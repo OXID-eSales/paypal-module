@@ -1,0 +1,267 @@
+name: oxid module tests
+
+on: [push]
+
+jobs:
+  install:
+    strategy:
+      matrix:
+        php: [ 7.4 ]
+        oxid: [ 6.3 ]
+    runs-on: ubuntu-latest
+    container:
+      image: oxidprojects/oxid-apache-php:oxid${{ matrix.oxid }}-php${{ matrix.php }}
+      options: --tmpfs=/build:noatime
+    env:
+      MODULE_NAME: oxid-solution-catalysts/paypal
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: install
+        run: composer create-project oxid-professional-services/test-oxid /build/oxid dev-oxid${{matrix.oxid}} --no-interaction -s dev --repository="{\"url\":\"https://github.com/keywan-ghadami-oxid/test-oxid.git\", \"type\":\"vcs\"}" --remove-vcs
+
+      - name: move artifacts to projects folder
+        run: |
+          mkdir -p /build/oxid/project-modules/module-under-test && cp -r * /build/oxid/project-modules/module-under-test
+      - name: add project module folder
+        run:
+          composer config repositories.build path /build/oxid/project-modules/\*
+        working-directory: /build/oxid
+
+      - name: require module
+        run: composer require --no-interaction $MODULE_NAME
+        working-directory: /build/oxid
+
+      - name: move config to source folder
+        run: cp config.inc.php-dist source/config.inc.php
+        working-directory: /build/oxid
+
+      - name: zip temp artifact
+        run: tar czf /build/oxid.tar.gz --directory /build oxid
+
+      - name: Upload oxid-with-deps
+        uses: actions/upload-artifact@v2
+        with:
+          name: oxid${{ matrix.oxid }}-php${{ matrix.php }}-with-deps
+          path: /build/oxid.tar.gz
+
+  static_code_checks:
+    strategy:
+      matrix:
+        php: [ 7.4 ]
+        oxid: [ 6.3 ]
+    runs-on: ubuntu-latest
+    needs: install
+    container:
+      image: oxidprojects/oxid-apache-php:oxid${{ matrix.oxid }}-php${{ matrix.php }}
+      options: --tmpfs=/build:exec,noatime
+    steps:
+      - name: Download oxid installation
+        uses: actions/download-artifact@v2
+        with:
+          name: oxid${{ matrix.oxid }}-php${{ matrix.php }}-with-deps
+          path: /build
+      - name: extract oxid installation
+        run: |
+          tar xzf oxid.tar.gz
+        working-directory: /build/
+
+      - name: prepare autoload
+        run: composer update
+        working-directory: /build/oxid/vendor/oxid-solution-catalysts/paypal/
+
+      - name: run psalm
+        run: composer psalm-report
+        working-directory: /build/oxid/vendor/oxid-solution-catalysts/paypal/
+
+      - name: Save psalm logs
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: psalm-log
+          path: /build/oxid/vendor/oxid-solution-catalysts/paypal/logs/psalm.sonarqube.json
+
+  codestyle_checks:
+    strategy:
+      matrix:
+        php: [ 7.4 ]
+        oxid: [ 6.3 ]
+    runs-on: ubuntu-latest
+    needs: install
+    container:
+      image: oxidprojects/oxid-apache-php:oxid${{ matrix.oxid }}-php${{ matrix.php }}
+    steps:
+      - name: Download oxid installation
+        uses: actions/download-artifact@v2
+        with:
+          name: oxid${{ matrix.oxid }}-php${{ matrix.php }}-with-deps
+          path: /build
+      - name: extract oxid installation
+        run: |
+          tar xzf oxid.tar.gz
+        working-directory: /build/
+
+      - name: prepare autoload
+        run: composer update
+        working-directory: /build/oxid/vendor/oxid-solution-catalysts/paypal/
+
+      - name: run phpcs
+        run: composer phpcs
+        working-directory: /build/oxid/vendor/oxid-solution-catalysts/paypal/
+
+  oxid_unit_tests:
+    strategy:
+      matrix:
+        php: [ 7.4 ]
+        oxid: [ 6.3 ]
+    runs-on: ubuntu-latest
+    needs: install
+    env:
+      MYSQL_DATABASE: oxid
+      MYSQL_HOST: db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      SHOP_URL: http://localhost/
+    services:
+      db:
+        image: mariadb:10.5
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: oxid
+        ports:
+          - 3306
+        options: --tmpfs=/tmp:noatime --tmpfs=/var/lib/mysql:noatime --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+    container:
+      image: oxidprojects/oxid-apache-php:oxid${{ matrix.oxid }}-php${{ matrix.php }}
+      options: --tmpfs=/build:exec,noatime
+    steps:
+      - name: Download a single artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: oxid${{ matrix.oxid }}-php${{ matrix.php }}-with-deps
+          path: /build
+      - name: extract temp artifact
+        run: |
+          tar xzf oxid.tar.gz
+        working-directory: /build/
+
+      - name: mysql shema
+        run: mysql -u $MYSQL_USER -h db -p$MYSQL_PASSWORD $MYSQL_DATABASE < "vendor/oxid-esales/oxideshop-ce/source/Setup/Sql/database_schema.sql"
+        working-directory: /build/oxid
+
+      - name: mysql data
+        run: mysql -u $MYSQL_USER -h db -p$MYSQL_PASSWORD $MYSQL_DATABASE < "vendor/oxid-esales/oxideshop-ce/source/Setup/Sql/initial_data.sql"
+        working-directory: /build/oxid
+
+      - name: console
+        run: vendor/bin/oe-console oe:module:install-configuration source/modules/osc/paypal/
+        working-directory: /build/oxid
+
+      - name: console
+        run: vendor/bin/oe-console oe:module:apply-configuration
+        working-directory: /build/oxid
+
+      - name: console
+        run: vendor/bin/oe-eshop-db_migrate migrations:migrate
+        working-directory: /build/oxid
+
+      - name: console
+        run: vendor/bin/oe-eshop-db_views_generate
+        working-directory: /build/oxid
+
+      - name: console
+        run: vendor/bin/oe-console oe:module:activate osc-paypal
+        working-directory: /build/oxid
+
+      - name: check mod config
+        run: cat var/configuration/shops/1.yaml
+        working-directory: /build/oxid
+
+      - name: composer validate
+        run: composer validate
+        working-directory: /build/oxid
+
+      - name: oxid config
+        run: cat source/config.inc.php
+        working-directory: /build/oxid
+
+      - name: run unit tests
+        run: |
+          XDEBUG_MODE=coverage php vendor/bin/phpunit \
+            --bootstrap vendor/oxid-esales/testing-library/bootstrap.php \
+            -c /build/oxid/vendor/oxid-solution-catalysts/paypal/Tests/phpunit.xml \
+            --coverage-clover=/build/oxid/logs/clover.xml \
+            --coverage-text \
+            --log-junit /build/oxid/logs/phpunit.xml
+        working-directory: /build/oxid
+
+      - name: Save logs
+        uses: actions/upload-artifact@v2
+        with:
+          name: logs
+          path: /build/oxid/logs
+
+  sonarcloud:
+    needs: [oxid_unit_tests, static_code_checks]
+    runs-on: ubuntu-latest
+    if: always() && (needs.oxid_unit_tests.result != 'failure')
+    steps:
+      - name: Checkout module
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: List
+        run: |
+          pwd
+          ls -alh
+
+      - name: Load phpunit logs
+        uses: actions/download-artifact@v2
+        with:
+          name: logs
+          path: logs
+
+      - name: Load psalm logs
+        uses: actions/download-artifact@v2
+        with:
+          name: psalm-log
+          path: logs/
+
+      - name: Fix phpunit logs
+        run: |
+          ls -alh logs
+          sed -i 's+/build/oxid/project-modules/module-under-test/++gI' logs/clover.xml
+          sed -i 's+/build/oxid/project-modules/module-under-test/++gI' logs/phpunit.xml
+
+      - name: Save logs
+        uses: actions/upload-artifact@v2
+        with:
+          name: logs-adjusted
+          path: logs
+
+      - name: Show logs
+        run: |
+          ls -alh logs
+          cat logs/clover.xml
+          cat logs/phpunit.xml
+          cat logs/psalm.sonarqube.json
+
+      - name: SonarCloud Scan
+        uses: sonarsource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=oxidprojects
+            -Dsonar.projectKey=OXIDprojects_paypal-oxid
+            -Dsonar.projectVersion=0.1.0
+            -Dsonar.sources=src
+            -Dsonar.tests=Tests
+            -Dsonar.sourceEncoding=UTF-8
+            -Dsonar.php.coverage.reportPaths=logs/clover.xml
+            -Dsonar.php.tests.reportPath=logs/phpunit.xml
+            -Dsonar.php.psalm.reportPaths=logs/psalm.sonarqube.json
+            -Dsonar.cpd.php.minimumTokens=30
+            -Dsonar.cpd.php.minimumLines=6

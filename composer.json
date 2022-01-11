@@ -1,0 +1,35 @@
+{
+    "name": "oxid-solution-catalysts/paypal",
+    "description": "OXID eSales PayPal payment module for OXID",
+    "type": "oxideshop-module",
+    "keywords": ["oxid", "modules", "eShop", "paypal", "payment"],
+    "homepage": "https://www.oxid-esales.com",
+    "license": ["GPL-3.0"],
+    "extra": {
+        "oxideshop": {
+            "target-directory": "osc/paypal"
+        }
+    },
+    "require": {
+        "webmozart/path-util": "^2.3.0"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "3.*",
+        "oxid-esales/oxideshop-ce": "^v6.8.0",
+        "vimeo/psalm": "^4.13"
+    },
+    "autoload": {
+        "psr-4": {
+            "OxidSolutionCatalysts\\PayPal\\": "src",
+            "OxidSolutionCatalysts\\PayPal\\Tests\\": "Tests"
+        }
+    },
+    "scripts": {
+        "psalm": "psalm --show-info=true --no-cache",
+        "psalm-report": "psalm --show-info=true --no-cache --report=logs/psalm.sonarqube.json",
+        "psalm-errors": "psalm --no-cache",
+        "psalm-automatic": "psalm --alter --issues=MissingReturnType,MissingParamType",
+        "phpcs": "phpcs --standard=Tests/phpcs.xml",
+        "phpcbf": "phpcbf --standard=Tests/phpcs.xml"
+    }
+}

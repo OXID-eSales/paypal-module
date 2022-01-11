@@ -1,0 +1,45 @@
+#!/bin/sh
+set -e
+
+# first arg is `-f` or `--some-option`
+if [ "${1#-}" != "$1" ]; then
+   set -- apache2-foreground "$@"
+fi
+
+#check if db container is ready
+while ! mysql -h ${MYSQL_HOST} -u ${MYSQL_USER} -p${MYSQL_PASSWORD} ${MYSQL_DATABASE} -e 'SHOW GLOBAL STATUS LIKE "Uptime"' --connect_timeout=10; do sleep 10; echo "DB not ready"; done
+
+# bootstrap oxid database/demodata
+MYSQL_CHECKDATA=`mysql -h ${MYSQL_HOST} -u ${MYSQL_USER} -p${MYSQL_PASSWORD} ${MYSQL_DATABASE} --skip-column-names -e "SHOW TABLES FROM ${MYSQL_DATABASE} LIKE 'oxconfig'"`
+if [ "${MYSQL_CHECKDATA}" = "" ]
+then
+   mysql -h ${MYSQL_HOST} -u ${MYSQL_USER} -p${MYSQL_PASSWORD} ${MYSQL_DATABASE} < /var/www/oxideshop/source/Setup/Sql/database_schema.sql
+   echo "db schema created"
+   mysql -h ${MYSQL_HOST} -u ${MYSQL_USER} -p${MYSQL_PASSWORD} ${MYSQL_DATABASE} -e "UPDATE oxshops SET OXSMTP = 'mailhog:1025', OXSMTPUSER = '', OXSMTPPWD = '' WHERE oxid = 1;"
+   php /var/www/oxideshop/vendor/bin/oe-eshop-doctrine_migration migrations:migrate
+   if [ "${OXID_EDITION}" = "b2b" ]
+   then
+   mysql -h ${MYSQL_HOST} -u ${MYSQL_USER} -p${MYSQL_PASSWORD} ${MYSQL_DATABASE} < /var/www/oxideshop/vendor/oxid-esales/oxideshop-demodata-ee/src/demodata.sql
+   else
+   mysql -h ${MYSQL_HOST} -u ${MYSQL_USER} -p${MYSQL_PASSWORD} ${MYSQL_DATABASE} < /var/www/oxideshop/vendor/oxid-esales/oxideshop-demodata-${OXID_EDITION}/src/demodata.sql
+   fi
+   php /var/www/oxideshop/vendor/bin/oe-eshop-db_views_regenerate
+   echo "demodata installed"
+
+fi
+
+if [ "${HTA_USER}" != test ] && [ "${HTA_PW}" != test ]
+then
+echo 'AuthType Basic\nAuthName "Passwortgesch�tzter Bereich"\nAuthUserFile /var/www/oxideshop/.htpasswd\nRequire valid-user' >> /var/www/oxideshop/source/.htaccess
+htpasswd -bc /var/www/oxideshop/.htpasswd ${HTA_USER} ${HTA_PW}
+fi
+
+rm -rf /var/www/oxideshop/source/Setup/
+chmod 444 /var/www/oxideshop/source/config.inc.php
+chmod 444 /var/www/oxideshop/source/.htaccess
+chown -R www-data:www-data /var/www/oxideshop/
+
+echo "Setup done."
+/var/www/oxideshop/vendor/bin/oe-console oe:module:activate osc-paypal;
+
+exec "$@"
