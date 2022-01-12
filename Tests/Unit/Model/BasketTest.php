@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace OxidProfessionalServices\PayPal\Tests\Unit\Model;
+namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Model;
 
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\TestingLibrary\UnitTestCase;

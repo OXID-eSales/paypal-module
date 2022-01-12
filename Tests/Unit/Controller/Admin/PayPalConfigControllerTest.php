@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace OxidProfessionalServices\PayPal\Tests\Unit\Controller\Admin;
+namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Controller\Admin;
 
 use OxidEsales\TestingLibrary\UnitTestCase;
-use OxidProfessionalServices\PayPal\Controller\Admin\PayPalConfigController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalConfigController;
 
 class PayPalConfigControllerTest extends UnitTestCase
 {

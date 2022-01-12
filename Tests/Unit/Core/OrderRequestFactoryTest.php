@@ -7,12 +7,12 @@
 
 declare(strict_types=1);
 
-namespace OxidProfessionalServices\PayPal\Tests\Unit\Core;
+namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Core;
 
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\TestingLibrary\UnitTestCase;
-use OxidProfessionalServices\PayPal\Api\Model\Orders\OrderRequest;
-use OxidProfessionalServices\PayPal\Core\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Api\Model\Orders\OrderRequest;
+use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use PHPUnit\Framework\MockObject\MockBuilder;
 
 class OrderRequestFactoryTest extends UnitTestCase

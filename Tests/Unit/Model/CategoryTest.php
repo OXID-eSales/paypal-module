@@ -7,10 +7,10 @@
 
 declare(strict_types=1);
 
-namespace OxidProfessionalServices\PayPal\Tests\Unit\Model\Logger;
+namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Model\Logger;
 
 use OxidEsales\TestingLibrary\UnitTestCase;
-use OxidProfessionalServices\PayPal\Model\Category;
+use OxidSolutionCatalysts\PayPal\Model\Category;
 
 class CategoryTest extends UnitTestCase
 {
