@@ -1,0 +1,35 @@
+<phpunit backupGlobals="true"
+         backupStaticAttributes="false"
+         bootstrap="bootstrap.php"
+         cacheTokens="true"
+         colors="false"
+         convertErrorsToExceptions="false"
+         convertNoticesToExceptions="false"
+         convertWarningsToExceptions="false"
+         forceCoversAnnotation="false"
+         mapTestClassNameToCoveredClassName="false"
+         printerClass="PHPUnit\TextUI\ResultPrinter"
+         processIsolation="false"
+         stopOnError="false"
+         stopOnFailure="false"
+         stopOnIncomplete="false"
+         stopOnSkipped="false"
+         beStrictAboutTestsThatDoNotTestAnything="true"
+         strict="false"
+         SYMFONY_DEPRECATIONS_HELPER="weak"
+         verbose="false">
+
+    <filter>
+        <whitelist addUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">../</directory>
+            <exclude>
+                <directory suffix=".php">../Tests/</directory>
+                <directory suffix=".php">../translations/</directory>
+                <directory suffix=".php">../views/</directory>
+                <directory suffix=".php">../out/</directory>
+                <directory suffix=".php">../docs/</directory>
+                <file suffix=".php">../metadata.php</file>
+            </exclude>
+        </whitelist>
+    </filter>
+</phpunit>

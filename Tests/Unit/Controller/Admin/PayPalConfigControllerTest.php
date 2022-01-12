@@ -1,0 +1,39 @@
+<?php
+
+/**
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
+ */
+
+declare(strict_types=1);
+
+namespace OxidProfessionalServices\PayPal\Tests\Unit\Controller\Admin;
+
+use OxidEsales\TestingLibrary\UnitTestCase;
+use OxidProfessionalServices\PayPal\Controller\Admin\PayPalConfigController;
+
+class PayPalConfigControllerTest extends UnitTestCase
+{
+    /** @var PayPalConfigController */
+    private $sut;
+
+    /**
+     * @inheritDoc
+     */
+    protected function setUp()
+    {
+        parent::setUp();
+
+        $this->sut = new PayPalConfigController();
+    }
+
+    public function testGetSignUpMerchantIntegrationLink()
+    {
+        $url = $this->sut->getSandboxSignUpMerchantIntegrationLink();
+        $urlInfo = parse_url($url);
+        $this->assertNotEmpty($urlInfo['query']);
+        $this->markTestIncomplete(
+            'This test has not been implemented yet.'
+        );
+    }
+}

@@ -1,0 +1,5 @@
+[{if $sPaymentID == "oxidpaypal"}]
+    [{include file='tpl/page/checkout/select_payment.tpl'}]
+[{else}]
+    [{$smarty.block.parent}]
+[{/if}]

@@ -11,6 +11,8 @@
         }
     },
     "require": {
+        "giggsey/libphonenumber-for-php": "^8.12",
+        "viison/address-splitter": "^0.3.4",
         "webmozart/path-util": "^2.3.0"
     },
     "require-dev": {
@@ -20,8 +22,8 @@
     },
     "autoload": {
         "psr-4": {
-            "OxidSolutionCatalysts\\PayPal\\": "src",
-            "OxidSolutionCatalysts\\PayPal\\Tests\\": "Tests"
+            "OxidSolutionCatalysts\\PayPal\\": "./src",
+            "OxidSolutionCatalysts\\PayPal\\Tests\\": "./Tests"
         }
     },
     "scripts": {
