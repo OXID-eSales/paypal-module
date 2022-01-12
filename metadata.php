@@ -18,32 +18,32 @@ use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Application\Model\PaymentGateway;
 use OxidEsales\Eshop\Core\ViewConfig;
-use OxidProfessionalServices\PayPal\Component\UserComponent as PayPalUserComponent;
-use OxidProfessionalServices\PayPal\Component\Widget\ArticleDetails as ArticleDetailsComponent;
-use OxidProfessionalServices\PayPal\Controller\Admin\ArticleListController;
-use OxidProfessionalServices\PayPal\Controller\Admin\BalanceController;
-use OxidProfessionalServices\PayPal\Controller\Admin\DisputeController;
-use OxidProfessionalServices\PayPal\Controller\Admin\DisputeDetailsController;
-use OxidProfessionalServices\PayPal\Controller\Admin\OnboardingController;
-use OxidProfessionalServices\PayPal\Controller\Admin\PayPalConfigController;
-use OxidProfessionalServices\PayPal\Controller\Admin\PayPalOrderController;
-use OxidProfessionalServices\PayPal\Controller\Admin\PayPalSubscribeController;
-use OxidProfessionalServices\PayPal\Controller\Admin\SubscriptionController;
-use OxidProfessionalServices\PayPal\Controller\Admin\SubscriptionDetailsController;
-use OxidProfessionalServices\PayPal\Controller\Admin\SubscriptionTransactionController;
-use OxidProfessionalServices\PayPal\Controller\Admin\TransactionController;
-use OxidProfessionalServices\PayPal\Controller\ArticleDetailsController as PayPalArticleDetailsController;
-use OxidProfessionalServices\PayPal\Controller\BasketController as PayPalBasketController;
-use OxidProfessionalServices\PayPal\Controller\OrderController as PayPalFrontEndOrderController;
-use OxidProfessionalServices\PayPal\Controller\ProxyController;
-use OxidProfessionalServices\PayPal\Controller\WebhookController;
-use OxidProfessionalServices\PayPal\Core\ViewConfig as PayPalViewConfig;
-use OxidProfessionalServices\PayPal\Model\Basket as PayPalBasket;
-use OxidProfessionalServices\PayPal\Model\BasketItem as PayPalBasketItem;
-use OxidProfessionalServices\PayPal\Model\Order as PayPalOrder;
-use OxidProfessionalServices\PayPal\Model\User as PayPalUser;
-use OxidProfessionalServices\PayPal\Model\PaymentGateway as PayPalPaymentGateway;
-use OxidProfessionalServices\PayPal\Model\PayPalArticle;
+use OxidSolutionCatalysts\PayPal\Component\UserComponent as PayPalUserComponent;
+use OxidSolutionCatalysts\PayPal\Component\Widget\ArticleDetails as ArticleDetailsComponent;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\ArticleListController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\BalanceController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\DisputeController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\DisputeDetailsController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\OnboardingController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalConfigController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalOrderController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalSubscribeController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\SubscriptionController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\SubscriptionDetailsController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\SubscriptionTransactionController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\TransactionController;
+use OxidSolutionCatalysts\PayPal\Controller\ArticleDetailsController as PayPalArticleDetailsController;
+use OxidSolutionCatalysts\PayPal\Controller\BasketController as PayPalBasketController;
+use OxidSolutionCatalysts\PayPal\Controller\OrderController as PayPalFrontEndOrderController;
+use OxidSolutionCatalysts\PayPal\Controller\ProxyController;
+use OxidSolutionCatalysts\PayPal\Controller\WebhookController;
+use OxidSolutionCatalysts\PayPal\Core\ViewConfig as PayPalViewConfig;
+use OxidSolutionCatalysts\PayPal\Model\Basket as PayPalBasket;
+use OxidSolutionCatalysts\PayPal\Model\BasketItem as PayPalBasketItem;
+use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrder;
+use OxidSolutionCatalysts\PayPal\Model\User as PayPalUser;
+use OxidSolutionCatalysts\PayPal\Model\PaymentGateway as PayPalPaymentGateway;
+use OxidSolutionCatalysts\PayPal\Model\PayPalArticle;
 
 $sMetadataVersion = '2.1';
 
@@ -149,8 +149,8 @@ $aModule = [
             'osc/paypal/views/tpl/shared/page/account/order_and_partsubscription_overview.tpl',
     ],
     'events' => [
-      #  'onActivate' => '\OxidProfessionalServices\PayPal\Core\Events::onActivate',
-      #  'onDeactivate' => '\OxidProfessionalServices\PayPal\Core\Events::onDeactivate'
+        'onActivate' => '\OxidSolutionCatalysts\PayPal\Core\Events\Events::onActivate',
+        'onDeactivate' => '\OxidSolutionCatalysts\PayPal\Core\Events\Events::onDeactivate'
     ],
     'blocks' => [ /*
         [
