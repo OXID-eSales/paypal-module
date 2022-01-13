@@ -12,7 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Controller\Admin;
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalConfigController;
 
-class PayPalConfigControllerTest extends UnitTestCase
+final class PayPalConfigControllerTest extends UnitTestCase
 {
     /** @var PayPalConfigController */
     private $sut;
@@ -20,14 +20,14 @@ class PayPalConfigControllerTest extends UnitTestCase
     /**
      * @inheritDoc
      */
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         $this->sut = new PayPalConfigController();
     }
 
-    public function testGetSignUpMerchantIntegrationLink()
+    public function testGetSignUpMerchantIntegrationLink(): void
     {
         $url = $this->sut->getSandboxSignUpMerchantIntegrationLink();
         $urlInfo = parse_url($url);

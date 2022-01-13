@@ -11,12 +11,16 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 
 /**
  * Class Config
  */
 class Config
 {
+    use ServiceContainer;
+
     /**
      * Checks if module configurations are valid
      *
@@ -63,7 +67,7 @@ class Config
      */
     public function isSandbox(): bool
     {
-        return (bool) Registry::getConfig()->getConfigParam('blPayPalSandboxMode');
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandbox();
     }
 
     /**
@@ -100,103 +104,68 @@ class Config
             : $this->getLiveWebhookId();
     }
 
-    /**
-     * @return string
-     */
     public function getLiveClientId(): string
     {
-        return (string) Registry::getConfig()->getConfigParam('sPayPalClientId', '');
+        return $this->getServiceFromContainer(ModuleSettings::class)->getLiveClientId();
     }
 
-    /**
-     * @return string
-     */
     public function getLiveClientSecret(): string
     {
-        return (string) Registry::getConfig()->getConfigParam('sPayPalClientSecret', '');
+        return $this->getServiceFromContainer(ModuleSettings::class)->getLiveClientSecret();
     }
 
-    /**
-     * @return string
-     */
-    public function getLiveWebhookId()
+    public function getLiveWebhookId(): string
     {
-        return (string) Registry::getConfig()->getConfigParam('sPayPalWebhookId', '');
+        return $this->getServiceFromContainer(ModuleSettings::class)->getLiveWebhookId();
     }
 
-    /**
-     * @return string
-     */
     public function getSandboxClientId(): string
     {
-        return (string) Registry::getConfig()->getConfigParam('sPayPalSandboxClientId', '');
+        return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxClientId();
     }
 
-    /**
-     * @return string
-     */
     public function getSandboxClientSecret(): string
     {
-        return (string) Registry::getConfig()->getConfigParam('sPayPalSandboxClientSecret', '');
+        return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxClientSecret();
     }
 
-    /**
-     * @return string
-     */
-    public function getSandboxWebhookId()
+    public function getSandboxWebhookId(): string
     {
-        return (string) Registry::getConfig()->getConfigParam('sPayPalSandboxWebhookId', '');
+        return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxWebhookId();
     }
 
-    /**
-     * @return bool
-     */
     public function showPayPalBasketButton(): bool
     {
-        return (bool) Registry::getConfig()->getConfigParam('blPayPalShowBasketButton', false);
+        return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalBasketButton();
     }
 
-    /**
-     * @return bool
-     */
     public function showPayPalCheckoutButton(): bool
     {
-        return (bool) Registry::getConfig()->getConfigParam('blPayPalShowCheckoutButton', false);
+        return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalCheckoutButton();
     }
 
-    /**
-     * @return bool
-     */
     public function showPayPalProductDetailsButton(): bool
     {
-        return (bool) Registry::getConfig()->getConfigParam('blPayPalShowProductDetailsButton');
+        return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalProductDetailsButton();
     }
 
-    /**
-     * @return bool
-     */
     public function getAutoBillOutstanding(): bool
     {
-        return (bool) Registry::getConfig()->getConfigParam('blPayPalAutoBillOutstanding');
+        return $this->getServiceFromContainer(ModuleSettings::class)->getAutoBillOutstanding();
     }
 
-    /**
-     * @return string
-     */
     public function getSetupFeeFailureAction(): string
     {
-        return (string) Registry::getConfig()->getConfigParam('sPayPalSetupFeeFailureAction', 'CONTINUE');
+        return $this->getServiceFromContainer(ModuleSettings::class)->getSetupFeeFailureAction();
     }
 
-    /**
-     * @return string
-     */
     public function getPaymentFailureThreshold(): string
     {
-        return (string) Registry::getConfig()->getConfigParam('sPayPalPaymentFailureThreshold', '1');
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPaymentFailureThreshold();
     }
 
     /**
+     * TODO: use Service\ModuleSettings
      * Config value getter
      * @Todo PSPAYPAL-491 Work in progress, add tests
      * @Todo Ensure we fetch this setting from the active subshop.

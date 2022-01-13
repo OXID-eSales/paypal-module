@@ -27,13 +27,17 @@ use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Request;
+use OxidSolutionCatalysts\PayPal\Module as OscPayPalModule;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 
 /**
  * Controller for admin > PayPal/Configuration page
  */
 class PayPalConfigController extends AdminController
 {
-    public const MODULE_ID = 'module:oxscpaypal';
+    use ServiceContainer;
+
     public const SIGN_UP_HOST = 'https://www.sandbox.paypal.com/bizsignup/partner/entry'; //TODO: use env
 
     /**
@@ -172,11 +176,7 @@ class PayPalConfigController extends AdminController
     {
         foreach ($conf as $confName => $value) {
             $value = trim($value);
-            if (strpos($confName, 'bl') === 0) {
-                Registry::getConfig()->saveShopConfVar('bool', $confName, $value, $shopId, self::MODULE_ID);
-            } else {
-                Registry::getConfig()->saveShopConfVar('str', $confName, $value, $shopId, self::MODULE_ID);
-            }
+            $this->getServiceFromContainer(ModuleSettings::class)->save($confName, $value);
         }
     }
 

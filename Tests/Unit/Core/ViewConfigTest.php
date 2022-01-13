@@ -9,14 +9,18 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Core;
 
+use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidEsales\Eshop\Application\Model\Payment;
 use OxidEsales\Eshop\Core\ViewConfig;
+use OxidSolutionCatalysts\PayPal\Module as OscPayPalModule;
+use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
 
 /**
  * Testing \OxidSolutionCatalysts\PayPal\Core\ViewConfig class.
  */
-class ViewConfigTest extends UnitTestCase
+final class ViewConfigTest extends UnitTestCase
 {
     /**
      * Tear down the fixture.
@@ -32,14 +36,15 @@ class ViewConfigTest extends UnitTestCase
      * PSPAYPAL-491 -->
      * Banner feature enabled? test
      */
-    public function testShowPayPalBannerOnStartPage()
+    public function testShowPayPalBannerOnStartPage(): void
     {
-        $view = oxNew(\OxidEsales\Eshop\Core\ViewConfig::class);
+        $moduleSettingsBridge = ContainerFactory::getInstance()->getContainer()->get(ModuleSettingBridgeInterface::class);
+        $moduleSettingsBridge->save('oePayPalBannersShowAll', false, OscPayPalModule::MODULE_ID);
 
-        $this->getConfig()->setConfigParam('oePayPalBannersShowAll', false);
+        $view = oxNew(\OxidEsales\Eshop\Core\ViewConfig::class);
         $this->assertFalse($view->enablePayPalBanners());
 
-        $this->getConfig()->setConfigParam('oePayPalBannersShowAll', true);
+        $moduleSettingsBridge->save('oePayPalBannersShowAll', true, OscPayPalModule::MODULE_ID);
         $this->assertTrue($view->enablePayPalBanners());
     }
 
@@ -47,14 +52,15 @@ class ViewConfigTest extends UnitTestCase
      * Test case for ViewConfig::getPayPalClientId()
      * @Todo needs new test with Core\Config mock
      */
-    public function testGetPayPalClientIdId()
+    public function testGetPayPalClientIdId(): void
     {
+        $this->markTestIncomplete('TODO');
     }
 
     /**
      * Test case for ViewConfig::showPayPalBannerOnStartPage()
      */
-    public function testShowBannersStartPage()
+    public function testShowBannersStartPage(): void
     {
         $view = oxNew(\OxidEsales\Eshop\Core\ViewConfig::class);
 
@@ -69,7 +75,7 @@ class ViewConfigTest extends UnitTestCase
     /**
      * Test case for ViewConfig::showPayPalBannerOnCategoryPage()
      */
-    public function testShowPayPalBannerOnCategoryPage()
+    public function testShowPayPalBannerOnCategoryPage(): void
     {
         $view = oxNew(\OxidEsales\Eshop\Core\ViewConfig::class);
 
@@ -84,7 +90,7 @@ class ViewConfigTest extends UnitTestCase
     /**
      * Test case for ViewConfig::showPayPalBannerOnSearchResultsPage()
      */
-    public function testShowPayPalBannerOnSearchResultsPage()
+    public function testShowPayPalBannerOnSearchResultsPage(): void
     {
         $view = oxNew(\OxidEsales\Eshop\Core\ViewConfig::class);
 
@@ -99,7 +105,7 @@ class ViewConfigTest extends UnitTestCase
     /**
      * Test case for ViewConfig::showPayPalBannerOnProductDetailsPage()
      */
-    public function testShowPayPalBannerOnProductDetailsPage()
+    public function testShowPayPalBannerOnProductDetailsPage(): void
     {
         $view = oxNew(\OxidEsales\Eshop\Core\ViewConfig::class);
 
@@ -119,7 +125,7 @@ class ViewConfigTest extends UnitTestCase
      * @param string $actionClassName
      * @param string $selectorSetting
      */
-    public function showPayPalBannerOnCheckoutPage(string $actionClassName, string $selectorSetting)
+    public function showPayPalBannerOnCheckoutPage(string $actionClassName, string $selectorSetting): void
     {
         $viewMock = $this
             ->getMockBuilder(\OxidSolutionCatalysts\PayPal\Core\ViewConfig::class)
@@ -139,7 +145,7 @@ class ViewConfigTest extends UnitTestCase
         $this->assertFalse($viewMock->showPayPalBannerOnCheckoutPage());
     }
 
-    public function providerBannerCheckoutPage()
+    public function providerBannerCheckoutPage(): array
     {
         return [
             ['basket', 'oePayPalBannersCartPageSelector'],
@@ -152,7 +158,7 @@ class ViewConfigTest extends UnitTestCase
      *
      * @dataProvider providerGetPayPalColorScheme
      */
-    public function testPayPalBannerColorScheme($colorScheme)
+    public function testPayPalBannerColorScheme($colorScheme): void
     {
         $view = oxNew(\OxidEsales\Eshop\Core\ViewConfig::class);
 
@@ -160,7 +166,7 @@ class ViewConfigTest extends UnitTestCase
         $this->assertEquals($colorScheme, $view->getPayPalBannersColorScheme());
     }
 
-    public function providerGetPayPalColorScheme()
+    public function providerGetPayPalColorScheme(): array
     {
         return [
             ['blue'],

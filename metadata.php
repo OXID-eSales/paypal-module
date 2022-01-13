@@ -343,6 +343,9 @@ $aModule = [
             'constraints' => 'blue|black|white|white-no-border', 'value' => 'blue'],
         // <-- PSPAYPAL-491
 
+        //TODO: setting was missing and seems to default to false atm
+       # ['name' => 'blPayPalShowCheckoutButton', 'type' => 'select', 'value' => 'false', 'constraints' => 'false'],
+
         // PSPAYPAL-492
         [
             'name' => 'blPayPalNeverUseCredit',

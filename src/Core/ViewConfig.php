@@ -118,10 +118,8 @@ class ViewConfig extends ViewConfig_parent
     /**
      * PSPAYPAL-491 -->
      * Returns whether PayPal banners should be shown on the start page
-     *
-     * @return bool
      */
-    public function enablePayPalBanners()
+    public function enablePayPalBanners(): bool
     {
         //TODO: refactor all similar settings fetching places
         return $this->getServiceFromContainer(ModuleSettings::class)->showAllPayPalBanners();
@@ -161,13 +159,13 @@ class ViewConfig extends ViewConfig_parent
      * @return bool
      */
     public function showPayPalBannerOnStartPage()
-    {
+    { return true; //hier weiter
         $config = Registry::getConfig();
         return (
-            $config->getConfigParam('oePayPalBannersShowAll') &&
-            $config->getConfigParam('oePayPalBannersStartPage') &&
-            $config->getConfigParam('oePayPalBannersStartPageSelector') &&
-            $config->getConfigParam('bl_perfLoadPrice')
+            $config->getConfigParam('oePayPalBannersShowAll') #&&
+       #     $config->getConfigParam('oePayPalBannersStartPage') &&
+       #     $config->getConfigParam('oePayPalBannersStartPageSelector') &&
+       #     $config->getConfigParam('bl_perfLoadPrice')
         );
     }
 
