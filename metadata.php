@@ -65,9 +65,9 @@ $aModule = [
     'author' => 'Oxid Solution Catalysts',
     'url' => '',
     'email' => '',
-    'extend' => [ /*
+    'extend' => [
         ViewConfig::class => PayPalViewConfig::class,
-        Order::class => PayPalOrder::class,
+      /*  Order::class => PayPalOrder::class,
         User::class => PayPalUser::class,
         Basket::class => PayPalBasket::class,
         BasketItem::class => PayPalBasketItem::class,
@@ -81,9 +81,9 @@ $aModule = [
         UserComponent::class => PayPalUserComponent::class
  */
     ],
-    'controllers' => [ /*
+    'controllers' => [
         'PayPalConfigController' => PayPalConfigController::class,
-        'PayPalBalanceController' => BalanceController::class,
+      /*  'PayPalBalanceController' => BalanceController::class,
         'PayPalWebhookController' => WebhookController::class,
         'PayPalProxyController' => ProxyController::class,
         'PayPalTransactionController' => TransactionController::class,
@@ -256,7 +256,7 @@ $aModule = [
             'file' => '/views/blocks/shared/page/details/inc/details_productmain_price_value.tpl',
             'position' => '5'
         ],
-
+*/
         // PSPAYPAL-491 Installment banners -->
         [
             'template' => 'page/checkout/basket.tpl',
@@ -301,7 +301,7 @@ $aModule = [
             'file' => '/views/blocks/shared/page/shop/start.tpl',
         ],
         // <-- PSPAYPAL-491
-
+/*
         [
             'template' => 'page/account/order.tpl',
             'block' => 'account_order_history_cart_items',
