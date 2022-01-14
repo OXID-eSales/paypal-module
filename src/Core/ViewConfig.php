@@ -121,7 +121,6 @@ class ViewConfig extends ViewConfig_parent
      */
     public function enablePayPalBanners(): bool
     {
-        //TODO: refactor all similar settings fetching places
         return $this->getServiceFromContainer(ModuleSettings::class)->showAllPayPalBanners();
     }
 
@@ -252,7 +251,6 @@ class ViewConfig extends ViewConfig_parent
      */
     public function showPayPalBannerOnCheckoutPage(): bool
     {
-        //TODO
         $showBanner = false;
         $actionClassName = $this->getActionClassName();
         $config = Registry::getConfig();

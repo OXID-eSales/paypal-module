@@ -178,6 +178,9 @@ class Config
             return (bool) false;
         }
 
+        //TODO: try catch invalid settings
+        #return $this->getServiceFromContainer(ModuleSettings::class)->getRawValue($varname);
+
         return (string) Registry::getConfig()->getConfigParam($varname);
     }
 
