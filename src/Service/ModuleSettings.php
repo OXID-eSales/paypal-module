@@ -17,6 +17,11 @@ class ModuleSettings
     /** @var ModuleSettingBridgeInterface */
     private $moduleSettingBridge;
 
+    //TODO: we need service for fetching module settings from db (this one)
+    //another class for moduleconfiguration (database values/edefaults)
+    //and the view configuration should go into some separate class
+    //also add shopcontext to get shop settings
+
     public function __construct(
         ModuleSettingBridgeInterface $moduleSettingBridge
     )
@@ -96,6 +101,66 @@ class ModuleSettings
     {
         $value = $this->getSettingValue('sPayPalPaymentFailureThreshold');
         return !empty($value) ? $value : '1';
+    }
+
+    public function showBannersOnStartPage(): bool
+    {
+        return (bool) $this->getSettingValue('oePayPalBannersStartPage');
+    }
+
+    public function getStartPageBannerSelector(): string
+    {
+        return (string) $this->getSettingValue('oePayPalBannersStartPageSelector');
+    }
+
+    public function showBannersOnCategoryPage(): bool
+    {
+        return (bool) $this->getSettingValue('oePayPalBannersCategoryPage');
+    }
+
+    public function getCategoryPageBannerSelector(): string
+    {
+        return (string) $this->getSettingValue('oePayPalBannersCategoryPageSelector');
+    }
+
+    public function showBannersOnSearchPage(): bool
+    {
+        return (bool) $this->getSettingValue('oePayPalBannersSearchResultsPage');
+    }
+
+    public function getSearchPageBannerSelector(): string
+    {
+        return (string) $this->getSettingValue('oePayPalBannersSearchResultsPageSelector');
+    }
+
+    public function showBannersOnProductDetailsPage(): bool
+    {
+        return (bool) $this->getSettingValue('oePayPalBannersProductDetailsPage');
+    }
+
+    public function getProductDetailsPageBannerSelector(): string
+    {
+        return (string) $this->getSettingValue('oePayPalBannersProductDetailsPageSelector');
+    }
+
+    public function showBannersOnCheckoutPage(): bool
+    {
+        return (bool) $this->getSettingValue('oePayPalBannersCheckoutPage');
+    }
+
+    public function getPayPalBannerCartPageSelector(): string
+    {
+        return (string) $this->getSettingValue('oePayPalBannersCartPageSelector');
+    }
+
+    public function getPayPalBannerPaymentPageSelector(): string
+    {
+        return (string) $this->getSettingValue('oePayPalBannersPaymentPageSelector');
+    }
+
+    public function getPayPalBannersColorScheme(): string
+    {
+        return (string) $this->getSettingValue('oePayPalBannersColorScheme');
     }
 
     public function save(string $name, $value): void

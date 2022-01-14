@@ -127,7 +127,6 @@ class ViewConfig extends ViewConfig_parent
 
     /**
      * Client ID getter for use with the installment banner feature.
-     * @return string
      */
     public function getPayPalClientId(): string
     {
@@ -136,7 +135,6 @@ class ViewConfig extends ViewConfig_parent
 
     /**
      * API URL getter for use with the installment banner feature
-     * @return string
      */
     public function getPayPalApiBannerUrl(): string
     {
@@ -155,136 +153,123 @@ class ViewConfig extends ViewConfig_parent
 
     /**
      * Returns whether PayPal banners should be shown on the start page
-     *
-     * @return bool
      */
-    public function showPayPalBannerOnStartPage()
-    { return true; //hier weiter
+    public function showPayPalBannerOnStartPage(): bool
+    {
         $config = Registry::getConfig();
+        $settings = $this->getServiceFromContainer(ModuleSettings::class);
+
         return (
-            $config->getConfigParam('oePayPalBannersShowAll') #&&
-       #     $config->getConfigParam('oePayPalBannersStartPage') &&
-       #     $config->getConfigParam('oePayPalBannersStartPageSelector') &&
-       #     $config->getConfigParam('bl_perfLoadPrice')
+            $settings->showAllPayPalBanners() &&
+            $settings->showBannersOnStartPage() &&
+            $settings->getStartPageBannerSelector() &&
+            $config->getConfigParam('bl_perfLoadPrice')
         );
     }
 
     /**
      * Returns PayPal banners selector for the start page
-     *
-     * @return string
      */
-    public function getPayPalBannerStartPageSelector()
+    public function getPayPalBannerStartPageSelector(): string
     {
-        $config = Registry::getConfig();
-        return $config->getConfigParam('oePayPalBannersStartPageSelector');
+        return $this->getServiceFromContainer(ModuleSettings::class)->getStartPageBannerSelector();
     }
 
     /**
      * Returns whether PayPal banners should be shown on the category page
-     *
-     * @return bool
      */
-    public function showPayPalBannerOnCategoryPage()
+    public function showPayPalBannerOnCategoryPage(): bool
     {
         $config = Registry::getConfig();
+        $settings = $this->getServiceFromContainer(ModuleSettings::class);
+
         return (
-            $config->getConfigParam('oePayPalBannersShowAll') &&
-            $config->getConfigParam('oePayPalBannersCategoryPage') &&
-            $config->getConfigParam('oePayPalBannersCategoryPageSelector') &&
+            $settings->showAllPayPalBanners() &&
+            $settings->showBannersOnCategoryPage() &&
+            $settings->getCategoryPageBannerSelector() &&
             $config->getConfigParam('bl_perfLoadPrice')
         );
     }
 
     /**
      * Returns PayPal banners selector for the category page
-     *
-     * @return string
      */
-    public function getPayPalBannerCategoryPageSelector()
+    public function getPayPalBannerCategoryPageSelector(): string
     {
-        $config = Registry::getConfig();
-        return $config->getConfigParam('oePayPalBannersCategoryPageSelector');
+        return $this->getServiceFromContainer(ModuleSettings::class)->getCategoryPageBannerSelector();
     }
 
     /**
      * Returns whether PayPal banners should be shown on the search results page
-     *
-     * @return bool
      */
-    public function showPayPalBannerOnSearchResultsPage()
+    public function showPayPalBannerOnSearchResultsPage(): bool
     {
         $config = Registry::getConfig();
+        $settings = $this->getServiceFromContainer(ModuleSettings::class);
 
         return (
-            $config->getConfigParam('oePayPalBannersShowAll') &&
-            $config->getConfigParam('oePayPalBannersSearchResultsPage') &&
-            $config->getConfigParam('oePayPalBannersSearchResultsPageSelector') &&
+            $settings->showAllPayPalBanners() &&
+            $settings->showBannersOnSearchPage() &&
+            $settings->getSearchPageBannerSelector() &&
             $config->getConfigParam('bl_perfLoadPrice')
         );
     }
 
     /**
      * Returns PayPal banners selector for the search page
-     *
-     * @return string
      */
-    public function getPayPalBannerSearchPageSelector()
+    public function getPayPalBannerSearchPageSelector(): string
     {
-        $config = Registry::getConfig();
-        return $config->getConfigParam('oePayPalBannersSearchResultsPageSelector');
+        return $this->getServiceFromContainer(ModuleSettings::class)->getSearchPageBannerSelector();
     }
 
     /**
      * Returns whether PayPal banners should be shown on the product details page
-     *
-     * @return bool
      */
-    public function showPayPalBannerOnProductDetailsPage()
+    public function showPayPalBannerOnProductDetailsPage(): bool
     {
         $config = Registry::getConfig();
+        $settings = $this->getServiceFromContainer(ModuleSettings::class);
 
         return (
-            $config->getConfigParam('oePayPalBannersShowAll') &&
-            $config->getConfigParam('oePayPalBannersProductDetailsPage') &&
-            $config->getConfigParam('oePayPalBannersProductDetailsPageSelector') &&
+            $settings->showAllPayPalBanners() &&
+            $settings->showBannersOnProductDetailsPage() &&
+            $settings->getProductDetailsPageBannerSelector() &&
             $config->getConfigParam('bl_perfLoadPrice')
         );
     }
 
     /**
      * Returns PayPal banners selector for the product detail page
-     *
-     * @return string
      */
-    public function getPayPalBannerProductDetailsPageSelector()
+    public function getPayPalBannerProductDetailsPageSelector(): string
     {
-        $config = Registry::getConfig();
-        return $config->getConfigParam('oePayPalBannersProductDetailsPageSelector');
+        return $this->getServiceFromContainer(ModuleSettings::class)->getProductDetailsPageBannerSelector();
     }
 
     /**
      * Returns whether PayPal banners should be shown on the checkout page
-     *
-     * @return bool
      */
-    public function showPayPalBannerOnCheckoutPage()
+    public function showPayPalBannerOnCheckoutPage(): bool
     {
+        //TODO
         $showBanner = false;
         $actionClassName = $this->getActionClassName();
         $config = Registry::getConfig();
+        $settings = $this->getServiceFromContainer(ModuleSettings::class);
+
         if ($actionClassName === 'basket') {
             $showBanner = (
-                $config->getConfigParam('oePayPalBannersShowAll') &&
-                $config->getConfigParam('oePayPalBannersCheckoutPage') &&
-                $config->getConfigParam('oePayPalBannersCartPageSelector') &&
+                $settings->showAllPayPalBanners() &&
+                $settings->showBannersOnCheckoutPage() &&
+                $settings->getPayPalBannerCartPageSelector() &&
                 $config->getConfigParam('bl_perfLoadPrice')
             );
         } elseif ($actionClassName === 'payment') {
             $showBanner = (
-                $config->getConfigParam('oePayPalBannersShowAll') &&
-                $config->getConfigParam('oePayPalBannersCheckoutPage') &&
-                $config->getConfigParam('oePayPalBannersPaymentPageSelector') &&
+                $settings->showAllPayPalBanners() &&
+                $settings->showBannersOnCheckoutPage() &&
+                $settings->getPayPalBannerPaymentPageSelector() &&
                 $config->getConfigParam('bl_perfLoadPrice')
             );
         }
@@ -294,32 +279,24 @@ class ViewConfig extends ViewConfig_parent
 
     /**
      * Returns PayPal banners selector for the cart page
-     *
-     * @return string
      */
-    public function getPayPalBannerCartPageSelector()
+    public function getPayPalBannerCartPageSelector(): string
     {
-        $config = Registry::getConfig();
-        return $config->getConfigParam('oePayPalBannersCartPageSelector');
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalBannerCartPageSelector();
     }
 
     /**
      * Returns PayPal banners selector for the payment page
-     *
-     * @return string
      */
-    public function getPayPalBannerPaymentPageSelector()
+    public function getPayPalBannerPaymentPageSelector(): string
     {
-        $config = Registry::getConfig();
-        return $config->getConfigParam('oePayPalBannersPaymentPageSelector');
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalBannerPaymentPageSelector();
     }
 
     /**
      * Returns the PayPal banners colour scheme
-     *
-     * @return string
      */
-    public function getPayPalBannersColorScheme()
+    public function getPayPalBannersColorScheme(): string
     {
         return Registry::getConfig()->getConfigParam('oePayPalBannersColorScheme');
     }
