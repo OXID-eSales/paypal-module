@@ -43,7 +43,7 @@ use OxidSolutionCatalysts\PayPal\Model\BasketItem as PayPalBasketItem;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Model\User as PayPalUser;
 use OxidSolutionCatalysts\PayPal\Model\PaymentGateway as PayPalPaymentGateway;
-use OxidSolutionCatalysts\PayPal\Model\PayPalArticle;
+use OxidSolutionCatalysts\PayPal\Model\Article as PayPalArticle;
 
 $sMetadataVersion = '2.1';
 
@@ -67,19 +67,19 @@ $aModule = [
     'email' => '',
     'extend' => [
         ViewConfig::class => PayPalViewConfig::class,
-      /*  Order::class => PayPalOrder::class,
-        User::class => PayPalUser::class,
+      #  Order::class => PayPalOrder::class,
+      #  User::class => PayPalUser::class,
         Basket::class => PayPalBasket::class,
-        BasketItem::class => PayPalBasketItem::class,
+      #  BasketItem::class => PayPalBasketItem::class,
         Article::class => PayPalArticle::class,
-        PaymentGateway::class => PayPalPaymentGateway::class,
-        ArticleList::class => ArticleListController::class,
-        ArticleDetailsController::class => PayPalArticleDetailsController::class,
-        BasketController::class => PayPalBasketController::class,
-        ArticleDetails::class => ArticleDetailsComponent::class,
-        OrderController::class => PayPalFrontEndOrderController::class,
-        UserComponent::class => PayPalUserComponent::class
- */
+      #  PaymentGateway::class => PayPalPaymentGateway::class,
+      #  ArticleList::class => ArticleListController::class,
+      #  ArticleDetailsController::class => PayPalArticleDetailsController::class,
+      #  BasketController::class => PayPalBasketController::class,
+      #  ArticleDetails::class => ArticleDetailsComponent::class,
+      #  OrderController::class => PayPalFrontEndOrderController::class,
+      #  UserComponent::class => PayPalUserComponent::class
+
     ],
     'controllers' => [
         'PayPalConfigController' => PayPalConfigController::class,
