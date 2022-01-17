@@ -60,22 +60,6 @@ class AcceptanceTester extends \Codeception\Actor
         return $homePage;
     }
 
-    public function setPayPalSettingsData(): void
-    {
-        $I = $this;
-
-        $I->updateModuleConfiguration('blPayPalSandboxMode', true);
-        $I->updateModuleConfiguration('sPayPalSandboxClientId', Fixtures::get('sPayPalClientId'));
-
-        /*
-        $I->updateConfigInDatabase('blPayPalLoggerEnabled', true, 'bool');
-        $I->updateConfigInDatabase('sOEPayPalSandboxUserEmail', Fixtures::get('sOEPayPalSandboxUsername'), 'str');
-        $I->updateConfigInDatabase('sOEPayPalSandboxUsername', Fixtures::get('sOEPayPalSandboxUsername'), 'str');
-        $I->updateConfigInDatabase('sOEPayPalSandboxPassword', Fixtures::get('sOEPayPalSandboxPassword'), 'str');
-        $I->updateConfigInDatabase('sOEPayPalSandboxSignature', Fixtures::get('sOEPayPalSandboxSignature'), 'str');
-        */
-    }
-
     public function setPayPalBannersVisibility(bool $on = false): void
     {
         $I = $this;

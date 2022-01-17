@@ -28,7 +28,6 @@ final class InstallmentBannersCest extends BaseCest
         parent::_before($I);
 
         $I->clearShopCache();
-        $I->setPayPalSettingsData();
         $I->setPayPalBannersVisibility(false);
         $I->updateConfigInDatabase('blUseStock', false, 'bool');
         $I->updateConfigInDatabase('bl_perfLoadPrice', true, 'bool');
