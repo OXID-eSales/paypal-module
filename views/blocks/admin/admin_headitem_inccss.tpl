@@ -1,16 +1,16 @@
 [{if
-    $oViewConf->getTopActiveClassName()|lower=="paypalconfigcontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypalordercontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypaltransactioncontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypalbalancecontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypalsubscriptioncontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypalsubscriptiondetailscontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypalsubscriptiontransactioncontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypaldisputedetailscontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypaldisputecontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypalsubscribecontroller"
+    $oViewConf->getTopActiveClassName()|lower=="paypalconfig" ||
+    $oViewConf->getTopActiveClassName()|lower=="paypalorder" ||
+    $oViewConf->getTopActiveClassName()|lower=="paypaltransaction" ||
+    $oViewConf->getTopActiveClassName()|lower=="paypalbalance" ||
+    $oViewConf->getTopActiveClassName()|lower=="paypalsubscription" ||
+    $oViewConf->getTopActiveClassName()|lower=="paypalsubscriptiondetails" ||
+    $oViewConf->getTopActiveClassName()|lower=="paypalsubscriptiontransaction" ||
+    $oViewConf->getTopActiveClassName()|lower=="paypaldisputedetails" ||
+    $oViewConf->getTopActiveClassName()|lower=="paypaldispute" ||
+    $oViewConf->getTopActiveClassName()|lower=="paypalsubscribe"
 }]
-    [{if $oViewConf->getTopActiveClassName()|lower!=="paypalsubscribecontroller"}]
+    [{if $oViewConf->getTopActiveClassName()|lower!=="paypalsubscribe"}]
         [{assign var="sFileMTimeBootstrap" value=$oViewConf->getModulePath('osc_paypal','out/src/css/bootstrap.min.css')|filemtime}]
         [{oxstyle include=$oViewConf->getModuleUrl('osc_paypal','out/src/css/bootstrap.min.css')|cat:"?"|cat:$sFileMTimeBootstrap priority=10}]
     [{/if}]

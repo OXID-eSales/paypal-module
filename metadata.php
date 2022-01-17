@@ -82,20 +82,19 @@ $aModule = [
 
     ],
     'controllers' => [
-        'PayPalConfigController' => PayPalConfigController::class,
-      /*  'PayPalBalanceController' => BalanceController::class,
-        'PayPalWebhookController' => WebhookController::class,
-        'PayPalProxyController' => ProxyController::class,
-        'PayPalTransactionController' => TransactionController::class,
-        'PayPalSubscriptionTransactionController' => SubscriptionTransactionController::class,
-        'PayPalSubscribeController' => PayPalSubscribeController::class,
-        'OnboardingController' => OnboardingController::class,
-        'PayPalOrderController' => PayPalOrderController::class,
-        'PayPalSubscriptionDetailsController' => SubscriptionDetailsController::class,
-        'PayPalSubscriptionController' => SubscriptionController::class,
-        'PayPalAdminArticleListController' => ArticleListController::class,
-        'PayPalDisputeController' => DisputeController::class,
-        'PayPalDisputeDetailsController' => DisputeDetailsController::class
+        'oscpaypalconfig' => PayPalConfigController::class,
+      /*  'oscpaypalbalance' => BalanceController::class,
+        'oscpaypalwebhook' => WebhookController::class,
+        'oscpaypalproxy' => ProxyController::class,
+        'oscpaypaltransaction' => TransactionController::class,
+        'oscpaypalsubscriptiontransaction' => SubscriptionTransactionController::class,
+        'oscpaypalsubscribe' => PayPalSubscribeController::class,
+        'osconboarding' => OnboardingController::class,
+        'oscpaypalorder' => PayPalOrderController::class,
+        'oscpaypalsubscriptiondetails' => SubscriptionDetailsController::class,
+        'oscpaypalsubscription' => SubscriptionController::class,
+        'oscpaypaldispute' => DisputeController::class,
+        'oscpaypaldisputedetails' => DisputeDetailsController::class
     */
     ],
     'templates' => [
@@ -202,7 +201,7 @@ $aModule = [
             'template' => 'widget/product/listitem_grid.tpl',
             'block' => 'widget_product_listitem_grid_price',
             'file' => 'views/blocks/shared/widget/product/widget_product_listitem_grid_price.tpl'
-        ],
+        ], */
         [
             'template' => 'page/checkout/basket.tpl',
             'block' => 'basket_btn_next_bottom',
@@ -243,7 +242,7 @@ $aModule = [
             'block' => 'change_payment',
             'file' => '/views/blocks/wave/page/checkout/change_payment.tpl',
             'position' => '5'
-        ],
+        ], /*
         [
             'template' => 'page/details/inc/productmain.tpl',
             'block' => 'details_productmain_tobasket',

@@ -46,27 +46,27 @@ class ModuleSettings
 
     public function getLiveClientSecret(): string
     {
-        return (string) $this->getSettingValue('sPayPalClientSecret', '');
+        return (string) $this->getSettingValue('sPayPalClientSecret');
     }
 
     public function getLiveWebhookId(): string
     {
-        return (string) $this->getSettingValue('sPayPalWebhookId', '');
+        return (string) $this->getSettingValue('sPayPalWebhookId');
     }
 
     public function getSandboxClientId(): string
     {
-        return (string) $this->getSettingValue('sPayPalSandboxClientId', '');
+        return (string) $this->getSettingValue('sPayPalSandboxClientId');
     }
 
     public function getSandboxClientSecret(): string
     {
-        return (string) $this->getSettingValue('sPayPalSandboxClientSecret', '');
+        return (string) $this->getSettingValue('sPayPalSandboxClientSecret');
     }
 
     public function getSandboxWebhookId(): string
     {
-        return (string) $this->getSettingValue('sPayPalSandboxWebhookId', '');
+        return (string) $this->getSettingValue('sPayPalSandboxWebhookId');
     }
 
     public function showPayPalBasketButton(): bool

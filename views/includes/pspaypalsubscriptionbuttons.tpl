@@ -48,7 +48,7 @@
                 [{/literal}]
                     [{if $isLoggedIn}]
                         [{literal}]
-                            return fetch('[{/literal}][{$sSelfLink|cat:"cl=PayPalProxyController&fnc=createSubscriptionOrder&aid="|cat:$aid|cat:"&subscriptionPlanId="|cat:$subscriptionPlan->id|cat:"&stoken="|cat:$oViewConf->getSessionChallengeToken()}][{literal}]', {
+                            return fetch('[{/literal}][{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createSubscriptionOrder&aid="|cat:$aid|cat:"&subscriptionPlanId="|cat:$subscriptionPlan->id|cat:"&stoken="|cat:$oViewConf->getSessionChallengeToken()}][{literal}]', {
                                 method: 'post',
                                 headers: {
                                     'content-type': 'application/json'
@@ -64,7 +64,7 @@
             },
             onApprove: function(data, actions) {
                 document.getElementById("overlay").style.display = "block";
-                let params = 'cl=PayPalProxyController&fnc=saveSubscriptionOrder&billingAgreementId=' + data.subscriptionID;
+                let params = 'cl=oscpaypalproxy&fnc=saveSubscriptionOrder&billingAgreementId=' + data.subscriptionID;
                 params += '&subscriptionPlanId=[{/literal}][{$subscriptionPlan->id}][{literal}]';
                 params += '&aid=[{/literal}][{$aid}][{literal}]';
                 params += '&showOverlay=1';

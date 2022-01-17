@@ -21,7 +21,7 @@
 
     [{assign var="filters" value=$oView->getFilterValues()}]
     <form method="post" id="transaction-filters" action="[{$oViewConf->getSelfLink()}]">
-        [{include file="_formparams.tpl" cl="PayPalTransactionController" lstrt=$lstrt actedit=$actedit oxid=$oxid fnc="" language=$actlang editlanguage=$actlang}]
+        [{include file="_formparams.tpl" cl="oscpaypaltransaction" lstrt=$lstrt actedit=$actedit oxid=$oxid fnc="" language=$actlang editlanguage=$actlang}]
         <div id="filters">
             [{if !empty($error)}]
             <div class="alert alert-danger" role="alert">

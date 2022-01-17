@@ -26,7 +26,7 @@
             </div>
             [{/if}]
             <div class="row ppaltmessages">
-                [{include file="_formparams.tpl" cl="PayPalBalanceController" lstrt=$lstrt actedit=$actedit oxid=$oxid fnc="" language=$actlang editlanguage=$actlang}]
+                [{include file="_formparams.tpl" cl="oscpaypalbalance" lstrt=$lstrt actedit=$actedit oxid=$oxid fnc="" language=$actlang editlanguage=$actlang}]
                 <div class="col-sm-4 col-md-3">
                     <div class="form-group">
                         <label for="asOfTimeFilter">[{oxmultilang ident="OSC_PAYPAL_AS_OF_TIME"}]</label>

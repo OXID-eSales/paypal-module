@@ -1,7 +1,7 @@
 [{include file="headitem.tpl" title="GENERAL_ADMIN_TITLE"|oxmultilangassign box="list"}]
 [{assign var="sSelfLink" value=$oViewConf->getSelfLink()|replace:"&amp;":"&"}]
 
-[{if $oViewConf->getTopActiveClassName()|lower=="paypalordercontroller"}]
+[{if $oViewConf->getTopActiveClassName()|lower=="paypalorder"}]
     <form name="transfer" id="transfer" action="[{$oViewConf->getSelfLink()}]" method="post">
         [{$oViewConf->getHiddenSid()}]
         <input type="hidden" name="oxid" value="[{$oxid}]">
@@ -575,7 +575,7 @@
             </form>
         </div>
         <div class="col-sm-12">
-            <iframe frameborder="0" src="[{$sSelfLink}]&cl=PayPalSubscriptionTransactionController&subscriptionId=[{$payPalSubscription->id}]" width="100%" height="600"></iframe>
+            <iframe frameborder="0" src="[{$sSelfLink}]&cl=oscpaypalsubscriptiontransaction&subscriptionId=[{$payPalSubscription->id}]" width="100%" height="600"></iframe>
         </div>
     </div>
 </div>

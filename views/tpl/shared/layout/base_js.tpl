@@ -12,7 +12,7 @@
                 if (!event.target.matches('.subscriptionCancelButton')) return;
                 event.preventDefault();
                 let el = event.target,
-                params = 'cl=PayPalProxyController&fnc=sendCancelRequest&orderId=' + el.getAttribute("data-orderid");
+                params = 'cl=oscpaypalproxy&fnc=sendCancelRequest&orderId=' + el.getAttribute("data-orderid");
                 params += '&stoken=[{/literal}][{$oViewConf->getSessionChallengeToken()}][{literal}]';
                 fetch('[{/literal}][{$sSelfLink}][{literal}]' + params, {
                     method: 'post',

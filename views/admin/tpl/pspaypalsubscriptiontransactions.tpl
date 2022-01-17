@@ -10,7 +10,7 @@
         <form method="post" action="[{$oViewConf->getSelfLink()}]">
         <div class="row">
                 [{$oViewConf->getHiddenSid()}]
-                <input type="hidden" name="cl" value="PayPalSubscriptionTransactionController">
+                <input type="hidden" name="cl" value="oscpaypalsubscriptiontransaction">
                 <input type="hidden" name="subscriptionId" value="[{$subscriptionId}]">
 
                 <div class="col-sm-4">
