@@ -31,6 +31,7 @@ final class InstallmentBannersCest extends BaseCest
         $I->setPayPalBannersVisibility(false);
         $I->updateConfigInDatabase('blUseStock', false, 'bool');
         $I->updateConfigInDatabase('bl_perfLoadPrice', true, 'bool');
+        $I->updateConfigInDatabase('iNewBasketItemMessage', false, 'bool');
     }
 
     public function _after(AcceptanceTester $I): void
