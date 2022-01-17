@@ -296,7 +296,7 @@ class ViewConfig extends ViewConfig_parent
      */
     public function getPayPalBannersColorScheme(): string
     {
-        return Registry::getConfig()->getConfigParam('oePayPalBannersColorScheme');
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalBannersColorScheme();
     }
 
     // <-- PSPAYPAL-491
