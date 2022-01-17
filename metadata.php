@@ -67,12 +67,12 @@ $aModule = [
     'email' => '',
     'extend' => [
         ViewConfig::class => PayPalViewConfig::class,
-      #  Order::class => PayPalOrder::class,
-      #  User::class => PayPalUser::class,
+        Order::class => PayPalOrder::class,
+        User::class => PayPalUser::class,
         Basket::class => PayPalBasket::class,
       #  BasketItem::class => PayPalBasketItem::class,
         Article::class => PayPalArticle::class,
-      #  PaymentGateway::class => PayPalPaymentGateway::class,
+        PaymentGateway::class => PayPalPaymentGateway::class,
       #  ArticleList::class => ArticleListController::class,
       #  ArticleDetailsController::class => PayPalArticleDetailsController::class,
       #  BasketController::class => PayPalBasketController::class,
@@ -83,19 +83,18 @@ $aModule = [
     ],
     'controllers' => [
         'oscpaypalconfig' => PayPalConfigController::class,
-      /*  'oscpaypalbalance' => BalanceController::class,
-        'oscpaypalwebhook' => WebhookController::class,
+      #  'oscpaypalbalance' => BalanceController::class,
+      #  'oscpaypalwebhook' => WebhookController::class,
         'oscpaypalproxy' => ProxyController::class,
-        'oscpaypaltransaction' => TransactionController::class,
-        'oscpaypalsubscriptiontransaction' => SubscriptionTransactionController::class,
-        'oscpaypalsubscribe' => PayPalSubscribeController::class,
-        'osconboarding' => OnboardingController::class,
-        'oscpaypalorder' => PayPalOrderController::class,
-        'oscpaypalsubscriptiondetails' => SubscriptionDetailsController::class,
-        'oscpaypalsubscription' => SubscriptionController::class,
-        'oscpaypaldispute' => DisputeController::class,
-        'oscpaypaldisputedetails' => DisputeDetailsController::class
-    */
+        'oscpaypaltransactions' => TransactionController::class,
+      #  'oscpaypalsubscriptiontransaction' => SubscriptionTransactionController::class,
+      #  'oscpaypalsubscribe' => PayPalSubscribeController::class,
+      #  'osconboarding' => OnboardingController::class,
+      #  'oscpaypalorder' => PayPalOrderController::class,
+      #  'oscpaypalsubscriptiondetails' => SubscriptionDetailsController::class,
+      #  'oscpaypalsubscription' => SubscriptionController::class,
+      #  'oscpaypaldispute' => DisputeController::class,
+      #  'oscpaypaldisputedetails' => DisputeDetailsController::class
     ],
     'templates' => [
         'pspaypalconfig.tpl' => 'osc/paypal/views/admin/tpl/pspaypalconfig.tpl',
@@ -123,13 +122,7 @@ $aModule = [
         'tpl/layout/base_style.tpl' => 'osc/paypal/views/tpl/shared/layout/base_style.tpl',
         'tpl/page/checkout/basket_btn_next_bottom.tpl' =>
             'osc/paypal/views/tpl/shared/page/checkout/basket_btn_next_bottom.tpl',
-        'tpl/page/checkout/basket_btn_next_bottom.tpl' =>
-            'osc/paypal/views/tpl/shared/page/checkout/basket_btn_next_bottom.tpl',
         'tpl/page/checkout/select_payment.tpl' => 'osc/paypal/views/tpl/shared/page/checkout/select_payment.tpl',
-        'tpl/page/details/inc/details_productmain_tobasket.tpl' =>
-            'osc/paypal/views/tpl/shared/page/details/inc/details_productmain_tobasket.tpl',
-        'tpl/page/checkout/inc/checkout_steps_main.tpl' =>
-            'osc/paypal/views/tpl/shared/page/checkout/inc/checkout_steps_main.tpl',
         'tpl/page/details/inc/details_productmain_tobasket.tpl' =>
             'osc/paypal/views/tpl/shared/page/details/inc/details_productmain_tobasket.tpl',
         'tpl/page/checkout/inc/checkout_steps_main.tpl' =>
@@ -342,8 +335,7 @@ $aModule = [
             'constraints' => 'blue|black|white|white-no-border', 'value' => 'blue'],
         // <-- PSPAYPAL-491
 
-        //TODO: setting was missing and seems to default to false atm
-       # ['name' => 'blPayPalShowCheckoutButton', 'type' => 'select', 'value' => 'false', 'constraints' => 'false'],
+        ['name' => 'blPayPalShowCheckoutButton', 'type' => 'bool', 'value' => 'true'],
 
         // PSPAYPAL-492
         [

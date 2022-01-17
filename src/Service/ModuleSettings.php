@@ -76,9 +76,7 @@ class ModuleSettings
 
     public function showPayPalCheckoutButton(): bool
     {
-        //TODO: doublecheck why setting was missing in metadata
-        return false;
-       # return (bool) $this->getSettingValue('blPayPalShowCheckoutButton', false);
+        return (bool) $this->getSettingValue('blPayPalShowCheckoutButton');
     }
 
     public function showPayPalProductDetailsButton(): bool
