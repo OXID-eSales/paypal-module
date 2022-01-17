@@ -1,0 +1,14 @@
+@import 'overlay';
+
+.paypal-button-or {
+    padding: 10px;
+}
+.paypal-button-wrapper {
+    width: 100%;
+    &.large {
+        max-width: 250px;
+    }
+    &.small {
+        max-width: 200px;
+    }
+}

@@ -7,7 +7,10 @@
     "license": ["GPL-3.0"],
     "extra": {
         "oxideshop": {
-            "target-directory": "osc/paypal"
+            "target-directory": "osc/paypal",
+        "blacklist-filter": [
+                "resources/**/*"
+            ]
         }
     },
     "require": {
