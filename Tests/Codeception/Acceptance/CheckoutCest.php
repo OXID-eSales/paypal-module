@@ -9,8 +9,6 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 
-use OxidEsales\Codeception\Page\Home;
-use OxidEsales\EshopCommunity\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
 use OxidEsales\Codeception\Page\Checkout\ThankYou;
@@ -89,5 +87,31 @@ final class CheckoutCest extends BaseCest
                 'OXPAYPALORDERID' => $token
             ]
         );
+
+        //As we have a PayPal orer now, also check admin
+        $this->openOrderPayPal($I, (string) $orderNumber);
+        $I->see(Translator::translate('OSC_PAYPAL_HISTORY_PAYPAL_STATUS'));
+        $I->see('Completed');
+        $I->seeElement('//input[@value="Refund"]');
+    }
+
+    public function checkTransactionInAdminForNonPayPalOrder(AcceptanceTester $I)
+    {
+        $I->wantToTest('seeing PayPal transactions in admin order for non PayPal order');
+
+        $this->openOrderPayPal($I, '1');
+        $I->see(Translator::translate('OXPS_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'));
+    }
+
+    protected function openOrderPayPal(AcceptanceTester $I, string $orderNumber): void
+    {
+        $adminPanel = $I->loginAdmin();
+        $orders = $adminPanel->openOrders();
+        $I->waitForDocumentReadyState();
+        $orders->find($orders->orderNumberInput, $orderNumber);
+
+        $I->selectListFrame();
+        $I->click(Translator::translate('tbclorder_paypal'));
+        $I->selectEditFrame();
     }
 }

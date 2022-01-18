@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Codeception;
 
+use OxidEsales\Codeception\Admin\AdminLoginPage;
+use OxidEsales\Codeception\Admin\AdminPanel;
 use OxidEsales\Codeception\Page\Home;
 use Codeception\Util\Fixtures;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -136,5 +138,20 @@ class AcceptanceTester extends \Codeception\Actor
     protected function prepareMessagePartRegex(string $part): string
     {
         return "/paypal.Messages\(\{[^}\)]*{$part}/";
+    }
+
+    public function openAdmin(): AdminLoginPage
+    {
+        $I = $this;
+        $adminLogin = new AdminLoginPage($I);
+        $I->amOnPage($adminLogin->URL);
+        return $adminLogin;
+    }
+
+    public function loginAdmin(): AdminPanel
+    {
+        $adminPage = $this->openAdmin();
+        $admin = Fixtures::get('adminUser');
+        return $adminPage->login($admin['userLoginName'], $admin['userPassword']);
     }
 }

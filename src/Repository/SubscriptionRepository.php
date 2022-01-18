@@ -1,6 +1,13 @@
 <?php
 
-namespace OxidProfessionalServices\PayPal\Repository;
+/**
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
+ */
+
+declare(strict_types=1);
+
+namespace OxidSolutionCatalysts\PayPal\Repository;
 
 use OxidEsales\Eshop\Application\Model\Article;
 use OxidEsales\Eshop\Core\DatabaseProvider;
@@ -8,11 +15,10 @@ use OxidEsales\Eshop\Core\Exception\DatabaseConnectionException;
 use OxidEsales\Eshop\Core\Exception\DatabaseErrorException;
 use OxidEsales\Eshop\Core\UtilsObject;
 use OxidEsales\Eshop\Core\TableViewNameGenerator;
-use OxidProfessionalServices\PayPal\Api\Model\Catalog\Product;
+use OxidSolutionCatalysts\PayPalApi\Model\Catalog\Product;
 use OxidEsales\Eshop\Core\Registry;
-use OxidProfessionalServices\PayPal\Api\Model\Subscriptions\BillingCycle;
-use OxidProfessionalServices\PayPal\Api\Model\Subscriptions\Plan;
 
+/** TODO: refactor */
 class SubscriptionRepository
 {
     /**

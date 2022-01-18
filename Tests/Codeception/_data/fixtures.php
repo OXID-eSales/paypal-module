@@ -8,6 +8,10 @@
 declare(strict_types=1);
 
 return [
+    'adminUser' => [
+        'userLoginName'  => 'admin@myoxideshop.com',
+        'userPassword' => 'admin0303',
+    ],
     'userPassword' => 'useruser',
     'userName'  => 'paypaluser@oxid-esales.dev',
     // This product is available in ce|pe|ee demodata
