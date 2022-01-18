@@ -9,8 +9,8 @@ declare(strict_types=1);
 
 return [
     'adminUser' => [
-        'userLoginName'  => 'admin@myoxideshop.com',
-        'userPassword' => 'admin0303',
+        'userLoginName'  => 'admin',
+        'userPassword' => 'admin',
     ],
     'userPassword' => 'useruser',
     'userName'  => 'paypaluser@oxid-esales.dev',
