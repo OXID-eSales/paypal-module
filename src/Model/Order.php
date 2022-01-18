@@ -105,10 +105,11 @@ class Order extends Order_parent
      */
     public function getPayPalOrderIdForOxOrderId(string $oxId = null)
     {
+        //TODO: model?
         if (is_null($this->payPalOrderId)) {
             $this->payPalOrderId = '';
             $oxId = is_null($oxId) ? $this->getId() : $oxId;
-            $table = 'oxps_paypal_order';
+            $table = 'osc_paypal_order';
             $shopId = $this->getShopId();
             $params = [$table . '.oxorderid' => $oxId, $table . '.oxshopid' => $shopId];
 

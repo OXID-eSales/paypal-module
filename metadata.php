@@ -90,7 +90,7 @@ $aModule = [
       #  'oscpaypalsubscriptiontransaction' => SubscriptionTransactionController::class,
       #  'oscpaypalsubscribe' => PayPalSubscribeController::class,
       #  'osconboarding' => OnboardingController::class,
-      #  'oscpaypalorder' => PayPalOrderController::class,
+        'oscpaypalorder' => PayPalOrderController::class,
       #  'oscpaypalsubscriptiondetails' => SubscriptionDetailsController::class,
       #  'oscpaypalsubscription' => SubscriptionController::class,
       #  'oscpaypaldispute' => DisputeController::class,
@@ -144,7 +144,7 @@ $aModule = [
         'onActivate' => '\OxidSolutionCatalysts\PayPal\Core\Events\Events::onActivate',
         'onDeactivate' => '\OxidSolutionCatalysts\PayPal\Core\Events\Events::onDeactivate'
     ],
-    'blocks' => [ /*
+    'blocks' => [
         [
             'template' => 'article_list.tpl',
             'block' => 'admin_article_list_item',
@@ -194,7 +194,7 @@ $aModule = [
             'template' => 'widget/product/listitem_grid.tpl',
             'block' => 'widget_product_listitem_grid_price',
             'file' => 'views/blocks/shared/widget/product/widget_product_listitem_grid_price.tpl'
-        ], */
+        ],
         [
             'template' => 'page/checkout/basket.tpl',
             'block' => 'basket_btn_next_bottom',
