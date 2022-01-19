@@ -40,6 +40,50 @@ final class CheckoutCest extends BaseCest
     {
         $I->wantToTest('checking out as logged in user with PayPal as payment method');
 
+        $this->proceedToPaymentStep($I);
+        $token = $this->approvalPayPalTransaction($I);
+
+        //pretend we are back in shop after clicking PayPal button and approving order
+        $I->amOnUrl($this->getShopUrl() . '?cl=payment');
+        $I->see(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
+
+        $orderNumber = $this->finalizeOrder($I);
+        $I->assertGreaterThan(1, $orderNumber);
+
+        $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
+        $I->seeInDataBase(
+            'osc_paypal_order',
+            [
+                'OXORDERID' => $orderId,
+                'OXPAYPALORDERID' => $token
+            ]
+        );
+        $I->seeInDataBase(
+            'oxorder',
+            [
+                'OXID' => $orderId,
+                'OXTOTALORDERSUM' => '119.6'
+            ]
+        );
+
+        //As we have a PayPal order now, also check admin
+        $this->openOrderPayPal($I, (string) $orderNumber);
+        $I->see(Translator::translate('OSC_PAYPAL_HISTORY_PAYPAL_STATUS'));
+        $I->see('Completed');
+        $I->seeElement('//input[@value="Refund"]');
+        $I->see('119,60 EUR');
+    }
+
+    public function checkTransactionInAdminForNonPayPalOrder(AcceptanceTester $I)
+    {
+        $I->wantToTest('seeing PayPal transactions in admin order for non PayPal order');
+
+        $this->openOrderPayPal($I, '1');
+        $I->see(Translator::translate('OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'));
+    }
+
+    private function proceedToPaymentStep(AcceptanceTester $I): void
+    {
         $I->updateModuleConfiguration('blPayPalShowCheckoutButton', true);
 
         $home = $I->openShop()
@@ -59,51 +103,31 @@ final class CheckoutCest extends BaseCest
 
         $I->see(Translator::translate('PAYMENT_METHOD'));
         $I->seeElement("#PayPalButtonPaymentPage");
+    }
 
+    private function finalizeOrder(AcceptanceTester $I): string
+    {
+        $paymentPage = new PaymentCheckout($I);
+        $paymentPage->goToNextStep()
+            ->submitOrder();
+
+        $thankYouPage = new ThankYou($I);
+
+        return  $thankYouPage->grabOrderNumber();
+    }
+
+    private function approvalPayPalTransaction(AcceptanceTester $I): string
+    {
         //workaround to approve the transaction on PayPal side
         $loginPage = new PayPalLogin($I);
         $loginPage->openPayPalApprovalPage($I);
         $token = $loginPage->getToken();
         $loginPage->approveStandardPayPal($_ENV['sBuyerLogin'], $_ENV['sBuyerPassword']);
 
-        //pretend we are back in shop after clicking PayPal button and approving order
-        $I->amOnUrl($this->getShopUrl() . '?cl=payment');
-        $I->see(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
-
-        $paymentPage = new PaymentCheckout($I);
-        $paymentPage->goToNextStep()
-            ->submitOrder();
-
-        $thankYouPage = new ThankYou($I);
-        $orderNumber = $thankYouPage->grabOrderNumber();
-
-        $I->assertGreaterThan(1, $orderNumber);
-
-        $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
-        $I->seeInDataBase(
-            'osc_paypal_order',
-            [
-                'OXORDERID' => $orderId,
-                'OXPAYPALORDERID' => $token
-            ]
-        );
-
-        //As we have a PayPal orer now, also check admin
-        $this->openOrderPayPal($I, (string) $orderNumber);
-        $I->see(Translator::translate('OSC_PAYPAL_HISTORY_PAYPAL_STATUS'));
-        $I->see('Completed');
-        $I->seeElement('//input[@value="Refund"]');
+        return $token;
     }
 
-    public function checkTransactionInAdminForNonPayPalOrder(AcceptanceTester $I)
-    {
-        $I->wantToTest('seeing PayPal transactions in admin order for non PayPal order');
-
-        $this->openOrderPayPal($I, '1');
-        $I->see(Translator::translate('OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'));
-    }
-
-    protected function openOrderPayPal(AcceptanceTester $I, string $orderNumber): void
+    private function openOrderPayPal(AcceptanceTester $I, string $orderNumber): void
     {
         $adminPanel = $I->loginAdmin();
         $orders = $adminPanel->openOrders();
