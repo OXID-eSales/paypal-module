@@ -21,6 +21,8 @@ class OnboardingController extends AdminController
      */
     public function autoConfigurationFromCallback()
     {
+        //TODO: make this testable
+
         $in = file_get_contents('php://input');
         $callBackData = json_decode($in);
         $authCode = $callBackData->authCode;

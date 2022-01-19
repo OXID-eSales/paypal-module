@@ -48,7 +48,7 @@ function onboardedCallbackSandbox(authCode, sharedId)
 
 function callOnboardingControllerAutoConfigurationFromCallback(authCode, sharedId, isSandBox)
 {
-    fetch(window.selfLink + 'cl=osconboarding&fnc=autoConfigurationFromCallback', {
+    fetch(window.selfLink + 'cl=oscpaypalonboarding&fnc=autoConfigurationFromCallback', {
         method: 'POST',
         headers: {
             'content-type': 'application/json'

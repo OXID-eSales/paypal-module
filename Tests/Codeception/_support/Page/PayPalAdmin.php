@@ -79,4 +79,15 @@ class PayPalAdmin extends AdminPanel
 
         return new Page($I);
     }
+
+    public function grabConfigurationLink(): string
+    {
+        $I = $this->user;
+
+        $I->selectNavigationFrame();
+        $I->retryClick(Translator::translate('paypal'));
+        $I->seeElement('//li[@name="nav_oscpaypalconfig"]//a');
+
+        return $I->grabAttributeFrom('//li[@name="nav_oscpaypalconfig"]//a', 'href');
+    }
 }
