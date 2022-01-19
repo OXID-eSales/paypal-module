@@ -21,7 +21,7 @@ use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Component\UserComponent as PayPalUserComponent;
 use OxidSolutionCatalysts\PayPal\Component\Widget\ArticleDetails as ArticleDetailsComponent;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\ArticleListController;
-use OxidSolutionCatalysts\PayPal\Controller\Admin\BalanceController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalBalanceController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\DisputeController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\DisputeDetailsController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\OnboardingController;
@@ -31,7 +31,7 @@ use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalSubscribeController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\SubscriptionController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\SubscriptionDetailsController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\SubscriptionTransactionController;
-use OxidSolutionCatalysts\PayPal\Controller\Admin\TransactionController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalTransactionController;
 use OxidSolutionCatalysts\PayPal\Controller\ArticleDetailsController as PayPalArticleDetailsController;
 use OxidSolutionCatalysts\PayPal\Controller\BasketController as PayPalBasketController;
 use OxidSolutionCatalysts\PayPal\Controller\OrderController as PayPalFrontEndOrderController;
@@ -83,18 +83,18 @@ $aModule = [
     ],
     'controllers' => [
         'oscpaypalconfig' => PayPalConfigController::class,
-      #  'oscpaypalbalance' => BalanceController::class,
+        'oscpaypalbalance' => PayPalBalanceController::class,
       #  'oscpaypalwebhook' => WebhookController::class,
         'oscpaypalproxy' => ProxyController::class,
-        'oscpaypaltransactions' => TransactionController::class,
+        'oscpaypaltransactions' => PayPalTransactionController::class,
       #  'oscpaypalsubscriptiontransaction' => SubscriptionTransactionController::class,
       #  'oscpaypalsubscribe' => PayPalSubscribeController::class,
       #  'osconboarding' => OnboardingController::class,
         'oscpaypalorder' => PayPalOrderController::class,
       #  'oscpaypalsubscriptiondetails' => SubscriptionDetailsController::class,
       #  'oscpaypalsubscription' => SubscriptionController::class,
-      #  'oscpaypaldispute' => DisputeController::class,
-      #  'oscpaypaldisputedetails' => DisputeDetailsController::class
+        'oscpaypaldispute' => DisputeController::class,
+        'oscpaypaldisputedetails' => DisputeDetailsController::class
     ],
     'templates' => [
         'pspaypalconfig.tpl' => 'osc/paypal/views/admin/tpl/pspaypalconfig.tpl',

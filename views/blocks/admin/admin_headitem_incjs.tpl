@@ -1,18 +1,18 @@
 [{if
-    $oViewConf->getTopActiveClassName()|lower=="paypalconfigcontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypalordercontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypaltransactioncontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypalbalancecontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypalsubscriptioncontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypalsubscriptiondetailscontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypalsubscriptiontransactioncontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypaldisputedetailscontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypaldisputecontroller" ||
-    $oViewConf->getTopActiveClassName()|lower=="paypalsubscribecontroller"
+    $oViewConf->getTopActiveClassName()|lower=="oscpaypalconfig" ||
+    $oViewConf->getTopActiveClassName()|lower=="oscpaypalorder" ||
+    $oViewConf->getTopActiveClassName()|lower=="oscpaypaltransactions" ||
+    $oViewConf->getTopActiveClassName()|lower=="oscpaypalbalance" ||
+    $oViewConf->getTopActiveClassName()|lower=="oscpaypalsubscription" ||
+    $oViewConf->getTopActiveClassName()|lower=="oscpaypalsubscriptiondetails" ||
+    $oViewConf->getTopActiveClassName()|lower=="oscpaypalsubscriptiontransaction" ||
+    $oViewConf->getTopActiveClassName()|lower=="oscpaypaldisputedetails" ||
+    $oViewConf->getTopActiveClassName()|lower=="oscpaypaldispute" ||
+    $oViewConf->getTopActiveClassName()|lower=="oscpaypalsubscribe"
 }]
     [{oxscript include="js/libs/jquery.min.js" priority=1}]
     [{oxscript add="$.noConflict();" priority=10}]
-    [{if $oViewConf->getTopActiveClassName()|lower=="paypalconfigcontroller"}]
+    [{if $oViewConf->getTopActiveClassName()|lower=="oscpaypalconfig"}]
         [{oxscript include="js/libs/jquery-ui.min.js"}]
         [{oxscript include="js/widgets/oxmoduleconfiguration.js"}]
         [{oxscript add="$('#configForm').oxModuleConfiguration();" priority=10}]

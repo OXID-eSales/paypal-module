@@ -21,7 +21,7 @@
     [{oxscript add=$sPayPalDisputsJS}]
 
     <form method="post" action="[{$oViewConf->getSelfLink()}]">
-        [{include file="_formparams.tpl" cl="PayPalDisputeController" lstrt=$lstrt actedit=$actedit oxid=$oxid fnc="" language=$actlang editlanguage=$actlang}]
+        [{include file="_formparams.tpl" cl="oscpaypaldispute" lstrt=$lstrt actedit=$actedit oxid=$oxid fnc="" language=$actlang editlanguage=$actlang}]
         <div id="filters">
             [{if !empty($error)}]
                 <div class="alert alert-danger" role="alert">

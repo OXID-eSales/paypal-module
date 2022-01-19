@@ -88,12 +88,12 @@ class PayPalOrderController extends AdminDetailsController
                 $result = "pspaypalpartsubscriptiondetails.tpl";
             }
         } catch (ApiException $exception) {
-            $this->addTplParam('error', $lang->translateString('OXPS_PAYPAL_ERROR_' . $exception->getErrorIssue()));
+            $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()));
             Registry::getLogger()->error($exception);
         }
 
         if (!$order->paidWithPayPal()) {
-            $this->addTplParam('error', $lang->translateString('OXPS_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'));
+            $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'));
         }
         return $result;
     }

@@ -20,9 +20,9 @@
  * @copyright (C) OXID eSales AG 2003-2020
  */
 
-namespace OxidProfessionalServices\PayPal\Component\Widget;
+namespace OxidSolutionCatalysts\PayPal\Component\Widget;
 
-use OxidProfessionalServices\PayPal\Traits\ArticleDetailsTrait;
+use OxidSolutionCatalysts\PayPal\Traits\ArticleDetailsTrait;
 
 /**
  * Class ArticleDetails

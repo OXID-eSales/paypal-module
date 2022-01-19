@@ -1,15 +1,20 @@
 <?php
 
-namespace OxidProfessionalServices\PayPal\Controller\Admin;
+/**
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
+ */
+
+namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
 
 use OxidEsales\Eshop\Application\Model\Article;
 use OxidEsales\Eshop\Core\DatabaseProvider;
-use OxidProfessionalServices\PayPal\Api\Exception\ApiException;
+use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidEsales\Eshop\Core\Exception\DatabaseConnectionException;
 use OxidEsales\Eshop\Core\Exception\DatabaseErrorException;
 use OxidEsales\Eshop\Core\Registry;
-use OxidProfessionalServices\PayPal\Core\ServiceFactory;
-use OxidProfessionalServices\PayPal\Repository\SubscriptionRepository;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Repository\SubscriptionRepository;
 
 class ArticleListController extends ArticleListController_Parent
 {

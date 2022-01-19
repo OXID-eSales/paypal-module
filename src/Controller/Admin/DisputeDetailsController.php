@@ -1,41 +1,26 @@
 <?php
 
 /**
- * This file is part of OXID eSales PayPal module.
- *
- * OXID eSales PayPal module is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eSales PayPal module is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eSales PayPal module.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2020
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
-namespace OxidProfessionalServices\PayPal\Controller\Admin;
+namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
 
 use OxidEsales\Eshop\Application\Controller\Admin\AdminListController;
 use OxidEsales\Eshop\Core\Registry;
-use OxidProfessionalServices\PayPal\Api\Exception\ApiException;
-use OxidProfessionalServices\PayPal\Api\Model\Disputes\Money;
-use OxidProfessionalServices\PayPal\Api\Model\Disputes\RequestEscalate;
-use OxidProfessionalServices\PayPal\Api\Model\Disputes\RequestMakeOffer;
-use OxidProfessionalServices\PayPal\Api\Model\Disputes\RequestSendMessage;
-use OxidProfessionalServices\PayPal\Api\Model\Disputes\ResponseDispute;
-use OxidProfessionalServices\PayPal\Api\Model\Disputes\ResponseEvidence;
-use OxidProfessionalServices\PayPal\Api\Model\Disputes\ResponseEvidenceInfo;
-use OxidProfessionalServices\PayPal\Api\Model\Disputes\ResponseTrackingInfo;
-use OxidProfessionalServices\PayPal\Controller\Admin\Service\DisputeService as FileAwareDisputeService;
-use OxidProfessionalServices\PayPal\Core\ServiceFactory;
-use OxidProfessionalServices\PayPal\Service\DisputeService;
+use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
+use OxidSolutionCatalysts\PayPalApi\Model\Disputes\Money;
+use OxidSolutionCatalysts\PayPalApi\Model\Disputes\RequestEscalate;
+use OxidSolutionCatalysts\PayPalApi\Model\Disputes\RequestMakeOffer;
+use OxidSolutionCatalysts\PayPalApi\Model\Disputes\RequestSendMessage;
+use OxidSolutionCatalysts\PayPalApi\Model\Disputes\ResponseDispute;
+use OxidSolutionCatalysts\PayPalApi\Model\Disputes\ResponseEvidence;
+use OxidSolutionCatalysts\PayPalApi\Model\Disputes\ResponseEvidenceInfo;
+use OxidSolutionCatalysts\PayPalApi\Model\Disputes\ResponseTrackingInfo;
+use OxidSolutionCatalysts\PayPal\Core\Service\DisputeService as FileAwareDisputeService;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Core\Api\DisputeService;
 
 class DisputeDetailsController extends AdminListController
 {
@@ -67,7 +52,7 @@ class DisputeDetailsController extends AdminListController
                 $this->addTplParam(
                     'error',
                     Registry::getLang()->translateString(
-                        'OXPS_PAYPAL_ERROR_' . $exception->getErrorIssue()
+                        'OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()
                     )
                 );
             }
@@ -103,7 +88,7 @@ class DisputeDetailsController extends AdminListController
 
         foreach ($constants as $constant => $value) {
             if (substr($constant, 0, 14) === "EVIDENCE_TYPE_") {
-                $evidenceTypes[str_replace('OXPS_PAYPAL_EVIDENCE_TYPE_', '', $constant)]
+                $evidenceTypes[str_replace('OSC_PAYPAL_EVIDENCE_TYPE_', '', $constant)]
                     = $lang->translateString($constant);
             }
         }

@@ -22,7 +22,6 @@ use OxidEsales\Eshop\Core\Email;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
-use OxidSolutionCatalysts\PayPal\Controller\Admin\Service\SubscriptionService;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
@@ -159,7 +158,7 @@ class ProxyController extends FrontendController
             $orderNo = $order->oxorder__oxordernr->value;
 
             $message = sprintf(
-                $lang->translateString('OXPS_PAYPAL_SUBSCRIPTION_UNSUBSCRIBE_MAIL'),
+                $lang->translateString('OSC_PAYPAL_SUBSCRIPTION_UNSUBSCRIBE_MAIL'),
                 $userName,
                 $customerNo,
                 $orderNo
@@ -168,7 +167,7 @@ class ProxyController extends FrontendController
             $mailer = oxNew(Email::class);
             $mailer->sendContactMail(
                 '',
-                $lang->translateString('OXPS_PAYPAL_SUBSCRIPTION_UNSUBSCRIBE_HEAD'),
+                $lang->translateString('OSC_PAYPAL_SUBSCRIPTION_UNSUBSCRIBE_HEAD'),
                 $message
             );
         }

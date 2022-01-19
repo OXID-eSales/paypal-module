@@ -1,34 +1,19 @@
 <?php
 
 /**
- * This file is part of OXID eSales PayPal module.
- *
- * OXID eSales PayPal module is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eSales PayPal module is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eSales PayPal module.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2020
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
-namespace OxidProfessionalServices\PayPal\Core\Webhook\Handler;
+namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
-use OxidProfessionalServices\PayPal\Core\Webhook\Event;
-use OxidProfessionalServices\PayPal\Repository\SubscriptionRepository;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
+use OxidSolutionCatalysts\PayPal\Repository\SubscriptionRepository;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Application\Model\OrderArticle;
 use OxidEsales\Eshop\Application\Model\Article;
-use OxidProfessionalServices\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Price;
 
@@ -100,7 +85,7 @@ class PaymentSaleCompletedHandler implements HandlerInterface
         $newArticle = oxNew(Article::class);
         $newArticle->assign([
             'oxarticles__oxtitle'  => sprintf(
-                $lang->translateString('OXPS_PAYPAL_SUBSCRITION_PART_ARTICLE_TITLE'),
+                $lang->translateString('OSC_PAYPAL_SUBSCRITION_PART_ARTICLE_TITLE'),
                 $payPalProduct->name,
                 $lastCycle['cycleNumber'],
                 $lastCycle['cycleTotal']

@@ -7,7 +7,7 @@
                      cl="oscpaypaltransactions">
             </SUBMENU>
             <SUBMENU id="OSC_PAYPAL_BALANCES"
-                     cl="PayPalBalanceController">
+                     cl="oscpaypalbalance">
             </SUBMENU>
             <SUBMENU id="OSC_PAYPAL_SUBSCRIPTIONS"
                      cl="oscpaypalsubscription">

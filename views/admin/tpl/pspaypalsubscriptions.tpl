@@ -20,7 +20,7 @@
     <br />
     <div id="filters">
         <form method="post" action="[{$oViewConf->getSelfLink()}]">
-            [{include file="_formparams.tpl" cl="PayPalSubscriptionController" lstrt=$lstrt actedit=$actedit oxid=$oxid fnc="" language=$actlang editlanguage=$actlang}]
+            [{include file="_formparams.tpl" cl="oscpaypalsubscription" lstrt=$lstrt actedit=$actedit oxid=$oxid fnc="" language=$actlang editlanguage=$actlang}]
 
             [{if !empty($error)}]
         <div class="alert alert-danger" role="alert">

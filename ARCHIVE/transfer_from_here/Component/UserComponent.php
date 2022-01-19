@@ -20,10 +20,10 @@
  * @copyright (C) OXID eSales AG 2003-2020
  */
 
-namespace OxidProfessionalServices\PayPal\Component;
+namespace OxidSolutionCatalysts\PayPal\Component;
 
 use OxidEsales\Eshop\Core\Registry;
-use OxidProfessionalServices\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
+use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 
 /**
  * @mixin \OxidEsales\Eshop\Application\Component\UserComponent
@@ -56,7 +56,7 @@ class UserComponent extends UserComponent_parent
         return $return;
     }
 
-    public function createPayPalGuestUser(\OxidProfessionalServices\PayPal\Api\Model\Orders\Order $response): void
+    public function createPayPalGuestUser(\OxidSolutionCatalysts\PayPalApi\Model\Orders\Order $response): void
     {
         $this->setParent(oxNew('Register'));
 

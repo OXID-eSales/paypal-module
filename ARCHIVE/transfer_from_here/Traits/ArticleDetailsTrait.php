@@ -1,4 +1,4 @@
-<<?php
+<?php
 
 /**
  * Copyright © OXID eSales AG. All rights reserved.

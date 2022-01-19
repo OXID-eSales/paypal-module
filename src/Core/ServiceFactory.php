@@ -18,7 +18,7 @@ use OxidSolutionCatalysts\PayPalApi\Service\Payments;
 use OxidSolutionCatalysts\PayPalApi\Service\Subscriptions;
 use OxidSolutionCatalysts\PayPalApi\Service\TransactionSearch;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\Service\DisputeService as FileAwareDisputeService;
-use OxidSolutionCatalysts\PayPal\Service\DisputeService;
+use OxidSolutionCatalysts\PayPal\Core\Api\DisputeService;
 
 /**
  * Class ServiceFactory

@@ -1,26 +1,11 @@
 <?php
 
 /**
- * This file is part of OXID eSales PayPal module.
- *
- * OXID eSales PayPal module is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eSales PayPal module is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eSales PayPal module.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2020
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
-namespace OxidProfessionalServices\PayPal\Controller\Admin;
+namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
 
 use OxidEsales\Eshop\Application\Controller\Admin\AdminController;
 use OxidEsales\Eshop\Application\Model\Article;
@@ -29,17 +14,17 @@ use OxidEsales\Eshop\Core\Exception\DatabaseConnectionException;
 use OxidEsales\Eshop\Core\Exception\DatabaseErrorException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\UtilsObject;
-use OxidProfessionalServices\PayPal\Api\Exception\ApiException;
-use OxidProfessionalServices\PayPal\Api\Model\Catalog\Product;
-use OxidProfessionalServices\PayPal\Api\Model\Subscriptions\BillingCycle;
-use OxidProfessionalServices\PayPal\Api\Model\Subscriptions\Frequency;
-use OxidProfessionalServices\PayPal\Api\Model\Subscriptions\Plan;
-use OxidProfessionalServices\PayPal\Controller\Admin\Service\CatalogService;
-use OxidProfessionalServices\PayPal\Controller\Admin\Service\SubscriptionService;
-use OxidProfessionalServices\PayPal\Core\Currency;
-use OxidProfessionalServices\PayPal\Core\ServiceFactory;
-use OxidProfessionalServices\PayPal\Model\Category;
-use OxidProfessionalServices\PayPal\Repository\SubscriptionRepository;
+use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
+use OxidSolutionCatalysts\PayPalApi\Model\Catalog\Product;
+use OxidSolutionCatalysts\PayPalApi\Model\Subscriptions\BillingCycle;
+use OxidSolutionCatalysts\PayPalApi\Model\Subscriptions\Frequency;
+use OxidSolutionCatalysts\PayPalApi\Model\Subscriptions\Plan;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\Service\CatalogService;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\Service\SubscriptionService;
+use OxidSolutionCatalysts\PayPal\Core\Currency;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Model\Category;
+use OxidSolutionCatalysts\PayPal\Repository\SubscriptionRepository;
 
 /**
  * Controller for admin > PayPal/Configuration page

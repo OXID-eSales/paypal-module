@@ -1,39 +1,24 @@
 <?php
 
 /**
- * This file is part of OXID eSales PayPal module.
- *
- * OXID eSales PayPal module is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eSales PayPal module is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eSales PayPal module.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2020
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
-namespace OxidProfessionalServices\PayPal\Controller;
+namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use OxidEsales\Eshop\Application\Controller\FrontendController;
 use OxidEsales\Eshop\Core\Registry;
-use OxidProfessionalServices\PayPal\Api\Exception\ApiException;
-use OxidProfessionalServices\PayPal\Core\Request;
-use OxidProfessionalServices\PayPal\Core\Webhook\Event;
-use OxidProfessionalServices\PayPal\Core\Webhook\EventDispatcher;
-use OxidProfessionalServices\PayPal\Core\Webhook\EventVerifier;
-use OxidProfessionalServices\PayPal\Core\Webhook\Exception\EventException;
+use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
+use OxidSolutionCatalysts\PayPal\Core\Request;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\Exception\EventException;
 
 /**
  * Class WebhookController
- * @package OxidProfessionalServices\PayPal\Controller
+ * @package OxidSolutionCatalysts\PayPal\Controller
  */
 class WebhookController extends FrontendController
 {

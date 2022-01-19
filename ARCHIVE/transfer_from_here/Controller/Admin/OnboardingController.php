@@ -1,13 +1,18 @@
 <?php
 
-namespace OxidProfessionalServices\PayPal\Controller\Admin;
+/**
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
+ */
+
+namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
 
 use OxidEsales\Eshop\Application\Controller\Admin\AdminController;
 use OxidEsales\Eshop\Core\Registry;
-use OxidProfessionalServices\PayPal\Api\Client;
-use OxidProfessionalServices\PayPal\Api\Onboarding;
-use OxidProfessionalServices\PayPal\Core\Config;
-use OxidProfessionalServices\PayPal\Core\Webhook\EventCreation;
+use OxidSolutionCatalysts\PayPalApi\Client;
+use OxidSolutionCatalysts\PayPalApi\Onboarding;
+use OxidSolutionCatalysts\PayPal\Core\Config;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\EventCreation;
 
 class OnboardingController extends AdminController
 {

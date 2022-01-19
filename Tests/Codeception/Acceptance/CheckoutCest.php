@@ -100,7 +100,7 @@ final class CheckoutCest extends BaseCest
         $I->wantToTest('seeing PayPal transactions in admin order for non PayPal order');
 
         $this->openOrderPayPal($I, '1');
-        $I->see(Translator::translate('OXPS_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'));
+        $I->see(Translator::translate('OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'));
     }
 
     protected function openOrderPayPal(AcceptanceTester $I, string $orderNumber): void

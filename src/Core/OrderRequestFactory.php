@@ -115,7 +115,7 @@ class OrderRequestFactory
 
         $purchaseUnit->custom_id = $transactionId;
         $purchaseUnit->invoice_id =  $invoiceId;
-        $description = sprintf($lang->translateString('OXPS_PAYPAL_DESCRIPTION'), $shopName);
+        $description = sprintf($lang->translateString('OSC_PAYPAL_DESCRIPTION'), $shopName);
         $purchaseUnit->description = $description;
 
         $purchaseUnit->amount = $this->getAmount();
