@@ -9,7 +9,8 @@
         "oxideshop": {
             "target-directory": "osc/paypal",
         "blacklist-filter": [
-                "resources/**/*"
+                "resources/**/*",
+                "tests/**/*"
             ]
         }
     },
@@ -27,8 +28,8 @@
     },
     "autoload": {
         "psr-4": {
-            "OxidSolutionCatalysts\\PayPal\\": "./src",
-            "OxidSolutionCatalysts\\PayPal\\Tests\\": "./Tests"
+            "OxidSolutionCatalysts\\PayPal\\": "src",
+            "OxidSolutionCatalysts\\PayPal\\Tests\\": "Tests"
         }
     },
     "scripts": {
