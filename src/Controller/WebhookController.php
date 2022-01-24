@@ -14,8 +14,8 @@ use OxidSolutionCatalysts\PayPal\Core\Request;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\Exception\EventException;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\Exception\EventTypeException;
+use OxidSolutionCatalysts\PayPal\Core\Exception\WebhookEventException;
+use OxidSolutionCatalysts\PayPal\Core\Exception\WebhookEventTypeException;
 
 /**
  * Class WebhookController
@@ -45,11 +45,11 @@ class WebhookController extends FrontendController
                 $dispatcher = Registry::get(EventDispatcher::class);
                 $dispatcher->dispatch(new Event($data, $data['event_type']));
             } else {
-                throw new EventException(json_last_error_msg());
+                throw new WebhookEventException(json_last_error_msg());
             }
-        } catch(EventTypeException $exception) {
+        } catch(WebhookEventTypeException $exception) {
             Registry::getLogger()->error($exception->getMessage(), [$exception]);
-        } catch (EventException | ApiException $exception) {
+        } catch (WebhookEventException | ApiException $exception) {
             Registry::getLogger()->error($exception->getMessage(), [$exception]);
             //TODO
             Registry::getUtils()->redirect(Registry::getConfig()->getShopUrl());

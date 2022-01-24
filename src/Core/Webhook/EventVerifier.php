@@ -12,7 +12,7 @@ use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Service\GenericService;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\Exception\EventVerificationException;
+use OxidSolutionCatalysts\PayPal\Core\Exception\WebhookEventVerificationException;
 
 /**
  * Class EventVerifier
@@ -36,14 +36,14 @@ class EventVerifier
      * @param array $headers Event request headers
      * @param string $body Event request body
      *
-     * @throws ApiException|EventVerificationException
+     * @throws ApiException|WebhookEventVerificationException
      */
     public function verify(array $headers, string $body): bool
     {
         $config = new Config();
 
         if (array_diff(self::VERIFICATION_EVENT_HEADERS, array_keys($headers))) {
-            throw new EventVerificationException('Missing required verification headers');
+            throw new WebhookEventVerificationException('Missing required verification headers');
         }
 
         $payload = [
@@ -63,7 +63,7 @@ class EventVerifier
         if (!$response['verification_status'] || (
             $response['verification_status'] !== self::VERIFICATION_STATUS_SUCCESS)
         ) {
-            throw new EventVerificationException('Event verification failed');
+            throw new WebhookEventVerificationException('Event verification failed');
         }
 
         return true;

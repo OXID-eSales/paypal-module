@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
 use OxidEsales\TestingLibrary\UnitTestCase;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\Exception\EventTypeException;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\Exception\EventException;
+use OxidSolutionCatalysts\PayPal\Core\Exception\WebhookEventTypeException;
+use OxidSolutionCatalysts\PayPal\Core\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher as PayPalWebhookActions;
 
@@ -34,8 +34,8 @@ final class WebhookActionTest extends UnitTestCase
 
         $handler = oxNew(PayPalWebhookActions::class);
 
-        $this->expectException(EventTypeException::class);
-        $this->expectExceptionMessage(EventTypeException::handlerNotFound('unknown.type')->getMessage());
+        $this->expectException(WebhookEventTypeException::class);
+        $this->expectExceptionMessage(WebhookEventTypeException::handlerNotFound('unknown.type')->getMessage());
 
         $handler->dispatch($webhookEvent);
     }
@@ -46,8 +46,8 @@ final class WebhookActionTest extends UnitTestCase
 
         $handler = oxNew(PayPalWebhookActions::class);
 
-        $this->expectException(EventException::class);
-        $this->expectExceptionMessage(EventException::mandatoryDataNotFound()->getMessage());
+        $this->expectException(WebhookEventException::class);
+        $this->expectExceptionMessage(WebhookEventException::mandatoryDataNotFound()->getMessage());
 
         $handler->dispatch($webhookEvent);
     }

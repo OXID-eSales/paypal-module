@@ -12,7 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\Exception\EventVerificationException;
+use OxidSolutionCatalysts\PayPal\Core\Exception\WebhookEventVerificationException;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier as WebhookRequestValidator;
 use OxidSolutionCatalysts\PayPalApi\Service\GenericService;
 
@@ -30,8 +30,8 @@ final class WebhookRequestVerificationTest extends UnitTestCase
     {
         $validator = oxNew(WebhookRequestValidator::class);
 
-        $this->expectException(EventVerificationException::class);
-        $this->expectExceptionMessage(EventVerificationException::missingHeaders()->getMessage());
+        $this->expectException(WebhookEventVerificationException::class);
+        $this->expectExceptionMessage(WebhookEventVerificationException::missingHeaders()->getMessage());
 
         $validator->verify([], '');
     }
@@ -41,8 +41,8 @@ final class WebhookRequestVerificationTest extends UnitTestCase
         $validator = oxNew(WebhookRequestValidator::class);
         $headers = array_chunk($this->defaultHeaders, 2);
 
-        $this->expectException(EventVerificationException::class);
-        $this->expectExceptionMessage(EventVerificationException::missingHeaders()->getMessage());
+        $this->expectException(WebhookEventVerificationException::class);
+        $this->expectExceptionMessage(WebhookEventVerificationException::missingHeaders()->getMessage());
 
         $validator->verify($headers, '');
     }
@@ -52,8 +52,8 @@ final class WebhookRequestVerificationTest extends UnitTestCase
         $validator = oxNew(WebhookRequestValidator::class);
         $this->setServiceFactoryMock([]);
 
-        $this->expectException(EventVerificationException::class);
-        $this->expectExceptionMessage(EventVerificationException::verificationFailed()->getMessage());
+        $this->expectException(WebhookEventVerificationException::class);
+        $this->expectExceptionMessage(WebhookEventVerificationException::verificationFailed()->getMessage());
 
         $validator->verify($this->defaultHeaders, '');
     }
@@ -63,8 +63,8 @@ final class WebhookRequestVerificationTest extends UnitTestCase
         $validator = oxNew(WebhookRequestValidator::class);
         $this->setServiceFactoryMock([]);
 
-        $this->expectException(EventVerificationException::class);
-        $this->expectExceptionMessage(EventVerificationException::verificationFailed()->getMessage());
+        $this->expectException(WebhookEventVerificationException::class);
+        $this->expectExceptionMessage(WebhookEventVerificationException::verificationFailed()->getMessage());
 
         $validator->verify($this->defaultHeaders, '');
     }

@@ -5,9 +5,9 @@
  * See LICENSE file for license details.
  */
 
-namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Exception;
+namespace OxidSolutionCatalysts\PayPal\Core\Exception;
 
-class EventTypeException extends EventException
+class WebhookEventTypeException extends WebhookEventException
 {
     public static function handlerNotFound(string $type): self
     {

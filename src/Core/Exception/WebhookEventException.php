@@ -5,11 +5,11 @@
  * See LICENSE file for license details.
  */
 
-namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Exception;
+namespace OxidSolutionCatalysts\PayPal\Core\Exception;
 
 use Exception;
 
-class EventException extends Exception
+class WebhookEventException extends Exception
 {
     public static function mandatoryDataNotFound(): self
     {
