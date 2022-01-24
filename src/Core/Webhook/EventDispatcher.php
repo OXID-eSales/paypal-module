@@ -7,8 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook;
 
-use OxidEsales\Eshop\Core\Exception\StandardException;
-use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\Exception\EventTypeException;
 
 /**
  * Delivers events to appropriate handlers
@@ -23,12 +22,11 @@ class EventDispatcher
         $handlers = EventHandlerMapping::MAPPING;
         $eventType = $event->getEventType();
 
-        if ($handlerClass = $handlers[$eventType]) {
-            $handler = oxNew($handlerClass);
+        if (isset($handlers[$eventType])) {
+            $handler = oxNew($handlers[$eventType]);
             $handler->handle($event);
         } else {
-            $exception = new StandardException(sprintf('Event handler for %s not found.', [$eventType]));
-            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            throw EventTypeException::handlerNotFound($eventType);
         }
     }
 }

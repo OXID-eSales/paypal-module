@@ -7,7 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
-use OxidEsales\Eshop\Application\Model\Order as OxOrder;
+use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
@@ -32,12 +32,12 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
         $oxidOrderId = $data->purchase_units[0]->custom_id ?? '';
 
         if (!$oxidOrderId || !$payPalOrderId) {
-            throw new EventException('Required data not found in request');
+            throw EventException::mandatoryDataNotFound();
         }
 
-        $order = oxNew(OxOrder::class);
+        $order = oxNew(EshopModelOrder::class);
         if (!$order->load($oxidOrderId)) {
-            throw new EventException(sprintf('Oxid order %s not found', $oxidOrderId));
+            throw EventException::byOrderId($oxidOrderId);
         }
 
         $response = $this->capturePayment($payPalOrderId);

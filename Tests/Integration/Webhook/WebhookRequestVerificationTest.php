@@ -74,7 +74,7 @@ final class WebhookRequestVerificationTest extends UnitTestCase
         $validator = oxNew(WebhookRequestValidator::class);
         $this->setServiceFactoryMock(['verification_status' => 'SUCCESS']);
 
-        $validator->verify($this->defaultHeaders, '');
+        $this->assertTrue($validator->verify($this->defaultHeaders, ''));
     }
 
     private function setServiceFactoryMock(array $verificationResponse): void

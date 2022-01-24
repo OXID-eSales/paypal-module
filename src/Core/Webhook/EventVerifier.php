@@ -38,7 +38,7 @@ class EventVerifier
      *
      * @throws ApiException|EventVerificationException
      */
-    public function verify(array $headers, string $body)
+    public function verify(array $headers, string $body): bool
     {
         $config = new Config();
 
@@ -65,5 +65,7 @@ class EventVerifier
         ) {
             throw new EventVerificationException('Event verification failed');
         }
+
+        return true;
     }
 }

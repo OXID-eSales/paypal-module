@@ -7,7 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook;
 
-class Event
+final class Event
 {
     /**
      * @var array
@@ -15,13 +15,19 @@ class Event
     private $data;
 
     /**
+     * @var string
+     */
+    private $eventType;
+
+    /**
      * Event constructor.
      *
      * @param array $data
      */
-    public function __construct(array $data)
+    public function __construct(array $data, string $eventType)
     {
         $this->data = $data;
+        $this->eventType = $eventType;
     }
 
     /**
@@ -39,6 +45,6 @@ class Event
      */
     public function getEventType(): string
     {
-        return $this->data['event_type'];
+        return $this->eventType;
     }
 }

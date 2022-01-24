@@ -17,6 +17,7 @@ use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCapturePendingHandl
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureRefundedHandler;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentSaleRefundedHandler;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentSaleReversedHandler;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentSaleCompletedHandler;
 
 class EventHandlerMapping
 {
