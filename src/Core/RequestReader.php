@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
-class Request
+class RequestReader
 {
     /**
      * Retrieves raw post data

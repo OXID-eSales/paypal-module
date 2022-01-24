@@ -11,8 +11,6 @@ use OxidEsales\Eshop\Application\Controller\Admin\AdminController;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Config;
-use OxidSolutionCatalysts\PayPal\Core\Request;
-use OxidSolutionCatalysts\PayPal\Module as OscPayPalModule;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 
