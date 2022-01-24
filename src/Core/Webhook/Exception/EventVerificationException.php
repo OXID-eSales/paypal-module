@@ -9,4 +9,17 @@ namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Exception;
 
 class EventVerificationException extends EventException
 {
+    protected const MISSING_HEADERS_MESSAGE = 'Missing required verification headers';
+
+    protected const VERIFICATION_FAILED_MESSAGE = 'Event verification failed';
+
+    public static function missingHeaders(): self
+    {
+        return new self(self::MISSING_HEADERS_MESSAGE);
+    }
+
+    public static function verificationFailed(): self
+    {
+        return new self(self::VERIFICATION_FAILED_MESSAGE);
+    }
 }
