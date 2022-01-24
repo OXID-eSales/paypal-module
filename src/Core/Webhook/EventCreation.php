@@ -13,6 +13,8 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventHandlerMapping;
 
 /**
+ * TODO: test, this seems to be used only during onboarding
+ *
  * Class EventCreation
  *
  * @see https://developer.paypal.com/docs/api/webhooks/v1/#webhooks_post
