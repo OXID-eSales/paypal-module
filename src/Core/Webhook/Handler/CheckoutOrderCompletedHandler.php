@@ -29,7 +29,7 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
         $data = $event->getData()['resource'];
 
         $payPalOrderId = $data['id'] ?? '';
-        $oxidOrderId = $data->purchase_units[0]->custom_id ?? '';
+        $oxidOrderId = $data['purchase_units'][0]['custom_id'] ?? '';
 
         if (!$oxidOrderId || !$payPalOrderId) {
             throw WebhookEventException::mandatoryDataNotFound();
