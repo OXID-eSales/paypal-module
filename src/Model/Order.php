@@ -139,7 +139,7 @@ class Order extends Order_parent
             $db = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC);
 
             $sql = 'SELECT OXPAYPALSUBPRODID
-                      FROM oxps_paypal_subscription
+                      FROM osc_paypal_subscription
                      WHERE PAYPALBILLINGAGREEMENTID = ?';
 
             /** @var $paypalSubscriptionId $subProdId @Todo Specify this!*/
@@ -154,7 +154,7 @@ class Order extends Order_parent
 
             if ($subProdId) {
                 $sql = 'SELECT PAYPALPRODUCTID
-                          FROM oxps_paypal_subscription_product
+                          FROM osc_paypal_subscription_product
                          WHERE OXID = ?';
 
                 $this->payPalProductId = $db->getOne(
@@ -180,7 +180,7 @@ class Order extends Order_parent
         if (is_null($this->payPalBillingAgreementId)) {
             $this->payPalBillingAgreementId = '';
             $oxId = is_null($oxId) ? $this->getId() : $oxId;
-            $table = 'oxps_paypal_subscription';
+            $table = 'osc_paypal_subscription';
             $shopId = $this->getShopId();
             $params = [$table . '.oxorderid' => $oxId, $table . '.oxshopid' => $shopId];
 

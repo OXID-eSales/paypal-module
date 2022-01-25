@@ -83,13 +83,14 @@ final class AdminCest extends BaseCest
     {
         $I->wantToTest('that shop admin PayPal subscriptions section can be loaded without error');
 
-        $I->markTestIncomplete('TODO: transfer subscription logic');
         $I->loginAdmin();
         $adminPanel = new PayPalAdmin($I);
         $adminPanel->openSubscriptions();
         $this->checkWeAreStillInAdminPanel($I);
 
-        $I->see(Translator::translate('OSC_PAYPAL_SUBSCRIPTIONS'));
+        $I->see(Translator::translate('OSC_PAYPAL_FILTER'));
+        $I->click(Translator::translate('OSC_PAYPAL_FILTER'));
+        $I->see(Translator::translate('OSC_PAYPAL_SUBSCRIPTION_PLAN_ID'));
     }
 
     public function testPayPalDispute(AcceptanceTester $I): void

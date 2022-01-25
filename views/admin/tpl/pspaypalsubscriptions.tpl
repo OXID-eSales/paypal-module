@@ -34,8 +34,8 @@
                     <input type="text"
                            id="subscriptionIdFilter"
                            class="form-control"
-                           name="filters[oxps_paypal_subscription][paypalbillingagreementid]"
-                           value="[{if $filters.oxps_paypal_subscription.paypalbillingagreementid}][{$filters.oxps_paypal_subscription.paypalbillingagreementid}][{/if}]">
+                           name="filters[osc_paypal_subscription][paypalbillingagreementid]"
+                           value="[{if $filters.osc_paypal_subscription.paypalbillingagreementid}][{$filters.osc_paypal_subscription.paypalbillingagreementid}][{/if}]">
                 </div>
             </div>
             <div class="col-sm-3">
@@ -44,8 +44,8 @@
                     <input type="text"
                            id="subscriptionPlanIdFilter"
                            class="form-control"
-                           name="filters[oxps_paypal_subscription_product][paypalsubscriptionplanid]"
-                           value="[{if $filters.oxps_paypal_subscription_product.paypalsubscriptionplanid}][{$filters.oxps_paypal_subscription_product.paypalsubscriptionplanid}][{/if}]">
+                           name="filters[osc_paypal_subscription_product][paypalsubscriptionplanid]"
+                           value="[{if $filters.osc_paypal_subscription_product.paypalsubscriptionplanid}][{$filters.osc_paypal_subscription_product.paypalsubscriptionplanid}][{/if}]">
                 </div>
             </div>
             <div class="col-sm-3">
@@ -90,12 +90,12 @@
                 [{foreach from=$subscriptions item="subscription" name="subscriptions"}]
                     [{cycle values='ppmessages,ppaltmessages' assign=cellClass}]
                     <tr class="[{$cellClass}]">
-                        <td>[{$subscription->oxps_paypal_subscription__paypalbillingagreementid->value}]</td>
-                        <td>[{$subscription->oxps_paypal_subscription__paypalsubscriptionplanid->value}]</td>
-                        <td>[{$subscription->oxps_paypal_subscription__oxbillemail->value}]</td>
-                        <td>[{$subscription->oxps_paypal_subscription__oxorderdate->value}]</td>
+                        <td>[{$subscription->osc_paypal_subscription__paypalbillingagreementid->value}]</td>
+                        <td>[{$subscription->osc_paypal_subscription__paypalsubscriptionplanid->value}]</td>
+                        <td>[{$subscription->osc_paypal_subscription__oxbillemail->value}]</td>
+                        <td>[{$subscription->osc_paypal_subscription__oxorderdate->value}]</td>
                         <td>
-                            <a href="[{$detailsLink|cat:"&amp;billingagreementid="|cat:$subscription->oxps_paypal_subscription__paypalbillingagreementid->value}]">
+                            <a href="[{$detailsLink|cat:"&amp;billingagreementid="|cat:$subscription->osc_paypal_subscription__paypalbillingagreementid->value}]">
                                 [{oxmultilang ident="OSC_PAYPAL_MORE"}]
                             </a>
                         </td>

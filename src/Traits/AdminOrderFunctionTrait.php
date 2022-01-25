@@ -145,7 +145,7 @@ trait AdminOrderFunctionTrait
         $subscriptionProduct = null;
 
         $sql = 'SELECT OXPAYPALSUBPRODID
-                  FROM oxps_paypal_subscription
+                  FROM osc_paypal_subscription
                  WHERE PAYPALBILLINGAGREEMENTID = ?';
 
         $subProdId = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)
@@ -158,7 +158,7 @@ trait AdminOrderFunctionTrait
 
         if ($subProdId) {
             $sql = 'SELECT PAYPALPRODUCTID
-                      FROM oxps_paypal_subscription_product
+                      FROM osc_paypal_subscription_product
                      WHERE OXID = ?';
 
             $subscriptionProductId = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)
