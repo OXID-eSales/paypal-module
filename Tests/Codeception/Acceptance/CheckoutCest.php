@@ -72,6 +72,10 @@ final class CheckoutCest extends BaseCest
         $I->see('Completed');
         $I->seeElement('//input[@value="Refund"]');
         $I->see('119,60 EUR');
+
+        //Oder was captured, so it should be marked as paid
+        $oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
+        $I->assertStringStartsWith(date('Y-m-d'), $oxPaid);
     }
 
     public function checkTransactionInAdminForNonPayPalOrder(AcceptanceTester $I)

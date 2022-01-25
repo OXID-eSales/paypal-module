@@ -27,13 +27,27 @@ class WebhookController extends WidgetController
     {
         parent::init();
 
-        $requestReader = new RequestReader();
-        $verificationService = Registry::get(EventVerifier::class);
-        $dispatcher = Registry::get(EventDispatcher::class);
+        try {
+            $requestReader = new RequestReader();
+            $verificationService = Registry::get(EventVerifier::class);
+            $dispatcher = Registry::get(EventDispatcher::class);
 
-        $webhookRequestHandler = new WebhookRequestHandler($requestReader, $verificationService, $dispatcher);
-        $webhookRequestHandler->process();
-
+            $webhookRequestHandler = new WebhookRequestHandler($requestReader, $verificationService, $dispatcher);
+            $success = $webhookRequestHandler->process();
+        } catch (\Exception $exception) {
+            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            $this->sendErrorResponse();
+        }
+        //We need to return a 200 if the call could be processed successfully, the otherwise webhook event
+        //will be sent it again:
+        //  "If your app responds with any other status code, PayPal tries to resend the notification
+        //   message 25 times over the course of three days."
         Registry::getUtils()->showMessageAndExit('');
+    }
+
+    private function sendErrorResponse(): void
+    {
+        header('Content-Type: text/html', true, 500);
+        exit;
     }
 }

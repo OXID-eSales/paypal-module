@@ -52,8 +52,13 @@ final class RequestHandler
             $this->processEvent($requestBody);
 
             $result = true;
-        } catch (WebhookEventException | ApiException | WebhookEventTypeException  $exception) {
+        } catch (WebhookEventException | WebhookEventTypeException  $exception) {
+            //we could not handle the call and don't want to receive it again, log and be done
             EshopRegistry::getLogger()->error($exception->getMessage(), [$exception]);
+        } catch (ApiException $exception) {
+            //we could not handle the call but want to retry, so log and rethrow
+            EshopRegistry::getLogger()->error($exception->getMessage(), [$exception]);
+            throw $exception;
         }
 
         return $result;
