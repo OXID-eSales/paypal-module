@@ -10,7 +10,7 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 use OxidEsales\Eshop\Application\Model\Article as EshopArticle;
 use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Controller\Admin\Service\SubscriptionService;
+use OxidSolutionCatalysts\PayPal\Core\Service\SubscriptionService;
 
 class BasketItem extends BasketItem_parent
 {

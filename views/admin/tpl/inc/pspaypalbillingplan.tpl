@@ -18,7 +18,7 @@
 
 <form name="billingPlanForm" id="billingPlanForm" action="[{ $oViewConf->getSelfLink() }]" method="post">
     [{$oViewConf->getHiddenSid()}]
-    <input type="hidden" name="cl" value="PayPalSubscribeController">
+    <input type="hidden" name="cl" value="oscpaypalsubscribe">
     <input type="hidden" name="fnc" value="[{$BillingPlanAction}]">
     <input type="hidden" name="oxid" value="[{$oxid}]">
     [{*
