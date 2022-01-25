@@ -161,7 +161,6 @@ class PayPalOrderController extends AdminDetailsController
     protected function getPayPalOrder(): ?PayPalOrder
     {
         return $this->getOrder()->getPayPalOrder();
-        return $this->payPalOrder;
     }
 
     /**
@@ -240,6 +239,7 @@ class PayPalOrderController extends AdminDetailsController
      */
     public function getPayPalVoidedAmount()
     {
+        //TODO: what's this?
         return 'toBeDone';
     }
 
@@ -303,7 +303,19 @@ class PayPalOrderController extends AdminDetailsController
     {
         if (!$this->payPalOrderHistory) {
             $this->payPalOrderHistory = [];
-            foreach ($this->getPayPalOrder()->purchase_units[0]->payments->captures as $capture) {
+
+            $payPalOrder = $this->getPayPalOrder();
+            $purchaseUnitPayments = $payPalOrder &&
+                $payPalOrder->purchase_units[0] &&
+                $payPalOrder->purchase_units[0]->payments ?
+                $payPalOrder->purchase_units[0]->payments : null;
+            $purchaseUnitData = [
+                'captures' => is_array($purchaseUnitPayments->captures) ? $purchaseUnitPayments->captures : [],
+                'refunds' =>  is_array($purchaseUnitPayments->refunds) ? $purchaseUnitPayments->refunds : [],
+                'authorizations' => is_array($purchaseUnitPayments->authorizations) ? $purchaseUnitPayments->authorizations : [],
+            ];
+
+            foreach ($purchaseUnitData['captures'] as $capture) {
                 $this->payPalOrderHistory[$this->formatDate($capture->create_time, true)] = [
                     'action'        => 'CAPTURED',
                     'amount'        => $capture->amount->value,
@@ -314,7 +326,7 @@ class PayPalOrderController extends AdminDetailsController
                     'invoiceid'     => $capture->invoice_id
                 ];
             }
-            foreach ($this->getPayPalOrder()->purchase_units[0]->payments->refunds as $refund) {
+            foreach ($purchaseUnitData['refunds'] as $refund) {
                 $this->payPalOrderHistory[$this->formatDate($refund->create_time, true)] = [
                     'action'        => 'REFUNDED',
                     'amount'        => $refund->amount->value,
@@ -325,7 +337,7 @@ class PayPalOrderController extends AdminDetailsController
                     'invoiceid'     => $refund->invoice_id
                 ];
             }
-            foreach ($this->getPayPalOrder()->purchase_units[0]->payments->authorizations as $authorization) {
+            foreach ($purchaseUnitData['authorizations'] as $authorization) {
                 $this->payPalOrderHistory[$this->formatDate($authorization->create_time, true)] = [
                     'action'        => 'AUTHORIZATION',
                     'amount'        => $authorization->amount->value,
