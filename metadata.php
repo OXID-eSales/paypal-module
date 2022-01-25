@@ -70,15 +70,15 @@ $aModule = [
         Order::class => PayPalOrder::class,
         User::class => PayPalUser::class,
         Basket::class => PayPalBasket::class,
-      #  BasketItem::class => PayPalBasketItem::class,
+        BasketItem::class => PayPalBasketItem::class,
         Article::class => PayPalArticle::class,
         PaymentGateway::class => PayPalPaymentGateway::class,
-      #  ArticleList::class => ArticleListController::class,
-      #  ArticleDetailsController::class => PayPalArticleDetailsController::class,
-      #  BasketController::class => PayPalBasketController::class,
-      #  ArticleDetails::class => ArticleDetailsComponent::class,
-      #  OrderController::class => PayPalFrontEndOrderController::class,
-      #  UserComponent::class => PayPalUserComponent::class
+        ArticleList::class => ArticleListController::class,
+        ArticleDetailsController::class => PayPalArticleDetailsController::class,
+        BasketController::class => PayPalBasketController::class,
+        ArticleDetails::class => ArticleDetailsComponent::class,
+        OrderController::class => PayPalFrontEndOrderController::class,
+        UserComponent::class => PayPalUserComponent::class
 
     ],
     'controllers' => [
@@ -87,12 +87,12 @@ $aModule = [
         'oscpaypalwebhook' => WebhookController::class,
         'oscpaypalproxy' => ProxyController::class,
         'oscpaypaltransactions' => PayPalTransactionController::class,
-      #  'oscpaypalsubscriptiontransaction' => SubscriptionTransactionController::class,
-      #  'oscpaypalsubscribe' => PayPalSubscribeController::class,
+        'oscpaypalsubscriptiontransaction' => SubscriptionTransactionController::class,
+        'oscpaypalsubscribe' => PayPalSubscribeController::class,
         'oscpaypalonboarding' => OnboardingController::class,
         'oscpaypalorder' => PayPalOrderController::class,
-      #  'oscpaypalsubscriptiondetails' => SubscriptionDetailsController::class,
-      #  'oscpaypalsubscription' => SubscriptionController::class,
+        'oscpaypalsubscriptiondetails' => SubscriptionDetailsController::class,
+        'oscpaypalsubscription' => SubscriptionController::class,
         'oscpaypaldispute' => DisputeController::class,
         'oscpaypaldisputedetails' => DisputeDetailsController::class
     ],
@@ -235,7 +235,7 @@ $aModule = [
             'block' => 'change_payment',
             'file' => '/views/blocks/wave/page/checkout/change_payment.tpl',
             'position' => '5'
-        ], /*
+        ],
         [
             'template' => 'page/details/inc/productmain.tpl',
             'block' => 'details_productmain_tobasket',
@@ -248,7 +248,7 @@ $aModule = [
             'file' => '/views/blocks/shared/page/details/inc/details_productmain_price_value.tpl',
             'position' => '5'
         ],
-*/
+
         // PSPAYPAL-491 Installment banners -->
         [
             'template' => 'page/checkout/basket.tpl',
@@ -293,13 +293,13 @@ $aModule = [
             'file' => '/views/blocks/shared/page/shop/start.tpl',
         ],
         // <-- PSPAYPAL-491
-/*
+
         [
             'template' => 'page/account/order.tpl',
             'block' => 'account_order_history_cart_items',
             'file' => '/views/blocks/shared/page/account/order.tpl'
         ],
-*/
+
     ],
     'settings' => [
         //TODO: tdb prefix with oscPayPal
