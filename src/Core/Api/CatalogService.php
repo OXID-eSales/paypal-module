@@ -5,7 +5,7 @@
  * See LICENSE file for license details.
  */
 
-namespace OxidSolutionCatalysts\PayPal\Core\Service;
+namespace OxidSolutionCatalysts\PayPal\Core\Api;
 
 use OxidEsales\Eshop\Core\Exception\DatabaseConnectionException;
 use OxidEsales\Eshop\Core\Exception\DatabaseErrorException;
