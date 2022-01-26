@@ -18,7 +18,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Disputes\ResponseDispute;
 use OxidSolutionCatalysts\PayPalApi\Model\Disputes\ResponseEvidence;
 use OxidSolutionCatalysts\PayPalApi\Model\Disputes\ResponseEvidenceInfo;
 use OxidSolutionCatalysts\PayPalApi\Model\Disputes\ResponseTrackingInfo;
-use OxidSolutionCatalysts\PayPal\Core\Service\DisputeService as FileAwareDisputeService;
+use OxidSolutionCatalysts\PayPal\Core\Api\DisputeService as FileAwareDisputeService;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Api\DisputeService;
 

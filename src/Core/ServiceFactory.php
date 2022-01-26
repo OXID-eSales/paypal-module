@@ -17,7 +17,7 @@ use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 use OxidSolutionCatalysts\PayPalApi\Service\Payments;
 use OxidSolutionCatalysts\PayPalApi\Service\Subscriptions;
 use OxidSolutionCatalysts\PayPalApi\Service\TransactionSearch;
-use OxidSolutionCatalysts\PayPal\Core\Service\DisputeService as FileAwareDisputeService;
+use OxidSolutionCatalysts\PayPal\Core\Api\DisputeService as FileAwareDisputeService;
 use OxidSolutionCatalysts\PayPal\Core\Api\DisputeService;
 
 /**
