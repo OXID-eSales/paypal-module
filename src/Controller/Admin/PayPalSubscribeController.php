@@ -20,7 +20,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Subscriptions\BillingCycle;
 use OxidSolutionCatalysts\PayPalApi\Model\Subscriptions\Frequency;
 use OxidSolutionCatalysts\PayPalApi\Model\Subscriptions\Plan;
 use OxidSolutionCatalysts\PayPal\Core\Api\CatalogService;
-use OxidSolutionCatalysts\PayPal\Core\Service\SubscriptionService;
+use OxidSolutionCatalysts\PayPal\Core\Api\SubscriptionService;
 use OxidSolutionCatalysts\PayPal\Core\Currency;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Model\Category;
