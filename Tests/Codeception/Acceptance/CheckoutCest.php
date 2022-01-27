@@ -1,3 +1,138 @@
+
+3
+Module PayPal
+Software project
+New
+PLANNING
+DEVELOPMENT
+OPERATIONS
+You're in a company-managed project
+
+Projects
+Module PayPal
+PS - PayPal Module
+
+0 days remaining
+KW 2 + 3 (2022)
+
+Show tickets assigned to
+
+To Do
+In Progress
+Ready for Review
+Review
+Done
+
+PSPAYPAL-496Open3 sub-tasksIntegration uAPM (unbranded Alternative Payment Methods)
+
+uAPM-API-Calls im Checkout
+Technical taskTrivial priority3d
+Assignee: Mario Lorenz
+PSPAYPAL503-
+uAPMs müssen als Zahlungsarten bei der Modulinstallation angelegt werden
+Technical taskTrivial priority1d
+Assignee: Johannes Ackermann
+PSPAYPAL501-
+Alte Button-Steuerung muss zurückgebaut werden
+Technical taskTrivial priority1.25d
+Assignee: Mario Lorenz
+PSPAYPAL502-
+
+PSPAYPAL-516Open10 sub-tasksosc-paypal module
+
+Create CI job for client
+Technical taskTrivial priority-
+PSPAYPAL522-
+Create tests for client
+Technical taskTrivial priority-
+PSPAYPAL523-
+Create integration tests for the module
+Technical taskTrivial priority-
+PSPAYPAL524-
+Refactor webhook controller to extend from widgetcontroller.
+Technical taskTrivial priority-
+PSPAYPAL525-
+TBD: own logger for PayPal module (or at least some common prefix)
+Technical taskTrivial priority-
+PSPAYPAL526-
+Fix basket fraud issue
+Technical taskTrivial priority-
+PSPAYPAL527-
+transfer module code from ps git to github
+Technical taskTrivial priority-
+Assignee: Heike Reuter
+PSPAYPAL517-
+transfer paypal client code from ps git to github
+Technical taskTrivial priority-
+Assignee: Heike Reuter
+PSPAYPAL518-
+move client code generation from ps git to private github repo
+Technical taskTrivial priority-
+Assignee: Heike Reuter
+PSPAYPAL519-
+create CI job for module
+Technical taskTrivial priority-
+Assignee: Mario Lorenz
+PSPAYPAL520-
+
+Other Issues2 issues
+
+Login während PayPal-Kauf
+StoryTrivial priority-
+Assignee: Mario Lorenz
+PSPAYPAL515-
+Update Wiki Main-Page
+StoryTrivial priority-
+Assignee: Mario Lorenz
+PSPAYPAL521-
+
+PSPAYPAL-516
+
+PSPAYPAL-527
+Fix basket fraud issue
+Description
+
+Module will capture approved costs, not basket costs at finalizeOrder. If (logged in) user puts a product to cart and approved payment with paypal, then opens shopping cart in a second tab and raises amount of products (or adds different products), then returns to first tab and finalizes the order, he will pay only authorized amount. The order will then be marked as paid and may contain totally different (way more expensive) products.
+
+Got a codeception test reproducing this issue attached here, will not pushi t to github unless module is in private repo. Same issue can be reproduced with PayOne module btw.
+
+TODO: test with guest buyer
+Environment
+None
+Attachments (1)
+
+CheckoutCest.php
+19 Jan 2022, 06:13 PM
+Activity
+Show:
+Pro tip: press M to comment
+Details
+Assignee
+Unassigned
+Reporter
+Heike Reuter
+Development
+Labels
+None
+Refered RQ version
+None
+Teams
+None
+Original estimate
+0d
+Sprint
+KW 2 + 3 (2022)
+Priority
+Trivial
+Automation
+Rule executions
+More fields
+Time tracking, Components, Fix versions, Affects versions, Due date
+Created 8 days ago
+Updated 8 days ago
+Configure
+CheckoutCest.php
+php · 6 KB
 <?php
 
 /**
@@ -84,6 +219,55 @@ final class CheckoutCest extends BaseCest
 
         $this->openOrderPayPal($I, '1');
         $I->see(Translator::translate('OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'));
+    }
+
+    public function changeBasketDuringCheckout(AcceptanceTester $I)
+    {
+        $I->wantToTest('changing baskte contents after payment was authorized');
+
+        $this->proceedToPaymentStep($I);
+        $token = $this->approvalPayPalTransaction($I);
+
+        //open new tab
+        $I->openNewTab();
+        $I->switchToNextTab();
+        $I->amOnUrl($this->getShopUrl() . '/en/cart');
+
+        $product = Fixtures::get('product');
+        $basket = new Basket($I);
+        $basket->addProductToBasketAndOpenBasket($product['oxid'], $product['amount'], 'basket');
+
+        //finalize order in previous tab
+        $I->switchToPreviousTab();
+        $I->amOnUrl($this->getShopUrl() . '?cl=payment');
+        $I->see(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
+
+        $orderNumber = $this->finalizeOrder($I);
+        $I->assertGreaterThan(1, $orderNumber);
+
+        $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
+        $I->seeInDataBase(
+            'osc_paypal_order',
+            [
+                'OXORDERID' => $orderId,
+                'OXPAYPALORDERID' => $token
+            ]
+        );
+        $I->seeInDataBase(
+            'oxorder',
+            [
+                'OXID' => $orderId,
+                'OXTOTALORDERSUM' => '239.2'
+            ]
+        );
+
+        //As we have a PayPal order now, also check admin
+        $this->openOrderPayPal($I, (string) $orderNumber);
+        $I->see(Translator::translate('OSC_PAYPAL_HISTORY_PAYPAL_STATUS'));
+        $I->see('Completed');
+        $I->seeElement('//input[@value="Refund"]');
+        $I->see('239,20 EUR');
+        $I->dontSee('119,60 EUR');
     }
 
     private function proceedToPaymentStep(AcceptanceTester $I): void
