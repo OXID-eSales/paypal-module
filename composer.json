@@ -1,5 +1,5 @@
 {
-    "name": "oxid-solution-catalysts/paypal",
+    "name": "oxid-solution-catalysts/paypal-module",
     "description": "OXID eSales PayPal payment module for OXID",
     "type": "oxideshop-module",
     "keywords": ["oxid", "modules", "eShop", "paypal", "payment"],
