@@ -9,11 +9,19 @@ declare(strict_types=1);
 
 return [
     'adminUser' => [
-        'userLoginName'  => 'admin',
+        'userLoginName' => 'admin',
         'userPassword' => 'admin',
     ],
     'userPassword' => 'useruser',
-    'userName'  => 'paypaluser@oxid-esales.dev',
+    'userName' => 'paypaluser@oxid-esales.dev',
+    'details' => [
+        'firstname' => 'TestUserName',
+        'lastname' => 'TestUserSurname',
+        'oxcity' => 'Freiburg',
+        'oxstreet' => 'Hauptstr.',
+        'oxstreetnr' => '13',
+        'oxzip' => '79098'
+    ],
     // This product is available in ce|pe|ee demodata
     'product' => [
         'oxid' => 'dc5ffdf380e15674b56dd562a7cb6aec',
@@ -37,11 +45,11 @@ return [
     'variant' => [
         'id' => '6b6e0bb9f2b8b5f070f91593073b4555',
         'bruttoprice' => 99.9,
-        'nettoprice'  => 83.95
+        'nettoprice' => 83.95
     ],
     'alternate_variant' => [
         'id' => '6b65295a7fe5fa6faaa2f0ac3f9b0f80',
         'bruttoprice' => 109.9,
-        'nettoprice'  => 92.35
+        'nettoprice' => 92.35
     ],
 ];

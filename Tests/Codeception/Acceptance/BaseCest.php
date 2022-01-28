@@ -30,6 +30,7 @@ abstract class BaseCest
 
     public function _after(AcceptanceTester $I): void
     {
+        $I->deleteFromDatabase('oxorder', ['OXORDERNR >=' => '2']);
     }
 
     protected function getShopUrl(): string
@@ -62,19 +63,25 @@ abstract class BaseCest
 
     protected function ensureShopUserData(AcceptanceTester $I): void
     {
+        $toBeUpdated = $_ENV['sBuyerLogin'];
+        if (0 < $I->grabNumRecords('oxuser', ['oxusername' => Fixtures::get('userName')])) {
+            $toBeUpdated = Fixtures::get('userName');
+            $I->deleteFromDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin']]);
+        }
+
         $I->updateInDatabase(
             'oxuser',
             [
                 'oxusername' => Fixtures::get('userName'),
-                'oxcity'     => 'Freiburg',
-                'oxstreet'   => 'Hauptstr.',
-                'oxstreetnr' => '13',
-                'oxzip'      => '79098',
-                'oxfname'    => 'Marc',
-                'oxlname'    => 'Muster'
+                'oxcity'     => Fixtures::get('details')['oxcity'],
+                'oxstreet'   => Fixtures::get('details')['oxstreet'],
+                'oxstreetnr' => Fixtures::get('details')['oxstreetnr'],
+                'oxzip'      => Fixtures::get('details')['oxzip'],
+                'oxfname'    => Fixtures::get('details')['firstname'],
+                'oxlname'    => Fixtures::get('details')['lastname'],
             ],
             [
-                'oxusername' => $_ENV['sBuyerLogin']
+                'oxusername' => $toBeUpdated
             ]
         );
         $I->updateInDatabase(
@@ -87,9 +94,12 @@ abstract class BaseCest
                 'oxusername' => Fixtures::get('userName')
             ]
         );
+
+        $I->seeInDatabase('oxuser', ['oxusername' => Fixtures::get('userName')]);
+        $I->dontSeeInDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin']]);
     }
 
-    protected function setUserDataSameAsPayPal(AcceptanceTester $I): void
+    protected function setUserDataSameAsPayPal(AcceptanceTester $I, bool $removePassword = false): void
     {
         $I->updateInDatabase(
             'oxuser',
@@ -101,6 +111,37 @@ abstract class BaseCest
                 'oxstreetnr' => '1',
                 'oxzip'      => '79111',
                 'oxcity'     => 'Freiburg'
+            ],
+            [
+                'oxusername' => Fixtures::get('userName')
+            ]
+        );
+
+        if ($removePassword) {
+            $this->removePassword($I);
+        }
+    }
+
+    protected function removePassword(AcceptanceTester $I): void
+    {
+        $I->updateInDatabase(
+            'oxuser',
+            [
+                'oxpassword' => '',
+                'oxpasssalt' => ''
+            ],
+            [
+                'oxusername' => $_ENV['sBuyerLogin']
+            ]
+        );
+    }
+
+    protected function setUserNameSameAsPayPal(AcceptanceTester $I): void
+    {
+        $I->updateInDatabase(
+            'oxuser',
+            [
+                'oxusername' => $_ENV['sBuyerLogin'],
             ],
             [
                 'oxusername' => Fixtures::get('userName')
