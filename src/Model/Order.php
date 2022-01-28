@@ -70,9 +70,10 @@ class Order extends Order_parent
     public function getPayPalOrder(): PayPalOrder
     {
         if (!$this->payPalOrder) {
+            //Why do we need this call if we know it was no PayPal order ?
             /** @var Orders $orderService */
             $orderService = Registry::get(ServiceFactory::class)->getOrderService();
-            $this->payPalOrder = $orderService->showOrderDetails($this->getPayPalOrderIdForOxOrderId());
+            $this->payPalOrder = $orderService->showOrderDetails($this->getPayPalOrderIdForOxOrderId(), '');
         }
 
         return $this->payPalOrder;

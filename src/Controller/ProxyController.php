@@ -76,7 +76,7 @@ class ProxyController extends FrontendController
             $request = new OrderCaptureRequest();
 
             try {
-                $response = $service->showOrderDetails($orderId);
+                $response = $service->showOrderDetails($orderId, '');
             } catch (Exception $exception) {
                 Registry::getLogger()->error("Error on order capture call.", [$exception]);
             }
