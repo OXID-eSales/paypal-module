@@ -1,7 +1,7 @@
 [{include file="headitem.tpl" title="GENERAL_ADMIN_TITLE"|oxmultilangassign box="list"}]
 [{assign var="sSelfLink" value=$oViewConf->getSelfLink()|replace:"&amp;":"&"}]
 
-[{if $oViewConf->getTopActiveClassName()|lower=="paypalorder"}]
+[{if $oViewConf->getTopActiveClassName()|lower=="oscpaypalorder"}]
     <form name="transfer" id="transfer" action="[{$oViewConf->getSelfLink()}]" method="post">
         [{$oViewConf->getHiddenSid()}]
         <input type="hidden" name="oxid" value="[{$oxid}]">
