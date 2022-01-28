@@ -161,6 +161,11 @@ class ModuleSettings
         return (string) $this->getSettingValue('oePayPalBannersColorScheme');
     }
 
+    public function loginWithPayPalEMail(): bool
+    {
+        return (bool) $this->getSettingValue('blPayPalLoginWithPayPalEMail');
+    }
+
     public function save(string $name, $value): void
     {
         $this->moduleSettingBridge->save($name, $value, Module::MODULE_ID);

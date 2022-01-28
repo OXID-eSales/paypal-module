@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Component;
 
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\Eshop\Application\Model\User;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 
 /**
@@ -58,6 +59,26 @@ class UserComponent extends UserComponent_parent
         $this->setRequestParameter('deladr', $deliveryAddress);
 
         $this->registerUser();
+    }
+
+    /**
+     * @param object $response \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order
+     */
+    public function loginPayPalCustomer(\OxidSolutionCatalysts\PayPalApi\Model\Orders\Order $response): bool
+    {
+        $user = oxNew(User::class);
+
+        if (
+            $loginSuccess = $user->login(
+                $response->payer->email_address,
+                '',
+                Registry::getConfig()->getRequestParameter('lgn_cook')
+            )
+        ) {
+            $this->setLoginStatus(USER_LOGIN_SUCCESS);
+        }
+
+        return $loginSuccess;
     }
 
     /**

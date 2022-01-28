@@ -1,30 +1,15 @@
 <?php
 
 /**
- * This file is part of OXID eSales PayPal module.
- *
- * OXID eSales PayPal module is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eSales PayPal module is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eSales PayPal module.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2020
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 $sLangName = 'Deutsch';
 
 $aLang = [
-    'charset'                                      => 'UTF-8',
-    'paypal'                                       => 'PayPal',
+    'charset'                                     => 'UTF-8',
+    'paypal'                                      => 'PayPal',
     'OSC_PAYPAL_EDIT'                             => 'Bearbeiten',
     'OSC_PAYPAL_ACTIONS'                          => 'Aktionen',
     'OSC_PAYPAL_CAPTURE_PAYMENT'                  => 'Zahlung erfassen',
@@ -152,7 +137,12 @@ $aLang = [
     'OSC_PAYPAL_PRODUCT_DETAILS_BUTTON_PLACEMENT' => 'Produktdetailseite',
     'OSC_PAYPAL_BASKET_BUTTON_PLACEMENT'          => 'Warenkorb',
     'OSC_PAYPAL_CHECKOUT_PLACEMENT'               => 'Bezahlseite (Checkout)',
-    'HELP_OSC_PAYPAL_CHECKOUT_PLACEMENT'          => 'bei gleichzeitiger Nutzung von PayPal PLUS bitte deaktivieren',
+    'OSC_PAYPAL_EXPRESS_LOGIN_TITLE'              => 'Login mit PayPal',
+    'OSC_PAYPAL_LOGIN_WITH_PAYPAL_EMAIL'          => 'Im Shop beim Kauf automatisch einloggen',
+    'HELP_OSC_PAYPAL_EXPRESS_LOGIN'               => 'Wenn die Shop-Kundenkonto-EMail-Adresse gleich der PayPal-EMail-Adresse ist,
+        besteht die Möglichkeit, sich durch ein Login bei PayPal auch automatisch im Shop anzumelden. Möglicherweise ist dieses Verhalten nicht im
+        Sicherheitsinteresse Ihrer Kunden',
+
     'HELP_OSC_PAYPAL_BUTTON_PLACEMEMT'            => 'Schalten Sie die Anzeige der PayPal-Schaltflächen um',
     'HELP_OSC_PAYPAL_CREDENTIALS'                 =>
         'Wenn Sie die API-Anmeldeinformationen (Client-ID, Client Passwort, Webhook-ID) bereits vorliegen haben, können Sie sie direkt eingeben.<br>

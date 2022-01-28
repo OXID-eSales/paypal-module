@@ -13,10 +13,8 @@ use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
 use OxidEsales\Codeception\Page\Checkout\ThankYou;
 use OxidEsales\Codeception\Step\Basket;
-use OxidEsales\Codeception\Page\Checkout\Basket as BasketCheckout;
 use OxidEsales\Codeception\Page\Checkout\PaymentCheckout;
 use OxidEsales\Codeception\Module\Translation\Translator;
-use OxidSolutionCatalysts\PayPal\Tests\Codeception\Page\PayPalLogin;
 
 /**
  * @group osc_paypal
@@ -36,12 +34,62 @@ final class CheckoutCest extends BaseCest
         $I->updateConfigInDatabase('iNewBasketItemMessage', false, 'bool');
     }
 
+    public function _after(AcceptanceTester $I): void
+    {
+        $this->ensureShopUserData($I);
+
+        parent::_after($I);
+    }
+
     public function checkoutWithPaypalStandard(AcceptanceTester $I): void
     {
-        $I->wantToTest('checking out as logged in user with PayPal as payment method');
+        $I->wantToTest('checking out as logged in user with PayPal as payment method. Shop login and PayPal login mail are the same.');
+
+        $this->setUserDataSameAsPayPal($I);
+        $this->proceedToPaymentStep($I, $_ENV['sBuyerLogin']);
+        $token = $this->approvePayPalTransaction($I);
+
+        //pretend we are back in shop after clicking PayPal button and approving order
+        $I->amOnUrl($this->getShopUrl() . '?cl=payment');
+        $I->see(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
+
+        $orderNumber = $this->finalizeOrder($I);
+        $I->assertGreaterThan(1, $orderNumber);
+
+        $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
+        $I->seeInDataBase(
+            'osc_paypal_order',
+            [
+                'OXORDERID' => $orderId,
+                'OXPAYPALORDERID' => $token
+            ]
+        );
+        $I->seeInDataBase(
+            'oxorder',
+            [
+                'OXID' => $orderId,
+                'OXTOTALORDERSUM' => '119.6'
+            ]
+        );
+
+        //As we have a PayPal order now, also check admin
+        $this->openOrderPayPal($I, (string) $orderNumber);
+        $I->see(Translator::translate('OSC_PAYPAL_HISTORY_PAYPAL_STATUS'));
+        $I->see('Completed');
+        $I->seeElement('//input[@value="Refund"]');
+        $I->see('119,60 EUR');
+
+        //Oder was captured, so it should be marked as paid
+        $oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
+        $I->assertStringStartsWith(date('Y-m-d'), $oxPaid);
+    }
+
+    public function checkoutWithPaypalStandardDifferentEmail(AcceptanceTester $I): void
+    {
+        $I->wantToTest('checking out as logged in user with PayPal as payment method. Shop login and PayPal login mail are different.');
 
         $this->proceedToPaymentStep($I);
-        $token = $this->approvalPayPalTransaction($I);
+        $token = $this->approvePayPalTransaction($I);
 
         //pretend we are back in shop after clicking PayPal button and approving order
         $I->amOnUrl($this->getShopUrl() . '?cl=payment');
@@ -88,10 +136,10 @@ final class CheckoutCest extends BaseCest
 
     public function changeBasketDuringCheckout(AcceptanceTester $I)
     {
-        $I->wantToTest('changing baskte contents after payment was authorized');
+        $I->wantToTest('changing basket contents after payment was authorized');
 
         $this->proceedToPaymentStep($I);
-        $token = $this->approvalPayPalTransaction($I);
+        $token = $this->approvePayPalTransaction($I);
 
         //open new tab
         $I->openNewTab();
@@ -135,60 +183,68 @@ final class CheckoutCest extends BaseCest
         $I->dontSee('119,60 EUR');
     }
 
-    private function proceedToPaymentStep(AcceptanceTester $I): void
+    public function checkoutWithPaypalInBasketStep(AcceptanceTester $I): void
     {
-        $I->updateModuleConfiguration('blPayPalShowCheckoutButton', true);
+        $I->wantToTest('checking out as logged in user with PayPal in basket step. Shop login and PayPal login mail are the same.');
 
-        $home = $I->openShop()
-            ->loginUser(Fixtures::get('userName'), Fixtures::get('userPassword'));
-        $I->waitForText(Translator::translate('HOME'));
+        $this->setUserDataSameAsPayPal($I);
+        $this->proceedToBasketStep($I, $_ENV['sBuyerLogin']);
+        $token = $this->approvePayPalTransaction($I);
 
-        //add product to basket and start checkout
-        $product = Fixtures::get('product');
-        $basket = new Basket($I);
-        $basket->addProductToBasketAndOpenBasket($product['oxid'], $product['amount'], 'basket');
-        $I->see(Translator::translate('CONTINUE_TO_NEXT_STEP'));
+        //We just skipped the address and payment step
+        //pretend we are back in shop after clicking PayPal button and approving order
+        $I->amOnUrl($this->getShopUrl() . '?cl=order');
+        $I->see(Translator::translate('MESSAGE_SUBMIT_BOTTOM'));
 
-        $I->amOnPage('/en/cart');
-        $basketPage = new BasketCheckout($I);
-        $basketPage->goToNextStep()
-            ->goToNextStep();
+        $orderNumber = $this->finalizeOrderInOrderStep($I);
+        $I->assertGreaterThan(1, $orderNumber);
 
-        $I->see(Translator::translate('PAYMENT_METHOD'));
-        $I->seeElement("#PayPalButtonPaymentPage");
+        $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
+        $I->seeInDataBase(
+            'osc_paypal_order',
+            [
+                'OXORDERID' => $orderId,
+                'OXPAYPALORDERID' => $token
+            ]
+        );
+        $I->seeInDataBase(
+            'oxorder',
+            [
+                'OXID' => $orderId,
+                'OXTOTALORDERSUM' => '119.6'
+            ]
+        );
     }
 
-    private function finalizeOrder(AcceptanceTester $I): string
+    public function checkoutWithPaypalInBasketStepDifferentMail(AcceptanceTester $I): void
     {
-        $paymentPage = new PaymentCheckout($I);
-        $paymentPage->goToNextStep()
-            ->submitOrder();
+        $I->wantToTest('checking out as logged in user with PayPal in basket step. Shop login and PayPal login mail are different.');
 
-        $thankYouPage = new ThankYou($I);
+        $this->proceedToBasketStep($I);
+        $token = $this->approvePayPalTransaction($I);
 
-        return  $thankYouPage->grabOrderNumber();
-    }
+        //We just skipped the address and payment step
+        //pretend we are back in shop after clicking PayPal button and approving order
+        $I->amOnUrl($this->getShopUrl() . '?cl=order');
+        $I->see(Translator::translate('MESSAGE_SUBMIT_BOTTOM'));
 
-    private function approvalPayPalTransaction(AcceptanceTester $I): string
-    {
-        //workaround to approve the transaction on PayPal side
-        $loginPage = new PayPalLogin($I);
-        $loginPage->openPayPalApprovalPage($I);
-        $token = $loginPage->getToken();
-        $loginPage->approveStandardPayPal($_ENV['sBuyerLogin'], $_ENV['sBuyerPassword']);
+        $orderNumber = $this->finalizeOrderInOrderStep($I);
+        $I->assertGreaterThan(1, $orderNumber);
 
-        return $token;
-    }
-
-    private function openOrderPayPal(AcceptanceTester $I, string $orderNumber): void
-    {
-        $adminPanel = $I->loginAdmin();
-        $orders = $adminPanel->openOrders();
-        $I->waitForDocumentReadyState();
-        $orders->find($orders->orderNumberInput, $orderNumber);
-
-        $I->selectListFrame();
-        $I->click(Translator::translate('tbclorder_paypal'));
-        $I->selectEditFrame();
+        $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
+        $I->seeInDataBase(
+            'osc_paypal_order',
+            [
+                'OXORDERID' => $orderId,
+                'OXPAYPALORDERID' => $token
+            ]
+        );
+        $I->seeInDataBase(
+            'oxorder',
+            [
+                'OXID' => $orderId,
+                'OXTOTALORDERSUM' => '119.6'
+            ]
+        );
     }
 }

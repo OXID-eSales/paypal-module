@@ -144,6 +144,11 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalCheckoutButton();
     }
 
+    public function loginWithPayPalEMail(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->loginWithPayPalEMail();
+    }
+
     public function showPayPalProductDetailsButton(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalProductDetailsButton();

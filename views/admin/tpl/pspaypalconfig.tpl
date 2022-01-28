@@ -156,11 +156,37 @@
                                     <div class="checkbox">
                                         <label>
                                             <input type="checkbox" name="conf[blPayPalShowCheckoutButton]" [{if $config->showPayPalCheckoutButton()}]checked[{/if}] value="1">
-                                            [{oxmultilang ident="OSC_PAYPAL_CHECKOUT_PLACEMENT"}] - [{oxmultilang ident='HELP_OSC_PAYPAL_CHECKOUT_PLACEMENT'}]
+                                            [{oxmultilang ident="OSC_PAYPAL_CHECKOUT_PLACEMENT"}]
                                         </label>
                                     </div>
                                 </div>
                                 <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_BUTTON_PLACEMEMT"}]</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header" id="heading2">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                        [{oxmultilang ident="OSC_PAYPAL_EXPRESS_LOGIN_TITLE"}]
+                    </h4>
+                </div>
+
+                <div id="collapse2" class="collapse" aria-labelledby="heading2" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="controls">
+                                <div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="conf[blPayPalLoginWithPayPalEMail]" [{if $config->loginWithPayPalEMail()}]checked[{/if}] value="1">
+                                            [{oxmultilang ident="OSC_PAYPAL_LOGIN_WITH_PAYPAL_EMAIL"}]
+                                        </label>
+                                    </div>
+                                </div>
+                                <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_EXPRESS_LOGIN"}]</span>
                             </div>
                         </div>
                     </div>

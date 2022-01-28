@@ -22,7 +22,7 @@
         onApprove: function(data, actions) {
             captureData = new FormData();
             captureData.append('orderID', data.orderID);
-            return fetch('[{/literal}][{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=captureOrder&context=continue"|cat:"&aid="|cat:$aid}][{literal}]', {
+            return fetch('[{/literal}][{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue"|cat:"&aid="|cat:$aid}][{literal}]', {
                 method: 'post',
                 body: captureData
             }).then(function(res) {
@@ -30,14 +30,6 @@
             }).then(function(data) {
             [{/literal}]
 
-            [{*if $oViewConf->getTopActiveClassName()=="details"}]
-                location.replace('[{$sSelfLink|cat:"cl=basket"}]');
-            [{elseif $oViewConf->getTopActiveClassName()=="payment"}]
-                if (data.id && data.status == "APPROVED") {
-                    $("#payment_oxidpaypal").prop( "checked", true);
-                    $('#paymentNextStepBottom').trigger("click");
-                }
-            [{/if*}]
             if (data.id && data.status == "APPROVED") {
                 location.replace('[{$sSelfLink|cat:"cl=order"}]');
             }
@@ -45,8 +37,10 @@
             })
         },
         onCancel: function(data, actions) {
+            fetch('[{/literal}][{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}][{literal}]');
         },
         onError: function (data) {
+            fetch('[{/literal}][{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}][{literal}]');
         }
     }).render('#[{/literal}][{$buttonId}][{literal}]');
     [{/literal}]
