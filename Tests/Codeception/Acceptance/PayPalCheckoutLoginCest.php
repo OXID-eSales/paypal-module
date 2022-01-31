@@ -31,6 +31,7 @@ final class PayPalCheckoutLoginCest extends BaseCest
         $I->updateConfigInDatabase('bl_perfLoadPrice', true, 'bool');
         $I->updateConfigInDatabase('iNewBasketItemMessage', false, 'bool');
         $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', false);
+        $this->ensureShopUserData($I);
     }
 
     public function _after(AcceptanceTester $I): void

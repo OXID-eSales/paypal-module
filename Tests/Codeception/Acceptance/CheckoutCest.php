@@ -32,6 +32,8 @@ final class CheckoutCest extends BaseCest
         $I->updateConfigInDatabase('blUseStock', false, 'bool');
         $I->updateConfigInDatabase('bl_perfLoadPrice', true, 'bool');
         $I->updateConfigInDatabase('iNewBasketItemMessage', false, 'bool');
+        $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', false);
+        $this->ensureShopUserData($I);
     }
 
     public function _after(AcceptanceTester $I): void
@@ -48,6 +50,7 @@ final class CheckoutCest extends BaseCest
         $this->setUserDataSameAsPayPal($I);
         $this->proceedToPaymentStep($I, $_ENV['sBuyerLogin']);
         $token = $this->approvePayPalTransaction($I);
+        $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
 
         //pretend we are back in shop after clicking PayPal button and approving order
         $I->amOnUrl($this->getShopUrl() . '?cl=payment');
@@ -68,7 +71,8 @@ final class CheckoutCest extends BaseCest
             'oxorder',
             [
                 'OXID' => $orderId,
-                'OXTOTALORDERSUM' => '119.6'
+                'OXTOTALORDERSUM' => '119.6',
+                'OXBILLFNAME' => $_ENV['sBuyerFirstName']
             ]
         );
 
@@ -90,6 +94,7 @@ final class CheckoutCest extends BaseCest
 
         $this->proceedToPaymentStep($I);
         $token = $this->approvePayPalTransaction($I);
+        $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
 
         //pretend we are back in shop after clicking PayPal button and approving order
         $I->amOnUrl($this->getShopUrl() . '?cl=payment');
@@ -110,7 +115,9 @@ final class CheckoutCest extends BaseCest
             'oxorder',
             [
                 'OXID' => $orderId,
-                'OXTOTALORDERSUM' => '119.6'
+                'OXTOTALORDERSUM' => '119.6',
+                'OXBILLFNAME' => Fixtures::get('details')['firstname'],
+                'OXDELFNAME' => $_ENV['sBuyerFirstName']
             ]
         );
 
@@ -140,10 +147,8 @@ final class CheckoutCest extends BaseCest
 
         $this->proceedToPaymentStep($I);
         $token = $this->approvePayPalTransaction($I);
+        $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
 
-        //open new tab
-        $I->openNewTab();
-        $I->switchToNextTab();
         $I->amOnUrl($this->getShopUrl() . '/en/cart');
 
         $product = Fixtures::get('product');
@@ -151,7 +156,6 @@ final class CheckoutCest extends BaseCest
         $basket->addProductToBasketAndOpenBasket($product['oxid'], $product['amount'], 'basket');
 
         //finalize order in previous tab
-        $I->switchToPreviousTab();
         $I->amOnUrl($this->getShopUrl() . '?cl=payment');
         $I->see(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
 
