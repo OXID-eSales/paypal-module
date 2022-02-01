@@ -136,6 +136,12 @@ $aLang = [
     'OSC_PAYPAL_PRODUCT_DETAILS_BUTTON_PLACEMENT' => 'Product details page',
     'OSC_PAYPAL_BASKET_BUTTON_PLACEMENT'          => 'Basket',
     'OSC_PAYPAL_CHECKOUT_PLACEMENT'               => 'Payment Page (Checkout)',
+    'OSC_PAYPAL_EXPRESS_LOGIN_TITLE'              => 'Login with PayPal',
+    'OSC_PAYPAL_LOGIN_WITH_PAYPAL_EMAIL'          => 'Automatically log in to shop during checkout',
+    'HELP_OSC_PAYPAL_EXPRESS_LOGIN'               => 'In case there is already a shop user registered with password to the same mail address as the the PayPal mail,
+        it is possible to be autonmatically be logged in to shop when logging in to PayPal. This behavior may not be in the 
+        security interests of your customers',
+
     'HELP_OSC_PAYPAL_BUTTON_PLACEMEMT'            => 'Toggle the display of PayPal buttons',
     'HELP_OSC_PAYPAL_CREDENTIALS'                 =>
         'If you already have the API credentials, you can enter them directly.<br>

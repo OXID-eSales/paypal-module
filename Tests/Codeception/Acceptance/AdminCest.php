@@ -39,7 +39,7 @@ final class AdminCest extends BaseCest
         $this->checkWeAreStillInAdminPanel($I);
 
         $I->see(Translator::translate('OSC_PAYPAL_CREDENTIALS'));
-        $I->see(Translator::translate('OSC_PAYPAL_BANNER_COLORSCHEME'));
+        $I->see(Translator::translate('OSC_PAYPAL_OPMODE_SANDBOX'));
     }
 
     public function testPayPalAdminTransactions(AcceptanceTester $I): void
