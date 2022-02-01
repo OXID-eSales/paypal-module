@@ -95,15 +95,18 @@ final class PayPalCheckoutLoginCest extends BaseCest
 
         //PayPal logs us in and we skipped the address and payment step
         //pretend we are back in shop after clicking PayPal button and approving order
-        $I->amOnUrl($this->getShopUrl() . '?cl=order');
+        $page = $I->amOnUrl($this->getShopUrl() . '?cl=user');
         $I->waitForPageLoad();
 
-        //TODO: we already have an account, we are just not logged in
+        //we already have an account with password, we are just not logged in
         $I->dontSee(sprintf(Translator::translate('ERROR_MESSAGE_USER_USEREXISTS'), $_ENV['sBuyerLogin']));
 
         $I->dontSee(Translator::translate('MY_ACCOUNT'));
         $I->see(Translator::translate('LOGIN'));
         $I->see(Translator::translate('PURCHASE_WITHOUT_REGISTRATION'));
+
+        //TODO: test finalizing order with logging in same user / logging in different user
+        //$page->loginUser($_ENV['sBuyerLogin'], Fixtures::get('userPassword'));
     }
 
     /**
@@ -114,7 +117,6 @@ final class PayPalCheckoutLoginCest extends BaseCest
         $I->wantToTest('checking out with PayPal payment as not existing shop user will end me up with passwordless shop login, PPlogin is ' . (int) $example['blPayPalLoginWithPayPalEMail']);
 
         //login flag does not make a difference in this case
-        //TODO: doublecheck 'true' case
         $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', $example['blPayPalLoginWithPayPalEMail']);
 
         //user does not exist in database
@@ -215,7 +217,6 @@ final class PayPalCheckoutLoginCest extends BaseCest
         $I->wantToTest('passwordless guest user, shop and PayPal email are same, invoice and names different, PPlogin is ' . (int) $example['blPayPalLoginWithPayPalEMail']);
 
         //login flag should not make a difference in this case as we only have a guest account anyway
-        //TODO: doublecheck 'false' case (account gets overwritten instead of just adding and using a new delivery address)
         $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', $example['blPayPalLoginWithPayPalEMail']);
 
         //paypal user does exist in database but has no password.
@@ -253,23 +254,11 @@ final class PayPalCheckoutLoginCest extends BaseCest
             [
                 'OXID' => $orderId,
                 'OXTOTALORDERSUM' => '119.6',
-                'OXBILLFNAME' => Fixtures::get('details')['firstname'],
-                'OXDELFNAME' => $_ENV['sBuyerFirstName']
+                'OXBILLFNAME' => $_ENV['sBuyerFirstName']
             ]
         );
 
-        $I->seeInDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin'], 'oxfname' => Fixtures::get('details')['firstname']]);
-
-        //TODO: in blPayPalLoginWithPayPalEMail false case, this is what is happening right now:
-        #$I->seeInDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin'], 'oxfname' => $_ENV['sBuyerFirstName']]);
-        #$I->seeInDataBase(
-        #    'oxorder',
-        #    [
-        #        'OXID' => $orderId,
-        #        'OXTOTALORDERSUM' => '119.6',
-        #        'OXBILLFNAME' => $_ENV['sBuyerFirstName']
-        #    ]
-        #);
+        $I->seeInDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin'], 'oxfname' => $_ENV['sBuyerFirstName']]);
     }
 
     /**

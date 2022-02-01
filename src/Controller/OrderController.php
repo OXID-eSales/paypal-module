@@ -28,6 +28,12 @@ class OrderController extends OrderController_parent
     public function render()
     {
         $this->processSubscriptionFunctionality();
+
+        if (Registry::getSession()->getVariable('oscpaypal_payment_redirect')) {
+            Registry::getSession()->deleteVariable('oscpaypal_payment_redirect');
+            Registry::getUtils()->redirect(Registry::getConfig()->getShopHomeUrl() . 'cl=user', true, 302);
+        }
+
         return parent::render();
     }
 

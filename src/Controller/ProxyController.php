@@ -20,6 +20,8 @@ use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Email;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
@@ -28,12 +30,15 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Repository\SubscriptionRepository;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 
 /**
  * Server side interface for PayPal smart buttons.
  */
 class ProxyController extends FrontendController
 {
+    use ServiceContainer;
+
     public function createOrder()
     {
         $context = (string)Registry::getRequest()->getRequestEscapedParameter('context', 'continue');
@@ -109,7 +114,6 @@ class ProxyController extends FrontendController
             /** @var ServiceFactory $serviceFactory */
             $serviceFactory = Registry::get(ServiceFactory::class);
             $service = $serviceFactory->getOrderService();
-            $config = oxNew(Config::class);
 
             try {
                 $response = $service->showOrderDetails($orderId, '');
@@ -117,19 +121,21 @@ class ProxyController extends FrontendController
                 Registry::getLogger()->error("Error on order capture call.", [$exception]);
             }
 
-            $userComponent = oxNew(UserComponent::class);
+            if (!$this->getUser()) {
+                $userRepository = $this->getServiceFromContainer(UserRepository::class);
+                $paypalEmail = (string) $response->payer->email_address;
 
-            if (!$user = $this->getUser()) {
-                // login if account exists
-                if (($config->loginWithPayPalEMail() && $userComponent->loginPayPalCustomer($response)) || $userComponent->createPayPalGuestUser($response)) {
-                    $user = $this->getUser();
-                // create guest-session
-//                } else {
-//                    $userComponent->createPayPalGuestUser($response);
+                if ($userRepository->userAccountExists($paypalEmail)) {
+                    //got a non-guest account, so either we log in or redirect customer to login step
+                    $this->handleUserLogin($response);
+                } else {
+                    //we need to use a guest account
+                    $userComponent = oxNew(UserComponent::class);
+                    $userComponent->createPayPalGuestUser($response);
                 }
             }
 
-            if ($user) {
+            if ($user = $this->getUser()) {
                 // add PayPal-Address as Delivery-Address
                 $deliveryAddress = PayPalAddressResponseToOxidAddress::mapAddress($response, 'oxaddress__');
                 $user->changeUserData(
@@ -146,6 +152,20 @@ class ProxyController extends FrontendController
                 $this->setPayPalPaymentMethod();
             }
             $this->outputJson($response);
+        }
+    }
+
+    protected function handleUserLogin(PayPalApiOrder $apiOrder): void
+    {
+        $paypalConfig = oxNew(Config::class);
+        $userComponent = oxNew(UserComponent::class);
+
+        if ($paypalConfig->loginWithPayPalEMail()) {
+            $userComponent->loginPayPalCustomer($apiOrder);
+        } else {
+            //TODO: we should redirect to user step/login page via exception/ShopControl
+            //tell order controller to redirect to checkout login
+            Registry::getSession()->setVariable('oscpaypal_payment_redirect', true);
         }
     }
 
