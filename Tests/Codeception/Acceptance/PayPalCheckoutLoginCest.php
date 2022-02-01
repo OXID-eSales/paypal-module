@@ -12,7 +12,9 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 use Codeception\Util\Fixtures;
 use Codeception\Example;
 use OxidEsales\Codeception\Module\Translation\Translator;
+use OxidEsales\Codeception\Page\Checkout\UserCheckout;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
+use OxidEsales\Codeception\Page\Home;
 
 /**
  * @group osc_paypal
@@ -79,34 +81,74 @@ final class PayPalCheckoutLoginCest extends BaseCest
         );
     }
 
-    public function checkoutWithPaypalFromBasketStepNoAutomaticLogin(AcceptanceTester $I): void
+    public function checkoutWithPaypalFromBasketStepNoAutomaticLoginFinalizeAsSameUser(AcceptanceTester $I): void
     {
         $I->wantToTest('no automatic login as existing but not logged in shop user. Shop login and PayPal login mail are the same.');
 
         $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', false);
 
-        $this->setUserDataSameAsPayPal($I);
-        $I->seeInDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin']]);
-        $I->dontSeeInDatabase('oxuser', ['oxusername' => Fixtures::get('userName')]);
+        $token = $this->startExpressCheckoutAsNotLoggedInExistingUser($I);
 
-        $this->proceedToBasketStep($I, $_ENV['sBuyerLogin'], false);
-        $token = $this->approvePayPalTransaction($I);
-        $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
+        //finalize order with logging in same user as paypal email
+        $home = new Home($I);
+        $home->loginUser($_ENV['sBuyerLogin'], Fixtures::get('userPassword'));
 
-        //PayPal logs us in and we skipped the address and payment step
-        //pretend we are back in shop after clicking PayPal button and approving order
-        $page = $I->amOnUrl($this->getShopUrl() . '?cl=user');
-        $I->waitForPageLoad();
+        $page = new UserCheckout($I);
+        $page->goToNextStep();
+        $orderNumber = $this->finalizeOrder($I);
 
-        //we already have an account with password, we are just not logged in
-        $I->dontSee(sprintf(Translator::translate('ERROR_MESSAGE_USER_USEREXISTS'), $_ENV['sBuyerLogin']));
+        $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
+        $I->seeInDataBase(
+            'osc_paypal_order',
+            [
+                'OXORDERID' => $orderId,
+                'OXPAYPALORDERID' => $token
+            ]
+        );
+        $I->seeInDataBase(
+            'oxorder',
+            [
+                'OXID' => $orderId,
+                'OXTOTALORDERSUM' => '119.6',
+                'OXBILLFNAME' => $_ENV['sBuyerFirstName']
+            ]
+        );
+    }
 
-        $I->dontSee(Translator::translate('MY_ACCOUNT'));
-        $I->see(Translator::translate('LOGIN'));
-        $I->see(Translator::translate('PURCHASE_WITHOUT_REGISTRATION'));
+    /** @group foobla */
+    public function checkoutWithPaypalFromBasketStepNoAutomaticLoginFinalizeAsDifferentUser(AcceptanceTester $I): void
+    {
+        $I->wantToTest('no automatic login as existing but not logged in shop user. Log into shop with different account.');
 
-        //TODO: test finalizing order with logging in same user / logging in different user
-        //$page->loginUser($_ENV['sBuyerLogin'], Fixtures::get('userPassword'));
+        $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', false);
+
+        $token = $this->startExpressCheckoutAsNotLoggedInExistingUser($I);
+
+        //finalize order with logging in different user than paypal email
+        $home = new Home($I);
+        $home->loginUser(Fixtures::get('defaultUserName'), Fixtures::get('userPassword'));
+
+        $page = new UserCheckout($I);
+        $page->goToNextStep();
+        $orderNumber = $this->finalizeOrder($I);
+
+        $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
+        $I->seeInDataBase(
+            'osc_paypal_order',
+            [
+                'OXORDERID' => $orderId,
+                'OXPAYPALORDERID' => $token
+            ]
+        );
+        $I->seeInDataBase(
+            'oxorder',
+            [
+                'OXID' => $orderId,
+                'OXTOTALORDERSUM' => '119.6',
+                'OXBILLFNAME' => $_ENV['sBuyerFirstName']
+            ]
+        );
+
     }
 
     /**
@@ -321,5 +363,29 @@ final class PayPalCheckoutLoginCest extends BaseCest
             ['blPayPalLoginWithPayPalEMail' => false],
             ['blPayPalLoginWithPayPalEMail' => true]
         ];
+    }
+
+    protected function startExpressCheckoutAsNotLoggedInExistingUser(AcceptanceTester $I): string
+    {
+        $this->setUserDataSameAsPayPal($I);
+        $I->seeInDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin']]);
+        $I->dontSeeInDatabase('oxuser', ['oxusername' => Fixtures::get('userName')]);
+
+        $this->proceedToBasketStep($I, $_ENV['sBuyerLogin'], false);
+        $token = $this->approvePayPalTransaction($I);
+        $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
+
+        //PayPal logs us in and we skipped the address and payment step
+        //pretend we are back in shop after clicking PayPal button and approving order
+        $I->amOnUrl($this->getShopUrl() . '?cl=order');
+        $I->waitForPageLoad();
+
+        //we already have an account with password, we are just not logged in
+        $I->dontSee(sprintf(Translator::translate('ERROR_MESSAGE_USER_USEREXISTS'), $_ENV['sBuyerLogin']));
+        $I->dontSee(Translator::translate('MY_ACCOUNT'));
+        $I->see(Translator::translate('LOGIN'));
+        $I->see(Translator::translate('PURCHASE_WITHOUT_REGISTRATION'));
+
+        return $token;
     }
 }
