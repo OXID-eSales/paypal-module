@@ -11,6 +11,8 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Application\Model\RequiredAddressFields;
+use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+
 
 /**
  * PayPal oxOrder class
@@ -56,5 +58,40 @@ class User extends User_parent
         }
 
         return $result;
+    }
+
+
+    /**
+     * @param string $userName
+     *
+     * @return false|string
+     */
+    private function getUserIdByPayPalAddress(string $userName)
+    {
+        return DatabaseProvider::getDb()->getOne(
+            "SELECT `OXID` FROM oxuser
+            WHERE 1 AND oxusername = :oxusername",
+            [
+                ':oxusername' => $userName
+            ]
+        );
+    }
+
+    /**
+     * Login with PayPalUsername
+     *
+     * @param string $userName
+     * @param string $password
+     */
+    protected function onLogin($userName, $password)
+    {
+        if (PayPalSession::isPayPalOrderActive()) {
+            $userId = $this->getUserIdByPayPalAddress($userName);
+            if ($userId) {
+                $this->load($userId);
+            }
+        } else {
+            parent::onLogin($userName, $password);
+        }
     }
 }

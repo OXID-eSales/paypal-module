@@ -1,23 +1,8 @@
 <?php
 
 /**
- * This file is part of OXID eSales PayPal module.
- *
- * OXID eSales PayPal module is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eSales PayPal module is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eSales PayPal module.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2020
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 $sLangName = 'English';
@@ -151,7 +136,12 @@ $aLang = [
     'OSC_PAYPAL_PRODUCT_DETAILS_BUTTON_PLACEMENT' => 'Product details page',
     'OSC_PAYPAL_BASKET_BUTTON_PLACEMENT'          => 'Basket',
     'OSC_PAYPAL_CHECKOUT_PLACEMENT'               => 'Payment Page (Checkout)',
-    'HELP_OSC_PAYPAL_CHECKOUT_PLACEMENT'          => 'when using PayPal PLUS please deactivate',
+    'OSC_PAYPAL_EXPRESS_LOGIN_TITLE'              => 'Login with PayPal',
+    'OSC_PAYPAL_LOGIN_WITH_PAYPAL_EMAIL'          => 'Automatically log in to shop during checkout',
+    'HELP_OSC_PAYPAL_EXPRESS_LOGIN'               => 'In case there is already a shop user registered with password to the same mail address as the the PayPal mail,
+        it is possible to be autonmatically be logged in to shop when logging in to PayPal. This behavior may not be in the 
+        security interests of your customers',
+
     'HELP_OSC_PAYPAL_BUTTON_PLACEMEMT'            => 'Toggle the display of PayPal buttons',
     'HELP_OSC_PAYPAL_CREDENTIALS'                 =>
         'If you already have the API credentials, you can enter them directly.<br>

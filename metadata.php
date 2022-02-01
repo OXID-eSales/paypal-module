@@ -337,6 +337,9 @@ $aModule = [
 
         ['name' => 'blPayPalShowCheckoutButton', 'type' => 'bool', 'value' => 'true'],
 
+        //PSPAYPAL-515
+        ['name' => 'blPayPalLoginWithPayPalEMail', 'type' => 'bool', 'value' => 'false'],
+
         // PSPAYPAL-492
         [
             'name' => 'blPayPalNeverUseCredit',

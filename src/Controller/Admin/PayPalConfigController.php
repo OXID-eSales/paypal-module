@@ -204,6 +204,9 @@ class PayPalConfigController extends AdminController
         if (!isset($conf['oePayPalBannersCheckoutPage'])) {
             $conf['oePayPalBannersCheckoutPage'] = 0;
         }
+        if (!isset($conf['blPayPalLoginWithPayPalEMail'])) {
+            $conf['blPayPalLoginWithPayPalEMail'] = 0;
+        }
 
         return $conf;
     }

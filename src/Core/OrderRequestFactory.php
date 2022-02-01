@@ -67,7 +67,7 @@ class OrderRequestFactory
     public function getRequest(
         Basket $basket,
         string $intent,
-        string $userAction,
+        ?string $userAction = null,
         ?string $transactionId = null,
         ?string $invoiceId = null
     ): OrderRequest {
@@ -81,7 +81,9 @@ class OrderRequestFactory
 
         $request->purchase_units = $this->getPurchaseUnits($transactionId, $invoiceId);
 
-        $request->application_context = $this->getApplicationContext($userAction);
+        if ($userAction) {
+            $request->application_context = $this->getApplicationContext($userAction);
+        }
 
         return $request;
     }
@@ -93,7 +95,7 @@ class OrderRequestFactory
      *
      * @return OrderApplicationContext
      */
-    protected function getApplicationContext(string $userAction): OrderApplicationContext
+    protected function getApplicationContext(?string $userAction): OrderApplicationContext
     {
         $context = new OrderApplicationContext();
         $context->brand_name = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
@@ -179,7 +181,6 @@ class OrderRequestFactory
         $language = Registry::getLang();
         $items = [];
         $nettoPrices = $basket->isCalculationModeNetto();
-
 
         /** @var BasketItem $basketItem */
         foreach ($basket->getContents() as $basketItem) {
