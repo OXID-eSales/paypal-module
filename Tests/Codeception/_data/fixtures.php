@@ -13,6 +13,8 @@ return [
         'userPassword' => 'admin',
     ],
     'userPassword' => 'useruser',
+    'defaultUserName' => 'defaultuser@oxid-esales.dev',
+    'defaultUserFirstName' => 'UserName',
     'userName' => 'paypaluser@oxid-esales.dev',
     'details' => [
         'firstname' => 'TestUserName',

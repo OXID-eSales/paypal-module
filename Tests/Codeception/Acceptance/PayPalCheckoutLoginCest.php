@@ -95,6 +95,8 @@ final class PayPalCheckoutLoginCest extends BaseCest
 
         $page = new UserCheckout($I);
         $page->goToNextStep();
+        $I->see(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
+
         $orderNumber = $this->finalizeOrder($I);
 
         $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
@@ -115,7 +117,6 @@ final class PayPalCheckoutLoginCest extends BaseCest
         );
     }
 
-    /** @group foobla */
     public function checkoutWithPaypalFromBasketStepNoAutomaticLoginFinalizeAsDifferentUser(AcceptanceTester $I): void
     {
         $I->wantToTest('no automatic login as existing but not logged in shop user. Log into shop with different account.');
@@ -130,6 +131,8 @@ final class PayPalCheckoutLoginCest extends BaseCest
 
         $page = new UserCheckout($I);
         $page->goToNextStep();
+        $I->see(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
+
         $orderNumber = $this->finalizeOrder($I);
 
         $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
@@ -145,10 +148,9 @@ final class PayPalCheckoutLoginCest extends BaseCest
             [
                 'OXID' => $orderId,
                 'OXTOTALORDERSUM' => '119.6',
-                'OXBILLFNAME' => $_ENV['sBuyerFirstName']
+                'OXBILLFNAME' => Fixtures::get('defaultUserFirstName')
             ]
         );
-
     }
 
     /**
