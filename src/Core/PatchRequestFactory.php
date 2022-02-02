@@ -24,6 +24,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnit;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
 
 /**
@@ -83,7 +84,7 @@ class PatchRequestFactory
         if ($deliveryId && $deliveryAddress->load($deliveryId)) {
             $patch = new Patch();
             $patch->op = Patch::OP_REPLACE;
-            $patch->path = "/purchase_units/@reference_id=='default'/shipping/address";
+            $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/shipping/address";
 
             $address = new AddressPortable();
 
@@ -115,7 +116,7 @@ class PatchRequestFactory
             $fullName = $deliveryAddress->oxaddress__oxfname->value . " " . $deliveryAddress->oxaddress__oxlname->value;
             $patch = new Patch();
             $patch->op = Patch::OP_REPLACE;
-            $patch->path = "/purchase_units/@reference_id=='default'/shipping/name";
+            $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/shipping/name";
             $patch->value->full_name = $fullName;
 
             $this->request[] = $patch;
@@ -126,7 +127,7 @@ class PatchRequestFactory
     {
         $patch = new Patch();
         $patch->op = Patch::OP_REPLACE;
-        $patch->path = "/purchase_units/@reference_id=='default'/amount";
+        $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/amount";
 
         $amount = new AmountWithBreakdown();
         $currency = $this->basket->getBasketCurrency();
@@ -136,7 +137,6 @@ class PatchRequestFactory
         //Total amount
         $amount->value = $total->value;
         $amount->currency_code = $total->currency_code;
-
         //Cost breakdown
         $breakdown = $amount->breakdown = new AmountBreakdown();
 
@@ -160,7 +160,6 @@ class PatchRequestFactory
             //Discount
             $breakdown->discount = PriceToMoney::convert($discount, $currency);
         }
-
         $patch->value = $amount;
 
         $this->request[] = $patch;
@@ -179,7 +178,7 @@ class PatchRequestFactory
 
         $patch = new Patch();
         $patch->op = Patch::OP_REPLACE;
-        $patch->path = "/purchase_units/@reference_id=='default'/items";
+        $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/items";
 
         $item = new Item();
         $item->name = $basketItem->getTitle();

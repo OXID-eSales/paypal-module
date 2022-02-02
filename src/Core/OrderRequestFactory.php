@@ -30,6 +30,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\PhoneWithType;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnit;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
 
 /**
@@ -121,7 +122,17 @@ class OrderRequestFactory
         $purchaseUnit->description = $description;
 
         $purchaseUnit->amount = $this->getAmount();
-        $purchaseUnit->items = $this->getItems();
+        $purchaseUnit->reference_id = Constants::PAYPAL_ORDER_REFERENCE_ID;
+
+        // PayPal cannot fully patch the items in the shopping cart.
+        // At the moment only the amount and the title of the article
+        // are relevant. However, no inventory.
+        // So we MUST ignore the transfer of detailed basket-informations to PayPal
+        //foreach ($this->basket->getContents() as $basketItem) {
+        //    $this->getPurchaseUnitsPatch($basketItem, $nettoPrices, $currency);
+        //}
+        // $purchaseUnit->items = $this->getItems();
+
         if ($this->basket->getBasketUser()) {
             $purchaseUnit->shipping = $this->getShippingAddress();
         }
