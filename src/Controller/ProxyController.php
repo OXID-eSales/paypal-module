@@ -40,8 +40,6 @@ class ProxyController extends FrontendController
 
     public function createOrder()
     {
-        $context = (string)Registry::getRequest()->getRequestEscapedParameter('context', 'continue');
-
         $this->addToBasket();
         $this->setPayPalPaymentMethod();
 

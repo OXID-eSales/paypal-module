@@ -26,6 +26,7 @@ abstract class BaseCest
     public function _before(AcceptanceTester $I): void
     {
         $this->activateModules();
+        $this->enableExpressButtons($I);
     }
 
     public function _after(AcceptanceTester $I): void
@@ -149,9 +150,11 @@ abstract class BaseCest
         );
     }
 
-    protected function proceedToPaymentStep(AcceptanceTester $I, string $userName = null): void
+    protected function proceedToPaymentStep(AcceptanceTester $I, string $userName = null, bool $ensureCheckoutButton = true): void
     {
-        $I->updateModuleConfiguration('blPayPalShowCheckoutButton', true);
+        if ($ensureCheckoutButton) {
+            $I->updateModuleConfiguration('blPayPalShowCheckoutButton', true);
+        }
 
         $userName = $userName ?: Fixtures::get('userName');
 
@@ -160,18 +163,33 @@ abstract class BaseCest
         $I->waitForText(Translator::translate('HOME'));
 
         //add product to basket and start checkout
-        $product = Fixtures::get('product');
-        $basket = new Basket($I);
-        $basket->addProductToBasketAndOpenBasket($product['oxid'], $product['amount'], 'basket');
-        $I->see(Translator::translate('CONTINUE_TO_NEXT_STEP'));
+        $this->fillBasket($I);
+       # $product = Fixtures::get('product');
+       # $basket = new Basket($I);
+       # $basket->addProductToBasketAndOpenBasket($product['oxid'], $product['amount'], 'basket');
+       # $I->see(Translator::translate('CONTINUE_TO_NEXT_STEP'));
 
+      #  $I->amOnPage('/en/cart');
+      #  $basketPage = new BasketCheckout($I);
+      #  $basketPage->goToNextStep()
+      #      ->goToNextStep();
+
+       # $I->see(Translator::translate('PAYMENT_METHOD'));
+        $this->fromBasketToPayment($I);
+
+        if ($ensureCheckoutButton) {
+            $I->seeElement("#PayPalButtonPaymentPage");
+        }
+    }
+
+    protected function fromBasketToPayment(AcceptanceTester $I): void
+    {
         $I->amOnPage('/en/cart');
         $basketPage = new BasketCheckout($I);
         $basketPage->goToNextStep()
             ->goToNextStep();
 
         $I->see(Translator::translate('PAYMENT_METHOD'));
-        $I->seeElement("#PayPalButtonPaymentPage");
     }
 
     protected function proceedToBasketStep(AcceptanceTester $I, string $userName = null, bool $logMeIn = true): void
@@ -187,11 +205,17 @@ abstract class BaseCest
         $I->waitForText(Translator::translate('HOME'));
 
         //add product to basket and start checkout
+        $this->fillBasket($I);
+        $I->seeElement("#PayPalPayButtonNextCart2");
+    }
+
+    protected function fillBasket(AcceptanceTester $I): void
+    {
+        //add product to basket and start checkout
         $product = Fixtures::get('product');
         $basket = new Basket($I);
         $basket->addProductToBasketAndOpenBasket($product['oxid'], $product['amount'], 'basket');
         $I->see(Translator::translate('CONTINUE_TO_NEXT_STEP'));
-        $I->seeElement("#PayPalPayButtonNextCart2");
     }
 
     protected function finalizeOrder(AcceptanceTester $I): string
@@ -215,11 +239,11 @@ abstract class BaseCest
         return  $thankYouPage->grabOrderNumber();
     }
 
-    protected function approvePayPalTransaction(AcceptanceTester $I): string
+    protected function approvePayPalTransaction(AcceptanceTester $I, string $addParams = ''): string
     {
         //workaround to approve the transaction on PayPal side
         $loginPage = new PayPalLogin($I);
-        $loginPage->openPayPalApprovalPage($I);
+        $loginPage->openPayPalApprovalPage($I, $addParams);
         $token = $loginPage->getToken();
         $loginPage->approveStandardPayPal($_ENV['sBuyerLogin'], $_ENV['sBuyerPassword']);
 
@@ -236,5 +260,12 @@ abstract class BaseCest
         $I->selectListFrame();
         $I->click(Translator::translate('tbclorder_paypal'));
         $I->selectEditFrame();
+    }
+
+    protected function enableExpressButtons(AcceptanceTester $I, bool $flag = true): void
+    {
+        $I->updateModuleConfiguration('blPayPalShowProductDetailsButton', $flag);
+        $I->updateModuleConfiguration('blPayPalShowBasketButton', $flag);
+        $I->updateModuleConfiguration('blPayPalShowCheckoutButton', $flag);
     }
 }

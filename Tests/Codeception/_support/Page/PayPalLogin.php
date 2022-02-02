@@ -63,9 +63,9 @@ class PayPalLogin extends Page
         return $this->token;
     }
 
-    public function openPayPalApprovalPage(AcceptanceTester $I): self
+    public function openPayPalApprovalPage(AcceptanceTester $I, string $addParams = ''): self
     {
-        $I->amOnPage('/index.php?cl=oscpaypalproxy&fnc=createOrder');
+        $I->amOnPage('/index.php?cl=oscpaypalproxy&fnc=createOrder' . $addParams);
         $I->see('checkout');
 
         $text = $I->grabTextFrom('//body');
