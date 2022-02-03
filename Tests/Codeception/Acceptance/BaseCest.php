@@ -250,6 +250,17 @@ abstract class BaseCest
         return $token;
     }
 
+    protected function approveAnonymousPayPalTransaction(AcceptanceTester $I, string $addParams = ''): string
+    {
+        //workaround to approve the transaction on PayPal side
+        $loginPage = new PayPalLogin($I);
+        $loginPage->openPayPalApprovalPageAsAnonymousUser($I, $addParams);
+        $token = $loginPage->getToken();
+        $loginPage->approveStandardPayPal($_ENV['sBuyerLogin'], $_ENV['sBuyerPassword']);
+
+        return $token;
+    }
+
     protected function openOrderPayPal(AcceptanceTester $I, string $orderNumber): void
     {
         $adminPanel = $I->loginAdmin();

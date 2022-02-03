@@ -42,5 +42,11 @@ modules:
     - \OxidEsales\Codeception\Module\Translation\TranslationsModule:
         shop_path: '%SHOP_SOURCE_PATH%'
         paths: 'Application/views/flow,Application/views/admin,modules/osc/paypal/views/admin,modules/osc/paypal/translations'
+    - REST:
+        url: '%SHOP_URL%'
+        depends: PhpBrowser
+        part: Json
+    - \OxidSolutionCatalysts\PayPal\Tests\Codeception\Module\PayPal:
+        depends: REST
 step_decorators:
   - \Codeception\Step\Retry
