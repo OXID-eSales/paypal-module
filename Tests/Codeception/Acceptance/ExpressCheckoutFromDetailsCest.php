@@ -26,27 +26,6 @@ use OxidEsales\Codeception\Step\ProductNavigation;
  */
 final class ExpressCheckoutFromDetailsCest extends BaseCest
 {
-    public function _before(AcceptanceTester $I): void
-    {
-        parent::_before($I);
-
-        $I->clearShopCache();
-        $I->setPayPalBannersVisibility(false);
-        $I->updateConfigInDatabase('blUseStock', false, 'bool');
-        $I->updateConfigInDatabase('bl_perfLoadPrice', true, 'bool');
-        $I->updateConfigInDatabase('iNewBasketItemMessage', false, 'bool');
-        $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', false);
-        $this->ensureShopUserData($I);
-    }
-
-    public function _after(AcceptanceTester $I): void
-    {
-        $this->ensureShopUserData($I);
-        $this->enableExpressButtons($I);
-
-        parent::_after($I);
-    }
-
     public function testExpressCheckoutFromDetailsButton(AcceptanceTester $I): void
     {
         $I->wantToTest('checkout from details page with empty cart. Customer is logged in.');

@@ -26,11 +26,23 @@ abstract class BaseCest
     public function _before(AcceptanceTester $I): void
     {
         $this->activateModules();
+
+        $I->clearShopCache();
+        $I->setPayPalBannersVisibility(false);
+        $I->updateConfigInDatabase('blUseStock', false, 'bool');
+        $I->updateConfigInDatabase('bl_perfLoadPrice', true, 'bool');
+        $I->updateConfigInDatabase('iNewBasketItemMessage', false, 'bool');
+        $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', false);
+        $this->ensureShopUserData($I);
         $this->enableExpressButtons($I);
     }
 
     public function _after(AcceptanceTester $I): void
     {
+        $this->ensureShopUserData($I);
+        $this->enableExpressButtons($I);
+        $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', false);
+
         $I->deleteFromDatabase('oxorder', ['OXORDERNR >=' => '2']);
     }
 
@@ -164,17 +176,6 @@ abstract class BaseCest
 
         //add product to basket and start checkout
         $this->fillBasket($I);
-       # $product = Fixtures::get('product');
-       # $basket = new Basket($I);
-       # $basket->addProductToBasketAndOpenBasket($product['oxid'], $product['amount'], 'basket');
-       # $I->see(Translator::translate('CONTINUE_TO_NEXT_STEP'));
-
-      #  $I->amOnPage('/en/cart');
-      #  $basketPage = new BasketCheckout($I);
-      #  $basketPage->goToNextStep()
-      #      ->goToNextStep();
-
-       # $I->see(Translator::translate('PAYMENT_METHOD'));
         $this->fromBasketToPayment($I);
 
         if ($ensureCheckoutButton) {

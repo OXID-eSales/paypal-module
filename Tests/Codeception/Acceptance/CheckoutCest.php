@@ -23,26 +23,6 @@ use OxidEsales\Codeception\Module\Translation\Translator;
  */
 final class CheckoutCest extends BaseCest
 {
-    public function _before(AcceptanceTester $I): void
-    {
-        parent::_before($I);
-
-        $I->clearShopCache();
-        $I->setPayPalBannersVisibility(false);
-        $I->updateConfigInDatabase('blUseStock', false, 'bool');
-        $I->updateConfigInDatabase('bl_perfLoadPrice', true, 'bool');
-        $I->updateConfigInDatabase('iNewBasketItemMessage', false, 'bool');
-        $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', false);
-        $this->ensureShopUserData($I);
-    }
-
-    public function _after(AcceptanceTester $I): void
-    {
-        $this->ensureShopUserData($I);
-
-        parent::_after($I);
-    }
-
     public function checkoutWithPaypalStandard(AcceptanceTester $I): void
     {
         $I->wantToTest('checking out as logged in user with PayPal as payment method. Shop login and PayPal login mail are the same.');
