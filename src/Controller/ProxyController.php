@@ -40,6 +40,11 @@ class ProxyController extends FrontendController
 
     public function createOrder()
     {
+        if (PayPalSession::isPayPalOrderActive()) {
+            //TODO: improve
+            $this->outputJson(['ERROR' => 'PayPal session already started.']);
+        }
+
         $this->addToBasket();
         $this->setPayPalPaymentMethod();
 
