@@ -48,13 +48,6 @@ class PaymentGateway extends PaymentGateway_parent
         if ($this->getSessionPaymentId() === 'oxidpaypal') {
             $success = $this->doAuthorizePayPalPayment($order);
         }
-/*
-        if (
-            ($session->getVariable('paymentid') == 'oxidpaypal')
-             || ($session->getBasket()->getPaymentId() == 'oxidpaypal')
-        ) {
-            $success = $this->doAuthorizePayment($order);
-        } */
 
         return $success;
     }
@@ -66,66 +59,6 @@ class PaymentGateway extends PaymentGateway_parent
     {
         $session = $this->getSession();
         return $session->getVariable('paymentid') ?? $session->getBasket()->getPaymentId();
-    }
-
-    /**
-     * Executes Authorize to PayPal
-     *
-     * @param Order $order  User ordering object
-     *
-     * @return bool
-     */
-    public function doAuthorizePayment(&$order)
-    {
-        $success = false;
-
-        try {
-            // updating order state
-            if ($order) {
-                if ($checkoutOrderId = PayPalSession::getcheckoutOrderId()) {
-
-                    /** @var ServiceFactory $serviceFactory */
-                    $serviceFactory = Registry::get(ServiceFactory::class);
-                    $service = $serviceFactory->getOrderService();
-
-                    // Capture Order
-                    try {
-                        $request = new OrderCaptureRequest();
-                        $response = $service->capturePaymentForOrder('', $checkoutOrderId, $request, '');
-                    } catch (Exception $exception) {
-                        Registry::getLogger()->error("Error on order capture call.", [$exception]);
-                        $exception = oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
-                        throw $exception;
-                    }
-
-                    $sql = 'INSERT INTO osc_paypal_order (';
-                    $sql .= 'OXID, OXSHOPID, OXORDERID, ';
-                    $sql .= 'OXPAYPALORDERID) VALUES(?,?,?,?)';
-
-                    DatabaseProvider::getDb()->execute($sql, [
-                        UtilsObject::getInstance()->generateUId(),
-                        Registry::getConfig()->getShopId(),
-                        $order->getId(),
-                        $checkoutOrderId
-                    ]);
-
-                    $success = true;
-                }
-            } else {
-                $exception = oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
-                throw $exception;
-            }
-        } catch (Exception $exception) {
-            $this->_iLastErrorNo = \OxidEsales\Eshop\Application\Model\Order::ORDER_STATE_PAYMENTERROR;
-            Registry::getLogger()->error("Error on doAuthorizePayment call.", [$exception]);
-
-            Registry::getUtilsView()->addErrorToDisplay($exception);
-        }
-
-        // destroy PayPal-Session
-        PayPalSession::storePayPalOrderId('');
-
-        return $success;
     }
 
     /**
