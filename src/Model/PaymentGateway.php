@@ -12,12 +12,17 @@ use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\UtilsObject;
+use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
+
 
 /**
  * Class PaymentGateway
@@ -27,6 +32,8 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
  */
 class PaymentGateway extends PaymentGateway_parent
 {
+     use ServiceContainer;
+
      /**
      * Executes payment, returns true on success.
      *
@@ -68,7 +75,7 @@ class PaymentGateway extends PaymentGateway_parent
      *
      * @return bool
      */
-    public function doAuthorizePayPalPayment(&$order)
+    protected function doAuthorizePayPalPayment(&$order)
     {
         $success = false;
 
@@ -76,6 +83,8 @@ class PaymentGateway extends PaymentGateway_parent
             // updating order state
             if ($order) {
                 if ($checkoutOrderId = PayPalSession::getcheckoutOrderId()) {
+
+                    //TODO: refactor this method
 
                     /** @var ServiceFactory $serviceFactory */
                     $serviceFactory = Registry::get(ServiceFactory::class);
@@ -94,25 +103,25 @@ class PaymentGateway extends PaymentGateway_parent
                         Registry::getLogger()->error("Error on order patch call.", [$exception]);
                     }
 
+                    $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
+                    /** @var PayPalOrderModel $paypalOrder */
+                    $paypalOrder = $orderRepository->paypalOrderByShopAndPayPalId($order->getId(), $checkoutOrderId);
+
                     // Capture Order
                     try {
                         $request = new OrderCaptureRequest();
-                        $service->capturePaymentForOrder('', $checkoutOrderId, $request, '');
+                        /** @var ApiOrderModel $result */
+                        $result = $service->capturePaymentForOrder('', $checkoutOrderId, $request, '');
+                        $paypalOrder->setStatus((string) $result->status);
+                        $paypalOrder->save();
                     } catch (Exception $exception) {
                         Registry::getLogger()->error("Error on order capture call.", [$exception]);
                         throw oxNew(StandardException::class, 'OXPS_PAYPAL_ORDEREXECUTION_ERROR');
                     }
 
-                    $sql = 'INSERT INTO osc_paypal_order (';
-                    $sql .= 'OXID, OXSHOPID, OXORDERID, ';
-                    $sql .= 'OXPAYPALORDERID) VALUES(?,?,?,?)';
-
-                    DatabaseProvider::getDb()->execute($sql, [
-                        UtilsObject::getInstance()->generateUId(),
-                        Registry::getConfig()->getShopId(),
-                        $order->getId(),
-                        $checkoutOrderId
-                    ]);
+                    if (ApiOrderModel::STATUS_COMPLETED === $paypalOrder->getStatus()) {
+                        $order->markOrderPaid();
+                    }
 
                     $success = true;
                 }
