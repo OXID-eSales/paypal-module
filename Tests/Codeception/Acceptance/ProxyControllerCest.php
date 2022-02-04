@@ -50,16 +50,6 @@ final class ProxyControllerCest extends BaseCest
         );
         $response = $I->grabJsonResponseAsArray();
         $I->assertSame(['ERROR' => 'PayPal session already started.'], $response);
-
-        //retry but do not send sid cookie, a new session will be started with new PayPal order
-        $I->clearShopCache();
-        $I->postTo(
-            $this->getShopUrl() . '/index.php?cl=oscpaypalproxy&fnc=createOrder&context=continue&aid=' . Fixtures::get('product')['oxid'],
-            ['Cookie' => 'language=0; sid=invalid;sid_key=oxid']
-        );
-        $response = $I->grabJsonResponseAsArray();
-        $I->assertNotEquals($paypalOrderId, $response['id']);
-        $I->assertNotEquals($sid,$I->extractSidFromResponseCookies());
     }
 
     public function testApproveOrderIdMismatch(AcceptanceTester $I): void

@@ -45,6 +45,9 @@ abstract class BaseCest
         $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', false);
 
         $I->deleteFromDatabase('oxorder', ['OXORDERNR >=' => '2']);
+        $I->deleteFromDatabase('oxuserbaskets', ['OXTITLE >=' => 'savedbasket']);
+        $I->resetCookie('sid');
+        $I->resetCookie('sid_key');
     }
 
     protected function getShopUrl(): string
