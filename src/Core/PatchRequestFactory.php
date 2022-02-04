@@ -117,6 +117,7 @@ class PatchRequestFactory
             $patch = new Patch();
             $patch->op = Patch::OP_REPLACE;
             $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/shipping/name";
+            $patch->value = new \stdClass();
             $patch->value->full_name = $fullName;
 
             $this->request[] = $patch;
