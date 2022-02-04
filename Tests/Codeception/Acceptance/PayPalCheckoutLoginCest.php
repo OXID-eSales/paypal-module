@@ -20,6 +20,7 @@ use OxidEsales\Codeception\Page\Home;
  * @group osc_paypal
  * @group osc_paypal_checkout
  * @group osc_paypal_checkout_paypallogin
+ * @group osc_paypal_remote_login
  */
 final class PayPalCheckoutLoginCest extends BaseCest
 {

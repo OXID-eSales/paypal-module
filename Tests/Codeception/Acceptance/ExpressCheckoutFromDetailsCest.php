@@ -23,6 +23,7 @@ use OxidEsales\Codeception\Step\ProductNavigation;
  * @group osc_paypal_checkout
  * @group osc_paypal_express
  * @group osc_paypal_express_details
+ * @group osc_paypal_remote_login
  */
 final class ExpressCheckoutFromDetailsCest extends BaseCest
 {
