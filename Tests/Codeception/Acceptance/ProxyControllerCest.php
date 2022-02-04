@@ -54,11 +54,46 @@ final class ProxyControllerCest extends BaseCest
         //retry but do not send sid cookie, a new session will be started with new PayPal order
         $I->clearShopCache();
         $I->postTo(
-            $this->getShopUrl() . '/index.php?cl=oscpaypalproxy&fnc=createOrder&context=continue&aid=' . Fixtures::get('product')['oxid']
+            $this->getShopUrl() . '/index.php?cl=oscpaypalproxy&fnc=createOrder&context=continue&aid=' . Fixtures::get('product')['oxid'],
+            ['Cookie' => 'language=0; sid=invalid;sid_key=oxid']
         );
         $response = $I->grabJsonResponseAsArray();
         $I->assertNotEquals($paypalOrderId, $response['id']);
         $I->assertNotEquals($sid,$I->extractSidFromResponseCookies());
+    }
+
+    public function testApproveOrderIdMismatch(AcceptanceTester $I): void
+    {
+        $I->wantToTest('calling proxy approveOrder only for same order Id as current session');
+
+        $this->enableExpressButtons($I);
+        $I->dontSeeCookie('sid');
+        $I->dontSeeCookie('sid_key');
+
+        //pretend we send this as post request from details
+        $I->postTo(
+            $this->getShopUrl() . '/index.php?cl=oscpaypalproxy&fnc=createOrder&context=continue&aid=' . Fixtures::get('product')['oxid']
+        );
+
+        $response = $I->grabJsonResponseAsArray();
+        $paypalOrderId = $response['id'];
+        $I->assertNotEmpty($paypalOrderId);
+        $sid = $I->extractSidFromResponseCookies();
+        $I->assertNotEmpty($sid);
+
+        //orderid mismatch
+        $I->postTo(
+            $this->getShopUrl() . '/index.php?cl=oscpaypalproxy&fnc=approveOrder&context=continue&orderID=somethingDifferent',
+            ['Cookie' => 'language=0; sid=' . $sid . ';sid_key=oxid']
+        );
+        $response = $I->grabJsonResponseAsArray();
+        $I->assertSame(['ERROR' => 'OrderId not found in PayPal session.'], $response);
+
+        $I->postTo(
+            $this->getShopUrl() . '/index.php?cl=oscpaypalproxy&fnc=approveOrder&context=continue&orderID=' . $paypalOrderId,
+            ['Cookie' => 'language=0; sid=' . $sid . ';sid_key=oxid']
+        );
+        $I->assertSame($paypalOrderId, $I->grabJsonResponseAsArray()['id']);
     }
 }
 
