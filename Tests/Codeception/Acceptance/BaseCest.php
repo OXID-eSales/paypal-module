@@ -41,6 +41,7 @@ abstract class BaseCest
     {
         $this->ensureShopUserData($I);
         $this->enableExpressButtons($I);
+        $I->updateConfigInDatabase('blShowNetPrice', false, 'bool');
         $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', false);
 
         $I->deleteFromDatabase('oxorder', ['OXORDERNR >=' => '2']);
