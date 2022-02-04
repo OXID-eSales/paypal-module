@@ -82,6 +82,9 @@ abstract class BaseCest
             $toBeUpdated = Fixtures::get('userName');
             $I->deleteFromDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin']]);
         }
+        if (0 < $I->grabNumRecords('oxnewssubscribed', ['oxemail' => $_ENV['sBuyerLogin']])) {
+            $I->deleteFromDatabase('oxnewssubscribed', ['oxemail' => $_ENV['sBuyerLogin']]);
+        }
 
         $I->updateInDatabase(
             'oxuser',
