@@ -37,7 +37,8 @@ final class Version20220112120100 extends AbstractMigration
                     'longdesc' => "Pay conveniently with PayPal"
                 ]
             ],
-            'countries' => []
+            'countries' => [],
+            'isuapm' => false
         ],
         // uAPM Bancontact
         'oxidpaypal_bancontact' => [
@@ -51,7 +52,8 @@ final class Version20220112120100 extends AbstractMigration
                     'longdesc' => "Pay conveniently with Bancontact"
                 ]
             ],
-            'countries' => ['BE']
+            'countries' => ['BE'],
+            'isuapm' => true
         ],
         // uAPM Boleto Bancário
         'oxidpaypal_boleto' => [
@@ -65,7 +67,8 @@ final class Version20220112120100 extends AbstractMigration
                     'longdesc' => "Pay conveniently with Boleto Bancário"
                 ]
             ],
-            'countries' => ['BR']
+            'countries' => ['BR'],
+            'isuapm' => true
         ],
         // uAPM BLIK
         'oxidpaypal_blik' => [
@@ -79,7 +82,8 @@ final class Version20220112120100 extends AbstractMigration
                     'longdesc' => "Pay conveniently with BLIK"
                 ]
             ],
-            'countries' => ['PL']
+            'countries' => ['PL'],
+            'isuapm' => true
         ],
         // uAPM EPS
         'oxidpaypal_eps' => [
@@ -93,7 +97,8 @@ final class Version20220112120100 extends AbstractMigration
                     'longdesc' => "Pay conveniently with EPS"
                 ]
             ],
-            'countries' => ['AT']
+            'countries' => ['AT'],
+            'isuapm' => true
         ],
         // uAPM GiroPay
         'oxidpaypal_giropay' => [
@@ -107,7 +112,8 @@ final class Version20220112120100 extends AbstractMigration
                     'longdesc' => "Pay conveniently with GiroPay"
                 ]
             ],
-            'countries' => ['DE']
+            'countries' => ['DE'],
+            'isuapm' => true
         ],
         // uAPM iDEAL
         'oxidpaypal_ideal' => [
@@ -121,7 +127,8 @@ final class Version20220112120100 extends AbstractMigration
                     'longdesc' => "Pay conveniently with iDEAL"
                 ]
             ],
-            'countries' => ['NL']
+            'countries' => ['NL'],
+            'isuapm' => true
         ],
         // uAPM Multibanco
         'oxidpaypal_multibanco' => [
@@ -135,7 +142,8 @@ final class Version20220112120100 extends AbstractMigration
                     'longdesc' => "Pay conveniently with Multibanco"
                 ]
             ],
-            'countries' => ['PT']
+            'countries' => ['PT'],
+            'isuapm' => true
         ],
         // uAPM Multibanco
         'oxidpaypal_mybank' => [
@@ -149,7 +157,8 @@ final class Version20220112120100 extends AbstractMigration
                     'longdesc' => "Pay conveniently with MyBank"
                 ]
             ],
-            'countries' => ['IT']
+            'countries' => ['IT'],
+            'isuapm' => true
         ],
         // uAPM OXXO
         'oxidpaypal_oxxo' => [
@@ -163,7 +172,8 @@ final class Version20220112120100 extends AbstractMigration
                     'longdesc' => "Pay conveniently with OXXO"
                 ]
             ],
-            'countries' => ['MX']
+            'countries' => ['MX'],
+            'isuapm' => true
         ],
         // uAPM Przelewy24
         'oxidpaypal_przelewy24' => [
@@ -177,7 +187,8 @@ final class Version20220112120100 extends AbstractMigration
                     'longdesc' => "Pay conveniently with Przelewy24"
                 ]
             ],
-            'countries' => ['PL']
+            'countries' => ['PL'],
+            'isuapm' => true
         ],
         // uAPM Sofort
         'oxidpaypal_sofort' => [
@@ -191,7 +202,8 @@ final class Version20220112120100 extends AbstractMigration
                     'longdesc' => "Pay conveniently with Sofort"
                 ]
             ],
-            'countries' => ['DE', 'AT', 'BE', 'IT', 'NL', 'UK', 'ES']
+            'countries' => ['DE', 'AT', 'BE', 'IT', 'NL', 'UK', 'ES'],
+            'isuapm' => true
         ],
         // uAPM Trustly
         'oxidpaypal_trustly' => [
@@ -205,7 +217,8 @@ final class Version20220112120100 extends AbstractMigration
                     'longdesc' => "Pay conveniently with Trustly"
                 ]
             ],
-            'countries' => ['SE', 'FI', 'NL', 'EE']
+            'countries' => ['SE', 'FI', 'NL', 'EE'],
+            'isuapm' => true
         ]
     ];
 
@@ -221,6 +234,7 @@ final class Version20220112120100 extends AbstractMigration
         $this->createPayPalSubscriptionProductTable($schema);
         $this->createPayPalSubscriptionTable($schema);
         $this->createPayPalOrderTable($schema);
+        $this->addColumnsToPaymentTable($schema);
         $this->createPayments($schema);
         $this->createPayment2Countries($schema);
         $this->createPayment2Deliverysets($schema);
@@ -447,6 +461,18 @@ final class Version20220112120100 extends AbstractMigration
         }
         if (!$order->hasIndex('OXORDERID')) {
             $order->addindex(['OXORDERID', 'OXORDERID']);
+        }
+    }
+
+    /**
+     * add Columns to payment table
+     */
+    protected function addColumnsToPaymentTable(Schema $schema): void
+    {
+        $payment = $schema->getTable('oxpayments');
+
+        if (!$payment->hasColumn('OSCPAYPAL_ISUAPM')) {
+            $payment->addColumn('OSCPAYPAL_ISUAPM', Types::INTEGER, ['columnDefinition' => 'tinyint(1) NOT NULL', 'default' => '0']);
         }
     }
 
