@@ -11,6 +11,7 @@ use OxidEsales\Eshop\Application\Controller\Admin\AdminController;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Config;
+use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 
@@ -21,22 +22,10 @@ class PayPalConfigController extends AdminController
 {
     use ServiceContainer;
 
-    protected const SIGN_UP_HOST = 'https://www.sandbox.paypal.com/bizsignup/partner/entry';
-
     /**
      * @var string Current class template name.
      */
     protected $_sThisTemplate = 'pspaypalconfig.tpl';
-
-    /**
-     * Get webhook controller url
-     *
-     * @return string
-     */
-    public function getWebhookControllerUrl(): string
-    {
-        return Registry::getUtilsUrl()->getActiveShopHost() . '/index.php?cl=PayPalWebhookController';
-    }
 
     /**
      * @return string
@@ -68,7 +57,8 @@ class PayPalConfigController extends AdminController
 
         return $this->buildSignUpLink(
             $config->getLiveOxidPartnerId(),
-            $config->getLiveOxidClientId()
+            $config->getLiveOxidClientId(),
+            PayPalConstants::PAYPAL_ONBOARDING_LIVE_URL
         );
     }
 
@@ -80,10 +70,10 @@ class PayPalConfigController extends AdminController
     public function getSandboxSignUpMerchantIntegrationLink(): string
     {
         $config = new Config();
-
         return $this->buildSignUpLink(
             $config->getSandboxOxidPartnerId(),
-            $config->getSandboxOxidClientId()
+            $config->getSandboxOxidClientId(),
+            PayPalConstants::PAYPAL_ONBOARDING_SANDBOX_URL
         );
     }
 
@@ -95,7 +85,7 @@ class PayPalConfigController extends AdminController
      *
      * @return string
      */
-    private function buildSignUpLink(string $partnerId, string $clientId): string
+    private function buildSignUpLink(string $partnerId, string $clientId, string $url): string
     {
         $params = [
             'sellerNonce' => $this->createNonce(),
@@ -108,7 +98,7 @@ class PayPalConfigController extends AdminController
             'features' => 'PAYMENT,REFUND,ADVANCED_TRANSACTIONS_SEARCH'
         ];
 
-        return self::SIGN_UP_HOST . '?' . http_build_query($params);
+        return $url . '?' . http_build_query($params);
     }
 
     /**

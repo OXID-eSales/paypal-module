@@ -23,6 +23,7 @@ class PayPalLogin extends Page
     public $userLoginEmail = '#email';
     public $userPassword = '#password';
 
+    public $continueButton = '#continueButton';
     public $nextButton = '#btnNext';
     public $loginButton = '#btnLogin';
     public $newConfirmButton = '#confirmButtonTop';
@@ -54,6 +55,8 @@ class PayPalLogin extends Page
     public $splitPassword = '#splitPassword';
     public $splitEmail = '#splitEmail';
     public $rememberedEmail = "//div[@class='profileRememberedEmail']";
+
+    public $agreeConnectButton = '#agreeAndConnectButton';
 
     /** @var string */
     private $token = '';
@@ -176,6 +179,38 @@ class PayPalLogin extends Page
 
         if ($I->seePageHasElement($this->oneTouchNotNowLink)) {
             $I->retryClick($this->oneTouchNotNowLink);
+        }
+
+        $this->waitForSpinnerDisappearance();
+        $this->removeCookieConsent();
+        $this->waitForSpinnerDisappearance();
+        $I->wait(3);
+    }
+
+
+    public function loginToPayPalOnboarding(string $userName, string $userPassword): void
+    {
+        $I = $this->user;
+
+        $this->waitForPayPalPage();
+        $this->removeCookieConsent();
+
+        if ($I->seePageHasElement($this->userLoginEmail)) {
+            $I->waitForElementVisible($this->userLoginEmail, 5);
+            $I->fillField($this->userLoginEmail, $userName);
+
+            if ($I->seePageHasElement($this->continueButton)) {
+                $I->retryClick($this->continueButton);
+            }
+            $I->waitForElementVisible($this->userPassword, 10);
+            $I->retryFillField($this->userPassword, $userPassword);
+            $I->seeElement($this->loginButton);
+            $I->retryClick($this->loginButton);
+        }
+
+        if ($I->seePageHasElement($this->userPassword)) {
+            $I->fillField($this->userPassword, $userPassword);
+            $I->retryClick($this->loginButton);
         }
 
         $this->waitForSpinnerDisappearance();

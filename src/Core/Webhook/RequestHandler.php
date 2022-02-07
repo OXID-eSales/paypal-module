@@ -13,8 +13,8 @@ use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier as VerificationService;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher as WebhookDispatcher;
-use OxidSolutionCatalysts\PayPal\Core\Exception\WebhookEventException;
-use OxidSolutionCatalysts\PayPal\Core\Exception\WebhookEventTypeException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 
 final class RequestHandler

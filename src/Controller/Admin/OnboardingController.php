@@ -9,73 +9,45 @@ namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
 
 use OxidEsales\Eshop\Application\Controller\Admin\AdminController;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPalApi\Client;
-use OxidSolutionCatalysts\PayPalApi\Onboarding;
-use OxidSolutionCatalysts\PayPal\Core\Config;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\EventCreation;
+use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPal\Core\RequestReader;
+use OxidSolutionCatalysts\PayPal\Core\Onboarding\Onboarding;
+use OxidSolutionCatalysts\PayPal\Core\Onboarding\Webhook;
 
 class OnboardingController extends AdminController
 {
+    use ServiceContainer;
+
     /**
      * Get ClientID, ClientSecret, WebhookID
      */
     public function autoConfigurationFromCallback()
     {
-        //TODO: make this testable
+        $credentials = [];
+        $webhookId = '';
 
-        $in = file_get_contents('php://input');
-        $callBackData = json_decode($in);
-        $authCode = $callBackData->authCode;
-        $sharedId = $callBackData->sharedId;
-        $isSandbox = $callBackData->isSandBox;
-        $nonce = Registry::getSession()->getVariable('PAYPAL_MODULE_NONCE');
-
-        $config = new Config();
-        $oxidConfig = Registry::getConfig();
-        $oxidConfig->setConfigParam('blPayPalSandboxMode', $isSandbox);
-        $url = $config->isSandbox() ? Client::SANDBOX_URL : Client::PRODUCTION_URL;
-
-        $result = [];
-
+        //credentials
         try {
-            $client = new Onboarding(
-                Registry::getLogger(),
-                $url,
-                $config->getTechnicalClientId(),
-                $config->getTechnicalClientSecret(),
-                $config->getTechnicalPartnerId()
-            );
-            $client->authAfterWebLogin($authCode, $sharedId, $nonce);
-            Registry::getSession()->deleteVariable('PAYPAL_MODULE_NONCE');
-
-            // save credentials
-            $credentials = $client->getCredentials();
-
-            if ($isSandbox) {
-                $oxidConfig->setConfigParam('sPayPalSandboxClientId', $credentials['client_id']);
-                $oxidConfig->setConfigParam('sPayPalSandboxClientSecret', $credentials['client_secret']);
-            } else {
-                $oxidConfig->setConfigParam('sPayPalClientId', $credentials['client_id']);
-                $oxidConfig->setConfigParam('sPayPalClientSecret', $credentials['client_secret']);
-            }
-            $result = [
-                'client_id'     => $credentials['client_id'],
-                'client_secret' => $credentials['client_secret']
-            ];
-
-            // create WebHook and setup WebHookEvents
-            $webHook = oxNew(EventCreation::class);
-            $webHookResponse = $webHook->create();
-
-            if ($isSandbox) {
-                $oxidConfig->setConfigParam('sPayPalSandboxWebhookId', $webHookResponse['id']);
-            } else {
-                $oxidConfig->setConfigParam('sPayPalWebhookId', $webHookResponse['id']);
-            }
-            $result['webhook_id'] = $webHookResponse['id'];
-        } catch (ApiException $exception) {
+            $requestReader = oxNew(RequestReader::class);
+            /** @var Onboarding $handler */
+            $handler = oxNew(Onboarding::class, $requestReader);
+            $credentials = $handler->autoConfigurationFromCallback();
+        } catch (\Exception $exception) {
             Registry::getLogger()->error($exception->getMessage(), [$exception]);
         }
+
+        //webhook registration
+        try {
+            /** @var Webhook $handler */
+            $handler = oxNew(Webhook::class);
+            $webhookId = $handler->ensureWebhook();
+        } catch (OnboardingException $exception) {
+            Registry::getUtilsView()->addErrorToDisplay($exception);
+        } catch (\Exception $exception) {
+            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+        }
+        $result = array_merge($credentials, ['webhook_id' => $webhookId]);
 
         header('Content-Type: application/json; charset=UTF-8');
         Registry::getUtils()->showMessageAndExit(json_encode($result));

@@ -171,6 +171,38 @@ class ModuleSettings
         $this->moduleSettingBridge->save($name, $value, Module::MODULE_ID);
     }
 
+    public function saveSandboxMode(bool $mode): void
+    {
+        $this->save('blPayPalSandboxMode', $mode);
+    }
+
+    public function saveClientId(string $clientId): void
+    {
+        if ($this->isSandbox()) {
+            $this->save('sPayPalSandboxClientId', $clientId);
+        } else {
+            $this->save('sPayPalClientId', $clientId);
+        }
+    }
+
+    public function saveClientSecret(string $clientSecret): void
+    {
+        if ($this->isSandbox()) {
+            $this->save('sPayPalSandboxClientSecret', $clientSecret);
+        } else {
+            $this->save('sPayPalClientSecret', $clientSecret);
+        }
+    }
+
+    public function saveWebhookId(string $webhookId): void
+    {
+        if ($this->isSandbox()) {
+            $this->save('sPayPalSandboxWebhookId', $webhookId);
+        } else {
+            $this->save('sPayPalWebhookId', $webhookId);
+        }
+    }
+
     /**
      * @return mixed
      */

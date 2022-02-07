@@ -10,7 +10,7 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Model\BaseModel;
 use OxidEsales\Eshop\Application\Model\Article as EshopModelArticle;
-use OxidSolutionCatalysts\PayPal\Core\Exception\NotFound;
+use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 
 class PayPalOrder extends BaseModel
 {

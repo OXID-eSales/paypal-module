@@ -111,30 +111,11 @@ final class AdminCest extends BaseCest
         $I->dontSee(Translator::translate('OSC_PAYPAL_ERROR'));
     }
 
-    public function testOnboarding(AcceptanceTester $I): void
-    {
-        $I->wantToTest('PayPal onboarding');
-
-        $I->markTestIncomplete('TODO');
-
-        $I->loginAdmin();
-        $adminPanel = new PayPalAdmin($I);
-        $I->amOnUrl(str_replace('oscpaypalconfig', 'oscpaypalonboarding', $adminPanel->grabConfigurationLink()) . '&fnc=autoConfigurationFromCallback');
-    }
-
     public function checkTransactionInAdminForNonPayPalOrder(AcceptanceTester $I)
     {
         $I->wantToTest('seeing PayPal transactions in admin order for non PayPal order');
 
         $this->openOrderPayPal($I, '1');
         $I->see(Translator::translate('OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'));
-    }
-
-    private function checkWeAreStillInAdminPanel(AcceptanceTester $I): void
-    {
-        //we did not end up on shop start page
-        $I->dontSee(Translator::translate('HOME'));
-        $I->dontSee(Translator::translate('START_BARGAIN_HEADER'));
-        $I->dontSee(Translator::translate('Maintenance mode'));
     }
 }

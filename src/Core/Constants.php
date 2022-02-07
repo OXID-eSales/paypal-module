@@ -16,4 +16,7 @@ class Constants
     public const PAYPAL_ORDER_INTENT_CAPTURE = 'CAPTURE';
     public const SESSION_CHECKOUT_ORDER_ID = 'paypal-checkout-session';
     public const PAYPAL_ORDER_REFERENCE_ID = 'OXID_REFERENCE';
+
+    public const PAYPAL_ONBOARDING_SANDBOX_URL = 'https://www.sandbox.paypal.com/bizsignup/partner/entry';
+    public const PAYPAL_ONBOARDING_LIVE_URL = 'https://www.paypal.com/bizsignup/partner/entry';
 }

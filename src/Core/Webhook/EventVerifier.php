@@ -12,7 +12,7 @@ use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Service\GenericService;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
-use OxidSolutionCatalysts\PayPal\Core\Exception\WebhookEventVerificationException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventVerificationException;
 
 /**
  * Class EventVerifier

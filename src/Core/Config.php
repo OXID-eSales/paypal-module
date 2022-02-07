@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPalApi\Client;
 
 /**
  * Class Config
@@ -311,7 +312,22 @@ class Config
     public function getWebhookControllerUrl(): string
     {
         return html_entity_decode(
-            Registry::getConfig()->getCurrentShopUrl(false) . 'index.php?cl=PayPalWebhookController'
+            Registry::getConfig()->getCurrentShopUrl(false) . 'index.php?cl=oscpaypalwebhook'
         );
+    }
+
+    public function getClientUrl(): string
+    {
+        return $this->isSandbox() ? $this->getClientSandboxUrl() : $this->getClientLiveUrl();
+    }
+
+    public function getClientLiveUrl(): string
+    {
+        return Client::PRODUCTION_URL;
+    }
+
+    public function getClientSandboxUrl(): string
+    {
+        return Client::SANDBOX_URL;
     }
 }

@@ -11,8 +11,8 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\TestingLibrary\UnitTestCase;
-use OxidSolutionCatalysts\PayPal\Core\Exception\WebhookEventException;
-use OxidSolutionCatalysts\PayPal\Core\Exception\WebhookEventTypeException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher as WebhookEventDispatcher;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutOrderCompletedHandler;
