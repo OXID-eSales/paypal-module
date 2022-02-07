@@ -12,12 +12,18 @@ use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\UtilsObject;
+use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch;
+use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\Unzer\Exception\Redirect;
+use OxidSolutionCatalysts\Unzer\Exception\RedirectWithMessage;
 
 /**
  * Class PaymentGateway
@@ -48,7 +54,70 @@ class PaymentGateway extends PaymentGateway_parent
         if ($this->getSessionPaymentId() === 'oxidpaypal') {
             $success = $this->doAuthorizePayPalPayment($order);
         }
-/*
+        elseif (PayPalDefinitions::isUAPMPayment($this->getSessionPaymentId())) {
+
+            // TODO: this is a "copy" of OxidSolutionCatalysts\PayPal\Controller\ProxyController::createOrder()
+
+            /** @var ServiceFactory $serviceFactory */
+            $serviceFactory = Registry::get(ServiceFactory::class);
+            $service = $serviceFactory->getOrderService();
+
+            if (!($checkoutOrderId = PayPalSession::getcheckoutOrderId())) {
+
+                /** @var OrderRequestFactory $requestFactory */
+                $requestFactory = Registry::get(OrderRequestFactory::class);
+                $request = $requestFactory->getRequest(
+                    Registry::getSession()->getBasket(),
+                    OrderRequest::INTENT_CAPTURE
+                );
+
+                try {
+                    $response = $service->createOrder($request, '', '');
+                } catch (Exception $exception) {
+                    Registry::getLogger()->error("Error on order create call.", [$exception]);
+                }
+
+                if ($response->id) {
+                    $checkoutOrderId = $response->id;
+                    PayPalSession::storePayPalOrderId($checkoutOrderId);
+                }
+            }
+            if ($checkoutOrderId) {
+                try {
+                    /** @var OrderRequestFactory $requestFactory */
+                    $requestFactory = Registry::get(ConfirmOrderRequestFactory::class);
+                    $request = $requestFactory->getRequest(
+                        Registry::getSession()->getBasket(),
+                        PayPalDefinitions::getPaymentSourceRequestName($this->getSessionPaymentId())
+                    );
+
+                    // toDo: Clearing with Marcus. Optional. Verifies that the payment originates from a valid, user-consented device and application. Reduces fraud and decreases declines. Transactions that do not include a client metadata ID are not eligible for PayPal Seller Protection.
+                    $payPalClientMetadataId = '';
+
+                    $response = $service->confirmTheOrder(
+                        $payPalClientMetadataId,
+                        $checkoutOrderId,
+                        $request
+                    );
+
+                    if ($response->links) {
+                        try {
+                            foreach ($response->links as $links) {
+                                if ($links->rel === 'payer_action') {
+                                    throw new Redirect($links->href);
+                                }
+                            }
+                        } catch (Redirect $e) {
+                            throw $e;
+                        }
+                    }
+                } catch (Exception $exception) {
+                    Registry::getLogger()->error("Error on confirm order call.", [$exception]);
+                }
+            }
+        }
+
+        /*
         if (
             ($session->getVariable('paymentid') == 'oxidpaypal')
              || ($session->getBasket()->getPaymentId() == 'oxidpaypal')
