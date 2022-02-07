@@ -5,7 +5,7 @@
  * See LICENSE file for license details.
  */
 
-namespace OxidSolutionCatalysts\PayPal\Exception;
+namespace OxidSolutionCatalysts\PayPal\Core\Exception;
 
 class Redirect extends PayPalException
 {

@@ -22,8 +22,8 @@ use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
-use OxidSolutionCatalysts\Unzer\Exception\Redirect;
-use OxidSolutionCatalysts\Unzer\Exception\RedirectWithMessage;
+use OxidSolutionCatalysts\PayPal\Core\Exception\Redirect;
+use OxidSolutionCatalysts\PayPal\Core\Exception\RedirectWithMessage;
 
 /**
  * Class PaymentGateway
@@ -101,18 +101,17 @@ class PaymentGateway extends PaymentGateway_parent
                     );
 
                     if ($response->links) {
-                        try {
-                            foreach ($response->links as $links) {
-                                if ($links->rel === 'payer_action') {
-                                    throw new Redirect($links->href);
-                                }
+                        foreach ($response->links as $links) {
+                            if ($links->rel === 'payer_action') {
+                                throw new Redirect($links->href);
                             }
-                        } catch (Redirect $e) {
-                            throw $e;
                         }
                     }
-                } catch (Exception $exception) {
-                    Registry::getLogger()->error("Error on confirm order call.", [$exception]);
+                } catch (Exception | Redirect $e) {
+                    throw new RedirectWithMessage(
+                        Registry::getConfig()->getSslShopUrl() . 'index.php?cl=payment',
+                        $e->getMessage()
+                    );
                 }
             }
         }
