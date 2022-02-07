@@ -16,6 +16,7 @@ use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Application\Model\User;
+use OxidEsales\Eshop\Application\Model\Payment;
 use OxidEsales\Eshop\Application\Model\PaymentGateway;
 use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Component\UserComponent as PayPalUserComponent;
@@ -42,6 +43,7 @@ use OxidSolutionCatalysts\PayPal\Model\Basket as PayPalBasket;
 use OxidSolutionCatalysts\PayPal\Model\BasketItem as PayPalBasketItem;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Model\User as PayPalUser;
+use OxidSolutionCatalysts\PayPal\Model\Payment as PayPalPayment;
 use OxidSolutionCatalysts\PayPal\Model\PaymentGateway as PayPalPaymentGateway;
 use OxidSolutionCatalysts\PayPal\Model\Article as PayPalArticle;
 
@@ -72,6 +74,7 @@ $aModule = [
         Basket::class => PayPalBasket::class,
         BasketItem::class => PayPalBasketItem::class,
         Article::class => PayPalArticle::class,
+        Payment::class => PayPalPayment::class,
         PaymentGateway::class => PayPalPaymentGateway::class,
         ArticleList::class => ArticleListController::class,
         ArticleDetailsController::class => PayPalArticleDetailsController::class,

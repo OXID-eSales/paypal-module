@@ -15,6 +15,7 @@ use Doctrine\Migrations\AbstractMigration;
 use OxidEsales\Eshop\Core\Config;
 use OxidEsales\Eshop\Core\ConfigFile;
 use OxidEsales\Facts\Facts;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 
 /**
  * Auto-generated Migration: Please modify to your needs!
@@ -23,204 +24,6 @@ final class Version20220112120100 extends AbstractMigration
 {
     protected $activeCountries = null;
     protected $languageIds = null;
-
-    private const PAYPAL_PAYMENT_DEFINTIONS = [
-        //Standard PayPal
-        'oxidpaypal' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => "PayPal v2",
-                    'longdesc' => "Bezahlen Sie bequem mit PayPal"
-                ],
-                'en' => [
-                    'desc' => "PayPal v2",
-                    'longdesc' => "Pay conveniently with PayPal"
-                ]
-            ],
-            'countries' => [],
-            'isuapm' => false
-        ],
-        // uAPM Bancontact
-        'oxidpaypal_bancontact' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => "Bancontact (über PayPal)",
-                    'longdesc' => "Bezahlen Sie bequem mit Bancontact"
-                ],
-                'en' => [
-                    'desc' => "Bancontact (via PayPal)",
-                    'longdesc' => "Pay conveniently with Bancontact"
-                ]
-            ],
-            'countries' => ['BE'],
-            'isuapm' => true
-        ],
-        // uAPM Boleto Bancário
-        'oxidpaypal_boleto' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => "Boleto Bancário (über PayPal)",
-                    'longdesc' => "Bezahlen Sie bequem mit Boleto Bancário"
-                ],
-                'en' => [
-                    'desc' => "Boleto Bancário (via PayPal)",
-                    'longdesc' => "Pay conveniently with Boleto Bancário"
-                ]
-            ],
-            'countries' => ['BR'],
-            'isuapm' => true
-        ],
-        // uAPM BLIK
-        'oxidpaypal_blik' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => "BLIK (über PayPal)",
-                    'longdesc' => "Bezahlen Sie bequem mit BLIK"
-                ],
-                'en' => [
-                    'desc' => "BLIK (via PayPal)",
-                    'longdesc' => "Pay conveniently with BLIK"
-                ]
-            ],
-            'countries' => ['PL'],
-            'isuapm' => true
-        ],
-        // uAPM EPS
-        'oxidpaypal_eps' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => "EPS (über PayPal)",
-                    'longdesc' => "Bezahlen Sie bequem mit EPS"
-                ],
-                'en' => [
-                    'desc' => "EPS (via PayPal)",
-                    'longdesc' => "Pay conveniently with EPS"
-                ]
-            ],
-            'countries' => ['AT'],
-            'isuapm' => true
-        ],
-        // uAPM GiroPay
-        'oxidpaypal_giropay' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => "GiroPay (über PayPal)",
-                    'longdesc' => "Bezahlen Sie bequem mit GiroPay"
-                ],
-                'en' => [
-                    'desc' => "GiroPay (via PayPal)",
-                    'longdesc' => "Pay conveniently with GiroPay"
-                ]
-            ],
-            'countries' => ['DE'],
-            'isuapm' => true
-        ],
-        // uAPM iDEAL
-        'oxidpaypal_ideal' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => "iDEAL (über PayPal)",
-                    'longdesc' => "Bezahlen Sie bequem mit iDEAL"
-                ],
-                'en' => [
-                    'desc' => "iDEAL (via PayPal)",
-                    'longdesc' => "Pay conveniently with iDEAL"
-                ]
-            ],
-            'countries' => ['NL'],
-            'isuapm' => true
-        ],
-        // uAPM Multibanco
-        'oxidpaypal_multibanco' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => "Multibanco (über PayPal)",
-                    'longdesc' => "Bezahlen Sie bequem mit Multibanco"
-                ],
-                'en' => [
-                    'desc' => "Multibanco (via PayPal)",
-                    'longdesc' => "Pay conveniently with Multibanco"
-                ]
-            ],
-            'countries' => ['PT'],
-            'isuapm' => true
-        ],
-        // uAPM Multibanco
-        'oxidpaypal_mybank' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => "MyBank (über PayPal)",
-                    'longdesc' => "Bezahlen Sie bequem mit MyBank"
-                ],
-                'en' => [
-                    'desc' => "MyBank (via PayPal)",
-                    'longdesc' => "Pay conveniently with MyBank"
-                ]
-            ],
-            'countries' => ['IT'],
-            'isuapm' => true
-        ],
-        // uAPM OXXO
-        'oxidpaypal_oxxo' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => "OXXO (über PayPal)",
-                    'longdesc' => "Bezahlen Sie bequem mit OXXO"
-                ],
-                'en' => [
-                    'desc' => "OXXO (via PayPal)",
-                    'longdesc' => "Pay conveniently with OXXO"
-                ]
-            ],
-            'countries' => ['MX'],
-            'isuapm' => true
-        ],
-        // uAPM Przelewy24
-        'oxidpaypal_przelewy24' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => "Przelewy24 (über PayPal)",
-                    'longdesc' => "Bezahlen Sie bequem mit Przelewy24"
-                ],
-                'en' => [
-                    'desc' => "Przelewy24 (via PayPal)",
-                    'longdesc' => "Pay conveniently with Przelewy24"
-                ]
-            ],
-            'countries' => ['PL'],
-            'isuapm' => true
-        ],
-        // uAPM Sofort
-        'oxidpaypal_sofort' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => "Sofort (über PayPal)",
-                    'longdesc' => "Bezahlen Sie bequem mit Sofort"
-                ],
-                'en' => [
-                    'desc' => "Sofort (via PayPal)",
-                    'longdesc' => "Pay conveniently with Sofort"
-                ]
-            ],
-            'countries' => ['DE', 'AT', 'BE', 'IT', 'NL', 'UK', 'ES'],
-            'isuapm' => true
-        ],
-        // uAPM Trustly
-        'oxidpaypal_trustly' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => "Trustly (über PayPal)",
-                    'longdesc' => "Bezahlen Sie bequem mit Trustly"
-                ],
-                'en' => [
-                    'desc' => "Trustly (via PayPal)",
-                    'longdesc' => "Pay conveniently with Trustly"
-                ]
-            ],
-            'countries' => ['SE', 'FI', 'NL', 'EE'],
-            'isuapm' => true
-        ]
-    ];
 
     public function __construct($version)
     {
@@ -234,7 +37,6 @@ final class Version20220112120100 extends AbstractMigration
         $this->createPayPalSubscriptionProductTable($schema);
         $this->createPayPalSubscriptionTable($schema);
         $this->createPayPalOrderTable($schema);
-        $this->addColumnsToPaymentTable($schema);
         $this->createPayments($schema);
         $this->createPayment2Countries($schema);
         $this->createPayment2Deliverysets($schema);
@@ -465,23 +267,11 @@ final class Version20220112120100 extends AbstractMigration
     }
 
     /**
-     * add Columns to payment table
-     */
-    protected function addColumnsToPaymentTable(Schema $schema): void
-    {
-        $payment = $schema->getTable('oxpayments');
-
-        if (!$payment->hasColumn('OSCPAYPAL_ISUAPM')) {
-            $payment->addColumn('OSCPAYPAL_ISUAPM', Types::INTEGER, ['columnDefinition' => 'tinyint(1) NOT NULL', 'default' => '0']);
-        }
-    }
-
-    /**
      * create payments
      */
     protected function createPayments(Schema $schema): void
     {
-        foreach (self::PAYPAL_PAYMENT_DEFINTIONS as $paymentId => $paymentDefinitions) {
+        foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
             $active = 0;
             // undefined countries mean everything is allowed
             if (!count($paymentDefinitions['countries'])) {
@@ -523,7 +313,7 @@ final class Version20220112120100 extends AbstractMigration
      */
     protected function createPayment2Countries(Schema $schema): void
     {
-        foreach (self::PAYPAL_PAYMENT_DEFINTIONS as $paymentId => $paymentDefinitions) {
+        foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
             $this->addSql(
                 "DELETE FROM `oxobject2payment` WHERE `OXPAYMENTID` = ? and `OXTYPE` = 'oxcountry'",
                 [$paymentId]
@@ -544,7 +334,7 @@ final class Version20220112120100 extends AbstractMigration
      */
     protected function createPayment2Deliverysets(Schema $schema): void
     {
-        foreach (self::PAYPAL_PAYMENT_DEFINTIONS as $paymentId => $paymentDefinitions) {
+        foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
             $this->addSql(
                 "DELETE FROM `oxobject2payment` WHERE `OXPAYMENTID` = ? and `OXTYPE` = 'oxdelset'",
                 [$paymentId]
