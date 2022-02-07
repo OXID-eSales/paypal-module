@@ -107,6 +107,9 @@ class PaymentGateway extends PaymentGateway_parent
                             }
                         }
                     }
+                    else {
+                        throw new \Exception('uAPM-Payment something is wrong');
+                    }
                 } catch (Exception | Redirect $e) {
                     throw new RedirectWithMessage(
                         Registry::getConfig()->getSslShopUrl() . 'index.php?cl=payment',
