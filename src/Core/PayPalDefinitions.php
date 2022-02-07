@@ -114,7 +114,7 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['NL'],
-            'uapmpaymentsource' => 'bancontact'
+            'uapmpaymentsource' => 'ideal'
         ],
         // uAPM Multibanco
         'oxidpaypal_multibanco' => [
@@ -174,7 +174,7 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['PL'],
-            'uapmpaymentsource' => 'przelewy24'
+            'uapmpaymentsource' => 'p24'
         ],
         // uAPM Sofort
         'oxidpaypal_sofort' => [
@@ -216,7 +216,7 @@ final class PayPalDefinitions
         return (isset(self::PAYPAL_DEFINTIONS[$oxid]['uapmpaymentsource']));
     }
 
-    public static function getUAPMPaymentSource(string $oxid) : string {
+    public static function getPaymentSourceRequestName(string $oxid) : string {
         return self::isUAPMPayment($oxid) ?
             self::PAYPAL_DEFINTIONS[$oxid]['uapmpaymentsource'] :
             '';
