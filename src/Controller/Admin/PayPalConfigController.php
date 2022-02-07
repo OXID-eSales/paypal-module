@@ -21,7 +21,7 @@ class PayPalConfigController extends AdminController
 {
     use ServiceContainer;
 
-    public const SIGN_UP_HOST = 'https://www.sandbox.paypal.com/bizsignup/partner/entry'; //TODO: use env
+    protected const SIGN_UP_HOST = 'https://www.sandbox.paypal.com/bizsignup/partner/entry';
 
     /**
      * @var string Current class template name.
