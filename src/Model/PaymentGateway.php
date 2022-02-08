@@ -109,7 +109,7 @@ class PaymentGateway extends PaymentGateway_parent
 
                     if ($response->links) {
                         foreach ($response->links as $links) {
-                            if ($links->rel === 'payer_action') {
+                            if ($links->rel === 'payer-action') {
                                 throw new Redirect($links->href);
                             }
                         }
@@ -117,7 +117,9 @@ class PaymentGateway extends PaymentGateway_parent
                     else {
                         throw new \Exception('uAPM-Payment something is wrong');
                     }
-                } catch (Exception | Redirect $e) {
+                } catch (Redirect $e) {
+                    throw $e;
+                } catch (Exception $e) {
                     throw new RedirectWithMessage(
                         Registry::getConfig()->getSslShopUrl() . 'index.php?cl=payment',
                         $e->getMessage()
