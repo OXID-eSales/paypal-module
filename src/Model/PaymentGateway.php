@@ -109,9 +109,9 @@ class PaymentGateway extends PaymentGateway_parent
 
                     if ($response->links) {
                         foreach ($response->links as $links) {
-                            if ($links->rel === 'payer-action') {
-                                Registry::getLogger($links->href);
-                                throw new Redirect($links->href);
+                            if ($links['rel'] === 'payer-action') {
+                                //Registry::getLogger()->error($links['href']);
+                                throw new Redirect($links['href']);
                             }
                         }
                     }

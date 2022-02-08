@@ -9,6 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Core\Exception\Redirect;
 use OxidSolutionCatalysts\PayPal\Core\Exception\RedirectWithMessage;
 
@@ -30,9 +31,9 @@ class ShopControl extends ShopControl_parent
     } // @codeCoverageIgnore
 
     /**
-     * @param UnzerException $exception
+     * @param PayPalException $exception
      */
-    public function handleCustomPayPalException(UnzerException $exception): void
+    public function handleCustomPayPalException(PayPalException $exception): void
     {
         if ($exception instanceof RedirectWithMessage) {
             $this->handleRedirectWithMessageException($exception);
