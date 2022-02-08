@@ -1,0 +1,68 @@
+<?php
+
+/**
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
+ */
+
+namespace OxidSolutionCatalysts\PayPal\Core;
+
+use OxidEsales\Eshop\Core\DisplayError;
+use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Exception\Redirect;
+use OxidSolutionCatalysts\PayPal\Core\Exception\RedirectWithMessage;
+
+/**
+ * @mixin \OxidEsales\Eshop\Core\ShopControl
+ */
+class ShopControl extends ShopControl_parent
+{
+    /**
+     * @param StandardException $exception
+     */
+    protected function _handleBaseException($exception): void // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+    {
+        if ($exception instanceof PayPalException) {
+            $this->handleCustomPayPalException($exception);
+        } else {
+            parent::_handleBaseException($exception);
+        }
+    } // @codeCoverageIgnore
+
+    /**
+     * @param UnzerException $exception
+     */
+    public function handleCustomPayPalException(UnzerException $exception): void
+    {
+        if ($exception instanceof RedirectWithMessage) {
+            $this->handleRedirectWithMessageException($exception);
+        } elseif ($exception instanceof Redirect) {
+            $this->handleRedirectException($exception, false);
+        } else {
+            parent::_handleBaseException($exception);
+        }
+    } // @codeCoverageIgnore
+
+    /**
+     * @param Redirect $redirectException
+     * @param bool $blAddRedirectParam
+     */
+    protected function handleRedirectException(Redirect $redirectException, bool $blAddRedirectParam = true): void
+    {
+        Registry::getUtils()->redirect($redirectException->getDestination(), $blAddRedirectParam);
+    }
+
+    /**
+     * @param RedirectWithMessage $redirectException
+     */
+    protected function handleRedirectWithMessageException(RedirectWithMessage $redirectException): void
+    {
+        $displayError = oxNew(DisplayError::class);
+        $displayError->setMessage($redirectException->getMessageKey());
+        $displayError->setFormatParameters($redirectException->getMessageParams());
+
+        Registry::getUtilsView()->addErrorToDisplay($displayError);
+
+        $this->handleRedirectException($redirectException);
+    }
+}
