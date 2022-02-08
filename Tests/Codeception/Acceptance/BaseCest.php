@@ -33,6 +33,11 @@ abstract class BaseCest
         $I->updateConfigInDatabase('bl_perfLoadPrice', true, 'bool');
         $I->updateConfigInDatabase('iNewBasketItemMessage', false, 'bool');
         $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', false);
+
+        $I->updateModuleConfiguration('sPayPalSandboxClientId', $_ENV['sPayPalSandboxClientId']);
+        $I->updateModuleConfiguration('blPayPalSandboxMode', true);
+        $I->updateModuleConfiguration('sPayPalSandboxClientSecret', $_ENV['sPayPalSandboxClientSecret']);
+
         $this->ensureShopUserData($I);
         $this->enableExpressButtons($I);
     }

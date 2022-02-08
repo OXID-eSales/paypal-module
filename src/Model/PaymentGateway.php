@@ -8,18 +8,13 @@
 namespace OxidSolutionCatalysts\PayPal\Model;
 
 use Exception;
-use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\UtilsObject;
-use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
+use OxidSolutionCatalysts\PayPal\Core\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
@@ -27,7 +22,10 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Exception\Redirect;
 use OxidSolutionCatalysts\PayPal\Core\Exception\RedirectWithMessage;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
-use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
+
+use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
+use OxidSolutionCatalysts\PayPal\Core\Payment\Service as CorePaymentService;
 
 
 /**
@@ -43,8 +41,8 @@ class PaymentGateway extends PaymentGateway_parent
      /**
      * Executes payment, returns true on success.
      *
-     * @param double                               $amount Goods amount
-     * @param \OxidEsales\PayPalModule\Model\Order $order  User ordering object
+     * @param double          $amount Goods amount
+     * @param EshopModelOrder $order  User ordering object
      *
      * @return bool
      */
@@ -59,83 +57,10 @@ class PaymentGateway extends PaymentGateway_parent
         }
 
         if ($this->getSessionPaymentId() === 'oxidpaypal') {
-            $success = $this->doAuthorizePayPalPayment($order);
+            $success = $this->doExecutePayPalPayment($order);
+        } elseif (PayPalDefinitions::isUAPMPayment($this->getSessionPaymentId())) {
+            $this->doExecuteUAPMPayment();
         }
-        elseif (PayPalDefinitions::isUAPMPayment($this->getSessionPaymentId())) {
-
-            // TODO: this is a "copy" of OxidSolutionCatalysts\PayPal\Controller\ProxyController::createOrder()
-
-            /** @var ServiceFactory $serviceFactory */
-            $serviceFactory = Registry::get(ServiceFactory::class);
-            $service = $serviceFactory->getOrderService();
-
-            if (!($checkoutOrderId = PayPalSession::getcheckoutOrderId())) {
-
-                /** @var OrderRequestFactory $requestFactory */
-                $requestFactory = Registry::get(OrderRequestFactory::class);
-                $request = $requestFactory->getRequest(
-                    Registry::getSession()->getBasket(),
-                    OrderRequest::INTENT_CAPTURE
-                );
-
-                try {
-                    $response = $service->createOrder($request, '', '');
-                } catch (Exception $exception) {
-                    Registry::getLogger()->error("Error on order create call.", [$exception]);
-                }
-
-                if ($response->id) {
-                    $checkoutOrderId = $response->id;
-                    PayPalSession::storePayPalOrderId($checkoutOrderId);
-                }
-            }
-            if ($checkoutOrderId) {
-//                try {
-                    /** @var OrderRequestFactory $requestFactory */
-                    $requestFactory = Registry::get(ConfirmOrderRequestFactory::class);
-                    $request = $requestFactory->getRequest(
-                        Registry::getSession()->getBasket(),
-                        PayPalDefinitions::getPaymentSourceRequestName($this->getSessionPaymentId())
-                    );
-
-                    // toDo: Clearing with Marcus. Optional. Verifies that the payment originates from a valid, user-consented device and application. Reduces fraud and decreases declines. Transactions that do not include a client metadata ID are not eligible for PayPal Seller Protection.
-                    $payPalClientMetadataId = '';
-
-                    $response = $service->confirmTheOrder(
-                        $payPalClientMetadataId,
-                        $checkoutOrderId,
-                        $request
-                    );
-
-                    if ($response->links) {
-                        foreach ($response->links as $links) {
-                            if ($links['rel'] === 'payer-action') {
-                                //Registry::getLogger()->error($links['href']);
-                                throw new Redirect($links['href']);
-                            }
-                        }
-                    }
-                    else {
-                        throw new \Exception('uAPM-Payment something is wrong');
-                    }
-/*
-                } catch (Exception $e) {
-                    throw new RedirectWithMessage(
-                        Registry::getConfig()->getSslShopUrl() . 'index.php?cl=payment',
-                        $e->getMessage()
-                    );
-                }
-*/
-            }
-        }
-
-        /*
-        if (
-            ($session->getVariable('paymentid') == 'oxidpaypal')
-             || ($session->getBasket()->getPaymentId() == 'oxidpaypal')
-        ) {
-            $success = $this->doAuthorizePayment($order);
-        } */
 
         return $success;
     }
@@ -149,76 +74,90 @@ class PaymentGateway extends PaymentGateway_parent
         return $session->getVariable('paymentid') ?? $session->getBasket()->getPaymentId();
     }
 
-    /**
-     * Executes Authorize to PayPal
-     *
-     * @param Order $order  User ordering object
-     *
-     * @return bool
-     */
-    protected function doAuthorizePayPalPayment(&$order)
+    protected function doExecutePayPalPayment(EshopModelOrder $order): bool
+    {
+        /** @var CorePaymentService $paymentService */
+        $paymentService = $this->getPaymentService();
+
+        $success = false;
+
+        if ($checkoutOrderId = PayPalSession::getcheckoutOrderId()) {
+
+            // Update Order
+            try {
+                $paymentService->doPatchPayPalOrder(Registry::getSession()->getBasket(), $checkoutOrderId);
+            } catch (Exception $exception) {
+                Registry::getLogger()->error("Error on order patch call.", [$exception]);
+            }
+
+            // Capture Order
+            try {
+                $paymentService->doCapturePayPalOrder($order, $checkoutOrderId);
+            } catch (Exception $exception) {
+                Registry::getLogger()->error("Error on order capture call.", [$exception]);
+                throw oxNew(StandardException::class, 'OXPS_PAYPAL_ORDEREXECUTION_ERROR');
+            }
+
+            $success = true;
+
+            // destroy PayPal-Session
+            PayPalSession::storePayPalOrderId('');
+        }
+
+        return $success;
+    }
+
+    protected function getPaymentService(): CorePaymentService
+    {
+        return oxNew(CorePaymentService::class,
+            Registry::get(ServiceFactory::class),
+            Registry::get(PatchRequestFactory::class),
+            Registry::get(OrderRequestFactory::class),
+            Registry::get(ConfirmOrderRequestFactory::class)
+        );
+    }
+
+    protected function doCreateUAPMOrder(): bool
     {
         $success = false;
 
-        try {
-            // updating order state
-            if ($order) {
-                if ($checkoutOrderId = PayPalSession::getcheckoutOrderId()) {
+        $response = $this->getPaymentService()
+            ->doCreatePayPalOrder(
+                Registry::getSession()->getBasket(),
+                OrderRequest::INTENT_CAPTURE
+            );
 
-                    //TODO: refactor this method
-
-                    /** @var ServiceFactory $serviceFactory */
-                    $serviceFactory = Registry::get(ServiceFactory::class);
-                    $service = $serviceFactory->getOrderService();
-
-                    /** @var PatchRequestFactory $requestFactory */
-                    $requestFactory = Registry::get(PatchRequestFactory::class);
-                    $request = $requestFactory->getRequest(
-                        Registry::getSession()->getBasket()
-                    );
-
-                    // Update Order
-                    try {
-                        $response = $service->updateOrder($checkoutOrderId, $request);
-                    } catch (Exception $exception) {
-                        Registry::getLogger()->error("Error on order patch call.", [$exception]);
-                    }
-
-                    $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
-                    /** @var PayPalOrderModel $paypalOrder */
-                    $paypalOrder = $orderRepository->paypalOrderByShopAndPayPalId($order->getId(), $checkoutOrderId);
-
-                    // Capture Order
-                    try {
-                        $request = new OrderCaptureRequest();
-                        /** @var ApiOrderModel $result */
-                        $result = $service->capturePaymentForOrder('', $checkoutOrderId, $request, '');
-                        $paypalOrder->setStatus((string) $result->status);
-                        $paypalOrder->save();
-                    } catch (Exception $exception) {
-                        Registry::getLogger()->error("Error on order capture call.", [$exception]);
-                        throw oxNew(StandardException::class, 'OXPS_PAYPAL_ORDEREXECUTION_ERROR');
-                    }
-
-                    if (ApiOrderModel::STATUS_COMPLETED === $paypalOrder->getStatus()) {
-                        $order->markOrderPaid();
-                    }
-
-                    $success = true;
-                }
-            } else {
-                $exception = oxNew(StandardException::class, 'OXPS_PAYPAL_ORDEREXECUTION_ERROR');
-                throw $exception;
-            }
-        } catch (Exception $exception) {
-            Registry::getLogger()->error("Error on doAuthorizePayPalPayment call.", [$exception]);
-
-            Registry::getUtilsView()->addErrorToDisplay($exception);
+        if ($response->id) {
+            $success = true;
+            $checkoutOrderId = $response->id;
+            PayPalSession::storePayPalOrderId($checkoutOrderId);
         }
 
-        // destroy PayPal-Session
-        PayPalSession::storePayPalOrderId('');
-
         return $success;
+    }
+
+    /**
+     * @throws PayPalException
+     */
+    protected function doExecuteUAPMPayment(): void
+    {
+        //For UAPM payment we should not yet have a paypal order in session.
+        //We create a fresh paypal order at this point
+        if (!$this->doCreateUAPMOrder()) {
+            throw PayPalException::createPayPalOrderFail();
+        }
+        try {
+            $redirectLink = $this->getPaymentService()->doExecuteUAPM(
+                Registry::getSession()->getBasket(),
+                PayPalSession::getcheckoutOrderId(),
+                PayPalDefinitions::getPaymentSourceRequestName($this->getSessionPaymentId())
+            );
+        } catch (Exception $exception) {
+            $redirectLink = Registry::getConfig()->getSslShopUrl() . 'index.php?cl=payment';
+            //TODO: do we need to log this?
+            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+        }
+
+        throw new Redirect($redirectLink);
     }
 }

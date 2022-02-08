@@ -20,6 +20,9 @@ use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Email;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
+use OxidSolutionCatalysts\PayPal\Core\Payment\Service as CorePaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Core\Config;
@@ -48,23 +51,11 @@ class ProxyController extends FrontendController
         $this->addToBasket();
         $this->setPayPalPaymentMethod();
 
-        /** @var ServiceFactory $serviceFactory */
-        $serviceFactory = Registry::get(ServiceFactory::class);
-        $service = $serviceFactory->getOrderService();
-
-        /** @var OrderRequestFactory $requestFactory */
-        $requestFactory = Registry::get(OrderRequestFactory::class);
-        $request = $requestFactory->getRequest(
+        $response = $this->getPaymentService()->doCreatePayPalOrder(
             Registry::getSession()->getBasket(),
             OrderRequest::INTENT_CAPTURE,
             OrderRequestFactory::USER_ACTION_CONTINUE
         );
-
-        try {
-            $response = $service->createOrder($request, '', '');
-        } catch (Exception $exception) {
-            Registry::getLogger()->error("Error on order create call.", [$exception]);
-        }
 
         if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);
@@ -316,5 +307,16 @@ class ProxyController extends FrontendController
             //tell order controller to redirect to checkout login
             Registry::getSession()->setVariable('oscpaypal_payment_redirect', true);
         }
+    }
+
+    protected function getPaymentService(): CorePaymentService
+    {
+        return oxNew(
+            CorePaymentService::class,
+            Registry::get(ServiceFactory::class),
+            Registry::get(PatchRequestFactory::class),
+            Registry::get(OrderRequestFactory::class),
+            Registry::get(ConfirmOrderRequestFactory::class)
+        );
     }
 }

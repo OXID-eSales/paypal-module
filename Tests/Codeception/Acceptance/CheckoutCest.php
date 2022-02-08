@@ -24,9 +24,6 @@ use OxidEsales\Codeception\Module\Translation\Translator;
  */
 final class CheckoutCest extends BaseCest
 {
-    /**
-     * @group investigate
-     */
     public function checkoutWithPaypalStandard(AcceptanceTester $I): void
     {
         $I->wantToTest('checking out as logged in user with PayPal as payment method. Shop login and PayPal login mail are the same.');

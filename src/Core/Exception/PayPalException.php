@@ -11,4 +11,13 @@ use OxidEsales\Eshop\Core\Exception\StandardException;
 
 class PayPalException extends StandardException
 {
+    public static function createPayPalOrderFail(): self
+    {
+        return new self('Could not create PayPal order.');
+    }
+
+    public static function uAPMPaymentFail(): self
+    {
+        return new self('uAPM-Payment something is wrong');
+    }
 }
