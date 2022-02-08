@@ -40,7 +40,10 @@ class ProxyController extends FrontendController
 
     public function createOrder()
     {
-        $context = (string)Registry::getRequest()->getRequestEscapedParameter('context', 'continue');
+        if (PayPalSession::isPayPalOrderActive()) {
+            //TODO: improve
+            $this->outputJson(['ERROR' => 'PayPal session already started.']);
+        }
 
         $this->addToBasket();
         $this->setPayPalPaymentMethod();
@@ -72,49 +75,56 @@ class ProxyController extends FrontendController
 
     public function approveOrder()
     {
-        if ($orderId = (string)Registry::getRequest()->getRequestEscapedParameter('orderID')) {
-            /** @var ServiceFactory $serviceFactory */
-            $serviceFactory = Registry::get(ServiceFactory::class);
-            $service = $serviceFactory->getOrderService();
+        $orderId = (string) Registry::getRequest()->getRequestEscapedParameter('orderID');
+        $sessionOrderId = PayPalSession::getcheckoutOrderId();
 
-            try {
-                $response = $service->showOrderDetails($orderId, '');
-            } catch (Exception $exception) {
-                Registry::getLogger()->error("Error on order capture call.", [$exception]);
-            }
-
-            if (!$this->getUser()) {
-                $userRepository = $this->getServiceFromContainer(UserRepository::class);
-                $paypalEmail = (string) $response->payer->email_address;
-
-                if ($userRepository->userAccountExists($paypalEmail)) {
-                    //got a non-guest account, so either we log in or redirect customer to login step
-                    $this->handleUserLogin($response);
-                } else {
-                    //we need to use a guest account
-                    $userComponent = oxNew(UserComponent::class);
-                    $userComponent->createPayPalGuestUser($response);
-                }
-            }
-
-            if ($user = $this->getUser()) {
-                // add PayPal-Address as Delivery-Address
-                $deliveryAddress = PayPalAddressResponseToOxidAddress::mapAddress($response, 'oxaddress__');
-                $user->changeUserData(
-                    $user->oxuser__oxusername->value,
-                    null,
-                    null,
-                    $user->getInvoiceAddress(),
-                    $deliveryAddress
-                );
-
-                // use a deliveryaddress in oxid-checkout
-                Registry::getSession()->setVariable('blshowshipaddress', false);
-
-                $this->setPayPalPaymentMethod();
-            }
-            $this->outputJson($response);
+        if (!$orderId || ($orderId !== $sessionOrderId)) {
+            //TODO: improve
+            $this->outputJson(['ERROR' => 'OrderId not found in PayPal session.']);
         }
+
+        /** @var ServiceFactory $serviceFactory */
+        $serviceFactory = Registry::get(ServiceFactory::class);
+        $service = $serviceFactory->getOrderService();
+
+        try {
+            $response = $service->showOrderDetails($orderId, '');
+        } catch (Exception $exception) {
+            Registry::getLogger()->error("Error on order capture call.", [$exception]);
+        }
+
+        if (!$this->getUser()) {
+            $userRepository = $this->getServiceFromContainer(UserRepository::class);
+            $paypalEmail = (string) $response->payer->email_address;
+
+            if ($userRepository->userAccountExists($paypalEmail)) {
+                //got a non-guest account, so either we log in or redirect customer to login step
+                $this->handleUserLogin($response);
+            } else {
+                //we need to use a guest account
+                $userComponent = oxNew(UserComponent::class);
+                $userComponent->createPayPalGuestUser($response);
+            }
+        }
+
+        if ($user = $this->getUser()) {
+            // add PayPal-Address as Delivery-Address
+            $deliveryAddress = PayPalAddressResponseToOxidAddress::mapAddress($response, 'oxaddress__');
+            $user->changeUserData(
+                $user->oxuser__oxusername->value,
+                null,
+                null,
+                $user->getInvoiceAddress(),
+                $deliveryAddress
+            );
+
+            // use a deliveryaddress in oxid-checkout
+            Registry::getSession()->setVariable('blshowshipaddress', false);
+
+            $this->setPayPalPaymentMethod();
+        }
+        $this->outputJson($response);
+
     }
 
     public function createSubscriptionOrder()

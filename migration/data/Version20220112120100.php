@@ -251,6 +251,13 @@ final class Version20220112120100 extends AbstractMigration
                 ['columnDefinition' => 'char(32) collate latin1_general_ci', 'comment' => 'OXID (oxorder)']
             );
         }
+        if (!$order->hasColumn('OSCPAYPALSTATUS')) {
+            $order->addColumn(
+                'OSCPAYPALSTATUS',
+                Types::STRING,
+                ['columnDefinition' => 'char(32) collate latin1_general_ci', 'comment' => 'PAYPAL order status']
+            );
+        }
         if (!$order->hasColumn('OXTIMESTAMP')) {
             $order->addColumn(
                 'OXTIMESTAMP',
@@ -263,6 +270,9 @@ final class Version20220112120100 extends AbstractMigration
         }
         if (!$order->hasIndex('OXORDERID')) {
             $order->addindex(['OXORDERID', 'OXORDERID']);
+        }
+        if (!$order->hasIndex('ORDERID_PAYPALORDERID')) {
+            $order->addUniqueIndex(['OXORDERID', 'OXPAYPALORDERID']);
         }
     }
 

@@ -22,25 +22,10 @@ use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
  */
 final class InstallmentBannersCest extends BaseCest
 {
-
-    public function _before(AcceptanceTester $I): void
-    {
-        parent::_before($I);
-
-        $I->clearShopCache();
-        $I->setPayPalBannersVisibility(false);
-        $I->updateConfigInDatabase('blUseStock', false, 'bool');
-        $I->updateConfigInDatabase('bl_perfLoadPrice', true, 'bool');
-        $I->updateConfigInDatabase('iNewBasketItemMessage', false, 'bool');
-    }
-
     public function _after(AcceptanceTester $I): void
     {
         $I->setPayPalBannersVisibility(true);
         $I->setPayPalBannersFlowSelectors();
-        $I->updateConfigInDatabase('blUseStock', true, 'bool');
-        $I->updateConfigInDatabase('bl_perfLoadPrice', true, 'bool');
-        $I->updateConfigInDatabase('blShowNetPrice', false, 'bool');
 
         parent::_after($I);
     }

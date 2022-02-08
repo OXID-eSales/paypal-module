@@ -63,9 +63,14 @@ class PayPalLogin extends Page
         return $this->token;
     }
 
-    public function openPayPalApprovalPage(AcceptanceTester $I): self
+    /**
+     * NOTE: we use GET here  but in real life, POST is used for Buttons. GET will reuse any sid cookie
+     *       that's already present but it will not force the shop into returning a fresh sid cookie.
+     *       When testing details page express without former session, use openPayPalApprovalPageAsAnonymousUser method.
+     */
+    public function openPayPalApprovalPage(AcceptanceTester $I, string $addParams = ''): self
     {
-        $I->amOnPage('/index.php?cl=oscpaypalproxy&fnc=createOrder');
+        $I->amOnPage('/index.php?cl=oscpaypalproxy&fnc=createOrder' . $addParams);
         $I->see('checkout');
 
         $text = $I->grabTextFrom('//body');
@@ -76,6 +81,36 @@ class PayPalLogin extends Page
         foreach ($links as $link) {
             if ('approve' == $link->rel) {
                 $urlApproveWithPayPal = $link->href;
+            }
+        }
+
+        $I->amOnUrl($urlApproveWithPayPal);
+
+        return $this;
+    }
+
+    public function openPayPalApprovalPageAsAnonymousUser(
+        AcceptanceTester $I,
+        string $addParams = '',
+        array $headers = []
+    ): self
+    {
+        //send this as post request
+        $I->postTo(
+            $I->getShopUrl() . '/index.php?cl=oscpaypalproxy&fnc=createOrder&context=continue' . $addParams,
+            $headers
+        );
+
+        $sid = $I->extractSidFromResponseCookies();
+        $I->setCookie('sid', $sid);
+        $I->setCookie('sid_key', 'oxid');
+
+        $response = $I->grabJsonResponseAsArray();
+        $urlApproveWithPayPal = '';
+        $this->token = (string) $response['id'];
+        foreach ($response['links'] as $link) {
+            if ('approve' == $link['rel']) {
+                $urlApproveWithPayPal = $link['href'];
             }
         }
 

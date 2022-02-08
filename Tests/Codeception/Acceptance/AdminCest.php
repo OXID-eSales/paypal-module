@@ -122,6 +122,14 @@ final class AdminCest extends BaseCest
         $I->amOnUrl(str_replace('oscpaypalconfig', 'oscpaypalonboarding', $adminPanel->grabConfigurationLink()) . '&fnc=autoConfigurationFromCallback');
     }
 
+    public function checkTransactionInAdminForNonPayPalOrder(AcceptanceTester $I)
+    {
+        $I->wantToTest('seeing PayPal transactions in admin order for non PayPal order');
+
+        $this->openOrderPayPal($I, '1');
+        $I->see(Translator::translate('OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'));
+    }
+
     private function checkWeAreStillInAdminPanel(AcceptanceTester $I): void
     {
         //we did not end up on shop start page

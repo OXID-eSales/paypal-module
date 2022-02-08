@@ -20,29 +20,13 @@ use OxidEsales\Codeception\Module\Translation\Translator;
  * @group osc_paypal
  * @group osc_paypal_checkout
  * @group osc_paypal_checkout_standard
+ * @group osc_paypal_remote_login
  */
 final class CheckoutCest extends BaseCest
 {
-    public function _before(AcceptanceTester $I): void
-    {
-        parent::_before($I);
-
-        $I->clearShopCache();
-        $I->setPayPalBannersVisibility(false);
-        $I->updateConfigInDatabase('blUseStock', false, 'bool');
-        $I->updateConfigInDatabase('bl_perfLoadPrice', true, 'bool');
-        $I->updateConfigInDatabase('iNewBasketItemMessage', false, 'bool');
-        $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', false);
-        $this->ensureShopUserData($I);
-    }
-
-    public function _after(AcceptanceTester $I): void
-    {
-        $this->ensureShopUserData($I);
-
-        parent::_after($I);
-    }
-
+    /**
+     * @group investigate
+     */
     public function checkoutWithPaypalStandard(AcceptanceTester $I): void
     {
         $I->wantToTest('checking out as logged in user with PayPal as payment method. Shop login and PayPal login mail are the same.');
@@ -67,6 +51,7 @@ final class CheckoutCest extends BaseCest
                 'OXPAYPALORDERID' => $token
             ]
         );
+
         $I->seeInDataBase(
             'oxorder',
             [
@@ -131,14 +116,6 @@ final class CheckoutCest extends BaseCest
         //Oder was captured, so it should be marked as paid
         $oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
         $I->assertStringStartsWith(date('Y-m-d'), $oxPaid);
-    }
-
-    public function checkTransactionInAdminForNonPayPalOrder(AcceptanceTester $I)
-    {
-        $I->wantToTest('seeing PayPal transactions in admin order for non PayPal order');
-
-        $this->openOrderPayPal($I, '1');
-        $I->see(Translator::translate('OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'));
     }
 
     public function changeBasketDuringCheckout(AcceptanceTester $I)

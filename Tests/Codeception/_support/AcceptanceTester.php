@@ -13,6 +13,7 @@ use OxidEsales\Codeception\Admin\AdminLoginPage;
 use OxidEsales\Codeception\Admin\AdminPanel;
 use OxidEsales\Codeception\Page\Home;
 use Codeception\Util\Fixtures;
+use OxidEsales\Facts\Facts;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
@@ -154,4 +155,12 @@ class AcceptanceTester extends \Codeception\Actor
         $admin = Fixtures::get('adminUser');
         return $adminPage->login($admin['userLoginName'], $admin['userPassword']);
     }
+
+    public function getShopUrl(): string
+    {
+        $facts = new Facts();
+
+        return $facts->getShopUrl();
+    }
+
 }

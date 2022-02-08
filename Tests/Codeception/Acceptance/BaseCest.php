@@ -26,11 +26,28 @@ abstract class BaseCest
     public function _before(AcceptanceTester $I): void
     {
         $this->activateModules();
+
+        $I->clearShopCache();
+        $I->setPayPalBannersVisibility(false);
+        $I->updateConfigInDatabase('blUseStock', false, 'bool');
+        $I->updateConfigInDatabase('bl_perfLoadPrice', true, 'bool');
+        $I->updateConfigInDatabase('iNewBasketItemMessage', false, 'bool');
+        $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', false);
+        $this->ensureShopUserData($I);
+        $this->enableExpressButtons($I);
     }
 
     public function _after(AcceptanceTester $I): void
     {
+        $this->ensureShopUserData($I);
+        $this->enableExpressButtons($I);
+        $I->updateConfigInDatabase('blShowNetPrice', false, 'bool');
+        $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', false);
+
         $I->deleteFromDatabase('oxorder', ['OXORDERNR >=' => '2']);
+        $I->deleteFromDatabase('oxuserbaskets', ['OXTITLE >=' => 'savedbasket']);
+        $I->resetCookie('sid');
+        $I->resetCookie('sid_key');
     }
 
     protected function getShopUrl(): string
@@ -67,6 +84,9 @@ abstract class BaseCest
         if (0 < $I->grabNumRecords('oxuser', ['oxusername' => Fixtures::get('userName')])) {
             $toBeUpdated = Fixtures::get('userName');
             $I->deleteFromDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin']]);
+        }
+        if (0 < $I->grabNumRecords('oxnewssubscribed', ['oxemail' => $_ENV['sBuyerLogin']])) {
+            $I->deleteFromDatabase('oxnewssubscribed', ['oxemail' => $_ENV['sBuyerLogin']]);
         }
 
         $I->updateInDatabase(
@@ -149,9 +169,11 @@ abstract class BaseCest
         );
     }
 
-    protected function proceedToPaymentStep(AcceptanceTester $I, string $userName = null): void
+    protected function proceedToPaymentStep(AcceptanceTester $I, string $userName = null, bool $ensureCheckoutButton = true): void
     {
-        $I->updateModuleConfiguration('blPayPalShowCheckoutButton', true);
+        if ($ensureCheckoutButton) {
+            $I->updateModuleConfiguration('blPayPalShowCheckoutButton', true);
+        }
 
         $userName = $userName ?: Fixtures::get('userName');
 
@@ -160,18 +182,22 @@ abstract class BaseCest
         $I->waitForText(Translator::translate('HOME'));
 
         //add product to basket and start checkout
-        $product = Fixtures::get('product');
-        $basket = new Basket($I);
-        $basket->addProductToBasketAndOpenBasket($product['oxid'], $product['amount'], 'basket');
-        $I->see(Translator::translate('CONTINUE_TO_NEXT_STEP'));
+        $this->fillBasket($I);
+        $this->fromBasketToPayment($I);
 
+        if ($ensureCheckoutButton) {
+            $I->seeElement("#PayPalButtonPaymentPage");
+        }
+    }
+
+    protected function fromBasketToPayment(AcceptanceTester $I): void
+    {
         $I->amOnPage('/en/cart');
         $basketPage = new BasketCheckout($I);
         $basketPage->goToNextStep()
             ->goToNextStep();
 
         $I->see(Translator::translate('PAYMENT_METHOD'));
-        $I->seeElement("#PayPalButtonPaymentPage");
     }
 
     protected function proceedToBasketStep(AcceptanceTester $I, string $userName = null, bool $logMeIn = true): void
@@ -187,11 +213,17 @@ abstract class BaseCest
         $I->waitForText(Translator::translate('HOME'));
 
         //add product to basket and start checkout
+        $this->fillBasket($I);
+        $I->seeElement("#PayPalPayButtonNextCart2");
+    }
+
+    protected function fillBasket(AcceptanceTester $I): void
+    {
+        //add product to basket and start checkout
         $product = Fixtures::get('product');
         $basket = new Basket($I);
         $basket->addProductToBasketAndOpenBasket($product['oxid'], $product['amount'], 'basket');
         $I->see(Translator::translate('CONTINUE_TO_NEXT_STEP'));
-        $I->seeElement("#PayPalPayButtonNextCart2");
     }
 
     protected function finalizeOrder(AcceptanceTester $I): string
@@ -215,11 +247,22 @@ abstract class BaseCest
         return  $thankYouPage->grabOrderNumber();
     }
 
-    protected function approvePayPalTransaction(AcceptanceTester $I): string
+    protected function approvePayPalTransaction(AcceptanceTester $I, string $addParams = ''): string
     {
         //workaround to approve the transaction on PayPal side
         $loginPage = new PayPalLogin($I);
-        $loginPage->openPayPalApprovalPage($I);
+        $loginPage->openPayPalApprovalPage($I, $addParams);
+        $token = $loginPage->getToken();
+        $loginPage->approveStandardPayPal($_ENV['sBuyerLogin'], $_ENV['sBuyerPassword']);
+
+        return $token;
+    }
+
+    protected function approveAnonymousPayPalTransaction(AcceptanceTester $I, string $addParams = ''): string
+    {
+        //workaround to approve the transaction on PayPal side
+        $loginPage = new PayPalLogin($I);
+        $loginPage->openPayPalApprovalPageAsAnonymousUser($I, $addParams);
         $token = $loginPage->getToken();
         $loginPage->approveStandardPayPal($_ENV['sBuyerLogin'], $_ENV['sBuyerPassword']);
 
@@ -236,5 +279,12 @@ abstract class BaseCest
         $I->selectListFrame();
         $I->click(Translator::translate('tbclorder_paypal'));
         $I->selectEditFrame();
+    }
+
+    protected function enableExpressButtons(AcceptanceTester $I, bool $flag = true): void
+    {
+        $I->updateModuleConfiguration('blPayPalShowProductDetailsButton', $flag);
+        $I->updateModuleConfiguration('blPayPalShowBasketButton', $flag);
+        $I->updateModuleConfiguration('blPayPalShowCheckoutButton', $flag);
     }
 }
