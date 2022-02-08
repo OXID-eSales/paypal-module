@@ -86,7 +86,7 @@ class ConfirmOrderRequestFactory
         $config = Registry::getConfig();
 
         $shopLanguageAbbr = $language->getLanguageAbbr();
-        $context->locale = $shopLanguageAbbr . '_' . strtoupper($shopLanguageAbbr);
+        $context->locale = $shopLanguageAbbr . '-' . strtoupper($shopLanguageAbbr);
         $context->return_url = $config->getSslShopUrl() . 'index.php?cl=thankyou';
         $context->cancel_url = $config->getSslShopUrl() . 'index.php?cl=payment';
 
