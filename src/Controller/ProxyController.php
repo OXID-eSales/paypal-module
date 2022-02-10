@@ -20,9 +20,7 @@ use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Email;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
-use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
-use OxidSolutionCatalysts\PayPal\Core\Payment\Service as CorePaymentService;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Core\Config;
@@ -51,7 +49,7 @@ class ProxyController extends FrontendController
         $this->addToBasket();
         $this->setPayPalPaymentMethod();
 
-        $response = $this->getPaymentService()->doCreatePayPalOrder(
+        $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
             Registry::getSession()->getBasket(),
             OrderRequest::INTENT_CAPTURE,
             OrderRequestFactory::USER_ACTION_CONTINUE
@@ -307,16 +305,5 @@ class ProxyController extends FrontendController
             //tell order controller to redirect to checkout login
             Registry::getSession()->setVariable('oscpaypal_payment_redirect', true);
         }
-    }
-
-    protected function getPaymentService(): CorePaymentService
-    {
-        return oxNew(
-            CorePaymentService::class,
-            Registry::get(ServiceFactory::class),
-            Registry::get(PatchRequestFactory::class),
-            Registry::get(OrderRequestFactory::class),
-            Registry::get(ConfirmOrderRequestFactory::class)
-        );
     }
 }

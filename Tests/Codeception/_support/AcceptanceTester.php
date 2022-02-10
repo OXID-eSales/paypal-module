@@ -163,4 +163,15 @@ class AcceptanceTester extends \Codeception\Actor
         return $facts->getShopUrl();
     }
 
+    public function switchToLastWindow()
+    {
+        $I = $this;
+        $I->executeInSelenium(function (\Facebook\WebDriver\Remote\RemoteWebDriver $webdriver) {
+            $handles=$webdriver->getWindowHandles();
+            $last_window = end($handles);
+            $webdriver->switchTo()->window($last_window);
+            $size = new \Facebook\WebDriver\WebDriverDimension(1920, 1280);
+            $webdriver->manage()->window()->setSize($size);
+        });
+    }
 }

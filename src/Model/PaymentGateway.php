@@ -25,7 +25,7 @@ use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
-use OxidSolutionCatalysts\PayPal\Core\Payment\Service as CorePaymentService;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 
 
 /**
@@ -77,7 +77,7 @@ class PaymentGateway extends PaymentGateway_parent
     protected function doExecutePayPalPayment(EshopModelOrder $order): bool
     {
         /** @var CorePaymentService $paymentService */
-        $paymentService = $this->getPaymentService();
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
         $success = false;
 
@@ -107,21 +107,11 @@ class PaymentGateway extends PaymentGateway_parent
         return $success;
     }
 
-    protected function getPaymentService(): CorePaymentService
-    {
-        return oxNew(CorePaymentService::class,
-            Registry::get(ServiceFactory::class),
-            Registry::get(PatchRequestFactory::class),
-            Registry::get(OrderRequestFactory::class),
-            Registry::get(ConfirmOrderRequestFactory::class)
-        );
-    }
-
     protected function doCreateUAPMOrder(): bool
     {
         $success = false;
 
-        $response = $this->getPaymentService()
+        $response = $this->getServiceFromContainer(PaymentService::class)
             ->doCreatePayPalOrder(
                 Registry::getSession()->getBasket(),
                 OrderRequest::INTENT_CAPTURE
@@ -147,7 +137,7 @@ class PaymentGateway extends PaymentGateway_parent
             throw PayPalException::createPayPalOrderFail();
         }
         try {
-            $redirectLink = $this->getPaymentService()->doExecuteUAPM(
+            $redirectLink = $this->getServiceFromContainer(PaymentService::class)->doExecuteUAPM(
                 Registry::getSession()->getBasket(),
                 PayPalSession::getcheckoutOrderId(),
                 PayPalDefinitions::getPaymentSourceRequestName($this->getSessionPaymentId())

@@ -5,7 +5,7 @@
  * See LICENSE file for license details.
  */
 
-namespace OxidSolutionCatalysts\PayPal\Core\Payment;
+namespace OxidSolutionCatalysts\PayPal\Service;
 
 use Exception;
 use OxidEsales\Eshop\Core\Exception\StandardException;
@@ -19,19 +19,20 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
-use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiModelOrder;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
 
-class Service
+class Payment
 {
-    use ServiceContainer;
+    /**
+     * @var OrderRepository
+     */
+    protected $orderRepository;
 
     /** ServiceFactory */
     protected $serviceFactory;
@@ -46,16 +47,18 @@ class Service
     protected $confirmOrderRequestFactory;
 
     public function __construct(
-        ServiceFactory $serviceFactory,
-        PatchRequestFactory $patchRequestFactory,
-        OrderRequestFactory $orderRequestFactory,
-        ConfirmOrderRequestFactory $confirmOrderRequestFactory
+        OrderRepository $orderRepository,
+        ServiceFactory $serviceFactory = null,
+        PatchRequestFactory $patchRequestFactory = null,
+        OrderRequestFactory $orderRequestFactory = null,
+        ConfirmOrderRequestFactory $confirmOrderRequestFactory = null
     )
     {
-        $this->serviceFactory = $serviceFactory;
-        $this->patchRequestFactory = $patchRequestFactory;
-        $this->orderRequestFactory = $orderRequestFactory;
-        $this->confirmOrderRequestFactory = $confirmOrderRequestFactory;
+        $this->orderRepository = $orderRepository;
+        $this->serviceFactory = $serviceFactory ?: Registry::get(ServiceFactory::class);
+        $this->patchRequestFactory = $patchRequestFactory ?: Registry::get(PatchRequestFactory::class);
+        $this->orderRequestFactory = $orderRequestFactory ?: Registry::get(OrderRequestFactory::class);
+        $this->confirmOrderRequestFactory = $confirmOrderRequestFactory ?: Registry::get(ConfirmOrderRequestFactory::class);
     }
 
     public function doCreatePayPalOrder(EshopModelBasket $basket, $intent, $userAction = null): ApiModelOrder
@@ -104,12 +107,10 @@ class Service
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
 
-        $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
-
         // Capture Order
         try {
             /** @var PayPalOrderModel $paypalOrder */
-            $paypalOrder = $orderRepository->paypalOrderByShopAndPayPalId($order->getId(), $checkoutOrderId);
+            $paypalOrder = $this->orderRepository->paypalOrderByShopAndPayPalId($order->getId(), $checkoutOrderId);
 
             $request = new OrderCaptureRequest();
             /** @var ApiOrderModel */
