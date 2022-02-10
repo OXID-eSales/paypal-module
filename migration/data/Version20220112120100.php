@@ -258,6 +258,13 @@ final class Version20220112120100 extends AbstractMigration
                 ['columnDefinition' => 'char(32) collate latin1_general_ci', 'comment' => 'PAYPAL order status']
             );
         }
+        if (!$order->hasColumn('OSCPAYMENTMETHODID')) {
+            $order->addColumn(
+                'OSCPAYMENTMETHODID',
+                Types::STRING,
+                ['columnDefinition' => 'char(32) collate latin1_general_ci', 'comment' => 'PayPal payment id']
+            );
+        }
         if (!$order->hasColumn('OXTIMESTAMP')) {
             $order->addColumn(
                 'OXTIMESTAMP',

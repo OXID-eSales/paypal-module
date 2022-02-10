@@ -193,6 +193,7 @@ $aLang = [
     'OSC_PAYPAL_MONEY_ACTION_FULL'                => 'vollständig',
     'OSC_PAYPAL_MONEY_ACTION_PARTIAL'             => 'teilweise',
     'OSC_PAYPAL_LIST_STATUS_ALL'                  => 'Alle',
+    'OSC_PAYPAL_STATUS_APPROVED'                  => 'genehmigt',
     'OSC_PAYPAL_STATUS_COMPLETED'                 => 'abgeschlossen',
     'OSC_PAYPAL_STATUS_DECLINED'                  => 'abgelehnt',
     'OSC_PAYPAL_STATUS_PARTIALLY_REFUNDED'        => 'Teilweise erstattet',

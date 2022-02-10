@@ -11,9 +11,11 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 
 final class PayPalDefinitions
 {
+    public const STANDARD_PAYPAL_PAYMENT_ID = 'oxidpaypal';
+
     private const PAYPAL_DEFINTIONS = [
         //Standard PayPal
-        'oxidpaypal' => [
+         self::STANDARD_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
                     'desc' => "PayPal v2",

@@ -11,6 +11,7 @@ use Exception;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\UtilsObject;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -44,11 +45,9 @@ class PaymentGateway extends PaymentGateway_parent
      * @param double          $amount Goods amount
      * @param EshopModelOrder $order  User ordering object
      *
-     * @return bool
      */
     public function executePayment($amount, &$order)
     {
-        $success = parent::executePayment($amount, $order);
         $session = $this->getSession();
 
         if ($session->getVariable('isSubscriptionCheckout')) {
@@ -56,12 +55,13 @@ class PaymentGateway extends PaymentGateway_parent
             return true;
         }
 
-        if ($this->getSessionPaymentId() === 'oxidpaypal') {
-            $success = $this->doExecutePayPalPayment($order);
-        } elseif (PayPalDefinitions::isUAPMPayment($this->getSessionPaymentId())) {
-            $this->doExecuteUAPMPayment();
-        }
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
+        if (PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId()) {
+            $success = $this->doExecutePayPalPayment($order);
+        } else {
+            $success = parent::executePayment($amount, $order);
+        }
         return $success;
     }
 
@@ -76,7 +76,7 @@ class PaymentGateway extends PaymentGateway_parent
 
     protected function doExecutePayPalPayment(EshopModelOrder $order): bool
     {
-        /** @var CorePaymentService $paymentService */
+        /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
         $success = false;
@@ -107,47 +107,4 @@ class PaymentGateway extends PaymentGateway_parent
         return $success;
     }
 
-    protected function doCreateUAPMOrder(): bool
-    {
-        $success = false;
-
-        $response = $this->getServiceFromContainer(PaymentService::class)
-            ->doCreatePayPalOrder(
-                Registry::getSession()->getBasket(),
-                OrderRequest::INTENT_CAPTURE
-            );
-
-        if ($response->id) {
-            $success = true;
-            $checkoutOrderId = $response->id;
-            PayPalSession::storePayPalOrderId($checkoutOrderId);
-        }
-
-        return $success;
-    }
-
-    /**
-     * @throws PayPalException
-     */
-    protected function doExecuteUAPMPayment(): void
-    {
-        //For UAPM payment we should not yet have a paypal order in session.
-        //We create a fresh paypal order at this point
-        if (!$this->doCreateUAPMOrder()) {
-            throw PayPalException::createPayPalOrderFail();
-        }
-        try {
-            $redirectLink = $this->getServiceFromContainer(PaymentService::class)->doExecuteUAPM(
-                Registry::getSession()->getBasket(),
-                PayPalSession::getcheckoutOrderId(),
-                PayPalDefinitions::getPaymentSourceRequestName($this->getSessionPaymentId())
-            );
-        } catch (Exception $exception) {
-            $redirectLink = Registry::getConfig()->getSslShopUrl() . 'index.php?cl=payment';
-            //TODO: do we need to log this?
-            Registry::getLogger()->error($exception->getMessage(), [$exception]);
-        }
-
-        throw new Redirect($redirectLink);
-    }
 }

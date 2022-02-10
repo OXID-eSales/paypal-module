@@ -10,7 +10,10 @@ namespace OxidSolutionCatalysts\PayPal\Service;
 use Exception;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidSolutionCatalysts\PayPal\Core\Exception\PayPalException;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
@@ -25,10 +28,16 @@ use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiModelOrder;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 
 
 class Payment
 {
+    /**
+     * @var EshopSession
+     */
+    protected $eshopSession;
+
     /**
      * @var OrderRepository
      */
@@ -47,6 +56,7 @@ class Payment
     protected $confirmOrderRequestFactory;
 
     public function __construct(
+        EshopSession $eshopSession,
         OrderRepository $orderRepository,
         ServiceFactory $serviceFactory = null,
         PatchRequestFactory $patchRequestFactory = null,
@@ -54,6 +64,7 @@ class Payment
         ConfirmOrderRequestFactory $confirmOrderRequestFactory = null
     )
     {
+        $this->eshopSession = $eshopSession;
         $this->orderRepository = $orderRepository;
         $this->serviceFactory = $serviceFactory ?: Registry::get(ServiceFactory::class);
         $this->patchRequestFactory = $patchRequestFactory ?: Registry::get(PatchRequestFactory::class);
@@ -110,12 +121,13 @@ class Payment
         // Capture Order
         try {
             /** @var PayPalOrderModel $paypalOrder */
-            $paypalOrder = $this->orderRepository->paypalOrderByShopAndPayPalId($order->getId(), $checkoutOrderId);
+            $paypalOrder = $this->getPayPalOrder($order->getId(), $checkoutOrderId);
 
             $request = new OrderCaptureRequest();
             /** @var ApiOrderModel */
             $result = $orderService->capturePaymentForOrder('', $checkoutOrderId, $request, '');
 
+            $paypalOrder->setPaymentMethodId($this->getSessionPaymentId($order));
             $paypalOrder->setStatus((string) $result->status);
             $paypalOrder->save();
         } catch (Exception $exception) {
@@ -151,16 +163,98 @@ class Payment
             $request
         );
 
-        if ($response->links) {
-            foreach ($response->links as $links) {
-                if ($links->rel === 'payer_action') {
-                    $redirectLink = $links->href;
-                }
+        if (!isset($response->links)) {
+            throw PayPalException::uAPMPaymentMalformedResponse();
+        }
+        foreach ($response->links as $links) {
+            if ($links['rel'] === 'payer-action') {
+                $redirectLink = $links['href'];
             }
-        } else {
-            throw PayPalException::uAPMPaymentFail();
+        }
+        if (!$redirectLink) {
+            throw PayPalException::uAPMPaymentMissingRedirectLink();
         }
 
         return $redirectLink;
+    }
+
+    /**
+     * Return the PaymentId from session basket
+     */
+    public function getSessionPaymentId(): ?string
+    {
+        return $this->eshopSession->getBasket() ? $this->eshopSession->getBasket()->getPaymentId() : null;
+    }
+
+    public function getPayPalOrder(string $shopOrderId, string $payPalOrderId): PayPalOrderModel
+    {
+        return $this->orderRepository->paypalOrderByOrderIdAndPayPalId($shopOrderId, $payPalOrderId);
+    }
+
+    public function removeTemporaryOrder(): void
+    {
+        $sessionOrderId = $this->eshopSession->getVariable('sess_challenge');
+        if (!$sessionOrderId) {
+            return;
+        }
+
+        $orderModel = oxNew(EshopModelOrder::class);
+        if ($orderModel->load($sessionOrderId)) {
+            $orderModel->delete();
+        }
+
+        if ( $payPalOrderId = PayPalSession::getUapmCheckoutOrderId()) {
+            $payPalOrder = $this->orderRepository->paypalOrderByOrderIdAndPayPalId($sessionOrderId, $payPalOrderId);
+            $payPalOrder->delete();
+        }
+
+        PayPalSession::unsetPayPalOrderId(Constants::SESSION_UAPMCHECKOUT_ORDER_ID);
+        $this->eshopSession->deleteVariable('sess_challenge');
+    }
+
+    /**
+     * @throws PayPalException
+     */
+    public function doExecuteUAPMPayment(EshopModelOrder $order, EshopModelBasket $basket): string
+    {
+        //For UAPM payment we should not yet have a paypal order in session.
+        //We create a fresh paypal order at this point
+
+        $uapmOrderId = $this->doCreateUAPMOrder($basket);
+        if (!$uapmOrderId) {
+            throw PayPalException::createPayPalOrderFail();
+        }
+        $payPalOrder = $this->getPayPalOrder($order->getId(), $uapmOrderId);
+        $payPalOrder->setPaymentMethodId($basket->getPaymentId());
+        PayPalSession::storePayPalOrderId($uapmOrderId, Constants::SESSION_UAPMCHECKOUT_ORDER_ID);
+        $redirectLink = '';
+
+        try {
+            $redirectLink = $this->doExecuteUAPM(
+                $basket,
+                $uapmOrderId,
+                PayPalDefinitions::getPaymentSourceRequestName($basket->getPaymentId())
+            );
+            $payPalOrder->save();
+
+        } catch (Exception $exception) {
+            PayPalSession::unsetPayPalOrderId(Constants::SESSION_UAPMCHECKOUT_ORDER_ID);
+            $this->removeTemporaryOrder();
+            //TODO: do we need to log this?
+            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+        }
+
+        //NOTE: payment not fully executed, we need customer interaction first
+        return $redirectLink;
+    }
+
+    public function doCreateUAPMOrder(EshopModelBasket $basket): string
+    {
+        $response = $this->doCreatePayPalOrder(
+                $basket,
+                OrderRequest::INTENT_CAPTURE
+            );
+
+        return $response->id ?: '';
     }
 }
