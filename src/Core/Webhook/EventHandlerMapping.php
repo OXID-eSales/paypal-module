@@ -26,7 +26,7 @@ class EventHandlerMapping
     public const MAPPING = [
         'CHECKOUT.ORDER.COMPLETED' => CheckoutOrderCompletedHandler::class,
         // CHECKOUT.ORDER.APPROVED is for us the same handle like CHECKOUT.ORDER.COMPLETED
-        'CHECKOUT.ORDER.APPROVED' => CheckoutOrderCompletedHandler::class,
+        'CHECKOUT.ORDER.APPROVED' => CheckoutOrderApprovedHandler::class,
         'CHECKOUT.PAYMENT-APPROVAL.REVERSED' => CheckoutPaymentAppovalReverseHandler::class,
         //'MERCHANT.ONBOARDING.COMPLETED' => MerchantOnboardingCompleteHandler::class,
         //'MERCHANT.PARTNER-CONSENT.REVOKED' => MerchantPartnerConsentRevokedHandler::class,

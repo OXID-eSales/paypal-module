@@ -22,7 +22,7 @@ use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Core\Exception\NotFound;
 
 
-class CheckoutOrderCompletedHandler implements HandlerInterface
+class CheckoutOrderApprovedHandler implements HandlerInterface
 {
     use ServiceContainer;
 
@@ -47,7 +47,6 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
         //get PayPalOrder
         try {
             $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
-            /** @var EshopModelOrder $order */
             $order = $orderRepository->getShopOrderByPayPalOrderId($payPalOrderId);
         } catch(NotFound $exception) {
             throw WebhookEventException::byOrderId($oxidOrderId);
@@ -57,8 +56,10 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
             throw WebhookEventException::byOrderId($oxidOrderId);
         }
 
-        //TODO: query order details
-      //  $response = $this->requestOrder($payPalOrderId);
+        //This one needs a capture
+        $response = $this->capturePayment($payPalOrderId); //look wrong
+
+        //Ensure that the total amount at the time of making the create order call equals the amount when capturing the payment.
 
         if (
             $response->status == OrderResponse::STATUS_COMPLETED &&
@@ -76,12 +77,12 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
      * @return Order
      * @throws ApiException
      */
-    private function requestOrder(string $orderId): Order
+    private function capturePayment(string $orderId): Order
     {
         /** @var ServiceFactory $serviceFactory */
         $serviceFactory = Registry::get(ServiceFactory::class);
         $service = $serviceFactory->getOrderService();
-     //   $request = new
+        $request = new OrderCaptureRequest();
 
         return $service->capturePaymentForOrder('', $orderId, $request, '');
     }

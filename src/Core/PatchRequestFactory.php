@@ -58,7 +58,10 @@ class PatchRequestFactory
         $this->getShippingNamePatch();
         $this->getShippingAddressPatch();
         $this->getAmountPatch();
-        $this->getCustomIdPatch((string) $basket->getOrderId());
+        if ($basket->getOrderId()) {
+            $this->getCustomIdPatch((string) $basket->getOrderId());
+        }
+
 
         /** @var BasketItem $basketItem */
         // PayPal cannot fully patch the items in the shopping cart.
