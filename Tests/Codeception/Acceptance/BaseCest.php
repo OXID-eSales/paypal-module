@@ -51,6 +51,7 @@ abstract class BaseCest
 
         $I->deleteFromDatabase('oxorder', ['OXORDERNR >=' => '2']);
         $I->deleteFromDatabase('oxuserbaskets', ['OXTITLE >=' => 'savedbasket']);
+        $I->deleteFromDatabase('osc_paypal_order', ['OXSHOPID >' => '0']);
         $I->resetCookie('sid');
         $I->resetCookie('sid_key');
     }
