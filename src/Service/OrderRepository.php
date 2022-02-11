@@ -111,7 +111,7 @@ class OrderRepository
         $queryBuilder->select('oxid')
             ->from('osc_paypal_order')
             ->where('oxpaypalorderid = :oxpaypalorderid')
-            ->andWhere('LENGTH(oxorderid) > ');
+            ->andWhere('LENGTH(oxorderid) > 0');
 
         $id = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)

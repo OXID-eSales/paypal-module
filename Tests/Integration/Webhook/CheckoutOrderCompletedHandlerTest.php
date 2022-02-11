@@ -18,6 +18,7 @@ use OxidSolutionCatalysts\PayPal\Core\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
+use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 
 
 final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
@@ -52,7 +53,7 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
         $handler->handle($event);
     }
 
-    public function testCheckoutOrderCompleted(): void
+    public function testCheckoutOrderNOtExistingShopOrder(): void
     {
         $data = [
             'resource' => [
@@ -63,8 +64,6 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
             ]
         ];
         $event = new WebhookEvent($data, 'CHECKOUT.ORDER.COMPLETED');
-
-        $this->prepareOrderMock('order_oxid');
 
         $data = [
             'status' => 'COMPLETED',
@@ -80,13 +79,63 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
                 ]
             ]
         ];
-        $this->setServiceFactoryMock( $data);
+        $this->setServiceFactoryMock($data);
+
+        $this->expectException(WebhookEventException::class);
+        $this->expectExceptionMessage(WebhookEventException::byOrderId('order_oxid')->getMessage());
 
         $handler = oxNew(CheckoutOrderCompletedHandler::class);
         $handler->handle($event);
     }
 
-    private function prepareOrderMock(string $orderId):void
+
+    public function testCheckoutOrderCompleted(): void
+    {
+        $data = [
+            'resource' => [
+                'id' => 'PAYPALID123456789',
+                'purchase_units' => [
+                    0 => ['custom_id' => 'order_oxid']
+                ]
+            ]
+        ];
+        $event = new WebhookEvent($data, 'CHECKOUT.ORDER.COMPLETED');
+
+        $orderMock = $this->prepareOrderMock('order_oxid');
+
+        $data = [
+            'status' => 'COMPLETED',
+            'purchase_units' => [
+                0 => [
+                    'payments' => [
+                        'captures' => [
+                            0 => [
+                                'status' => 'COMPLETED'
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $this->setServiceFactoryMock($data);
+
+        $orderRepositoryMock = $this->getMockBuilder(OrderRepository::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderRepositoryMock->expects($this->once())
+            ->method('getShopOrderByPayPalOrderId')
+            ->willReturn($orderMock);
+
+        $handler = $this->getMockBuilder(CheckoutOrderCompletedHandler::class)
+            ->onlyMethods(['getServiceFromContainer'])
+            ->getMock();
+        $handler->expects($this->once())
+            ->method('getServiceFromContainer')
+            ->willReturn($orderRepositoryMock);
+        $handler->handle($event);
+    }
+
+    private function prepareOrderMock(string $orderId): EshopModelOrder
     {
         $mock = $this->getMockBuilder(EshopModelOrder::class)
             ->disableOriginalConstructor()
@@ -95,10 +144,14 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
             ->method('load')
             ->with($orderId)
             ->willReturn(true);
+        $mock->expects($this->any())
+            ->method('getId')
+            ->willReturn($orderId);
         $mock->expects($this->once())
             ->method('markOrderPaid');
 
-        EshopRegistry::getUtilsObject()->setClassInstance(EshopModelOrder::class, $mock);
+        return $mock;
+        #EshopRegistry::getUtilsObject()->setClassInstance(EshopModelOrder::class, $mock);
     }
 
     private function setServiceFactoryMock(array $data): void
