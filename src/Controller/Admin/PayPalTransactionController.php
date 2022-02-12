@@ -39,9 +39,11 @@ class PayPalTransactionController extends AdminListController
     public function render()
     {
         try {
-            $this->requestTransactions();
+            if (Registry::getRequest()->getRequestParameter('where')) {
+                $this->requestTransactions();
+            }
             $this->addTplParam('eventCodes', TransactionEventCodes::EVENT_CODES);
-        } catch (ApiException $exception) {
+        } catch (ApiException $exception) {  Registry::getLogger()->error($exception->getMessage());
             if ($exception->shouldDisplay()) {
                 $this->addTplParam('error', Registry::getLang()->translateString('OSC_PAYPAL_ERROR_' .
                     $exception->getErrorIssue()));
