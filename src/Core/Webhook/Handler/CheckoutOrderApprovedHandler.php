@@ -33,33 +33,25 @@ class CheckoutOrderApprovedHandler implements HandlerInterface
     public function handle(Event $event): void
     {
         $data = $event->getData()['resource'];
+        $payPalOrderId = (string) $data['id'];
 
-        $payPalOrderId = $data['id'] ?? '';
-        $oxidOrderId = $data['purchase_units'][0]['custom_id'] ?? '';
-
-        //TODO: make sure we get the right one
-        #"/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/custom_id";
-
-        if (!$oxidOrderId || !$payPalOrderId) {
+        if (!$payPalOrderId) {
             throw WebhookEventException::mandatoryDataNotFound();
         }
 
         //get PayPalOrder
         try {
             $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
+            /** @var EshopModelOrder $order */
             $order = $orderRepository->getShopOrderByPayPalOrderId($payPalOrderId);
         } catch(NotFound $exception) {
-            throw WebhookEventException::byOrderId($oxidOrderId);
+            throw WebhookEventException::byPayPalOrderId($payPalOrderId);
         }
 
-        if ($oxidOrderId && ($oxidOrderId !== $order->getId())) {
-            throw WebhookEventException::byOrderId($oxidOrderId);
-        }
+        //TODO: tbd: query order details from paypal. On the other hand, we just got verified that this data came from PayPal.
 
         //This one needs a capture
-        $response = $this->capturePayment($payPalOrderId); //look wrong
-
-        //Ensure that the total amount at the time of making the create order call equals the amount when capturing the payment.
+        $response = $this->capturePayment($payPalOrderId);
 
         if (
             $response->status == OrderResponse::STATUS_COMPLETED &&

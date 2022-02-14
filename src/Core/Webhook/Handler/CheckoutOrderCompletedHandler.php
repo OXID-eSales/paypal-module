@@ -14,7 +14,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as OrderResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Core\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -33,14 +32,9 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
     public function handle(Event $event): void
     {
         $data = $event->getData()['resource'];
+        $payPalOrderId = (string) $data['id'];
 
-        $payPalOrderId = $data['id'] ?? '';
-        $oxidOrderId = $data['purchase_units'][0]['custom_id'] ?? '';
-
-        //TODO: make sure we get the right one
-        #"/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/custom_id";
-
-        if (!$oxidOrderId || !$payPalOrderId) {
+        if (!$payPalOrderId) {
             throw WebhookEventException::mandatoryDataNotFound();
         }
 
@@ -50,39 +44,15 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
             /** @var EshopModelOrder $order */
             $order = $orderRepository->getShopOrderByPayPalOrderId($payPalOrderId);
         } catch(NotFound $exception) {
-            throw WebhookEventException::byOrderId($oxidOrderId);
+            throw WebhookEventException::byPayPalOrderId($payPalOrderId);
         }
 
-        if ($oxidOrderId && ($oxidOrderId !== $order->getId())) {
-            throw WebhookEventException::byOrderId($oxidOrderId);
-        }
-
-        //TODO: query order details
-      //  $response = $this->requestOrder($payPalOrderId);
-
+        //TODO: tbd: query order details from paypal. On the other hand, we just got verified that this data came from PayPal.
         if (
-            $response->status == OrderResponse::STATUS_COMPLETED &&
-            $response->purchase_units[0]->payments->captures[0]->status == Capture::STATUS_COMPLETED
+            $data['status'] == OrderResponse::STATUS_COMPLETED &&
+            $data['purchase_units'][0]['payments']['captures'][0]['status'] == Capture::STATUS_COMPLETED
         ) {
             $order->markOrderPaid();
         }
-    }
-
-    /**
-     * Captures payment for given order
-     *
-     * @param string $orderId
-     *
-     * @return Order
-     * @throws ApiException
-     */
-    private function requestOrder(string $orderId): Order
-    {
-        /** @var ServiceFactory $serviceFactory */
-        $serviceFactory = Registry::get(ServiceFactory::class);
-        $service = $serviceFactory->getOrderService();
-     //   $request = new
-
-        return $service->capturePaymentForOrder('', $orderId, $request, '');
     }
 }

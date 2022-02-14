@@ -49,7 +49,8 @@ class PatchRequestFactory
      * @return array
      */
     public function getRequest(
-        Basket $basket
+        Basket $basket,
+        string $orderId = ''
     ): array {
         $this->basket = $basket;
         $nettoPrices = $this->basket->isCalculationModeNetto();
@@ -58,8 +59,8 @@ class PatchRequestFactory
         $this->getShippingNamePatch();
         $this->getShippingAddressPatch();
         $this->getAmountPatch();
-        if ($basket->getOrderId()) {
-            $this->getCustomIdPatch((string) $basket->getOrderId());
+        if ($orderId) {
+            $this->getCustomIdPatch($orderId);
         }
 
 

@@ -93,13 +93,13 @@ class Payment
         return $response;
     }
 
-    public function doPatchPayPalOrder(EshopModelBasket $basket, string $checkoutOrderId): void
+    public function doPatchPayPalOrder(EshopModelBasket $basket, string $checkoutOrderId, string $shopOrderId = ''): void
     {
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
 
         $request = $this->patchRequestFactory
-            ->getRequest($basket);
+            ->getRequest($basket, $shopOrderId);
 
         // Update Order
         try {
