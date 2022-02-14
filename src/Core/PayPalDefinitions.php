@@ -28,6 +28,20 @@ final class PayPalDefinitions
             ],
             'countries' => []
         ],
+        //PayPal advanced credit and debit card //TODO: name?
+        'oxidpaypal_acdc' => [
+            'descriptions' => [
+                'de' => [
+                    'desc' => "PayPal advanced credit and debit card",
+                    'longdesc' => "Bezahlen Sie bequem mit PayPal"
+                ],
+                'en' => [
+                    'desc' => "PayPal advanced credit and debit card",
+                    'longdesc' => "Pay conveniently with PayPal"
+                ]
+            ],
+            'countries' => ['DE']
+        ],
         // uAPM Bancontact
         'oxidpaypal_bancontact' => [
             'descriptions' => [
