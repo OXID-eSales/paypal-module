@@ -19,6 +19,7 @@ use OxidSolutionCatalysts\PayPalApi\Service\Subscriptions;
 use OxidSolutionCatalysts\PayPalApi\Service\TransactionSearch;
 use OxidSolutionCatalysts\PayPal\Core\Api\DisputeService as FileAwareDisputeService;
 use OxidSolutionCatalysts\PayPal\Core\Api\DisputeService;
+use OxidSolutionCatalysts\PayPal\Core\Api\IdentityService;
 
 /**
  * Class ServiceFactory
@@ -108,6 +109,17 @@ class ServiceFactory
     public function getFileAwareDisputeService(): FileAwareDisputeService
     {
         return oxNew(FileAwareDisputeService::class, $this->getClient());
+    }
+
+    /**
+     * @return GenericService
+     */
+    public function getIdentityService(): IdentityService
+    {
+        return oxNew(
+            IdentityService::class,
+            $this->getClient()
+        );
     }
 
     /**

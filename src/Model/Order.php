@@ -47,8 +47,15 @@ class Order extends Order_parent
      *
      * @var int
      */
-    const ORDER_STATE_UAPMINPROGRESSS = 500;
+    const ORDER_STATE_UAPMINPROGRESS = 500;
 
+    /**
+     * ACDC payment in progress
+     *
+     * @var int
+     */
+    const ORDER_STATE_ACDCINPROGRESS = 700;
+    
     /**
      * Error during payment execution
      *
@@ -84,10 +91,10 @@ class Order extends Order_parent
      */
     protected $payPalProductId;
 
-    public function finalizeOrderAfterUapmRedirect(string $payPalOrderId)
+    public function finalizeOrderAfterExternalPayment(string $payPalOrderId)
     {
         if (!$this->isLoaded()) {
-            throw PayPalException::uAPMCannotFinalizeOrderAfterRedirectSuccess($payPalOrderId);
+            throw PayPalException::cannotFinalizeOrderAfterExternalPaymentSuccess($payPalOrderId);
         }
 
         if (!$this->oxorder__oxordernr->value) {
@@ -151,18 +158,20 @@ class Order extends Order_parent
 
         //catch uapm PayPal payments here
         if (PayPalDefinitions::isUAPMPayment($paymentService->getSessionPaymentId())) {
-           try {
-               /** @var EshopModelBasket $basket */
-               $basket = Registry::getSession()->getBasket();
-               $uapmGoNext = $paymentService->doExecuteUAPMPayment($this, $basket);
-               PayPalSession::setUapmRedirectLink($uapmGoNext);
+            try {
+                /** @var EshopModelBasket $basket */
+                $basket = Registry::getSession()->getBasket();
+                $uapmGoNext = $paymentService->doExecuteUAPMPayment($this, $basket);
+                PayPalSession::setUapmRedirectLink($uapmGoNext);
 
-               return self::ORDER_STATE_UAPMINPROGRESSS;
-           } catch(\Exception $exception) {
-               $this->delete();
-               Registry::getLogger()->error($exception->getMessage(), [$exception]);
-           }
+                return self::ORDER_STATE_UAPMINPROGRESS;
+            } catch (\Exception $exception) {
+                $this->delete();
+                Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            }
             return self::ORDER_STATE_PAYMENTERROR;
+        } elseif ((string) $paymentService->getSessionPaymentId() === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) {
+            return self::ORDER_STATE_ACDCINPROGRESS;
         } else {
             return parent::_executePayment($basket, $userpayment);
         }

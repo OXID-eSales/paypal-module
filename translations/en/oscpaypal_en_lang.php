@@ -44,4 +44,10 @@ $aLang = [
     'OSC_PAYPAL_SUBSCRIPTION_UNSUBSCRIBE_SEND'    => 'Subscription cancellation request sent',
     'OSC_PAYPAL_SUBSCRIPTION_UNSUBSCRIBE_HEAD'    => 'Subscription cancellation request',
     'OSC_PAYPAL_SUBSCRIPTION_UNSUBSCRIBE_MAIL'    => 'The <strong> customer%s (Kd.Nr: %s)</strong> would like to cancel his subscription from the order <strong>%s</strong>. Please check the subscription and then contact the customer again.',
+
+    'OSC_PAYPAL_ACDC'                             => 'Advanced Credit and Debit Card',
+    'OSC_PAYPAL_ACDC_CARD_NUMBER'                 => 'Card Number',
+    'OSC_PAYPAL_ACDC_CARD_EXDATE'                 => 'Expiration Date',
+    'OSC_PAYPAL_ACDC_CARD_CVV'                    => 'CVV',
+    'OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD'           => 'Name on Card',
 ];

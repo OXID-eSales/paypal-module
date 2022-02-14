@@ -12,6 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 final class PayPalDefinitions
 {
     public const STANDARD_PAYPAL_PAYMENT_ID = 'oxidpaypal';
+    public const ACDC_PAYPAL_PAYMENT_ID = 'oxidpaypal_acdc';
 
     private const PAYPAL_DEFINTIONS = [
         //Standard PayPal
@@ -29,7 +30,7 @@ final class PayPalDefinitions
             'countries' => []
         ],
         //PayPal advanced credit and debit card //TODO: name?
-        'oxidpaypal_acdc' => [
+        self::ACDC_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
                     'desc' => "PayPal advanced credit and debit card",

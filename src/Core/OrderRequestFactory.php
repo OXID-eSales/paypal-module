@@ -46,6 +46,8 @@ class OrderRequestFactory
      */
     public const USER_ACTION_CONTINUE = 'CONTINUE';
 
+    public const USER_ACTION_PAY_NOW = 'PAY_NOW';
+
     /**
      * @var OrderRequest
      */

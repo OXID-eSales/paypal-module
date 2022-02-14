@@ -117,9 +117,14 @@ $aModule = [
         'pspaypalsubscriptiondetails.tpl' => 'osc/paypal/views/admin/tpl/pspaypalsubscriptiondetails.tpl',
         'pspaypalpartsubscriptiondetails.tpl' => 'osc/paypal/views/admin/tpl/pspaypalpartsubscriptiondetails.tpl',
         'pspaypalsubscribe.tpl'    => 'osc/paypal/views/admin/tpl/pspaypalsubscribe.tpl',
+        'pspaypalacdcbuttons.tpl' => 'osc/paypal/views/includes/pspaypalacdcbuttons.tpl',
         'pspaypalsmartpaymentbuttons.tpl' => 'osc/paypal/views/includes/pspaypalsmartpaymentbuttons.tpl',
         'pspaypalpaymentbuttons.tpl' => 'osc/paypal/views/includes/pspaypalpaymentbuttons.tpl',
         'pspaypalsubscriptionbuttons.tpl' => 'osc/paypal/views/includes/pspaypalsubscriptionbuttons.tpl',
+
+        'modules/osc/paypal/oscpaypalacdc.tpl' => 'osc/paypal/views/includes/oscpaypalacdc.tpl',
+        'modules/osc/paypal/paypal_shipping_and_payment_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/paypal_shipping_and_payment.tpl',
+        'modules/osc/paypal/paypal_shipping_and_payment_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/paypal_shipping_and_payment.tpl',
 
         // PAYPAL-486 Register templates for overloading here;
         // use theme name in key when theme-specific. Shared templates don't receive a theme-specific key.
@@ -150,6 +155,19 @@ $aModule = [
         'onDeactivate' => '\OxidSolutionCatalysts\PayPal\Core\Events\Events::onDeactivate'
     ],
     'blocks' => [
+        [
+            'theme' => 'flow',
+            'template' => 'page/checkout/order.tpl',
+            'block' => 'shippingAndPayment',
+            'file' => 'views/blocks/flow/page/checkout/shipping_and_payment.tpl'
+        ],
+        [
+            'theme' => 'wave',
+            'template' => 'page/checkout/order.tpl',
+            'block' => 'shippingAndPayment',
+            'file' => 'views/blocks/wave/page/checkout/shipping_and_payment.tpl'
+        ],
+
         [
             'template' => 'article_list.tpl',
             'block' => 'admin_article_list_item',

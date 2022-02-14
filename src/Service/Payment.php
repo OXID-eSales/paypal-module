@@ -93,6 +93,26 @@ class Payment
         return $response;
     }
 
+    public function doCreateAcdcOrder(EshopModelBasket $basket): array
+    {
+        $response = $this->doCreatePayPalOrder(
+            $basket,
+            OrderRequest::INTENT_CAPTURE,
+            OrderRequestFactory::USER_ACTION_CONTINUE
+        );
+
+        $paypalOrderId = $response->id ?: '';
+        $status = $response->status ?: '';
+        $this->doPatchPayPalOrder($basket, $paypalOrderId);
+
+        $return = [
+            'id' => $paypalOrderId,
+            'status' => $status
+        ];
+
+        return $return;
+    }
+
     public function doPatchPayPalOrder(EshopModelBasket $basket, string $checkoutOrderId, string $shopOrderId = ''): void
     {
         /** @var ApiOrderService $orderService */
@@ -113,7 +133,7 @@ class Payment
     /**
      * Executes capture to PayPal
      */
-    public function doCapturePayPalOrder(EshopModelOrder $order, string $checkoutOrderId): void
+    public function doCapturePayPalOrder(EshopModelOrder $order, string $checkoutOrderId): ApiOrderModel
     {
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
@@ -127,7 +147,7 @@ class Payment
             /** @var ApiOrderModel */
             $result = $orderService->capturePaymentForOrder('', $checkoutOrderId, $request, '');
 
-            $paypalOrder->setPaymentMethodId($this->getSessionPaymentId($order));
+            $paypalOrder->setPaymentMethodId($this->getSessionPaymentId());
             $paypalOrder->setStatus((string) $result->status);
             $paypalOrder->save();
         } catch (Exception $exception) {
@@ -138,6 +158,8 @@ class Payment
         if (ApiOrderModel::STATUS_COMPLETED === $paypalOrder->getStatus()) {
             $order->markOrderPaid();
         }
+
+        return $result;
     }
 
     public function doExecuteUAPM(EshopModelBasket $basket, string $checkoutOrderId, string $uapmName): string
@@ -208,7 +230,9 @@ class Payment
             $payPalOrder->delete();
         }
 
+        PayPalSession::unsetPayPalOrderId();
         PayPalSession::unsetPayPalOrderId(Constants::SESSION_UAPMCHECKOUT_ORDER_ID);
+        PayPalSession::unsetPayPalOrderId(Constants::SESSION_ACDCCHECKOUT_ORDER_ID);
         $this->eshopSession->deleteVariable('sess_challenge');
     }
 

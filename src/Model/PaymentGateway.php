@@ -59,6 +59,8 @@ class PaymentGateway extends PaymentGateway_parent
 
         if (PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId()) {
             $success = $this->doExecutePayPalPayment($order);
+        } elseif (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId()) {
+            $success = $this->doExecuteAcdcPayPalPayment($order);
         } else {
             $success = parent::executePayment($amount, $order);
         }
@@ -93,12 +95,11 @@ class PaymentGateway extends PaymentGateway_parent
             // Capture Order
             try {
                 $paymentService->doCapturePayPalOrder($order, $checkoutOrderId);
+                $success = true;
             } catch (Exception $exception) {
                 Registry::getLogger()->error("Error on order capture call.", [$exception]);
-                throw oxNew(StandardException::class, 'OXPS_PAYPAL_ORDEREXECUTION_ERROR');
+                $success = false;
             }
-
-            $success = true;
 
             // destroy PayPal-Session
             PayPalSession::storePayPalOrderId('');
@@ -107,4 +108,28 @@ class PaymentGateway extends PaymentGateway_parent
         return $success;
     }
 
+    protected function doExecuteAcdcPayPalPayment(EshopModelOrder $order): bool
+    {
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+
+        $success = false;
+
+        if ($checkoutOrderId = PayPalSession::getAcdcCheckoutOrderId()) {
+            // Capture Order
+            try {
+                $paymentService->doCapturePayPalOrder($order, $checkoutOrderId);
+                $success = true;
+            } catch (Exception $exception) {
+                Registry::getLogger()->error("Error on acdc order capture call.", [$exception]);
+            }
+
+            // destroy PayPal-Session
+            PayPalSession::unsetPayPalOrderId();
+            PayPalSession::unsetPayPalOrderId(Constants::SESSION_UAPMCHECKOUT_ORDER_ID);
+            PayPalSession::unsetPayPalOrderId(Constants::SESSION_ACDCCHECKOUT_ORDER_ID);
+        }
+
+        return $success;
+    }
 }
