@@ -7,7 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook;
 
-use OxidSolutionCatalysts\PayPal\Core\Exception\WebhookEventTypeException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException;
 
 /**
  * Delivers events to appropriate handlers

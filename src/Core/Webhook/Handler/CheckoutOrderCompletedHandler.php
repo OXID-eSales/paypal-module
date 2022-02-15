@@ -16,7 +16,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as OrderResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
-use OxidSolutionCatalysts\PayPal\Core\Exception\WebhookEventException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 
 class CheckoutOrderCompletedHandler implements HandlerInterface
 {

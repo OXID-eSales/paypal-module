@@ -10,8 +10,8 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
 use OxidEsales\TestingLibrary\UnitTestCase;
-use OxidSolutionCatalysts\PayPal\Core\Exception\WebhookEventTypeException;
-use OxidSolutionCatalysts\PayPal\Core\Exception\WebhookEventException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher as PayPalWebhookActions;
 

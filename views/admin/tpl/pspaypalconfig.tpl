@@ -55,6 +55,7 @@
                             [{assign var='liveMerchantSignUpLink' value=$oView->getLiveSignUpMerchantIntegrationLink()}]
                             <p class="live"><a target="_blank"
                                   class="boardinglink"
+                                  id="paypalonboardinglive"
                                   href="[{$liveMerchantSignUpLink}]"
                                   data-paypal-button="PPLtBlue">
                                     [{oxmultilang ident="OSC_PAYPAL_LIVE_BUTTON_CREDENTIALS"}]
@@ -93,6 +94,7 @@
                             <p class="sandbox"><a target="_blank"
                                   class="boardinglink"
                                   href="[{$sandboxMerchantSignUpLink}]"
+                                  id="paypalonboardingsandbox"
                                   data-paypal-onboard-complete="onboardedCallbackSandbox"
                                   data-paypal-button="PPLtBlue">
                                     [{oxmultilang ident="OSC_PAYPAL_SANDBOX_BUTTON_CREDENTIALS"}]

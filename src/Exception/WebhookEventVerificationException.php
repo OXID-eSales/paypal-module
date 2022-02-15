@@ -5,7 +5,7 @@
  * See LICENSE file for license details.
  */
 
-namespace OxidSolutionCatalysts\PayPal\Core\Exception;
+namespace OxidSolutionCatalysts\PayPal\Exception;
 
 class WebhookEventVerificationException extends WebhookEventException
 {

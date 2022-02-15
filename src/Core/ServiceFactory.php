@@ -77,12 +77,12 @@ class ServiceFactory
     /**
      * @return GenericService
      */
-    public function geWebhookService(): GenericService
+    public function getWebhookService(string $uri = ''): GenericService
     {
         return oxNew(
             GenericService::class,
             $this->getClient(),
-            '/v1/notifications/webhooks'
+            '/v1/notifications/webhooks' . $uri
         );
     }
 
