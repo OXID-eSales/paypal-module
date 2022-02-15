@@ -13,7 +13,7 @@ use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as PayPalApiOrders;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutOrderCompletedHandler;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutOrderApprovedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
@@ -21,16 +21,16 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 
 
-final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
+final class CheckoutOrderApprovedHandlerTest extends UnitTestCase
 {
     public function testRequestMissingData(): void
     {
-        $event = new WebhookEvent([], 'CHECKOUT.ORDER.COMPLETED');
+        $event = new WebhookEvent([], 'CHECKOUT.ORDER.APPROVED');
 
         $this->expectException(WebhookEventException::class);
         $this->expectExceptionMessage(WebhookEventException::mandatoryDataNotFound()->getMessage());
 
-        $handler = oxNew(CheckoutOrderCompletedHandler::class);
+        $handler = oxNew(CheckoutOrderApprovedHandler::class);
         $handler->handle($event);
     }
 
@@ -41,19 +41,19 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
                 'id' => 'PAYPALID123456789'
             ]
         ];
-        $event = new WebhookEvent($data, 'CHECKOUT.ORDER.COMPLETED');
+        $event = new WebhookEvent($data, 'CHECKOUT.ORDER.APPROVED');
 
         $this->expectException(WebhookEventException::class);
         $this->expectExceptionMessage(WebhookEventException::byPayPalOrderId('PAYPALID123456789')->getMessage());
 
-        $handler = oxNew(CheckoutOrderCompletedHandler::class);
+        $handler = oxNew(CheckoutOrderApprovedHandler::class);
         $handler->handle($event);
     }
 
-    public function testCheckoutOrderCompleted(): void
+    public function testCheckoutOrderApproved(): void
     {
         $data = $this->getRequestData();
-        $event = new WebhookEvent($data, 'CHECKOUT.ORDER.COMPLETED');
+        $event = new WebhookEvent($data, 'CHECKOUT.ORDER.APPROVED');
 
         $orderMock = $this->prepareOrderMock('order_oxid');
 
@@ -64,7 +64,23 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
             ->method('getShopOrderByPayPalOrderId')
             ->willReturn($orderMock);
 
-        $handler = $this->getMockBuilder(CheckoutOrderCompletedHandler::class)
+        $data = [
+            'status' => 'COMPLETED',
+            'purchase_units' => [
+                0 => [
+                    'payments' => [
+                        'captures' => [
+                            0 => [
+                                'status' => 'COMPLETED'
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $this->setServiceFactoryMock($data);
+
+        $handler = $this->getMockBuilder(CheckoutOrderApprovedHandler::class)
             ->onlyMethods(['getServiceFromContainer'])
             ->getMock();
         $handler->expects($this->once())
@@ -91,9 +107,29 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
         return $mock;
     }
 
+    private function setServiceFactoryMock(array $data): void
+    {
+        $response = new ApiOrderResponse($data);
+
+        $orderServiceMock =  $this->getMockBuilder(PayPalApiOrders::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderServiceMock->expects($this->any())
+            ->method('capturePaymentForOrder')
+            ->willReturn($response);
+
+        $serviceFactoryMock = $this->getMockBuilder(ServiceFactory::class)
+            ->getMock();
+        $serviceFactoryMock->expects($this->any())
+            ->method('getOrderService')
+            ->willReturn($orderServiceMock);
+
+        EshopRegistry::set(ServiceFactory::class, $serviceFactoryMock);
+    }
+
     private function getRequestData(): array
     {
-        $json = file_get_contents(__DIR__ . '/../../Fixtures/checkout_order_completed.json');
+        $json = file_get_contents(__DIR__ . '/../../Fixtures/checkout_order_approved.json');
 
         return json_decode($json, true);
     }

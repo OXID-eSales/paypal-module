@@ -17,9 +17,15 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
+use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 
-class CheckoutOrderCompletedHandler implements HandlerInterface
+
+class CheckoutOrderApprovedHandler implements HandlerInterface
 {
+    use ServiceContainer;
+
     /**
      * @inheritDoc
      * @throws ApiException
@@ -27,11 +33,9 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
     public function handle(Event $event): void
     {
         $data = $event->getData()['resource'];
+        $payPalOrderId = (string) $data['id'];
 
-        $payPalOrderId = $data['id'] ?? '';
-        $oxidOrderId = $data['purchase_units'][0]['custom_id'] ?? '';
-
-        if (!$oxidOrderId || !$payPalOrderId) {
+        if (!$payPalOrderId) {
             throw WebhookEventException::mandatoryDataNotFound();
         }
 
@@ -42,16 +46,14 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
             $order = $orderRepository->getShopOrderByPayPalOrderId($payPalOrderId);
         } catch(NotFound $exception) {
             throw WebhookEventException::byPayPalOrderId($payPalOrderId);
-        $order = oxNew(EshopModelOrder::class);
-        if (!$order->load($oxidOrderId)) {
-            throw WebhookEventException::byOrderId($oxidOrderId);
         }
 
+        //TODO: tbd: query order details from paypal. On the other hand, we just got verified that this data came from PayPal.
+
+        //This one needs a capture
         $response = $this->capturePayment($payPalOrderId);
 
         if (
-            $data['status'] == OrderResponse::STATUS_COMPLETED &&
-            $data['purchase_units'][0]['payments']['captures'][0]['status'] == Capture::STATUS_COMPLETED
             $response->status == OrderResponse::STATUS_COMPLETED &&
             $response->purchase_units[0]->payments->captures[0]->status == Capture::STATUS_COMPLETED
         ) {

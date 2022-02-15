@@ -61,7 +61,7 @@ final class PayPalCheckoutLoginCest extends BaseCest
             ]
         );
     }
-    /** @group wahoo */
+
     public function checkoutWithPaypalFromBasketStepNoAutomaticLoginFinalizeAsSameUser(AcceptanceTester $I): void
     {
         $I->wantToTest('no automatic login as existing but not logged in shop user. Shop login and PayPal login mail are the same.');

@@ -76,7 +76,7 @@ class OrderRequestFactory
         $this->basket = $basket;
 
         $request->intent = $intent;
-        if ($user = $basket->getUser()) {
+        if ($basket->getUser()) {
             $request->payer = $this->getPayer();
         }
 

@@ -16,7 +16,9 @@ use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Application\Model\User;
+use OxidEsales\Eshop\Application\Model\Payment;
 use OxidEsales\Eshop\Application\Model\PaymentGateway;
+use OxidEsales\Eshop\Core\ShopControl;
 use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Component\UserComponent as PayPalUserComponent;
 use OxidSolutionCatalysts\PayPal\Component\Widget\ArticleDetails as ArticleDetailsComponent;
@@ -37,11 +39,13 @@ use OxidSolutionCatalysts\PayPal\Controller\BasketController as PayPalBasketCont
 use OxidSolutionCatalysts\PayPal\Controller\OrderController as PayPalFrontEndOrderController;
 use OxidSolutionCatalysts\PayPal\Controller\ProxyController;
 use OxidSolutionCatalysts\PayPal\Controller\WebhookController;
+use OxidSolutionCatalysts\PayPal\Core\ShopControl as PayPalShopControl;
 use OxidSolutionCatalysts\PayPal\Core\ViewConfig as PayPalViewConfig;
 use OxidSolutionCatalysts\PayPal\Model\Basket as PayPalBasket;
 use OxidSolutionCatalysts\PayPal\Model\BasketItem as PayPalBasketItem;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Model\User as PayPalUser;
+use OxidSolutionCatalysts\PayPal\Model\Payment as PayPalPayment;
 use OxidSolutionCatalysts\PayPal\Model\PaymentGateway as PayPalPaymentGateway;
 use OxidSolutionCatalysts\PayPal\Model\Article as PayPalArticle;
 
@@ -66,12 +70,14 @@ $aModule = [
     'url' => '',
     'email' => '',
     'extend' => [
+        ShopControl::class => PayPalShopControl::class,
         ViewConfig::class => PayPalViewConfig::class,
         Order::class => PayPalOrder::class,
         User::class => PayPalUser::class,
         Basket::class => PayPalBasket::class,
         BasketItem::class => PayPalBasketItem::class,
         Article::class => PayPalArticle::class,
+        Payment::class => PayPalPayment::class,
         PaymentGateway::class => PayPalPaymentGateway::class,
         ArticleList::class => ArticleListController::class,
         ArticleDetailsController::class => PayPalArticleDetailsController::class,
@@ -79,7 +85,6 @@ $aModule = [
         ArticleDetails::class => ArticleDetailsComponent::class,
         OrderController::class => PayPalFrontEndOrderController::class,
         UserComponent::class => PayPalUserComponent::class
-
     ],
     'controllers' => [
         'oscpaypalconfig' => PayPalConfigController::class,

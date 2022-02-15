@@ -57,8 +57,6 @@ final class AdminCest extends BaseCest
 
         $I->click(Translator::translate('OSC_PAYPAL_FILTER'));
         $I->see(Translator::translate('OSC_PAYPAL_STORE_ID'));
-
-        $I->markTestIncomplete('TODO: figure out why this error is shown');
         $I->dontSee(Translator::translate('OSC_PAYPAL_ERROR'));
     }
 

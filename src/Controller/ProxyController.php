@@ -20,6 +20,7 @@ use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Email;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Core\Config;
@@ -48,23 +49,11 @@ class ProxyController extends FrontendController
         $this->addToBasket();
         $this->setPayPalPaymentMethod();
 
-        /** @var ServiceFactory $serviceFactory */
-        $serviceFactory = Registry::get(ServiceFactory::class);
-        $service = $serviceFactory->getOrderService();
-
-        /** @var OrderRequestFactory $requestFactory */
-        $requestFactory = Registry::get(OrderRequestFactory::class);
-        $request = $requestFactory->getRequest(
+        $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
             Registry::getSession()->getBasket(),
             OrderRequest::INTENT_CAPTURE,
             OrderRequestFactory::USER_ACTION_CONTINUE
         );
-
-        try {
-            $response = $service->createOrder($request, '', '');
-        } catch (Exception $exception) {
-            Registry::getLogger()->error("Error on order create call.", [$exception]);
-        }
 
         if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);

@@ -45,6 +45,11 @@ class PayPalOrder extends BaseModel
         return $this->getFieldData('oscpaypalstatus');
     }
 
+    public function getPaymentMethodId(): string
+    {
+        return $this->getFieldData('oscpaymentmethodid');
+    }
+
     public function setStatus(string $status): void
     {
         $this->assign(
@@ -54,5 +59,13 @@ class PayPalOrder extends BaseModel
         );
     }
 
+    public function setPaymentMethodId(string $id): void
+    {
+        $this->assign(
+            [
+                'oscpaymentmethodid' => $id
+            ]
+        );
+    }
 
 }

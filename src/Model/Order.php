@@ -10,10 +10,14 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Model;
 
+use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
+use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Model\BaseModel;
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\Application\Model\UserPayment;
+use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalOrder;
@@ -22,6 +26,10 @@ use OxidSolutionCatalysts\PayPalApi\Model\Subscriptions\Subscription as PayPalSu
 use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Traits\AdminOrderFunctionTrait;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 
 /**
  * PayPal Eshop model order class
@@ -30,7 +38,23 @@ use OxidSolutionCatalysts\PayPal\Traits\AdminOrderFunctionTrait;
  */
 class Order extends Order_parent
 {
+    use ServiceContainer;
+
     use AdminOrderFunctionTrait;
+
+    /**
+     * Uapm payment in progress
+     *
+     * @var int
+     */
+    const ORDER_STATE_UAPMINPROGRESSS = 500;
+
+    /**
+     * Error during payment execution
+     *
+     * @var int
+     */
+    const ORDER_STATE_PAYMENTERROR = 2;
 
     /**
      * PayPal order information
@@ -59,6 +83,90 @@ class Order extends Order_parent
      * @var string
      */
     protected $payPalProductId;
+
+    public function finalizeOrderAfterUapmRedirect(string $payPalOrderId)
+    {
+        if (!$this->isLoaded()) {
+            throw PayPalException::uAPMCannotFinalizeOrderAfterRedirectSuccess($payPalOrderId);
+        }
+
+        if (!$this->oxorder__oxordernr->value) {
+            $this->_setNumber();
+        } else {
+            oxNew(\OxidEsales\Eshop\Core\Counter::class)->update($this->_getCounterIdent(), $this->oxorder__oxordernr->value);
+        }
+
+        // deleting remark info only when order is finished
+        \OxidEsales\Eshop\Core\Registry::getSession()->deleteVariable('ordrem');
+
+        $this->_updateOrderDate();
+
+        //TODO: Order is still not finished, need to doublecheck uapm payment status
+        $this->_setOrderStatus('NOT_FINISHED');
+
+        $basket = Registry::getSession()->getBasket();
+        $user = Registry::getSession()->getUser();
+        $userPayment = oxNew(UserPayment::class);
+        $userPayment->load($this->getFieldData('oxpaymentid'));
+        $this->afterOrderCleanUp($basket, $user);
+
+        return $this->_sendOrderByEmail($user, $basket, $userPayment);
+    }
+
+    //TODO: this place should be refactored in shop core
+    protected function afterOrderCleanUp(EshopModelBasket $basket, EshopModelUser $user): void
+    {
+        // deleting remark info only when order is finished
+        Registry::getSession()->deleteVariable('ordrem');
+
+        // store orderid
+        $basket->setOrderId($this->getId());
+
+        // updating wish lists
+        $this->_updateWishlist($basket->getContents(), $user);
+
+        // updating users notice list
+        $this->_updateNoticeList($basket->getContents(), $user);
+
+        // marking vouchers as used and sets them to $this->_aVoucherList (will be used in order email)
+        // skipping this action in case of order recalculation
+        $this->_markVouchers($basket, $user);
+    }
+
+    /**
+     * Executes payment. Additionally loads oxPaymentGateway object, initiates
+     * it by adding payment parameters (oxPaymentGateway::setPaymentParams())
+     * and finally executes it (oxPaymentGateway::executePayment()). On failure -
+     * deletes order and returns * error code 2.
+     *
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket      basket object
+     * @param object                                     $oUserpayment user payment object
+     *
+     * @return  integer 2 or an error code
+     * @deprecated underscore prefix violates PSR12, will be renamed to "executePayment" in next major
+     */
+    protected function _executePayment($basket, $userpayment) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+    {
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+
+        //catch uapm PayPal payments here
+        if (PayPalDefinitions::isUAPMPayment($paymentService->getSessionPaymentId())) {
+           try {
+               /** @var EshopModelBasket $basket */
+               $basket = Registry::getSession()->getBasket();
+               $uapmGoNext = $paymentService->doExecuteUAPMPayment($this, $basket);
+               PayPalSession::setUapmRedirectLink($uapmGoNext);
+
+               return self::ORDER_STATE_UAPMINPROGRESSS;
+           } catch(\Exception $exception) {
+               $this->delete();
+               Registry::getLogger()->error($exception->getMessage(), [$exception]);
+           }
+            return self::ORDER_STATE_PAYMENTERROR;
+        } else {
+            return parent::_executePayment($basket, $userpayment);
+        }
+    }
 
     /**
      * Get PayPal order object for the current active order object
