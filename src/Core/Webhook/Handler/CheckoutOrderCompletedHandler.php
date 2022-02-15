@@ -40,7 +40,6 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
             throw WebhookEventException::byOrderId($oxidOrderId);
         }
 
-        //TODO: what happens if that order was already captured?
         $response = $this->capturePayment($payPalOrderId);
 
         if (
