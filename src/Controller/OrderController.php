@@ -212,7 +212,7 @@ class OrderController extends OrderController_parent
         try {
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
-            $order->finalizeOrderAfterUapmRedirect($sessionUapmOrderId);
+            $order->finalizeOrderAfterExternalPayment($sessionUapmOrderId);
 
         } catch (\Exception $exception) {
             $this->canceluapm('cannot finalize order');
