@@ -126,8 +126,7 @@
                         })
                     }).catch(function (err) {
                         console.log('Payment could not be processed! ' + JSON.stringify(err))
-                        alert('Please try again');
-                        window.location.reload();
+                        window.location.href = '[{$sSelfLink|cat:"cl=order&acdcretry=true"}]'
                     })
                 })
             });

@@ -50,4 +50,5 @@ $aLang = [
     'OSC_PAYPAL_ACDC_CARD_EXDATE'                 => 'Ablaufdatum',
     'OSC_PAYPAL_ACDC_CARD_CVV'                    => 'CVV',
     'OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD'           => 'Karteninhaber',
+    'OSC_PAYPAL_ACDC_PLEASE_RETRY'                => 'Bitte geben Sie ihre Kreditkartendaten erneut ein.'
 ];

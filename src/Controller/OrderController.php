@@ -7,11 +7,13 @@
 
 namespace OxidSolutionCatalysts\PayPal\Controller;
 
+use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalEshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
@@ -45,7 +47,23 @@ class OrderController extends OrderController_parent
             Registry::getUtils()->redirect(Registry::getConfig()->getShopHomeUrl() . 'cl=user', true, 302);
         }
 
+        $this->renderAcdcRetry();
+
         return parent::render();
+    }
+
+    protected function renderAcdcRetry()
+    {
+        if (Registry::getRequest()->getRequestParameter('acdcretry')) {
+            $displayError = oxNew(DisplayError::class);
+            $displayError->setMessage('OSC_PAYPAL_ACDC_PLEASE_RETRY');
+            Registry::getUtilsView()->addErrorToDisplay($displayError);
+
+            $paymentService = $this->getServiceFromContainer(PaymentService::class);
+            if ((string) $paymentService->getSessionPaymentId() === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) {
+                $paymentService->removeTemporaryOrder();
+            }
+        }
     }
 
     public function getUserCountryIso(): string
