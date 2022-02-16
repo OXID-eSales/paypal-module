@@ -112,6 +112,16 @@ class ViewConfig extends ViewConfig_parent
             $params['components'] = 'messages,buttons';
         }
 
+        $params['enable-funding'] = 'paylater';
+        $params['disable-funding'] = 'sepa,bancontact,blik,eps,giropay,ideal,mercadopago,mybank,p24,sofort,venmo';
+
+        if ($this->getServiceFromContainer(ModuleSettings::class)->isAcdcEligibility()) {
+            $params['disable-funding'] .= ',card';
+        }
+        else {
+            $params['enable-funding'] .= ',card';
+        }
+
         return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
     }
 

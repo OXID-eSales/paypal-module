@@ -36,6 +36,11 @@ class PaymentController extends PaymentController_parent
             }
         }
 
+        // check ACDC Eligibility
+        if (!$this->getServiceFromContainer(ModuleSettings::class)->isAcdcEligibility()) {
+            unset ($paymentList['oxidpaypal_acdc']);
+        }
+
         return $paymentList;
     }
 }
