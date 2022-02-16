@@ -39,6 +39,6 @@ class Events
     private static function executeModuleMigrations(): void
     {
         $migrations = (new MigrationsBuilder())->build();
-        $migrations->execute('migrations:migrate', 'oxscpaypal');
+        $migrations->execute('migrations:migrate', 'osc_paypal');
     }
 }
