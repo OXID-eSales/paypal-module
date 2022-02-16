@@ -11,6 +11,7 @@ use OxidEsales\Eshop\Application\Controller\Admin\ArticleList;
 use OxidEsales\Eshop\Application\Controller\ArticleDetailsController;
 use OxidEsales\Eshop\Application\Controller\BasketController;
 use OxidEsales\Eshop\Application\Controller\OrderController;
+use OxidEsales\Eshop\Application\Controller\PaymentController;
 use OxidEsales\Eshop\Application\Model\Article;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\BasketItem;
@@ -37,6 +38,7 @@ use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalTransactionController;
 use OxidSolutionCatalysts\PayPal\Controller\ArticleDetailsController as PayPalArticleDetailsController;
 use OxidSolutionCatalysts\PayPal\Controller\BasketController as PayPalBasketController;
 use OxidSolutionCatalysts\PayPal\Controller\OrderController as PayPalFrontEndOrderController;
+use OxidSolutionCatalysts\PayPal\Controller\PaymentController as PayPalPaymentController;
 use OxidSolutionCatalysts\PayPal\Controller\ProxyController;
 use OxidSolutionCatalysts\PayPal\Controller\WebhookController;
 use OxidSolutionCatalysts\PayPal\Core\ShopControl as PayPalShopControl;
@@ -84,6 +86,7 @@ $aModule = [
         BasketController::class => PayPalBasketController::class,
         ArticleDetails::class => ArticleDetailsComponent::class,
         OrderController::class => PayPalFrontEndOrderController::class,
+        PaymentController::class => PayPalPaymentController::class,
         UserComponent::class => PayPalUserComponent::class
     ],
     'controllers' => [
@@ -368,6 +371,11 @@ $aModule = [
             'name' => 'blPayPalNeverUseCredit',
             'type' => 'bool',
             'value' => false,
+        ],
+        [
+            'name' => 'blPayPalAcdcEligibility',
+            'type' => 'bool',
+            'value' => true
         ],
         [
             'name' => 'arrPayPalEnabledOptions_Details',
