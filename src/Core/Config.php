@@ -28,20 +28,7 @@ class Config
      */
     public function checkHealth(): void
     {
-        if (
-            (
-                !$this->isSandbox() &&
-                !$this->getLiveClientId() &&
-                !$this->getLiveClientSecret() &&
-                !$this->getLiveWebhookId()
-            ) ||
-            (
-                $this->isSandbox() &&
-                !$this->getSandboxClientId() &&
-                !$this->getSandboxClientSecret() &&
-                !$this->getSandboxWebhookId()
-            )
-        ) {
+        if (!$this->getServiceFromContainer(ModuleSettings::class)->checkHealth()) {
             throw oxNew(
                 StandardException::class
             );
@@ -77,9 +64,7 @@ class Config
      */
     public function getClientId(): string
     {
-        return $this->isSandbox() ?
-            $this->getSandboxClientId() :
-            $this->getLiveClientId();
+        return $this->getServiceFromContainer(ModuleSettings::class)->getClientId();
     }
 
     /**
@@ -89,9 +74,7 @@ class Config
      */
     public function getClientSecret(): string
     {
-        return $this->isSandbox() ?
-            $this->getSandboxClientSecret() :
-            $this->getLiveClientSecret();
+        return $this->getServiceFromContainer(ModuleSettings::class)->getClientSecret();
     }
 
     /**
@@ -99,9 +82,12 @@ class Config
      */
     public function getWebhookId()
     {
-        return $this->isSandbox() ?
-            $this->getSandboxWebhookId()
-            : $this->getLiveWebhookId();
+        return $this->getServiceFromContainer(ModuleSettings::class)->getWebhookId();
+    }
+
+    public function isAcdcEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isAcdcEligibility();
     }
 
     public function getLiveClientId(): string

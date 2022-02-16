@@ -24,7 +24,7 @@ class ViewConfig extends ViewConfig_parent
      */
     public function isPayPalActive(): bool
     {
-        return $this->getPayPalConfig()->isActive();
+        return $this->getServiceFromContainer(ModuleSettings::class)->checkHealth();
     }
 
     /**
@@ -87,12 +87,11 @@ class ViewConfig extends ViewConfig_parent
      */
     public function getPayPalJsSdkUrl($subscribe = false): string
     {
-        $payPalConfig = $this->getPayPalConfig();
         $config = Registry::getConfig();
 
         $params = [];
 
-        $params['client-id'] = $payPalConfig->getClientId();
+        $params['client-id'] = $this->getServiceFromContainer(ModuleSettings::class)->getClientId();
 
         if ($subscribe) {
             $params['vault'] = 'true';
@@ -125,11 +124,10 @@ class ViewConfig extends ViewConfig_parent
      */
     public function getPayPalJsSdkUrlForACDC(): string
     {
-        $payPalConfig = $this->getPayPalConfig();
         $config = Registry::getConfig();
 
         $params = [];
-        $params['client-id'] = $payPalConfig->getClientId();
+        $params['client-id'] = $this->getServiceFromContainer(ModuleSettings::class)->getClientId();
         $params['integration-date'] = Constants::PAYPAL_INTEGRATION_DATE;
 
         if ($currency = $config->getActShopCurrencyObject()) {
@@ -164,7 +162,7 @@ class ViewConfig extends ViewConfig_parent
      */
     public function getPayPalClientId(): string
     {
-        return $this->getPayPalConfig()->getClientId();
+        return $this->getServiceFromContainer(ModuleSettings::class)->getClientId();
     }
 
     /**
