@@ -366,11 +366,5 @@ $aModule = [
         //PSPAYPAL-515
         ['name' => 'blPayPalLoginWithPayPalEMail', 'type' => 'bool', 'value' => 'false'],
 
-        // PSPAYPAL-492
-        [
-            'name' => 'blPayPalNeverUseCredit',
-            'type' => 'bool',
-            'value' => false
-        ]
     ]
 ];
