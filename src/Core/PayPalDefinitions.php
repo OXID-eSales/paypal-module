@@ -29,15 +29,14 @@ final class PayPalDefinitions
             ],
             'countries' => []
         ],
-        //PayPal advanced credit and debit card //TODO: name?
         self::ACDC_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
-                    'desc' => "PayPal advanced credit and debit card",
+                    'desc' => "Kreditkarte (über PayPal)",
                     'longdesc' => "Bezahlen Sie bequem mit PayPal"
                 ],
                 'en' => [
-                    'desc' => "PayPal advanced credit and debit card",
+                    'desc' => "Creditcard (via PayPal)",
                     'longdesc' => "Pay conveniently with PayPal"
                 ]
             ],
