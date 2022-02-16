@@ -1,6 +1,3 @@
-
-[{oxstyle include=$oViewConf->getModuleUrl('osc_paypal','out/src/css/paypal_acdc.css')}]
-
 [{block name="oscpaypal_acdc"}]
     [{* use original script tag instead of oxscript because of the additional params *}]
     <script src="[{$oViewConf->getPayPalJsSdkUrlForACDC()}]" data-client-token="[{$oViewConf->getDataClientToken()}]"></script>
@@ -9,19 +6,24 @@
 <!-- Advanced credit and debit card payments form -->
 <div id="card_container" class="card_container">
     <form id="card_form">
-        <label for="card-number">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_NUMBER"}]</label>
-           <div id="card-number" class="card_field"></div>
-        <div>
-            <label for="expiration-date">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_EXDATE"}]</label>
-            <div id="expiration-date" class="card_field"></div>
+        <div class="form-group">
+            <label for="card-number" class="control-label">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_NUMBER"}]</label>
+            <div id="card-number" class="form-control card_field"></div>
         </div>
-        <div>
-            <label for="cvv">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_CVV"}]</label
-              ><div id="cvv" class="card_field"></div>
+        <div class="form-group">
+            <label for="expiration-date" class="control-label">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_EXDATE"}]</label>
+            <div id="expiration-date" class="form-control card_field"></div>
         </div>
-        <label for="card-holder-name">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD"}]</label>
-            <input type="text" id="card-holder-name" name="card-holder-name" autocomplete="off" placeholder="card holder name"/>
-
+        <div class="form-group">
+            <label for="cvv" class="control-label">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_CVV"}]</label>
+            <div id="cvv" class="form-control card_field"></div>
+        </div>
+        <div class="form-group">
+            <label for="card-holder-name" class="control-label">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD"}]</label>
+            <div class="controls">
+                <input type="text" id="card-holder-name" class="form-control" name="card-holder-name" autocomplete="off" placeholder="[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD"}]"/>
+            </div>
+        </div>
         <div class="hidden">
             <input type="hidden" id="card-billing-address-street" name="card-billing-address-street" value="[{if $oxcmp_user->oxuser__oxstreet->value}][{$oxcmp_user->oxuser__oxstreet->value}][{/if}] [{if $oxcmp_user->oxuser__oxstreetnr->value}][{$oxcmp_user->oxuser__oxstreetnr->value}][{/if}]" />
             <input type="hidden" id="card-billing-address-unit" name="card-billing-address-unit" value=""/>

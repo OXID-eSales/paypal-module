@@ -6,3 +6,4 @@ php-cs-fixer.phar
 /vendor/
 /composer.lock
 /Tests/Codeception/_output/
+/resources/node_modules/
