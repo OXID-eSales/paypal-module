@@ -366,5 +366,10 @@ $aModule = [
         //PSPAYPAL-515
         ['name' => 'blPayPalLoginWithPayPalEMail', 'type' => 'bool', 'value' => 'false'],
 
+        [
+            'name' => 'blPayPalAcdcEligibility',
+            'type' => 'bool',
+            'value' => true
+        ]
     ]
 ];
