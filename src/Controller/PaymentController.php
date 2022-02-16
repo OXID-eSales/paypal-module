@@ -7,10 +7,13 @@
 
 namespace OxidSolutionCatalysts\PayPal\Controller;
 
-use OxidSolutionCatalysts\PayPal\Core\Config;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 
 class PaymentController extends PaymentController_parent
 {
+    use ServiceContainer;
+
     /**
      * Template variable getter. Returns paymentlist
      *
@@ -21,7 +24,7 @@ class PaymentController extends PaymentController_parent
         $paymentList = parent::getPaymentList();
 
         // check if basic config exists
-        if (!Config::checkHealth()) {
+        if (!$this->getServiceFromContainer(ModuleSettings::class)->checkHealth()) {
             $paymentListRaw = $paymentList;
             $paymentList = [];
 
