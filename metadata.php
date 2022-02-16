@@ -370,69 +370,7 @@ $aModule = [
         [
             'name' => 'blPayPalNeverUseCredit',
             'type' => 'bool',
-            'value' => false,
-        ],
-        [
-            'name' => 'blPayPalAcdcEligibility',
-            'type' => 'bool',
-            'value' => true
-        ],
-        [
-            'name' => 'arrPayPalEnabledOptions_Details',
-            'type' => 'aarr',
-            'value' => [
-                'card'          => 1,
-                'bancontact'    => 0,
-                'blik'          => 0,
-                'eps'           => 0,
-                'giropay'       => 0,
-                'ideal'         => 0,
-                'mercadopago'   => 0,
-                'mybank'        => 0,
-                'p24'           => 0,
-                'sepa'          => 1,
-                'sofort'        => 1,
-                'venmo'         => 0,
-                'paylater'      => 1,
-            ]
-        ],
-        [
-            'name' => 'arrPayPalEnabledOptions_Basket',
-            'type' => 'aarr',
-            'value' => [
-                'card'          => 1,
-                'bancontact'    => 0,
-                'blik'          => 0,
-                'eps'           => 0,
-                'giropay'       => 1,
-                'ideal'         => 0,
-                'mercadopago'   => 0,
-                'mybank'        => 0,
-                'p24'           => 0,
-                'sepa'          => 1,
-                'sofort'        => 1,
-                'venmo'         => 0,
-                'paylater'      => 1,
-            ]
-        ],
-        [
-            'name' => 'arrPayPalEnabledOptions_Checkout',
-            'type' => 'aarr',
-            'value' => [
-                'card'          => 1,
-                'bancontact'    => 1,
-                'blik'          => 1,
-                'eps'           => 1,
-                'giropay'       => 1,
-                'ideal'         => 1,
-                'mercadopago'   => 1,
-                'mybank'        => 1,
-                'p24'           => 1,
-                'sepa'          => 1,
-                'sofort'        => 1,
-                'venmo'         => 1,
-                'paylater'      => 1,
-            ]
-        ],
+            'value' => false
+        ]
     ]
 ];
