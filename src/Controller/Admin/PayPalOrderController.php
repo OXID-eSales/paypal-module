@@ -19,6 +19,8 @@ use OxidSolutionCatalysts\PayPalApi\Model\Payments\RefundRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Payments;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Traits\AdminOrderFunctionTrait;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 
 /**
  * Order class wrapper for PayPal module
@@ -26,6 +28,7 @@ use OxidSolutionCatalysts\PayPal\Traits\AdminOrderFunctionTrait;
 class PayPalOrderController extends AdminDetailsController
 {
     use AdminOrderFunctionTrait;
+    use ServiceContainer;
 
     /**
      * @var Order
@@ -107,7 +110,8 @@ class PayPalOrderController extends AdminDetailsController
     public function capture(): void
     {
         $order = $this->getOrder();
-        $orderId = $order->getPayPalOrder()->id;
+        $paypalOrder =  $order->getPayPalOrder();
+        $orderId = $paypalOrder->id;
 
         /** @var ServiceFactory $serviceFactory */
         $serviceFactory = Registry::get(ServiceFactory::class);
@@ -120,6 +124,12 @@ class PayPalOrderController extends AdminDetailsController
             $response->purchase_units[0]->payments->captures[0]->status == Capture::STATUS_COMPLETED
         ) {
             $order->markOrderPaid();
+
+            /** @var PayPalModelOrder $paypalOrderModel */
+            $paypalOrderModel = $this->getServiceFromContainer(OrderRepository::class)
+                ->paypalOrderByOrderIdAndPayPalId($order->getId(), $orderId);
+            $paypalOrderModel->setStatus($response->status);
+            $paypalOrderModel->save();
         }
     }
 

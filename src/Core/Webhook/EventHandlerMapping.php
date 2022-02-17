@@ -10,7 +10,7 @@ namespace OxidSolutionCatalysts\PayPal\Core\Webhook;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\BillingSubscriptionUpdateHandler;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutOrderCompletedHandler;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutOrderApprovedHandler;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutPaymentAppovalReverseHandler;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutPaymentApprovalReverseHandler;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\MerchantOnboardingCompleteHandler;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\MerchantPartnerConsentRevokedHandler;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureCompletedHandler;
@@ -27,11 +27,11 @@ class EventHandlerMapping
         'CHECKOUT.ORDER.COMPLETED' => CheckoutOrderCompletedHandler::class,
         // CHECKOUT.ORDER.APPROVED is for us the same handle like CHECKOUT.ORDER.COMPLETED
         'CHECKOUT.ORDER.APPROVED' => CheckoutOrderApprovedHandler::class,
-        'CHECKOUT.PAYMENT-APPROVAL.REVERSED' => CheckoutPaymentAppovalReverseHandler::class,
+        'CHECKOUT.PAYMENT-APPROVAL.REVERSED' => CheckoutPaymentApprovalReverseHandler::class,
         //'MERCHANT.ONBOARDING.COMPLETED' => MerchantOnboardingCompleteHandler::class,
         //'MERCHANT.PARTNER-CONSENT.REVOKED' => MerchantPartnerConsentRevokedHandler::class,
         //'PAYMENT.CAPTURE.COMPLETED' => PaymentCaptureCompletedHandler::class,
-        //'PAYMENT.CAPTURE.DENIED' => PaymentCaptureDeniedHandler::class,
+        'PAYMENT.CAPTURE.DENIED' => PaymentCaptureDeniedHandler::class,
         //'PAYMENT.CAPTURE.REFUNDED' => PaymentCaptureRefundedHandler::class,
         //'PAYMENT.CAPTURE.PENDING' => PaymentCapturePendingHandler::class,
         //'BILLING.SUBSCRIPTION.ACTIVATED' => BillingSubscriptionUpdateHandler::class,

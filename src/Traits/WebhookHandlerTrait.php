@@ -17,6 +17,8 @@ use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 
 trait WebhookHandlerTrait
 {
+    use ServiceContainer;
+
     public function getOrder(Event $event): EshopModelOrder
     {
         $payPalOrderId = $this->getPayPalOrderId($event);

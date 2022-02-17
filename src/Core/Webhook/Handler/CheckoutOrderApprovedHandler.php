@@ -16,15 +16,11 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as OrderResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
-use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
-use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait;
 
 class CheckoutOrderApprovedHandler implements HandlerInterface
 {
-    use ServiceContainer;
     use WebhookHandlerTrait;
 
     /**
@@ -48,6 +44,12 @@ class CheckoutOrderApprovedHandler implements HandlerInterface
             $response->purchase_units[0]->payments->captures[0]->status == Capture::STATUS_COMPLETED
         ) {
             $order->markOrderPaid();
+
+            /** @var PayPalModelOrder $paypalOrderModel */
+            $paypalOrderModel = $this->getServiceFromContainer(OrderRepository::class)
+                ->paypalOrderByOrderIdAndPayPalId($order->getId(), $payPalOrderId);
+            $paypalOrderModel->setStatus($response->status);
+            $paypalOrderModel->save();
         }
     }
 

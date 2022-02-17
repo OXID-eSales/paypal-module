@@ -15,16 +15,11 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as OrderResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
-use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
-use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait;
-
 
 class CheckoutOrderCompletedHandler implements HandlerInterface
 {
-    use ServiceContainer;
     use WebhookHandlerTrait;
 
     /**
@@ -36,6 +31,7 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
         /** @var EshopModelOrder $order */
         $order = $this->getOrder($event);
 
+        $payPalOrderId = $this->getPayPalOrderId($event);
         $data = $this->getEventPayload($event)['resource'];
 
         //TODO: tbd: query order details from paypal. On the other hand, we just got verified that this data came from PayPal.
@@ -44,6 +40,12 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
             $data['purchase_units'][0]['payments']['captures'][0]['status'] == Capture::STATUS_COMPLETED
         ) {
             $order->markOrderPaid();
+
+            /** @var PayPalModelOrder $paypalOrderModel */
+            $paypalOrderModel = $this->getServiceFromContainer(OrderRepository::class)
+                ->paypalOrderByOrderIdAndPayPalId($order->getId(), $payPalOrderId);
+            $paypalOrderModel->setStatus($data['status']);
+            $paypalOrderModel->save();
         }
     }
 }

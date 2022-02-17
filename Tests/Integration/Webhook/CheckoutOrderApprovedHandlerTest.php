@@ -12,6 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as PayPalApiOrders;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutOrderApprovedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
@@ -56,6 +57,7 @@ final class CheckoutOrderApprovedHandlerTest extends UnitTestCase
         $event = new WebhookEvent($data, 'CHECKOUT.ORDER.APPROVED');
 
         $orderMock = $this->prepareOrderMock('order_oxid');
+        $paypalOrderMock = $this->preparePayPalOrderMock($data['resource']['id']);
 
         $orderRepositoryMock = $this->getMockBuilder(OrderRepository::class)
             ->disableOriginalConstructor()
@@ -63,6 +65,9 @@ final class CheckoutOrderApprovedHandlerTest extends UnitTestCase
         $orderRepositoryMock->expects($this->once())
             ->method('getShopOrderByPayPalOrderId')
             ->willReturn($orderMock);
+        $orderRepositoryMock->expects($this->once())
+            ->method('paypalOrderByOrderIdAndPayPalId')
+            ->willReturn($paypalOrderMock);
 
         $data = [
             'status' => 'COMPLETED',
@@ -83,7 +88,7 @@ final class CheckoutOrderApprovedHandlerTest extends UnitTestCase
         $handler = $this->getMockBuilder(CheckoutOrderApprovedHandler::class)
             ->onlyMethods(['getServiceFromContainer'])
             ->getMock();
-        $handler->expects($this->once())
+        $handler->expects($this->any())
             ->method('getServiceFromContainer')
             ->willReturn($orderRepositoryMock);
         $handler->handle($event);
@@ -103,6 +108,26 @@ final class CheckoutOrderApprovedHandlerTest extends UnitTestCase
             ->willReturn($orderId);
         $mock->expects($this->once())
             ->method('markOrderPaid');
+
+        return $mock;
+    }
+
+    private function preparePaypalOrderMock(string $orderId): PayPalOrderModel
+    {
+        $mock = $this->getMockBuilder(PayPalOrderModel::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $mock->expects($this->any())
+            ->method('load')
+            ->with($orderId)
+            ->willReturn(true);
+        $mock->expects($this->any())
+            ->method('getId')
+            ->willReturn($orderId);
+        $mock->expects($this->once())
+            ->method('setStatus');
+        $mock->expects($this->once())
+            ->method('save');
 
         return $mock;
     }
