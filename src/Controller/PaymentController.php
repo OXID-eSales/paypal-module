@@ -9,6 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 
 class PaymentController extends PaymentController_parent
 {
@@ -38,7 +39,7 @@ class PaymentController extends PaymentController_parent
 
         // check ACDC Eligibility
         if (!$this->getServiceFromContainer(ModuleSettings::class)->isAcdcEligibility()) {
-            unset ($paymentList['oxidpaypal_acdc']);
+            unset ($paymentList[PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID]);
         }
 
         return $paymentList;
