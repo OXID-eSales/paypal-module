@@ -51,7 +51,7 @@
 
                 // Call your server to set up the transaction
                 createOrder: function(data, actions) {
-                    return fetch('[{$sSelfLink|cat:"cl=order&fnc=createAcdcOrder&ord_agb=1&challenge="}]' + '[{$oViewConf->getSessionChallengeToken()}]' + '&sDeliveryAddressMD5=' + '[{$oView->getDeliveryAddressMD5()}]', {
+                    return fetch('[{$sSelfLink|cat:"cl=order&fnc=createAcdcOrder&ord_agb=1&stoken="}]' + '[{$oViewConf->getSessionChallengeToken()}]' + '&sDeliveryAddressMD5=' + '[{$oView->getDeliveryAddressMD5()}]', {
                         method: 'post',
                         headers: {
                             'content-type': 'application/json'
