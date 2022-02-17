@@ -29,21 +29,16 @@
     <div class="col-12 col-md-6" id="orderPayment">
         <div>
             <div class="card">
-                <form action="[{$oViewConf->getSslSelfLink()}]" method="post">
-                    <div class="card-header">
-                        <h3 class="card-title">
-                            [{oxmultilang ident="PAYMENT_METHOD"}]
-                            [{$oViewConf->getHiddenSid()}]
-                            <input type="hidden" name="cl" value="payment">
-                            <input type="hidden" name="fnc" value="">
-                            <button type="submit"
-                                    class="btn btn-sm btn-warning float-right submitButton largeButton edit-button"
-                                    title="[{oxmultilang ident="EDIT"}]">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        [{oxmultilang ident="PAYMENT_METHOD"}]
+                        <a href="[{$oViewConf->getSslSelfLink()|cat:"cl=payment"}]" title="[{oxmultilang ident="EDIT"}]">
+                            <span class="btn btn-sm btn-warning float-right submitButton largeButton edit-button">
                                 <i class="fas fa-pencil-alt"></i>
-                            </button>
-                        </h3>
-                    </div>
-                </form>
+                            </span>
+                        </a>
+                    </h3>
+                </div>
                 <div class="card-body">
                     [{$payment->oxpayments__oxdesc->value}]
                     [{if $sPaymentID == "oxidpaypal_acdc"}]
