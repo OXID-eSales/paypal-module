@@ -13,6 +13,7 @@ final class PayPalDefinitions
 {
     public const STANDARD_PAYPAL_PAYMENT_ID = 'oxidpaypal';
     public const ACDC_PAYPAL_PAYMENT_ID = 'oxidpaypal_acdc';
+    public const PUI_PAYPAL_PAYMENT_ID = 'oxidpaypal_pui';
 
     private const PAYPAL_DEFINTIONS = [
         //Standard PayPal
@@ -28,6 +29,19 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => []
+        ],
+        self::PUI_PAYPAL_PAYMENT_ID => [
+            'descriptions' => [
+                'de' => [
+                    'desc' => "Rechnungskauf (über PayPal)",
+                    'longdesc' => "Bezahlen Sie bequem mit PayPal"
+                ],
+                'en' => [
+                    'desc' => "Pay upon Invoice (via PayPal)",
+                    'longdesc' => "Pay conveniently with PayPal"
+                ]
+            ],
+            'countries' => ['DE']
         ],
         self::ACDC_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
