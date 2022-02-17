@@ -36,8 +36,7 @@ class CheckoutOrderApprovedHandler implements HandlerInterface
         /** @var EshopModelOrder\ $order */
         $order = $this->getOrder($event);
 
-        $data = $event->getData()['resource'];
-        $payPalOrderId = (string) $data['id'];
+        $payPalOrderId = $this->getPayPalOrderId($event);
 
         //TODO: tbd: query order details from paypal. On the other hand, we just got verified that this data came from PayPal.
 

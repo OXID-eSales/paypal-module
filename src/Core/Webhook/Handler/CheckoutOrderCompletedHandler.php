@@ -33,10 +33,10 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
      */
     public function handle(Event $event): void
     {
-        $data = $event->getData()['resource'];
-
         /** @var EshopModelOrder $order */
         $order = $this->getOrder($event);
+
+        $data = $this->getEventPayload($event)['resource'];
 
         //TODO: tbd: query order details from paypal. On the other hand, we just got verified that this data came from PayPal.
         if (

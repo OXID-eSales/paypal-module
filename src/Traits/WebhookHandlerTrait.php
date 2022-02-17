@@ -19,12 +19,7 @@ trait WebhookHandlerTrait
 {
     public function getOrder(Event $event): EshopModelOrder
     {
-        $data = $event->getData()['resource'];
-        $payPalOrderId = (string) $data['id'];
-
-        if (!$payPalOrderId) {
-            throw WebhookEventException::mandatoryDataNotFound();
-        }
+        $payPalOrderId = $this->getPayPalOrderId($event);
 
         //get PayPalOrder
         try {
@@ -36,5 +31,33 @@ trait WebhookHandlerTrait
         }
 
         return $order;
+    }
+
+    public function getPayPalOrderId(Event $event): string
+    {
+        $data = $this->getEventPayload($event);
+
+        if (!is_array($data) || !isset($data['resource'])) {
+            throw WebhookEventException::mandatoryDataNotFound();
+        }
+
+        $payPalOrderId = (string) $data['resource']['id'];
+
+        if (!$payPalOrderId) {
+            throw WebhookEventException::mandatoryDataNotFound();
+        }
+
+        return $payPalOrderId;
+    }
+
+    public function getEventPayload(Event $event): array
+    {
+        $data = $event->getData();
+
+        if (!is_array($data)) {
+            throw WebhookEventException::mandatoryDataNotFound();
+        }
+
+        return $data;
     }
 }
