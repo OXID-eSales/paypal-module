@@ -19,11 +19,13 @@ use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
+use OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait;
 
 
 class CheckoutOrderCompletedHandler implements HandlerInterface
 {
     use ServiceContainer;
+    use WebhookHandlerTrait;
 
     /**
      * @inheritDoc
@@ -32,20 +34,9 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
     public function handle(Event $event): void
     {
         $data = $event->getData()['resource'];
-        $payPalOrderId = (string) $data['id'];
 
-        if (!$payPalOrderId) {
-            throw WebhookEventException::mandatoryDataNotFound();
-        }
-
-        //get PayPalOrder
-        try {
-            $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
-            /** @var EshopModelOrder $order */
-            $order = $orderRepository->getShopOrderByPayPalOrderId($payPalOrderId);
-        } catch(NotFound $exception) {
-            throw WebhookEventException::byPayPalOrderId($payPalOrderId);
-        }
+        /** @var EshopModelOrder $order */
+        $order = $this->getOrder($event);
 
         //TODO: tbd: query order details from paypal. On the other hand, we just got verified that this data came from PayPal.
         if (
