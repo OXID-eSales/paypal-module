@@ -1,6 +1,0 @@
-[{assign var="payment" value=$oView->getPayment()}]
-[{if "oxidpaypal_acdc" == $payment->getId()}]
-    [{include file="modules/osc/paypal/oscpaypalacdc.tpl"}]
-[{else}]
-    [{$smarty.block.parent}]
-[{/if}]

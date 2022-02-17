@@ -40,6 +40,8 @@
                 [{$payment->oxpayments__oxdesc->value}]
                 [{if $sPaymentID == "oxidpaypal_acdc"}]
                    [{include file="modules/osc/paypal/oscpaypalacdc.tpl"}]
+                [{elseif $sPaymentID == "oxidpaypal_pui"}]
+                    [{include file="modules/osc/paypal/oscpaypalpui.tpl"}]
                 [{/if}]
             </div>
         </div>
