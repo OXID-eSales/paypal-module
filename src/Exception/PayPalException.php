@@ -31,7 +31,7 @@ class PayPalException extends StandardException
         return new self('uAPM-Payment something is wrong');
     }
 
-    public static function uAPMCannotFinalizeOrderAfterRedirectSuccess(string $payPalOrderId): self
+    public static function cannotFinalizeOrderAfterExternalPaymentSuccess(string $payPalOrderId): self
     {
         return new self(sprintf('uAPM-Payment error. We might have PayPal order %s with incomplete shop order', $payPalOrderId));
     }

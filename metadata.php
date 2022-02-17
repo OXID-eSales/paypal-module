@@ -11,6 +11,7 @@ use OxidEsales\Eshop\Application\Controller\Admin\ArticleList;
 use OxidEsales\Eshop\Application\Controller\ArticleDetailsController;
 use OxidEsales\Eshop\Application\Controller\BasketController;
 use OxidEsales\Eshop\Application\Controller\OrderController;
+use OxidEsales\Eshop\Application\Controller\PaymentController;
 use OxidEsales\Eshop\Application\Model\Article;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\BasketItem;
@@ -37,6 +38,7 @@ use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalTransactionController;
 use OxidSolutionCatalysts\PayPal\Controller\ArticleDetailsController as PayPalArticleDetailsController;
 use OxidSolutionCatalysts\PayPal\Controller\BasketController as PayPalBasketController;
 use OxidSolutionCatalysts\PayPal\Controller\OrderController as PayPalFrontEndOrderController;
+use OxidSolutionCatalysts\PayPal\Controller\PaymentController as PayPalPaymentController;
 use OxidSolutionCatalysts\PayPal\Controller\ProxyController;
 use OxidSolutionCatalysts\PayPal\Controller\WebhookController;
 use OxidSolutionCatalysts\PayPal\Core\ShopControl as PayPalShopControl;
@@ -84,6 +86,7 @@ $aModule = [
         BasketController::class => PayPalBasketController::class,
         ArticleDetails::class => ArticleDetailsComponent::class,
         OrderController::class => PayPalFrontEndOrderController::class,
+        PaymentController::class => PayPalPaymentController::class,
         UserComponent::class => PayPalUserComponent::class
     ],
     'controllers' => [
@@ -117,9 +120,14 @@ $aModule = [
         'pspaypalsubscriptiondetails.tpl' => 'osc/paypal/views/admin/tpl/pspaypalsubscriptiondetails.tpl',
         'pspaypalpartsubscriptiondetails.tpl' => 'osc/paypal/views/admin/tpl/pspaypalpartsubscriptiondetails.tpl',
         'pspaypalsubscribe.tpl'    => 'osc/paypal/views/admin/tpl/pspaypalsubscribe.tpl',
+        'pspaypalacdcbuttons.tpl' => 'osc/paypal/views/includes/pspaypalacdcbuttons.tpl',
         'pspaypalsmartpaymentbuttons.tpl' => 'osc/paypal/views/includes/pspaypalsmartpaymentbuttons.tpl',
         'pspaypalpaymentbuttons.tpl' => 'osc/paypal/views/includes/pspaypalpaymentbuttons.tpl',
         'pspaypalsubscriptionbuttons.tpl' => 'osc/paypal/views/includes/pspaypalsubscriptionbuttons.tpl',
+
+        'modules/osc/paypal/oscpaypalacdc.tpl' => 'osc/paypal/views/includes/oscpaypalacdc.tpl',
+        'modules/osc/paypal/paypal_shipping_and_payment_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/paypal_shipping_and_payment.tpl',
+        'modules/osc/paypal/paypal_shipping_and_payment_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/paypal_shipping_and_payment.tpl',
 
         // PAYPAL-486 Register templates for overloading here;
         // use theme name in key when theme-specific. Shared templates don't receive a theme-specific key.
@@ -150,6 +158,19 @@ $aModule = [
         'onDeactivate' => '\OxidSolutionCatalysts\PayPal\Core\Events\Events::onDeactivate'
     ],
     'blocks' => [
+        [
+            'theme' => 'flow',
+            'template' => 'page/checkout/order.tpl',
+            'block' => 'shippingAndPayment',
+            'file' => 'views/blocks/flow/page/checkout/shipping_and_payment.tpl'
+        ],
+        [
+            'theme' => 'wave',
+            'template' => 'page/checkout/order.tpl',
+            'block' => 'shippingAndPayment',
+            'file' => 'views/blocks/wave/page/checkout/shipping_and_payment.tpl'
+        ],
+
         [
             'template' => 'article_list.tpl',
             'block' => 'admin_article_list_item',
@@ -345,68 +366,10 @@ $aModule = [
         //PSPAYPAL-515
         ['name' => 'blPayPalLoginWithPayPalEMail', 'type' => 'bool', 'value' => 'false'],
 
-        // PSPAYPAL-492
         [
-            'name' => 'blPayPalNeverUseCredit',
+            'name' => 'blPayPalAcdcEligibility',
             'type' => 'bool',
-            'value' => false,
-        ],
-        [
-            'name' => 'arrPayPalEnabledOptions_Details',
-            'type' => 'aarr',
-            'value' => [
-                'card'          => 1,
-                'bancontact'    => 0,
-                'blik'          => 0,
-                'eps'           => 0,
-                'giropay'       => 0,
-                'ideal'         => 0,
-                'mercadopago'   => 0,
-                'mybank'        => 0,
-                'p24'           => 0,
-                'sepa'          => 1,
-                'sofort'        => 1,
-                'venmo'         => 0,
-                'paylater'      => 1,
-            ]
-        ],
-        [
-            'name' => 'arrPayPalEnabledOptions_Basket',
-            'type' => 'aarr',
-            'value' => [
-                'card'          => 1,
-                'bancontact'    => 0,
-                'blik'          => 0,
-                'eps'           => 0,
-                'giropay'       => 1,
-                'ideal'         => 0,
-                'mercadopago'   => 0,
-                'mybank'        => 0,
-                'p24'           => 0,
-                'sepa'          => 1,
-                'sofort'        => 1,
-                'venmo'         => 0,
-                'paylater'      => 1,
-            ]
-        ],
-        [
-            'name' => 'arrPayPalEnabledOptions_Checkout',
-            'type' => 'aarr',
-            'value' => [
-                'card'          => 1,
-                'bancontact'    => 1,
-                'blik'          => 1,
-                'eps'           => 1,
-                'giropay'       => 1,
-                'ideal'         => 1,
-                'mercadopago'   => 1,
-                'mybank'        => 1,
-                'p24'           => 1,
-                'sepa'          => 1,
-                'sofort'        => 1,
-                'venmo'         => 1,
-                'paylater'      => 1,
-            ]
-        ],
+            'value' => true
+        ]
     ]
 ];

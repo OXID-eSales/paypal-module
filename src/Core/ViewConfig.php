@@ -10,6 +10,7 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 
 /**
  * @mixin \OxidEsales\Eshop\Core\ViewConfig
@@ -23,7 +24,7 @@ class ViewConfig extends ViewConfig_parent
      */
     public function isPayPalActive(): bool
     {
-        return $this->getPayPalConfig()->isActive();
+        return $this->getServiceFromContainer(ModuleSettings::class)->checkHealth();
     }
 
     /**
@@ -86,12 +87,11 @@ class ViewConfig extends ViewConfig_parent
      */
     public function getPayPalJsSdkUrl($subscribe = false): string
     {
-        $payPalConfig = $this->getPayPalConfig();
         $config = Registry::getConfig();
 
         $params = [];
 
-        $params['client-id'] = $payPalConfig->getClientId();
+        $params['client-id'] = $this->getServiceFromContainer(ModuleSettings::class)->getClientId();
 
         if ($subscribe) {
             $params['vault'] = 'true';
@@ -112,7 +112,50 @@ class ViewConfig extends ViewConfig_parent
             $params['components'] = 'messages,buttons';
         }
 
+        $params['enable-funding'] = 'paylater';
+        $params['disable-funding'] = 'sepa,bancontact,blik,eps,giropay,ideal,mercadopago,mybank,p24,sofort,venmo';
+
+        if ($this->getServiceFromContainer(ModuleSettings::class)->isAcdcEligibility()) {
+            $params['disable-funding'] .= ',card';
+        }
+        else {
+            $params['enable-funding'] .= ',card';
+        }
+
         return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
+    }
+
+    /**
+     * Gets PayPal JS SDK url
+     *
+     * @param bool $subscribe is it a PayPal Subscription
+     *
+     * @return string
+     */
+    public function getPayPalJsSdkUrlForACDC(): string
+    {
+        $config = Registry::getConfig();
+
+        $params = [];
+        $params['client-id'] = $this->getServiceFromContainer(ModuleSettings::class)->getClientId();
+        $params['integration-date'] = Constants::PAYPAL_INTEGRATION_DATE;
+
+        if ($currency = $config->getActShopCurrencyObject()) {
+            $params['currency'] = strtoupper($currency->name);
+        }
+
+        $params['components'] = 'buttons,hosted-fields';
+
+        return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
+    }
+
+    public function getDataClientToken(): string
+    {
+        $identityService = Registry::get(ServiceFactory::class)->getIdentityService();
+
+        $response = $identityService->requestClientToken();
+
+        return is_array($response) ? (string) $response['client_token'] : '';
     }
 
     /**
@@ -129,7 +172,7 @@ class ViewConfig extends ViewConfig_parent
      */
     public function getPayPalClientId(): string
     {
-        return $this->getPayPalConfig()->getClientId();
+        return $this->getServiceFromContainer(ModuleSettings::class)->getClientId();
     }
 
     /**

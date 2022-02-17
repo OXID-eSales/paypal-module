@@ -75,6 +75,16 @@ class PayPalSession
         return Registry::getSession()->getVariable(Constants::SESSION_UAPMCHECKOUT_ORDER_ID);
     }
 
+    /**
+     * PayPal uapm checkout order id getter
+     *
+     * @return mixed
+     */
+    public static function getAcdcCheckoutOrderId()
+    {
+        return Registry::getSession()->getVariable(Constants::SESSION_ACDCCHECKOUT_ORDER_ID);
+    }
+
     public static function subscriptionIsProcessing(): void
     {
         Registry::getSession()->setVariable('SessionIsProcessing', true);

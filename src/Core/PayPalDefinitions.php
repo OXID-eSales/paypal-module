@@ -12,6 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 final class PayPalDefinitions
 {
     public const STANDARD_PAYPAL_PAYMENT_ID = 'oxidpaypal';
+    public const ACDC_PAYPAL_PAYMENT_ID = 'oxidpaypal_acdc';
 
     private const PAYPAL_DEFINTIONS = [
         //Standard PayPal
@@ -27,6 +28,19 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => []
+        ],
+        self::ACDC_PAYPAL_PAYMENT_ID => [
+            'descriptions' => [
+                'de' => [
+                    'desc' => "Kreditkarte (über PayPal)",
+                    'longdesc' => "Bezahlen Sie bequem mit PayPal"
+                ],
+                'en' => [
+                    'desc' => "Creditcard (via PayPal)",
+                    'longdesc' => "Pay conveniently with PayPal"
+                ]
+            ],
+            'countries' => ['DE']
         ],
         // uAPM Bancontact
         'oxidpaypal_bancontact' => [

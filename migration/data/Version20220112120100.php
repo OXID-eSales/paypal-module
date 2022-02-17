@@ -275,11 +275,8 @@ final class Version20220112120100 extends AbstractMigration
         if (!$order->hasPrimaryKey('OXID')) {
             $order->setPrimaryKey(['OXID']);
         }
-        if (!$order->hasIndex('OXORDERID')) {
-            $order->addindex(['OXORDERID', 'OXORDERID']);
-        }
         if (!$order->hasIndex('ORDERID_PAYPALORDERID')) {
-            $order->addUniqueIndex(['OXORDERID', 'OXPAYPALORDERID']);
+            $order->addUniqueIndex(['OXORDERID', 'OXPAYPALORDERID'], 'ORDERID_PAYPALORDERID');
         }
     }
 

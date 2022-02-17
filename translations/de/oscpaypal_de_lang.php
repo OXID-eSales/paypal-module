@@ -44,4 +44,11 @@ $aLang = [
     'OSC_PAYPAL_SUBSCRIPTION_UNSUBSCRIBE_SEND'    => 'Abo-Kündigungsanfrage gesendet',
     'OSC_PAYPAL_SUBSCRIPTION_UNSUBSCRIBE_HEAD'    => 'Abo-Kündigungsanfrage',
     'OSC_PAYPAL_SUBSCRIPTION_UNSUBSCRIBE_MAIL'    => 'Der <strong>Kunde %s (Kd.Nr: %s)</strong> möchte sein Abo aus der Bestellung <strong>%s</strong> stornieren. Bitte prüfen Sie das Abo und setzen sich mit dem Kunden anschließend wieder in Verbindung.',
+
+    'OSC_PAYPAL_ACDC'                             => 'Advanced Credit and Debit Card',
+    'OSC_PAYPAL_ACDC_CARD_NUMBER'                 => 'Kartennummer',
+    'OSC_PAYPAL_ACDC_CARD_EXDATE'                 => 'Ablaufdatum',
+    'OSC_PAYPAL_ACDC_CARD_CVV'                    => 'CVV',
+    'OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD'           => 'Karteninhaber',
+    'OSC_PAYPAL_ACDC_PLEASE_RETRY'                => 'Bitte geben Sie ihre Kreditkartendaten erneut ein.'
 ];

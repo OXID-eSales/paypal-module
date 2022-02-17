@@ -39,6 +39,41 @@ class ModuleSettings
         return (bool) $this->getSettingValue('blPayPalSandboxMode');
     }
 
+    /**
+     * Checks if module configurations are valid
+     *
+     * @throws StandardException
+     */
+    public function checkHealth(): bool
+    {
+        return (
+            $this->getClientId() &&
+            $this->getClientSecret() &&
+            $this->getWebhookId()
+        );
+    }
+
+    public function getClientId(): string
+    {
+        return $this->isSandbox() ?
+            $this->getSandboxClientId() :
+            $this->getLiveClientId();
+    }
+
+    public function getClientSecret(): string
+    {
+        return $this->isSandbox() ?
+            $this->getSandboxClientSecret() :
+            $this->getLiveClientSecret();
+    }
+
+    public function getWebhookId(): string
+    {
+        return $this->isSandbox() ?
+            $this->getSandboxWebhookId() :
+            $this->getLiveWebhookId();
+    }
+
     public function getLiveClientId(): string
     {
         return (string) $this->getSettingValue('sPayPalClientId');
@@ -164,6 +199,11 @@ class ModuleSettings
     public function loginWithPayPalEMail(): bool
     {
         return (bool) $this->getSettingValue('blPayPalLoginWithPayPalEMail');
+    }
+
+    public function isAcdcEligibility(): bool
+    {
+        return (bool) $this->getSettingValue('blPayPalAcdcEligibility');
     }
 
     public function save(string $name, $value): void

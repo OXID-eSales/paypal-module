@@ -20,6 +20,7 @@ use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Email;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
@@ -113,7 +114,6 @@ class ProxyController extends FrontendController
             $this->setPayPalPaymentMethod();
         }
         $this->outputJson($response);
-
     }
 
     public function createSubscriptionOrder()
