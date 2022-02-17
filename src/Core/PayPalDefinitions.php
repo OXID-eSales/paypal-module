@@ -238,8 +238,28 @@ final class PayPalDefinitions
         ]
     ];
 
+    private const PAYPAL_STATIC_CONTENTS = [
+        [
+            'oxloadid' => 'oscpaypalpuiconfirmation',
+            'oxactive' => 1,
+            'oxtitle_de' => 'Rechnungskauf Einverständniserklärung',
+            'oxtitle_en' => 'Pay upon Invoice letter of acceptance',
+            'oxcontent_de' => 'Mit Klicken auf den Button akzeptieren Sie die Ratepay Zahlungsbedingungen und erklären sich mit der Durchführung einer
+                Risikoprüfung durch Ratepay, unseren Partner, einverstanden. Sie akzeptieren auch PayPals Datenschutzerklärung. Falls Ihre Transaktion
+                per Kauf auf Rechnung erfolgreich abgewickelt werden kann, wird der Kaufpreis an Ratepay abgetreten und Sie dürfen nur an Ratepay
+                überweisen, nicht an den Händler.',
+            'oxcontent_en' => ' By clicking on the button, you agree to the terms of payment and performance of a risk check from the payment partner,
+                Ratepay. You also agree to PayPal’s privacy statement. If your request to purchase upon invoice is accepted, the purchase price claim will be
+                assigned to Ratepay, and you may only pay Ratepay, not the merchant.'
+        ]
+    ];
+
     public static function getPayPalDefinitions() {
         return self::PAYPAL_DEFINTIONS;
+    }
+
+    public static function getPayPalStaticContents() {
+        return self::PAYPAL_STATIC_CONTENTS;
     }
 
     public static function isUAPMPayment(string $oxid) : bool {
