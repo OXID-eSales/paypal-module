@@ -162,7 +162,7 @@ class Payment
         return $result;
     }
 
-    public function doExecuteUAPM(EshopModelBasket $basket, string $checkoutOrderId, string $uapmName): string
+    public function doConfirmUAPM(EshopModelBasket $basket, string $checkoutOrderId, string $uapmName): string
     {
         $redirectLink = '';
 
@@ -254,7 +254,7 @@ class Payment
         $redirectLink = '';
 
         try {
-            $redirectLink = $this->doExecuteUAPM(
+            $redirectLink = $this->doConfirmUAPM(
                 $basket,
                 $uapmOrderId,
                 PayPalDefinitions::getPaymentSourceRequestName($basket->getPaymentId())
