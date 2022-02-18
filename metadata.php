@@ -405,42 +405,50 @@ $aModule = [
         [
             'name' => 'oscPayPalBannersShowAll',
             'type' => 'bool',
-            'value' => true
+            'value' => true,
+            'group' => null
         ],
         [
             'name' => 'oscPayPalBannersStartPage',
             'type' => 'bool',
-            'value' => true
+            'value' => true,
+            'group' => null
         ],
         [
             'name' => 'oscPayPalBannersStartPageSelector',
             'type' => 'str',
-            'value' => '#wrapper .row'
+            'value' => '#wrapper .row',
+            'group' => null
         ],
         [
             'name' => 'oscPayPalBannersCategoryPage',
             'type' => 'bool',
-            'value' => true
+            'value' => true,
+            'group' => null
         ],
         [
             'name' => 'oscPayPalBannersCategoryPageSelector',
             'type' => 'str',
-            'value' => '.page-header'
+            'value' => '.page-header',
+            'group' => null
         ],
         [
             'name' => 'oscPayPalBannersSearchResultsPage',
             'type' => 'bool',
-            'value' => true
+            'value' => true,
+            'group' => null
         ],
         [
             'name' => 'oscPayPalBannersSearchResultsPageSelector',
             'type' => 'str',
-            'value' => '#content .page-header .clearfix'
+            'value' => '#content .page-header .clearfix',
+            'group' => null
         ],
         [
             'name' => 'oscPayPalBannersProductDetailsPage',
             'type' => 'bool',
-            'value' => true
+            'value' => true,
+            'group' => null
         ],
         [
             'name' => 'oscPayPalBannersProductDetailsPageSelector',
@@ -450,38 +458,45 @@ $aModule = [
         [
             'name' => 'oscPayPalBannersCheckoutPage',
             'type' => 'bool',
-            'value' => true
+            'value' => true,
+            'group' => null
         ],
         [
             'name' => 'oscPayPalBannersCartPageSelector',
             'type' => 'str',
-            'value' => '.cart-buttons'
+            'value' => '.cart-buttons',
+            'group' => null
         ],
         [
             'name' => 'oscPayPalBannersPaymentPageSelector',
             'type' => 'str',
-            'value' => '.checkoutSteps ~ .spacer'
+            'value' => '.checkoutSteps ~ .spacer',
+            'group' => null
         ],
         [
             'name' => 'oscPayPalBannersColorScheme',
             'type' => 'select',
             'constraints' => 'blue|black|white|white-no-border',
-            'value' => 'blue'
+            'value' => 'blue',
+            'group' => null
         ],
         [
             'name' => 'oscPayPalShowCheckoutButton',
             'type' => 'bool',
-            'value' => true
+            'value' => true,
+            'group' => null
         ],
         [
             'name' => 'oscPayPalLoginWithPayPalEMail',
             'type' => 'bool',
-            'value' => false
+            'value' => false,
+            'group' => null
         ],
         [
             'name' => 'oscPayPalAcdcEligibility',
             'type' => 'bool',
-            'value' => true
+            'value' => true,
+            'group' => null
         ]
     ]
 ];

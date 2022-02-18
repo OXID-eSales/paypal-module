@@ -156,15 +156,65 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->getPaymentFailureThreshold();
     }
 
+    public function showAllPayPalBanners(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showAllPayPalBanners();
+    }
+
+    public function showBannersOnStartPage(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showBannersOnStartPage();
+    }
+
+    public function getStartPageBannerSelector(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getStartPageBannerSelector();
+    }
+
+    public function showBannersOnCategoryPage(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showBannersOnCategoryPage();
+    }
+
+    public function getCategoryPageBannerSelector(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getCategoryPageBannerSelector();
+    }
+
+    public function showBannersOnSearchPage(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showBannersOnSearchPage();
+    }
+
+    public function getSearchPageBannerSelector(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getSearchPageBannerSelector();
+    }
+
+    public function showBannersOnProductDetailsPage(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showBannersOnProductDetailsPage();
+    }
+
+    public function getProductDetailsPageBannerSelector(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getProductDetailsPageBannerSelector();
+    }
+
+    public function showBannersOnCheckoutPage(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showBannersOnCheckoutPage();
+    }
+
     /**
      * TODO: use Service\ModuleSettings
      * Config value getter
      * @Todo PSPAYPAL-491 Work in progress, add tests
      * @Todo Ensure we fetch this setting from the active subshop.
-     * @param string oxconfig.OXVARNAME
+     * @param mixed oxconfig.OXVARNAME
      * @return string|boolean value
      */
-    public function getPayPalModuleConfigurationValue($varname): string
+    public function getPayPalModuleConfigurationValue($varname)
     {
         if ($varname == '') {
             return (bool) false;

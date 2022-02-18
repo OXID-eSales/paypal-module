@@ -256,7 +256,7 @@
                             <div class="controls">
                                 <div class="checkbox">
                                     <label>
-                                        <input type="checkbox" name="conf[oscPayPalBannersShowAll]" [{if $config->getPayPalModuleConfigurationValue('oscPayPalBannersShowAll')}]checked[{/if}] value="1">
+                                        <input type="checkbox" name="conf[oscPayPalBannersShowAll]" [{if $config->showAllPayPalBanners()}]checked[{/if}] value="1">
                                         [{oxmultilang ident="OSC_PAYPAL_BANNER_SHOW_ALL"}]
                                     </label>
                                 </div>
@@ -268,14 +268,14 @@
                             <div class="controls">
                                 <div class="checkbox">
                                     <label>
-                                        <input type="checkbox" name="conf[oscPayPalBannersStartPage]" [{if $config->getPayPalModuleConfigurationValue('oscPayPalBannersStartPage')}]checked[{/if}] value="1">
+                                        <input type="checkbox" name="conf[oscPayPalBannersStartPage]" [{if $config->showBannersOnStartPage()}]checked[{/if}] value="1">
                                         [{oxmultilang ident="OSC_PAYPAL_BANNER_STARTPAGE"}]
                                     </label>
                                 </div>
                             </div>
                             <label for="banner-startpage">[{oxmultilang ident="OSC_PAYPAL_BANNER_STARTPAGESELECTOR"}]</label>
                             <div class="controls">
-                                <input type="text" class="form-control" id="banner-startpage" name="conf[oscPayPalBannersStartPageSelector]" value="[{$config->getPayPalModuleConfigurationValue('oscPayPalBannersStartPageSelector')}]">
+                                <input type="text" class="form-control" id="banner-startpage" name="conf[oscPayPalBannersStartPageSelector]" value="[{$config->getStartPageBannerSelector()}]">
                             </div>
                             <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_BANNER_STARTPAGESELECTOR"}]</span>
 
@@ -283,14 +283,14 @@
                             <div class="controls">
                                 <div class="checkbox">
                                     <label>
-                                        <input type="checkbox" name="conf[oscPayPalBannersCategoryPage]" [{if $config->getPayPalModuleConfigurationValue('oscPayPalBannersCategoryPage')}]checked[{/if}] value="1">
+                                        <input type="checkbox" name="conf[oscPayPalBannersCategoryPage]" [{if $config->showBannersOnCategoryPage()}]checked[{/if}] value="1">
                                         [{oxmultilang ident="OSC_PAYPAL_BANNER_CATEGORYPAGE"}]
                                     </label>
                                 </div>
                             </div>
                             <label for="banner-categorypage">[{oxmultilang ident="OSC_PAYPAL_BANNER_CATEGORYPAGESELECTOR"}]</label>
                             <div class="controls">
-                                <input type="text" class="form-control" id="banner-categorypage" name="conf[oscPayPalBannersCategoryPageSelector]" value="[{$config->getPayPalModuleConfigurationValue('oscPayPalBannersCategoryPageSelector')}]">
+                                <input type="text" class="form-control" id="banner-categorypage" name="conf[oscPayPalBannersCategoryPageSelector]" value="[{$config->getCategoryPageBannerSelector()}]">
                             </div>
                             <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_BANNER_CATEGORYPAGESELECTOR"}]</span>
 
@@ -298,14 +298,14 @@
                             <div class="controls">
                                 <div class="checkbox">
                                     <label>
-                                        <input type="checkbox" name="conf[oscPayPalBannersSearchResultsPage]" custom-data="[{$config->getPayPalModuleConfigurationValue('oscPayPalBannersSearchResultsPage')}]" [{if $config->getPayPalModuleConfigurationValue('oscPayPalBannersSearchResultsPage')}]checked[{/if}] value="1">
+                                        <input type="checkbox" name="conf[oscPayPalBannersSearchResultsPage]" [{if $config->showBannersOnSearchPage()}]checked[{/if}] value="1">
                                         [{oxmultilang ident="OSC_PAYPAL_BANNER_SEARCHRESULTSPAGE"}]
                                     </label>
                                 </div>
                             </div>
                             <label for="banner-searchpage">[{oxmultilang ident="OSC_PAYPAL_BANNER_SEARCHRESULTSPAGESELECTOR"}]</label>
                             <div class="controls">
-                                <input type="text" class="form-control" id="banner-searchpage" name="conf[oscPayPalBannersSearchResultsPageSelector]" value="[{$config->getPayPalModuleConfigurationValue('oscPayPalBannersSearchResultsPageSelector')}]">
+                                <input type="text" class="form-control" id="banner-searchpage" name="conf[oscPayPalBannersSearchResultsPageSelector]" value="[{$config->getSearchPageBannerSelector()}]">
                             </div>
                             <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_BANNER_SEARCHRESULTSPAGESELECTOR"}]</span>
 
@@ -313,14 +313,14 @@
                             <div class="controls">
                                 <div class="checkbox">
                                     <label>
-                                        <input type="checkbox" name="conf[oscPayPalBannersProductDetailsPage]" [{if $config->getPayPalModuleConfigurationValue('oscPayPalBannersProductDetailsPage')}]checked[{/if}] value="1">
+                                        <input type="checkbox" name="conf[oscPayPalBannersProductDetailsPage]" [{if $config->showBannersOnProductDetailsPage()}]checked[{/if}] value="1">
                                         [{oxmultilang ident="OSC_PAYPAL_BANNER_DETAILSPAGE"}]
                                     </label>
                                 </div>
                             </div>
                             <label for="banner-detailspage">[{oxmultilang ident="OSC_PAYPAL_BANNER_DETAILSPAGESELECTOR"}]</label>
                             <div class="controls">
-                                <input type="text" class="form-control" id="banner-detailspage" name="conf[oscPayPalBannersProductDetailsPageSelector]" value="[{$config->getPayPalModuleConfigurationValue('oscPayPalBannersProductDetailsPageSelector')}]">
+                                <input type="text" class="form-control" id="banner-detailspage" name="conf[oscPayPalBannersProductDetailsPageSelector]" value="[{$config->getProductDetailsPageBannerSelector()}]">
                             </div>
                             <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_BANNER_DETAILSPAGESELECTOR"}]</span>
 
@@ -328,7 +328,7 @@
                             <div class="controls">
                                 <div class="checkbox">
                                     <label>
-                                        <input type="checkbox" name="conf[oscPayPalBannersCheckoutPage]" [{if $config->getPayPalModuleConfigurationValue('oscPayPalBannersCheckoutPage')}]checked[{/if}] value="1">
+                                        <input type="checkbox" name="conf[oscPayPalBannersCheckoutPage]" [{if $config->showBannersOnCheckoutPage()}]checked[{/if}] value="1">
                                         [{oxmultilang ident="OSC_PAYPAL_BANNER_CHECKOUTPAGE"}]
                                     </label>
                                 </div>
