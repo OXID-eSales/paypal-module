@@ -153,7 +153,7 @@ $aLang = [
     'HELP_OSC_PAYPAL_SANDBOX_CLIENT_ID'           => 'Client-ID des Sandbox-Account für Sandbox-Modus',
     'HELP_OSC_PAYPAL_SANDBOX_CLIENT_SECRET'       => 'Secret des Sandbox-Account für Sandbox-Modus. Bitte geben Sie das Passwort zweimal ein.',
     'HELP_OSC_PAYPAL_SANDBOX_WEBHOOK_ID'          =>
-        'Die ID des Sandboox-Webhooks, wie in Ihrem Developer Portal-Konto konfiguriert',
+        'Die ID des Sandbox-Webhooks, wie in Ihrem Developer Portal-Konto konfiguriert',
     'HELP_OSC_PAYPAL_OPMODE'                      =>
         'Verwenden Sie Sandbox (Test), um PayPal zu konfigurieren und zu testen. Wenn Sie bereit sind,
         echte Transaktionen zu empfangen, wechseln Sie zu Produktion (live).',
