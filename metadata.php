@@ -371,6 +371,11 @@ $aModule = [
             'name' => 'blPayPalAcdcEligibility',
             'type' => 'bool',
             'value' => true
+        ],
+        [
+            'name' => 'blPayPalPuiEligibility',
+            'type' => 'bool',
+            'value' => true
         ]
     ]
 ];

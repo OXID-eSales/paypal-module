@@ -42,6 +42,11 @@ class PaymentController extends PaymentController_parent
             unset ($paymentList[PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID]);
         }
 
+        // check Pui Eligibility
+        if (!$this->getServiceFromContainer(ModuleSettings::class)->isPayPalPuiEligibility()) {
+            unset ($paymentList[PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID]);
+        }
+
         return $paymentList;
     }
 }

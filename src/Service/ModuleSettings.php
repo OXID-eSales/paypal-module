@@ -206,6 +206,11 @@ class ModuleSettings
         return (bool) $this->getSettingValue('blPayPalAcdcEligibility');
     }
 
+    public function isPayPalPuiEligibility(): bool
+    {
+        return (bool) $this->getSettingValue('blPayPalPuiEligibility');
+    }
+
     public function save(string $name, $value): void
     {
         $this->moduleSettingBridge->save($name, $value, Module::MODULE_ID);
