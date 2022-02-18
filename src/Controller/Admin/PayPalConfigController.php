@@ -53,11 +53,8 @@ class PayPalConfigController extends AdminController
      */
     public function getLiveSignUpMerchantIntegrationLink(): string
     {
-        $config = new Config();
-
         return $this->buildSignUpLink(
-            $config->getLiveOxidPartnerId(),
-            $config->getLiveOxidClientId(),
+            PayPalConstants::PAYPAL_OXID_PARTNER_LIVE_ID,
             PayPalConstants::PAYPAL_ONBOARDING_LIVE_URL
         );
     }
@@ -69,10 +66,8 @@ class PayPalConfigController extends AdminController
      */
     public function getSandboxSignUpMerchantIntegrationLink(): string
     {
-        $config = new Config();
         return $this->buildSignUpLink(
-            $config->getSandboxOxidPartnerId(),
-            $config->getSandboxOxidClientId(),
+            PayPalConstants::PAYPAL_OXID_PARTNER_SANDBOX_ID,
             PayPalConstants::PAYPAL_ONBOARDING_SANDBOX_URL
         );
     }
@@ -81,19 +76,16 @@ class PayPalConfigController extends AdminController
      * Maps arguments and constants to request parameters, generates a sign up url
      *
      * @param string $partnerId
-     * @param string $clientId
      *
      * @return string
      */
-    private function buildSignUpLink(string $partnerId, string $clientId, string $url): string
+    private function buildSignUpLink(string $partnerId, string $url): string
     {
         $params = [
             'sellerNonce' => $this->createNonce(),
             'partnerId' => $partnerId,
             'product' => 'EXPRESS_CHECKOUT',
             'integrationType' => 'FO',
-            'partnerClientId' => $clientId,
-            //'partnerLogoUrl' => '',
             'displayMode' => 'minibrowser',
             'features' => 'PAYMENT,REFUND,ADVANCED_TRANSACTIONS_SEARCH'
         ];

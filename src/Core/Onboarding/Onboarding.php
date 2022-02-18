@@ -10,6 +10,7 @@ namespace OxidSolutionCatalysts\PayPal\Core\Onboarding;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Onboarding as ApiOnboardingClient;
 use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -108,9 +109,9 @@ class Onboarding
         $client = new ApiOnboardingClient(
             Registry::getLogger(),
             $isSandbox ? $paypalConfig->getClientSandboxUrl() : $paypalConfig->getClientLiveUrl(),
-            $isSandbox ? $paypalConfig->getSandboxOxidClientId() : $paypalConfig->getLiveOxidClientId(),
-            $isSandbox ? $paypalConfig->getSandboxOxidSecret() : $paypalConfig->getLiveOxidSecret(),
-            $isSandbox ? $paypalConfig->getSandboxOxidPartnerId() : $paypalConfig->getLiveOxidPartnerId()
+            '',
+            '',
+            $isSandbox ? Constants::PAYPAL_OXID_PARTNER_SANDBOX_ID : Constants::PAYPAL_OXID_PARTNER_LIVE_ID
         );
 
         return $client;
