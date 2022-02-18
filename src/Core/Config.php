@@ -206,6 +206,16 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->showBannersOnCheckoutPage();
     }
 
+    public function getPayPalBannerCartPageSelector(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalBannerCartPageSelector();
+    }
+
+    public function getPayPalBannerPaymentPageSelector(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalBannerPaymentPageSelector();
+    }
+
     /**
      * TODO: use Service\ModuleSettings
      * Config value getter

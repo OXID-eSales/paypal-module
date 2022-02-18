@@ -335,12 +335,12 @@
                             </div>
                             <label for="banner-cart">[{oxmultilang ident="OSC_PAYPAL_BANNER_CARTPAGESELECTOR"}]</label>
                             <div class="controls">
-                                <input type="text" class="form-control" id="banner-cart" name="conf[oscPayPalBannersCartPageSelector]" value="[{$config->getPayPalModuleConfigurationValue('oscPayPalBannersCartPageSelector')}]">
+                                <input type="text" class="form-control" id="banner-cart" name="conf[oscPayPalBannersCartPageSelector]" value="[{$config->getPayPalBannerCartPageSelector()}]">
                             </div>
                             <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_BANNER_CARTPAGESELECTOR"}]</span>
                             <label for="banner-paymentpage">[{oxmultilang ident="OSC_PAYPAL_BANNER_PAYMENTPAGESELECTOR"}]</label>
                             <div class="controls">
-                                <input type="text" class="form-control" id="banner-paymentpage" name="conf[oscPayPalBannersPaymentPageSelector]" value="[{$config->getPayPalModuleConfigurationValue('oscPayPalBannersPaymentPageSelector')}]">
+                                <input type="text" class="form-control" id="banner-paymentpage" name="conf[oscPayPalBannersPaymentPageSelector]" value="[{$config->getPayPalBannerPaymentPageSelector()}]">
                             </div>
                             <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_BANNER_PAYMENTPAGESELECTOR"}]</span>
 
