@@ -91,6 +91,14 @@ class Order extends Order_parent
      */
     protected $payPalProductId;
 
+    public function savePuiInvoiceNr(string $invoiceNr): void
+    {
+        $this->assign(
+            ['oxinvoicenr' => $invoiceNr]
+        );
+        $this->save();
+    }
+
     public function finalizeOrderAfterExternalPayment(string $payPalOrderId)
     {
         if (!$this->isLoaded()) {

@@ -16,8 +16,6 @@ use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
-use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
-use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\Redirect;
@@ -61,19 +59,12 @@ class PaymentGateway extends PaymentGateway_parent
             $success = $this->doExecutePayPalPayment($order);
         } elseif (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId()) {
             $success = $this->doExecuteAcdcPayPalPayment($order);
+        } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId()) {
+            $success = $this->doExecutePuiPayment($order);
         } else {
             $success = parent::executePayment($amount, $order);
         }
         return $success;
-    }
-
-     /**
-     * Return the PaymentId from Session
-     */
-    public function getSessionPaymentId()
-    {
-        $session = $this->getSession();
-        return $session->getVariable('paymentid') ?? $session->getBasket()->getPaymentId();
     }
 
     protected function doExecutePayPalPayment(EshopModelOrder $order): bool
@@ -103,6 +94,21 @@ class PaymentGateway extends PaymentGateway_parent
 
             // destroy PayPal-Session
             PayPalSession::storePayPalOrderId('');
+        }
+
+        return $success;
+    }
+
+    protected function doExecutePuiPayment(EshopModelOrder $order): bool
+    {
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+
+        $success = false;
+        try {
+            $success = $paymentService->doExecutePuiPayment($order, Registry::getSession()->getBasket());
+        } catch (Exception $exception) {
+            Registry::getLogger()->error("Error on execute pui payment call.", [$exception]);
         }
 
         return $success;

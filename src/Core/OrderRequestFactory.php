@@ -19,6 +19,7 @@ use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
@@ -27,11 +28,14 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderApplicationContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PhoneWithType;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnit;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
+use OxidSolutionCatalysts\PayPalApi\Pui\ExperienceContext;
+use OxidSolutionCatalysts\PayPalApi\Pui\PuiPaymentSource;
 
 /**
  * Class OrderRequestBuilder
@@ -64,6 +68,7 @@ class OrderRequestFactory
      * @param string $userAction USER_ACTION_CONTINUE constant values
      * @param null|string $transactionId transaction id
      * @param null|string $invoiceId custom invoice number
+     * @param null|string $processingInstruction processing instruction
      *
      * @return OrderRequest
      */
@@ -72,13 +77,15 @@ class OrderRequestFactory
         string $intent,
         ?string $userAction = null,
         ?string $transactionId = null,
+        ?string $processingInstruction = null,
+        ?string $paymentSource = null,
         ?string $invoiceId = null
     ): OrderRequest {
         $request = $this->request = new OrderRequest();
         $this->basket = $basket;
 
         $request->intent = $intent;
-        if ($basket->getUser()) {
+        if (!$paymentSource && $basket->getUser()) {
             $request->payer = $this->getPayer();
         }
 
@@ -86,6 +93,17 @@ class OrderRequestFactory
 
         if ($userAction) {
             $request->application_context = $this->getApplicationContext($userAction);
+        }
+
+        if ($processingInstruction) {
+            $request->processing_instruction = $processingInstruction;
+        }
+
+        if ($paymentSource) {
+            $request->payment_source =
+                [
+                    $paymentSource => $this->getPaymentSource()
+                ];
         }
 
         return $request;
@@ -255,9 +273,9 @@ class OrderRequestFactory
     /**
      * @return Payer
      */
-    protected function getPayer(): Payer
+    protected function getPayer(string $payerClass = Payer::class): Payer
     {
-        $payer = new Payer();
+        $payer = new $payerClass;
         $user = $this->basket->getBasketUser();
 
         $name = $payer->initName();
@@ -394,4 +412,47 @@ class OrderRequestFactory
 
         return $phone;
     }
+
+    function getPaymentSource(): PuiPaymentSource
+    {
+        $user = $this->basket->getBasketUser();
+
+        // get Billing CountryCode
+        $country = oxNew(Country::class);
+        $country->load($user->getFieldData('oxcountryid'));
+
+        // check possible deliveryCountry
+        $deliveryId = Registry::getSession()->getVariable("deladrid");
+        $deliveryAddress = oxNew(Address::class);
+        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
+            $country->load($deliveryAddress->getFieldData('oxcountryid'));
+        }
+
+        $payer = $this->getPayer();
+
+        $billingAddress = new AddressPortable();
+        $billingAddress->address_line_1 = $payer->address->address_line_1;
+        $billingAddress->admin_area_2 = $payer->address->admin_area_2;
+        $billingAddress->postal_code = $payer->address->postal_code;
+        $billingAddress->country_code = $payer->address->country_code;
+
+        $paymentSource = new PuiPaymentSource;
+        $paymentSource->name = $payer->name;
+        $paymentSource->email = $payer->email_address;
+        $paymentSource->billing_address = $billingAddress;
+
+        $paymentSource->phone = new Phone();
+        $paymentSource->phone->national_number = $payer->phone->phone_number->national_number;
+        $paymentSource->phone->country_code = '49';
+        $paymentSource->birth_date = $payer->birth_date;
+
+        $experienceContext = new ExperienceContext();
+        $experienceContext->brand_name = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
+        $experienceContext->locale = strtolower($payer->address->country_code) . '-' .  strtoupper($payer->address->country_code);
+        $experienceContext->customer_service_instructions[] =  Registry::getConfig()->getActiveShop()->getFieldData('oxinfoemail');
+        $paymentSource->experience_context = $experienceContext;
+
+        return $paymentSource;
+    }
 }
+

@@ -40,6 +40,7 @@ abstract class BaseCest
 
         $this->ensureShopUserData($I);
         $this->enableExpressButtons($I);
+        $this->enablePayments($I);
     }
 
     public function _after(AcceptanceTester $I): void
@@ -300,5 +301,13 @@ abstract class BaseCest
         $I->dontSee(Translator::translate('HOME'));
         $I->dontSee(Translator::translate('START_BARGAIN_HEADER'));
         $I->dontSee(Translator::translate('Maintenance mode'));
+    }
+
+    protected function enablePayments(AcceptanceTester $I): void
+    {
+        //we did not end up on shop start page
+        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oxidpaypal_pui']);
+        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oxidpaypal_sofort']);
+        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oxidpaypal_acdc']);
     }
 }

@@ -3,7 +3,7 @@
 <form name="transfer" id="transfer" action="[{$oViewConf->getSelfLink()}]" method="post">
     [{$oViewConf->getHiddenSid()}]
     <input type="hidden" name="oxid" value="[{$oxid}]">
-    <input type="hidden" name="cl" value="PayPalOrderController">
+    <input type="hidden" name="cl" value="oscpaypalorder">
 </form>
 
 [{if $error}]
@@ -167,7 +167,7 @@
     <form action="[{$oViewConf->getSelfLink()}]" method="post">
         [{$oViewConf->getHiddenSid()}]
         <input type="hidden" name="fnc" value="capture">
-        <input type="hidden" name="cl" value="PayPalOrderController">
+        <input type="hidden" name="cl" value="oscpaypalorder">
         <input type="hidden" name="oxid" value="[{$oxid}]">
         <input type="hidden" name="language" value="[{$actlang}]">
         <input type="submit" value="[{oxmultilang ident="OSC_PAYPAL_CAPTURE"}]">
@@ -178,7 +178,7 @@
         <form action="[{$oViewConf->getSelfLink()}]" method="post">
             [{$oViewConf->getHiddenSid()}]
             <input type="hidden" name="fnc" value="refund">
-            <input type="hidden" name="cl" value="PayPalOrderController">
+            <input type="hidden" name="cl" value="oscpaypalorder">
             <input type="hidden" name="oxid" value="[{$oxid}]">
             <input type="hidden" name="language" value="[{$actlang}]">
             <table class="paypalActionsTable">
