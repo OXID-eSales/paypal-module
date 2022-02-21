@@ -71,6 +71,7 @@ final class AdminOnboardingCest extends BaseCest
         $I->seeElement('#opmode');
         $I->selectOption('#opmode', 'sandbox');
         $I->seeElement('#paypalonboardingsandbox');
+        $I->assertEmpty($I->grabAttributeFrom("#client-sandbox-id", 'value'));
 
         $link = $I->grabAttributeFrom('#paypalonboardingsandbox', 'href');
         $I->assertStringContainsString('sellerNonce', $link);
@@ -92,7 +93,9 @@ final class AdminOnboardingCest extends BaseCest
         $adminPanel = new PayPalAdmin($I);
         $adminPanel->openConfiguration();
         $this->checkWeAreStillInAdminPanel($I);
-        $I->see(substr(Translator::translate('OSC_PAYPAL_CONF_VALID'), 0, 20));
-        $I->dontSee(substr(Translator::translate('OSC_PAYPAL_ERR_CONF_INVALID'), 0, 65));
+
+        $I->assertNotEmpty($I->grabAttributeFrom("#client-sandbox-id", 'value'));
+        //NOTE: in case of non ssl url, the webhook cannot be created, so webhook part depends on test environment
+        //locally we will still see a note, that the module is inactive
     }
 }

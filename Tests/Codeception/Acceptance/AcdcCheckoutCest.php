@@ -65,4 +65,25 @@ final class AcdcCheckoutCestCheckoutCest extends BaseCest
         //we got a fresh paypal order in the session
         $I->assertNotEquals($token, $newToken);
     }
+
+    public function checkoutWithAcdcViaPayPalNoCreditCardFieldsFilled(AcceptanceTester $I): void
+    {
+        $I->wantToTest('logged in user with ACDC clicks order now without entering CC credentials');
+
+        $I->seeNumRecords(0, 'osc_paypal_order');
+        $I->seeNumRecords(1, 'oxorder');
+
+        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
+
+        $paymentCheckout = new PaymentCheckout($I);
+        /** @var OrderCheckout $orderCheckout */
+        $paymentCheckout->selectPayment('oxidpaypal_acdc')
+            ->goToNextStep();
+        $I->waitForPageLoad();
+        $I->see('Creditcard (via PayPal)');
+        $I->waitForElementVisible("#card_form");
+
+        //This is as far as we get, look slike codecetion cannot interfere with paypal JS
+        $I->seeElement("#card_form");
+    }
 }
