@@ -47,7 +47,7 @@ final class Version20220112120100 extends AbstractMigration
         $this->createPayments($schema);
         $this->createPayment2Countries($schema);
         $this->createPayment2Deliverysets($schema);
-        $this->createStaticContent($schema);
+       // $this->createStaticContent($schema);
     }
 
     public function down(Schema $schema): void
