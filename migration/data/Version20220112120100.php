@@ -407,7 +407,7 @@ final class Version20220112120100 extends AbstractMigration
      */
     protected function getLanguageIds(): array
     {
-        if (!count($this->languageIds)) {
+        if (!is_countable($this->languageIds) || !count($this->languageIds)) {
             $facts = new Facts();
             $configFile = new ConfigFile($facts->getSourcePath() . '/config.inc.php');
             $configKey = is_null($configFile->getVar('sConfigKey')) ?
@@ -445,7 +445,7 @@ final class Version20220112120100 extends AbstractMigration
                     [1]
                 )->fetchAllAssociative()
             ) {
-                foreach ($results as $result) {
+                foreach ($results as $row) {
                     $this->activeCountries[$row['OXISOALPHA2']] = $row['OXID'];
                 }
             }
