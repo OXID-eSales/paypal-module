@@ -24,6 +24,8 @@ class Constants
     public const PAYPAL_ONBOARDING_SANDBOX_URL = 'https://www.sandbox.paypal.com/bizsignup/partner/entry';
     public const PAYPAL_ONBOARDING_LIVE_URL = 'https://www.paypal.com/bizsignup/partner/entry';
 
+    public const PAYPAL_PUI_PROCESSING_INSTRUCTIONS = 'ORDER_COMPLETE_ON_PAYMENT_APPROVAL';
+
     /**
      * This PartnerIds are public. The only function is to create
      * a basiclly AccessToken,  Which one is needed to generate

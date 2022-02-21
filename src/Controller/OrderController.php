@@ -17,7 +17,6 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalEshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Exception\Redirect;
@@ -135,7 +134,7 @@ class OrderController extends OrderController_parent
             return;
         }
 
-        $response = $paymentService->doCreateAcdcOrder(
+        $response = $paymentService->doCreatePatchedOrder(
             Registry::getSession()->getBasket()
         );
         if (!($paypalOrderId = $response['id'])) {
