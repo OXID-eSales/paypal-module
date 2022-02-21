@@ -9,6 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
+use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 
 /**
  * Interface HandlerInterface
@@ -23,4 +24,6 @@ interface HandlerInterface
      * @throws WebhookEventException
      */
     public function handle(Event $event): void;
+
+    public function getOrder(Event $event): EshopModelOrder;
 }

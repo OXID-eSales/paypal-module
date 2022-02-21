@@ -10,51 +10,19 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
 use OxidEsales\TestingLibrary\UnitTestCase;
-use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
-use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
-use OxidSolutionCatalysts\PayPalApi\Service\Orders as PayPalApiOrders;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutOrderCompletedHandler;
-use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureDeniedHandler;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
+use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 
 
-final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
+final class PaymentCaptureDeniedHandlerTest extends UnitTestCase
 {
-    public function testRequestMissingData(): void
-    {
-        $event = new WebhookEvent([], 'CHECKOUT.ORDER.COMPLETED');
-
-        $this->expectException(WebhookEventException::class);
-        $this->expectExceptionMessage(WebhookEventException::mandatoryDataNotFound()->getMessage());
-
-        $handler = oxNew(CheckoutOrderCompletedHandler::class);
-        $handler->handle($event);
-    }
-
-    public function testEshopOrderNotFoundByPayPalOrderId(): void
-    {
-        $data = [
-            'resource' => [
-                'id' => 'PAYPALID123456789'
-            ]
-        ];
-        $event = new WebhookEvent($data, 'CHECKOUT.ORDER.COMPLETED');
-
-        $this->expectException(WebhookEventException::class);
-        $this->expectExceptionMessage(WebhookEventException::byPayPalOrderId('PAYPALID123456789')->getMessage());
-
-        $handler = oxNew(CheckoutOrderCompletedHandler::class);
-        $handler->handle($event);
-    }
-
-    public function testCheckoutOrderCompleted(): void
+    public function testPaymentCaptureDenied(): void
     {
         $data = $this->getRequestData();
-        $event = new WebhookEvent($data, 'CHECKOUT.ORDER.COMPLETED');
+        $event = new WebhookEvent($data, 'PAYMENT.CAPTURE.DENIED');
 
         $orderMock = $this->prepareOrderMock('order_oxid');
         $paypalOrderMock = $this->preparePayPalOrderMock($data['resource']['id']);
@@ -69,7 +37,7 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
             ->method('paypalOrderByOrderIdAndPayPalId')
             ->willReturn($paypalOrderMock);
 
-        $handler = $this->getMockBuilder(CheckoutOrderCompletedHandler::class)
+        $handler = $this->getMockBuilder(PaymentCaptureDeniedHandler::class)
             ->onlyMethods(['getServiceFromContainer'])
             ->getMock();
         $handler->expects($this->any())
@@ -91,7 +59,7 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
             ->method('getId')
             ->willReturn($orderId);
         $mock->expects($this->once())
-            ->method('markOrderPaid');
+            ->method('markOrderPaymentFailed');
 
         return $mock;
     }
@@ -118,7 +86,7 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
 
     private function getRequestData(): array
     {
-        $json = file_get_contents(__DIR__ . '/../../Fixtures/checkout_order_completed.json');
+        $json = file_get_contents(__DIR__ . '/../../Fixtures/payment_capture_denied.json');
 
         return json_decode($json, true);
     }
