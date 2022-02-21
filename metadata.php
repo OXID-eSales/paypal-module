@@ -94,15 +94,17 @@ $aModule = [
         'oscpaypalbalance' => PayPalBalanceController::class,
         'oscpaypalwebhook' => WebhookController::class,
         'oscpaypalproxy' => ProxyController::class,
-        'oscpaypaltransactions' => PayPalTransactionController::class,
-        'oscpaypalsubscriptiontransaction' => SubscriptionTransactionController::class,
-        'oscpaypalsubscribe' => PayPalSubscribeController::class,
+
         'oscpaypalonboarding' => OnboardingController::class,
         'oscpaypalorder' => PayPalOrderController::class,
-        'oscpaypalsubscriptiondetails' => SubscriptionDetailsController::class,
-        'oscpaypalsubscription' => SubscriptionController::class,
-        'oscpaypaldispute' => DisputeController::class,
-        'oscpaypaldisputedetails' => DisputeDetailsController::class
+        //TODO: for the first release we start without PayPal Subscriptions
+        // 'oscpaypaltransactions' => PayPalTransactionController::class,
+        // 'oscpaypalsubscriptiontransaction' => SubscriptionTransactionController::class,
+        // 'oscpaypalsubscribe' => PayPalSubscribeController::class,
+        // 'oscpaypalsubscriptiondetails' => SubscriptionDetailsController::class,
+        // 'oscpaypalsubscription' => SubscriptionController::class,
+        // 'oscpaypaldispute' => DisputeController::class,
+        // 'oscpaypaldisputedetails' => DisputeDetailsController::class
     ],
     'templates' => [
         //TODO: PSPAYPAL-541 tdb prefix with oscPayPal
@@ -172,22 +174,22 @@ $aModule = [
             'block' => 'shippingAndPayment',
             'file' => 'views/blocks/wave/page/checkout/shipping_and_payment.tpl'
         ],
-
-        [
-            'template' => 'article_list.tpl',
-            'block' => 'admin_article_list_item',
-            'file' => 'views/blocks/admin/article_list_extended.tpl'
-        ],
-        [
-            'template' => 'article_list.tpl',
-            'block' => 'admin_article_list_colgroup',
-            'file' => 'views/blocks/admin/article_list_colgroup_extended.tpl'
-        ],
-        [
-            'template' => 'article_list.tpl',
-            'block' => 'admin_article_list_sorting',
-            'file' => 'views/blocks/admin/article_list_sorting_extended.tpl'
-        ],
+        //TODO: for the first release we start without PayPal Subscriptions
+        // [
+        //     'template' => 'article_list.tpl',
+        //     'block' => 'admin_article_list_item',
+        //     'file' => 'views/blocks/admin/article_list_extended.tpl'
+        // ],
+        // [
+        //     'template' => 'article_list.tpl',
+        //     'block' => 'admin_article_list_colgroup',
+        //     'file' => 'views/blocks/admin/article_list_colgroup_extended.tpl'
+        // ],
+        // [
+        //     'template' => 'article_list.tpl',
+        //     'block' => 'admin_article_list_sorting',
+        //     'file' => 'views/blocks/admin/article_list_sorting_extended.tpl'
+        // ],
         [
             'template' => 'headitem.tpl',
             'block' => 'admin_headitem_inccss',

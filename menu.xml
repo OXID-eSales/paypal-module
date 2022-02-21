@@ -3,6 +3,19 @@
     <OXMENU id="NAVIGATION_ESHOPADMIN">
         <MAINMENU id="paypal">
             <SUBMENU id="OSC_PAYPAL_CONFIG" cl="oscpaypalconfig"/>
+        </MAINMENU>
+        <MAINMENU id="mxorders">
+            <SUBMENU id="mxdisplayorders" cl="admin_order" list="order_list">
+                <TAB id="tbclorder_paypal" cl="oscpaypalorder"/>
+            </SUBMENU>
+        </MAINMENU>
+    </OXMENU>
+</OX>
+<!-- TODO: for the first release we start without PayPal Subscriptions
+<OX>
+    <OXMENU id="NAVIGATION_ESHOPADMIN">
+        <MAINMENU id="paypal">
+            <SUBMENU id="OSC_PAYPAL_CONFIG" cl="oscpaypalconfig"/>
             <SUBMENU id="OSC_PAYPAL_TRANSACTIONS"
                      cl="oscpaypaltransactions">
             </SUBMENU>
@@ -26,3 +39,4 @@
         </MAINMENU>
     </OXMENU>
 </OX>
+-->
