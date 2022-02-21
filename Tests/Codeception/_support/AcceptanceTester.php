@@ -67,36 +67,36 @@ class AcceptanceTester extends \Codeception\Actor
     {
         $I = $this;
 
-        $I->updateModuleConfiguration('oePayPalBannersShowAll', $on);
-        $I->updateModuleConfiguration('oePayPalBannersStartPage', $on);
-        $I->updateModuleConfiguration('oePayPalBannersCategoryPage', $on);
-        $I->updateModuleConfiguration('oePayPalBannersSearchResultsPage', $on);
-        $I->updateModuleConfiguration('oePayPalBannersProductDetailsPage', $on);
-        $I->updateModuleConfiguration('oePayPalBannersCheckoutPage', $on);
+        $I->updateModuleConfiguration('oscPayPalBannersShowAll', $on);
+        $I->updateModuleConfiguration('oscPayPalBannersStartPage', $on);
+        $I->updateModuleConfiguration('oscPayPalBannersCategoryPage', $on);
+        $I->updateModuleConfiguration('oscPayPalBannersSearchResultsPage', $on);
+        $I->updateModuleConfiguration('oscPayPalBannersProductDetailsPage', $on);
+        $I->updateModuleConfiguration('oscPayPalBannersCheckoutPage', $on);
     }
 
     public function setPayPalBannersFlowSelectors(): void
     {
         $I = $this;
 
-        $I->updateModuleConfiguration('oePayPalBannersStartPageSelector', '#wrapper .row');
-        $I->updateModuleConfiguration('oePayPalBannersCategoryPageSelector', '.page-header');
-        $I->updateModuleConfiguration('oePayPalBannersSearchResultsPageSelector', '#content .page-header .clearfix');
-        $I->updateModuleConfiguration('oePayPalBannersProductDetailsPageSelector', '#detailsItemsPager');
-        $I->updateModuleConfiguration('oePayPalBannersCartPageSelector', '.cart-buttons');
-        $I->updateModuleConfiguration('oePayPalBannersPaymentPageSelector', '.checkoutSteps ~ .spacer');
+        $I->updateModuleConfiguration('oscPayPalBannersStartPageSelector', '#wrapper .row');
+        $I->updateModuleConfiguration('oscPayPalBannersCategoryPageSelector', '.page-header');
+        $I->updateModuleConfiguration('oscPayPalBannersSearchResultsPageSelector', '#content .page-header .clearfix');
+        $I->updateModuleConfiguration('oscPayPalBannersProductDetailsPageSelector', '#detailsItemsPager');
+        $I->updateModuleConfiguration('oscPayPalBannersCartPageSelector', '.cart-buttons');
+        $I->updateModuleConfiguration('oscPayPalBannersPaymentPageSelector', '.checkoutSteps ~ .spacer');
     }
 
     public function setPayPalBannersCustomSelectors(string $selector = ''): void
     {
         $I = $this;
 
-        $I->updateModuleConfiguration('oePayPalBannersStartPageSelector', $selector);
-        $I->updateModuleConfiguration('oePayPalBannersCategoryPageSelector', $selector);
-        $I->updateModuleConfiguration('oePayPalBannersSearchResultsPageSelector', $selector);
-        $I->updateModuleConfiguration('oePayPalBannersProductDetailsPageSelector', $selector);
-        $I->updateModuleConfiguration('oePayPalBannersCartPageSelector', $selector);
-        $I->updateModuleConfiguration('oePayPalBannersPaymentPageSelector', $selector);
+        $I->updateModuleConfiguration('oscPayPalBannersStartPageSelector', $selector);
+        $I->updateModuleConfiguration('oscPayPalBannersCategoryPageSelector', $selector);
+        $I->updateModuleConfiguration('oscPayPalBannersSearchResultsPageSelector', $selector);
+        $I->updateModuleConfiguration('oscPayPalBannersProductDetailsPageSelector', $selector);
+        $I->updateModuleConfiguration('oscPayPalBannersCartPageSelector', $selector);
+        $I->updateModuleConfiguration('oscPayPalBannersPaymentPageSelector', $selector);
     }
 
     public function dontSeePayPalInstallmentBanner(): self

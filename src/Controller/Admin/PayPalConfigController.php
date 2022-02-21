@@ -53,11 +53,8 @@ class PayPalConfigController extends AdminController
      */
     public function getLiveSignUpMerchantIntegrationLink(): string
     {
-        $config = new Config();
-
         return $this->buildSignUpLink(
-            $config->getLiveOxidPartnerId(),
-            $config->getLiveOxidClientId(),
+            PayPalConstants::PAYPAL_OXID_PARTNER_LIVE_ID,
             PayPalConstants::PAYPAL_ONBOARDING_LIVE_URL
         );
     }
@@ -69,10 +66,8 @@ class PayPalConfigController extends AdminController
      */
     public function getSandboxSignUpMerchantIntegrationLink(): string
     {
-        $config = new Config();
         return $this->buildSignUpLink(
-            $config->getSandboxOxidPartnerId(),
-            $config->getSandboxOxidClientId(),
+            PayPalConstants::PAYPAL_OXID_PARTNER_SANDBOX_ID,
             PayPalConstants::PAYPAL_ONBOARDING_SANDBOX_URL
         );
     }
@@ -81,19 +76,16 @@ class PayPalConfigController extends AdminController
      * Maps arguments and constants to request parameters, generates a sign up url
      *
      * @param string $partnerId
-     * @param string $clientId
      *
      * @return string
      */
-    private function buildSignUpLink(string $partnerId, string $clientId, string $url): string
+    private function buildSignUpLink(string $partnerId, string $url): string
     {
         $params = [
             'sellerNonce' => $this->createNonce(),
             'partnerId' => $partnerId,
             'product' => 'EXPRESS_CHECKOUT',
             'integrationType' => 'FO',
-            'partnerClientId' => $clientId,
-            //'partnerLogoUrl' => '',
             'displayMode' => 'minibrowser',
             'features' => 'PAYMENT,REFUND,ADVANCED_TRANSACTIONS_SEARCH'
         ];
@@ -162,40 +154,42 @@ class PayPalConfigController extends AdminController
      */
     protected function handleSpecialFields(array $conf): array
     {
-        if ($conf['blPayPalSandboxMode'] === 'sandbox') {
-            $conf['blPayPalSandboxMode'] = 1;
+        if ($conf['oscPayPalSandboxMode'] === 'sandbox') {
+            $conf['oscPayPalSandboxMode'] = 1;
         } else {
-            $conf['blPayPalSandboxMode'] = 0;
+            $conf['oscPayPalSandboxMode'] = 0;
         }
 
-        if (!isset($conf['blPayPalShowProductDetailsButton'])) {
-            $conf['blPayPalShowProductDetailsButton'] = 0;
+        if (!isset($conf['oscPayPalShowProductDetailsButton'])) {
+            $conf['oscPayPalShowProductDetailsButton'] = 0;
+        }
+        if (!isset($conf['oscPayPalShowBasketButton'])) {
+            $conf['oscPayPalShowBasketButton'] = 0;
+        }
+        if (!isset($conf['oscPayPalShowCheckoutButton'])) {
+            $conf['oscPayPalShowCheckoutButton'] = 0;
         }
 
-        if (!isset($conf['blPayPalShowBasketButton'])) {
-            $conf['blPayPalShowBasketButton'] = 0;
+        if (!isset($conf['oscPayPalBannersShowAll'])) {
+            $conf['oscPayPalBannersShowAll'] = 0;
         }
-
-        if (!isset($conf['oePayPalBannersShowAll'])) {
-            $conf['oePayPalBannersShowAll'] = 0;
+        if (!isset($conf['oscPayPalBannersStartPage'])) {
+            $conf['oscPayPalBannersStartPage'] = 0;
         }
-        if (!isset($conf['oePayPalBannersStartPage'])) {
-            $conf['oePayPalBannersStartPage'] = 0;
+        if (!isset($conf['oscPayPalBannersCategoryPage'])) {
+            $conf['oscPayPalBannersCategoryPage'] = 0;
         }
-        if (!isset($conf['oePayPalBannersCategoryPage'])) {
-            $conf['oePayPalBannersCategoryPage'] = 0;
+        if (!isset($conf['oscPayPalBannersSearchResultsPage'])) {
+            $conf['oscPayPalBannersSearchResultsPage'] = 0;
         }
-        if (!isset($conf['oePayPalBannersSearchResultsPage'])) {
-            $conf['oePayPalBannersSearchResultsPage'] = 0;
+        if (!isset($conf['oscPayPalBannersProductDetailsPage'])) {
+            $conf['oscPayPalBannersProductDetailsPage'] = 0;
         }
-        if (!isset($conf['oePayPalBannersProductDetailsPage'])) {
-            $conf['oePayPalBannersProductDetailsPage'] = 0;
+        if (!isset($conf['oscPayPalBannersCheckoutPage'])) {
+            $conf['oscPayPalBannersCheckoutPage'] = 0;
         }
-        if (!isset($conf['oePayPalBannersCheckoutPage'])) {
-            $conf['oePayPalBannersCheckoutPage'] = 0;
-        }
-        if (!isset($conf['blPayPalLoginWithPayPalEMail'])) {
-            $conf['blPayPalLoginWithPayPalEMail'] = 0;
+        if (!isset($conf['oscPayPalLoginWithPayPalEMail'])) {
+            $conf['oscPayPalLoginWithPayPalEMail'] = 0;
         }
 
         return $conf;

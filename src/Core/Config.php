@@ -156,15 +156,75 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->getPaymentFailureThreshold();
     }
 
+    public function showAllPayPalBanners(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showAllPayPalBanners();
+    }
+
+    public function showBannersOnStartPage(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showBannersOnStartPage();
+    }
+
+    public function getStartPageBannerSelector(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getStartPageBannerSelector();
+    }
+
+    public function showBannersOnCategoryPage(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showBannersOnCategoryPage();
+    }
+
+    public function getCategoryPageBannerSelector(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getCategoryPageBannerSelector();
+    }
+
+    public function showBannersOnSearchPage(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showBannersOnSearchPage();
+    }
+
+    public function getSearchPageBannerSelector(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getSearchPageBannerSelector();
+    }
+
+    public function showBannersOnProductDetailsPage(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showBannersOnProductDetailsPage();
+    }
+
+    public function getProductDetailsPageBannerSelector(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getProductDetailsPageBannerSelector();
+    }
+
+    public function showBannersOnCheckoutPage(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showBannersOnCheckoutPage();
+    }
+
+    public function getPayPalBannerCartPageSelector(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalBannerCartPageSelector();
+    }
+
+    public function getPayPalBannerPaymentPageSelector(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalBannerPaymentPageSelector();
+    }
+
     /**
      * TODO: use Service\ModuleSettings
      * Config value getter
      * @Todo PSPAYPAL-491 Work in progress, add tests
      * @Todo Ensure we fetch this setting from the active subshop.
-     * @param string oxconfig.OXVARNAME
+     * @param mixed oxconfig.OXVARNAME
      * @return string|boolean value
      */
-    public function getPayPalModuleConfigurationValue($varname): string
+    public function getPayPalModuleConfigurationValue($varname)
     {
         if ($varname == '') {
             return (bool) false;
@@ -174,120 +234,6 @@ class Config
         #return $this->getServiceFromContainer(ModuleSettings::class)->getRawValue($varname);
 
         return (string) Registry::getConfig()->getConfigParam($varname);
-    }
-
-    /**
-     * This ClientId is public. The only function is to create
-     * a basiclly AccessToken,  Which one is needed to generate
-     * the request for the merchant ClientId.
-     * For this purpose, this ClientId is unencrypted, here as part
-     * of this open Source Module
-     * this method is private see getTechnicalClientId which respects the sandbox mode for you
-     * @return string
-     */
-    public function getLiveOxidClientId(): string
-    {
-        return "AQPFC4NJr-nIiumTXvyfHFJLK-RlWAcv9D0zAc4OWiKiQXyXnJZ7Lw1E2h6O2mtceJf5kWflplieijnK";
-    }
-
-    /**
-     * This ClientId is public. The only function is to create
-     * a basiclly AccessToken,  Which one is needed to generate
-     * the request for the merchant ClientId and Secret.
-     * For this purpose, this ClientId is unencrypted, here as part
-     * of this open Source Module
-     *
-     * @return string
-     */
-    public function getSandboxOxidClientId(): string
-    {
-        return "AS-lHBWs8cudxxonSeQ1eRbdn1Nr-7baqAURRNJnIuP-PPQFzFF1XkjDYV3NG3M6O75st2D98DOil4Vd";
-    }
-
-    /**
-     * This PartnerId is public. The only function is to create
-     * a basiclly AccessToken,  Which one is needed to generate
-     * the request for the merchant ClientId and Secret.
-     * For this purpose, this ClientId is unencrypted, here as part
-     * of this open Source Module
-     * this method is private see getTechnicalPartnerId which respects the sandbox mode for you
-     * @return string
-     */
-    public function getLiveOxidPartnerId(): string
-    {
-        return "FULA6AY33UTA4";
-    }
-
-    /**
-     * This PartnerId is public. The only function is to create
-     * a basiclly AccessToken,  Which one is needed to generate
-     * the request for the merchant ClientId and Secret.
-     * For this purpose, this PartnerId is unencrypted, here as part
-     * of this open Source Module
-     *
-     * @return string
-     */
-    public function getSandboxOxidPartnerId(): string
-    {
-        return "LRCHTG6NYPSXN";
-    }
-
-    /**
-     * This Secret is public. The only function is to create
-     * a basiclly AccessToken,  Which one is needed to generate
-     * the request for the merchant ClientId and Secret.
-     * For this purpose, this ClientId is unencrypted, here as part
-     * of this open Source Module
-     *
-     * @return string
-     */
-    public function getLiveOxidSecret(): string
-    {
-        return "ELcHsbqzqmC8wVbndnDxokTnQboMn-HfcJ2tGfWbxJUIAIys0HMqfzbHrev5R--RPd6B2xNWJrddtO9z";
-    }
-
-    /**
-     * This Secret is public. The only function is to create
-     * a basiclly AccessToken,  Which one is needed to generate
-     * the request for the merchant ClientId and Secret.
-     * For this purpose, this PartnerId is unencrypted, here as part
-     * of this open Source Module
-     *
-     * @return string
-     */
-    public function getSandboxOxidSecret(): string
-    {
-        return "EANkP__pSQ25b1cXuO4CrC_KeDc78rKtgUpeEDthejOVjkJV9sv0mfjxM_A4qXyMqbdCIeib0tDfQY_6";
-    }
-
-    /**
-     * @return string
-     */
-    public function getTechnicalClientId()
-    {
-        return $this->isSandbox() ?
-            $this->getSandboxOxidClientId()
-            : $this->getLiveOxidClientId();
-    }
-
-    /**
-     * @return string
-     */
-    public function getTechnicalPartnerId()
-    {
-        return $this->isSandbox() ?
-            $this->getSandboxOxidPartnerId()
-            : $this->getLiveOxidPartnerId();
-    }
-
-    /**
-     * @return string
-     */
-    public function getTechnicalClientSecret()
-    {
-        return $this->isSandbox() ?
-            $this->getSandboxOxidSecret()
-            : $this->getLiveOxidSecret();
     }
 
     /**

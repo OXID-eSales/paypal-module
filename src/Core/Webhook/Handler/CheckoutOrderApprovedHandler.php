@@ -16,15 +16,12 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as OrderResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
-use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
-use OxidSolutionCatalysts\PayPal\Exception\NotFound;
-
+use OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait;
 
 class CheckoutOrderApprovedHandler implements HandlerInterface
 {
-    use ServiceContainer;
+    use WebhookHandlerTrait;
 
     /**
      * @inheritDoc
@@ -32,21 +29,10 @@ class CheckoutOrderApprovedHandler implements HandlerInterface
      */
     public function handle(Event $event): void
     {
-        $data = $event->getData()['resource'];
-        $payPalOrderId = (string) $data['id'];
+        /** @var EshopModelOrder\ $order */
+        $order = $this->getOrder($event);
 
-        if (!$payPalOrderId) {
-            throw WebhookEventException::mandatoryDataNotFound();
-        }
-
-        //get PayPalOrder
-        try {
-            $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
-            /** @var EshopModelOrder $order */
-            $order = $orderRepository->getShopOrderByPayPalOrderId($payPalOrderId);
-        } catch(NotFound $exception) {
-            throw WebhookEventException::byPayPalOrderId($payPalOrderId);
-        }
+        $payPalOrderId = $this->getPayPalOrderId($event);
 
         //TODO: tbd: query order details from paypal. On the other hand, we just got verified that this data came from PayPal.
 
@@ -58,6 +44,12 @@ class CheckoutOrderApprovedHandler implements HandlerInterface
             $response->purchase_units[0]->payments->captures[0]->status == Capture::STATUS_COMPLETED
         ) {
             $order->markOrderPaid();
+
+            /** @var PayPalModelOrder $paypalOrderModel */
+            $paypalOrderModel = $this->getServiceFromContainer(OrderRepository::class)
+                ->paypalOrderByOrderIdAndPayPalId($order->getId(), $payPalOrderId);
+            $paypalOrderModel->setStatus($response->status);
+            $paypalOrderModel->save();
         }
     }
 

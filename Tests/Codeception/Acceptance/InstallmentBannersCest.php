@@ -46,8 +46,8 @@ final class InstallmentBannersCest extends BaseCest
     {
         $I->wantToTest('shop start page with installment banner');
 
-        $I->updateModuleConfiguration('oePayPalBannersShowAll', true);
-        $I->updateModuleConfiguration('oePayPalBannersStartPage', true);
+        $I->updateModuleConfiguration('oscPayPalBannersShowAll', true);
+        $I->updateModuleConfiguration('oscPayPalBannersStartPage', true);
 
         $I->openShop();
         $I->waitForText(Translator::translate('HOME'));
@@ -59,8 +59,8 @@ final class InstallmentBannersCest extends BaseCest
     {
         $I->wantToTest('category page with installment banner');
 
-        $I->updateModuleConfiguration('oePayPalBannersShowAll', true);
-        $I->updateModuleConfiguration('oePayPalBannersCategoryPage', true);
+        $I->updateModuleConfiguration('oscPayPalBannersShowAll', true);
+        $I->updateModuleConfiguration('oscPayPalBannersCategoryPage', true);
 
         $home = $I->openShop();
         $I->waitForText(Translator::translate('HOME'));
@@ -74,8 +74,8 @@ final class InstallmentBannersCest extends BaseCest
     {
         $I->wantToTest('search resuotes page with installment banner');
 
-        $I->updateModuleConfiguration('oePayPalBannersShowAll', true);
-        $I->updateModuleConfiguration('oePayPalBannersSearchResultsPage', true);
+        $I->updateModuleConfiguration('oscPayPalBannersShowAll', true);
+        $I->updateModuleConfiguration('oscPayPalBannersSearchResultsPage', true);
 
         $home = $I->openShop();
         $I->waitForText(Translator::translate('HOME'));
@@ -92,8 +92,8 @@ final class InstallmentBannersCest extends BaseCest
     {
         $I->wantToTest('product details page with installment banner');
 
-        $I->updateModuleConfiguration('oePayPalBannersShowAll', true);
-        $I->updateModuleConfiguration('oePayPalBannersProductDetailsPage', true);
+        $I->updateModuleConfiguration('oscPayPalBannersShowAll', true);
+        $I->updateModuleConfiguration('oscPayPalBannersProductDetailsPage', true);
 
         $home = $I->openShop();
         $I->waitForText(Translator::translate('HOME'));
@@ -117,8 +117,8 @@ final class InstallmentBannersCest extends BaseCest
     {
         $I->wantToTest('checkout page with installment banner and logged in user');
 
-        $I->updateModuleConfiguration('oePayPalBannersShowAll', true);
-        $I->updateModuleConfiguration('oePayPalBannersCheckoutPage', true);
+        $I->updateModuleConfiguration('oscPayPalBannersShowAll', true);
+        $I->updateModuleConfiguration('oscPayPalBannersCheckoutPage', true);
 
         $home = $I->openShop()
             ->loginUser(Fixtures::get('userName'), Fixtures::get('userPassword'));
@@ -155,11 +155,11 @@ final class InstallmentBannersCest extends BaseCest
         $this->checkBannersOnAllPages($I, true);
 
         //disable main flag
-        $I->updateModuleConfiguration('oePayPalBannersShowAll', false);
+        $I->updateModuleConfiguration('oscPayPalBannersShowAll', false);
         $this->checkBannersOnAllPages($I, false);
 
         //reenable main flag but change performance shop config flag
-        $I->updateModuleConfiguration('oePayPalBannersShowAll', true);
+        $I->updateModuleConfiguration('oscPayPalBannersShowAll', true);
         $I->updateConfigInDatabase('bl_perfLoadPrice', false, 'bool');
         $this->checkBannersOnAllPages($I, false);
 

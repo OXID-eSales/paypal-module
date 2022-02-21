@@ -25,9 +25,9 @@ abstract class BaseTestCase extends UnitTestCase
         $dotenv = new \Symfony\Component\Dotenv\Dotenv();
         $dotenv->load(__DIR__.'/../../.env');
 
-        $this->updateModuleConfiguration('sPayPalSandboxClientId', $_ENV['sPayPalSandboxClientId']);
-        $this->updateModuleConfiguration('blPayPalSandboxMode', true);
-        $this->updateModuleConfiguration('sPayPalSandboxClientSecret', $_ENV['sPayPalSandboxClientSecret']);
+        $this->updateModuleConfiguration('oscPayPalSandboxClientId', $_ENV['oscPayPalSandboxClientId']);
+        $this->updateModuleConfiguration('oscPayPalSandboxMode', true);
+        $this->updateModuleConfiguration('oscPayPalSandboxClientSecret', $_ENV['oscPayPalSandboxClientSecret']);
     }
 
     protected function getPsrLoggerMock(): LoggerInterface

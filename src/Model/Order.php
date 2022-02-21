@@ -214,6 +214,17 @@ class Order extends Order_parent
         $this->oxorder__oxpaid = new Field($date);
     }
 
+    public function markOrderPaymentFailed()
+    {
+        $this->assign(
+            [
+                'OXTRANSSTATUS' => 'ERROR',
+                'OXFOLDER' => 'ORDERFOLDER_ERROR'
+            ]
+        );
+        $this->save();
+    }
+
     /**
      * Returns PayPal order id.
      *

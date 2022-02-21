@@ -71,14 +71,14 @@ function callOnboardingControllerAutoConfigurationFromCallback(authCode, sharedI
                     jQuery("#client-sandbox-id").val(data.client_id);
                     jQuery("#client-sandbox-secret").val(data.client_secret);
                     jQuery("#webhook-sandbox-id").val(data.webhook_id);
-                    jQuery('input[name="conf[sPayPalSandboxClientSecret]"').val(data.client_secret);
-                    jQuery('input[name="conf[sPayPalSandboxClientSecret]"').prev('input.password_input').val(data.client_secret);
+                    jQuery('input[name="conf[oscPayPalSandboxClientSecret]"').val(data.client_secret);
+                    jQuery('input[name="conf[oscPayPalSandboxClientSecret]"').prev('input.password_input').val(data.client_secret);
                 } else {
                     jQuery("#client-id").val(data.client_id);
                     jQuery("#client-secret").val(data.client_secret);
                     jQuery("#webhook-id").val(data.webhook_id);
-                    jQuery('input[name="conf[sPayPalClientSecret]"').val(data.client_secret);
-                    jQuery('input[name="conf[sPayPalClientSecret]"').prev('input.password_input').val(data.client_secret);
+                    jQuery('input[name="conf[oscPayPalClientSecret]"').val(data.client_secret);
+                    jQuery('input[name="conf[oscPayPalClientSecret]"').prev('input.password_input').val(data.client_secret);
                 }
                 jQuery("#configForm").submit();
             });
