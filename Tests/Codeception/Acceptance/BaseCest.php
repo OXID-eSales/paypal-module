@@ -32,11 +32,11 @@ abstract class BaseCest
         $I->updateConfigInDatabase('blUseStock', false, 'bool');
         $I->updateConfigInDatabase('bl_perfLoadPrice', true, 'bool');
         $I->updateConfigInDatabase('iNewBasketItemMessage', false, 'bool');
-        $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', false);
+        $I->updateModuleConfiguration('oscPayPalLoginWithPayPalEMail', false);
 
-        $I->updateModuleConfiguration('sPayPalSandboxClientId', $_ENV['sPayPalSandboxClientId']);
-        $I->updateModuleConfiguration('blPayPalSandboxMode', true);
-        $I->updateModuleConfiguration('sPayPalSandboxClientSecret', $_ENV['sPayPalSandboxClientSecret']);
+        $I->updateModuleConfiguration('oscPayPalSandboxClientId', $_ENV['oscPayPalSandboxClientId']);
+        $I->updateModuleConfiguration('oscPayPalSandboxMode', true);
+        $I->updateModuleConfiguration('oscPayPalSandboxClientSecret', $_ENV['oscPayPalSandboxClientSecret']);
 
         $this->ensureShopUserData($I);
         $this->enableExpressButtons($I);
@@ -47,7 +47,7 @@ abstract class BaseCest
         $this->ensureShopUserData($I);
         $this->enableExpressButtons($I);
         $I->updateConfigInDatabase('blShowNetPrice', false, 'bool');
-        $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', false);
+        $I->updateModuleConfiguration('oscPayPalLoginWithPayPalEMail', false);
 
         $I->deleteFromDatabase('oxorder', ['OXORDERNR >=' => '2']);
         $I->deleteFromDatabase('oxuserbaskets', ['OXTITLE >=' => 'savedbasket']);
@@ -178,7 +178,7 @@ abstract class BaseCest
     protected function proceedToPaymentStep(AcceptanceTester $I, string $userName = null, bool $ensureCheckoutButton = true): void
     {
         if ($ensureCheckoutButton) {
-            $I->updateModuleConfiguration('blPayPalShowCheckoutButton', true);
+            $I->updateModuleConfiguration('oscPayPalShowCheckoutButton', true);
         }
 
         $userName = $userName ?: Fixtures::get('userName');
@@ -208,7 +208,7 @@ abstract class BaseCest
 
     protected function proceedToBasketStep(AcceptanceTester $I, string $userName = null, bool $logMeIn = true): void
     {
-        $I->updateModuleConfiguration('blPayPalShowCheckoutButton', true);
+        $I->updateModuleConfiguration('oscPayPalShowCheckoutButton', true);
 
         $userName = $userName ?: Fixtures::get('userName');
 
@@ -289,9 +289,9 @@ abstract class BaseCest
 
     protected function enableExpressButtons(AcceptanceTester $I, bool $flag = true): void
     {
-        $I->updateModuleConfiguration('blPayPalShowProductDetailsButton', $flag);
-        $I->updateModuleConfiguration('blPayPalShowBasketButton', $flag);
-        $I->updateModuleConfiguration('blPayPalShowCheckoutButton', $flag);
+        $I->updateModuleConfiguration('oscPayPalShowProductDetailsButton', $flag);
+        $I->updateModuleConfiguration('oscPayPalShowBasketButton', $flag);
+        $I->updateModuleConfiguration('oscPayPalShowCheckoutButton', $flag);
     }
 
     protected function checkWeAreStillInAdminPanel(AcceptanceTester $I): void

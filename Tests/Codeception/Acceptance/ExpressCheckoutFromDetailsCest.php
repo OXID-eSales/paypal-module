@@ -32,7 +32,7 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
         $I->wantToTest('checkout from details page with empty cart. Customer is logged in.');
 
         $this->enableExpressButtons($I, false);
-        $I->updateModuleConfiguration('blPayPalShowProductDetailsButton', true);
+        $I->updateModuleConfiguration('oscPayPalShowProductDetailsButton', true);
 
         $I->openShop()
             ->loginUser(Fixtures::get('userName'), Fixtures::get('userPassword'));
@@ -81,7 +81,7 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
         $I->wantToTest('checkout from details page from clean session and filled cart. Customer is guest buyer without shop account.');
 
         $this->enableExpressButtons($I);
-        $I->updateModuleConfiguration('blPayPalShowProductDetailsButton', true);
+        $I->updateModuleConfiguration('oscPayPalShowProductDetailsButton', true);
 
         $this->proceedToBasketStep($I, $_ENV['sBuyerLogin'], false);
 
@@ -125,7 +125,7 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
 
         $this->enableExpressButtons($I);
         $this->setUserNameSameAsPayPal($I);
-        $I->updateModuleConfiguration('blPayPalLoginWithPayPalEMail', true);
+        $I->updateModuleConfiguration('oscPayPalLoginWithPayPalEMail', true);
 
         $productNavigation = new ProductNavigation($I);
         $productNavigation->openProductDetailsPage(Fixtures::get('product')['oxid']);

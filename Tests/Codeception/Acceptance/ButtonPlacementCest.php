@@ -39,7 +39,7 @@ final class ButtonPlacementCest extends BaseCest
         $I->dontSeeElement("#PayPalButtonProductMain");
 
         //switch it on
-        $I->updateModuleConfiguration('blPayPalShowProductDetailsButton', true);
+        $I->updateModuleConfiguration('oscPayPalShowProductDetailsButton', true);
 
         $I->openShop();
         $I->waitForText(Translator::translate('HOME'));
@@ -60,7 +60,7 @@ final class ButtonPlacementCest extends BaseCest
         $I->dontSeeElement("#PayPalPayButtonNextCart2");
 
         //switch it on
-        $I->updateModuleConfiguration('blPayPalShowBasketButton', true);
+        $I->updateModuleConfiguration('oscPayPalShowBasketButton', true);
         $I->openShop();
         $I->waitForText(Translator::translate('HOME'));
         $this->fillBasket($I);
@@ -77,7 +77,7 @@ final class ButtonPlacementCest extends BaseCest
         $I->dontSeeElement("#PayPalButtonPaymentPage");
 
         //switch it on
-        $I->updateModuleConfiguration('blPayPalShowCheckoutButton', true);
+        $I->updateModuleConfiguration('oscPayPalShowCheckoutButton', true);
         $I->clearShopCache();
         $this->proceedToPaymentStep($I, Fixtures::get('userName'), false);
         $I->seeElement("#PayPalButtonPaymentPage");
