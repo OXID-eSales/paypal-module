@@ -44,8 +44,6 @@ final class AdminCest extends BaseCest
 
     public function testPayPalAdminTransactions(AcceptanceTester $I): void
     {
-        $I->markTestIncomplete('TODO: enable feature and test in a later module version');
-
         $I->wantToTest('that shop admin PayPal transactions section can be loaded without error');
 
         $I->loginAdmin();
