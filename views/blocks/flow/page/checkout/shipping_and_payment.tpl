@@ -1,5 +1,5 @@
 [{assign var="payment" value=$oView->getPayment()}]
-[{if "oxidpaypal_acdc" == $payment->getId() || "oxidpaypal_pui" == $payment->getId()}]
+[{if "oscpaypal_acdc" == $payment->getId() || "oscpaypal_pui" == $payment->getId()}]
     [{include file="modules/osc/paypal/paypal_shipping_and_payment_flow.tpl"}]
 [{else}]
     [{$smarty.block.parent}]

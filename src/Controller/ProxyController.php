@@ -32,6 +32,7 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Repository\SubscriptionRepository;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 
 /**
  * Server side interface for PayPal smart buttons.
@@ -230,7 +231,7 @@ class ProxyController extends FrontendController
             $user = $activeUser;
         }
 
-        if ($session->getVariable('paymentid') !== 'oxidpaypal') {
+        if ($session->getVariable('paymentid') !== PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID) {
             $possibleDeliverySets = [];
 
             $deliverySetList = Registry::get(DeliverySetList::class)
@@ -244,17 +245,17 @@ class ProxyController extends FrontendController
                     $basket->getPrice()->getBruttoPrice(),
                     $user
                 );
-                if (array_key_exists('oxidpaypal', $paymentList)) {
+                if (array_key_exists(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID, $paymentList)) {
                     $possibleDeliverySets[] = $deliverySet->getId();
                 }
             }
 
             if (count($possibleDeliverySets)) {
-                $basket->setPayment('oxidpaypal');
+                $basket->setPayment(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
                 $shippingSetId = reset($possibleDeliverySets);
                 $basket->setShipping($shippingSetId);
                 $session->setVariable('sShipSet', $shippingSetId);
-                $session->setVariable('paymentid', 'oxidpaypal');
+                $session->setVariable('paymentid', PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
             }
         }
     }

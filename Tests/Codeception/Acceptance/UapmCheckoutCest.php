@@ -35,7 +35,7 @@ final class UapmCheckoutCest extends BaseCest
         //first decide to use sofort via paypal
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oxidpaypal_sofort')
+        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_sofort')
             ->goToNextStep();
         $paymentCheckout = $orderCheckout->goToPreviousStep();
         $I->dontSee(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
@@ -50,7 +50,7 @@ final class UapmCheckoutCest extends BaseCest
         //change decision again to use Sofort via PayPal
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oxidpaypal_sofort')
+        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_sofort')
             ->goToNextStep();
         $paymentCheckout = $orderCheckout->goToPreviousStep();
         $I->dontSee(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
@@ -77,7 +77,7 @@ final class UapmCheckoutCest extends BaseCest
 
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oxidpaypal_sofort')
+        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_sofort')
             ->goToNextStep();
         $orderCheckout->submitOrder();
 
@@ -109,7 +109,7 @@ final class UapmCheckoutCest extends BaseCest
 
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oxidpaypal_sofort')
+        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_sofort')
             ->goToNextStep();
         $orderCheckout->submitOrder();
 
@@ -138,7 +138,7 @@ final class UapmCheckoutCest extends BaseCest
 
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oxidpaypal_sofort')
+        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_sofort')
             ->goToNextStep();
         $orderCheckout->submitOrder();
 

@@ -11,9 +11,9 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 
 final class PayPalDefinitions
 {
-    public const STANDARD_PAYPAL_PAYMENT_ID = 'oxidpaypal';
-    public const ACDC_PAYPAL_PAYMENT_ID = 'oxidpaypal_acdc';
-    public const PUI_PAYPAL_PAYMENT_ID = 'oxidpaypal_pui';
+    public const STANDARD_PAYPAL_PAYMENT_ID = 'oscpaypal';
+    public const ACDC_PAYPAL_PAYMENT_ID = 'oscpaypal_acdc';
+    public const PUI_PAYPAL_PAYMENT_ID = 'oscpaypal_pui';
 
     public const PAYMENT_CONSTRAINTS = [
             'oxfromamount' => 0,
@@ -66,7 +66,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM Bancontact
-        'oxidpaypal_bancontact' => [
+        'oscpaypal_bancontact' => [
             'descriptions' => [
                 'de' => [
                     'desc' => "Bancontact (über PayPal)",
@@ -82,7 +82,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM Boleto Bancário
-        'oxidpaypal_boleto' => [
+        'oscpaypal_boleto' => [
             'descriptions' => [
                 'de' => [
                     'desc' => "Boleto Bancário (über PayPal)",
@@ -98,7 +98,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM BLIK
-        'oxidpaypal_blik' => [
+        'oscpaypal_blik' => [
             'descriptions' => [
                 'de' => [
                     'desc' => "BLIK (über PayPal)",
@@ -114,7 +114,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM EPS
-        'oxidpaypal_eps' => [
+        'oscpaypal_eps' => [
             'descriptions' => [
                 'de' => [
                     'desc' => "EPS (über PayPal)",
@@ -130,7 +130,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM GiroPay
-        'oxidpaypal_giropay' => [
+        'oscpaypal_giropay' => [
             'descriptions' => [
                 'de' => [
                     'desc' => "GiroPay (über PayPal)",
@@ -146,7 +146,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM iDEAL
-        'oxidpaypal_ideal' => [
+        'oscpaypal_ideal' => [
             'descriptions' => [
                 'de' => [
                     'desc' => "iDEAL (über PayPal)",
@@ -162,7 +162,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM Multibanco
-        'oxidpaypal_multibanco' => [
+        'oscpaypal_multibanco' => [
             'descriptions' => [
                 'de' => [
                     'desc' => "Multibanco (über PayPal)",
@@ -178,7 +178,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM Multibanco
-        'oxidpaypal_mybank' => [
+        'oscpaypal_mybank' => [
             'descriptions' => [
                 'de' => [
                     'desc' => "MyBank (über PayPal)",
@@ -194,7 +194,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM OXXO
-        'oxidpaypal_oxxo' => [
+        'oscpaypal_oxxo' => [
             'descriptions' => [
                 'de' => [
                     'desc' => "OXXO (über PayPal)",
@@ -210,7 +210,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM Przelewy24
-        'oxidpaypal_przelewy24' => [
+        'oscpaypal_przelewy24' => [
             'descriptions' => [
                 'de' => [
                     'desc' => "Przelewy24 (über PayPal)",
@@ -226,7 +226,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM Sofort
-        'oxidpaypal_sofort' => [
+        'oscpaypal_sofort' => [
             'descriptions' => [
                 'de' => [
                     'desc' => "Sofort (über PayPal)",
@@ -242,7 +242,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM Trustly
-        'oxidpaypal_trustly' => [
+        'oscpaypal_trustly' => [
             'descriptions' => [
                 'de' => [
                     'desc' => "Trustly (über PayPal)",

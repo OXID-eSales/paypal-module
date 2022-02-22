@@ -27,7 +27,7 @@ final class ViewConfigTest extends UnitTestCase
      */
     protected function tearDown(): void
     {
-        \OxidEsales\Eshop\Core\DatabaseProvider::getDB()->execute("delete from oxpayments where OXID = 'oxidpaypal' ");
+        \OxidEsales\Eshop\Core\DatabaseProvider::getDB()->execute("delete from oxpayments where OXID = 'oscpaypal' ");
 
         parent::tearDown();
     }

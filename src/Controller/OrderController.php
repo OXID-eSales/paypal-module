@@ -98,7 +98,7 @@ class OrderController extends OrderController_parent
         $session = $this->getSession();
         $oBasket =  $session->getBasket();
 
-        if ($oBasket->getPaymentId() !== 'oxidpaypal') {
+        if ($oBasket->getPaymentId() !== PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID) {
             return $ret;
         }
 
@@ -289,8 +289,8 @@ class OrderController extends OrderController_parent
     private function setPayPalAsPaymentMethod()
     {
         $payment = $this->getBasket()->getPaymentId();
-        if (($payment !== 'oxidpaypal')) {
-            $this->getBasket()->setPayment('oxidpaypal');
+        if (($payment !== PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID)) {
+            $this->getBasket()->setPayment(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
         }
     }
 

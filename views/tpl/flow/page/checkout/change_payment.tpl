@@ -1,4 +1,4 @@
-[{if 'oxidpaypal'|array_key_exists:$oView->getPaymentList()}]
+[{if 'oscpaypal'|array_key_exists:$oView->getPaymentList()}]
     [{assign var="config" value=$oViewConf->getPayPalConfig()}]
     [{if $oViewConf->isPayPalSessionActive() || $config->showPayPalCheckoutButton()}]
         <div class="panel panel-default">

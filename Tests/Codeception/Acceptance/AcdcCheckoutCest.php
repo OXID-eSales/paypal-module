@@ -35,7 +35,7 @@ final class AcdcCheckoutCestCheckoutCest extends BaseCest
         //first decide to use sofort via paypal
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oxidpaypal_acdc')
+        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_acdc')
             ->goToNextStep();
         $paymentCheckout = $orderCheckout->goToPreviousStep();
         $I->dontSee(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
@@ -50,7 +50,7 @@ final class AcdcCheckoutCestCheckoutCest extends BaseCest
         //change decision again to use Sofort via PayPal
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oxidpaypal_acdc')
+        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_acdc')
             ->goToNextStep();
         $paymentCheckout = $orderCheckout->goToPreviousStep();
         $I->dontSee(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
@@ -77,7 +77,7 @@ final class AcdcCheckoutCestCheckoutCest extends BaseCest
 
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $paymentCheckout->selectPayment('oxidpaypal_acdc')
+        $paymentCheckout->selectPayment('oscpaypal_acdc')
             ->goToNextStep();
         $I->waitForPageLoad();
         $I->see('Creditcard (via PayPal)');

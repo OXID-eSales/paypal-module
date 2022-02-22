@@ -307,9 +307,9 @@ abstract class BaseCest
     protected function enablePayments(AcceptanceTester $I): void
     {
         //we did not end up on shop start page
-        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oxidpaypal_pui']);
-        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oxidpaypal_sofort']);
-        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oxidpaypal_acdc']);
-        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oxidpaypal']);
+        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oscpaypal_pui']);
+        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oscpaypal_sofort']);
+        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oscpaypal_acdc']);
+        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oscpaypal']);
     }
 }

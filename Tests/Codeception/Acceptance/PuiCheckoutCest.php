@@ -47,7 +47,7 @@ final class PuiCheckoutCest extends BaseCest
 
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oxidpaypal_pui')
+        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_pui')
             ->goToNextStep();
         $orderCheckout->submitOrder();
 
@@ -84,7 +84,7 @@ final class PuiCheckoutCest extends BaseCest
 
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oxidpaypal_pui')
+        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_pui')
             ->goToNextStep();
         $orderCheckout->submitOrder();
         $I->waitForPageLoad();
