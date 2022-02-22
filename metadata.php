@@ -128,8 +128,10 @@ $aModule = [
         'pspaypalpaymentbuttons.tpl' => 'osc/paypal/views/includes/pspaypalpaymentbuttons.tpl',
         'pspaypalsubscriptionbuttons.tpl' => 'osc/paypal/views/includes/pspaypalsubscriptionbuttons.tpl',
 
-        'modules/osc/paypal/oscpaypalacdc.tpl' => 'osc/paypal/views/includes/oscpaypalacdc.tpl',
-        'modules/osc/paypal/oscpaypalpui.tpl' => 'osc/paypal/views/includes/oscpaypalpui.tpl',
+        'modules/osc/paypal/oscpaypalacdc_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/oscpaypalacdc.tpl',
+        'modules/osc/paypal/oscpaypalacdc_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/oscpaypalacdc.tpl',
+        'modules/osc/paypal/oscpaypalpui_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/oscpaypalpui.tpl',
+        'modules/osc/paypal/oscpaypalpui_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/oscpaypalpui.tpl',
         'modules/osc/paypal/paypal_shipping_and_payment_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/paypal_shipping_and_payment.tpl',
         'modules/osc/paypal/paypal_shipping_and_payment_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/paypal_shipping_and_payment.tpl',
 
