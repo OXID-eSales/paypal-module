@@ -310,5 +310,6 @@ abstract class BaseCest
         $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oxidpaypal_pui']);
         $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oxidpaypal_sofort']);
         $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oxidpaypal_acdc']);
+        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oxidpaypal']);
     }
 }

@@ -37,6 +37,7 @@ final class AdminOnboardingCest extends BaseCest
         $I->updateModuleConfiguration('oscPayPalSandboxClientId', '');
         $I->updateModuleConfiguration('oscPayPalSandboxMode', false);
         $I->updateModuleConfiguration('oscPayPalSandboxClientSecret', '');
+        $I->updateModuleConfiguration('oscPayPalSandboxWebhookId', '');
 
         $I->clearShopCache();
     }
