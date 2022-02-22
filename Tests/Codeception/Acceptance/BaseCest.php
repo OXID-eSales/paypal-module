@@ -37,6 +37,7 @@ abstract class BaseCest
         $I->updateModuleConfiguration('oscPayPalSandboxClientId', $_ENV['oscPayPalSandboxClientId']);
         $I->updateModuleConfiguration('oscPayPalSandboxMode', true);
         $I->updateModuleConfiguration('oscPayPalSandboxClientSecret', $_ENV['oscPayPalSandboxClientSecret']);
+        $I->updateModuleConfiguration('oscPayPalSandboxWebhookId', 'dummy_webhook_id');
 
         $this->ensureShopUserData($I);
         $this->enableExpressButtons($I);
@@ -52,7 +53,7 @@ abstract class BaseCest
 
         $I->deleteFromDatabase('oxorder', ['OXORDERNR >=' => '2']);
         $I->deleteFromDatabase('oxuserbaskets', ['OXTITLE >=' => 'savedbasket']);
-        $I->deleteFromDatabase('osc_paypal_order', ['OXSHOPID >' => '0']);
+        $I->deleteFromDatabase('oscpaypal_order', ['OXSHOPID >' => '0']);
         $I->resetCookie('sid');
         $I->resetCookie('sid_key');
     }
@@ -306,8 +307,9 @@ abstract class BaseCest
     protected function enablePayments(AcceptanceTester $I): void
     {
         //we did not end up on shop start page
-        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oxidpaypal_pui']);
-        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oxidpaypal_sofort']);
-        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oxidpaypal_acdc']);
+        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oscpaypal_pui']);
+        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oscpaypal_sofort']);
+        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oscpaypal_acdc']);
+        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oscpaypal']);
     }
 }

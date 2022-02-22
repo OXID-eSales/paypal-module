@@ -38,9 +38,9 @@
             </div>
             <div class="panel-body">
                 [{$payment->oxpayments__oxdesc->value}]
-                [{if $sPaymentID == "oxidpaypal_acdc"}]
+                [{if $sPaymentID == "oscpaypal_acdc"}]
                    [{include file="modules/osc/paypal/oscpaypalacdc_flow.tpl"}]
-                [{elseif $sPaymentID == "oxidpaypal_pui"}]
+                [{elseif $sPaymentID == "oscpaypal_pui"}]
                     [{include file="modules/osc/paypal/oscpaypalpui_flow.tpl"}]
                 [{/if}]
             </div>

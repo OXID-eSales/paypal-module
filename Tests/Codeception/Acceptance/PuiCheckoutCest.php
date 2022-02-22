@@ -29,7 +29,7 @@ final class PuiCheckoutCest extends BaseCest
     {
         $I->wantToTest('logged in user with PUI via PayPal runs into payment error after redirect.');
 
-        $I->seeNumRecords(0, 'osc_paypal_order');
+        $I->seeNumRecords(0, 'oscpaypal_order');
         $I->seeNumRecords(1, 'oxorder');
 
         $I->updateInDatabase(
@@ -47,7 +47,7 @@ final class PuiCheckoutCest extends BaseCest
 
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oxidpaypal_pui')
+        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_pui')
             ->goToNextStep();
         $orderCheckout->submitOrder();
 
@@ -56,7 +56,7 @@ final class PuiCheckoutCest extends BaseCest
         $I->see(Translator::translate('MESSAGE_UNAVAILABLE_SHIPPING_METHOD'));
 
         //nothing changed
-        $I->seeNumRecords(0, 'osc_paypal_order');
+        $I->seeNumRecords(0, 'oscpaypal_order');
         $I->seeNumRecords(1, 'oxorder');
     }
 
@@ -66,7 +66,7 @@ final class PuiCheckoutCest extends BaseCest
 
         $I->markTestIncomplete('TODO: Need PUI capable sandbox account for testing.');
 
-        $I->seeNumRecords(0, 'osc_paypal_order');
+        $I->seeNumRecords(0, 'oscpaypal_order');
         $I->seeNumRecords(1, 'oxorder');
 
         $I->updateInDatabase(
@@ -84,7 +84,7 @@ final class PuiCheckoutCest extends BaseCest
 
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oxidpaypal_pui')
+        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_pui')
             ->goToNextStep();
         $orderCheckout->submitOrder();
         $I->waitForPageLoad();
@@ -95,7 +95,7 @@ final class PuiCheckoutCest extends BaseCest
 
         $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
         $I->seeInDataBase(
-            'osc_paypal_order',
+            'oscpaypal_order',
             [
                 'OXORDERID' => $orderId
             ]
