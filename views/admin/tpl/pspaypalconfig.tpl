@@ -195,7 +195,7 @@
                     </div>
                 </div>
             </div>
-
+            [{* TODO: for the first release we start without PayPal Subscriptions
             <div class="card">
                 <div class="card-header" id="heading4">
                     <h4 class="collapsed" data-toggle="collapse" data-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
@@ -243,7 +243,7 @@
                     </div>
                 </div>
             </div>
-
+            *}]
             <div class="card">
                 <div class="card-header" id="heading4">
                     <h4 class="collapsed" data-toggle="collapse" data-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
