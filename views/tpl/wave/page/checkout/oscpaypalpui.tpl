@@ -23,11 +23,18 @@
     [{assign var="iBirthdayYear" value=0}]
 [{/if}]
 
+[{assign var="phonenumber" value=""}]
+[{if isset($invadr.oxuser__oxfon)}]
+    [{assign var="phonenumber" value=$invadr.oxuser__oxfon}]
+[{else}]
+    [{assign var="phonenumber" value=$oxcmp_user->oxuser__oxfon->value}]
+[{/if}]
+
 <p><br />[{oxmultilang ident="OSC_PAYPAL_PUI_HELP"}]</p>
 
 <div id="card_container" class="card_container">
     <form id="pui_form">
-        <div class="form-group row oxDate">
+        <div class="form-group row oxDate [{if !$iBirthdayMonth || !$iBirthdayDay || !$iBirthdayYear}]text-danger[{/if}]">
             <label class="control-label col-12 col-lg-3 req">[{oxmultilang ident="OSC_PAYPAL_PUI_BIRTHDAY"}]</label>
             <div class="col-3 col-lg-3">
                 <input id="pui_required_birthdate_day" class="oxDay form-control" name="pui_required[birthdate][day]" type="text" maxlength="2" value="[{if $iBirthdayDay > 0}][{$iBirthdayDay}][{/if}]" placeholder="[{oxmultilang ident="DAY"}]" required="" />
@@ -45,12 +52,22 @@
             <div class="col-3 col-lg-3">
                 <input id="pui_required_birthdate_year" class="oxYear form-control" name="pui_required[birthdate][year]" type="text" maxlength="4" value="[{if $iBirthdayYear}][{$iBirthdayYear}][{/if}]" placeholder="[{oxmultilang ident="YEAR"}]" required="" />
             </div>
+            <div class="offset-lg-3 col-lg-9 col-12">
+                <div class="help-block pui_required_birthdate_day_help pui_required_birthdate_month_help pui_required_birthdate_year_help">
+                    <p class="text-danger [{if $iBirthdayMonth && $iBirthdayDay && $iBirthdayYear}]d-none[{/if}]">[{oxmultilang ident="DD_FORM_VALIDATION_REQUIRED"}]</p>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group row">
+        <div class="form-group row [{if !$phonenumber}]text-danger[{/if}]">
             <label for="pui_required_phonenumber" class="control-label col-12 col-lg-3 req">[{oxmultilang ident="OSC_PAYPAL_PUI_PHONENUMBER"}]</label>
             <div class="col-12 col-lg-9">
-                <input id="pui_required_phonenumber" type="text" class="form-control" name="pui_required[phonenumber]" autocomplete="off" placeholder="[{oxmultilang ident="OSC_PAYPAL_PUI_PHONENUMBER_PLACEHOLDER"}]" value="[{if isset( $invadr.oxuser__oxfon )}][{$invadr.oxuser__oxfon}][{else}][{$oxcmp_user->oxuser__oxfon->value}][{/if}]" />
+                <input id="pui_required_phonenumber" type="text" class="form-control" name="pui_required[phonenumber]" autocomplete="off" placeholder="[{oxmultilang ident="OSC_PAYPAL_PUI_PHONENUMBER_PLACEHOLDER"}]" value="[{$phonenumber}]" />
+            </div>
+            <div class="offset-lg-3 col-lg-9 col-12">
+                <div class="help-block pui_required_phonenumber_help">
+                    <p class="text-danger [{if $phonenumber}]d-none[{/if}]">[{oxmultilang ident="DD_FORM_VALIDATION_REQUIRED"}]</p>
+                </div>
             </div>
         </div>
     </form>

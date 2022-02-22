@@ -6,11 +6,21 @@
     $("#orderConfirmAgbBottom").submit(function(event) {
         var dontStopSubmit = true;
         $('#pui_form [id^=pui_required_]').each(function(index) {
+            var help = $('#pui_form .' + $(this).attr("id") + '_help > p.text-danger');
             if (!$(this).val()) {
                 dontStopSubmit = false;
+                help.removeClass('d-none');
+            }
+            else {
+                help.addClass('d-none');
             }
             $('#orderConfirmAgbBottom input[name="' + $(this).attr("name") + '"]').val($(this).val());
         });
+        if (!dontStopSubmit) {
+            $('html, body').animate({
+                scrollTop: $("#pui_form").offset().top
+            }, 1000);
+        }
         return dontStopSubmit;
     });
 [{/capture}]
