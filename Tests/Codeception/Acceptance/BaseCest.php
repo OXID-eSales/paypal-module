@@ -37,6 +37,7 @@ abstract class BaseCest
         $I->updateModuleConfiguration('oscPayPalSandboxClientId', $_ENV['oscPayPalSandboxClientId']);
         $I->updateModuleConfiguration('oscPayPalSandboxMode', true);
         $I->updateModuleConfiguration('oscPayPalSandboxClientSecret', $_ENV['oscPayPalSandboxClientSecret']);
+        $I->updateModuleConfiguration('oscPayPalSandboxWebhookId', 'dummy_webhook_id');
 
         $this->ensureShopUserData($I);
         $this->enableExpressButtons($I);
