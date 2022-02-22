@@ -30,10 +30,10 @@
         <div class="form-group oxDate">
             <label class="control-label col-xs-12 col-lg-3 req">[{oxmultilang ident="OSC_PAYPAL_PUI_BIRTHDAY"}]</label>
             <div class="col-xs-3 col-lg-3">
-                <input id="oxDay" class="oxDay form-control" name="invadr[oxuser__oxbirthdate][day]" type="text" maxlength="2" value="[{if $iBirthdayDay > 0}][{$iBirthdayDay}][{/if}]" placeholder="[{oxmultilang ident="DAY"}]" required="" />
+                <input id="pui_required_birthdate_day" class="oxDay form-control" name="pui_required[birthdate][day]" type="text" maxlength="2" value="[{if $iBirthdayDay > 0}][{$iBirthdayDay}][{/if}]" placeholder="[{oxmultilang ident="DAY"}]" required="" />
             </div>
             <div class="col-xs-6 col-lg-3">
-                <select class="oxMonth form-control selectpicker" name="invadr[oxuser__oxbirthdate][month]" required="" />
+                <select id="pui_required_birthdate_month" class="oxMonth form-control selectpicker" name="pui_required[birthdate][month]" required="" />
                     <option value="" label="-">-</option>
                     [{section name="month" start=1 loop=13}]
                         <option value="[{$smarty.section.month.index}]" label="[{$smarty.section.month.index}]" [{if $iBirthdayMonth == $smarty.section.month.index}] selected="selected" [{/if}]>
@@ -43,18 +43,14 @@
                 </select>
             </div>
             <div class="col-xs-3 col-lg-3">
-                <input id="oxYear" class="oxYear form-control" name="invadr[oxuser__oxbirthdate][year]" type="text" maxlength="4" value="[{if $iBirthdayYear}][{$iBirthdayYear}][{/if}]" placeholder="[{oxmultilang ident="YEAR"}]" required="" />
-            </div>
-            <div class="col-lg-offset-3 col-lg-9 col-xs-12">
-                [{include file="message/inputvalidation.tpl" aErrors=$aErrors.oxuser__oxbirthdate}]
-                <div class="help-block"></div>
+                <input id="pui_required_birthdate_year" class="oxYear form-control" name="pui_required[birthdate][year]" type="text" maxlength="4" value="[{if $iBirthdayYear}][{$iBirthdayYear}][{/if}]" placeholder="[{oxmultilang ident="YEAR"}]" required="" />
             </div>
         </div>
 
         <div class="form-group">
-            <label for="pui-phonenumber" class="control-label col-xs-12 col-lg-3 req">[{oxmultilang ident="OSC_PAYPAL_PUI_PHONENUMBER"}]</label>
+            <label for="pui_required_phonenumber" class="control-label col-xs-12 col-lg-3 req">[{oxmultilang ident="OSC_PAYPAL_PUI_PHONENUMBER"}]</label>
             <div class="col-xs-12 col-lg-9">
-                <input type="text" id="pui-birthday" class="form-control" name="pui-phonenumber" autocomplete="off" placeholder="[{oxmultilang ident="OSC_PAYPAL_PUI_PHONENUMBER_PLACEHOLDER"}]" value="[{if isset( $invadr.oxuser__oxfon )}][{$invadr.oxuser__oxfon}][{else}][{$oxcmp_user->oxuser__oxfon->value}][{/if}]" />
+                <input id="pui_required_phonenumber" type="text" class="form-control" name="pui_required[phonenumber]" autocomplete="off" placeholder="[{oxmultilang ident="OSC_PAYPAL_PUI_PHONENUMBER_PLACEHOLDER"}]" value="[{if isset( $invadr.oxuser__oxfon )}][{$invadr.oxuser__oxfon}][{else}][{$oxcmp_user->oxuser__oxfon->value}][{/if}]" />
             </div>
         </div>
     </form>
