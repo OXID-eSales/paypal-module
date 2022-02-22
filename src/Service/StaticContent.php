@@ -43,11 +43,16 @@ class StaticContent
     public function addStaticContents(): void
     {
         foreach (PayPalDefinitions::getPayPalStaticContents() as $content) {
+            $loadId = $content['oxloadid'];
+            if (!$this->needToAddContent($loadId)) {
+                continue;
+            }
+
             foreach ($this->getLanguageIds() as $langId => $langAbbr) {
-                $contentModel = $this->getContentModel($content['oxloadid'], $langId);
+                $contentModel = $this->getContentModel($loadId, $langId);
                 $contentModel->assign(
                     [
-                        'oxloadid'  => $content['oxloadid'],
+                        'oxloadid'  => $loadId,
                         'oxactive'  => $content['oxactive'],
                         'oxtitle'   => isset($content['oxtitle_' . $langAbbr]) ? $content['oxtitle_' . $langAbbr] : '',
                         'oxcontent' => isset($content['oxcontent_' . $langAbbr]) ? $content['oxcontent_' . $langAbbr] : '',
@@ -56,6 +61,15 @@ class StaticContent
                 $contentModel->save();
             }
         }
+    }
+
+    protected function needToAddContent(string $ident): bool
+    {
+        $content = oxNew(EshopModelContent::class);
+        if ($content->loadByIdent($ident)) {
+            return false;
+        }
+        return true;
     }
 
     protected function getContentModel(string $ident, int $languageId): EshopModelContent

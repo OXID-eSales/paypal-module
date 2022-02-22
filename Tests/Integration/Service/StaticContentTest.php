@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Service;
 
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 use OxidSolutionCatalysts\PayPal\Service\StaticContent;
 use OxidEsales\Eshop\Application\Model\Content as EshopModelContent;
@@ -30,8 +31,37 @@ final class StaticContentTest extends BaseTestCase
         $after = oxNew(EshopModelContent::class);
         $after->loadByIdent('oscpaypalpuiconfirmation');
         $after->loadInLang(0, $after->getId());
-        $this->assertNotEmpty($after->getTitle());
+        $this->assertEquals(PayPalDefinitions::getPayPalStaticContents()['oscpaypalpuiconfirmation']['oxtitle_de'], $after->getTitle());
         $after->loadInLang(1, $after->getId());
-        $this->assertNotEmpty($after->getTitle());
+        $this->assertEquals(PayPalDefinitions::getPayPalStaticContents()['oscpaypalpuiconfirmation']['oxtitle_en'], $after->getTitle());
+    }
+
+    public function testExistingContentIsNotChanged(): void
+    {
+        $before = oxNew(EshopModelContent::class);
+        $before->loadByIdent('oscpaypalpuiconfirmation');
+        $before->delete();
+
+        $deleted = oxNew(EshopModelContent::class);
+        $this->assertFalse($deleted->loadByIdent('oscpaypalpuiconfirmation'));
+
+        $service = $this->getServiceFromContainer(StaticContent::class);
+        $service->addStaticContents();
+
+        $changeme = oxNew(EshopModelContent::class);
+        $changeme->loadByIdent('oscpaypalpuiconfirmation');
+        $changeme->loadInLang(0, $changeme->getId());
+        $changeme->assign(['oxtitle' => 'some test title']);
+        $changeme->save();
+
+        //now run service again
+        $service = $this->getServiceFromContainer(StaticContent::class);
+        $service->addStaticContents();
+
+        $after = oxNew(EshopModelContent::class);
+        $after->loadByIdent('oscpaypalpuiconfirmation');
+        $this->assertEquals('some test title', $after->getTitle());
+        $after->loadInLang(1, $after->getId());
+        $this->assertEquals(PayPalDefinitions::getPayPalStaticContents()['oscpaypalpuiconfirmation']['oxtitle_en'], $after->getTitle());
     }
 }

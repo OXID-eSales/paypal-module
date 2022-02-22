@@ -239,6 +239,7 @@ final class PayPalDefinitions
     ];
 
     private const PAYPAL_STATIC_CONTENTS = [
+        'oscpaypalpuiconfirmation' =>
         [
             'oxloadid' => 'oscpaypalpuiconfirmation',
             'oxactive' => 1,
