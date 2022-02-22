@@ -30,7 +30,7 @@ class SubscriptionRepository
     public function getLinkedProductByOxid($oxid)
     {
         return DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getAll(
-            'SELECT * FROM osc_paypal_subscription_product WHERE OXARTID = ?',
+            'SELECT * FROM oscpaypal_subscription_product WHERE OXARTID = ?',
             [$oxid]
         );
     }
@@ -45,7 +45,7 @@ class SubscriptionRepository
     {
         return DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getAll(
             'SELECT PAYPALSUBSCRIPTIONPLANID
-                FROM osc_paypal_subscription_product
+                FROM oscpaypal_subscription_product
                 WHERE PAYPALPRODUCTID = ?',
             [$productId]
         );
@@ -60,12 +60,12 @@ class SubscriptionRepository
     public function getSubscriptionsBySubscriptionPlanId($subscriptionPlanId)
     {
         return DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getAll(
-            'SELECT osc_paypal_subscription.*
-                FROM osc_paypal_subscription
-                LEFT JOIN osc_paypal_subscription_product
-                    ON (osc_paypal_subscription_product.OXID = osc_paypal_subscription.OXPAYPALSUBPRODID)
-                WHERE osc_paypal_subscription_product.PAYPALSUBSCRIPTIONPLANID = ? AND
-                    osc_paypal_subscription.OXPARENTORDERID = ""',
+            'SELECT oscpaypal_subscription.*
+                FROM oscpaypal_subscription
+                LEFT JOIN oscpaypal_subscription_product
+                    ON (oscpaypal_subscription_product.OXID = oscpaypal_subscription.OXPAYPALSUBPRODID)
+                WHERE oscpaypal_subscription_product.PAYPALSUBSCRIPTIONPLANID = ? AND
+                    oscpaypal_subscription.OXPARENTORDERID = ""',
             [$subscriptionPlanId]
         );
     }
@@ -80,7 +80,7 @@ class SubscriptionRepository
     {
         return DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getAll(
             'SELECT *
-                FROM osc_paypal_subscription
+                FROM oscpaypal_subscription
                 WHERE OXPARENTORDERID = ?',
             [$orderId]
         );
@@ -96,7 +96,7 @@ class SubscriptionRepository
     {
         return DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getRow(
             'SELECT *
-                FROM osc_paypal_subscription
+                FROM oscpaypal_subscription
                 WHERE OXORDERID = ?',
             [$orderId]
         );
@@ -113,7 +113,7 @@ class SubscriptionRepository
     {
         return DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getOne(
             'SELECT OXPARENTORDERID
-                FROM osc_paypal_subscription
+                FROM oscpaypal_subscription
                 WHERE OXORDERID = ?',
             [$orderId]
         );
@@ -129,7 +129,7 @@ class SubscriptionRepository
     {
         return DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getOne(
             'SELECT OXID
-                FROM osc_paypal_subscription_product
+                FROM oscpaypal_subscription_product
                 WHERE PAYPALSUBSCRIPTIONPLANID = ?',
             [$subscriptionPlanId]
         );
@@ -145,8 +145,8 @@ class SubscriptionRepository
     {
         return DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getRow(
             'SELECT psp.PAYPALSUBSCRIPTIONPLANID, psp.PAYPALPRODUCTID, psp.OXARTID, ps.OXORDERID, ps.OXUSERID
-                FROM osc_paypal_subscription_product as psp
-                LEFT JOIN osc_paypal_subscription as ps on (ps.OXPAYPALSUBPRODID = psp.OXID)
+                FROM oscpaypal_subscription_product as psp
+                LEFT JOIN oscpaypal_subscription as ps on (ps.OXPAYPALSUBPRODID = psp.OXID)
                 WHERE ps.PAYPALBILLINGAGREEMENTID = ?',
             [$billingAgreementId]
         );
@@ -162,7 +162,7 @@ class SubscriptionRepository
     {
         return DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getAll(
             'SELECT OXARTID
-                FROM osc_paypal_subscription_product
+                FROM oscpaypal_subscription_product
                 WHERE PAYPALPRODUCTID = ?',
             [$productId]
         );
@@ -181,13 +181,13 @@ class SubscriptionRepository
         $from = $page ? $page * $limit : 0;
 
         $subscriptionOrders = oxNew(\OxidEsales\Eshop\Core\Model\ListModel::class);
-        $subscriptionOrders->init('oxbase', 'osc_paypal_subscription');
+        $subscriptionOrders->init('oxbase', 'oscpaypal_subscription');
 
         $viewNameGenerator = Registry::get(TableViewNameGenerator::class);
 
         $orderView = $viewNameGenerator->getViewName('oxorder');
-        $subscriptionProductView = $viewNameGenerator->getViewName('osc_paypal_subscription_product');
-        $subscriptionOrderView = $viewNameGenerator->getViewName('osc_paypal_subscription');
+        $subscriptionProductView = $viewNameGenerator->getViewName('oscpaypal_subscription_product');
+        $subscriptionOrderView = $viewNameGenerator->getViewName('oscpaypal_subscription');
         $shopId = Registry::getConfig()->getShopId();
 
         $select = "select {$orderView}.`oxbillemail`, {$orderView}.`oxorderdate`,
@@ -228,7 +228,7 @@ class SubscriptionRepository
             return;
         }
 
-        $sql = 'INSERT INTO osc_paypal_subscription_product (';
+        $sql = 'INSERT INTO oscpaypal_subscription_product (';
         $sql .= 'OXID, OXSHOPID, OXARTID, ';
         $sql .= 'PAYPALPRODUCTID) VALUES(?,?,?,?)';
 
@@ -244,7 +244,7 @@ class SubscriptionRepository
     {
         return DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getRow(
             'SELECT *
-                FROM osc_paypal_subscription_product
+                FROM oscpaypal_subscription_product
                 WHERE PAYPALPRODUCTID = ?
                 AND PAYPALSUBSCRIPTIONPLANID = ?',
             [$productId, $subscriptionPlanId]
@@ -268,7 +268,7 @@ class SubscriptionRepository
         $existingProduct = $this->getSubscriptionIdPlanByProductId($productId);
 
         if (count($existingProduct) == 1  && empty($existingProduct[0]['PAYPALSUBSCRIPTIONPLANID'])) {
-            $sql = 'UPDATE osc_paypal_subscription_product SET ';
+            $sql = 'UPDATE oscpaypal_subscription_product SET ';
             $sql .= 'PAYPALSUBSCRIPTIONPLANID = ?,';
             $sql .= 'OXARTID = ? ';
             $sql .= 'WHERE PAYPALPRODUCTID = ?';
@@ -279,7 +279,7 @@ class SubscriptionRepository
                 $productId,
             ]);
         } else {
-            $sql = 'INSERT INTO osc_paypal_subscription_product (';
+            $sql = 'INSERT INTO oscpaypal_subscription_product (';
             $sql .= 'OXID, OXSHOPID, OXARTID, ';
             $sql .= 'PAYPALPRODUCTID, PAYPALSUBSCRIPTIONPLANID) VALUES(?,?,?,?,?)';
 
@@ -319,7 +319,7 @@ class SubscriptionRepository
 
         $subProdId = $this->getOxIdFromSubscriptedPlan($subscriptionPlanId);
 
-        $sql = "INSERT INTO osc_paypal_subscription(
+        $sql = "INSERT INTO oscpaypal_subscription(
                     `OXID`,
                     `OXSHOPID`,
                     `OXUSERID`,
@@ -364,7 +364,7 @@ class SubscriptionRepository
      */
     public function setCancelRequestSended(string $orderId = ''): void
     {
-        $sql = 'UPDATE osc_paypal_subscription SET
+        $sql = 'UPDATE oscpaypal_subscription SET
             OXCANCELREQUESTSENDED = "1"
             WHERE OXORDERID = ?';
 
@@ -380,7 +380,7 @@ class SubscriptionRepository
      */
     public function deleteLinkedProduct($paypalProductId): void
     {
-        $sql = 'DELETE FROM osc_paypal_subscription_product WHERE PAYPALPRODUCTID = ?';
+        $sql = 'DELETE FROM oscpaypal_subscription_product WHERE PAYPALPRODUCTID = ?';
 
         DatabaseProvider::getDb()->execute($sql, [
             $paypalProductId
@@ -394,7 +394,7 @@ class SubscriptionRepository
      */
     public function deleteLinkedPlan($planId): void
     {
-        $sql = 'DELETE FROM osc_paypal_subscription_product WHERE PAYPALSUBSCRIPTIONPLANID = ?';
+        $sql = 'DELETE FROM oscpaypal_subscription_product WHERE PAYPALSUBSCRIPTIONPLANID = ?';
 
         DatabaseProvider::getDb()->execute($sql, [
             $planId

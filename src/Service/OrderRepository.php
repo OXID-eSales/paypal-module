@@ -87,7 +87,7 @@ class OrderRepository
         ];
 
         $queryBuilder->select('oxid')
-            ->from('osc_paypal_order')
+            ->from('oscpaypal_order')
             ->where('oxorderid = :oxorderid')
             ->andWhere('oxpaypalorderid = :oxpaypalorderid');
 
@@ -109,7 +109,7 @@ class OrderRepository
         ];
 
         $queryBuilder->select('oxid')
-            ->from('osc_paypal_order')
+            ->from('oscpaypal_order')
             ->where('oxpaypalorderid = :oxpaypalorderid')
             ->andWhere('LENGTH(oxorderid) > 0');
 

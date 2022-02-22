@@ -27,12 +27,12 @@ class User extends User_parent
      */
     public function hasSubscribed($subscriptionPlanId = '')
     {
-        $select = 'SELECT osc_paypal_subscription.`oxid`
-            FROM osc_paypal_subscription
-            LEFT JOIN osc_paypal_subscription_product
-            ON (osc_paypal_subscription.`oxpaypalsubprodid` = osc_paypal_subscription_product.`oxid`)
-            WHERE osc_paypal_subscription.`oxuserid` = ?
-            AND osc_paypal_subscription_product.`paypalsubscriptionplanid` = ?';
+        $select = 'SELECT oscpaypal_subscription.`oxid`
+            FROM oscpaypal_subscription
+            LEFT JOIN oscpaypal_subscription_product
+            ON (oscpaypal_subscription.`oxpaypalsubprodid` = oscpaypal_subscription_product.`oxid`)
+            WHERE oscpaypal_subscription.`oxuserid` = ?
+            AND oscpaypal_subscription_product.`paypalsubscriptionplanid` = ?';
 
         $result = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getRow(
             $select,

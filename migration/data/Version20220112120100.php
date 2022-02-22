@@ -45,10 +45,10 @@ final class Version20220112120100 extends AbstractMigration
      */
     protected function createPayPalSubscriptionProductTable(Schema $schema): void
     {
-        if (!$schema->hasTable('osc_paypal_subscription_product')) {
-            $subscriptionProduct = $schema->createTable('osc_paypal_subscription_product');
+        if (!$schema->hasTable('oscpaypal_subscription_product')) {
+            $subscriptionProduct = $schema->createTable('oscpaypal_subscription_product');
         } else {
-            $subscriptionProduct = $schema->getTable('osc_paypal_subscription_product');
+            $subscriptionProduct = $schema->getTable('oscpaypal_subscription_product');
         }
 
         if (!$subscriptionProduct->hasColumn('OXID')) {
@@ -103,10 +103,10 @@ final class Version20220112120100 extends AbstractMigration
      */
     protected function createPayPalSubscriptionTable(Schema $schema): void
     {
-        if (!$schema->hasTable('osc_paypal_subscription')) {
-            $subscription = $schema->createTable('osc_paypal_subscription');
+        if (!$schema->hasTable('oscpaypal_subscription')) {
+            $subscription = $schema->createTable('oscpaypal_subscription');
         } else {
-            $subscription = $schema->getTable('osc_paypal_subscription');
+            $subscription = $schema->getTable('oscpaypal_subscription');
         }
 
         if (!$subscription->hasColumn('OXID')) {
@@ -153,7 +153,7 @@ final class Version20220112120100 extends AbstractMigration
                 Types::STRING,
                 [
                     'columnDefinition' => 'char(32) collate latin1_general_ci',
-                    'comment' => 'OXID (osc_paypal_subscription_product)'
+                    'comment' => 'OXID (oscpaypal_subscription_product)'
                 ]
             );
         }
@@ -208,10 +208,10 @@ final class Version20220112120100 extends AbstractMigration
      */
     protected function createPayPalOrderTable(Schema $schema): void
     {
-        if (!$schema->hasTable('osc_paypal_order')) {
-            $order = $schema->createTable('osc_paypal_order');
+        if (!$schema->hasTable('oscpaypal_order')) {
+            $order = $schema->createTable('oscpaypal_order');
         } else {
-            $order = $schema->getTable('osc_paypal_order');
+            $order = $schema->getTable('oscpaypal_order');
         }
 
         if (!$order->hasColumn('OXID')) {

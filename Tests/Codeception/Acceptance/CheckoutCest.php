@@ -42,7 +42,7 @@ final class CheckoutCest extends BaseCest
 
         $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
         $I->seeInDataBase(
-            'osc_paypal_order',
+            'oscpaypal_order',
             [
                 'OXORDERID' => $orderId,
                 'OXPAYPALORDERID' => $token
@@ -87,7 +87,7 @@ final class CheckoutCest extends BaseCest
 
         $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
         $I->seeInDataBase(
-            'osc_paypal_order',
+            'oscpaypal_order',
             [
                 'OXORDERID' => $orderId,
                 'OXPAYPALORDERID' => $token
@@ -138,7 +138,7 @@ final class CheckoutCest extends BaseCest
 
         $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
         $I->seeInDataBase(
-            'osc_paypal_order',
+            'oscpaypal_order',
             [
                 'OXORDERID' => $orderId,
                 'OXPAYPALORDERID' => $token
@@ -179,7 +179,7 @@ final class CheckoutCest extends BaseCest
 
         $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
         $I->seeInDataBase(
-            'osc_paypal_order',
+            'oscpaypal_order',
             [
                 'OXORDERID' => $orderId,
                 'OXPAYPALORDERID' => $token
@@ -211,7 +211,7 @@ final class CheckoutCest extends BaseCest
 
         $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
         $I->seeInDataBase(
-            'osc_paypal_order',
+            'oscpaypal_order',
             [
                 'OXORDERID' => $orderId,
                 'OXPAYPALORDERID' => $token

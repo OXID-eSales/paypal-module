@@ -105,7 +105,7 @@ class OrderController extends OrderController_parent
         // save order id to subscription
         if ($subscriptionProductOrderId = $session->getVariable('subscriptionProductOrderId')) {
             $orderId = Registry::getSession()->getVariable('sess_challenge');
-            $sql = 'UPDATE osc_paypal_subscription SET OXORDERID = ? WHERE OXID = ?';
+            $sql = 'UPDATE oscpaypal_subscription SET OXORDERID = ? WHERE OXID = ?';
             DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->execute(
                 $sql,
                 [

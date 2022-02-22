@@ -70,7 +70,7 @@ final class AcdcCheckoutCestCheckoutCest extends BaseCest
     {
         $I->wantToTest('logged in user with ACDC clicks order now without entering CC credentials');
 
-        $I->seeNumRecords(0, 'osc_paypal_order');
+        $I->seeNumRecords(0, 'oscpaypal_order');
         $I->seeNumRecords(1, 'oxorder');
 
         $this->proceedToPaymentStep($I, Fixtures::get('userName'));
