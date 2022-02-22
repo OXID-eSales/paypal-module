@@ -62,6 +62,8 @@ final class AdminCest extends BaseCest
 
     public function testPayPalAdminBalances(AcceptanceTester $I): void
     {
+        $I->markTestIncomplete('TODO: enable feature and test in a later module version');
+
         $I->wantToTest('that shop admin PayPal balances section can be loaded without error');
 
         $I->loginAdmin();
@@ -72,13 +74,13 @@ final class AdminCest extends BaseCest
         $I->see(Translator::translate('OSC_PAYPAL_FILTER'));
         $I->click(Translator::translate('OSC_PAYPAL_FILTER'));
         $I->see(Translator::translate('OSC_PAYPAL_CURRENCY_CODE'));
-
-        $I->markTestIncomplete('TODO: figure out why this error is shown');
         $I->dontSee(Translator::translate('OSC_PAYPAL_ERROR'));
     }
 
     public function testPayPalSubscriptions(AcceptanceTester $I): void
     {
+        $I->markTestIncomplete('TODO: enable feature and test in a later module version');
+
         $I->wantToTest('that shop admin PayPal subscriptions section can be loaded without error');
 
         $I->loginAdmin();
@@ -93,6 +95,8 @@ final class AdminCest extends BaseCest
 
     public function testPayPalDispute(AcceptanceTester $I): void
     {
+        $I->markTestIncomplete('TODO: enable feature and test in a later module version');
+
         $I->wantToTest('that shop admin PayPal dispute section can be loaded without error');
 
         $I->loginAdmin();

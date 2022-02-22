@@ -19,7 +19,7 @@ class PayPalOrder extends BaseModel
      *
      * @var string
      */
-    protected $_sCoreTable = 'osc_paypal_order';
+    protected $_sCoreTable = 'oscpaypal_order';
 
     /**
      * Construct initialize class

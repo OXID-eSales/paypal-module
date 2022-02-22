@@ -98,14 +98,14 @@ class OrderController extends OrderController_parent
         $session = $this->getSession();
         $oBasket =  $session->getBasket();
 
-        if ($oBasket->getPaymentId() !== 'oxidpaypal') {
+        if ($oBasket->getPaymentId() !== PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID) {
             return $ret;
         }
 
         // save order id to subscription
         if ($subscriptionProductOrderId = $session->getVariable('subscriptionProductOrderId')) {
             $orderId = Registry::getSession()->getVariable('sess_challenge');
-            $sql = 'UPDATE osc_paypal_subscription SET OXORDERID = ? WHERE OXID = ?';
+            $sql = 'UPDATE oscpaypal_subscription SET OXORDERID = ? WHERE OXID = ?';
             DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->execute(
                 $sql,
                 [
@@ -289,8 +289,8 @@ class OrderController extends OrderController_parent
     private function setPayPalAsPaymentMethod()
     {
         $payment = $this->getBasket()->getPaymentId();
-        if (($payment !== 'oxidpaypal')) {
-            $this->getBasket()->setPayment('oxidpaypal');
+        if (($payment !== PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID)) {
+            $this->getBasket()->setPayment(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
         }
     }
 

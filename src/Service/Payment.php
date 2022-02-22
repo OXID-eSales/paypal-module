@@ -135,7 +135,7 @@ class Payment
 
         $request = $this->patchRequestFactory
             ->getRequest($basket, $shopOrderId, $paymentSource);
-   Registry::getLogger()->error('patch request ' . serialize($request));
+
         // Update Order
         try {
             $orderService->updateOrder($checkoutOrderId, $request);

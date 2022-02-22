@@ -43,7 +43,7 @@ class Article extends Article_parent
             $this->_sPayPalProductId = '';
 
             $sql = 'SELECT PAYPALPRODUCTID
-                FROM osc_paypal_subscription_product
+                FROM oscpaypal_subscription_product
                 WHERE OXARTID = ?';
 
             $sPayPalProductId = (string) DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)
