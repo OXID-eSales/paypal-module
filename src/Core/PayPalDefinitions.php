@@ -15,9 +15,15 @@ final class PayPalDefinitions
     public const ACDC_PAYPAL_PAYMENT_ID = 'oxidpaypal_acdc';
     public const PUI_PAYPAL_PAYMENT_ID = 'oxidpaypal_pui';
 
+    public const PAYMENT_CONSTRAINTS = [
+            'oxfromamount' => 0,
+            'oxtoamount' => 10000,
+            'oxaddsumtype' => 'abs'
+        ];
+
     private const PAYPAL_DEFINTIONS = [
         //Standard PayPal
-         self::STANDARD_PAYPAL_PAYMENT_ID => [
+        self::STANDARD_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
                     'desc' => "PayPal v2",
@@ -28,7 +34,8 @@ final class PayPalDefinitions
                     'longdesc' => "Pay conveniently with PayPal"
                 ]
             ],
-            'countries' => []
+            'countries' => [],
+            'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         self::PUI_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
@@ -41,7 +48,8 @@ final class PayPalDefinitions
                     'longdesc' => "Pay conveniently with PayPal"
                 ]
             ],
-            'countries' => ['DE']
+            'countries' => ['DE'],
+            'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         self::ACDC_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
@@ -54,7 +62,8 @@ final class PayPalDefinitions
                     'longdesc' => "Pay conveniently with PayPal"
                 ]
             ],
-            'countries' => ['DE']
+            'countries' => ['DE'],
+            'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM Bancontact
         'oxidpaypal_bancontact' => [
@@ -69,7 +78,8 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['BE'],
-            'uapmpaymentsource' => 'bancontact'
+            'uapmpaymentsource' => 'bancontact',
+            'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM Boleto Bancário
         'oxidpaypal_boleto' => [
@@ -84,7 +94,8 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['BR'],
-            'uapmpaymentsource' => 'boletobancario'
+            'uapmpaymentsource' => 'boletobancario',
+            'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM BLIK
         'oxidpaypal_blik' => [
@@ -99,7 +110,8 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['PL'],
-            'uapmpaymentsource' => 'blik'
+            'uapmpaymentsource' => 'blik',
+            'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM EPS
         'oxidpaypal_eps' => [
@@ -114,7 +126,8 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['AT'],
-            'uapmpaymentsource' => 'eps'
+            'uapmpaymentsource' => 'eps',
+            'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM GiroPay
         'oxidpaypal_giropay' => [
@@ -129,7 +142,8 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['DE'],
-            'uapmpaymentsource' => 'giropay'
+            'uapmpaymentsource' => 'giropay',
+            'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM iDEAL
         'oxidpaypal_ideal' => [
@@ -144,7 +158,8 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['NL'],
-            'uapmpaymentsource' => 'ideal'
+            'uapmpaymentsource' => 'ideal',
+            'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM Multibanco
         'oxidpaypal_multibanco' => [
@@ -159,7 +174,8 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['PT'],
-            'uapmpaymentsource' => 'multibanco'
+            'uapmpaymentsource' => 'multibanco',
+            'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM Multibanco
         'oxidpaypal_mybank' => [
@@ -174,7 +190,8 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['IT'],
-            'uapmpaymentsource' => 'mybank'
+            'uapmpaymentsource' => 'mybank',
+            'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM OXXO
         'oxidpaypal_oxxo' => [
@@ -189,7 +206,8 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['MX'],
-            'uapmpaymentsource' => 'oxxo'
+            'uapmpaymentsource' => 'oxxo',
+            'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM Przelewy24
         'oxidpaypal_przelewy24' => [
@@ -204,7 +222,8 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['PL'],
-            'uapmpaymentsource' => 'p24'
+            'uapmpaymentsource' => 'p24',
+            'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM Sofort
         'oxidpaypal_sofort' => [
@@ -219,7 +238,8 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['DE', 'AT', 'BE', 'IT', 'NL', 'UK', 'ES'],
-            'uapmpaymentsource' => 'sofort'
+            'uapmpaymentsource' => 'sofort',
+            'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM Trustly
         'oxidpaypal_trustly' => [
@@ -234,7 +254,8 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['SE', 'FI', 'NL', 'EE'],
-            'uapmpaymentsource' => 'trustly'
+            'uapmpaymentsource' => 'trustly',
+            'constraints' => self::PAYMENT_CONSTRAINTS
         ]
     ];
 

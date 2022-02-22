@@ -26,7 +26,7 @@ class Events
         // execute module migrations
         self::executeModuleMigrations();
 
-        //add static contents.
+        //add static contents and payment methods
         //NOTE: this assumes the module's servies.yaml is already in place at the time this method is called
         self::addStaticContents();
     }
@@ -63,6 +63,7 @@ class Events
             ->getContainer()
             ->get(StaticContent::class);
 
-        $service->addStaticContents();
+        $service->ensureStaticContents();
+        $service->ensurePayPalPaymentMethods();
     }
 }
