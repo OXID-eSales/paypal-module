@@ -413,7 +413,7 @@ class OrderRequestFactory
         return $phone;
     }
 
-    function getPaymentSource(): PuiPaymentSource
+    protected function getPaymentSource(): PuiPaymentSource
     {
         $user = $this->basket->getBasketUser();
 
@@ -441,10 +441,10 @@ class OrderRequestFactory
         $paymentSource->email = $payer->email_address;
         $paymentSource->billing_address = $billingAddress;
 
-        $paymentSource->phone = new Phone();
-        $paymentSource->phone->national_number = $payer->phone->phone_number->national_number;
-        $paymentSource->phone->country_code = '49';
-        $paymentSource->birth_date = $payer->birth_date;
+        $paymentSource->phone = $user->getPhoneNumberForPuiRequest();
+        if ($fromRequest = $user->getBirthDateForPuiRequest()) {
+            $paymentSource->birth_date = $fromRequest->format('Y-m-d');
+        }
 
         $experienceContext = new ExperienceContext();
         $experienceContext->brand_name = Registry::getConfig()->getActiveShop()->getFieldData('oxname');

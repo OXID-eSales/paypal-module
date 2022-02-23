@@ -14,6 +14,7 @@ final class PayPalDefinitions
     public const STANDARD_PAYPAL_PAYMENT_ID = 'oscpaypal';
     public const ACDC_PAYPAL_PAYMENT_ID = 'oscpaypal_acdc';
     public const PUI_PAYPAL_PAYMENT_ID = 'oscpaypal_pui';
+    public const PUI_REQUEST_PAYMENT_SOURCE_NAME = 'pay_upon_invoice';
 
     public const PAYMENT_CONSTRAINTS = [
             'oxfromamount' => 0,

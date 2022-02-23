@@ -25,9 +25,32 @@ use OxidEsales\Codeception\Module\Translation\Translator;
  */
 final class PuiCheckoutCest extends BaseCest
 {
+    public function checkoutWithPuiViaPayPalMissingRequiredFields(AcceptanceTester $I): void
+    {
+        $I->wantToTest('logged in user with PUI via PayPal cannot place order without mandatory fields');
+
+        $I->seeNumRecords(0, 'oscpaypal_order');
+        $I->seeNumRecords(1, 'oxorder');
+
+        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
+
+        $paymentCheckout = new PaymentCheckout($I);
+        /** @var OrderCheckout $orderCheckout */
+        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_pui')
+            ->goToNextStep();
+        $orderCheckout->submitOrder();
+
+        $I->waitForPageLoad();
+        $I->seeElement("#orderConfirmAgbBottom");
+
+        //nothing changed
+        $I->seeNumRecords(0, 'oscpaypal_order');
+        $I->seeNumRecords(1, 'oxorder');
+    }
+
     public function checkoutWithPuiViaPayPalError(AcceptanceTester $I): void
     {
-        $I->wantToTest('logged in user with PUI via PayPal runs into payment error after redirect.');
+        $I->wantToTest('logged in user with PUI via PayPal runs into payment error (unparsable phone) after redirect.');
 
         $I->seeNumRecords(0, 'oscpaypal_order');
         $I->seeNumRecords(1, 'oxorder');
@@ -35,7 +58,7 @@ final class PuiCheckoutCest extends BaseCest
         $I->updateInDatabase(
             'oxuser',
             [
-                'oxfon' => '',
+                'oxfon' => 'lalalala',
                 'oxbirthdate' => '2000-04-01'
             ],
             [

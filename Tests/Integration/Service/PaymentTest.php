@@ -10,6 +10,8 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Service;
 
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
@@ -52,6 +54,50 @@ final class PaymentTest extends BaseTestCase
         $result = $paymentService->doCreatePayPalOrder($basket, OrderRequest::INTENT_CAPTURE);
 
         $this->assertNotEmpty($result->id);
+    }
+
+    public function testCreatePuiPayPalOrder(): void
+    {
+        $this->setRequestParameter('pui_required_birthdate_day', 1);
+        $this->setRequestParameter('pui_required_birthdate_month', 4);
+        $this->setRequestParameter('pui_required_birthdate_year', 2000);
+        $this->setRequestParameter('pui_required_phonenumber', '040 111222333');
+
+        $loggerMock = $this->getPsrLoggerMock();
+        $loggerMock->expects($this->never())
+            ->method('error');
+        EshopRegistry::set('logger', $loggerMock);
+
+        $user = oxNew(EshopModelUser::class);
+        $user->load(self::TEST_USER_ID);
+
+        $basket = oxNew(EshopModelBasket::class);
+        $basket->addToBasket(self::TEST_PRODUCT_ID, 1);
+        $basket->setUser($user);
+        $basket->setBasketUser($user);
+        $basket->setPayment(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
+        $basket->setShipping('oxidstandard');
+        $basket->calculateBasket(true);
+
+        $transactionId = EshopRegistry::getUtilsObject()->generateUId();
+        $order = $this->getMockBuilder(EshopModelOrder::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $order->expects($this->any())
+            ->method('getShopId')
+            ->willReturn(1);
+        $order->expects($this->any())
+            ->method('getId')
+            ->willReturn($transactionId);
+        $order->expects($this->once())
+            ->method('savePuiInvoiceNr');
+
+        $this->markTestIncomplete('TODO as soon as we do no longer run into PAYEE_NOT_ENABLED_FOR_PUI_PROCESSING');
+
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $result = $paymentService->doExecutePuiPayment($order, $basket);
+
+        $this->assertTrue($result);
     }
 
     public function testSandboxAccountCanCreatePuiOrder(): void
