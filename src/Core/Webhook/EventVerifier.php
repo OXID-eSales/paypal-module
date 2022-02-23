@@ -42,7 +42,7 @@ class EventVerifier
     {
         $config = new Config();
 
-        if (array_diff(self::VERIFICATION_EVENT_HEADERS, array_keys($headers))) {
+        if (array_diff(self::VERIFICATION_EVENT_HEADERS, array_keys(array_change_key_case($headers, CASE_UPPER)))) {
             throw new WebhookEventVerificationException('Missing required verification headers');
         }
 
