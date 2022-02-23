@@ -97,8 +97,8 @@ $aModule = [
 
         'oscpaypalonboarding' => OnboardingController::class,
         'oscpaypalorder' => PayPalOrderController::class,
+        'oscpaypaltransactions' => PayPalTransactionController::class,
         //TODO: for the first release we start without PayPal Subscriptions
-        // 'oscpaypaltransactions' => PayPalTransactionController::class,
         // 'oscpaypalsubscriptiontransaction' => SubscriptionTransactionController::class,
         // 'oscpaypalsubscribe' => PayPalSubscribeController::class,
         // 'oscpaypalsubscriptiondetails' => SubscriptionDetailsController::class,
