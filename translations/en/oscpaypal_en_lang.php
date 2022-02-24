@@ -50,5 +50,11 @@ $aLang = [
     'OSC_PAYPAL_ACDC_CARD_EXDATE'                 => 'Expiration Date',
     'OSC_PAYPAL_ACDC_CARD_CVV'                    => 'CVV',
     'OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD'           => 'Name on Card',
-    'OSC_PAYPAL_ACDC_PLEASE_RETRY'                => 'Please enter credit card data once again'
+    'OSC_PAYPAL_ACDC_PLEASE_RETRY'                => 'Please enter credit card data once again',
+
+    'OSC_PAYPAL_PUI_HELP'                         => 'To process the installment payment, we need your date of birth and a valid telephone number with country code (e.g. +49 30 123456789)',
+    'OSC_PAYPAL_PUI_BIRTHDAY'                     => 'Birthday',
+    'OSC_PAYPAL_PUI_BIRTHDAY_PLACEHOLDER'         => '01.01.1970',
+    'OSC_PAYPAL_PUI_PHONENUMBER'                  => 'Phonenumber',
+    'OSC_PAYPAL_PUI_PHONENUMBER_PLACEHOLDER'      => '+49 30 123456789',
 ];
