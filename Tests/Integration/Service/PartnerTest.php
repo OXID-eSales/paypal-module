@@ -28,7 +28,7 @@ final class PartnerTest extends BaseTestCase
         $this->assertEquals('tracking_id', $result->tracking_id);
     }
 
-    public function testGetPartnerReferralLinks(): void
+    public function testGetPartnerReferralSandboxLinks(): void
     {
         /** @var PartnerService $service */
         $service = $this->getServiceFromContainer(PartnerService::class);
@@ -43,6 +43,21 @@ final class PartnerTest extends BaseTestCase
         $this->assertNotEmpty($result['action_url']);
     }
 
+    public function testGetPartnerReferralLiveLinks(): void
+    {
+        /** @var PartnerService $service */
+        $service = $this->getServiceFromContainer(PartnerService::class);
+
+        /** @var PartnerConfig $config */
+        $partnerConfig = oxNew(PartnerConfig::class);
+
+        $result = $service->getPartnerReferralLinks($partnerConfig->createNonce(), 'tracking_id', false);
+
+        $this->assertCount(2, $result);
+        $this->assertNotEmpty($result['self']);
+        $this->assertNotEmpty($result['action_url']);
+    }
+
     public function testSandboxAccountCanCreateReferralLinks(): void
     {
         /** @var PartnerService $service */
@@ -51,6 +66,22 @@ final class PartnerTest extends BaseTestCase
         $apiService = oxNew(
             GenericService::class,
             $partnerService->getPartnerClient(true),
+            '/v2/customer/partner-referrals/'
+        );
+
+        $result = $apiService->request('post', $this->getPartnerRequestData());
+
+        $this->assertNotEmpty($result['links']);
+    }
+
+    public function testLiveAccountCanCreateReferralLinks(): void
+    {
+        /** @var PartnerService $service */
+        $partnerService = $this->getServiceFromContainer(PartnerService::class);
+
+        $apiService = oxNew(
+            GenericService::class,
+            $partnerService->getPartnerClient(false),
             '/v2/customer/partner-referrals/'
         );
 
