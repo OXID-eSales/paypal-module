@@ -16,23 +16,23 @@ final class PayPalDefinitions
     public const PUI_PAYPAL_PAYMENT_ID = 'oscpaypal_pui';
     public const PUI_REQUEST_PAYMENT_SOURCE_NAME = 'pay_upon_invoice';
 
-    public const PAYMENT_CONSTRAINTS = [
-            'oxfromamount' => 0,
-            'oxtoamount' => 10000,
-            'oxaddsumtype' => 'abs'
-        ];
+    private const PAYMENT_CONSTRAINTS = [
+        'oxfromamount' => 0,
+        'oxtoamount' => 10000,
+        'oxaddsumtype' => 'abs'
+    ];
 
     private const PAYPAL_DEFINTIONS = [
         //Standard PayPal
         self::STANDARD_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
-                    'desc' => "PayPal v2",
-                    'longdesc' => "Bezahlen Sie bequem mit PayPal"
+                    'desc' => 'PayPal v2',
+                    'longdesc' => 'Bezahlen Sie bequem mit PayPal'
                 ],
                 'en' => [
-                    'desc' => "PayPal v2",
-                    'longdesc' => "Pay conveniently with PayPal"
+                    'desc' => 'PayPal v2',
+                    'longdesc' => 'Pay conveniently with PayPal'
                 ]
             ],
             'countries' => [],
