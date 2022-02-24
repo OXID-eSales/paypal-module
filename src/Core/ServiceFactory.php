@@ -60,7 +60,7 @@ class ServiceFactory
      */
     public function getCatalogService(): Catalog
     {
-        return new Catalog($this->getClient());
+        return oxNew(Catalog($this->getClient()));
     }
 
     /**
