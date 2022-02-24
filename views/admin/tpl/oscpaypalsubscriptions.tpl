@@ -75,7 +75,7 @@
         </form>
     </div>
 
-    [{include file="pspaypallistpagination.tpl"}]
+    [{include file="oscpaypallistpagination.tpl"}]
     <div id="results">
         <table class="table table-sm">
             <thead>
@@ -104,6 +104,6 @@
             </tbody>
         </table>
     </div>
-    [{include file="pspaypallistpagination.tpl"}]
+    [{include file="oscpaypallistpagination.tpl"}]
 </div>
 [{include file="bottomitem.tpl"}]
