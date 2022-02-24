@@ -306,7 +306,7 @@ class Payment
                 OrderRequest::INTENT_CAPTURE,
                 OrderRequestFactory::USER_ACTION_CONTINUE,
                 Constants::PAYPAL_PUI_PROCESSING_INSTRUCTIONS,
-                PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID,
+                 PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME,
                  $payPalClientMetadataId,
                  $order->getId()
             );

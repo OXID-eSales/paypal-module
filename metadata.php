@@ -128,10 +128,14 @@ $aModule = [
         'pspaypalpaymentbuttons.tpl' => 'osc/paypal/views/includes/pspaypalpaymentbuttons.tpl',
         'pspaypalsubscriptionbuttons.tpl' => 'osc/paypal/views/includes/pspaypalsubscriptionbuttons.tpl',
 
-        'modules/osc/paypal/oscpaypalacdc.tpl' => 'osc/paypal/views/includes/oscpaypalacdc.tpl',
-        'modules/osc/paypal/oscpaypalpui.tpl' => 'osc/paypal/views/includes/oscpaypalpui.tpl',
+        'modules/osc/paypal/oscpaypalacdc_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/oscpaypalacdc.tpl',
+        'modules/osc/paypal/oscpaypalacdc_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/oscpaypalacdc.tpl',
+        'modules/osc/paypal/oscpaypalpui_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/oscpaypalpui.tpl',
+        'modules/osc/paypal/oscpaypalpui_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/oscpaypalpui.tpl',
         'modules/osc/paypal/paypal_shipping_and_payment_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/paypal_shipping_and_payment.tpl',
         'modules/osc/paypal/paypal_shipping_and_payment_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/paypal_shipping_and_payment.tpl',
+        'modules/osc/paypal/checkout_order_btn_submit_bottom_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/checkout_order_btn_submit_bottom.tpl',
+        'modules/osc/paypal/checkout_order_btn_submit_bottom_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/checkout_order_btn_submit_bottom.tpl',
 
         // PAYPAL-486 Register templates for overloading here;
         // use theme name in key when theme-specific. Shared templates don't receive a theme-specific key.
@@ -174,6 +178,19 @@ $aModule = [
             'block' => 'shippingAndPayment',
             'file' => 'views/blocks/wave/page/checkout/shipping_and_payment.tpl'
         ],
+        [
+            'theme' => 'flow',
+            'template' => 'page/checkout/order.tpl',
+            'block' => 'checkout_order_btn_submit_bottom',
+            'file' => '/views/blocks/flow/page/checkout/checkout_order_btn_submit_bottom.tpl'
+        ],
+        [
+            'theme' => 'wave',
+            'template' => 'page/checkout/order.tpl',
+            'block'    => 'checkout_order_btn_submit_bottom',
+            'file'     => '/views/blocks/wave/page/checkout/checkout_order_btn_submit_bottom.tpl'
+        ],
+
         //TODO: for the first release we start without PayPal Subscriptions
         // [
         //     'template' => 'article_list.tpl',

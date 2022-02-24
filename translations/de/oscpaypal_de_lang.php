@@ -50,5 +50,11 @@ $aLang = [
     'OSC_PAYPAL_ACDC_CARD_EXDATE'                 => 'Ablaufdatum',
     'OSC_PAYPAL_ACDC_CARD_CVV'                    => 'CVV',
     'OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD'           => 'Karteninhaber',
-    'OSC_PAYPAL_ACDC_PLEASE_RETRY'                => 'Bitte geben Sie ihre Kreditkartendaten erneut ein.'
+    'OSC_PAYPAL_ACDC_PLEASE_RETRY'                => 'Bitte geben Sie ihre Kreditkartendaten erneut ein.',
+
+    'OSC_PAYPAL_PUI_HELP'                         => 'Für die Abwicklung der Ratenzahlung benötigen wir Ihr Geburtsdatum sowie eine gültige Telefonnummer mit Ländervorwahl (z.B. +49 30 123456789)',
+    'OSC_PAYPAL_PUI_BIRTHDAY'                     => 'Geburtstag',
+    'OSC_PAYPAL_PUI_BIRTHDAY_PLACEHOLDER'         => '01.01.1970',
+    'OSC_PAYPAL_PUI_PHONENUMBER'                  => 'Telefonnummer',
+    'OSC_PAYPAL_PUI_PHONENUMBER_PLACEHOLDER'      => '+49 30 123456789',
 ];

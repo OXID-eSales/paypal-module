@@ -1,0 +1,5 @@
+[{assign var="payment" value=$oView->getPayment()}]
+[{if "oscpaypal_pui" == $payment->getId()}]
+    [{include file="modules/osc/paypal/checkout_order_btn_submit_bottom_wave.tpl"}]
+[{/if}]
+[{$smarty.block.parent}]
