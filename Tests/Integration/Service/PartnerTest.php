@@ -36,7 +36,7 @@ final class PartnerTest extends BaseTestCase
         /** @var PartnerConfig $config */
         $partnerConfig = oxNew(PartnerConfig::class);
 
-        $result = $service->getPartnerReferralLinks($partnerConfig->createNonce(), 'tracking_id');
+        $result = $service->getPartnerReferralLinks($partnerConfig->createNonce(), 'tracking_id', true);
 
         $this->assertCount(2, $result);
         $this->assertNotEmpty($result[0]['href']);
@@ -49,7 +49,7 @@ final class PartnerTest extends BaseTestCase
 
         $apiService = oxNew(
             GenericService::class,
-            $partnerService->getPartnerClient(),
+            $partnerService->getPartnerClient(true),
             '/v2/customer/partner-referrals/'
         );
 

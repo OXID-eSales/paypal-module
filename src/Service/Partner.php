@@ -7,7 +7,6 @@
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
-use OxidEsales\Eshop\Core\registry as EshopRegistry;
 use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPalApi\Service\Partner as PayPalApiPartnerService;
 use OxidSolutionCatalysts\PayPalApi\Client as PayPalApiClient;
@@ -37,10 +36,10 @@ class Partner
         $this->requestBuilder = $requestBuilder;
     }
 
-    public function getPartnerReferralLinks(string $nonce, string $trackingId): array
+    public function getPartnerReferralLinks(string $nonce, string $trackingId, bool $isSandbox = false): array
     {
         /** @var PayPalApiPartnerService $apiService */
-        $apiService = $this->getPartnerApiService();
+        $apiService = $this->getPartnerApiService($isSandbox);
 
         /** @var  ReferralDataReferralData $request */
         $request = $this->requestBuilder->getRequest($nonce, $trackingId);
@@ -51,21 +50,21 @@ class Partner
         return is_array($result->links) ? $result->links : [];
     }
 
-    public function getPartnerApiService(): PayPalApiPartnerService
+    public function getPartnerApiService(bool $isSandbox): PayPalApiPartnerService
     {
-        return oxNew(PayPalApiPartnerService::class, $this->getPartnerClient());
+        return oxNew(PayPalApiPartnerService::class, $this->getPartnerClient($isSandbox));
     }
 
-    public function getPartnerClient(): PayPalApiClient
+    public function getPartnerClient( bool $isSandbox): PayPalApiClient
     {
         /** @var PartnerConfig $config */
         $partnerConfig = oxNew(PartnerConfig::class);
 
         $client = new PayPalApiClient(
             $this->logger,
-            $partnerConfig->isSandbox() ? PayPalApiClient::SANDBOX_URL : PayPalApiClient::PRODUCTION_URL,
-            $partnerConfig->getTechnicalClientId(),
-            $partnerConfig->getTechnicalClientSecret(),
+            $isSandbox ? PayPalApiClient::SANDBOX_URL : PayPalApiClient::PRODUCTION_URL,
+            $partnerConfig->getTechnicalClientId($isSandbox),
+            $partnerConfig->getTechnicalClientSecret($isSandbox),
             '',
             false
         );

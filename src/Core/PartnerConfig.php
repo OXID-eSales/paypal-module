@@ -29,14 +29,6 @@ class PartnerConfig
     }
 
     /**
-     * @return bool
-     */
-    public function isSandbox(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandbox();
-    }
-
-    /**
      * This ClientId is public. The only function is to create
      * a basiclly AccessToken,  Which one is needed to generate
      * the request for the merchant ClientId.
@@ -123,9 +115,9 @@ class PartnerConfig
     /**
      * @return string
      */
-    public function getTechnicalClientId()
+    public function getTechnicalClientId(bool $isForSandbox = false)
     {
-        return $this->isSandbox() ?
+        return $isForSandbox ?
             $this->getSandboxOxidClientId()
             : $this->getLiveOxidClientId();
     }
@@ -133,9 +125,9 @@ class PartnerConfig
     /**
      * @return string
      */
-    public function getTechnicalPartnerId()
+    public function getTechnicalPartnerId(bool $isForSandbox = false)
     {
-        return $this->isSandbox() ?
+        return $isForSandbox ?
             $this->getSandboxOxidPartnerId()
             : $this->getLiveOxidPartnerId();
     }
@@ -143,9 +135,9 @@ class PartnerConfig
     /**
      * @return string
      */
-    public function getTechnicalClientSecret()
+    public function getTechnicalClientSecret(bool $isForSandbox = false)
     {
-        return $this->isSandbox() ?
+        return $isForSandbox  ?
             $this->getSandboxOxidSecret()
             : $this->getLiveOxidSecret();
     }
