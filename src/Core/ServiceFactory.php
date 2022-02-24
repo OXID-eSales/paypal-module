@@ -11,6 +11,7 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Client;
+use OxidSolutionCatalysts\PayPalApi\Service\Partner;
 use OxidSolutionCatalysts\PayPalApi\Service\Catalog;
 use OxidSolutionCatalysts\PayPalApi\Service\GenericService;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders;
@@ -60,7 +61,7 @@ class ServiceFactory
      */
     public function getCatalogService(): Catalog
     {
-        return new Catalog($this->getClient());
+        return oxNew(Catalog($this->getClient()));
     }
 
     /**
@@ -84,6 +85,17 @@ class ServiceFactory
             GenericService::class,
             $this->getClient(),
             '/v1/notifications/webhooks' . $uri
+        );
+    }
+
+    /**
+     * @return Partner
+     */
+    public function getPartnerService(): Partner
+    {
+        return oxNew(
+            Partner::class,
+            $this->getClient()
         );
     }
 
