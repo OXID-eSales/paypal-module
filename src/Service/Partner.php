@@ -47,7 +47,13 @@ class Partner
         /** @var ReferralDataCreateReferralDataResponse $result */
         $result = $apiService->createPartnerReferral($request);
 
-        return is_array($result->links) ? $result->links : [];
+        $links = is_array($result->links) ? $result->links : [];
+        $return = [];
+        foreach ($links as $sub) {
+            $return[$sub['rel']] = $sub['href'];
+        }
+
+        return $return;
     }
 
     public function getPartnerApiService(bool $isSandbox): PayPalApiPartnerService

@@ -39,7 +39,8 @@ final class PartnerTest extends BaseTestCase
         $result = $service->getPartnerReferralLinks($partnerConfig->createNonce(), 'tracking_id', true);
 
         $this->assertCount(2, $result);
-        $this->assertNotEmpty($result[0]['href']);
+        $this->assertNotEmpty($result['self']);
+        $this->assertNotEmpty($result['action_url']);
     }
 
     public function testSandboxAccountCanCreateReferralLinks(): void
