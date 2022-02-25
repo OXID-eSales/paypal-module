@@ -56,7 +56,7 @@ final class AdminOnboardingCest extends BaseCest
         $I->seeElement('#paypalonboardinglive');
 
         $link = $I->grabAttributeFrom('#paypalonboardinglive', 'href');
-        $I->doAssertStringContainsString('sellerNonce', $link);
+        $I->assertStringContainsString('sellerNonce', $link);
     }
 
     public function testOnboardingSandboxMode(AcceptanceTester $I): void
@@ -75,7 +75,7 @@ final class AdminOnboardingCest extends BaseCest
         $I->assertEmpty($I->grabAttributeFrom("#client-sandbox-id", 'value'));
 
         $link = $I->grabAttributeFrom('#paypalonboardingsandbox', 'href');
-        $I->doAssertStringContainsString('sellerNonce', $link);
+        $I->assertStringContainsString('sellerNonce', $link);
 
         $I->click('#paypalonboardingsandbox');
         $I->switchToLastWindow();

@@ -89,8 +89,8 @@ final class WebhookCest extends BaseCest
         $I->retryAssertStringContainsString('END WEBHOOK TEST', file_get_contents(OX_LOG_FILE));
 
         $I->assertStringNotContainsString('Missing required verification headers', file_get_contents(OX_LOG_FILE));
-        $I->doAssertStringContainsString('PayPal Webhook request', file_get_contents(OX_LOG_FILE));
-        $I->doAssertStringContainsString('PayPal Webhook headers', file_get_contents(OX_LOG_FILE));
+        $I->assertStringContainsString('PayPal Webhook request', file_get_contents(OX_LOG_FILE));
+        $I->assertStringContainsString('PayPal Webhook headers', file_get_contents(OX_LOG_FILE));
     }
 
     private function getApiService(): TestService
