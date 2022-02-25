@@ -10,8 +10,9 @@ namespace OxidSolutionCatalysts\PayPal\Core\Onboarding;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Onboarding as ApiOnboardingClient;
 use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
+use OxidSolutionCatalysts\PayPal\Core\PartnerConfig as PayPalPartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Core\RequestReader;
+use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
@@ -20,16 +21,6 @@ use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 class Onboarding
 {
     use ServiceContainer;
-
-    /** @var RequestReader */
-    private $requestReader;
-
-    public function __construct(
-        RequestReader $requestReader
-    )
-    {
-        $this->requestReader = $requestReader;
-    }
 
     public function autoConfigurationFromCallback(): array
     {
@@ -70,7 +61,7 @@ class Onboarding
 
     public function getOnboardingPayload(): array
     {
-        $response = json_decode($this->requestReader->getRawPost(), true);
+        $response = json_decode(PayPalSession::getOnboardingPayload(), true);
 
         if (!is_array($response) ||
             !isset($response['authCode']) ||
@@ -104,15 +95,16 @@ class Onboarding
 
     public function getOnboardingClient(bool $isSandbox): ApiOnboardingClient
     {
-        $paypalConfig = new PayPalConfig();
+        $paypalConfig = oxNew(PayPalConfig::class);
+        $partnerConfig = oxNew(PayPalPartnerConfig::class);
 
         $client = new ApiOnboardingClient(
             Registry::getLogger(),
             $isSandbox ? $paypalConfig->getClientSandboxUrl() : $paypalConfig->getClientLiveUrl(),
-            '',
-            '',
-            $isSandbox ? Constants::PAYPAL_OXID_PARTNER_SANDBOX_ID : Constants::PAYPAL_OXID_PARTNER_LIVE_ID
-        );
+            $partnerConfig->getTechnicalClientId($isSandbox),
+            $partnerConfig->getTechnicalClientSecret($isSandbox),
+            PayPalSession::getMerchantIdInPayPal()
+    );
 
         return $client;
     }

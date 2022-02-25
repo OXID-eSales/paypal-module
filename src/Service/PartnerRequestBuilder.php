@@ -7,6 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
+use OxidEsales\Eshop\Core\Session as EshopSession;
 use PDO;
 use Doctrine\DBAL\Query\QueryBuilder;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
@@ -30,11 +31,18 @@ final class PartnerRequestBuilder
     /** @var QueryBuilderFactoryInterface */
     private $queryBuilderFactory;
 
+    /**
+     * @var EshopSession
+     */
+    private $eshopSession;
+
     public function __construct(
+        EshopSession $eshopSession,
         ContextInterface $context,
         QueryBuilderFactoryInterface $queryBuilderFactory
     )
     {
+        $this->eshopSession = $eshopSession;
         $this->context = $context;
         $this->queryBuilderFactory = $queryBuilderFactory;
     }
@@ -79,10 +87,18 @@ final class PartnerRequestBuilder
         /** @var ReferralDataPartnerConfigOverride $result */
         $result = new ReferralDataPartnerConfigOverride();
 
-        $result->partner_logo_url = EshopRegistry::getConfig()->getSslShopUrl() . 'out/admin/img/setup_logo.png';
-        $result->return_url = EshopRegistry::getConfig()->getSslShopUrl() . 'admin/index.php?cl=oscpaypalconfig';
+        $result->partner_logo_url = EshopRegistry::getConfig()->getOutUrl(null, true) . 'img/setup_logo.png';
+        $result->return_url = EshopRegistry::getConfig()->getCurrentShopUrl(true) .
+            '?cl=oscpaypalonboarding&fnc=returnFromSignup' .
+            '&stoken=' . $this->eshopSession->getSessionChallengeToken() .
+            '&force_admin_sid=' . $this->eshopSession->getId();
+
         $result->return_url_description = 'return to ' . EshopRegistry::getConfig()->getSslShopUrl();
-        $result->action_renewal_url = EshopRegistry::getConfig()->getSslShopUrl() . 'admin/index.php?cl=oscpaypalconfig';
+        $result->action_renewal_url = EshopRegistry::getConfig()->getCurrentShopUrl(true) .
+            '?cl=oscpaypalconfig' .
+            '&stoken=' . $this->eshopSession->getSessionChallengeToken() .
+            '&force_admin_sid=' . $this->eshopSession->getId();
+
         $result->show_add_credit_card = true;
 
         return $result;

@@ -19,6 +19,11 @@ class Constants
     public const SESSION_UAPMCHECKOUT_ORDER_ID = 'paypal-uapm-checkout-session';
     public const SESSION_UAPMCHECKOUT_PAYMENTERROR = 'paypal-uapm-checkout-error';
     public const SESSION_UAPMCHECKOUT_REDIRECTLINK = 'paypal-uapm-checkout-redirect';
+
+    public const SESSION_ONBOARDING_PAYLOAD = 'paypal-onboarding-payload';
+    public const SESSION_ONBOARDING_MERCHANTID = 'paypal-onboarding-merchantid';
+    public const SESSION_ONBOARDING_MERCHANTIDINPAYPAL = 'paypal_onboarding-merchantidpaypal';
+
     public const PAYPAL_ORDER_REFERENCE_ID = 'OXID_REFERENCE';
 
     public const PAYPAL_ONBOARDING_SANDBOX_URL = 'https://www.sandbox.paypal.com/bizsignup/partner/entry';
