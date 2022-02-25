@@ -116,12 +116,12 @@ final class StaticContentTest extends BaseTestCase
             $this->assertTrue($payment->load($paymentId));
 
             $payment->loadInLang(0, $paymentId);
-            $this->assertEquals(PayPalDefinitions::getPayPalDefinitions()[$paymentId]['descriptions']['de']['desc'], $payment->getFieldData('oxdesc'));
-            $this->assertEquals(PayPalDefinitions::getPayPalDefinitions()[$paymentId]['descriptions']['de']['longdesc'], $payment->getFieldData('oxlongdesc'));
+            $this->assertEquals(htmlspecialchars(PayPalDefinitions::getPayPalDefinitions()[$paymentId]['descriptions']['de']['desc']), $payment->getFieldData('oxdesc'));
+            $this->assertEquals(htmlspecialchars(PayPalDefinitions::getPayPalDefinitions()[$paymentId]['descriptions']['de']['longdesc']), $payment->getFieldData('oxlongdesc'));
 
             $payment->loadInLang(1, $paymentId);
-            $this->assertEquals(PayPalDefinitions::getPayPalDefinitions()[$paymentId]['descriptions']['en']['desc'], $payment->getFieldData('oxdesc'));
-            $this->assertEquals(PayPalDefinitions::getPayPalDefinitions()[$paymentId]['descriptions']['en']['longdesc'], $payment->getFieldData('oxlongdesc'));
+            $this->assertEquals(htmlspecialchars(PayPalDefinitions::getPayPalDefinitions()[$paymentId]['descriptions']['en']['desc']), $payment->getFieldData('oxdesc'));
+            $this->assertEquals(htmlspecialchars(PayPalDefinitions::getPayPalDefinitions()[$paymentId]['descriptions']['en']['longdesc']), $payment->getFieldData('oxlongdesc'));
 
             $this->assertNotEmpty($payment->getCountries(), $paymentId);
         }

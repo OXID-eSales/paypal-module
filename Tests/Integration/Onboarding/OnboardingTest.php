@@ -22,16 +22,16 @@ final class OnboardingTest extends BaseTestCase
 {
     public function testOnboardingLinks(): void
     {
+        Registry::getSession()->setId('test_session_id');
+
         $controller = oxNew(PayPalConfigController::class);
-        $liveLink = $controller->getLiveSignUpMerchantIntegrationLink();
-        $this->assertNotEmpty($liveLink);
-        $this->assertStringNotContainsString('sandbox', $liveLink);
+        $liveLinks = $controller->getLiveSignUpMerchantIntegrationLinks();
+        $this->assertNotEmpty($liveLinks);
+        $this->assertStringNotContainsString('sandbox', serialize($liveLinks));
 
-        $sandboxLink = $controller->getSandboxSignUpMerchantIntegrationLink();
-        $this->assertNotEmpty($sandboxLink);
-        $this->assertStringContainsString('sandbox', $sandboxLink);
-
-        $this->assertNotEquals($sandboxLink, $liveLink);
+        $sandboxLinks = $controller->getSandboxSignUpMerchantIntegrationLinks();
+        $this->assertNotEmpty($sandboxLinks);
+        $this->assertStringContainsString('sandbox', serialize($sandboxLinks));
     }
 
     public function testAutoConfigurationFromCallback(): void

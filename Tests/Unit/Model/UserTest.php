@@ -19,9 +19,15 @@ final class UserTest extends UnitTestCase
 {
     public function testPuiBirthDate(): void
     {
-        $this->setRequestParameter('pui_required_birthdate_day', 1);
-        $this->setRequestParameter('pui_required_birthdate_month', 4);
-        $this->setRequestParameter('pui_required_birthdate_year', 2000);
+        $this->setRequestParameter(
+            'pui_required', [
+                    'birthdate' => [
+                        'day' => 1,
+                        'month' => 4,
+                        'year' => 2000
+                    ],
+                ]
+        );
 
         $user = oxNew(EshopModelUser::class);
 
@@ -31,9 +37,15 @@ final class UserTest extends UnitTestCase
 
     public function testPuiBirthDateNotSet(): void
     {
-        $this->setRequestParameter('pui_required_birthdate_day', null);
-        $this->setRequestParameter('pui_required_birthdate_month', null);
-        $this->setRequestParameter('pui_required_birthdate_year', null);
+        $this->setRequestParameter(
+            'pui_required', [
+                'birthdate' => [
+                    'day' => null,
+                    'month' => null,
+                    'year' => null
+                ],
+            ]
+        );
 
         $user = oxNew(EshopModelUser::class);
 
@@ -42,7 +54,11 @@ final class UserTest extends UnitTestCase
 
     public function testPuiPhone(): void
     {
-        $this->setRequestParameter('pui_required_phonenumber', '040 111222333');
+        $this->setRequestParameter(
+            'pui_required', [
+                'phonenumber' => '040 111222333'
+            ]
+        );
 
         $user = oxNew(EshopModelUser::class);
         $user->assign(
@@ -61,7 +77,11 @@ final class UserTest extends UnitTestCase
 
     public function testPuiPhoneWithCountryPrefix(): void
     {
-        $this->setRequestParameter('pui_required_phonenumber', '+49 40 111222333');
+        $this->setRequestParameter(
+            'pui_required', [
+                'phonenumber' => '+49 40 111222333'
+            ]
+        );
 
         $user = oxNew(EshopModelUser::class);
         $user->assign(
@@ -80,7 +100,11 @@ final class UserTest extends UnitTestCase
 
     public function testPuiPhoneInvalid(): void
     {
-        $this->setRequestParameter('pui_required_phonenumber', 'NO_PHONE');
+        $this->setRequestParameter(
+            'pui_required', [
+                'phonenumber' => 'NO_PHONE'
+            ]
+        );
 
         $user = oxNew(EshopModelUser::class);
 

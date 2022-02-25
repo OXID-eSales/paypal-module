@@ -27,10 +27,16 @@ final class OrderTest extends BaseTestCase
 
     public function testCreatePuiPayPalOrderRequestWithPuiRequiredFields(): void
     {
-        $this->setRequestParameter('pui_required_birthdate_day', 1);
-        $this->setRequestParameter('pui_required_birthdate_month', 4);
-        $this->setRequestParameter('pui_required_birthdate_year', 2000);
-        $this->setRequestParameter('pui_required_phonenumber', '040 111222333');
+        $this->setRequestParameter(
+            'pui_required', [
+                'birthdate' => [
+                    'day' => 1,
+                    'month' => 4,
+                    'year' => 2000
+                ],
+                'phonenumber' => '040 111222333'
+            ]
+        );
 
         //DE demo user
         $user = oxNew(EshopModelUser::class);
