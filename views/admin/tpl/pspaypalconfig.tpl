@@ -55,7 +55,7 @@
                             [{assign var='liveMerchantSignUpLinks' value=$oView->getLiveSignUpMerchantIntegrationLinks()}]
                             <p class="live"><a target="_blank"
                                   class="boardinglink"
-                                  href="[{$liveMerchantSignUpLinks.action_url}]"
+                                  href="[{$liveMerchantSignUpLinks.action_url|cat:'&displayMode=minibrowser'}]"
                                   id="paypalonboardinglive"
                                   data-paypal-onboard-complete="onboardedCallbackLive"
                                   data-paypal-button="PPLtBlue">
