@@ -86,7 +86,7 @@ final class CheckoutOrderApprovedHandlerTest extends UnitTestCase
         $this->setServiceFactoryMock($data);
 
         $handler = $this->getMockBuilder(CheckoutOrderApprovedHandler::class)
-            ->onlyMethods(['getServiceFromContainer'])
+            ->setMethods(['getServiceFromContainer'])
             ->getMock();
         $handler->expects($this->any())
             ->method('getServiceFromContainer')

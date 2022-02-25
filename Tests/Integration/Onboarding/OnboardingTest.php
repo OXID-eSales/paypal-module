@@ -27,11 +27,11 @@ final class OnboardingTest extends BaseTestCase
         $controller = oxNew(PayPalConfigController::class);
         $liveLinks = $controller->getLiveSignUpMerchantIntegrationLinks();
         $this->assertNotEmpty($liveLinks);
-        $this->assertStringNotContainsString('sandbox', serialize($liveLinks));
+        $this->doAssertStringNotContainsString('sandbox', serialize($liveLinks));
 
         $sandboxLinks = $controller->getSandboxSignUpMerchantIntegrationLinks();
         $this->assertNotEmpty($sandboxLinks);
-        $this->assertStringContainsString('sandbox', serialize($sandboxLinks));
+        $this->doAssertStringContainsString('sandbox', serialize($sandboxLinks));
     }
 
     public function testAutoConfigurationFromCallback(): void
@@ -63,7 +63,7 @@ final class OnboardingTest extends BaseTestCase
             ->willReturn($credentials);
 
         $service = $this->getMockBuilder(Onboarding::class)
-            ->onlyMethods(['saveCredentials', 'getOnboardingClient'])
+            ->setMethods(['saveCredentials', 'getOnboardingClient'])
             ->setConstructorArgs([$requestReader])
             ->getMock();
         $service->expects($this->once())
