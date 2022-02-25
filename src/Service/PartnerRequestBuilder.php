@@ -92,14 +92,12 @@ final class PartnerRequestBuilder
         $request->partner_logo_url = EshopRegistry::getConfig()->getOutUrl(null, true) . 'img/setup_logo.png';
         $request->return_url = $adminShopUrl.
             '?cl=oscpaypalonboarding&fnc=returnFromSignup' .
-            '&stoken=' . (string) $this->eshopSession->getSessionChallengeToken() .
-            '&force_admin_sid=' . (string) $this->eshopSession->getId();
+            '&stoken=' . (string) $this->eshopSession->getSessionChallengeToken();
 
         $request->return_url_description = 'return to ' . EshopRegistry::getConfig()->getSslShopUrl();
         $request->action_renewal_url = $adminShopUrl .
             '?cl=oscpaypalconfig' .
-            '&stoken=' . (string) $this->eshopSession->getSessionChallengeToken() .
-            '&force_admin_sid=' . (string) $this->eshopSession->getId();
+            '&stoken=' . (string) $this->eshopSession->getSessionChallengeToken();
 
         $request->show_add_credit_card = true;
 
