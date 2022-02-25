@@ -20,6 +20,7 @@ use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Exception\Redirect;
+use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 
 /**
  * Class OrderController
@@ -209,6 +210,12 @@ class OrderController extends OrderController_parent
         }
 
         try {
+            $paymentService = $this->getServiceFromContainer(PaymentService::class);
+            $order = $paymentService->fetchOrderFields((string) $sessionUapmOrderId, '');
+            if ('APPROVED' !== $order->status) {
+                throw PayPalException::uAPMPaymentFail();
+            }
+
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
             $order->finalizeOrderAfterExternalPayment($sessionUapmOrderId);
