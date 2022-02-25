@@ -80,7 +80,6 @@ final class AcdcCheckoutCestCheckoutCest extends BaseCest
         $paymentCheckout->selectPayment('oscpaypal_acdc')
             ->goToNextStep();
         $I->waitForPageLoad();
-        $I->see('Creditcard (via PayPal)');
         $I->waitForElementVisible("#card_form");
 
         //This is as far as we get, look slike codecetion cannot interfere with paypal JS

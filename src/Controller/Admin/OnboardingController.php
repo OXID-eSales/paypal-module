@@ -47,10 +47,12 @@ class OnboardingController extends AdminController
             PayPalSession::storeMerchantIdInPayPal(Registry::getRequest()->getRequestParameter('merchantIdInPayPal'));
         }
 
-        $this->autoConfiguration();
+        $credentials = $this->autoConfiguration();
         $this->registerWebhooks();
 
-        $result = [];
+        $result = [
+            !empty($credentials) ? 'success' : 'failure'
+        ];
         header('Content-Type: application/json; charset=UTF-8');
         Registry::getUtils()->showMessageAndExit(json_encode($result));
     }

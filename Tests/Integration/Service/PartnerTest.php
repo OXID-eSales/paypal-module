@@ -30,6 +30,8 @@ final class PartnerTest extends BaseTestCase
 
     public function testGetPartnerReferralSandboxLinks(): void
     {
+        $this->getConfig()->setConfigParam('sAdminDir', "admin");
+
         /** @var PartnerService $service */
         $service = $this->getServiceFromContainer(PartnerService::class);
 
@@ -45,6 +47,8 @@ final class PartnerTest extends BaseTestCase
 
     public function testGetPartnerReferralLiveLinks(): void
     {
+        $this->getConfig()->setConfigParam('sAdminDir', "admin");
+
         /** @var PartnerService $service */
         $service = $this->getServiceFromContainer(PartnerService::class);
 

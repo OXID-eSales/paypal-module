@@ -84,24 +84,26 @@ final class PartnerRequestBuilder
 
     private function getPartnerConfigOverride(): ReferralDataPartnerConfigOverride
     {
-        /** @var ReferralDataPartnerConfigOverride $result */
-        $result = new ReferralDataPartnerConfigOverride();
+        /** @var ReferralDataPartnerConfigOverride $request */
+        $request = new ReferralDataPartnerConfigOverride();
 
-        $result->partner_logo_url = EshopRegistry::getConfig()->getOutUrl(null, true) . 'img/setup_logo.png';
-        $result->return_url = EshopRegistry::getConfig()->getCurrentShopUrl(true) .
+        $adminShopUrl = EshopRegistry::getConfig()->getCurrentShopUrl(true);
+
+        $request->partner_logo_url = EshopRegistry::getConfig()->getOutUrl(null, true) . 'img/setup_logo.png';
+        $request->return_url = $adminShopUrl.
             '?cl=oscpaypalonboarding&fnc=returnFromSignup' .
-            '&stoken=' . $this->eshopSession->getSessionChallengeToken() .
-            '&force_admin_sid=' . $this->eshopSession->getId();
+            '&stoken=' . (string) $this->eshopSession->getSessionChallengeToken() .
+            '&force_admin_sid=' . (string) $this->eshopSession->getId();
 
-        $result->return_url_description = 'return to ' . EshopRegistry::getConfig()->getSslShopUrl();
-        $result->action_renewal_url = EshopRegistry::getConfig()->getCurrentShopUrl(true) .
+        $request->return_url_description = 'return to ' . EshopRegistry::getConfig()->getSslShopUrl();
+        $request->action_renewal_url = $adminShopUrl .
             '?cl=oscpaypalconfig' .
-            '&stoken=' . $this->eshopSession->getSessionChallengeToken() .
-            '&force_admin_sid=' . $this->eshopSession->getId();
+            '&stoken=' . (string) $this->eshopSession->getSessionChallengeToken() .
+            '&force_admin_sid=' . (string) $this->eshopSession->getId();
 
-        $result->show_add_credit_card = true;
+        $request->show_add_credit_card = true;
 
-        return $result;
+        return $request;
     }
 
     private function getBusinessEntity(): AccountBusinessEntity

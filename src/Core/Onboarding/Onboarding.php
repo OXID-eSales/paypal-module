@@ -80,7 +80,7 @@ class Onboarding
         $moduleSettings->saveSandboxMode($isSandbox);
     }
 
-    public function saveCredentials(array $credentials): void
+    public function saveCredentials(array $credentials): array
     {
         if (!isset($credentials['client_id']) ||
             !isset($credentials['client_secret'])
@@ -91,6 +91,11 @@ class Onboarding
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $moduleSettings->saveClientId($credentials['client_id']);
         $moduleSettings->saveClientSecret($credentials['client_secret']);
+
+        return [
+            'client_id' => $moduleSettings->getClientId(),
+            'client_secret' => $moduleSettings->getClientSecret()
+        ];
     }
 
     public function getOnboardingClient(bool $isSandbox): ApiOnboardingClient
