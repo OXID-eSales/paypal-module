@@ -107,7 +107,7 @@ $aModule = [
         // 'oscpaypaldisputedetails' => DisputeDetailsController::class
     ],
     'templates' => [
-        'oscpaypalconfig.tpl' => 'osc/paypal/views/admin/tpl/pspaypalconfig.tpl', // @Todo PSPAYPAL-544 Rename this file to match the key.
+        'oscpaypalconfig.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalconfig.tpl',
         'oscpaypaldisputedetails.tpl' => 'osc/paypal/views/admin/tpl/oscpaypaldisputedetails.tpl',
         'oscpaypaldisputes.tpl' => 'osc/paypal/views/admin/tpl/oscpaypaldisputes.tpl',
         'oscpaypalorder.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalorder.tpl',
