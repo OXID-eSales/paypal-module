@@ -11,7 +11,8 @@ use OxidEsales\Eshop\Application\Controller\Admin\AdminController;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Config;
-use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
+use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
+use OxidSolutionCatalysts\PayPal\Service\Partner as PartnerService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 
@@ -49,14 +50,10 @@ class PayPalConfigController extends AdminController
     /**
      * Template Getter: Get a Link for SignUp the Live Merchant Integration
      * see getSignUpMerchantIntegrationLink
-     * @return string
      */
-    public function getLiveSignUpMerchantIntegrationLink(): string
+    public function getLiveSignUpMerchantIntegrationLinks(): array
     {
-        return $this->buildSignUpLink(
-            PayPalConstants::PAYPAL_OXID_PARTNER_LIVE_ID,
-            PayPalConstants::PAYPAL_ONBOARDING_LIVE_URL
-        );
+        return $this->getReferralLinks();
     }
 
     /**
@@ -64,33 +61,17 @@ class PayPalConfigController extends AdminController
      * see getSignUpMerchantIntegrationLink
      * @return string
      */
-    public function getSandboxSignUpMerchantIntegrationLink(): string
+    public function getSandboxSignUpMerchantIntegrationLinks(): array
     {
-        return $this->buildSignUpLink(
-            PayPalConstants::PAYPAL_OXID_PARTNER_SANDBOX_ID,
-            PayPalConstants::PAYPAL_ONBOARDING_SANDBOX_URL
-        );
+        return $this->getReferralLinks(true);
     }
 
-    /**
-     * Maps arguments and constants to request parameters, generates a sign up url
-     *
-     * @param string $partnerId
-     *
-     * @return string
-     */
-    private function buildSignUpLink(string $partnerId, string $url): string
+    protected function getReferralLinks(bool $isSandbox = false): array
     {
-        $params = [
-            'sellerNonce' => $this->createNonce(),
-            'partnerId' => $partnerId,
-            'product' => 'EXPRESS_CHECKOUT',
-            'integrationType' => 'FO',
-            'displayMode' => 'minibrowser',
-            'features' => 'PAYMENT,REFUND,ADVANCED_TRANSACTIONS_SEARCH'
-        ];
+        $trackingId = Registry::getSession()->getId();
+        $partnerService = $this->getServiceFromContainer(PartnerService::class);
 
-        return $url . '?' . http_build_query($params);
+        return $partnerService->getPartnerReferralLinks($this->createNonce(), $trackingId, $isSandbox);
     }
 
     /**
@@ -104,12 +85,9 @@ class PayPalConfigController extends AdminController
             return Registry::getSession()->getVariable('PAYPAL_MODULE_NONCE');
         }
 
-        try {
-            // throws Exception if it was not possible to gather sufficient entropy.
-            $nonce = bin2hex(random_bytes(42));
-        } catch (\Exception $e) {
-            $nonce = md5(uniqid('', true) . '|' . microtime()) . substr(md5(mt_rand()), 0, 24);
-        }
+        /** @var PartnerConfig $partnerConfig */
+        $partnerConfig = oxNew(PartnerConfig::class);
+        $nonce = $partnerConfig->createNonce();
 
         Registry::getSession()->setVariable('PAYPAL_MODULE_NONCE', $nonce);
 

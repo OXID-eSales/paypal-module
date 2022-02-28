@@ -38,7 +38,7 @@ final class PaymentCaptureDeniedHandlerTest extends UnitTestCase
             ->willReturn($paypalOrderMock);
 
         $handler = $this->getMockBuilder(PaymentCaptureDeniedHandler::class)
-            ->onlyMethods(['getServiceFromContainer'])
+            ->setMethods(['getServiceFromContainer'])
             ->getMock();
         $handler->expects($this->any())
             ->method('getServiceFromContainer')

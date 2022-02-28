@@ -146,4 +146,47 @@ class PayPalSession
             Constants::SESSION_UAPMCHECKOUT_REDIRECTLINK
         );
     }
+
+    public static function storeMerchantIdInPayPal(string $merchantId): void
+    {
+        Registry::getSession()->setVariable(
+            Constants::SESSION_ONBOARDING_MERCHANTIDINPAYPAL,
+            $merchantId
+        );
+    }
+
+    public static function getMerchantIdInPayPal(): ?string
+    {
+        return Registry::getSession()->getVariable(
+            Constants::SESSION_ONBOARDING_MERCHANTIDINPAYPAL
+        );
+    }
+
+    public static function storeOnboardingPayload(string $payload): void
+    {
+        Registry::getSession()->setVariable(
+            Constants::SESSION_ONBOARDING_PAYLOAD,
+            $payload
+        );
+    }
+
+    public static function getOnboardingPayload(): ?string
+    {
+        return Registry::getSession()->getVariable(
+            Constants::SESSION_ONBOARDING_PAYLOAD
+        );
+    }
+
+    public static function unsetOnboardingSession(): void
+    {
+        Registry::getSession()->deleteVariable(
+            Constants::SESSION_ONBOARDING_MERCHANTID
+        );
+        Registry::getSession()->deleteVariable(
+            Constants::SESSION_ONBOARDING_MERCHANTIDINPAYPAL
+        );
+        Registry::getSession()->deleteVariable(
+            Constants::SESSION_ONBOARDING_PAYLOAD
+        );
+    }
 }

@@ -70,7 +70,7 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
             ->willReturn($paypalOrderMock);
 
         $handler = $this->getMockBuilder(CheckoutOrderCompletedHandler::class)
-            ->onlyMethods(['getServiceFromContainer'])
+            ->setMethods(['getServiceFromContainer'])
             ->getMock();
         $handler->expects($this->any())
             ->method('getServiceFromContainer')

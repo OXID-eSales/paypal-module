@@ -27,7 +27,7 @@ class ConfirmOrderRequestFactory
     /**
      * @var ConfirmOrderRequest
      */
-    private ConfirmOrderRequest $request;
+    private $request;
 
     /**
      * @param Basket $basket

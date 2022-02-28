@@ -37,15 +37,15 @@ final class WebhookTest extends BaseTestCase
     {
         $service = oxNew(Webhook::class);
 
-        $this->assertStringContainsString('oscpaypalwebhook', $service->getWebhookEndpoint());
-        $this->assertStringContainsString(Registry::getConfig()->getShopUrl(), $service->getWebhookEndpoint());
+        $this->doAssertStringContainsString('oscpaypalwebhook', $service->getWebhookEndpoint());
+        $this->doAssertStringContainsString(Registry::getConfig()->getShopUrl(), $service->getWebhookEndpoint());
     }
 
     public function testGetAvailableEvents(): void
     {
         $service = oxNew(Webhook::class);
 
-        $this->assertStringContainsString('CHECKOUT.ORDER.COMPLETED', serialize($service->getAvailableEventNames()));
+        $this->doAssertStringContainsString('CHECKOUT.ORDER.COMPLETED', serialize($service->getAvailableEventNames()));
     }
 
     public function testNonSslEndpoint(): void
@@ -115,7 +115,7 @@ final class WebhookTest extends BaseTestCase
     protected function getServiceMock(string $url = SELF::TEST_WEBHOOK_URL, array $addMockMethods = []): Webhook
     {
         $service = $this->getMockBuilder(Webhook::class)
-            ->onlyMethods(array_merge(['getWebhookEndpoint'], $addMockMethods))
+            ->setMethods(array_merge(['getWebhookEndpoint'], $addMockMethods))
             ->getMock();
         $service->expects($this->any())
             ->method('getWebhookEndpoint')

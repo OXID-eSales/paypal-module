@@ -12,26 +12,27 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Onboarding;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidSolutionCatalysts\PayPalApi\Onboarding as ApiOnboardingClient;
-use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalConfigController;
 use OxidSolutionCatalysts\PayPal\Core\Onboarding\Onboarding;
-use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
+use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 
 final class OnboardingTest extends BaseTestCase
 {
     public function testOnboardingLinks(): void
     {
+        Registry::getSession()->setId('test_session_id');
+        $this->getConfig()->setConfigParam('sAdminDir', "admin");
+
         $controller = oxNew(PayPalConfigController::class);
-        $liveLink = $controller->getLiveSignUpMerchantIntegrationLink();
-        $this->assertNotEmpty($liveLink);
-        $this->assertStringNotContainsString('sandbox', $liveLink);
+        $liveLinks = $controller->getLiveSignUpMerchantIntegrationLinks();
+        $this->assertNotEmpty($liveLinks);
+        $this->doAssertStringNotContainsString('sandbox', serialize($liveLinks));
 
-        $sandboxLink = $controller->getSandboxSignUpMerchantIntegrationLink();
-        $this->assertNotEmpty($sandboxLink);
-        $this->assertStringContainsString('sandbox', $sandboxLink);
-
-        $this->assertNotEquals($sandboxLink, $liveLink);
+        $sandboxLinks = $controller->getSandboxSignUpMerchantIntegrationLinks();
+        $this->assertNotEmpty($sandboxLinks);
+        $this->doAssertStringContainsString('sandbox', serialize($sandboxLinks));
     }
 
     public function testAutoConfigurationFromCallback(): void
@@ -41,11 +42,7 @@ final class OnboardingTest extends BaseTestCase
 
         $expected = json_decode($response, true);
 
-        $requestReader = $this->getMockBuilder(RequestReader::class)
-            ->getMock();
-        $requestReader->expects($this->once())
-            ->method('getRawPost')
-            ->willReturn($response);
+        PayPalSession::storeOnboardingPayload($response);
 
         $apiClient = $this->getMockBuilder(ApiOnboardingClient::class)
             ->disableOriginalConstructor()
@@ -63,8 +60,7 @@ final class OnboardingTest extends BaseTestCase
             ->willReturn($credentials);
 
         $service = $this->getMockBuilder(Onboarding::class)
-            ->onlyMethods(['saveCredentials', 'getOnboardingClient'])
-            ->setConstructorArgs([$requestReader])
+            ->setMethods(['saveCredentials', 'getOnboardingClient'])
             ->getMock();
         $service->expects($this->once())
             ->method('getOnboardingClient')

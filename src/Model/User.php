@@ -29,9 +29,10 @@ class User extends User_parent
 {
     public function getBirthDateForPuiRequest(): ?DateTimeImmutable
     {
-        $day = EshopRegistry::getRequest()->getRequestParameter('pui_required_birthdate_day');
-        $month = EshopRegistry::getRequest()->getRequestParameter('pui_required_birthdate_month');
-        $year = EshopRegistry::getRequest()->getRequestParameter('pui_required_birthdate_year');
+        $required = EshopRegistry::getRequest()->getRequestParameter('pui_required');
+        $day = $required['birthdate']['day'];
+        $month = $required['birthdate']['month'];
+        $year = $required['birthdate']['year'];
 
         $result = null;
         if (checkdate($month, $day, $year)) {
@@ -44,7 +45,7 @@ class User extends User_parent
     public function getPhoneNumberForPuiRequest(): ?ApiModelPhone
     {
         $result = null;
-        $rawNumber = EshopRegistry::getRequest()->getRequestParameter('pui_required_phonenumber');
+        $rawNumber = EshopRegistry::getRequest()->getRequestParameter('pui_required')['phonenumber'];
 
         $country = oxNew(EshopModelCountry::class);
         $country->load($this->getFieldData('oxcountryId'));

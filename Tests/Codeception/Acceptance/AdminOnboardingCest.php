@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 
 use OxidEsales\Codeception\Module\Translation\Translator;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\Page\PayPalAdmin;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
@@ -56,7 +57,7 @@ final class AdminOnboardingCest extends BaseCest
         $I->seeElement('#paypalonboardinglive');
 
         $link = $I->grabAttributeFrom('#paypalonboardinglive', 'href');
-        $I->assertStringContainsString('sellerNonce', $link);
+        $I->assertStringContainsString('referralToken', $link);
     }
 
     public function testOnboardingSandboxMode(AcceptanceTester $I): void
@@ -75,7 +76,7 @@ final class AdminOnboardingCest extends BaseCest
         $I->assertEmpty($I->grabAttributeFrom("#client-sandbox-id", 'value'));
 
         $link = $I->grabAttributeFrom('#paypalonboardingsandbox', 'href');
-        $I->assertStringContainsString('sellerNonce', $link);
+        $I->assertStringContainsString('referralToken', $link);
 
         $I->click('#paypalonboardingsandbox');
         $I->switchToLastWindow();
@@ -86,16 +87,13 @@ final class AdminOnboardingCest extends BaseCest
         $I->click($payPal->agreeConnectButton);
         $I->waitForPageLoad();
 
-        $I->see('Vielen Dank für Ihre Anmeldung');
+        $I->waitForElement("//a[contains(@href, 'cl=oscpaypalonboarding')]", 20);
+        $I->waitForElementClickable("//a[contains(@href, 'cl=oscpaypalonboarding')]");
+        $href = $I->grabAttributeFrom("//a[contains(@href, 'cl=oscpaypalonboarding')]", 'href');
+        $I->assertStringContainsString('returnFromSignup', $href);
+        $I->amOnUrl($href);
+        $I->see('["success"]');
 
-        $I->switchToWindow();
-        $I->resetCookie('admin_sid');
-        $I->loginAdmin();
-        $adminPanel = new PayPalAdmin($I);
-        $adminPanel->openConfiguration();
-        $this->checkWeAreStillInAdminPanel($I);
-
-        $I->assertNotEmpty($I->grabAttributeFrom("#client-sandbox-id", 'value'));
         //NOTE: in case of non ssl url, the webhook cannot be created, so webhook part depends on test environment
         //locally we will still see a note, that the module is inactive
     }

@@ -33,24 +33,24 @@ class Payment
     /**
      * @var EshopSession
      */
-    protected $eshopSession;
+    private $eshopSession;
 
     /**
      * @var OrderRepository
      */
-    protected $orderRepository;
+    private $orderRepository;
 
     /** ServiceFactory */
-    protected $serviceFactory;
+    private $serviceFactory;
 
     /** PatchRequestFactory */
-    protected $patchRequestFactory;
+    private $patchRequestFactory;
 
     /** OrderRequestFactory */
-    protected $orderRequestFactory;
+    private $orderRequestFactory;
 
     /** @var ConfirmOrderRequestFactory */
-    protected $confirmOrderRequestFactory;
+    private $confirmOrderRequestFactory;
 
     public function __construct(
         EshopSession $eshopSession,
