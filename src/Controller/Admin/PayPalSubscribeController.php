@@ -60,7 +60,7 @@ class PayPalSubscribeController extends AdminController
     public function __construct()
     {
         parent::__construct();
-        $this->_sThisTemplate = 'pspaypalsubscribe.tpl';
+        $this->_sThisTemplate = 'oscpaypalsubscribe.tpl';
         $this->repository = new SubscriptionRepository();
     }
 

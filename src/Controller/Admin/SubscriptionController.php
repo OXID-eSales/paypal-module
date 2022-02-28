@@ -23,7 +23,7 @@ class SubscriptionController extends AdminListController
      */
     public function __construct()
     {
-        $this->setTemplateName('pspaypalsubscriptions.tpl');
+        $this->setTemplateName('oscpaypalsubscriptions.tpl');
 
         parent::__construct();
     }

@@ -305,7 +305,7 @@
                 [{/foreach}]
             </tbody>
         </table>
-        [{include file="pspaypallistpagination.tpl"}]
+        [{include file="oscpaypallistpagination.tpl"}]
     </div>
 </div>
 [{include file="bottomitem.tpl"}]

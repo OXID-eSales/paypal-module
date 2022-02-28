@@ -73,15 +73,15 @@
 <table style="width: 100%;">
     <tr>
         <td style="vertical-align: top; width: 50%">
-            [{include file="pspaypalsubscriptionform.tpl"}]
+            [{include file="oscpaypalsubscriptionform.tpl"}]
             [{if $oView->hasLinkedObject() }]
-                [{include file="pspaypalbillingplan.tpl" title="billingplan"}]
+                [{include file="oscpaypalbillingplan.tpl" title="billingplan"}]
             [{/if}]
 
         </td>
         <td style="vertical-align: top;">
             [{if $oView->hasLinkedObject() }]
-                [{include file="pspaypalbillingplandata.tpl"}]
+                [{include file="oscpaypalbillingplandata.tpl"}]
             [{/if}]
         </td>
     </tr>

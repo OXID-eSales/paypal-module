@@ -63,7 +63,7 @@ class PayPalOrderController extends AdminDetailsController
 
         $lang = Registry::getLang();
 
-        $result = "pspaypalorder.tpl";
+        $result = "oscpaypalorder.tpl";
 
         // normal paypal order
         try {
@@ -85,10 +85,10 @@ class PayPalOrderController extends AdminDetailsController
                 $product = $this->getSubscriptionProduct($paypalSubscription->id);
                 $this->addTplParam('payPalSubscription', $paypalSubscription);
                 $this->addTplParam('subscriptionProduct', $product);
-                $result = "pspaypalsubscriptiondetails.tpl";
+                $result = "oscpaypalsubscriptiondetails.tpl";
             } elseif ($this->isPayPalPartSubscription($orderId)) {
                 $this->addTplParam('payPalParentSubscriptionOrder', $this->getParentSubscriptionOrder($orderId));
-                $result = "pspaypalpartsubscriptiondetails.tpl";
+                $result = "oscpaypalpartsubscriptiondetails.tpl";
             }
         } catch (ApiException $exception) {
             $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()));

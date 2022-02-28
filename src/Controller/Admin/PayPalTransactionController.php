@@ -31,7 +31,7 @@ class PayPalTransactionController extends AdminListController
     /**
      * @var string Current class template name.
      */
-    protected $_sThisTemplate = 'pspaypaltransactions.tpl';
+    protected $_sThisTemplate = 'oscpaypaltransactions.tpl';
 
     /**
      * @inheritDoc

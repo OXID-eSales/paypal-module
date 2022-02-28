@@ -31,7 +31,7 @@ class DisputeController extends AdminListController
     public function __construct()
     {
         parent::__construct();
-        $this->setTemplateName('pspaypaldisputes.tpl');
+        $this->setTemplateName('oscpaypaldisputes.tpl');
     }
 
     /**

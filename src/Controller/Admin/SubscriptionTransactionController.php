@@ -27,7 +27,7 @@ class SubscriptionTransactionController extends AdminController
     public function __construct()
     {
         parent::__construct();
-        $this->setTemplateName('pspaypalsubscriptiontransactions.tpl');
+        $this->setTemplateName('oscpaypalsubscriptiontransactions.tpl');
     }
 
     /**
