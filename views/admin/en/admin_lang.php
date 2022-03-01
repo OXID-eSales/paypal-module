@@ -64,12 +64,12 @@ $aLang = [
     'OSC_PAYPAL_INSTRUMENT_SUB_TYPE'              => 'Instrument sub type',
     'OSC_PAYPAL_TRANSACTION_SUBJECT'              => 'Subject',
     'OSC_PAYPAL_PROTECTION_ELIGIBILITY'           => 'Protection eligibility',
-    'tbclorder_paypal'                             => 'PayPal',
+    'tbclorder_oscpaypal'                         => 'PayPal',
     // PayPal Config
     'OSC_PAYPAL_CONFIG'                           => 'Configuration',
     'OSC_PAYPAL_SUBSCRIBE'                        => 'PayPal Subscriptions',
     'OSC_PAYPAL_SUBSCRIBE_OPTIONS'                => 'PayPal Subscription Options',
-    'PAYPAL_SUBSCRIBE_MAIN'                        => 'PayPal Subscriptions',
+    'PAYPAL_SUBSCRIBE_MAIN'                       => 'PayPal Subscriptions',
     'OSC_PAYPAL_BILLING_PLAN'                     => 'Billing Plans',
     'OSC_PAYPAL_BILLING_PLAN_MAIN'                => 'Billing Cycle',
     'OSC_PAYPAL_BILLING_PLAN_NAME'                => 'Billing Cycle Name',
@@ -139,7 +139,7 @@ $aLang = [
     'OSC_PAYPAL_EXPRESS_LOGIN_TITLE'              => 'Login with PayPal',
     'OSC_PAYPAL_LOGIN_WITH_PAYPAL_EMAIL'          => 'Automatically log in to shop during checkout',
     'HELP_OSC_PAYPAL_EXPRESS_LOGIN'               => 'In case there is already a shop user registered with password to the same mail address as the the PayPal mail,
-        it is possible to be autonmatically be logged in to shop when logging in to PayPal. This behavior may not be in the 
+        it is possible to be autonmatically be logged in to shop when logging in to PayPal. This behavior may not be in the
         security interests of your customers',
 
     'HELP_OSC_PAYPAL_BUTTON_PLACEMEMT'            => 'Toggle the display of PayPal buttons',
