@@ -508,7 +508,7 @@ $aModule = [
         [
             'name' => 'oscPayPalLoginWithPayPalEMail',
             'type' => 'bool',
-            'value' => false,
+            'value' => true,
             'group' => null
         ],
         [
