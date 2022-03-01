@@ -52,10 +52,9 @@
                         <p class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_CREDENTIALS"}]</p>
 
                         [{if !$config->getLiveClientId() && !$config->getLiveClientSecret() && !$config->getLiveWebhookId()}]
-                            [{assign var='liveMerchantSignUpLinks' value=$oView->getLiveSignUpMerchantIntegrationLinks()}]
                             <p class="live"><a target="_blank"
                                   class="boardinglink"
-                                  href="[{$liveMerchantSignUpLinks.action_url|cat:'&displayMode=minibrowser'}]"
+                                  href="[{$oView->getLiveSignUpMerchantIntegrationLink()}]"
                                   id="paypalonboardinglive"
                                   data-paypal-onboard-complete="onboardedCallbackLive"
                                   data-paypal-button="PPLtBlue">
@@ -91,10 +90,9 @@
                         </div>
 
                         [{if !$config->getSandboxClientId() && !$config->getSandboxClientSecret() && !$config->getSandboxWebhookId()}]
-                            [{assign var='sandboxMerchantSignUpLinks' value=$oView->getSandboxSignUpMerchantIntegrationLinks()}]
                             <p class="sandbox"><a target="_blank"
                                   class="boardinglink"
-                                  href="[{$sandboxMerchantSignUpLinks.action_url|cat:'&displayMode=minibrowser'}]"
+                                  href="[{$oView->getSandboxSignUpMerchantIntegrationLink()}]"
                                   id="paypalonboardingsandbox"
                                   data-paypal-onboard-complete="onboardedCallbackSandbox"
                                   data-paypal-button="PPLtBlue">

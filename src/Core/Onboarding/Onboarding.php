@@ -10,7 +10,6 @@ namespace OxidSolutionCatalysts\PayPal\Core\Onboarding;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Onboarding as ApiOnboardingClient;
 use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
-use OxidSolutionCatalysts\PayPal\Core\PartnerConfig as PayPalPartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -101,13 +100,12 @@ class Onboarding
     public function getOnboardingClient(bool $isSandbox): ApiOnboardingClient
     {
         $paypalConfig = oxNew(PayPalConfig::class);
-        $partnerConfig = oxNew(PayPalPartnerConfig::class);
 
         $client = new ApiOnboardingClient(
             Registry::getLogger(),
             $isSandbox ? $paypalConfig->getClientSandboxUrl() : $paypalConfig->getClientLiveUrl(),
-            $partnerConfig->getTechnicalClientId($isSandbox),
-            $partnerConfig->getTechnicalClientSecret($isSandbox),
+            '',
+            '',
             PayPalSession::getMerchantIdInPayPal()
     );
 
