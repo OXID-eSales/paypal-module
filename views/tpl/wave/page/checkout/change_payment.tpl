@@ -1,6 +1,6 @@
 [{if 'oscpaypal'|array_key_exists:$oView->getPaymentList()}]
     [{assign var="config" value=$oViewConf->getPayPalConfig()}]
-    [{if $oViewConf->isPayPalSessionActive() || $config->showPayPalCheckoutButton()}]
+    [{if $oViewConf->isPayPalSessionActive()}]
         <div class="card-deck">
             <div class="card">
                 <div class="card-header">
@@ -24,7 +24,7 @@
                             [{/literal}]
                         [{/capture}]
                         [{oxscript add=$smarty.capture.hide_payment}]
-                    [{elseif $config->showPayPalCheckoutButton()}]
+                    [{else}]
                         <div class="text-left">
                             [{include file="oscpaypalsmartpaymentbuttons.tpl" buttonId="PayPalButtonPaymentPage" buttonClass="col-md-4 col-12"}]
                         </div>
