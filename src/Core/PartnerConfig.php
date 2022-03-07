@@ -55,14 +55,12 @@ class PartnerConfig
     {
         return "AS-lHBWs8cudxxonSeQ1eRbdn1Nr-7baqAURRNJnIuP-PPQFzFF1XkjDYV3NG3M6O75st2D98DOil4Vd";
     }
-
     /**
      * This PartnerId is public. The only function is to create
      * a basiclly AccessToken,  Which one is needed to generate
      * the request for the merchant ClientId and Secret.
-     * For this purpose, this ClientId is unencrypted, here as part
+     * For this purpose, this PartnerId is unencrypted, here as part
      * of this open Source Module
-     * this method is private see getTechnicalPartnerId which respects the sandbox mode for you
      * @return string
      */
     public function getLiveOxidPartnerId(): string
@@ -85,34 +83,6 @@ class PartnerConfig
     }
 
     /**
-     * This Secret is public. The only function is to create
-     * a basiclly AccessToken,  Which one is needed to generate
-     * the request for the merchant ClientId and Secret.
-     * For this purpose, this ClientId is unencrypted, here as part
-     * of this open Source Module
-     *
-     * @return string
-     */
-    public function getLiveOxidSecret(): string
-    {
-        return "ELcHsbqzqmC8wVbndnDxokTnQboMn-HfcJ2tGfWbxJUIAIys0HMqfzbHrev5R--RPd6B2xNWJrddtO9z";
-    }
-
-    /**
-     * This Secret is public. The only function is to create
-     * a basiclly AccessToken,  Which one is needed to generate
-     * the request for the merchant ClientId and Secret.
-     * For this purpose, this PartnerId is unencrypted, here as part
-     * of this open Source Module
-     *
-     * @return string
-     */
-    public function getSandboxOxidSecret(): string
-    {
-        return "EANkP__pSQ25b1cXuO4CrC_KeDc78rKtgUpeEDthejOVjkJV9sv0mfjxM_A4qXyMqbdCIeib0tDfQY_6";
-    }
-
-    /**
      * @return string
      */
     public function getTechnicalClientId(bool $isForSandbox = false)
@@ -121,7 +91,6 @@ class PartnerConfig
             $this->getSandboxOxidClientId()
             : $this->getLiveOxidClientId();
     }
-
     /**
      * @return string
      */
@@ -130,15 +99,5 @@ class PartnerConfig
         return $isForSandbox ?
             $this->getSandboxOxidPartnerId()
             : $this->getLiveOxidPartnerId();
-    }
-
-    /**
-     * @return string
-     */
-    public function getTechnicalClientSecret(bool $isForSandbox = false)
-    {
-        return $isForSandbox  ?
-            $this->getSandboxOxidSecret()
-            : $this->getLiveOxidSecret();
     }
 }

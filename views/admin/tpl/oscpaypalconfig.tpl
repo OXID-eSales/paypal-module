@@ -52,14 +52,21 @@
                         <p class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_CREDENTIALS"}]</p>
 
                         [{if !$config->getLiveClientId() && !$config->getLiveClientSecret() && !$config->getLiveWebhookId()}]
-                            [{assign var='liveMerchantSignUpLinks' value=$oView->getLiveSignUpMerchantIntegrationLinks()}]
+[{*
                             <p class="live"><a target="_blank"
-                                  class="boardinglink"
-                                  href="[{$liveMerchantSignUpLinks.action_url|cat:'&displayMode=minibrowser'}]"
+                                  class="popuplink2"
+                                  href="[{$oView->getLiveSignUpMerchantIntegrationLink()}]"
                                   id="paypalonboardinglive"
                                   data-paypal-onboard-complete="onboardedCallbackLive"
                                   data-paypal-button="PPLtBlue">
                                     [{oxmultilang ident="OSC_PAYPAL_LIVE_BUTTON_CREDENTIALS"}]
+                               </a>
+                            </p>
+*}]
+                            <p class="live"><a href="[{$oViewConf->getSelfLink()|cat:"cl=oscpaypalconfig&aoc=live"}]" target="_blank"
+                                class="popuplink paypal-button-PPLtBlue"
+                                id="paypalonboardingpopuplive">
+                                    [{oxmultilang ident="OSC_PAYPAL_LIVE_BUTTON_CREDENTIALS_INIT"}]
                                </a>
                             </p>
                         [{/if}]
@@ -91,15 +98,22 @@
                         </div>
 
                         [{if !$config->getSandboxClientId() && !$config->getSandboxClientSecret() && !$config->getSandboxWebhookId()}]
-                            [{assign var='sandboxMerchantSignUpLinks' value=$oView->getSandboxSignUpMerchantIntegrationLinks()}]
+[{*
                             <p class="sandbox"><a target="_blank"
-                                  class="boardinglink"
-                                  href="[{$sandboxMerchantSignUpLinks.action_url|cat:'&displayMode=minibrowser'}]"
+                                  class="popuplink"
+                                  href="[{$oView->getSandboxSignUpMerchantIntegrationLink()}]"
                                   id="paypalonboardingsandbox"
                                   data-paypal-onboard-complete="onboardedCallbackSandbox"
                                   data-paypal-button="PPLtBlue">
                                     [{oxmultilang ident="OSC_PAYPAL_SANDBOX_BUTTON_CREDENTIALS"}]
                                 </a>
+                            </p>
+*}]
+                            <p class="sandbox"><a href="[{$oViewConf->getSelfLink()|cat:"cl=oscpaypalconfig&aoc=sandbox"}]" target="_blank"
+                                class="popuplink paypal-button-PPLtBlue"
+                                id="paypalonboardingpopupsandbox">
+                                    [{oxmultilang ident="OSC_PAYPAL_SANDBOX_BUTTON_CREDENTIALS_INIT"}]
+                               </a>
                             </p>
                         [{/if}]
 
@@ -154,12 +168,6 @@
                                         <label>
                                             <input type="checkbox" name="conf[oscPayPalShowBasketButton]" [{if $config->showPayPalBasketButton()}]checked[{/if}] value="1">
                                             [{oxmultilang ident="OSC_PAYPAL_BASKET_BUTTON_PLACEMENT"}]
-                                        </label>
-                                    </div>
-                                    <div class="checkbox">
-                                        <label>
-                                            <input type="checkbox" name="conf[oscPayPalShowCheckoutButton]" [{if $config->showPayPalCheckoutButton()}]checked[{/if}] value="1">
-                                            [{oxmultilang ident="OSC_PAYPAL_CHECKOUT_PLACEMENT"}]
                                         </label>
                                     </div>
                                 </div>

@@ -12,7 +12,7 @@ use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
-use OxidSolutionCatalysts\PayPal\Service\Partner as PartnerService;
+use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 
@@ -34,9 +34,16 @@ class PayPalConfigController extends AdminController
     public function render()
     {
         $thisTemplate = parent::render();
-
         $config = new Config();
         $this->addTplParam('config', $config);
+
+        // popUp Rendering onboarding
+        if ($aoc = Registry::getConfig()->getRequestParameter("aoc")) {
+            $this->_aViewData['isSandBox'] = ($aoc == 'live') ? false : true;
+            $this->_aViewData['ready'] = ($aoc == 'ready') ? true : false;
+            $this->_aViewData['bottom_buttons'] = '';
+            return 'oscpaypalconfig_popup.tpl';
+        }
 
         try {
             $config->checkHealth();
@@ -50,10 +57,18 @@ class PayPalConfigController extends AdminController
     /**
      * Template Getter: Get a Link for SignUp the Live Merchant Integration
      * see getSignUpMerchantIntegrationLink
+     * @return string
      */
-    public function getLiveSignUpMerchantIntegrationLinks(): array
+    public function getLiveSignUpMerchantIntegrationLink(): string
     {
-        return $this->getReferralLinks();
+        /** @var PartnerConfig $partnerConfig */
+        $partnerConfig = oxNew(PartnerConfig::class);
+
+        return $this->buildSignUpLink(
+            $partnerConfig->getTechnicalClientId(),
+            $partnerConfig->getTechnicalPartnerId(),
+            PayPalConstants::PAYPAL_ONBOARDING_LIVE_URL
+        );
     }
 
     /**
@@ -61,17 +76,58 @@ class PayPalConfigController extends AdminController
      * see getSignUpMerchantIntegrationLink
      * @return string
      */
-    public function getSandboxSignUpMerchantIntegrationLinks(): array
+    public function getSandboxSignUpMerchantIntegrationLink(): string
     {
-        return $this->getReferralLinks(true);
+        /** @var PartnerConfig $partnerConfig */
+        $partnerConfig = oxNew(PartnerConfig::class);
+
+        return $this->buildSignUpLink(
+            $partnerConfig->getTechnicalClientId(true),
+            $partnerConfig->getTechnicalPartnerId(true),
+            PayPalConstants::PAYPAL_ONBOARDING_SANDBOX_URL
+        );
     }
 
-    protected function getReferralLinks(bool $isSandbox = false): array
+    /**
+     * Maps arguments and constants to request parameters, generates a sign up url
+     *
+     * @param string $partnerId
+     *
+     * @return string
+     */
+    private function buildSignUpLink(string $partnerClientId, string $partnerId, string $url): string
     {
-        $trackingId = Registry::getSession()->getId();
-        $partnerService = $this->getServiceFromContainer(PartnerService::class);
+        $lang = Registry::getLang();
+        $config = Registry::getConfig();
+        $session = Registry::getSession();
 
-        return $partnerService->getPartnerReferralLinks($this->createNonce(), $trackingId, $isSandbox);
+        $countryCode = strtoupper($lang->getLanguageAbbr());
+        $localeCode = $lang->getLanguageAbbr() . '-' . $countryCode;
+
+        $adminShopUrl = $config->getCurrentShopUrl(true);
+
+        $partnerLogoUrl = $config->getOutUrl(null, true) . 'admin/img/loginlogo.png';
+        $returnToPartnerUrl = $adminShopUrl .
+            'index.php?cl=oscpaypalonboarding&fnc=returnFromSignup' .
+            '&stoken=' . (string) $session->getSessionChallengeToken();
+
+        $params = [
+            'partnerClientId' => $partnerClientId,
+            'partnerId' => $partnerId,
+            'partnerLogoUrl' => $partnerLogoUrl,
+            'returnToPartnerUrl' => $returnToPartnerUrl,
+            'product' => 'ppcp',
+            'secondaryProducts' => 'payment_methods',
+            'capabilities' => 'PAY_UPON_INVOICE',
+            'integrationType' => 'FO',
+            'features' => 'PAYMENT,REFUND,ACCESS_MERCHANT_INFORMATION,ADVANCED_TRANSACTIONS_SEARCH',
+            'country.x' => $countryCode,
+            'locale.x' => $localeCode,
+            'sellerNonce' => $this->createNonce(),
+            'displayMode' => 'minibrowser'
+        ];
+
+        return $url . '?' . http_build_query($params);
     }
 
     /**
@@ -81,15 +137,17 @@ class PayPalConfigController extends AdminController
      */
     public function createNonce(): string
     {
-        if (!empty(Registry::getSession()->getVariable('PAYPAL_MODULE_NONCE'))) {
-            return Registry::getSession()->getVariable('PAYPAL_MODULE_NONCE');
+        $session = Registry::getSession();
+
+        if (!empty($session->getVariable('PAYPAL_MODULE_NONCE'))) {
+            return $session->getVariable('PAYPAL_MODULE_NONCE');
         }
 
         /** @var PartnerConfig $partnerConfig */
         $partnerConfig = oxNew(PartnerConfig::class);
         $nonce = $partnerConfig->createNonce();
 
-        Registry::getSession()->setVariable('PAYPAL_MODULE_NONCE', $nonce);
+        $session->setVariable('PAYPAL_MODULE_NONCE', $nonce);
 
         return $nonce;
     }
@@ -143,9 +201,6 @@ class PayPalConfigController extends AdminController
         }
         if (!isset($conf['oscPayPalShowBasketButton'])) {
             $conf['oscPayPalShowBasketButton'] = 0;
-        }
-        if (!isset($conf['oscPayPalShowCheckoutButton'])) {
-            $conf['oscPayPalShowCheckoutButton'] = 0;
         }
 
         if (!isset($conf['oscPayPalBannersShowAll'])) {

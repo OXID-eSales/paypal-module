@@ -76,7 +76,8 @@ class Payment
         string $processingInstruction = null,
         string $paymentSource = '',
         string $payPalClientMetadataId = '',
-        string $payPalRequestId = ''
+        string $payPalRequestId = '',
+        string $payPalPartnerAttributionId = ''
     #): ?ApiModelOrder
     ) //TODO return value
     {
@@ -93,8 +94,15 @@ class Payment
         );
 
         $response = [];
+
         try {
-            $response = $orderService->createOrder($request, '', $payPalClientMetadataId, 'return=minimal', $payPalRequestId);
+            $response = $orderService->createOrder(
+                $request,
+                $payPalPartnerAttributionId,
+                $payPalClientMetadataId,
+                'return=minimal',
+                $payPalRequestId
+            );
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on order create call.", [$exception]);
         }

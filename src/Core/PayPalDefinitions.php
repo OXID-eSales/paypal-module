@@ -27,12 +27,14 @@ final class PayPalDefinitions
         self::STANDARD_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
-                    'desc' => 'PayPal v2',
-                    'longdesc' => 'Bezahlen Sie bequem mit PayPal'
+                    'desc' => 'PayPal',
+                    'longdesc' => '',
+                    'longdesc_beta' => 'Bezahlen Sie bequem mit PayPal'
                 ],
                 'en' => [
-                    'desc' => 'PayPal v2',
-                    'longdesc' => 'Pay conveniently with PayPal'
+                    'desc' => 'PayPal',
+                    'longdesc' => '',
+                    'longdesc_beta' => 'Pay conveniently with PayPal'
                 ]
             ],
             'countries' => [],
@@ -42,12 +44,14 @@ final class PayPalDefinitions
             'descriptions' => [
                 'de' => [
                     'desc' => 'Rechnungskauf',
-                    'longdesc' => '<img src="" title="Rechnungskauf" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="" title="Rechnungskauf" style="float: left;margin-right: 10px;" />
                         Bezahlen Sie bequem mit PayPal'
                 ],
                 'en' => [
                     'desc' => 'Pay upon Invoice',
-                    'longdesc' => '<img src="" title="Pay upon Invoice" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="" title="Pay upon Invoice" style="float: left;margin-right: 10px;" />
                         Pay conveniently with PayPal'
                 ]
             ],
@@ -58,12 +62,14 @@ final class PayPalDefinitions
             'descriptions' => [
                 'de' => [
                     'desc' => 'Kreditkarte',
-                    'longdesc' => '<img src="" title="Kreditkarte" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="" title="Kreditkarte" style="float: left;margin-right: 10px;" />
                         Bezahlen Sie bequem mit Kreditkarte'
                 ],
                 'en' => [
                     'desc' => 'Creditcard',
-                    'longdesc' => '<img src="" title="Creditcard" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="" title="Creditcard" style="float: left;margin-right: 10px;" />
                         Pay conveniently with Creditcard'
                 ]
             ],
@@ -75,7 +81,8 @@ final class PayPalDefinitions
             'descriptions' => [
                 'de' => [
                     'desc' => 'Bancontact',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_bancontact_color.svg" title="Bancontact" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_bancontact_color.svg" title="Bancontact" style="float: left;margin-right: 10px;" />
                         Bancontact ist die am weitesten verbreitete, akzeptierte und vertrauenswürdigste
                         elektronische Zahlung Methode in Belgien, mit über 15 Millionen ausgegebenen Bancontact-Karten
                         und 150.000 verarbeiteten online-Transaktionen pro Tag. Bancontact ermöglicht es, direkt durch
@@ -85,7 +92,8 @@ final class PayPalDefinitions
                 ],
                 'en' => [
                     'desc' => 'Bancontact',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_bancontact_color.svg" title="Bancontact" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_bancontact_color.svg" title="Bancontact" style="float: left;margin-right: 10px;" />
                         Bancontact is the most widely used, accepted and trusted electronic payment
                         method in Belgium, with over 15 million Bancontact cards issued, and 150,000 online
                         transactions processed a day. Bancontact makes it possible to pay directly through
@@ -103,12 +111,14 @@ final class PayPalDefinitions
             'descriptions' => [
                 'de' => [
                     'desc' => 'Boleto Bancário',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_boleto_black.svg" title="Boleto Bancário" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_boleto_black.svg" title="Boleto Bancário" style="float: left;margin-right: 10px;" />
                         Bezahlen Sie bequem mit Boleto Bancário'
                 ],
                 'en' => [
                     'desc' => 'Boleto Bancário',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_boleto_black.svg" title="Boleto Bancário" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_boleto_black.svg" title="Boleto Bancário" style="float: left;margin-right: 10px;" />
                         Pay conveniently with Boleto Bancário'
                 ]
             ],
@@ -121,7 +131,8 @@ final class PayPalDefinitions
             'descriptions' => [
                 'de' => [
                     'desc' => 'BLIK',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_blik_color.svg" title="BLIK" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_blik_color.svg" title="BLIK" style="float: left;margin-right: 10px;" />
                         BLIK wurde 2015 in Polen gegründet, eingeführt und entwickelt und ist ein Muss für
                         als Zahlungsmethode für E-Commerce-Sites in Polen. BLIK ist ein mobiler Zahlungsdienst mit einem
                         Alleinstellungsmerkmal in Form eines Kooperationsmodells zwischen Banken, Acquirern und Händlern.
@@ -132,7 +143,8 @@ final class PayPalDefinitions
                 ],
                 'en' => [
                     'desc' => 'BLIK',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_blik_color.svg" title="BLIK" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_blik_color.svg" title="BLIK" style="float: left;margin-right: 10px;" />
                         Introduced in 2015, and created and developed in Poland, BLIK is a must-have local
                         payment method for e-commerce sites in Poland. BLIK is a mobile payment service with a unique
                         model of cooperation between banks, payment acquirers and merchants. BLIK is available to
@@ -151,7 +163,8 @@ final class PayPalDefinitions
             'descriptions' => [
                 'de' => [
                     'desc' => 'EPS',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_eps_color.svg" title="eps" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_eps_color.svg" title="eps" style="float: left;margin-right: 10px;" />
                         eps ist die wichtigste Zahlungsmethode für Banküberweisungen in Österreich,
                         entwickelt von österreichischen Banken: über 80 % aller Online-Händler in Österreich bieten
                         ihren Kunden eps an. 83% der Österreicher kaufen grenzüberschreitend ein. eps ist eine
@@ -160,7 +173,8 @@ final class PayPalDefinitions
                 ],
                 'en' => [
                     'desc' => 'EPS',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_eps_color.svg" title="eps" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_eps_color.svg" title="eps" style="float: left;margin-right: 10px;" />
                         eps is the main bank transfer payment method in Austria, built by Austrian banks:
                         more than 80% of all online merchants in Austria offer eps to their customers. With 83% of
                         Austrians shopping cross border, eps is a critical payment method for a merchant’s payment
@@ -176,7 +190,8 @@ final class PayPalDefinitions
             'descriptions' => [
                 'de' => [
                     'desc' => 'GiroPay',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_giropay_color.svg" title="Giropay" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_giropay_color.svg" title="Giropay" style="float: left;margin-right: 10px;" />
                          Mit Giropay nutzen Verbraucher das sichere Online-Banking ihrer Bank:
                          Ihre Bankkontoinformationen und Transaktionsdetails bleiben vollständig geschützt und sicher.
                          Beim Auschecken können Verbraucher Giropay direkt ohne zusätzliche Registrierung nutzen.
@@ -185,7 +200,8 @@ final class PayPalDefinitions
                 ],
                 'en' => [
                     'desc' => 'GiroPay',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_giropay_color.svg" title="Giropay" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_giropay_color.svg" title="Giropay" style="float: left;margin-right: 10px;" />
                         With Giropay, consumers are using their bank’s secure online banking:
                         their bank account information and transaction details remain fully protected and secure.
                         When consumers check out, they can use Giropay directly without any additional registration.
@@ -202,7 +218,8 @@ final class PayPalDefinitions
             'descriptions' => [
                 'de' => [
                     'desc' => 'iDEAL',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_ideal_color.svg" title="iDEAL" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_ideal_color.svg" title="iDEAL" style="float: left;margin-right: 10px;" />
                         iDEAL ist eine der beliebtesten Zahlungsmethoden in den Niederlanden.
                          60% aller Online-Transaktionen und 667 Millionen Zahlungen im Jahr 2019 wurden
                          mit iDEAL abgewickelt. iDEAL ermöglicht es seinene Kunden, über die mobile App
@@ -213,7 +230,8 @@ final class PayPalDefinitions
                 ],
                 'en' => [
                     'desc' => 'iDEAL',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_ideal_color.svg" title="iDEAL" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_ideal_color.svg" title="iDEAL" style="float: left;margin-right: 10px;" />
                         iDEAL is one of the most popular payment method in the Netherlands,
                         accounting for 60% of all online transactions and 667 million payments in 2019.
                         iDEAL allows customers to pay via it’s mobile app or within the customers’ online
@@ -231,7 +249,8 @@ final class PayPalDefinitions
             'descriptions' => [
                 'de' => [
                     'desc' => 'Multibanco',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_multibanco_color.svg" title="Multibanco" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_multibanco_color.svg" title="Multibanco" style="float: left;margin-right: 10px;" />
                         Im Besitz und betrieben von SIBS (Sociedade Interbancária de Serviços S.A.),
                          ermöglicht Multibanco den Verbrauchern, per Banküberweisung oder mit einer Multibanco-Karte an
                          einem Geldautomaten zu bezahlen. Multibanco ist eine zentrale Zahlungsmethode für portugiesische
@@ -242,7 +261,8 @@ final class PayPalDefinitions
                 ],
                 'en' => [
                     'desc' => 'Multibanco',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_multibanco_color.svg" title="Multibanco" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_multibanco_color.svg" title="Multibanco" style="float: left;margin-right: 10px;" />
                         Owned and operated by SIBS (Sociedade Interbancária de Serviços S.A.),
                         Multibanco enables consumers to pay by bank transfer or with a Multibanco card at an ATM.
                         Multibanco is a core payment method for Portuguese consumers and is available at over
@@ -260,7 +280,8 @@ final class PayPalDefinitions
             'descriptions' => [
                 'de' => [
                     'desc' => 'MyBank',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_mybank_color.svg" title="MyBank" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_mybank_color.svg" title="MyBank" style="float: left;margin-right: 10px;" />
                         MyBank bietet sichere und geschützte Banküberweisungen in Echtzeit zwischen Kunden
                         und Kaufleute. MyBank ist auf einer Vielzahl von Websites für den Kauf von Produkten verfügbar,
                         Dienstleistungen und für Zahlungen an Einrichtungen der öffentlichen Verwaltung. MyBank
@@ -269,7 +290,8 @@ final class PayPalDefinitions
                 ],
                 'en' => [
                     'desc' => 'MyBank',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_mybank_color.svg" title="MyBank" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_mybank_color.svg" title="MyBank" style="float: left;margin-right: 10px;" />
                         MyBank offers safe and protected real-time bank transfers between customers
                         and merchants. MyBank is available on a wide range of sites for the purchase of products,
                         services and for payments towards public administration entities. MyBank is a flexible
@@ -286,7 +308,8 @@ final class PayPalDefinitions
             'descriptions' => [
                 'de' => [
                     'desc' => 'OXXO',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_oxxo_color.svg" title="OXXO" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_oxxo_color.svg" title="OXXO" style="float: left;margin-right: 10px;" />
                         OXXO ist eine Convenience-Store-Kette aus Mexiko mit über 18.000 Geschäften
                         quer durch Lateinamerika. OXXO wurde vor über 30 Jahren gegründet und ist angeblich das größte
                         Convenience-Store-Kette in Mexiko. E-Commerce-Kunden wählen einfach OXXO als Zahlungsmittel
@@ -295,7 +318,8 @@ final class PayPalDefinitions
                 ],
                 'en' => [
                     'desc' => 'OXXO',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_oxxo_color.svg" title="OXXO" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_oxxo_color.svg" title="OXXO" style="float: left;margin-right: 10px;" />
                         OXXO is a chain of convenience stores from Mexico, with over 18,000 stores
                         across Latin America. Established over 30 years ago, OXXO is reportedly the largest
                         convenience store chain in Mexico. E-commerce consumers simply choose OXXO as the payment
@@ -312,14 +336,16 @@ final class PayPalDefinitions
             'descriptions' => [
                 'de' => [
                     'desc' => 'Przelewy24',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_przelewy24_color.svg" title="Przelewy24" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_przelewy24_color.svg" title="Przelewy24" style="float: left;margin-right: 10px;" />
                         Przelewy24, oft auch als P24 bezeichnet, ist eine der wichtigsten Online-Zahlungs-
                         Systeme in Polen. Mehr als 80 % der Online-Shopper in Polen bezahlen über Przelewy24 und
                         fast 10.000 online Händler bieten diese Zahlungsmethode in ihren Online-Shops an.'
                 ],
                 'en' => [
                     'desc' => 'Przelewy24',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_przelewy24_color.svg" title="Przelewy24" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_przelewy24_color.svg" title="Przelewy24" style="float: left;margin-right: 10px;" />
                         Przelewy24, often referred to as P24, is one of Poland’s primary online payment
                         systems. More than 80% of online shoppers in Poland pay via Przelewy24 and almost 10,000 online
                         merchants offer this payment method in their online shops.'
@@ -334,7 +360,8 @@ final class PayPalDefinitions
             'descriptions' => [
                 'de' => [
                     'desc' => 'Sofort',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_sofort_black.svg" title="Sofort" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_sofort_black.svg" title="Sofort" style="float: left;margin-right: 10px;" />
                         Sofort, auch bekannt als Jetzt bezahlen mit Klarna, ist eine beliebte Online-
                         Banking-Methode in Deutschland, Österreich, der Schweiz und Belgien, was es zu einem Muss für
                         jedes Unternehmen macht, das in diesem Bereich tätig sein will. Im Jahr 2014 wurde Sofort von
@@ -345,7 +372,8 @@ final class PayPalDefinitions
                 ],
                 'en' => [
                     'desc' => 'Sofort',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_sofort_black.svg" title="Sofort" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_sofort_black.svg" title="Sofort" style="float: left;margin-right: 10px;" />
                         Sofort, also known as Pay now with Klarna, is a popular online banking method
                         in Germany, Austria, Switzerland and Belgium, making it a must-have for any business wanting
                         to operate in this area. In 2014 Sofort was acquired by Klarna and the Klarna Group was
@@ -363,7 +391,8 @@ final class PayPalDefinitions
             'descriptions' => [
                 'de' => [
                     'desc' => 'Trustly',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_trustly_color.svg" title="Trustly" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_trustly_color.svg" title="Trustly" style="float: left;margin-right: 10px;" />
                         Trustly erfüllt die hohe Nachfrage nach Banküberweisungszahlungen in wichtigen
                         europäischen Märkten. Mit Trustly können Verbraucher Zahlungen direkt von ihren Bankkonten
                         mit einem hoch sicheren Zahlungsoption ohne Risiko von gestohlenen Daten oder Betrug initiieren.
@@ -373,7 +402,8 @@ final class PayPalDefinitions
                 ],
                 'en' => [
                     'desc' => 'Trustly',
-                    'longdesc' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_trustly_color.svg" title="Trustly" style="float: left;margin-right: 10px;" />
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_trustly_color.svg" title="Trustly" style="float: left;margin-right: 10px;" />
                         Trustly meets the high demand for bank transfer payments in key European markets.
                         With Trustly, consumers can initiate payments directly from their bank accounts, using a highly
                         secure payment option, with no risk of stolen details or fraud. Trustly integrates with banks

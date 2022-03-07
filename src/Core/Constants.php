@@ -30,14 +30,4 @@ class Constants
     public const PAYPAL_ONBOARDING_LIVE_URL = 'https://www.paypal.com/bizsignup/partner/entry';
 
     public const PAYPAL_PUI_PROCESSING_INSTRUCTIONS = 'ORDER_COMPLETE_ON_PAYMENT_APPROVAL';
-
-    /**
-     * This PartnerIds are public. The only function is to create
-     * a basiclly AccessToken,  Which one is needed to generate
-     * the request for the merchant ClientId and Secret.
-     * For this purpose, this PartnerIds are unencrypted, here as part
-     * of this open Source Module
-     */
-    public const PAYPAL_OXID_PARTNER_LIVE_ID = "FULA6AY33UTA4";
-    public const PAYPAL_OXID_PARTNER_SANDBOX_ID = "LRCHTG6NYPSXN";
 }

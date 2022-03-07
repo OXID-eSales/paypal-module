@@ -9,7 +9,7 @@
         </MAINMENU>
         <MAINMENU id="mxorders">
             <SUBMENU id="mxdisplayorders" cl="admin_order" list="order_list">
-                <TAB id="tbclorder_paypal" cl="oscpaypalorder"/>
+                <TAB id="tbclorder_oscpaypal" cl="oscpaypalorder"/>
             </SUBMENU>
         </MAINMENU>
     </OXMENU>
@@ -37,7 +37,7 @@
         </MAINMENU>
         <MAINMENU id="mxorders">
             <SUBMENU id="mxdisplayorders" cl="admin_order" list="order_list">
-                <TAB id="tbclorder_paypal" cl="oscpaypalorder"/>
+                <TAB id="tbclorder_oscpaypal" cl="oscpaypalorder"/>
             </SUBMENU>
         </MAINMENU>
     </OXMENU>

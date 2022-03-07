@@ -109,11 +109,6 @@ class ModuleSettings
         return (bool) $this->getSettingValue('oscPayPalShowBasketButton');
     }
 
-    public function showPayPalCheckoutButton(): bool
-    {
-        return (bool) $this->getSettingValue('oscPayPalShowCheckoutButton');
-    }
-
     public function showPayPalProductDetailsButton(): bool
     {
         return (bool) $this->getSettingValue('oscPayPalShowProductDetailsButton');

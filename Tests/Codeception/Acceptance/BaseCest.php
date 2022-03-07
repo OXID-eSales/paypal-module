@@ -285,7 +285,7 @@ abstract class BaseCest
         $orders->find($orders->orderNumberInput, $orderNumber);
 
         $I->selectListFrame();
-        $I->click(Translator::translate('tbclorder_paypal'));
+        $I->click(Translator::translate('tbclorder_oscpaypal'));
         $I->selectEditFrame();
     }
 

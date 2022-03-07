@@ -15,7 +15,6 @@ use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Core\Onboarding\Onboarding;
 use OxidSolutionCatalysts\PayPal\Core\Onboarding\Webhook;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
-use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
 
 class OnboardingController extends AdminController
 {
@@ -50,11 +49,13 @@ class OnboardingController extends AdminController
         $credentials = $this->autoConfiguration();
         $this->registerWebhooks();
 
-        $result = [
-            !empty($credentials) ? 'success' : 'failure'
-        ];
-        header('Content-Type: application/json; charset=UTF-8');
-        Registry::getUtils()->showMessageAndExit(json_encode($result));
+        $session = Registry::getSession();
+
+        Registry::getUtils()->redirect(
+            Registry::getConfig()->getCurrentShopUrl(true) . 'index.php?cl=oscpaypalconfig&aoc=ready' .
+            '&stoken=' . (string) Registry::getSession()->getSessionChallengeToken()
+            , false, 302
+        );
     }
 
     /**
