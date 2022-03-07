@@ -5,8 +5,20 @@
 
 jQuery(document).ready(function(){
 
-    jQuery(".boardinglink").click(function() {
+    jQuery(".popuplink").click(function() {
         jQuery("#overlay").show();
+        localStorage.reloadoscpaypalconfig = "0";
+        window.setInterval(function(){
+            if(localStorage.reloadoscpaypalconfig == "1"){
+                localStorage.reloadoscpaypalconfig = "0";
+                jQuery("#overlay").hide();
+                location.reload();
+            }
+        }, 500);
+    });
+
+    jQuery(".boardinglink").click(function() {
+//        jQuery("#overlay").show();
     });
 
     if(window.isSandBox) {
@@ -66,7 +78,7 @@ function callOnboardingControllerAutoConfigurationFromCallback(authCode, sharedI
             }
 
             response.json().then(function (data) {
-                jQuery("#overlay").hide();
+                //jQuery("#overlay").hide();
                 if (window.isSandBox) {
                     jQuery("#client-sandbox-id").val(data.client_id);
                     jQuery("#client-sandbox-secret").val(data.client_secret);

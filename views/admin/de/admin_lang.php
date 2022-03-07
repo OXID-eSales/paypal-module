@@ -127,7 +127,11 @@ $aLang = [
     'OSC_PAYPAL_LIVE_CREDENTIALS'                 => 'API-Anmeldeinformationen (Live)',
     'OSC_PAYPAL_SANDBOX_CREDENTIALS'              => 'API-Anmeldeinformationen (Sandbox)',
     'OSC_PAYPAL_LIVE_BUTTON_CREDENTIALS'          => 'Anmeldung Händler PayPal-Integration (Live)',
+    'OSC_PAYPAL_LIVE_BUTTON_CREDENTIALS_INIT'     => 'Händler PayPal-Integration (Live) im neuen Fenster starten ...',
     'OSC_PAYPAL_SANDBOX_BUTTON_CREDENTIALS'       => 'Anmeldung Händler PayPal-Integration (Sandbox)',
+    'OSC_PAYPAL_SANDBOX_BUTTON_CREDENTIALS_INIT'  => 'Händler PayPal-Integration (Sandbox) im neuen Fenster starten ...',
+    'OSC_PAYPAL_ONBOARD_CLICK_HELP'               => 'Bitte schließen Sie diese Seite, wenn Sie die PayPal-Integration abbrechen wollen ...',
+    'OSC_PAYPAL_ONBOARD_CLOSE_HELP'               => 'Onboarding erfolgreich. Sie können das Fenster jetzt schließen.',
     'OSC_PAYPAL_ERR_CONF_INVALID'                 =>
         'Ein oder mehrere Konfigurationswerte sind entweder nicht festgelegt oder falsch.
         Bitte überprüfen Sie sie noch einmal.<br>
@@ -136,7 +140,6 @@ $aLang = [
     'OSC_PAYPAL_BUTTON_PLACEMEMT_TITLE'           => 'Einstellungen für die Buttonplatzierung',
     'OSC_PAYPAL_PRODUCT_DETAILS_BUTTON_PLACEMENT' => 'Produktdetailseite',
     'OSC_PAYPAL_BASKET_BUTTON_PLACEMENT'          => 'Warenkorb',
-    'OSC_PAYPAL_CHECKOUT_PLACEMENT'               => 'Bezahlseite (Checkout)',
     'OSC_PAYPAL_EXPRESS_LOGIN_TITLE'              => 'Login mit PayPal',
     'OSC_PAYPAL_LOGIN_WITH_PAYPAL_EMAIL'          => 'Im Shop beim Kauf automatisch einloggen',
     'HELP_OSC_PAYPAL_EXPRESS_LOGIN'               => 'Wenn die Shop-Kundenkonto-EMail-Adresse gleich der PayPal-EMail-Adresse ist,

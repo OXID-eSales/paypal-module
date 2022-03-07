@@ -108,6 +108,7 @@ $aModule = [
     ],
     'templates' => [
         'oscpaypalconfig.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalconfig.tpl',
+        'oscpaypalconfig_popup.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalconfig_popup.tpl',
         'oscpaypaldisputedetails.tpl' => 'osc/paypal/views/admin/tpl/oscpaypaldisputedetails.tpl',
         'oscpaypaldisputes.tpl' => 'osc/paypal/views/admin/tpl/oscpaypaldisputes.tpl',
         'oscpaypalorder.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalorder.tpl',

@@ -49,11 +49,13 @@ class OnboardingController extends AdminController
         $credentials = $this->autoConfiguration();
         $this->registerWebhooks();
 
-        $result = [
-            !empty($credentials) ? 'success' : 'failure'
-        ];
-        header('Content-Type: application/json; charset=UTF-8');
-        Registry::getUtils()->showMessageAndExit(json_encode($result));
+        $session = Registry::getSession();
+
+        Registry::getUtils()->redirect(
+            Registry::getConfig()->getCurrentShopUrl(true) . 'index.php?cl=oscpaypalconfig&aoc=ready' .
+            '&stoken=' . (string) Registry::getSession()->getSessionChallengeToken()
+            , false, 302
+        );
     }
 
     /**

@@ -34,9 +34,16 @@ class PayPalConfigController extends AdminController
     public function render()
     {
         $thisTemplate = parent::render();
-
         $config = new Config();
         $this->addTplParam('config', $config);
+
+        // popUp Rendering onboarding
+        if ($aoc = Registry::getConfig()->getRequestParameter("aoc")) {
+            $this->_aViewData['isSandBox'] = ($aoc == 'live') ? false : true;
+            $this->_aViewData['ready'] = ($aoc == 'ready') ? true : false;
+            $this->_aViewData['bottom_buttons'] = '';
+            return 'oscpaypalconfig_popup.tpl';
+        }
 
         try {
             $config->checkHealth();
@@ -99,7 +106,7 @@ class PayPalConfigController extends AdminController
 
         $adminShopUrl = $config->getCurrentShopUrl(true);
 
-        $partnerLogoUrl = $config->getOutUrl(null, true) . 'img/setup_logo.png';
+        $partnerLogoUrl = $config->getOutUrl(null, true) . 'admin/img/loginlogo.png';
         $returnToPartnerUrl = $adminShopUrl .
             'index.php?cl=oscpaypalonboarding&fnc=returnFromSignup' .
             '&stoken=' . (string) $session->getSessionChallengeToken();
@@ -194,9 +201,6 @@ class PayPalConfigController extends AdminController
         }
         if (!isset($conf['oscPayPalShowBasketButton'])) {
             $conf['oscPayPalShowBasketButton'] = 0;
-        }
-        if (!isset($conf['oscPayPalShowCheckoutButton'])) {
-            $conf['oscPayPalShowCheckoutButton'] = 0;
         }
 
         if (!isset($conf['oscPayPalBannersShowAll'])) {

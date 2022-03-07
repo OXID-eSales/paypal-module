@@ -1,5 +1,9 @@
 @import 'overlay';
 
+#PPMiniWin .mask {
+    display: block;
+}
+
 .paypal-config {
     width:600px;
     margin: 5em auto;
@@ -27,6 +31,32 @@
     }
     .card-header {
         cursor:pointer;
+    }
+    .paypal-button-PPLtBlue {
+        padding-top: 12px;
+        border-radius: 5px;
+        border: 1px solid #9DA3A6;
+        vertical-align: middle;
+        padding-right: 16px;
+        display: table-cell;
+        text-decoration: none;
+        background-color: #1B9DDb;
+        color: #fff;
+        font-size: 15px;
+        font-family: HelveticaNeueMedium,"Helvetica Neue Medium",Helvetica,Arial,sans-serif;
+        &:before {
+            content: "";
+            background: url(https://www.paypalobjects.com/images/shared/monogram@2x.png) 12px no-repeat #FFF;
+            background-size: 18.34px;
+            display: table-cell;
+            width: 40px;
+            height: 42px;
+            float: left;
+            margin-right: 16px;
+            border-bottom-left-radius: 5px;
+            border-top-left-radius: 5px;
+            margin-top: -12px;
+        }
     }
 }
 

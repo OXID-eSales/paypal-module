@@ -127,7 +127,11 @@ $aLang = [
     'OSC_PAYPAL_LIVE_CREDENTIALS'                 => 'Live API credentials',
     'OSC_PAYPAL_SANDBOX_CREDENTIALS'              => 'Sandbox API credentials',
     'OSC_PAYPAL_LIVE_BUTTON_CREDENTIALS'          => 'SignUp Merchant Integration (Live)',
+    'OSC_PAYPAL_LIVE_BUTTON_CREDENTIALS_INIT'     => 'Start Merchant Integration (Live) in a new window ...',
     'OSC_PAYPAL_SANDBOX_BUTTON_CREDENTIALS'       => 'SignUp Merchant Integration (Sandbox)',
+    'OSC_PAYPAL_SANDBOX_BUTTON_CREDENTIALS_INIT'  => 'Start Merchant Integration (Sandbox) in a new window ...',
+    'OSC_PAYPAL_ONBOARD_CLICK_HELP'               => 'Please close the page if you want to cancel the PayPal integration...',
+    'OSC_PAYPAL_ONBOARD_CLOSE_HELP'               => 'You can now close the window.',
     'OSC_PAYPAL_ERR_CONF_INVALID'                 =>
         'One or more configuration values are either not set or incorrect. Please double check them.<br>
         <b>Module inactive.</b>',
@@ -135,7 +139,6 @@ $aLang = [
     'OSC_PAYPAL_BUTTON_PLACEMEMT_TITLE'           => 'Button placement settings',
     'OSC_PAYPAL_PRODUCT_DETAILS_BUTTON_PLACEMENT' => 'Product details page',
     'OSC_PAYPAL_BASKET_BUTTON_PLACEMENT'          => 'Basket',
-    'OSC_PAYPAL_CHECKOUT_PLACEMENT'               => 'Payment Page (Checkout)',
     'OSC_PAYPAL_EXPRESS_LOGIN_TITLE'              => 'Login with PayPal',
     'OSC_PAYPAL_LOGIN_WITH_PAYPAL_EMAIL'          => 'Automatically log in to shop during checkout',
     'HELP_OSC_PAYPAL_EXPRESS_LOGIN'               => 'In case there is already a shop user registered with password to the same mail address as the the PayPal mail,
