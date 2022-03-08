@@ -92,8 +92,6 @@ final class PaymentTest extends BaseTestCase
         $order->expects($this->once())
             ->method('savePuiInvoiceNr');
 
-        $this->markTestIncomplete('TODO as soon as we do no longer run into PAYEE_NOT_ENABLED_FOR_PUI_PROCESSING');
-
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $result = $paymentService->doExecutePuiPayment($order, $basket);
 
@@ -105,8 +103,6 @@ final class PaymentTest extends BaseTestCase
         /** @var ApiOrderService $orderService */
         $orderService = EshopRegistry::get(ServiceFactory::class)
             ->getOrderService();
-
-        $this->markTestIncomplete('TODO as soon as we do no longer run into PAYEE_NOT_ENABLED_FOR_PUI_PROCESSING');
 
         $result = $orderService->createOrder(
             $this->getPuiOrderRequest(), '', 'test-' . microtime(), 'return=minimal', 'request-id-' . microtime());
