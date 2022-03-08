@@ -114,6 +114,9 @@ class Payment
         EshopModelBasket $basket
     ): array
     {
+        // PatchOrders access an OrderCall that has taken place before.
+        // For this reason, the payPalPartnerAttributionId does not have
+        // to be transmitted again in the case of a PatchCall
         $response = $this->doCreatePayPalOrder(
             $basket,
             OrderRequest::INTENT_CAPTURE,
@@ -299,9 +302,15 @@ class Payment
     public function doCreateUAPMOrder(EshopModelBasket $basket): string
     {
         $response = $this->doCreatePayPalOrder(
-                $basket,
-                OrderRequest::INTENT_CAPTURE
-            );
+            $basket,
+            OrderRequest::INTENT_CAPTURE,
+            null,
+            '',
+            '',
+            '',
+            '',
+            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+        );
 
         return $response->id ?: '';
     }
@@ -314,9 +323,10 @@ class Payment
                 OrderRequest::INTENT_CAPTURE,
                 OrderRequestFactory::USER_ACTION_CONTINUE,
                 Constants::PAYPAL_PUI_PROCESSING_INSTRUCTIONS,
-                 PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME,
-                 $payPalClientMetadataId,
-                 $order->getId()
+                PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME,
+                $payPalClientMetadataId,
+                $order->getId(),
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
             $payPalOrderId = $result['id'];
         } catch (Exception $exception) {
