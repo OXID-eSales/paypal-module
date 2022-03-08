@@ -54,7 +54,12 @@ class ProxyController extends FrontendController
         $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
             Registry::getSession()->getBasket(),
             OrderRequest::INTENT_CAPTURE,
-            OrderRequestFactory::USER_ACTION_CONTINUE
+            OrderRequestFactory::USER_ACTION_CONTINUE,
+            null,
+            '',
+            '',
+            '',
+            $this->getPayPalPartnerAttributionId()
         );
 
         if ($response->id) {
@@ -306,5 +311,21 @@ class ProxyController extends FrontendController
             //tell order controller to redirect to checkout login
             Registry::getSession()->setVariable('oscpaypal_payment_redirect', true);
         }
+    }
+
+    protected function getPayPalPartnerAttributionId(): string
+    {
+        $buttonPosition = (string) Registry::getRequest()->getRequestEscapedParameter('pos');
+        switch ($buttonPosition) {
+            case 'PayPalButtonProductMain':
+            case 'PayPalPayButtonNextCart2':
+                $payPalPartnerAttributionId = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_EXPRESS;
+                break;
+            case 'PayPalButtonPaymentPage':
+            default:
+                $payPalPartnerAttributionId = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
+                break;
+        };
+        return $payPalPartnerAttributionId;
     }
 }
