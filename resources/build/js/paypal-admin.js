@@ -76,9 +76,9 @@ function callOnboardingControllerAutoConfigurationFromCallback(authCode, sharedI
             if (response.status !== 200) {
                 return;
             }
-
+/*
             response.json().then(function (data) {
-                //jQuery("#overlay").hide();
+                jQuery("#overlay").hide();
                 if (window.isSandBox) {
                     jQuery("#client-sandbox-id").val(data.client_id);
                     jQuery("#client-sandbox-secret").val(data.client_secret);
@@ -94,6 +94,7 @@ function callOnboardingControllerAutoConfigurationFromCallback(authCode, sharedI
                 }
                 jQuery("#configForm").submit();
             });
+*/
         }
     )
     .catch(function (err) {
