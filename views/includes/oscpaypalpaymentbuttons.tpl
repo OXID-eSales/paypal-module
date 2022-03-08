@@ -8,7 +8,7 @@
     [{literal}]
     paypal.Buttons({
         createOrder: function(data, actions) {
-            return fetch('[{/literal}][{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue"|cat:"&aid="|cat:$aid}][{literal}]', {
+            return fetch('[{/literal}][{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue"|cat:"&aid="|cat:$aid|cat:"&pos="|cat:$buttonId}][{literal}]', {
                 method: 'post',
                 headers: {
                     'content-type': 'application/json'
@@ -22,7 +22,7 @@
         onApprove: function(data, actions) {
             captureData = new FormData();
             captureData.append('orderID', data.orderID);
-            return fetch('[{/literal}][{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue"|cat:"&aid="|cat:$aid}][{literal}]', {
+            return fetch('[{/literal}][{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue"|cat:"&aid="|cat:$aid|cat:"&pos="|cat:$buttonId}][{literal}]', {
                 method: 'post',
                 body: captureData
             }).then(function(res) {

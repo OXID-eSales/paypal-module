@@ -30,4 +30,10 @@ class Constants
     public const PAYPAL_ONBOARDING_LIVE_URL = 'https://www.paypal.com/bizsignup/partner/entry';
 
     public const PAYPAL_PUI_PROCESSING_INSTRUCTIONS = 'ORDER_COMPLETE_ON_PAYMENT_APPROVAL';
+
+    // BN Codes defined togehter with PayPal
+    public const PAYPAL_PARTNER_ATTRIBUTION_ID_SUBSCRIPTION = 'Oxid_Cart_Subscriptions';
+    public const PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP = 'Oxid_Cart_Payments';
+    public const PAYPAL_PARTNER_ATTRIBUTION_ID_EXPRESS = 'Oxid_Cart_PymtsShortcut';
+    public const PAYPAL_PARTNER_ATTRIBUTION_ID_BANNER = 'oxid_Cart_Instbanners';
 }
