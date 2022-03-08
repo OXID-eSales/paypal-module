@@ -20,21 +20,6 @@ use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 
 final class OnboardingTest extends BaseTestCase
 {
-    public function testOnboardingLinks(): void
-    {
-        Registry::getSession()->setId('test_session_id');
-        $this->getConfig()->setConfigParam('sAdminDir', "admin");
-
-        $controller = oxNew(PayPalConfigController::class);
-        $liveLinks = $controller->getLiveSignUpMerchantIntegrationLinks();
-        $this->assertNotEmpty($liveLinks);
-        $this->doAssertStringNotContainsString('sandbox', serialize($liveLinks));
-
-        $sandboxLinks = $controller->getSandboxSignUpMerchantIntegrationLinks();
-        $this->assertNotEmpty($sandboxLinks);
-        $this->doAssertStringContainsString('sandbox', serialize($sandboxLinks));
-    }
-
     public function testAutoConfigurationFromCallback(): void
     {
         $response = '{"authCode":"C21AAJlAxXbg1yhcvDvsQBkCkGBWcbdrFGDFA2vm4rjeXEpE-HsiV7ONaEPCyi-A3ebfRyK-hqbqld7ZBPAqwm8-MqiL1pCyw",' .
