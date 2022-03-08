@@ -54,10 +54,13 @@ final class AdminOnboardingCest extends BaseCest
 
         $I->seeElement('#opmode');
         $I->selectOption('#opmode', 'live');
-        $I->seeElement('#paypalonboardinglive');
+        $I->seeElement('#paypalonboardingpopuplive');
+        $I->click('#paypalonboardingpopuplive');
+        $I->switchToLastWindow();
 
+        $I->seeElement('#paypalonboardinglive');
         $link = $I->grabAttributeFrom('#paypalonboardinglive', 'href');
-        $I->assertStringContainsString('referralToken', $link);
+        $I->assertStringContainsString('partnerClientId', $link);
     }
 
     public function testOnboardingSandboxMode(AcceptanceTester $I): void
@@ -72,12 +75,13 @@ final class AdminOnboardingCest extends BaseCest
         $I->see(substr(Translator::translate('OSC_PAYPAL_ERR_CONF_INVALID'), 0, 65));
         $I->seeElement('#opmode');
         $I->selectOption('#opmode', 'sandbox');
-        $I->seeElement('#paypalonboardingsandbox');
+        $I->seeElement('#paypalonboardingpopupsandbox');
         $I->assertEmpty($I->grabAttributeFrom("#client-sandbox-id", 'value'));
 
-        $link = $I->grabAttributeFrom('#paypalonboardingsandbox', 'href');
-        $I->assertStringContainsString('referralToken', $link);
+        $I->click('#paypalonboardingpopupsandbox');
+        $I->switchToLastWindow();
 
+        $I->seeElement('#paypalonboardingsandbox');
         $I->click('#paypalonboardingsandbox');
         $I->switchToLastWindow();
 
@@ -92,9 +96,13 @@ final class AdminOnboardingCest extends BaseCest
         $href = $I->grabAttributeFrom("//a[contains(@href, 'cl=oscpaypalonboarding')]", 'href');
         $I->assertStringContainsString('returnFromSignup', $href);
         $I->amOnUrl($href);
-        $I->see('["success"]');
+        $I->see('You can now close the window');
 
         //NOTE: in case of non ssl url, the webhook cannot be created, so webhook part depends on test environment
         //locally we will still see a note, that the module is inactive
+        $I->switchToWindow();
+        $I->reloadPage();
+
+        $I->assertNotEmpty($I->grabAttributeFrom("#client-sandbox-id", 'value'));
     }
 }
