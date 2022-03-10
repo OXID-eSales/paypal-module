@@ -59,15 +59,15 @@ $sMetadataVersion = '2.1';
 $aModule = [
     'id' => 'osc_paypal',
     'title' => [
-        'de' => 'OSC :: PayPal - Online-Bezahldienst',
-        'en' => 'OSC :: PayPal - Online-Payment'
+        'de' => 'PayPal Checkout für OXID',
+        'en' => 'PayPal Checkout for OXID'
     ],
     'description' => [
-        'de' => 'Nutzung des Online-Bezahldienstes von PayPal',
-        'en' => 'Use of the online payment service from PayPal'
+        'de' => 'Nutzung des Online-Bezahldienstes von PayPal. Dokumentation: <a href="https://docs.oxid-esales.com/modules/paypal-checkout/de/latest/" target="_blank">PayPal Checkout</a>',
+        'en' => 'Use of the online payment service from PayPal. Documentation: <a href="https://docs.oxid-esales.com/modules/paypal-checkout/en/latest/" target="_blank">PayPal Checkout</a>'
     ],
     'thumbnail' => 'out/img/paypal.png',
-    'version' => '0.0.2',
+    'version' => '1.0.0',
     'author' => 'Oxid Solution Catalysts',
     'url' => '',
     'email' => '',
@@ -97,8 +97,8 @@ $aModule = [
 
         'oscpaypalonboarding' => OnboardingController::class,
         'oscpaypalorder' => PayPalOrderController::class,
-        'oscpaypaltransactions' => PayPalTransactionController::class,
         //TODO: for the first release we start without PayPal Subscriptions
+        // 'oscpaypaltransactions' => PayPalTransactionController::class,
         // 'oscpaypalsubscriptiontransaction' => SubscriptionTransactionController::class,
         // 'oscpaypalsubscribe' => PayPalSubscribeController::class,
         // 'oscpaypalsubscriptiondetails' => SubscriptionDetailsController::class,
