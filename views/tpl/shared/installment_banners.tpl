@@ -5,7 +5,11 @@
 
     [{assign var="currency" value=$oView->getActCurrency()}]
 
-    [{oxscript include=$oViewConf->getPayPalApiBannerUrl()}]
+    [{block name="oscpaypal_banner"}]
+        [{* use original script tag instead of oxscript because of the additional params *}]
+        <script src="[{$oViewConf->getPayPalApiBannerUrl()}]" data-partner-attribution-id="[{$oViewConf->getPayPalPartnerAttributionIdForBanner()}]"></script>
+    [{/block}]
+
     [{capture assign="installmentBanners"}]
         // Create installment banner holder
         var newNode = document.createElement('div');

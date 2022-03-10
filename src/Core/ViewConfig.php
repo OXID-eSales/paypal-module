@@ -194,6 +194,14 @@ class ViewConfig extends ViewConfig_parent
     }
 
     /**
+     * API ID getter for use with the installment banner feature
+     */
+    public function getPayPalPartnerAttributionIdForBanner(): string
+    {
+        return Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_BANNER;
+    }
+
+    /**
      * Returns whether PayPal banners should be shown on the start page
      */
     public function showPayPalBannerOnStartPage(): bool
