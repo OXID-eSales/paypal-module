@@ -99,7 +99,7 @@ class OrderController extends OrderController_parent
         $session = $this->getSession();
         $oBasket =  $session->getBasket();
 
-        if ($oBasket->getPaymentId() !== PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID) {
+        if ($oBasket->getPaymentId() !== PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID) {
             return $ret;
         }
 
@@ -296,8 +296,8 @@ class OrderController extends OrderController_parent
     private function setPayPalAsPaymentMethod()
     {
         $payment = $this->getBasket()->getPaymentId();
-        if (($payment !== PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID)) {
-            $this->getBasket()->setPayment(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
+        if (($payment !== PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID)) {
+            $this->getBasket()->setPayment(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
         }
     }
 

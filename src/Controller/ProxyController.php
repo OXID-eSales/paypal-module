@@ -43,7 +43,7 @@ class ProxyController extends FrontendController
 
     public function createOrder()
     {
-        if (PayPalSession::isPayPalOrderActive()) {
+        if (PayPalSession::isPayPalExpressOrderActive()) {
             //TODO: improve
             $this->outputJson(['ERROR' => 'PayPal session already started.']);
         }
@@ -236,7 +236,7 @@ class ProxyController extends FrontendController
             $user = $activeUser;
         }
 
-        if ($session->getVariable('paymentid') !== PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID) {
+        if ($session->getVariable('paymentid') !== PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID) {
             $possibleDeliverySets = [];
 
             $deliverySetList = Registry::get(DeliverySetList::class)
@@ -250,17 +250,17 @@ class ProxyController extends FrontendController
                     $basket->getPrice()->getBruttoPrice(),
                     $user
                 );
-                if (array_key_exists(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID, $paymentList)) {
+                if (array_key_exists(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID, $paymentList)) {
                     $possibleDeliverySets[] = $deliverySet->getId();
                 }
             }
 
             if (count($possibleDeliverySets)) {
-                $basket->setPayment(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
+                $basket->setPayment(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
                 $shippingSetId = reset($possibleDeliverySets);
                 $basket->setShipping($shippingSetId);
                 $session->setVariable('sShipSet', $shippingSetId);
-                $session->setVariable('paymentid', PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
+                $session->setVariable('paymentid', PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
             }
         }
     }

@@ -130,7 +130,7 @@ class User extends User_parent
      */
     protected function onLogin($userName, $password)
     {
-        if (PayPalSession::isPayPalOrderActive()) {
+        if (PayPalSession::isPayPalExpressOrderActive()) {
             $userId = $this->getUserIdByPayPalAddress($userName);
             if ($userId) {
                 $this->load($userId);

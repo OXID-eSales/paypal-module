@@ -41,14 +41,14 @@ class PayPalSession
      *
      * @return bool
      */
-    public static function isPayPalOrderActive(): bool
+    public static function isPayPalExpressOrderActive(): bool
     {
         if (!self::getcheckoutOrderId()) {
             return false;
         }
 
         $paymentId = Registry::getSession()->getBasket()->getPaymentId();
-        if (PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID !== $paymentId) {
+        if (PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID !== $paymentId) {
             return false;
         }
 

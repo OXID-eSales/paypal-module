@@ -12,6 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 final class PayPalDefinitions
 {
     public const STANDARD_PAYPAL_PAYMENT_ID = 'oscpaypal';
+    public const EXPRESS_PAYPAL_PAYMENT_ID = 'oscpaypal_express';
     public const ACDC_PAYPAL_PAYMENT_ID = 'oscpaypal_acdc';
     public const PUI_PAYPAL_PAYMENT_ID = 'oscpaypal_pui';
     public const PUI_REQUEST_PAYMENT_SOURCE_NAME = 'pay_upon_invoice';
@@ -23,18 +24,36 @@ final class PayPalDefinitions
     ];
 
     private const PAYPAL_DEFINTIONS = [
-        //Standard PayPal
+        //Standard PayPal via uAPM
         self::STANDARD_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
                     'desc' => 'PayPal',
                     'longdesc' => '',
-                    'longdesc_beta' => 'Bezahlen Sie bequem mit PayPal'
+                    'longdesc_beta' => 'Bezahlen Sie bequem mit PayPal.'
                 ],
                 'en' => [
                     'desc' => 'PayPal',
                     'longdesc' => '',
-                    'longdesc_beta' => 'Pay conveniently with PayPal'
+                    'longdesc_beta' => 'Pay conveniently with PayPal.'
+                ]
+            ],
+            'uapmpaymentsource' => 'paypal',
+            'countries' => [],
+            'constraints' => self::PAYMENT_CONSTRAINTS
+        ],
+        //Express PayPal
+        self::EXPRESS_PAYPAL_PAYMENT_ID => [
+            'descriptions' => [
+                'de' => [
+                    'desc' => 'PayPal Express',
+                    'longdesc' => '',
+                    'longdesc_beta' => 'Bezahlen Sie bequem mit PayPal. Starten Sie direkt von der Detailsseite oder im Warenkorb.'
+                ],
+                'en' => [
+                    'desc' => 'PayPal Express',
+                    'longdesc' => '',
+                    'longdesc_beta' => 'Pay conveniently with PayPal. Start directly from the details page or in the shopping cart.'
                 ]
             ],
             'countries' => [],

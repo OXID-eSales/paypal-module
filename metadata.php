@@ -68,7 +68,7 @@ $aModule = [
     ],
     'thumbnail' => 'out/img/paypal.png',
     'version' => '1.0.0',
-    'author' => 'Oxid Solution Catalysts',
+    'author' => 'OXID eSales AG',
     'url' => '',
     'email' => '',
     'extend' => [
