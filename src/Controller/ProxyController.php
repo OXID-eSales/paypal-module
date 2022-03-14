@@ -72,7 +72,7 @@ class ProxyController extends FrontendController
     public function approveOrder()
     {
         $orderId = (string) Registry::getRequest()->getRequestEscapedParameter('orderID');
-        $sessionOrderId = PayPalSession::getcheckoutOrderId();
+        $sessionOrderId = PayPalSession::getCheckoutOrderId();
 
         if (!$orderId || ($orderId !== $sessionOrderId)) {
             //TODO: improve
