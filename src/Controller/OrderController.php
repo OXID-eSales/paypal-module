@@ -279,10 +279,10 @@ class OrderController extends OrderController_parent
     protected function _getNextStep($success) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
     {
         if (
-            (\OxidSolutionCatalysts\PayPal\Model\Order::ORDER_STATE_UAPMINPROGRESS == $success) &&
-            ($redirectLink = PayPalSession::getUapmRedirectLink())
+            (\OxidSolutionCatalysts\PayPal\Model\Order::ORDER_STATE_SESSIONPAYMENT_INPROGRESS == $success) &&
+            ($redirectLink = PayPalSession::getSessionRedirectLink())
         ) {
-            PayPalSession::unsetUapmRedirectLink();
+            PayPalSession::unsetSessionRedirectLink();
             throw new Redirect($redirectLink);
         }
 

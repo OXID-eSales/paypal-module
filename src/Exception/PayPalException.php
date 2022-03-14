@@ -16,14 +16,14 @@ class PayPalException extends StandardException
         return new self('Could not create PayPal order.');
     }
 
-    public static function uAPMPaymentMalformedResponse(): self
+    public static function sessionPaymentMalformedResponse(): self
     {
-        return new self('uAPM-Payment reponse structure  is not as expected.');
+        return new self('Session-Payment reponse structure is not as expected.');
     }
 
-    public static function uAPMPaymentMissingRedirectLink(): self
+    public static function sessionPaymentMissingRedirectLink(): self
     {
-        return new self('uAPM-Payment reponse contains no redirect link.');
+        return new self('Session-Payment reponse contains no redirect link.');
     }
 
     public static function uAPMPaymentFail(): self

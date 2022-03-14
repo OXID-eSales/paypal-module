@@ -77,7 +77,9 @@ class Payment
         string $paymentSource = '',
         string $payPalClientMetadataId = '',
         string $payPalRequestId = '',
-        string $payPalPartnerAttributionId = ''
+        string $payPalPartnerAttributionId = '',
+        string $returnUrl,
+        string $cancelUrl
     #): ?ApiModelOrder
     ) //TODO return value
     {
@@ -90,7 +92,10 @@ class Payment
             $userAction,
             null,
             $processingInstruction,
-            $paymentSource
+            $paymentSource,
+            null,
+            $returnUrl,
+            $cancelUrl
         );
 
         $response = [];
@@ -212,15 +217,16 @@ class Payment
         );
 
         if (!isset($response->links)) {
-            throw PayPalException::uAPMPaymentMalformedResponse();
+            throw PayPalException::sessionPaymentMalformedResponse();
         }
         foreach ($response->links as $links) {
             if ($links['rel'] === 'payer-action') {
                 $redirectLink = $links['href'];
+                break;
             }
         }
         if (!$redirectLink) {
-            throw PayPalException::uAPMPaymentMissingRedirectLink();
+            throw PayPalException::sessionPaymentMissingRedirectLink();
         }
 
         $this->trackPayPalOrder(
@@ -293,6 +299,57 @@ class Payment
             $this->removeTemporaryOrder();
             //TODO: do we need to log this?
             Registry::getLogger()->error($exception->getMessage(), [$exception]);
+        }
+
+        //NOTE: payment not fully executed, we need customer interaction first
+        return $redirectLink;
+    }
+
+    /**
+     * @throws PayPalException
+     */
+    public function doExecuteStandardPayment(EshopModelOrder $order, EshopModelBasket $basket): string
+    {
+        //For Standard payment we should not yet have a paypal order in session.
+        //We create a fresh paypal order at this point
+        $config = Registry::getConfig();
+        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=thankyou';
+        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=payment&payerror=2';
+
+        $response = $this->doCreatePayPalOrder(
+            $basket,
+            OrderRequest::INTENT_CAPTURE,
+            null,
+            '',
+            '',
+            '',
+            '',
+            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
+            $returnUrl,
+            $cancelUrl
+        );
+
+        $orderId = $response->id ?: '';
+
+        if (!$orderId) {
+            throw PayPalException::createPayPalOrderFail();
+        }
+
+        PayPalSession::storePayPalOrderId($orderId, Constants::SESSION_CHECKOUT_ORDER_ID);
+
+        if (!isset($response->links)) {
+            throw PayPalException::sessionPaymentMalformedResponse();
+        }
+        foreach ($response->links as $links) {
+            if ($links['rel'] === 'approve') {
+                $redirectLink = $links['href'];
+                break;
+            }
+        }
+        if (!$redirectLink) {
+            PayPalSession::unsetPayPalOrderId(Constants::SESSION_CHECKOUT_ORDER_ID);
+            $this->removeTemporaryOrder();
+            throw PayPalException::sessionPaymentMissingRedirectLink();
         }
 
         //NOTE: payment not fully executed, we need customer interaction first

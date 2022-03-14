@@ -125,25 +125,25 @@ class PayPalSession
         );
     }
 
-    public static function setUapmRedirectLink(string $link): void
+    public static function setSessionRedirectLink(string $link): void
     {
         Registry::getSession()->setVariable(
-            Constants::SESSION_UAPMCHECKOUT_REDIRECTLINK,
+            Constants::SESSION_REDIRECTLINK,
             $link
         );
     }
 
-    public static function getUapmRedirectLink(): string
+    public static function getSessionRedirectLink(): string
     {
         return (string) Registry::getSession()->getVariable(
-            Constants::SESSION_UAPMCHECKOUT_REDIRECTLINK
+            Constants::SESSION_REDIRECTLINK
         );
     }
 
-    public static function unsetUapmRedirectLink():void
+    public static function unsetSessionRedirectLink():void
     {
         Registry::getSession()->deleteVariable(
-            Constants::SESSION_UAPMCHECKOUT_REDIRECTLINK
+            Constants::SESSION_REDIRECTLINK
         );
     }
 

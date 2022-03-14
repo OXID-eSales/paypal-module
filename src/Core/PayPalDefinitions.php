@@ -24,7 +24,7 @@ final class PayPalDefinitions
     ];
 
     private const PAYPAL_DEFINTIONS = [
-        //Standard PayPal via uAPM
+        //Standard PayPal
         self::STANDARD_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
@@ -38,7 +38,6 @@ final class PayPalDefinitions
                     'longdesc_beta' => 'Pay conveniently with PayPal.'
                 ]
             ],
-            'uapmpaymentsource' => 'paypal',
             'countries' => [],
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],

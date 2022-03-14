@@ -18,7 +18,7 @@ class Constants
     public const SESSION_ACDCCHECKOUT_ORDER_ID = 'paypal-acdc-checkout-session';
     public const SESSION_UAPMCHECKOUT_ORDER_ID = 'paypal-uapm-checkout-session';
     public const SESSION_UAPMCHECKOUT_PAYMENTERROR = 'paypal-uapm-checkout-error';
-    public const SESSION_UAPMCHECKOUT_REDIRECTLINK = 'paypal-uapm-checkout-redirect';
+    public const SESSION_REDIRECTLINK = 'paypal-session-checkout-redirect';
 
     public const SESSION_ONBOARDING_PAYLOAD = 'paypal-onboarding-payload';
     public const SESSION_ONBOARDING_MERCHANTID = 'paypal-onboarding-merchantid';
