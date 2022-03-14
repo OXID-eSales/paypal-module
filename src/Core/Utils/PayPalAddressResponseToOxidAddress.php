@@ -26,13 +26,17 @@ class PayPalAddressResponseToOxidAddress
         string $DBTablePrefix
     ): array {
         $country = oxNew(Country::class);
-        $countryId = $country->getIdByCode($response->purchase_units[0]->shipping->address->country_code);
+
+        $shippingAddress = $response->purchase_units[0]->shipping->address;
+        $shippingFullName = $response->purchase_units[0]->shipping->name->full_name;
+
+        $countryId = $country->getIdByCode($shippingAddress->country_code);
         $country->load($countryId);
         $countryName = $country->oxcountry__oxtitle->value;
         $street = '';
         $streetNo = '';
         try {
-            $streetTmp = $response->purchase_units[0]->shipping->address->address_line_1;
+            $streetTmp = $shippingAddress->address_line_1;
             $addressData = AddressSplitter::splitAddress($streetTmp);
             $street = $addressData['streetName'] ?? '';
             $streetNo = $addressData['houseNumber'] ?? '';
@@ -42,14 +46,22 @@ class PayPalAddressResponseToOxidAddress
         }
 
         return [
-            $DBTablePrefix . 'oxfname' => $response->payer->name->given_name,
-            $DBTablePrefix . 'oxlname' => $response->payer->name->surname,
+            $DBTablePrefix . 'oxfname' => self::getFirstName($shippingFullName),
+            $DBTablePrefix . 'oxlname' => self::getLastName($shippingFullName),
             $DBTablePrefix . 'oxstreet' => $street,
             $DBTablePrefix . 'oxstreetnr' => $streetNo,
-            $DBTablePrefix . 'oxcity' => $response->purchase_units[0]->shipping->address->admin_area_2,
+            $DBTablePrefix . 'oxcity' => $shippingAddress->admin_area_2,
             $DBTablePrefix . 'oxcountryid' => $countryId,
             $DBTablePrefix . 'oxcountry' => $countryName,
-            $DBTablePrefix . 'oxzip' => $response->purchase_units[0]->shipping->address->postal_code,
+            $DBTablePrefix . 'oxzip' => $shippingAddress->postal_code,
         ];
+    }
+
+    protected static function getFirstName($name) {
+        return implode(' ', array_slice(explode(' ', $name), 0, -1));
+    }
+
+    protected static function getLastName($name) {
+        return array_slice(explode(' ', $name), -1)[0];
     }
 }
