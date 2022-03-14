@@ -164,26 +164,19 @@ class Order extends Order_parent
     {
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
-        //catch uapm PayPal payments here
-        if (PayPalDefinitions::isUAPMPayment($paymentService->getSessionPaymentId())) {
-            try {
-                /** @var EshopModelBasket $basket */
-                $basket = Registry::getSession()->getBasket();
-                $uapmGoNext = $paymentService->doExecuteUAPMPayment($this, $basket);
-                PayPalSession::setSessionRedirectLink($uapmGoNext);
+        $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($paymentService->getSessionPaymentId());
+        $isPayPalStandard = (string) $paymentService->getSessionPaymentId() === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
 
-                return self::ORDER_STATE_SESSIONPAYMENT_INPROGRESS;
-            } catch (\Exception $exception) {
-                $this->delete();
-                Registry::getLogger()->error($exception->getMessage(), [$exception]);
-            }
-            return self::ORDER_STATE_PAYMENTERROR;
-        } elseif ((string) $paymentService->getSessionPaymentId() === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID) {
+        //catch UAPM & standard PayPal payments here
+        if ($isPayPalUAPM || $isPayPalStandard) {
             try {
                 /** @var EshopModelBasket $basket */
                 $basket = Registry::getSession()->getBasket();
-                $standardGoNext = $paymentService->doExecuteStandardPayment($this, $basket);
-                PayPalSession::setSessionRedirectLink($standardGoNext);
+                $redirectLink =
+                    $isPayPalUAPM ?
+                        $paymentService->doExecuteUAPMPayment($this, $basket) :
+                        $paymentService->doExecuteStandardPayment($this, $basket);
+                PayPalSession::setSessionRedirectLink($redirectLink);
 
                 return self::ORDER_STATE_SESSIONPAYMENT_INPROGRESS;
             } catch (\Exception $exception) {

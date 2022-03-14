@@ -147,7 +147,7 @@ class OrderController extends OrderController_parent
             $response = ['acdcerror' => 'unexpected order status ' . $status];
             $paymentService->removeTemporaryOrder();
         } else {
-            PayPalSession::storePayPalOrderId($paypalOrderId, Constants::SESSION_ACDCCHECKOUT_ORDER_ID);
+            PayPalSession::storePayPalOrderId($paypalOrderId);
             $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
             $payPalOrder = $paymentService->getPayPalOrder($sessionOrderId, $paypalOrderId);
             $payPalOrder->setStatus($response['status']);
@@ -161,7 +161,7 @@ class OrderController extends OrderController_parent
     {
         $acdcRequestId = (string) Registry::getRequest()->getRequestParameter('acdcorderid');
         $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
-        $sessionAcdcOrderId = (string) PayPalSession::getAcdcCheckoutOrderId();
+        $sessionAcdcOrderId = (string) PayPalSession::getCheckoutOrderId();
 
         $result = [
             'details' => [
@@ -199,67 +199,38 @@ class OrderController extends OrderController_parent
         $this->outputJson($result);
     }
 
-    public function finalizepaypal(): string
+    public function finalizepaypalsession(): string
     {
         $standardRequestId = (string) Registry::getRequest()->getRequestParameter('token');
         $sessionOrderId = Registry::getSession()->getVariable('sess_challenge');
-        $sessionStandardOrderId = PayPalSession::getcheckoutOrderId();
-
-        if (!$sessionOrderId || !$sessionStandardOrderId || ($standardRequestId !== $sessionStandardOrderId)) {
-            $this->cancelSession('request to session mismatch');
+        $sessionCheckoutOrderId = PayPalSession::getCheckoutOrderId();
+        
+        if (!$sessionOrderId || !$sessionCheckoutOrderId || ($standardRequestId !== $sessionCheckoutOrderId)) {
+            $this->cancelpaypalsession('request to session mismatch');
         }
 
         try {
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
-            $order = $paymentService->fetchOrderFields((string) $sessionStandardOrderId, '');
+            $order = $paymentService->fetchOrderFields((string) $sessionCheckoutOrderId, '');
             if ('APPROVED' !== $order->status) {
                 throw PayPalException::sessionPaymentFail();
             }
 
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
-            $order->finalizeOrderAfterExternalPayment($sessionStandardOrderId);
+            $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);
 
         } catch (\Exception $exception) {
-            $this->cancelSession('cannot finalize order');
+            $this->cancelpaypalsession('cannot finalize order');
         }
 
         return 'thankyou';
     }
-
-
-    public function finalizeuapm(): string
-    {
-        $uapmRequestId = (string) Registry::getRequest()->getRequestParameter('token');
-        $sessionOrderId = Registry::getSession()->getVariable('sess_challenge');
-        $sessionUapmOrderId = PayPalSession::getUapmCheckoutOrderId();
-
-        if (!$sessionOrderId || !$sessionUapmOrderId || ($uapmRequestId !== $sessionUapmOrderId)) {
-            $this->cancelSession('request to session mismatch');
-        }
-
-        try {
-            $paymentService = $this->getServiceFromContainer(PaymentService::class);
-            $order = $paymentService->fetchOrderFields((string) $sessionUapmOrderId, '');
-            if ('APPROVED' !== $order->status) {
-                throw PayPalException::sessionPaymentFail();
-            }
-
-            $order = oxNew(EshopModelOrder::class);
-            $order->load($sessionOrderId);
-            $order->finalizeOrderAfterExternalPayment($sessionUapmOrderId);
-
-        } catch (\Exception $exception) {
-            $this->cancelSession('cannot finalize order');
-        }
-
-        return 'thankyou';
-    }
-
+    
     public function finalizeacdc(): string
     {
         $sessionOrderId = Registry::getSession()->getVariable('sess_challenge');
-        $sessionAcdcOrderId = PayPalSession::getAcdcCheckoutOrderId();
+        $sessionAcdcOrderId = PayPalSession::getCheckoutOrderId();
 
         try {
             $order = oxNew(EshopModelOrder::class);
@@ -267,14 +238,14 @@ class OrderController extends OrderController_parent
             $order->finalizeOrderAfterExternalPayment($sessionAcdcOrderId);
             $goNext = 'thankyou';
         } catch (\Exception $exception) {
-            $this->cancelSession('cannot finalize order');
+            $this->cancelpaypalsession('cannot finalize order');
             $goNext = 'payment?payerror=2';
         }
 
         return $goNext;
     }
 
-    public function cancelSession(string $errorcode = null): string
+    public function cancelpaypalsession(string $errorcode = null): string
     {
         //TODO: we get the PayPal order id retuned in token parameter, can be used for paranoia checks
         //(string) Registry::getRequest()->getRequestParameter('token')
@@ -284,8 +255,7 @@ class OrderController extends OrderController_parent
             ->removeTemporaryOrder();
 
         $goNext = 'payment';
-        if (PayPalSession::getUapmSessionError() || $errorcode || $requestErrorcode) {
-            PayPalSession::unsetUapmSessionError();
+        if ($errorcode || $requestErrorcode) {
             $goNext = 'payment?payerror=2';
         }
 

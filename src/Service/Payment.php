@@ -259,14 +259,12 @@ class Payment
             $orderModel->delete();
         }
 
-        if ( $payPalOrderId = PayPalSession::getUapmCheckoutOrderId()) {
+        if ($payPalOrderId = PayPalSession::getCheckoutOrderId()) {
             $payPalOrder = $this->orderRepository->paypalOrderByOrderIdAndPayPalId($sessionOrderId, $payPalOrderId);
             $payPalOrder->delete();
         }
 
         PayPalSession::unsetPayPalOrderId();
-        PayPalSession::unsetPayPalOrderId(Constants::SESSION_UAPMCHECKOUT_ORDER_ID);
-        PayPalSession::unsetPayPalOrderId(Constants::SESSION_ACDCCHECKOUT_ORDER_ID);
         $this->eshopSession->deleteVariable('sess_challenge');
     }
 
@@ -283,7 +281,7 @@ class Payment
             throw PayPalException::createPayPalOrderFail();
         }
 
-        PayPalSession::storePayPalOrderId($uapmOrderId, Constants::SESSION_UAPMCHECKOUT_ORDER_ID);
+        PayPalSession::storePayPalOrderId($uapmOrderId);
         $redirectLink = '';
 
         try {
@@ -295,7 +293,7 @@ class Payment
             );
 
         } catch (Exception $exception) {
-            PayPalSession::unsetPayPalOrderId(Constants::SESSION_UAPMCHECKOUT_ORDER_ID);
+            PayPalSession::unsetPayPalOrderId();
             $this->removeTemporaryOrder();
             //TODO: do we need to log this?
             Registry::getLogger()->error($exception->getMessage(), [$exception]);
@@ -313,8 +311,8 @@ class Payment
         //For Standard payment we should not yet have a paypal order in session.
         //We create a fresh paypal order at this point
         $config = Registry::getConfig();
-        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypal';
-        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelSession';
+        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
+        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
 
         $response = $this->doCreatePayPalOrder(
             $basket,
@@ -335,7 +333,7 @@ class Payment
             throw PayPalException::createPayPalOrderFail();
         }
 
-        PayPalSession::storePayPalOrderId($orderId, Constants::SESSION_CHECKOUT_ORDER_ID);
+        PayPalSession::storePayPalOrderId($orderId);
 
         if (!isset($response->links)) {
             throw PayPalException::sessionPaymentMalformedResponse();
@@ -347,7 +345,7 @@ class Payment
             }
         }
         if (!$redirectLink) {
-            PayPalSession::unsetPayPalOrderId(Constants::SESSION_CHECKOUT_ORDER_ID);
+            PayPalSession::unsetPayPalOrderId();
             $this->removeTemporaryOrder();
             throw PayPalException::sessionPaymentMissingRedirectLink();
         }

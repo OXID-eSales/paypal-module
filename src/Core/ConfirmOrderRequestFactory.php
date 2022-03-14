@@ -87,8 +87,8 @@ class ConfirmOrderRequestFactory
 
         $shopLanguageAbbr = $language->getLanguageAbbr();
         $context->locale = $shopLanguageAbbr . '-' . strtoupper($shopLanguageAbbr);
-        $context->return_url = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeuapm';
-        $context->cancel_url = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelSession';
+        $context->return_url = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
+        $context->cancel_url = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
 
         return $context;
     }

@@ -18,10 +18,10 @@ class PayPalSession
      *
      * @param $checkoutOrderId
      */
-    public static function storePayPalOrderId(string $checkoutOrderId, string $target = Constants::SESSION_CHECKOUT_ORDER_ID): void
+    public static function storePayPalOrderId(string $checkoutOrderId): void
     {
         Registry::getSession()->setVariable(
-            $target,
+            Constants::SESSION_CHECKOUT_ORDER_ID,
             $checkoutOrderId
         );
     }
@@ -29,10 +29,10 @@ class PayPalSession
     /**
      * PayPal remove checkoutOrderId
      */
-    public static function unsetPayPalOrderId(string $target = Constants::SESSION_CHECKOUT_ORDER_ID)
+    public static function unsetPayPalOrderId()
     {
         Registry::getSession()->deleteVariable(
-            $target
+            Constants::SESSION_CHECKOUT_ORDER_ID
         );
     }
 
@@ -43,7 +43,7 @@ class PayPalSession
      */
     public static function isPayPalExpressOrderActive(): bool
     {
-        if (!self::getcheckoutOrderId()) {
+        if (!self::getCheckoutOrderId()) {
             return false;
         }
 
@@ -60,29 +60,9 @@ class PayPalSession
      *
      * @return mixed
      */
-    public static function getcheckoutOrderId()
+    public static function getCheckoutOrderId()
     {
         return Registry::getSession()->getVariable(Constants::SESSION_CHECKOUT_ORDER_ID);
-    }
-
-    /**
-     * PayPal uapm checkout order id getter
-     *
-     * @return mixed
-     */
-    public static function getUapmCheckoutOrderId()
-    {
-        return Registry::getSession()->getVariable(Constants::SESSION_UAPMCHECKOUT_ORDER_ID);
-    }
-
-    /**
-     * PayPal uapm checkout order id getter
-     *
-     * @return mixed
-     */
-    public static function getAcdcCheckoutOrderId()
-    {
-        return Registry::getSession()->getVariable(Constants::SESSION_ACDCCHECKOUT_ORDER_ID);
     }
 
     public static function subscriptionIsProcessing(): void
@@ -101,28 +81,6 @@ class PayPalSession
     {
         $isSubscriptionProcessing = Registry::getSession()->getVariable('SessionIsProcessing');
         return empty($isSubscriptionProcessing) ? false : true;
-    }
-
-    public static function setUapmSessionError(string $message): void
-    {
-        Registry::getSession()->setVariable(
-            Constants::SESSION_UAPMCHECKOUT_PAYMENTERROR,
-            $message
-        );
-    }
-
-    public static function getUapmSessionError(): ?string
-    {
-        return Registry::getSession()->getVariable(
-            Constants::SESSION_UAPMCHECKOUT_PAYMENTERROR
-        );
-    }
-
-    public static function unsetUapmSessionError():void
-    {
-        Registry::getSession()->deleteVariable(
-            Constants::SESSION_UAPMCHECKOUT_PAYMENTERROR
-        );
     }
 
     public static function setSessionRedirectLink(string $link): void
