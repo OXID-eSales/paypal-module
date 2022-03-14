@@ -18,10 +18,10 @@ class PayPalSession
      *
      * @param $checkoutOrderId
      */
-    public static function storePayPalOrderId(string $checkoutOrderId, string $target = Constants::SESSION_CHECKOUT_ORDER_ID): void
+    public static function storePayPalOrderId(string $checkoutOrderId): void
     {
         Registry::getSession()->setVariable(
-            $target,
+            Constants::SESSION_CHECKOUT_ORDER_ID,
             $checkoutOrderId
         );
     }
@@ -29,10 +29,10 @@ class PayPalSession
     /**
      * PayPal remove checkoutOrderId
      */
-    public static function unsetPayPalOrderId(string $target = Constants::SESSION_CHECKOUT_ORDER_ID)
+    public static function unsetPayPalOrderId()
     {
         Registry::getSession()->deleteVariable(
-            $target
+            Constants::SESSION_CHECKOUT_ORDER_ID
         );
     }
 
@@ -41,14 +41,14 @@ class PayPalSession
      *
      * @return bool
      */
-    public static function isPayPalOrderActive(): bool
+    public static function isPayPalExpressOrderActive(): bool
     {
-        if (!self::getcheckoutOrderId()) {
+        if (!self::getCheckoutOrderId()) {
             return false;
         }
 
         $paymentId = Registry::getSession()->getBasket()->getPaymentId();
-        if (PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID !== $paymentId) {
+        if (PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID !== $paymentId) {
             return false;
         }
 
@@ -60,29 +60,9 @@ class PayPalSession
      *
      * @return mixed
      */
-    public static function getcheckoutOrderId()
+    public static function getCheckoutOrderId()
     {
         return Registry::getSession()->getVariable(Constants::SESSION_CHECKOUT_ORDER_ID);
-    }
-
-    /**
-     * PayPal uapm checkout order id getter
-     *
-     * @return mixed
-     */
-    public static function getUapmCheckoutOrderId()
-    {
-        return Registry::getSession()->getVariable(Constants::SESSION_UAPMCHECKOUT_ORDER_ID);
-    }
-
-    /**
-     * PayPal uapm checkout order id getter
-     *
-     * @return mixed
-     */
-    public static function getAcdcCheckoutOrderId()
-    {
-        return Registry::getSession()->getVariable(Constants::SESSION_ACDCCHECKOUT_ORDER_ID);
     }
 
     public static function subscriptionIsProcessing(): void
@@ -103,47 +83,25 @@ class PayPalSession
         return empty($isSubscriptionProcessing) ? false : true;
     }
 
-    public static function setUapmSessionError(string $message): void
+    public static function setSessionRedirectLink(string $link): void
     {
         Registry::getSession()->setVariable(
-            Constants::SESSION_UAPMCHECKOUT_PAYMENTERROR,
-            $message
-        );
-    }
-
-    public static function getUapmSessionError(): ?string
-    {
-        return Registry::getSession()->getVariable(
-            Constants::SESSION_UAPMCHECKOUT_PAYMENTERROR
-        );
-    }
-
-    public static function unsetUapmSessionError():void
-    {
-        Registry::getSession()->deleteVariable(
-            Constants::SESSION_UAPMCHECKOUT_PAYMENTERROR
-        );
-    }
-
-    public static function setUapmRedirectLink(string $link): void
-    {
-        Registry::getSession()->setVariable(
-            Constants::SESSION_UAPMCHECKOUT_REDIRECTLINK,
+            Constants::SESSION_REDIRECTLINK,
             $link
         );
     }
 
-    public static function getUapmRedirectLink(): string
+    public static function getSessionRedirectLink(): string
     {
         return (string) Registry::getSession()->getVariable(
-            Constants::SESSION_UAPMCHECKOUT_REDIRECTLINK
+            Constants::SESSION_REDIRECTLINK
         );
     }
 
-    public static function unsetUapmRedirectLink():void
+    public static function unsetSessionRedirectLink():void
     {
         Registry::getSession()->deleteVariable(
-            Constants::SESSION_UAPMCHECKOUT_REDIRECTLINK
+            Constants::SESSION_REDIRECTLINK
         );
     }
 

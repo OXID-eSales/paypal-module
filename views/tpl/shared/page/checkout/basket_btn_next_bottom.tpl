@@ -1,5 +1,5 @@
 [{assign var="config" value=$oViewConf->getPayPalConfig()}]
-[{if $config->isActive() && !$oViewConf->isPayPalSessionActive() && $config->showPayPalBasketButton()}]
+[{if $config->isActive() && !$oViewConf->isPayPalExpressSessionActive() && $config->showPayPalBasketButton()}]
     [{include file="oscpaypalsmartpaymentbuttons.tpl" buttonId="PayPalPayButtonNextCart2" buttonClass="float-right pull-right paypal-button-wrapper small"}]
     <div class="float-right pull-right paypal-button-or">
         [{"OR"|oxmultilangassign|oxupper}]

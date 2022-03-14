@@ -46,7 +46,7 @@ final class OrderTest extends BaseTestCase
         $basket->addToBasket(self::TEST_PRODUCT_ID, 1);
         $basket->setUser($user);
         $basket->setBasketUser($user);
-        $basket->setPayment(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
+        $basket->setPayment(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
         $basket->setShipping('oxidstandard');
         $basket->calculateBasket(true);
 

@@ -79,7 +79,9 @@ class OrderRequestFactory
         ?string $transactionId = null,
         ?string $processingInstruction = null,
         ?string $paymentSource = null,
-        ?string $invoiceId = null
+        ?string $invoiceId = null,
+        ?string $returnUrl = null,
+        ?string $cancelUrl = null
     ): OrderRequest {
         $request = $this->request = new OrderRequest();
         $this->basket = $basket;
@@ -91,8 +93,8 @@ class OrderRequestFactory
 
         $request->purchase_units = $this->getPurchaseUnits($transactionId, $invoiceId);
 
-        if ($userAction) {
-            $request->application_context = $this->getApplicationContext($userAction);
+        if ($userAction || $returnUrl || $cancelUrl) {
+            $request->application_context = $this->getApplicationContext($userAction, $returnUrl, $cancelUrl);
         }
 
         if ($processingInstruction) {
@@ -116,13 +118,15 @@ class OrderRequestFactory
      *
      * @return OrderApplicationContext
      */
-    protected function getApplicationContext(?string $userAction): OrderApplicationContext
+    protected function getApplicationContext(?string $userAction, ?string $returnUrl, ?string $cancelUrl): OrderApplicationContext
     {
         $context = new OrderApplicationContext();
         $context->brand_name = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
         $context->shipping_preference = 'GET_FROM_FILE';
         $context->landing_page = 'LOGIN';
         $context->user_action = $userAction;
+        $context->return_url = $returnUrl;
+        $context->cancel_url = $cancelUrl;
 
         return $context;
     }

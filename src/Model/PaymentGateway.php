@@ -57,6 +57,8 @@ class PaymentGateway extends PaymentGateway_parent
 
         if (PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId()) {
             $success = $this->doExecutePayPalPayment($order);
+        } elseif (PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId()) {
+            $success = $this->doExecutePayPalExpressPayment($order);
         } elseif (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId()) {
             $success = $this->doExecuteAcdcPayPalPayment($order);
         } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId()) {
@@ -74,7 +76,32 @@ class PaymentGateway extends PaymentGateway_parent
 
         $success = false;
 
-        if ($checkoutOrderId = PayPalSession::getcheckoutOrderId()) {
+        if ($checkoutOrderId = PayPalSession::getCheckoutOrderId()) {
+
+            // Capture Order
+            try {
+                $paymentService->doCapturePayPalOrder($order, $checkoutOrderId);
+                $success = true;
+            } catch (Exception $exception) {
+                Registry::getLogger()->error("Error on order capture call.", [$exception]);
+                $success = false;
+            }
+
+            // destroy PayPal-Session
+            PayPalSession::storePayPalOrderId('');
+        }
+
+        return $success;
+    }
+
+    protected function doExecutePayPalExpressPayment(EshopModelOrder $order): bool
+    {
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+
+        $success = false;
+
+        if ($checkoutOrderId = PayPalSession::getCheckoutOrderId()) {
 
             // Update Order
             try {
@@ -121,7 +148,7 @@ class PaymentGateway extends PaymentGateway_parent
 
         $success = false;
 
-        if ($checkoutOrderId = PayPalSession::getAcdcCheckoutOrderId()) {
+        if ($checkoutOrderId = PayPalSession::getCheckoutOrderId()) {
             // Capture Order
             try {
                 $paymentService->doCapturePayPalOrder($order, $checkoutOrderId);
@@ -132,8 +159,6 @@ class PaymentGateway extends PaymentGateway_parent
 
             // destroy PayPal-Session
             PayPalSession::unsetPayPalOrderId();
-            PayPalSession::unsetPayPalOrderId(Constants::SESSION_UAPMCHECKOUT_ORDER_ID);
-            PayPalSession::unsetPayPalOrderId(Constants::SESSION_ACDCCHECKOUT_ORDER_ID);
         }
 
         return $success;

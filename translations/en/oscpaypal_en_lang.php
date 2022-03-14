@@ -8,10 +8,10 @@
 declare(strict_types=1);
 
 $aLang = [
-    'charset'                                      => 'UTF-8',
+    'charset'                                     => 'UTF-8',
     'OSC_PAYPAL_SUBSCRIBE'                        => 'PayPal Subscriptions',
     'OSC_PAYPAL_DESCRIPTION'                      => 'Payment at %s',
-    'OSC_PAYPAL_PAY'                              => 'PayPal',
+    'OSC_PAYPAL_PAY_EXPRESS'                      => 'PayPal Express',
     'OSC_PAYPAL_PAY_PROCESSED'                    => 'Your payment will be processed by PayPal Pay.',
     'OSC_PAYPAL_PAY_UNLINK'                       => 'unlink',
     'OSC_PAYPAL_SUBSCRIPTION'                     => 'PayPal Subscription',

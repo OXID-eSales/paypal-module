@@ -30,7 +30,7 @@ class PaymentController extends PaymentController_parent
             $paymentList = [];
 
             foreach ($paymentListRaw as $key => $payment) {
-                if (strpos($key, 'oscpaypal_') !== false) {
+                if (strpos($key, 'oscpaypal') !== false) {
                     continue;
                 }
                 $paymentList[$key] = $payment;

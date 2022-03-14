@@ -47,7 +47,7 @@ class Order extends Order_parent
      *
      * @var int
      */
-    const ORDER_STATE_UAPMINPROGRESS = 500;
+    const ORDER_STATE_SESSIONPAYMENT_INPROGRESS = 500;
 
     /**
      * ACDC payment in progress
@@ -55,7 +55,7 @@ class Order extends Order_parent
      * @var int
      */
     const ORDER_STATE_ACDCINPROGRESS = 700;
-    
+
     /**
      * Error during payment execution
      *
@@ -164,15 +164,21 @@ class Order extends Order_parent
     {
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
-        //catch uapm PayPal payments here
-        if (PayPalDefinitions::isUAPMPayment($paymentService->getSessionPaymentId())) {
+        $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($paymentService->getSessionPaymentId());
+        $isPayPalStandard = (string) $paymentService->getSessionPaymentId() === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
+
+        //catch UAPM & standard PayPal payments here
+        if ($isPayPalUAPM || $isPayPalStandard) {
             try {
                 /** @var EshopModelBasket $basket */
                 $basket = Registry::getSession()->getBasket();
-                $uapmGoNext = $paymentService->doExecuteUAPMPayment($this, $basket);
-                PayPalSession::setUapmRedirectLink($uapmGoNext);
+                $redirectLink =
+                    $isPayPalUAPM ?
+                        $paymentService->doExecuteUAPMPayment($this, $basket) :
+                        $paymentService->doExecuteStandardPayment($this, $basket);
+                PayPalSession::setSessionRedirectLink($redirectLink);
 
-                return self::ORDER_STATE_UAPMINPROGRESS;
+                return self::ORDER_STATE_SESSIONPAYMENT_INPROGRESS;
             } catch (\Exception $exception) {
                 $this->delete();
                 Registry::getLogger()->error($exception->getMessage(), [$exception]);
