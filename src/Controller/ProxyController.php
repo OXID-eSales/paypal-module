@@ -315,17 +315,6 @@ class ProxyController extends FrontendController
 
     protected function getPayPalPartnerAttributionId(): string
     {
-        $buttonPosition = (string) Registry::getRequest()->getRequestEscapedParameter('pos');
-        switch ($buttonPosition) {
-            case 'PayPalButtonProductMain':
-            case 'PayPalPayButtonNextCart2':
-                $payPalPartnerAttributionId = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_EXPRESS;
-                break;
-            case 'PayPalButtonPaymentPage':
-            default:
-                $payPalPartnerAttributionId = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
-                break;
-        };
-        return $payPalPartnerAttributionId;
+        return Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_EXPRESS;
     }
 }
