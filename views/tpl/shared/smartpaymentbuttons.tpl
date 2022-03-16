@@ -1,10 +1,10 @@
 <div id="overlay"><div class="loader"></div></div>
 [{if $subscriptionPlans}]
     [{if $oxcmp_user}]
-        [{include file="oscpaypalsubscriptionbuttons.tpl" buttonId=$buttonId aid=$aid}]
+        [{include file="modules/osc/paypal/subscriptionbuttons.tpl" buttonId=$buttonId aid=$aid}]
     [{else}]
         [{oxmultilang ident="OSC_PAYPAL_SUBSCRIPTION_NEEDSUSER"}]
     [{/if}]
 [{else}]
-    [{include file="oscpaypalpaymentbuttons.tpl" buttonId=$buttonId aid=$aid}]
+    [{include file="modules/osc/paypal/paymentbuttons.tpl" buttonId=$buttonId aid=$aid}]
 [{/if}]

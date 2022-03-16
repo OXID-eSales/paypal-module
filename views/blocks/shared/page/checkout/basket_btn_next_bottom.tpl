@@ -1,2 +1,2 @@
-[{include file='tpl/page/checkout/basket_btn_next_bottom.tpl'}]
+[{include file='modules/osc/paypal/basket_btn_next_bottom.tpl'}]
 [{$smarty.block.parent}]

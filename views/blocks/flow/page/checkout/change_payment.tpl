@@ -1,2 +1,2 @@
-[{include file='tpl/flow/page/checkout/change_payment.tpl'}]
+[{include file='modules/osc/paypal/change_payment_flow.tpl'}]
 [{$smarty.block.parent}]

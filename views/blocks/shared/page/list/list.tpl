@@ -6,5 +6,5 @@
     [{/if}]
 
     [{oxstyle include=$oViewConf->getModuleUrl('osc_paypal','out/src/css/paypal_installment.css')}]
-    [{include file="tpl/installment_banners.tpl" amount=$paypalInstallmentPrice selector=$oViewConf->getPayPalBannerCategoryPageSelector()}]
+    [{include file="modules/osc/paypal/installment_banners.tpl" amount=$paypalInstallmentPrice selector=$oViewConf->getPayPalBannerCategoryPageSelector()}]
 [{/if}]

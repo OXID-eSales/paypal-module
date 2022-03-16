@@ -1,5 +1,5 @@
 [{if $sPaymentID == "oscpaypal_express"}]
-    [{include file='tpl/page/checkout/select_payment.tpl'}]
+    [{include file='modules/osc/paypal/select_payment.tpl'}]
 [{else}]
     [{$smarty.block.parent}]
 [{/if}]

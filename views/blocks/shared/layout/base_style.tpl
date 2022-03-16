@@ -1,3 +1,3 @@
 [{$smarty.block.parent}]
-[{include file='tpl/layout/base_style.tpl'}]
+[{include file='modules/osc/paypal/base_style.tpl'}]
 

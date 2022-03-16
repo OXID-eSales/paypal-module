@@ -107,59 +107,64 @@ $aModule = [
         // 'oscpaypaldisputedetails' => DisputeDetailsController::class
     ],
     'templates' => [
+        // Admin: Config
         'oscpaypalconfig.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalconfig.tpl',
         'oscpaypalconfig_popup.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalconfig_popup.tpl',
-        'oscpaypaldisputedetails.tpl' => 'osc/paypal/views/admin/tpl/oscpaypaldisputedetails.tpl',
-        'oscpaypaldisputes.tpl' => 'osc/paypal/views/admin/tpl/oscpaypaldisputes.tpl',
-        'oscpaypalorder.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalorder.tpl',
-        'oscpaypalbillingplan.tpl' => 'osc/paypal/views/admin/tpl/inc/oscpaypalbillingplan.tpl',
-        'oscpaypalsubscriptionform.tpl' => 'osc/paypal/views/admin/tpl/inc/oscpaypalsubscriptionform.tpl',
-        'oscpaypalbillingplandata.tpl' => 'osc/paypal/views/admin/tpl/inc/oscpaypalbillingplandata.tpl',
-        'oscpaypallistpagination.tpl' => 'osc/paypal/views/admin/tpl/inc/oscpaypallistpagination.tpl',
-        'oscpaypalsubscriptions.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalsubscriptions.tpl',
-        'oscpaypaltransactions.tpl' => 'osc/paypal/views/admin/tpl/oscpaypaltransactions.tpl',
-        'oscpaypalbalances.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalbalances.tpl',
-        'oscpaypalsubscriptiontransactions.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalsubscriptiontransactions.tpl',
-        'oscpaypalsubscriptiondetails.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalsubscriptiondetails.tpl',
-        'oscpaypalpartsubscriptiondetails.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalpartsubscriptiondetails.tpl',
-        'oscpaypalsubscribe.tpl'    => 'osc/paypal/views/admin/tpl/oscpaypalsubscribe.tpl',
-        'oscpaypalacdcbuttons.tpl' => 'osc/paypal/views/includes/oscpaypalacdcbuttons.tpl',
-        'oscpaypalsmartpaymentbuttons.tpl' => 'osc/paypal/views/includes/oscpaypalsmartpaymentbuttons.tpl',
-        'oscpaypalpaymentbuttons.tpl' => 'osc/paypal/views/includes/oscpaypalpaymentbuttons.tpl',
-        'oscpaypalsubscriptionbuttons.tpl' => 'osc/paypal/views/includes/oscpaypalsubscriptionbuttons.tpl',
 
-        'modules/osc/paypal/oscpaypalacdc_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/oscpaypalacdc.tpl',
-        'modules/osc/paypal/oscpaypalacdc_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/oscpaypalacdc.tpl',
-        'modules/osc/paypal/oscpaypalpui_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/oscpaypalpui.tpl',
-        'modules/osc/paypal/oscpaypalpui_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/oscpaypalpui.tpl',
-        'modules/osc/paypal/paypal_shipping_and_payment_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/paypal_shipping_and_payment.tpl',
-        'modules/osc/paypal/paypal_shipping_and_payment_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/paypal_shipping_and_payment.tpl',
+        // Admin: Subscriptions
+        //TODO: for the first release we start without PayPal Subscriptions
+        // 'oscpaypaldisputedetails.tpl' => 'osc/paypal/views/admin/tpl/oscpaypaldisputedetails.tpl',
+        // 'oscpaypaldisputes.tpl' => 'osc/paypal/views/admin/tpl/oscpaypaldisputes.tpl',
+        // 'oscpaypalorder.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalorder.tpl',
+        // 'oscpaypalbillingplan.tpl' => 'osc/paypal/views/admin/tpl/inc/oscpaypalbillingplan.tpl',
+        // 'oscpaypalsubscriptionform.tpl' => 'osc/paypal/views/admin/tpl/inc/oscpaypalsubscriptionform.tpl',
+        // 'oscpaypalbillingplandata.tpl' => 'osc/paypal/views/admin/tpl/inc/oscpaypalbillingplandata.tpl',
+        // 'oscpaypallistpagination.tpl' => 'osc/paypal/views/admin/tpl/inc/oscpaypallistpagination.tpl',
+        // 'oscpaypalsubscriptions.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalsubscriptions.tpl',
+        // 'oscpaypaltransactions.tpl' => 'osc/paypal/views/admin/tpl/oscpaypaltransactions.tpl',
+        // 'oscpaypalbalances.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalbalances.tpl',
+        // 'oscpaypalsubscriptiontransactions.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalsubscriptiontransactions.tpl',
+        // 'oscpaypalsubscriptiondetails.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalsubscriptiondetails.tpl',
+        // 'oscpaypalpartsubscriptiondetails.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalpartsubscriptiondetails.tpl',
+        // 'oscpaypalsubscribe.tpl'    => 'osc/paypal/views/admin/tpl/oscpaypalsubscribe.tpl',
+
+        'modules/osc/paypal/smartpaymentbuttons.tpl' => 'osc/paypal/views/tpl/shared/smartpaymentbuttons.tpl',
+        'modules/osc/paypal/paymentbuttons.tpl' => 'osc/paypal/views/tpl/shared/paymentbuttons.tpl',
+        'modules/osc/paypal/subscriptionbuttons.tpl' => 'osc/paypal/views/tpl/shared/subscriptionbuttons.tpl',
+
+        'modules/osc/paypal/acdc_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/acdc.tpl',
+        'modules/osc/paypal/acdc_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/acdc.tpl',
+        'modules/osc/paypal/pui_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/pui.tpl',
+        'modules/osc/paypal/pui_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/pui.tpl',
+        'modules/osc/paypal/shipping_and_payment_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/shipping_and_payment.tpl',
+        'modules/osc/paypal/shipping_and_payment_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/shipping_and_payment.tpl',
         'modules/osc/paypal/checkout_order_btn_submit_bottom_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/checkout_order_btn_submit_bottom.tpl',
         'modules/osc/paypal/checkout_order_btn_submit_bottom_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/checkout_order_btn_submit_bottom.tpl',
 
         // PAYPAL-486 Register templates for overloading here;
         // use theme name in key when theme-specific. Shared templates don't receive a theme-specific key.
-        'tpl/layout/base_js.tpl' => 'osc/paypal/views/tpl/shared/layout/base_js.tpl',
-        'tpl/layout/base_style.tpl' => 'osc/paypal/views/tpl/shared/layout/base_style.tpl',
-        'tpl/page/checkout/basket_btn_next_bottom.tpl' =>
+        'modules/osc/paypal/base_js.tpl' => 'osc/paypal/views/tpl/shared/layout/base_js.tpl',
+        'modules/osc/paypal/base_style.tpl' => 'osc/paypal/views/tpl/shared/layout/base_style.tpl',
+        'modules/osc/paypal/basket_btn_next_bottom.tpl' =>
             'osc/paypal/views/tpl/shared/page/checkout/basket_btn_next_bottom.tpl',
-        'tpl/page/checkout/select_payment.tpl' => 'osc/paypal/views/tpl/shared/page/checkout/select_payment.tpl',
-        'tpl/page/details/inc/details_productmain_tobasket.tpl' =>
+        'modules/osc/paypal/select_payment.tpl' => 'osc/paypal/views/tpl/shared/page/checkout/select_payment.tpl',
+        'modules/osc/paypal/details_productmain_tobasket.tpl' =>
             'osc/paypal/views/tpl/shared/page/details/inc/details_productmain_tobasket.tpl',
-        'tpl/page/checkout/inc/checkout_steps_main.tpl' =>
+        'modules/osc/paypal/checkout_steps_main.tpl' =>
             'osc/paypal/views/tpl/shared/page/checkout/inc/checkout_steps_main.tpl',
         // PAYPAL-486 Theme-specific
-        'tpl/flow/page/checkout/change_payment.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/change_payment.tpl',
-        'tpl/wave/page/checkout/change_payment.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/change_payment.tpl',
+        'modules/osc/paypal/change_payment_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/change_payment.tpl',
+        'modules/osc/paypal/change_payment_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/change_payment.tpl',
 
         // PSPAYPAL-491 Installment banners
-        'tpl/installment_banners.tpl' => 'osc/paypal/views/tpl/shared/installment_banners.tpl',
+        'modules/osc/paypal/installment_banners.tpl' => 'osc/paypal/views/tpl/shared/installment_banners.tpl',
 
         // PSPAYPAL-483/PSPAYPAL-484 Subscription basics
-        'tpl/page/account/order_and_subscription_overview.tpl' =>
-            'osc/paypal/views/tpl/shared/page/account/order_and_subscription_overview.tpl',
-        'tpl/page/account/order_and_partsubscription_overview.tpl' =>
-            'osc/paypal/views/tpl/shared/page/account/order_and_partsubscription_overview.tpl',
+        //TODO: for the first release we start without PayPal Subscriptions
+        // 'modules/osc/paypal/order_and_subscription_overview.tpl' =>
+        //     'osc/paypal/views/tpl/shared/page/account/order_and_subscription_overview.tpl',
+        // 'modules/osc/paypal/order_and_partsubscription_overview.tpl' =>
+        //     'osc/paypal/views/tpl/shared/page/account/order_and_partsubscription_overview.tpl',
     ],
     'events' => [
         'onActivate' => '\OxidSolutionCatalysts\PayPal\Core\Events\Events::onActivate',
