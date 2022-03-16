@@ -124,9 +124,15 @@ class OrderRequestFactory
         $context->brand_name = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
         $context->shipping_preference = 'GET_FROM_FILE';
         $context->landing_page = 'LOGIN';
-        $context->user_action = $userAction;
-        $context->return_url = $returnUrl;
-        $context->cancel_url = $cancelUrl;
+        if ($userAction) {
+            $context->user_action = $userAction;
+        }
+        if ($returnUrl) {
+            $context->return_url = $returnUrl;
+        }
+        if ($cancelUrl) {
+            $context->cancel_url = $cancelUrl;
+        }
 
         return $context;
     }

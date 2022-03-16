@@ -78,8 +78,8 @@ class Payment
         string $payPalClientMetadataId = '',
         string $payPalRequestId = '',
         string $payPalPartnerAttributionId = '',
-        string $returnUrl,
-        string $cancelUrl
+        string $returnUrl = '',
+        string $cancelUrl = ''
     #): ?ApiModelOrder
     ) //TODO return value
     {
