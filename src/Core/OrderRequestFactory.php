@@ -19,7 +19,6 @@ use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
@@ -28,11 +27,9 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderApplicationContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PhoneWithType;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnit;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
-use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
 use OxidSolutionCatalysts\PayPalApi\Pui\ExperienceContext;
 use OxidSolutionCatalysts\PayPalApi\Pui\PuiPaymentSource;
@@ -81,7 +78,8 @@ class OrderRequestFactory
         ?string $paymentSource = null,
         ?string $invoiceId = null,
         ?string $returnUrl = null,
-        ?string $cancelUrl = null
+        ?string $cancelUrl = null,
+        bool $withArticles = true
     ): OrderRequest {
         $request = $this->request = new OrderRequest();
         $this->basket = $basket;
@@ -91,7 +89,7 @@ class OrderRequestFactory
             $request->payer = $this->getPayer();
         }
 
-        $request->purchase_units = $this->getPurchaseUnits($transactionId, $invoiceId);
+        $request->purchase_units = $this->getPurchaseUnits($transactionId, $invoiceId, $withArticles);
 
         if ($userAction || $returnUrl || $cancelUrl) {
             $request->application_context = $this->getApplicationContext($userAction, $returnUrl, $cancelUrl);
@@ -140,7 +138,11 @@ class OrderRequestFactory
     /**
      * @return PurchaseUnit[]
      */
-    protected function getPurchaseUnits(?string $transactionId, ?string $invoiceId): array
+    protected function getPurchaseUnits(
+        ?string $transactionId,
+        ?string $invoiceId,
+        bool $withArticles = true
+    ): array
     {
         $purchaseUnit = new PurchaseUnitRequest();
         $shopName = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
@@ -154,14 +156,14 @@ class OrderRequestFactory
         $purchaseUnit->amount = $this->getAmount();
         $purchaseUnit->reference_id = Constants::PAYPAL_ORDER_REFERENCE_ID;
 
-        // PayPal cannot fully patch the items in the shopping cart.
+        // If it is planned to patch this PayPal order in the further course,
+        // then no items may be given, since PayPal cannot patch any items at the moment
         // At the moment only the amount and the title of the article
         // are relevant. However, no inventory.
-        // So we MUST ignore the transfer of detailed basket-informations to PayPal
-        //foreach ($this->basket->getContents() as $basketItem) {
-        //    $this->getPurchaseUnitsPatch($basketItem, $nettoPrices, $currency);
-        //}
-        // $purchaseUnit->items = $this->getItems();
+        // in this case get the purchase units without articles
+        if ($withArticles) {
+            $purchaseUnit->items = $this->getItems();
+        }
 
         if ($this->basket->getBasketUser()) {
             $purchaseUnit->shipping = $this->getShippingAddress();
@@ -189,14 +191,12 @@ class OrderRequestFactory
         $breakdown = $amount->breakdown = new AmountBreakdown();
 
         //Item total cost
-        $itemTotal = $basket->getSumOfCostOfAllItemsPayPalBasket();
+        $itemTotal = $basket->getPayPalProductNetto();
         $breakdown->item_total = PriceToMoney::convert($itemTotal, $currency);
 
-        if ($basket->isCalculationModeNetto()) {
-            //Item tax sum
-            $tax = $basket->getPayPalProductVat();
-            $breakdown->tax_total = PriceToMoney::convert($tax, $currency);
-        }
+        //Item tax sum
+        $tax = $basket->getPayPalProductVatValue();
+        $breakdown->tax_total = PriceToMoney::convert($tax, $currency);
 
         if ($basket->getDeliveryCost()) {
             //Shipping cost
@@ -221,57 +221,64 @@ class OrderRequestFactory
         $currency = $basket->getBasketCurrency();
         $language = Registry::getLang();
         $items = [];
-        $nettoPrices = $basket->isCalculationModeNetto();
 
         /** @var BasketItem $basketItem */
         foreach ($basket->getContents() as $basketItem) {
             $item = new Item();
             $item->name = $basketItem->getTitle();
             $itemUnitPrice = $basketItem->getUnitPrice();
-            $item->unit_amount = PriceToMoney::convert($itemUnitPrice->getPrice(), $currency);
 
-            if ($nettoPrices) {
-                $item->tax = PriceToMoney::convert($itemUnitPrice->getVatValue(), $currency);
-            }
+            $item->unit_amount = PriceToMoney::convert($itemUnitPrice->getNettoPrice(), $currency);
+            $item->tax = PriceToMoney::convert($itemUnitPrice->getVatValue(), $currency);
+            $item->tax_rate = $itemUnitPrice->getVat();
+            // TODO: There are usually still categories for digital products.
+            // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
+            $item->category = 'PHYSICAL_GOODS';
 
             $item->quantity = $basketItem->getAmount();
             $items[] = $item;
         }
 
-        if ($wrapping = $basket->getPayPalWrappingCosts()) {
+        if ($wrapping = $basket->getPayPalCheckoutWrappingCosts()) {
             $item = new Item();
             $item->name = $language->translateString('GIFT_WRAPPING');
-            $item->unit_amount = PriceToMoney::convert($wrapping, $currency);
 
-            if ($nettoPrices) {
-                $item->tax = PriceToMoney::convert($basket->getPayPalWrappingVat(), $currency);
-            }
+            $item->unit_amount = PriceToMoney::convert($wrapping, $currency);
+            $item->tax = PriceToMoney::convert($basket->getPayPalCheckoutWrappingVatValue(), $currency);
+            $item->tax_rate = $basket->getPayPalCheckoutWrappingVat();
+            // TODO: There are usually still categories for digital products.
+            // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
+            $item->category = 'PHYSICAL_GOODS';
 
             $item->quantity = 1;
             $items[] = $item;
         }
 
-        if ($giftCard = $basket->getPayPalGiftCardCosts()) {
+        if ($giftCard = $basket->getPayPalCheckoutGiftCardCosts()) {
             $item = new Item();
             $item->name = $language->translateString('GREETING_CARD');
-            $item->unit_amount = PriceToMoney::convert($giftCard, $currency);
 
-            if ($nettoPrices) {
-                $item->tax = PriceToMoney::convert($basket->getPayPalGiftCardVat(), $currency);
-            }
+            $item->unit_amount = PriceToMoney::convert($giftCard, $currency);
+            $item->tax = PriceToMoney::convert($basket->getPayPalCheckoutGiftCardVatValue(), $currency);
+            $item->tax_rate = $basket->getPayPalCheckoutGiftCardVat();
+            // TODO: There are usually still categories for digital products.
+            // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
+            $item->category = 'PHYSICAL_GOODS';
 
             $item->quantity = 1;
             $items[] = $item;
         }
 
-        if (($payment = $basket->getPayPalPaymentCosts()) > 0) {
+        if (($payment = $basket->getPayPalCheckoutPaymentCosts()) > 0) {
             $item = new Item();
             $item->name = $language->translateString('PAYMENT_METHOD');
-            $item->unit_amount = PriceToMoney::convert($payment, $currency);
 
-            if ($nettoPrices) {
-                $item->tax = PriceToMoney::convert($basket->getPayPalPayCostVat(), $currency);
-            }
+            $item->unit_amount = PriceToMoney::convert($payment, $currency);
+            $item->tax = PriceToMoney::convert($basket->getPayPalCheckoutPaymentVatValue(), $currency);
+            $item->tax_rate = $basket->getPayPalCheckoutPaymentVat();
+            // TODO: There are usually still categories for digital products.
+            // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
+            $item->category = 'PHYSICAL_GOODS';
 
             $item->quantity = 1;
             $items[] = $item;

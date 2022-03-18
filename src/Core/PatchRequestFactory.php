@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
-use DateTime;
 use OxidEsales\Eshop\Application\Model\Address;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\BasketItem;
@@ -21,10 +20,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnit;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
-use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
 
 /**
@@ -137,8 +132,9 @@ class PatchRequestFactory
 
         $amount = new AmountWithBreakdown();
         $currency = $this->basket->getBasketCurrency();
+        $priceVatMode = ($this->basket->isCalculationModeNetto() ? 2 : 1);
 
-        $total = PriceToMoney::convert($this->basket->getPrice(), $currency);
+        $total = PriceToMoney::convert($this->basket->getPrice(), $currency, $priceVatMode);
 
         //Total amount
         $amount->value = $total->value;
@@ -148,23 +144,23 @@ class PatchRequestFactory
 
         //Item total cost
         $itemTotal = $this->basket->getSumOfCostOfAllItemsPayPalBasket();
-        $breakdown->item_total = PriceToMoney::convert($itemTotal, $currency);
+        $breakdown->item_total = PriceToMoney::convert($itemTotal, $currency, $priceVatMode);
 
         if ($this->basket->isCalculationModeNetto()) {
             //Item tax sum
-            $tax = $this->basket->getPayPalProductVat();
-            $breakdown->tax_total = PriceToMoney::convert($tax, $currency);
+            $tax = $this->basket->getPayPalProductVatValue();
+            $breakdown->tax_total = PriceToMoney::convert($tax, $currency, $priceVatMode);
         }
 
         if ($this->basket->getDeliveryCost()) {
             //Shipping cost
             $shippingCost = $this->basket->getDeliveryCost();
-            $breakdown->shipping = PriceToMoney::convert($shippingCost, $currency);
+            $breakdown->shipping = PriceToMoney::convert($shippingCost, $currency, $priceVatMode);
         }
 
         if ($discount = $this->basket->getDiscountSumPayPalBasket()) {
             //Discount
-            $breakdown->discount = PriceToMoney::convert($discount, $currency);
+            $breakdown->discount = PriceToMoney::convert($discount, $currency, $priceVatMode);
         }
         $patch->value = $amount;
 
@@ -181,7 +177,7 @@ class PatchRequestFactory
         bool $nettoPrices,
         $currency
     ): void {
-
+        $priceVatMode = ($this->basket->isCalculationModeNetto() ? 2 : 1);
         $patch = new Patch();
         $patch->op = Patch::OP_REPLACE;
         $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/items";
@@ -189,10 +185,10 @@ class PatchRequestFactory
         $item = new Item();
         $item->name = $basketItem->getTitle();
         $itemUnitPrice = $basketItem->getUnitPrice();
-        $item->unit_amount = PriceToMoney::convert($itemUnitPrice->getPrice(), $currency);
+        $item->unit_amount = PriceToMoney::convert($itemUnitPrice->getPrice(), $currency, $priceVatMode);
 
         if ($nettoPrices) {
-            $item->tax = PriceToMoney::convert($itemUnitPrice->getVatValue(), $currency);
+            $item->tax = PriceToMoney::convert($itemUnitPrice->getVatValue(), $currency, $priceVatMode);
         }
         $item->quantity = $basketItem->getAmount();
 

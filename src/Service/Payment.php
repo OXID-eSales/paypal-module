@@ -27,6 +27,7 @@ use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use phpDocumentor\Reflection\Types\Boolean;
 
 class Payment
 {
@@ -74,12 +75,13 @@ class Payment
         string $intent,
         string $userAction = null,
         string $processingInstruction = null,
-        string $paymentSource = '',
+        string $paymentSource = null,
         string $payPalClientMetadataId = '',
         string $payPalRequestId = '',
         string $payPalPartnerAttributionId = '',
-        string $returnUrl = '',
-        string $cancelUrl = ''
+        string $returnUrl = null,
+        string $cancelUrl = null,
+        bool $withArticles = true
     #): ?ApiModelOrder
     ) //TODO return value
     {
@@ -95,7 +97,8 @@ class Payment
             $paymentSource,
             null,
             $returnUrl,
-            $cancelUrl
+            $cancelUrl,
+            $withArticles
         );
 
         $response = [];
@@ -125,7 +128,15 @@ class Payment
         $response = $this->doCreatePayPalOrder(
             $basket,
             OrderRequest::INTENT_CAPTURE,
-            OrderRequestFactory::USER_ACTION_CONTINUE
+            OrderRequestFactory::USER_ACTION_CONTINUE,
+            null,
+            null,
+            '',
+            '',
+            '',
+            null,
+            null,
+            false
         );
 
         $paypalOrderId = $response->id ?: '';
@@ -376,14 +387,14 @@ class Payment
             $result = $this->doCreatePayPalOrder(
                 $basket,
                 OrderRequest::INTENT_CAPTURE,
-                OrderRequestFactory::USER_ACTION_CONTINUE,
+                null,
                 Constants::PAYPAL_PUI_PROCESSING_INSTRUCTIONS,
                 PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME,
                 $payPalClientMetadataId,
                 $order->getId(),
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
-            $payPalOrderId = $result['id'];
+            $payPalOrderId = $result->id;
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on pui order creation call.", [$exception]);
         }
@@ -400,7 +411,7 @@ class Payment
             (string) $order->getId(),
             $payPalOrderId,
             $basket->getPaymentId(),
-            $result['status']
+            $result->status
         );
 
         $order->savePuiInvoiceNr($payPalOrderId);
