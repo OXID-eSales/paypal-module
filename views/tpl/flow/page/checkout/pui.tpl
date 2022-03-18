@@ -43,7 +43,7 @@
                 <select id="pui_required_birthdate_month" class="oxMonth form-control selectpicker" name="pui_required[birthdate][month]" required="" />
                     <option value="" label="-">-</option>
                     [{section name="month" start=1 loop=13}]
-                        <option value="[{$smarty.section.month.index}]" label="[{$smarty.section.month.index}]" [{if $iBirthdayMonth == $smarty.section.month.index}] selected="selected" [{/if}]>
+                        <option value="[{$smarty.section.month.index}]" label="[{oxmultilang ident="MONTH_NAME_"|cat:$smarty.section.month.index}]" [{if $iBirthdayMonth == $smarty.section.month.index}] selected="selected" [{/if}]>
                             [{oxmultilang ident="MONTH_NAME_"|cat:$smarty.section.month.index}]
                         </option>
                     [{/section}]
