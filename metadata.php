@@ -111,11 +111,13 @@ $aModule = [
         'oscpaypalconfig.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalconfig.tpl',
         'oscpaypalconfig_popup.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalconfig_popup.tpl',
 
+        // Admin: Order
+        'oscpaypalorder.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalorder.tpl',
+
         // Admin: Subscriptions
         //TODO: for the first release we start without PayPal Subscriptions
         // 'oscpaypaldisputedetails.tpl' => 'osc/paypal/views/admin/tpl/oscpaypaldisputedetails.tpl',
         // 'oscpaypaldisputes.tpl' => 'osc/paypal/views/admin/tpl/oscpaypaldisputes.tpl',
-        // 'oscpaypalorder.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalorder.tpl',
         // 'oscpaypalbillingplan.tpl' => 'osc/paypal/views/admin/tpl/inc/oscpaypalbillingplan.tpl',
         // 'oscpaypalsubscriptionform.tpl' => 'osc/paypal/views/admin/tpl/inc/oscpaypalsubscriptionform.tpl',
         // 'oscpaypalbillingplandata.tpl' => 'osc/paypal/views/admin/tpl/inc/oscpaypalbillingplandata.tpl',
