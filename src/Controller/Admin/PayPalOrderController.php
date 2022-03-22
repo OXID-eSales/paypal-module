@@ -36,6 +36,11 @@ class PayPalOrderController extends AdminDetailsController
     protected $order;
 
     /**
+     * @var PayPalOrder
+     */
+    protected $payPalOrderHistory;
+
+    /**
      * @inheritDoc
      */
     public function executeFunction($functionName)
@@ -47,11 +52,6 @@ class PayPalOrderController extends AdminDetailsController
             Registry::getLogger()->error($exception);
         }
     }
-
-    /**
-     * @var PayPalOrder
-     */
-    protected $payPalOrderHistory;
 
     /**
      * @return string
@@ -75,7 +75,7 @@ class PayPalOrderController extends AdminDetailsController
             $this->addTplParam('payPalSubscriptionOrder', null);
 
             if ($order->getPayPalOrderIdForOxOrderId()) {
-                $this->addTplParam('payPalOrder', $order->getPayPalOrder());
+                $this->addTplParam('payPalOrder', $this->getPayPalOrder());
                 $this->addTplParam('capture', $order->getOrderPaymentCapture());
             } elseif (
                 $this->isPayPalSubscription($orderId) &&
@@ -110,7 +110,7 @@ class PayPalOrderController extends AdminDetailsController
     public function capture(): void
     {
         $order = $this->getOrder();
-        $paypalOrder =  $order->getPayPalOrder();
+        $paypalOrder =  $this->getPayPalOrder();
         $orderId = $paypalOrder->id;
 
         /** @var ServiceFactory $serviceFactory */
@@ -217,7 +217,7 @@ class PayPalOrderController extends AdminDetailsController
      */
     public function getPayPalTotalOrderSum()
     {
-        return $this->getPayPalOrder()->purchase_units[0]->amount->breakdown->item_total->value;
+        return $this->getPayPalOrder()->purchase_units[0]->amount->value;
     }
 
     /**
