@@ -30,7 +30,10 @@
             }).then(function(data) {
             [{/literal}]
 
-            if (data.id && data.status == "APPROVED") {
+            if (data.status == "ERROR") {
+                location.reload();
+            }
+            else if (data.id && data.status == "APPROVED") {
                 location.replace('[{$sSelfLink|cat:"cl=order"}]');
             }
             [{literal}]

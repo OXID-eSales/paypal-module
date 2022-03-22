@@ -14,6 +14,9 @@ $aLang = [
     'OSC_PAYPAL_PAY_EXPRESS'                      => 'PayPal Express',
     'OSC_PAYPAL_PAY_PROCESSED'                    => 'Your payment will be processed by PayPal Pay.',
     'OSC_PAYPAL_PAY_UNLINK'                       => 'unlink',
+
+    'OSC_PAYPAL_PAY_EXPRESS_ERROR_DELCOUNTRY'    => 'Unfortunately we do not deliver to your desired delivery country. Please select a different delivery address.',
+
     'OSC_PAYPAL_SUBSCRIPTION'                     => 'PayPal Subscription',
     'OSC_PAYPAL_SUBSCRIPTION_SETUP_FEE'           => 'Setup Fee',
     'OSC_PAYPAL_FREQUENCY_DAY'                    => 'Day',

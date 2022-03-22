@@ -19,6 +19,7 @@ use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Application\Model\Payment;
 use OxidEsales\Eshop\Application\Model\PaymentGateway;
+use OxidEsales\Eshop\Core\InputValidator;
 use OxidEsales\Eshop\Core\ShopControl;
 use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Component\UserComponent as PayPalUserComponent;
@@ -41,6 +42,7 @@ use OxidSolutionCatalysts\PayPal\Controller\OrderController as PayPalFrontEndOrd
 use OxidSolutionCatalysts\PayPal\Controller\PaymentController as PayPalPaymentController;
 use OxidSolutionCatalysts\PayPal\Controller\ProxyController;
 use OxidSolutionCatalysts\PayPal\Controller\WebhookController;
+use OxidSolutionCatalysts\PayPal\Core\InputValidator as PayPalInputValidator;
 use OxidSolutionCatalysts\PayPal\Core\ShopControl as PayPalShopControl;
 use OxidSolutionCatalysts\PayPal\Core\ViewConfig as PayPalViewConfig;
 use OxidSolutionCatalysts\PayPal\Model\Basket as PayPalBasket;
@@ -72,6 +74,7 @@ $aModule = [
     'url' => 'https://www.oxid-esales.com',
     'email' => 'info@oxid-esales.com',
     'extend' => [
+        InputValidator::class => PayPalInputValidator::class,
         ShopControl::class => PayPalShopControl::class,
         ViewConfig::class => PayPalViewConfig::class,
         Order::class => PayPalOrder::class,

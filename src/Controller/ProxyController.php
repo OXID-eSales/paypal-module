@@ -122,6 +122,12 @@ class ProxyController extends FrontendController
 
             $this->setPayPalPaymentMethod();
         }
+        // if we have no user, we stop the process
+        else {
+            $response->status = 'ERROR';
+            PayPalSession::unsetPayPalOrderId();
+            Registry::getSession()->getBasket()->setPayment(null);
+        }
         $this->outputJson($response);
     }
 
