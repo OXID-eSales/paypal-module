@@ -1,6 +1,6 @@
 # PayPal Checkout for OXID
 
-PayPal checkout integration for OXID eShop 6.3 and above.
+PayPal checkout integration for OXID eShop 6.2 and above.
 
 ## Documentation
 
@@ -9,7 +9,7 @@ PayPal checkout integration for OXID eShop 6.3 and above.
 
 ## Branch Compatibility
 
-* b-6.3.x module branch is compatible with OXID eShop compilation 6.3
+* b-6.3.x module branch is compatible with OXID eShop compilation 6.2
 
 ## Install
 
