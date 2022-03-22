@@ -30,7 +30,7 @@ class ViewConfig extends ViewConfig_parent
      * @param boolean
      */
     protected $isWaveCompatibleTheme = null;
-    
+
     /**
      * @return bool
      */
@@ -124,7 +124,10 @@ class ViewConfig extends ViewConfig_parent
             $params['components'] = 'messages,buttons';
         }
 
-        $params['enable-funding'] = 'paylater';
+        if ($this->getServiceFromContainer(ModuleSettings::class)->showPayPalPayLaterButton()) {
+            $params['enable-funding'] = 'paylater';
+        }
+
         $params['disable-funding'] = 'sepa,bancontact,blik,eps,giropay,ideal,mercadopago,mybank,p24,sofort,venmo';
 
         if ($this->getServiceFromContainer(ModuleSettings::class)->isAcdcEligibility()) {

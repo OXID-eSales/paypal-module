@@ -139,13 +139,16 @@ $aLang = [
     'OSC_PAYPAL_BUTTON_PLACEMEMT_TITLE'           => 'Button placement settings',
     'OSC_PAYPAL_PRODUCT_DETAILS_BUTTON_PLACEMENT' => 'Product details page',
     'OSC_PAYPAL_BASKET_BUTTON_PLACEMENT'          => 'Basket',
+    'HELP_OSC_PAYPAL_BUTTON_PLACEMEMT'            => 'Toggle the display of PayPal buttons',
+    'OSC_SHOW_PAYPAL_PAYLATER_BUTTON'             => 'Show "Pay later"-Button?',
+    'HELP_OSC_SHOW_PAYPAL_PAYLATER_BUTTON'        => 'In addition to the classic PayPal button, there is a "Pay later"-button that can be displayed below the standard button. If it is activated, the customer has the option of paying for the goods later.',
+
     'OSC_PAYPAL_EXPRESS_LOGIN_TITLE'              => 'Login with PayPal',
     'OSC_PAYPAL_LOGIN_WITH_PAYPAL_EMAIL'          => 'Automatically log in to shop during checkout',
     'HELP_OSC_PAYPAL_EXPRESS_LOGIN'               => 'In case there is already a shop user registered with password to the same mail address as the the PayPal mail,
         it is possible to be autonmatically be logged in to shop when logging in to PayPal. This behavior may not be in the
         security interests of your customers',
 
-    'HELP_OSC_PAYPAL_BUTTON_PLACEMEMT'            => 'Toggle the display of PayPal buttons',
     'HELP_OSC_PAYPAL_CREDENTIALS'                 =>
         'If you already have the API credentials, you can enter them directly.<br>
         If you do not yet have any API data and the input fields are still empty, you can also use the

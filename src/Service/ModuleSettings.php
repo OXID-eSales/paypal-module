@@ -109,6 +109,11 @@ class ModuleSettings
         return (bool) $this->getSettingValue('oscPayPalShowBasketButton');
     }
 
+    public function showPayPalPayLaterButton(): bool
+    {
+        return (bool) $this->getSettingValue('oscPayPalShowPayLaterButton');
+    }
+
     public function showPayPalProductDetailsButton(): bool
     {
         return (bool) $this->getSettingValue('oscPayPalShowProductDetailsButton');

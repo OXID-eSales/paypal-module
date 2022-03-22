@@ -140,13 +140,16 @@ $aLang = [
     'OSC_PAYPAL_BUTTON_PLACEMEMT_TITLE'           => 'Einstellungen für die Buttonplatzierung',
     'OSC_PAYPAL_PRODUCT_DETAILS_BUTTON_PLACEMENT' => 'Produktdetailseite',
     'OSC_PAYPAL_BASKET_BUTTON_PLACEMENT'          => 'Warenkorb',
+    'HELP_OSC_PAYPAL_BUTTON_PLACEMEMT'            => 'Schalten Sie die Anzeige der PayPal-Schaltflächen um',
+    'OSC_SHOW_PAYPAL_PAYLATER_BUTTON'             => '"Später Bezahlen"-Button anzeigen?',
+    'HELP_OSC_SHOW_PAYPAL_PAYLATER_BUTTON'        => 'Neben den klassischen PayPal-Button gibt es ein "Später Bezahlen"-Button, der unter dem Standardbutton angezeigt werden kann. Ist der aktiviert, bekommt der Kunde direkt die Möglichkeit, die Ware später zu zahlen.',
+
     'OSC_PAYPAL_EXPRESS_LOGIN_TITLE'              => 'Login mit PayPal',
     'OSC_PAYPAL_LOGIN_WITH_PAYPAL_EMAIL'          => 'Im Shop beim Kauf automatisch einloggen',
     'HELP_OSC_PAYPAL_EXPRESS_LOGIN'               => 'Wenn die Shop-Kundenkonto-EMail-Adresse gleich der PayPal-EMail-Adresse ist,
         besteht die Möglichkeit, sich durch ein Login bei PayPal auch automatisch im Shop anzumelden. Möglicherweise ist dieses Verhalten nicht im
         Sicherheitsinteresse Ihrer Kunden',
 
-    'HELP_OSC_PAYPAL_BUTTON_PLACEMEMT'            => 'Schalten Sie die Anzeige der PayPal-Schaltflächen um',
     'HELP_OSC_PAYPAL_CREDENTIALS'                 =>
         'Wenn Sie die API-Anmeldeinformationen (Client-ID, Client Passwort, Webhook-ID) bereits vorliegen haben, können Sie sie direkt eingeben.<br>
         Sollten Sie noch keine API-Daten haben und die Eingafelder noch leer sein, können Sie auch den eingeblendeten

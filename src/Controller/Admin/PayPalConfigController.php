@@ -202,7 +202,9 @@ class PayPalConfigController extends AdminController
         if (!isset($conf['oscPayPalShowBasketButton'])) {
             $conf['oscPayPalShowBasketButton'] = 0;
         }
-
+        if (!isset($conf['oscPayPalShowPayLaterButton'])) {
+            $conf['oscPayPalShowPayLaterButton'] = 0;
+        }
         if (!isset($conf['oscPayPalBannersShowAll'])) {
             $conf['oscPayPalBannersShowAll'] = 0;
         }

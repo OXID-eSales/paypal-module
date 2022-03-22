@@ -157,6 +157,7 @@
                     <div class="card-body">
                         <div class="form-group">
                             <div class="controls">
+                                <p><span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_BUTTON_PLACEMEMT"}]</span></p>
                                 <div>
                                     <div class="checkbox">
                                         <label>
@@ -171,7 +172,15 @@
                                         </label>
                                     </div>
                                 </div>
-                                <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_BUTTON_PLACEMEMT"}]</span>
+                                <p><span class="help-block">[{oxmultilang ident="HELP_OSC_SHOW_PAYPAL_PAYLATER_BUTTON"}]</span></p>
+                                <div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="conf[oscPayPalShowPayLaterButton]" [{if $config->showPayPalPayLaterButton()}]checked[{/if}] value="1">
+                                            [{oxmultilang ident="OSC_SHOW_PAYPAL_PAYLATER_BUTTON"}]
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -179,13 +188,13 @@
             </div>
 
             <div class="card">
-                <div class="card-header" id="heading2">
-                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                <div class="card-header" id="heading3">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
                         [{oxmultilang ident="OSC_PAYPAL_EXPRESS_LOGIN_TITLE"}]
                     </h4>
                 </div>
 
-                <div id="collapse2" class="collapse" aria-labelledby="heading2" data-parent="#accordion">
+                <div id="collapse3" class="collapse" aria-labelledby="heading3" data-parent="#accordion">
                     <div class="card-body">
                         <div class="form-group">
                             <div class="controls">
@@ -253,12 +262,12 @@
             </div>
             *}]
             <div class="card">
-                <div class="card-header" id="heading4">
+                <div class="card-header" id="heading5">
                     <h4 class="collapsed" data-toggle="collapse" data-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
                         [{oxmultilang ident="OSC_PAYPAL_BANNER_CREDENTIALS"}]
                     </h4>
                 </div>
-                <div id="collapse5" class="collapse" aria-labelledby="heading4" data-parent="#accordion">
+                <div id="collapse5" class="collapse" aria-labelledby="heading5" data-parent="#accordion">
                     <div class="card-body">
                         <p>[{oxmultilang ident="OSC_PAYPAL_BANNER_INFOTEXT"}]</p>
                         <div class="form-group">

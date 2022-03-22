@@ -367,6 +367,12 @@ $aModule = [
             'group' => null
         ],
         [
+            'name' => 'oscPayPalShowPayLaterButton',
+            'type' => 'bool',
+            'value' => true,
+            'group' => null
+        ],
+        [
             'name' => 'oscPayPalAutoBillOutstanding',
             'type' => 'bool',
             'value' => true,
