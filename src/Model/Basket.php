@@ -224,10 +224,21 @@ class Basket extends Basket_parent
      * collect the netto-sum of all articles in Basket
      * and returns sum of all costs.
      *
+     * Normally we could use the method: $this->getProductsPrice()->getSum(true)
+     * to calculate the total net amount. However, since Paypal calculates the
+     * sum of the items on the basis of the rounded net prices, rounding errors
+     * can occur in the total. Therefore we calculate the sum over the following
+     * iteration.
+     *
      * @return double
      */
     public function getPayPalProductNetto() {
-        return $this->getProductsPrice()->getSum(true);
+        $result = 0;
+        foreach ($this->getContents() as $basketItem) {
+            $itemUnitPrice = $basketItem->getUnitPrice();
+            $result += $itemUnitPrice->getNettoPrice() * $basketItem->getAmount();
+        }
+        return $result;
     }
 
     /**
@@ -253,14 +264,22 @@ class Basket extends Basket_parent
     /**
      * Return products VAT.
      *
+     * Normally we could use the method: $this->getProductVats(false)
+     * to calculate the total net amount. However, since Paypal calculates the
+     * sum of the items on the basis of the rounded net prices, rounding errors
+     * can occur in the total. Therefore we calculate the sum over the following
+     * iteration.
+     *
      * @return double
      */
     public function getPayPalProductVatValue()
     {
-        $productVatList = $this->getProductVats(false);
-        $productVatSum = array_sum($productVatList);
-
-        return $productVatSum;
+        $result = 0;
+        foreach ($this->getContents() as $basketItem) {
+            $itemUnitPrice = $basketItem->getUnitPrice();
+            $result += $itemUnitPrice->getVatValue() * $basketItem->getAmount();
+        }
+        return $result;
     }
 
     /**
