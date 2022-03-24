@@ -245,15 +245,6 @@ class PayPalOrderController extends AdminDetailsController
     }
 
     /**
-     * Template getter getPayPalVoidedAmount
-     */
-    public function getPayPalVoidedAmount()
-    {
-        //TODO: what's this?
-        return 'toBeDone';
-    }
-
-    /**
      * Template getter getPayPalAuthorizationId
      */
     public function getPayPalAuthorizationId()

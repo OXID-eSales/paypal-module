@@ -18,55 +18,49 @@
     <tbody>
     <tr>
     <td class="edittext" valign="top">
-        <table class="paypalActionsTable" width="98%">
+        <table class="paypalActionsTable">
             <tr>
-                <td class="edittext">[{oxmultilang ident="OSC_PAYPAL_SHOP_PAYMENT_STATUS"}]:</td>
-                <td class="edittext">
+                <td class="edittext">[{oxmultilang ident="OSC_PAYPAL_SHOP_PAYMENT_STATUS" suffix="COLON"}]</td>
+                <td class="edittext" align="right">
                     <b>[{oxmultilang ident='OSC_PAYPAL_STATUS_'|cat:$oView->getPayPalPaymentStatus()}]</b>
                 </td>
             </tr>
             <tr>
-                <td class="edittext">[{oxmultilang ident="OSC_PAYPAL_ORDER_PRICE"}]:</td>
-                <td class="edittext">
+                <td class="edittext">[{oxmultilang ident="OSC_PAYPAL_ORDER_PRICE" suffix="COLON"}]</td>
+                <td class="edittext" align="right">
                     <b>[{$oView->formatPrice($oView->getPayPalTotalOrderSum())}] [{$currency}]</b>
                 </td>
             </tr>
             <tr>
-                <td class="edittext">[{oxmultilang ident="OSC_PAYPAL_CAPTURED_AMOUNT"}]:</td>
-                <td class="edittext">
+                <td class="edittext">[{oxmultilang ident="OSC_PAYPAL_CAPTURED_AMOUNT" suffix="COLON"}]</td>
+                <td class="edittext" align="right">
                     <b>[{$oView->formatPrice($oView->getPayPalCapturedAmount())}] [{$currency}]</b>
                 </td>
             </tr>
             <tr>
-                <td class="edittext">[{oxmultilang ident="OSC_PAYPAL_REFUNDED_AMOUNT"}]:</td>
-                <td class="edittext">
+                <td class="edittext">[{oxmultilang ident="OSC_PAYPAL_REFUNDED_AMOUNT" suffix="COLON"}]</td>
+                <td class="edittext" align="right">
                     <b>[{$oView->formatPrice($oView->getPayPalRefundedAmount())}] [{$currency}]</b>
                 </td>
             </tr>
             <tr>
-                <td class="edittext">[{oxmultilang ident="OSC_PAYPAL_CAPTURED_NET"}]:</td>
-                <td class="edittext">
+                <td class="edittext">[{oxmultilang ident="OSC_PAYPAL_CAPTURED_NET" suffix="COLON"}]</td>
+                <td class="edittext" align="right">
                     <b>[{$oView->formatPrice($oView->getPayPalRemainingRefundAmount())}] [{$currency}]</b>
                 </td>
             </tr>
-            <tr>
-                <td class="edittext">[{oxmultilang ident="OSC_PAYPAL_VOIDED_AMOUNT"}]:</td>
-                <td class="edittext">
-                    <b>[{$oView->formatPrice($oView->getPayPalVoidedAmount())}] [{$currency}]</b>
-                </td>
-            </tr>
-
-
-            <tr>
-                <td class="edittext">[{oxmultilang ident="OSC_PAYPAL_AUTHORIZATIONID"}]:</td>
-                <td class="edittext">
-                    <b>[{$oView->getPayPalAuthorizationId()}]</b>
-                </td>
-            </tr>
+            [{if $oView->getPayPalAuthorizationId()}]
+                <tr>
+                    <td class="edittext">[{oxmultilang ident="OSC_PAYPAL_AUTHORIZATIONID" suffix="COLON"}]</td>
+                    <td class="edittext">
+                        <b>[{$oView->getPayPalAuthorizationId()}]</b>
+                    </td>
+                </tr>
+            [{/if}]
         </table>
 
         </br>
-        <b>[{oxmultilang ident="OSC_PAYPAL_PAYMENT_HISTORY"}]: </b>
+        <b>[{oxmultilang ident="OSC_PAYPAL_PAYMENT_HISTORY" suffix="COLON"}]</b>
         <table id="historyTable">
             <colgroup>
                 <col width="20%">
@@ -103,11 +97,9 @@
             </tr>
             [{/foreach}]
         </table>
-        <p><b>[{oxmultilang ident="OSC_PAYPAL_HISTORY_NOTICE"}]: </b>[{oxmultilang ident="OSC_PAYPAL_HISTORY_NOTICE_TEXT"}]
-        </p>
     </td>
     <td class="edittext" valign="top" align="left">
-        <b>[{oxmultilang ident="OSC_PAYPAL_ORDER_PRODUCTS"}]: </b>
+        <p><b>[{oxmultilang ident="OSC_PAYPAL_ORDER_PRODUCTS" suffix="COLON"}]</b></p>
         <table cellspacing="0" cellpadding="0" border="0" width="98%">
             <tr>
                 <td class="listheader first">[{oxmultilang ident="GENERAL_SUM"}]</td>
@@ -162,48 +154,52 @@
     </tr>
     </tbody>
     </table>
-
-    [{oxmultilang ident="OSC_PAYPAL_ACTIONS"}]: <br>
-    <form action="[{$oViewConf->getSelfLink()}]" method="post">
-        [{$oViewConf->getHiddenSid()}]
-        <input type="hidden" name="fnc" value="capture">
-        <input type="hidden" name="cl" value="oscpaypalorder">
-        <input type="hidden" name="oxid" value="[{$oxid}]">
-        <input type="hidden" name="language" value="[{$actlang}]">
-        <input type="submit" value="[{oxmultilang ident="OSC_PAYPAL_CAPTURE"}]">
-    </form>
-
-    <div style="margin-top: 10px">
-        [{oxmultilang ident="OSC_PAYPAL_ISSUE_REFUND"}]
-        <form action="[{$oViewConf->getSelfLink()}]" method="post">
-            [{$oViewConf->getHiddenSid()}]
-            <input type="hidden" name="fnc" value="refund">
-            <input type="hidden" name="cl" value="oscpaypalorder">
-            <input type="hidden" name="oxid" value="[{$oxid}]">
-            <input type="hidden" name="language" value="[{$actlang}]">
-            <table class="paypalActionsTable">
-                <tr>
-                    <td><label for="refundAmount">[{oxmultilang ident="OSC_PAYPAL_REFUND_AMOUNT"}]</label></td>
-                    <td><input type="number" id="refundAmount" name="refundAmount"></td>
-                </tr>
-                <tr>
-                    <td><label for="invoiceId">[{oxmultilang ident="OSC_PAYPAL_INVOICE_ID"}]</label></td>
-                    <td><input type="text" id="invoiceId" name="invoiceId" maxlength="127"></td>
-                </tr>
-                <tr>
-                    <td><label for="noteToBuyer">[{oxmultilang ident="OSC_PAYPAL_NOTE_TO_BUYER"}]</label></td>
-                    <td><textarea id="noteToBuyer" name="noteToBuyer" maxlength="255"></textarea></td>
-                </tr>
-                <tr>
-                    <td><label for="refundAll">[{oxmultilang ident="OSC_PAYPAL_REFUND_ALL"}]</label></td>
-                    <td><input type="checkbox" id="refundAll" name="refundAll"></td>
-                </tr>
-                <tr>
-                    <td><input type="submit" value="[{oxmultilang ident="OSC_PAYPAL_REFUND"}]"></td>
-                </tr>
-            </table>
-        </form>
-    </div>
+    [{if $oView->getPayPalPaymentStatus() == 'PENDING' || $oView->getPayPalPaymentStatus() == 'APPROVED'}]
+        <div style="margin-top: 10px">
+            <p><b>[{oxmultilang ident="OSC_PAYPAL_ACTIONS" suffix="COLON"}]</b></p>
+            <form action="[{$oViewConf->getSelfLink()}]" method="post">
+                [{$oViewConf->getHiddenSid()}]
+                <input type="hidden" name="fnc" value="capture">
+                <input type="hidden" name="cl" value="oscpaypalorder">
+                <input type="hidden" name="oxid" value="[{$oxid}]">
+                <input type="hidden" name="language" value="[{$actlang}]">
+                <input type="submit" value="[{oxmultilang ident="OSC_PAYPAL_CAPTURE"}]">
+            </form>
+        </div>
+    [{/if}]
+    [{if $oView->getPayPalPaymentStatus() == 'COMPLETED'}]
+        <div style="margin-top: 10px">
+            <p><b>[{oxmultilang ident="OSC_PAYPAL_ISSUE_REFUND"}]</b></p>
+            <form action="[{$oViewConf->getSelfLink()}]" method="post">
+                [{$oViewConf->getHiddenSid()}]
+                <input type="hidden" name="fnc" value="refund">
+                <input type="hidden" name="cl" value="oscpaypalorder">
+                <input type="hidden" name="oxid" value="[{$oxid}]">
+                <input type="hidden" name="language" value="[{$actlang}]">
+                <table class="paypalActionsTable">
+                    <tr>
+                        <td><label for="refundAmount">[{oxmultilang ident="OSC_PAYPAL_REFUND_AMOUNT"}]</label></td>
+                        <td><input type="text" id="refundAmount" name="refundAmount" value="[{$oView->formatPrice($oView->getPayPalRemainingRefundAmount())}]"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="invoiceId">[{oxmultilang ident="OSC_PAYPAL_INVOICE_ID"}]</label></td>
+                        <td><input type="text" id="invoiceId" name="invoiceId" maxlength="127"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="noteToBuyer">[{oxmultilang ident="OSC_PAYPAL_NOTE_TO_BUYER"}]</label></td>
+                        <td><textarea id="noteToBuyer" name="noteToBuyer" maxlength="255"></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><label for="refundAll">[{oxmultilang ident="OSC_PAYPAL_REFUND_ALL"}]</label></td>
+                        <td><input type="checkbox" id="refundAll" name="refundAll"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="submit" value="[{oxmultilang ident="OSC_PAYPAL_REFUND"}]"></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    [{/if}]
 [{/if}]
 [{include file="bottomnaviitem.tpl"}]
 [{include file="bottomitem.tpl"}]
