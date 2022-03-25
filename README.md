@@ -17,7 +17,6 @@ PayPal checkout integration for OXID eShop 6.2 and above.
 
 # Add Repositories source
 $ composer config repositories.oscpaypal composer https://paypal-module.packages.oxid-esales.com/
-$ composer config repositories.oscpaypalclient composer https://paypal-client.packages.oxid-esales.com/
 # Install desired version of oxid-solution-catalysts/paypal module
 $ composer require oxid-solution-catalysts/paypal-module ^1.0.0
 # Run install
