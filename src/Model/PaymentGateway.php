@@ -133,7 +133,12 @@ class PaymentGateway extends PaymentGateway_parent
 
         $success = false;
         try {
-            $success = $paymentService->doExecutePuiPayment($order, Registry::getSession()->getBasket());
+            $success = $paymentService->doExecutePuiPayment(
+                    $order,
+                    Registry::getSession()->getBasket(),
+                    PayPalSession::getPayPalPuiCmId()
+            );
+            PayPalSession::unsetPayPalPuiCmId();
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on execute pui payment call.", [$exception]);
         }

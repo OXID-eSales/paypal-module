@@ -37,6 +37,36 @@ class PayPalSession
     }
 
     /**
+     * PayPal store PUI-CM-Id
+     *
+     * @param $cmId
+     */
+    public static function storePayPalPuiCmId(string $cmId): void
+    {
+        Registry::getSession()->setVariable(
+            Constants::SESSION_PUI_CMID,
+            $cmId
+        );
+    }
+
+    public static function getPayPalPuiCmId(): string
+    {
+        return (string) Registry::getSession()->getVariable(
+            Constants::SESSION_PUI_CMID
+        );
+    }
+
+    /**
+     * PayPal remove PUI-CM-Id
+     */
+    public static function unsetPayPalPuiCmId()
+    {
+        Registry::getSession()->deleteVariable(
+            Constants::SESSION_PUI_CMID
+        );
+    }
+
+    /**
      * Checks if active PayPal Order exists
      *
      * @return bool

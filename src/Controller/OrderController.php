@@ -204,7 +204,7 @@ class OrderController extends OrderController_parent
         $standardRequestId = (string) Registry::getRequest()->getRequestParameter('token');
         $sessionOrderId = Registry::getSession()->getVariable('sess_challenge');
         $sessionCheckoutOrderId = PayPalSession::getCheckoutOrderId();
-        
+
         if (!$sessionOrderId || !$sessionCheckoutOrderId || ($standardRequestId !== $sessionCheckoutOrderId)) {
             $this->cancelpaypalsession('request to session mismatch');
         }
@@ -226,7 +226,7 @@ class OrderController extends OrderController_parent
 
         return 'thankyou';
     }
-    
+
     public function finalizeacdc(): string
     {
         $sessionOrderId = Registry::getSession()->getVariable('sess_challenge');
@@ -260,6 +260,18 @@ class OrderController extends OrderController_parent
         }
 
         return $goNext;
+    }
+
+    /**
+     * Template-Getter get a Fraudnet CmId
+     *
+     * @param $response
+     */
+    public function getPayPalPuiFraudnetCmId(): string {
+
+        $cmId = Registry::getUtilsObject()->generateUId();
+        PayPalSession::storePayPalPuiCmId($cmId);
+        return $cmId;
     }
 
     /**

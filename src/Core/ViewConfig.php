@@ -42,6 +42,14 @@ class ViewConfig extends ViewConfig_parent
     /**
      * @return bool
      */
+    public function isPayPalSandbox(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandbox();
+    }
+
+    /**
+     * @return bool
+     */
     public function isPayPalExpressSessionActive(): bool
     {
         return PayPalSession::isPayPalExpressOrderActive();
@@ -78,6 +86,22 @@ class ViewConfig extends ViewConfig_parent
     public function getCheckoutOrderId(): ?string
     {
         return PayPalSession::getCheckoutOrderId();
+    }
+
+    /**
+     * @return string
+     */
+    public function getPayPalPuiFNParams(): string
+    {
+        return Constants::PAYPAL_PUI_FNPARAMS;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPayPalPuiFlowId(): string
+    {
+        return Constants::PAYPAL_PUI_FLOWID;
     }
 
     /**

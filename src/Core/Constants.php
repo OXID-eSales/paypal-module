@@ -15,12 +15,12 @@ class Constants
     public const PAYPAL_INTEGRATION_DATE = '2020-07-29';
     public const PAYPAL_ORDER_INTENT_CAPTURE = 'CAPTURE';
     public const SESSION_CHECKOUT_ORDER_ID = 'paypal-checkout-session';
-    public const SESSION_UAPMCHECKOUT_ORDER_ID = 'paypal-uapm-checkout-session';
     public const SESSION_REDIRECTLINK = 'paypal-session-checkout-redirect';
 
     public const SESSION_ONBOARDING_PAYLOAD = 'paypal-onboarding-payload';
     public const SESSION_ONBOARDING_MERCHANTID = 'paypal-onboarding-merchantid';
     public const SESSION_ONBOARDING_MERCHANTIDINPAYPAL = 'paypal_onboarding-merchantidpaypal';
+    public const SESSION_PUI_CMID = 'paypal-pui-cmid';
 
     public const PAYPAL_ORDER_REFERENCE_ID = 'OXID_REFERENCE';
 
@@ -28,6 +28,8 @@ class Constants
     public const PAYPAL_ONBOARDING_LIVE_URL = 'https://www.paypal.com/bizsignup/partner/entry';
 
     public const PAYPAL_PUI_PROCESSING_INSTRUCTIONS = 'ORDER_COMPLETE_ON_PAYMENT_APPROVAL';
+    public const PAYPAL_PUI_FNPARAMS = 'fnparams-dede7cc5-15fd-4c75-a9f4-36c430ee3a99';
+    public const PAYPAL_PUI_FLOWID = 'Oxid_PayPal_PUI_Checkout';
 
     // BN Codes defined togehter with PayPal
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_SUBSCRIPTION = 'Oxid_Cart_Subscriptions';

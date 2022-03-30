@@ -141,6 +141,7 @@ $aModule = [
         'modules/osc/paypal/acdc_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/acdc.tpl',
         'modules/osc/paypal/pui_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/pui.tpl',
         'modules/osc/paypal/pui_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/pui.tpl',
+        'modules/osc/paypal/pui_fraudnet.tpl' => 'osc/paypal/views/tpl/shared/page/checkout/pui_fraudnet.tpl',
         'modules/osc/paypal/shipping_and_payment_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/shipping_and_payment.tpl',
         'modules/osc/paypal/shipping_and_payment_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/shipping_and_payment.tpl',
         'modules/osc/paypal/checkout_order_btn_submit_bottom_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/checkout_order_btn_submit_bottom.tpl',

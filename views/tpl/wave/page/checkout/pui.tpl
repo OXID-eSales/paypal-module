@@ -1,3 +1,4 @@
+[{include file="modules/osc/paypal/pui_fraudnet.tpl"}]
 [{assign var="invadr" value=$oView->getInvoiceAddress()}]
 [{if isset( $invadr.oxuser__oxbirthdate.month )}]
     [{assign var="iBirthdayMonth" value=$invadr.oxuser__oxbirthdate.month}]
@@ -29,7 +30,6 @@
 [{else}]
     [{assign var="phonenumber" value=$oxcmp_user->oxuser__oxfon->value}]
 [{/if}]
-
 <p><br />[{oxmultilang ident="OSC_PAYPAL_PUI_HELP"}]</p>
 
 <div id="card_container" class="card_container">
