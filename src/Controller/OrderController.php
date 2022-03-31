@@ -269,8 +269,10 @@ class OrderController extends OrderController_parent
      */
     public function getPayPalPuiFraudnetCmId(): string {
 
-        $cmId = Registry::getUtilsObject()->generateUId();
-        PayPalSession::storePayPalPuiCmId($cmId);
+        if (!($cmId = PayPalSession::getPayPalPuiCmId())) {
+            $cmId = Registry::getUtilsObject()->generateUId();
+            PayPalSession::storePayPalPuiCmId($cmId);
+        }
         return $cmId;
     }
 
