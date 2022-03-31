@@ -385,7 +385,8 @@ class Basket extends Basket_parent
     public function calculateBasket($blForceUpdate = false)
     {
         $isSubscriptionBasket = false;
-        foreach ($this->_aBasketContents as $oBasketItem) {
+
+        foreach ($this->getBasketArticles() as $oBasketItem) {
             $basketArticle = $oBasketItem->getArticle(true);
             $basketArticle->getId();
             $article = oxNew(\OxidEsales\Eshop\Application\Model\Article::class);
