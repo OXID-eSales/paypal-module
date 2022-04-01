@@ -166,16 +166,21 @@ class Order extends Order_parent
 
         $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($paymentService->getSessionPaymentId());
         $isPayPalStandard = (string) $paymentService->getSessionPaymentId() === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
+        $isPayPalPayLater = (string) $paymentService->getSessionPaymentId() === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID;
 
-        //catch UAPM & standard PayPal payments here
-        if ($isPayPalUAPM || $isPayPalStandard) {
+        //catch UAPM, Standard and Pay Later PayPal payments here
+        if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater) {
             try {
                 /** @var EshopModelBasket $basket */
                 $basket = Registry::getSession()->getBasket();
-                $redirectLink =
-                    $isPayPalUAPM ?
-                        $paymentService->doExecuteUAPMPayment($this, $basket) :
-                        $paymentService->doExecuteStandardPayment($this, $basket);
+                if ($isPayPalUAPM) {
+                    $redirectLink = $paymentService->doExecuteUAPMPayment($this, $basket);
+                } else {
+                    $redirectLink = $paymentService->doExecuteStandardPayment($this, $basket);
+                    if ($isPayPalPayLater) {
+                        $redirectLink .= '&fundingSource=paylater';
+                    }
+                }
                 PayPalSession::setSessionRedirectLink($redirectLink);
 
                 return self::ORDER_STATE_SESSIONPAYMENT_INPROGRESS;

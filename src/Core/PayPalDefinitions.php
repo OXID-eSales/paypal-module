@@ -12,6 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 final class PayPalDefinitions
 {
     public const STANDARD_PAYPAL_PAYMENT_ID = 'oscpaypal';
+    public const PAYLATER_PAYPAL_PAYMENT_ID = 'oscpaypal_paylater';
     public const EXPRESS_PAYPAL_PAYMENT_ID = 'oscpaypal_express';
     public const ACDC_PAYPAL_PAYMENT_ID = 'oscpaypal_acdc';
     public const PUI_PAYPAL_PAYMENT_ID = 'oscpaypal_pui';
@@ -36,6 +37,23 @@ final class PayPalDefinitions
                     'desc' => 'PayPal',
                     'longdesc' => '',
                     'longdesc_beta' => 'Pay conveniently with PayPal.'
+                ]
+            ],
+            'countries' => [],
+            'constraints' => self::PAYMENT_CONSTRAINTS
+        ],
+        //Paylater PayPal
+        self::PAYLATER_PAYPAL_PAYMENT_ID => [
+            'descriptions' => [
+                'de' => [
+                    'desc' => 'PayPal - später bezahlen',
+                    'longdesc' => '',
+                    'longdesc_beta' => 'Kaufen Sie jetzt und bezahlen sie später mit PayPal.'
+                ],
+                'en' => [
+                    'desc' => 'PayPal- pay later',
+                    'longdesc' => '',
+                    'longdesc_beta' => 'Buy now and pay later with PayPal.'
                 ]
             ],
             'countries' => [],
