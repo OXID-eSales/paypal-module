@@ -43,7 +43,7 @@ class PaymentController extends PaymentController_parent
         }
 
         // check Pui Eligibility
-        if (!$this->getServiceFromContainer(ModuleSettings::class)->isPayPalPuiEligibility()) {
+        if (!$this->getServiceFromContainer(ModuleSettings::class)->isPuiEligibility()) {
             unset ($paymentList[PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID]);
         }
 

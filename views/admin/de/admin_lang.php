@@ -165,6 +165,9 @@ $aLang = [
         echte Transaktionen zu empfangen, wechseln Sie zu Produktion (live).',
     'HELP_OSC_PAYPAL_WEBHOOK_ID'                  =>
         'Die ID des Webhooks, wie in Ihrem Developer Portal-Konto konfiguriert',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS'                 => 'Freischaltung für besondere Zahlarten erfolgt',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_PUI'             => 'Rechnungskauf',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Kreditkarte',
 
     // PayPal ORDER
     'OSC_PAYPAL_AMOUNT'                           => 'Betrag',

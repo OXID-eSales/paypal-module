@@ -97,6 +97,14 @@
                             </div>
                         </div>
 
+                        <div class="form-group live">
+                            <label for="special-payments">[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS" suffix="COLON"}]</label>
+                            <div>
+                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_PUI" suffix="COLON"}] [{if $config->isPuiEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]<br />
+                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC" suffix="COLON"}] [{if $config->isAcdcEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                            </div>
+                        </div>
+
                         [{if !$config->getSandboxClientId() && !$config->getSandboxClientSecret() && !$config->getSandboxWebhookId()}]
 [{*
                             <p class="sandbox"><a target="_blank"
@@ -142,6 +150,15 @@
                                 <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_SANDBOX_WEBHOOK_ID"}]</span>
                             </div>
                         </div>
+
+                        <div class="form-group sandbox">
+                            <label for="special-payments-sandbox">[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS" suffix="COLON"}]</label>
+                            <div>
+                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_PUI" suffix="COLON"}] [{if $config->isPuiEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]<br />
+                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC" suffix="COLON"}] [{if $config->isAcdcEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
