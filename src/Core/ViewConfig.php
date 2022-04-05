@@ -158,7 +158,12 @@ class ViewConfig extends ViewConfig_parent
             $params['disable-funding'] .= ',card';
         }
         else {
-            $params['enable-funding'] .= ',card';
+            if (isset($params['enable-funding'])) {
+                $params['enable-funding'] .= ',card';
+            }
+            else {
+                $params['enable-funding'] = 'card';
+            }
         }
 
         return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
