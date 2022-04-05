@@ -138,7 +138,7 @@ class PayPalSession
     public static function storeMerchantIdInPayPal(string $merchantId): void
     {
         Registry::getSession()->setVariable(
-            Constants::SESSION_ONBOARDING_MERCHANTIDINPAYPAL,
+            Constants::SESSION_ONBOARDING_MERCHANTID,
             $merchantId
         );
     }
@@ -146,7 +146,7 @@ class PayPalSession
     public static function getMerchantIdInPayPal(): ?string
     {
         return Registry::getSession()->getVariable(
-            Constants::SESSION_ONBOARDING_MERCHANTIDINPAYPAL
+            Constants::SESSION_ONBOARDING_MERCHANTID
         );
     }
 
@@ -169,9 +169,6 @@ class PayPalSession
     {
         Registry::getSession()->deleteVariable(
             Constants::SESSION_ONBOARDING_MERCHANTID
-        );
-        Registry::getSession()->deleteVariable(
-            Constants::SESSION_ONBOARDING_MERCHANTIDINPAYPAL
         );
         Registry::getSession()->deleteVariable(
             Constants::SESSION_ONBOARDING_PAYLOAD
