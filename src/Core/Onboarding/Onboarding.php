@@ -10,7 +10,7 @@ namespace OxidSolutionCatalysts\PayPal\Core\Onboarding;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Onboarding as ApiOnboardingClient;
 use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
-use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -28,6 +28,11 @@ class Onboarding
             //fetch and save credentials
             $credentials = $this->fetchCredentials();
             $this->saveCredentials($credentials);
+
+            // fetch and save Eligibility
+            $merchantInformations = $this->fetchMerchantInformations();
+            $this->saveEligibility($merchantInformations);
+
         } catch (\Exception $exception) {
             throw OnboardingException::autoConfiguration($exception->getMessage());
         }
@@ -97,18 +102,70 @@ class Onboarding
         ];
     }
 
-    public function getOnboardingClient(bool $isSandbox): ApiOnboardingClient
+    public function getOnboardingClient(bool $isSandbox, bool $withCredentials = false): ApiOnboardingClient
     {
         $paypalConfig = oxNew(PayPalConfig::class);
+        $partnerConfig = oxNew(PartnerConfig::class);
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
 
-        $client = new ApiOnboardingClient(
+        $clientId = $withCredentials ? $moduleSettings->getClientId() : '';
+        $clientSecret = $withCredentials ? $moduleSettings->getClientSecret() : '';
+
+        return new ApiOnboardingClient(
             Registry::getLogger(),
             $isSandbox ? $paypalConfig->getClientSandboxUrl() : $paypalConfig->getClientLiveUrl(),
-            '',
-            '',
+            $clientId,
+            $clientSecret,
+            $partnerConfig->getTechnicalPartnerId($isSandbox),
             PayPalSession::getMerchantIdInPayPal()
-    );
+        );
+    }
 
-        return $client;
+    public function fetchMerchantInformations()
+    {
+        $onboardingResponse = $this->getOnboardingPayload();
+        try {
+            /** @var ApiOnboardingClient $apiClient */
+            $apiClient = $this->getOnboardingClient($onboardingResponse['isSandBox'], true);
+            $merchantInformations = $apiClient->getMerchantInformations();
+        } catch (ApiException $exception) {
+            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+        }
+        return $merchantInformations;
+    }
+
+    public function saveEligibility(array $merchantInformations): array
+    {
+        if (!isset($merchantInformations['products'])
+        ) {
+            throw OnboardingException::merchantInformationsNotFound();
+        }
+
+        $isPuiEligibility = false;
+        $isAcdcEligibility = false;
+
+        foreach ($merchantInformations['products'] as $product) {
+            if (
+                $product['name'] === 'PAYMENT_METHODS' &&
+                in_array('PAY_UPON_INVOICE', $product['capabilities'])
+            ){
+                $isPuiEligibility = true;
+            }
+            elseif (
+                $product['name'] === 'PPCP_CUSTOM' &&
+                in_array('CUSTOM_CARD_PROCESSING', $product['capabilities'])
+            ) {
+                $isAcdcEligibility = true;
+            }
+        }
+
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $moduleSettings->savePuiEligibility($isPuiEligibility);
+        $moduleSettings->saveAcdcEligibility($isAcdcEligibility);
+
+        return [
+            'acdc' => $isAcdcEligibility,
+            'pui' => $isPuiEligibility
+        ];
     }
 }

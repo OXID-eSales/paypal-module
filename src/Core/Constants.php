@@ -19,7 +19,6 @@ class Constants
 
     public const SESSION_ONBOARDING_PAYLOAD = 'paypal-onboarding-payload';
     public const SESSION_ONBOARDING_MERCHANTID = 'paypal-onboarding-merchantid';
-    public const SESSION_ONBOARDING_MERCHANTIDINPAYPAL = 'paypal_onboarding-merchantidpaypal';
     public const SESSION_PUI_CMID = 'paypal-pui-cmid';
 
     public const PAYPAL_ORDER_REFERENCE_ID = 'OXID_REFERENCE';
@@ -31,7 +30,7 @@ class Constants
     public const PAYPAL_PUI_FNPARAMS = 'fnparams-dede7cc5-15fd-4c75-a9f4-36c430ee3a99';
     public const PAYPAL_PUI_FLOWID = 'Oxid_PayPal_PUI_Checkout';
 
-    // BN Codes defined togehter with PayPal
+    // BN Codes defined together with PayPal
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_SUBSCRIPTION = 'Oxid_Cart_Subscriptions';
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP = 'Oxid_Cart_Payments';
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_EXPRESS = 'Oxid_Cart_PymtsShortcut';

@@ -488,13 +488,25 @@ $aModule = [
         [
             'name' => 'oscPayPalAcdcEligibility',
             'type' => 'bool',
-            'value' => true,
+            'value' => false,
             'group' => null
         ],
         [
             'name' => 'oscPayPalPuiEligibility',
             'type' => 'bool',
-            'value' => true,
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalSandboxAcdcEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalSandboxPuiEligibility',
+            'type' => 'bool',
+            'value' => false,
             'group' => null
         ]
     ]

@@ -10,12 +10,10 @@ namespace OxidSolutionCatalysts\PayPal\Core\Onboarding;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventHandlerMapping;
-use OxidSolutionCatalysts\PayPalApi\Onboarding as ApiOnboardingClient;
 use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
-use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 
 class Webhook
 {

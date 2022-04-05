@@ -91,6 +91,11 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->isAcdcEligibility();
     }
 
+    public function isPuiEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isPuiEligibility();
+    }
+
     public function getLiveClientId(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getLiveClientId();

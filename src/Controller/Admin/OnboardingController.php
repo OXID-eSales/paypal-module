@@ -25,7 +25,6 @@ class OnboardingController extends AdminController
      */
     public function autoConfigurationFromCallback()
     {
-        //credentials
         try {
             $requestReader = oxNew(RequestReader::class);
             PayPalSession::storeOnboardingPayload($requestReader->getRawPost());
@@ -46,7 +45,7 @@ class OnboardingController extends AdminController
             PayPalSession::storeMerchantIdInPayPal(Registry::getRequest()->getRequestParameter('merchantIdInPayPal'));
         }
 
-        $credentials = $this->autoConfiguration();
+        $this->autoConfiguration();
         $this->registerWebhooks();
 
         $session = Registry::getSession();
@@ -59,7 +58,7 @@ class OnboardingController extends AdminController
     }
 
     /**
-     * Get ClientID, ClientSecret, WebhookID
+     * Get ClientID, ClientSecret
      */
     protected function autoConfiguration(): array
     {
@@ -75,11 +74,13 @@ class OnboardingController extends AdminController
         return $credentials;
     }
 
+    /**
+     * webhook registration
+     */
     protected function registerWebhooks(): string
     {
         $webhookId = '';
 
-        //webhook registration
         try {
             /** @var Webhook $handler */
             $handler = oxNew(Webhook::class);

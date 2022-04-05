@@ -16,6 +16,11 @@ class OnboardingException extends Exception
         return new self('Required data not found in request');
     }
 
+    public static function merchantInformationsNotFound(): self
+    {
+        return new self('merchantInformations not found in request');
+    }
+
     public static function nonsslUrl(): self
     {
         return new self('Webhook can only be registered on ssl endpoint');

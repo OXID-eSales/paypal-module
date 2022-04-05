@@ -74,6 +74,21 @@ class ModuleSettings
             $this->getLiveWebhookId();
     }
 
+    public function isAcdcEligibility(): bool
+    {
+        return $this->isSandbox() ?
+            $this->isSandboxAcdcEligibility() :
+            $this->isLiveAcdcEligibility();
+    }
+
+
+    public function isPuiEligibility(): bool
+    {
+        return $this->isSandbox() ?
+            $this->isSandboxPuiEligibility() :
+            $this->isLivePuiEligibility();
+    }
+
     public function getLiveClientId(): string
     {
         return (string) $this->getSettingValue('oscPayPalClientId');
@@ -201,14 +216,24 @@ class ModuleSettings
         return (bool) $this->getSettingValue('oscPayPalLoginWithPayPalEMail');
     }
 
-    public function isAcdcEligibility(): bool
+    public function isLiveAcdcEligibility(): bool
     {
         return (bool) $this->getSettingValue('oscPayPalAcdcEligibility');
     }
 
-    public function isPayPalPuiEligibility(): bool
+    public function isLivePuiEligibility(): bool
     {
         return (bool) $this->getSettingValue('oscPayPalPuiEligibility');
+    }
+
+    public function isSandboxAcdcEligibility(): bool
+    {
+        return (bool) $this->getSettingValue('oscPayPalSandboxAcdcEligibility');
+    }
+
+    public function isSandboxPuiEligibility(): bool
+    {
+        return (bool) $this->getSettingValue('oscPayPalSandboxPuiEligibility');
     }
 
     public function save(string $name, $value): void
@@ -236,6 +261,24 @@ class ModuleSettings
             $this->save('oscPayPalSandboxClientSecret', $clientSecret);
         } else {
             $this->save('oscPayPalClientSecret', $clientSecret);
+        }
+    }
+
+    public function saveAcdcEligibility(bool $eligibility): void
+    {
+        if ($this->isSandbox()) {
+            $this->save('oscPayPalSandboxAcdcEligibility', $eligibility);
+        } else {
+            $this->save('oscPayPalAcdcEligibility', $eligibility);
+        }
+    }
+
+    public function savePuiEligibility(bool $eligibility): void
+    {
+        if ($this->isSandbox()) {
+            $this->save('oscPayPalSandboxPuiEligibility', $eligibility);
+        } else {
+            $this->save('oscPayPalPuiEligibility', $eligibility);
         }
     }
 
