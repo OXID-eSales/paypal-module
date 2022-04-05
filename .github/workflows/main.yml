@@ -13,7 +13,7 @@ jobs:
       image: oxidprojects/oxid-apache-php:oxid${{ matrix.oxid }}-php${{ matrix.php }}
       options: --tmpfs=/build:noatime
     env:
-      MODULE_NAME: oxid-solution-catalysts/paypal
+      MODULE_NAME: oxid-solution-catalysts/paypal-module
     steps:
       - uses: actions/checkout@v2
 
@@ -68,18 +68,18 @@ jobs:
 
       - name: prepare autoload
         run: composer update
-        working-directory: /build/oxid/vendor/oxid-solution-catalysts/paypal/
+        working-directory: /build/oxid/vendor/oxid-solution-catalysts/paypal-module/
 
       - name: run psalm
         run: composer psalm-report
-        working-directory: /build/oxid/vendor/oxid-solution-catalysts/paypal/
+        working-directory: /build/oxid/vendor/oxid-solution-catalysts/paypal-module/
 
       - name: Save psalm logs
         if: always()
         uses: actions/upload-artifact@v2
         with:
           name: psalm-log
-          path: /build/oxid/vendor/oxid-solution-catalysts/paypal/logs/psalm.sonarqube.json
+          path: /build/oxid/vendor/oxid-solution-catalysts/paypal-module/logs/psalm.sonarqube.json
 
   codestyle_checks:
     strategy:
@@ -103,11 +103,11 @@ jobs:
 
       - name: prepare autoload
         run: composer update
-        working-directory: /build/oxid/vendor/oxid-solution-catalysts/paypal/
+        working-directory: /build/oxid/vendor/oxid-solution-catalysts/paypal-module/
 
       - name: run phpcs
         run: composer phpcs
-        working-directory: /build/oxid/vendor/oxid-solution-catalysts/paypal/
+        working-directory: /build/oxid/vendor/oxid-solution-catalysts/paypal-module/
 
   oxid_unit_tests:
     strategy:
@@ -189,7 +189,7 @@ jobs:
         run: |
           XDEBUG_MODE=coverage php vendor/bin/phpunit \
             --bootstrap vendor/oxid-esales/testing-library/bootstrap.php \
-            -c /build/oxid/vendor/oxid-solution-catalysts/paypal/Tests/phpunit.xml \
+            -c /build/oxid/vendor/oxid-solution-catalysts/paypal-module/Tests/phpunit.xml \
             --coverage-clover=/build/oxid/logs/clover.xml \
             --coverage-text \
             --log-junit /build/oxid/logs/phpunit.xml
