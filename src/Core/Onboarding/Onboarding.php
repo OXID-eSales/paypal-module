@@ -10,6 +10,7 @@ namespace OxidSolutionCatalysts\PayPal\Core\Onboarding;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Onboarding as ApiOnboardingClient;
 use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
+use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -101,16 +102,21 @@ class Onboarding
         ];
     }
 
-    public function getOnboardingClient(bool $isSandbox): ApiOnboardingClient
+    public function getOnboardingClient(bool $isSandbox, bool $withCredentials = false): ApiOnboardingClient
     {
         $paypalConfig = oxNew(PayPalConfig::class);
+        $partnerConfig = oxNew(PartnerConfig::class);
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+
+        $clientId = $withCredentials ? $moduleSettings->getClientId() : '';
+        $clientSecret = $withCredentials ? $moduleSettings->getClientSecret() : '';
 
         return new ApiOnboardingClient(
             Registry::getLogger(),
             $isSandbox ? $paypalConfig->getClientSandboxUrl() : $paypalConfig->getClientLiveUrl(),
-            '',
-            '',
-            $paypalConfig->getTechnicalPartnerId($isSandbox),
+            $clientId,
+            $clientSecret,
+            $partnerConfig->getTechnicalPartnerId($isSandbox),
             PayPalSession::getMerchantIdInPayPal()
         );
     }
@@ -120,7 +126,7 @@ class Onboarding
         $onboardingResponse = $this->getOnboardingPayload();
         try {
             /** @var ApiOnboardingClient $apiClient */
-            $apiClient = $this->getOnboardingClient($onboardingResponse['isSandBox']);
+            $apiClient = $this->getOnboardingClient($onboardingResponse['isSandBox'], true);
             $merchantInformations = $apiClient->getMerchantInformations();
         } catch (ApiException $exception) {
             Registry::getLogger()->error($exception->getMessage(), [$exception]);

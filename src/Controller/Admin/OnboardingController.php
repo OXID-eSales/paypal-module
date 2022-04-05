@@ -47,7 +47,6 @@ class OnboardingController extends AdminController
 
         $this->autoConfiguration();
         $this->registerWebhooks();
-        $this->checkEligibility();
 
         $session = Registry::getSession();
 
@@ -93,19 +92,5 @@ class OnboardingController extends AdminController
         }
 
         return $webhookId;
-    }
-
-    /**
-     * check PUI and ACDC Eligibility
-     */
-    protected function checkEligibility()
-    {
-        try {
-            /** @var Onboarding $handler */
-            $handler = oxNew(Onboarding::class);
-            $credentials = $handler->checkEligibility();
-        } catch (\Exception $exception) {
-            Registry::getLogger()->error($exception->getMessage(), [$exception]);
-        }
     }
 }
