@@ -1,7 +1,7 @@
-ARG OXID="6.3"
+ARG OXID="6.4"
 ARG PHP="7.4"
 FROM oxidprojects/oxid-apache-php:oxid${OXID}-php${PHP}
-ARG OXID="6.3"
+ARG OXID="6.4"
 ARG PHP="7.4"
 ARG MODULE_NAME="oxid-solution-catalysts/paypal-module"
 ENV HTA_PW="test"
