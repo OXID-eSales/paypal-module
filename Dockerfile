@@ -12,10 +12,13 @@ RUN mkdir -p /var/www/oxideshop/project-modules/module-under-test
 #RUN composer require oxid-esales/oxideshop-demodata-ce:
 
 COPY . /var/www/oxideshop/project-modules/module-under-test
+RUN git clone -b b-6.3.x https://github.com/OXID-eSales/paypal-client.git /var/www/oxideshop/project-modules/paypal-client 
 
 WORKDIR /var/www/oxideshop
 RUN composer config repositories.build path /var/www/oxideshop/project-modules/\*
 RUN composer require --no-interaction $MODULE_NAME
+RUN composer require --no-interaction oxid-solution-catalysts/paypal-client
+
 # move config to source folder
 RUN cp config.inc.php-dist source/config.inc.php
 
