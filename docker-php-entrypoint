@@ -40,6 +40,6 @@ chmod 444 /var/www/oxideshop/source/.htaccess
 chown -R www-data:www-data /var/www/oxideshop/
 
 echo "Setup done."
-/var/www/oxideshop/vendor/bin/oe-console oe:module:activate osc-paypal;
+/var/www/oxideshop/vendor/bin/oe-console oe:module:activate osc_paypal;
 
 exec "$@"
