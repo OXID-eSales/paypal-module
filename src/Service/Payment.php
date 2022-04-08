@@ -427,14 +427,24 @@ class Payment
     ): PayPalOrderModel
     {
         /** @var PayPalOrderModel $payPalOrder */
-        $payPalOrder = $this->orderRepository
-            ->paypalOrderByOrderIdAndPayPalId($shopOrderId, $payPalOrderId);
+        $payPalOrder = $this->getPayPalOrder($shopOrderId, $payPalOrderId);
 
         $payPalOrder->setPaymentMethodId($paymentMethodId);
         $payPalOrder->setStatus($status);
         $payPalOrder->save();
 
         return $payPalOrder;
+    }
+
+    public function getPayPalOrder(
+        string $shopOrderId,
+        string $payPalOrderId
+    ) {
+        /** @var PayPalOrderModel $payPalOrder */
+        return $this->orderRepository->paypalOrderByOrderIdAndPayPalId(
+            $shopOrderId,
+            $payPalOrderId
+        );
     }
 
     public function fetchOrderFields(string $paypalOrderId, string $fields = ''): ApiOrderModel
