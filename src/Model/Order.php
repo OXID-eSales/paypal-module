@@ -21,8 +21,6 @@ use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalOrder;
-use OxidSolutionCatalysts\PayPalApi\Model\Catalog\Product as PayPalProduct;
-use OxidSolutionCatalysts\PayPalApi\Model\Subscriptions\Subscription as PayPalSubscription;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Traits\AdminOrderFunctionTrait;
@@ -111,9 +109,6 @@ class Order extends Order_parent
             oxNew(\OxidEsales\Eshop\Core\Counter::class)->update($this->_getCounterIdent(), $this->oxorder__oxordernr->value);
         }
 
-        // deleting remark info only when order is finished
-        \OxidEsales\Eshop\Core\Registry::getSession()->deleteVariable('ordrem');
-
         $this->_updateOrderDate();
 
         //TODO: Order is still not finished, need to doublecheck uapm payment status
@@ -124,6 +119,13 @@ class Order extends Order_parent
         $userPayment = oxNew(UserPayment::class);
         $userPayment->load($this->getFieldData('oxpaymentid'));
         $this->afterOrderCleanUp($basket, $user);
+
+        if (
+            PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID == $userPayment->oxuserpayments__oxpaymentsid->value ||
+            PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID == $userPayment->oxuserpayments__oxpaymentsid->value
+        ) {
+            $this->doExecutePayPalPayment($payPalOrderId);
+        }
 
         return $this->_sendOrderByEmail($user, $basket, $userPayment);
     }
@@ -213,6 +215,29 @@ class Order extends Order_parent
         }
 
         return $this->payPalOrder;
+    }
+
+    protected function doExecutePayPalPayment($checkoutOrderId): bool
+    {
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+
+        $success = false;
+
+        // Capture Order
+        try {
+            $paymentService->doCapturePayPalOrder($this, $checkoutOrderId);
+            $success = true;
+        } catch (Exception $exception) {
+            Registry::getLogger()->error("Error on order capture call.", [$exception]);
+        }
+
+        $this->markOrderPaid();
+
+        // destroy PayPal-Session
+        PayPalSession::storePayPalOrderId('');
+
+        return $success;
     }
 
     /**

@@ -55,12 +55,7 @@ class PaymentGateway extends PaymentGateway_parent
 
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
-        if (
-            PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId() ||
-            PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId()
-        ) {
-            $success = $this->doExecutePayPalPayment($order);
-        } elseif (PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId()) {
+        if (PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId()) {
             $success = $this->doExecutePayPalExpressPayment($order);
         } elseif (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId()) {
             $success = $this->doExecuteAcdcPayPalPayment($order);
@@ -69,31 +64,6 @@ class PaymentGateway extends PaymentGateway_parent
         } else {
             $success = parent::executePayment($amount, $order);
         }
-        return $success;
-    }
-
-    protected function doExecutePayPalPayment(EshopModelOrder $order): bool
-    {
-        /** @var PaymentService $paymentService */
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
-
-        $success = false;
-
-        if ($checkoutOrderId = PayPalSession::getCheckoutOrderId()) {
-
-            // Capture Order
-            try {
-                $paymentService->doCapturePayPalOrder($order, $checkoutOrderId);
-                $success = true;
-            } catch (Exception $exception) {
-                Registry::getLogger()->error("Error on order capture call.", [$exception]);
-                $success = false;
-            }
-
-            // destroy PayPal-Session
-            PayPalSession::storePayPalOrderId('');
-        }
-
         return $success;
     }
 
