@@ -120,10 +120,11 @@ class Order extends Order_parent
         $userPayment->load($this->getFieldData('oxpaymentid'));
         $this->afterOrderCleanUp($basket, $user);
 
-        if (
-            PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID == $userPayment->oxuserpayments__oxpaymentsid->value ||
-            PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID == $userPayment->oxuserpayments__oxpaymentsid->value
-        ) {
+        $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($userPayment->oxuserpayments__oxpaymentsid->value);
+        $isPayPalStandard = $userPayment->oxuserpayments__oxpaymentsid->value === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
+        $isPayPalPayLater = $userPayment->oxuserpayments__oxpaymentsid->value === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID;
+
+        if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater) {
             $this->doExecutePayPalPayment($payPalOrderId);
         }
 
