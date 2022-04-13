@@ -46,17 +46,17 @@ class UserComponent extends UserComponent_parent
     {
         $this->setParent(oxNew('Register'));
 
-        $this->setRequestParameter('lgn_usr', $response->payer->email_address);
+        $this->setRequestParameterByPayPal('lgn_usr', $response->payer->email_address);
         // Guest users have a blank password
         $password = '';
-        $this->setRequestParameter('lgn_pwd', $password);
-        $this->setRequestParameter('lgn_pwd2', $password);
-        $this->setRequestParameter('lgn_pwd2', $password);
+        $this->setRequestParameterByPayPal('lgn_pwd', $password);
+        $this->setRequestParameterByPayPal('lgn_pwd2', $password);
+        $this->setRequestParameterByPayPal('lgn_pwd2', $password);
 
         $invoiceAddress = PayPalAddressResponseToOxidAddress::mapAddress($response, 'oxuser__');
         $deliveryAddress = PayPalAddressResponseToOxidAddress::mapAddress($response, 'oxaddress__');
-        $this->setRequestParameter('invadr', $invoiceAddress);
-        $this->setRequestParameter('deladr', $deliveryAddress);
+        $this->setRequestParameterByPayPal('invadr', $invoiceAddress);
+        $this->setRequestParameterByPayPal('deladr', $deliveryAddress);
 
         $this->registerUser();
     }
@@ -85,7 +85,7 @@ class UserComponent extends UserComponent_parent
      * @param string $paramName
      * @param mixed $paramValue
      */
-    protected function setRequestParameter(string $paramName, $paramValue): void
+    protected function setRequestParameterByPayPal(string $paramName, $paramValue): void
     {
         $_POST[$paramName] = $paramValue;
     }
