@@ -31,6 +31,7 @@ fi
 if [ "${HTA_USER}" != test ] && [ "${HTA_PW}" != test ]
 then
 echo 'AuthType Basic\nAuthName "Passwortgeschuetzter Bereich"\nAuthUserFile /var/www/oxideshop/.htpasswd\nRequire valid-user' >> /var/www/oxideshop/source/.htaccess
+echo 'Order deny,allow\nDeny from all\nAllow from paypal.com\nSatisfy any' >> /var/www/oxideshop/source/.htaccess
 htpasswd -bc /var/www/oxideshop/.htpasswd ${HTA_USER} ${HTA_PW}
 fi
 
