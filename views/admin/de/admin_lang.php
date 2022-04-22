@@ -65,6 +65,7 @@ $aLang = [
     'OSC_PAYPAL_SPECIAL_PAYMENTS'                 => 'Freischaltung für besondere Zahlarten erfolgt',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_PUI'             => 'Rechnungskauf',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Kreditkarte',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '(Alternativ zur fehlenden Zahlart wird ein zusätzlicher Button "Kreditkarte" unter den Paypal-Buttons angezeigt.)',
 
     // PayPal ORDER
     'OSC_PAYPAL_ISSUE_REFUND'                     => 'Rückerstattung ausstellen',

@@ -64,6 +64,7 @@ $aLang = [
     'OSC_PAYPAL_SPECIAL_PAYMENTS'                 => 'Activation for special payment methods has taken place',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_PUI'             => 'Pay upon Invoice',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Creditcard',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '(As an alternative to the missing payment method, an additional "credit card" button is displayed under the Paypal buttons.)',
 
     // PayPal ORDER
     'OSC_PAYPAL_ISSUE_REFUND'                     => 'Issue refund',
