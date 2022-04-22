@@ -67,6 +67,7 @@ $aLang = [
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Kreditkarte',
 
     // PayPal ORDER
+    'OSC_PAYPAL_ISSUE_REFUND'                     => 'Rückerstattung ausstellen',
     'OSC_PAYPAL_AMOUNT'                           => 'Betrag',
     'OSC_PAYPAL_SHOP_PAYMENT_STATUS'              => 'Shop-Zahlungsstatus',
     'OSC_PAYPAL_ORDER_PRICE'                      => 'Bestellpreis gesamt',

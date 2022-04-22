@@ -66,6 +66,7 @@ $aLang = [
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Creditcard',
 
     // PayPal ORDER
+    'OSC_PAYPAL_ISSUE_REFUND'                     => 'Issue refund',
     'OSC_PAYPAL_AMOUNT'                           => 'Amount',
     'OSC_PAYPAL_SHOP_PAYMENT_STATUS'              => 'Shop payment status',
     'OSC_PAYPAL_ORDER_PRICE'                      => 'Full order price',

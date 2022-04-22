@@ -146,21 +146,6 @@ $aModule = [
             'file' => 'views/blocks/layout/base_style.tpl'
         ],
         [
-            'template' => 'widget/product/listitem_line.tpl',
-            'block' => 'widget_product_listitem_line_price',
-            'file' => 'views/blocks/widget/product/widget_product_listitem_line_price.tpl'
-        ],
-        [
-            'template' => 'widget/product/listitem_infogrid.tpl',
-            'block' => 'widget_product_listitem_infogrid_price',
-            'file' => 'views/blocks/widget/product/widget_product_listitem_infogrid_price.tpl'
-        ],
-        [
-            'template' => 'widget/product/listitem_grid.tpl',
-            'block' => 'widget_product_listitem_grid_price',
-            'file' => 'views/blocks/widget/product/widget_product_listitem_grid_price.tpl'
-        ],
-        [
             'template' => 'page/checkout/basket.tpl',
             'block' => 'basket_btn_next_bottom',
             'file' => '/views/blocks/page/checkout/basket_btn_next_bottom.tpl',
