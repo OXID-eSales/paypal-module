@@ -1,6 +1,0 @@
-modules:
-  osc_paypal:
-    moduleSettings:
-      oscPayPalSandboxMode:
-        type: bool
-        value: true
