@@ -229,62 +229,13 @@
                     </div>
                 </div>
             </div>
-            [{* TODO: for the first release we start without PayPal Subscriptions
-            <div class="card">
-                <div class="card-header" id="heading4">
-                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
-                        [{oxmultilang ident="OSC_PAYPAL_SUBSCRIBE_OPTIONS"}]
-                    </h4>
-                </div>
-                <div id="collapse4" class="collapse" aria-labelledby="heading4" data-parent="#accordion">
-                    <div class="card-body">
-                        <div class="form-group">
-                            <label for="autobilloutstanding">[{oxmultilang ident="OSC_PAYPAL_BILLING_PLAN_AUTOMATICALLY_BILL"}]</label>
-                            <div class="controls">
-                                <div>
-                                    <div class="checkbox">
-                                        <label>
-                                            <input id="autobilloutstanding" type="checkbox" name="conf[oscPayPalAutoBillOutstanding]" [{if $config->getAutoBillOutstanding()}]checked[{/if}] value="1">
-                                        </label>
-                                        <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_BILLING_PLAN_AUTOMATICALLY_BILL"}]</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <label for="setupfeefailureaction">[{oxmultilang ident="OSC_PAYPAL_BILLING_PLAN_FAILURE_ACTION"}]</label>
-                            <div class="controls">
-                                <select name="conf[oscPayPalSetupFeeFailureAction]" id="setupfeefailureaction" class="form-control">
-                                    <option value="CONTINUE" [{if $config->getSetupFeeFailureAction() == 'CONTINUE'}]selected[{/if}]>
-                                        [{oxmultilang ident="OSC_PAYPAL_BILLING_PLAN_ACTION_CONTINUE"}]
-                                    </option>
-                                    <option value="CANCEL" [{if $config->getSetupFeeFailureAction() == 'CANCEL'}]selected[{/if}]>
-                                        [{oxmultilang ident="OSC_PAYPAL_BILLING_PLAN_ACTION_CANCEL"}]
-                                    </option>
-                                </select>
-                                <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_BILLING_PLAN_FAILURE_ACTION"}]</span>
-                            </div>
-
-                            <label for="paymentfailurethreshold">[{oxmultilang ident="OSC_PAYPAL_BILLING_PLAN_FAILURE_THRESHOLD"}]</label>
-                            <div class="controls">
-                                <select name="conf[oscPayPalPaymentFailureThreshold]" id="paymentfailurethreshold" class="form-control">
-                                    [{foreach from=$oView->getTotalCycleDefaults() item=value key=name}]
-                                        <option value="[{$value}]" [{if $config->getPaymentFailureThreshold() == $value}]selected[{/if}]>[{$value}]</option>
-                                    [{/foreach}]
-                                </select>
-                                <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_BILLING_PLAN_FAILURE_THRESHOLD"}]</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            *}]
             <div class="card">
                 <div class="card-header" id="heading5">
-                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
                         [{oxmultilang ident="OSC_PAYPAL_BANNER_CREDENTIALS"}]
                     </h4>
                 </div>
-                <div id="collapse5" class="collapse" aria-labelledby="heading5" data-parent="#accordion">
+                <div id="collapse4" class="collapse" aria-labelledby="heading5" data-parent="#accordion">
                     <div class="card-body">
                         <p>[{oxmultilang ident="OSC_PAYPAL_BANNER_INFOTEXT"}]</p>
                         <div class="form-group">

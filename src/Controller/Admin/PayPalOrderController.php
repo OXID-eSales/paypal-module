@@ -18,7 +18,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\RefundRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Payments;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
-use OxidSolutionCatalysts\PayPal\Traits\AdminOrderFunctionTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 
@@ -27,7 +26,6 @@ use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
  */
 class PayPalOrderController extends AdminDetailsController
 {
-    use AdminOrderFunctionTrait;
     use ServiceContainer;
 
     /**
@@ -72,23 +70,10 @@ class PayPalOrderController extends AdminDetailsController
             $this->addTplParam('oxid', $orderId);
             $this->addTplParam('order', $order);
             $this->addTplParam('payPalOrder', null);
-            $this->addTplParam('payPalSubscriptionOrder', null);
 
             if ($order->getPayPalOrderIdForOxOrderId()) {
                 $this->addTplParam('payPalOrder', $this->getPayPalOrder());
                 $this->addTplParam('capture', $order->getOrderPaymentCapture());
-            } elseif (
-                $this->isPayPalSubscription($orderId) &&
-                ($billingAgreementId = $order->getPayPalBillingAgreementIdForOxOrderId())
-            ) {
-                $paypalSubscription = $this->getPayPalSubscription($billingAgreementId);
-                $product = $this->getSubscriptionProduct($paypalSubscription->id);
-                $this->addTplParam('payPalSubscription', $paypalSubscription);
-                $this->addTplParam('subscriptionProduct', $product);
-                $result = "oscpaypalsubscriptiondetails.tpl";
-            } elseif ($this->isPayPalPartSubscription($orderId)) {
-                $this->addTplParam('payPalParentSubscriptionOrder', $this->getParentSubscriptionOrder($orderId));
-                $result = "oscpaypalpartsubscriptiondetails.tpl";
             }
         } catch (ApiException $exception) {
             $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()));

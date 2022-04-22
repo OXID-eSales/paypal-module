@@ -48,11 +48,6 @@ class PaymentGateway extends PaymentGateway_parent
     {
         $session = $this->getSession();
 
-        if ($session->getVariable('isSubscriptionCheckout')) {
-            $this->getSession()->deleteVariable('isSubscriptionCheckout');
-            return true;
-        }
-
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
         if (PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId()) {

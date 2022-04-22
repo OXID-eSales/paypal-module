@@ -31,7 +31,6 @@ class Constants
     public const PAYPAL_PUI_FLOWID = 'Oxid_PayPal_PUI_Checkout';
 
     // BN Codes defined together with PayPal
-    public const PAYPAL_PARTNER_ATTRIBUTION_ID_SUBSCRIPTION = 'Oxid_Cart_Subscriptions';
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP = 'Oxid_Cart_Payments';
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_EXPRESS = 'Oxid_Cart_PymtsShortcut';
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_BANNER = 'oxid_Cart_Instbanners';

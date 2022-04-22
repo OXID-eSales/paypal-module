@@ -31,16 +31,8 @@ class OrderController extends OrderController_parent
 {
     use ServiceContainer;
 
-    public function init()
-    {
-        $this->processSubscriptionFunctionality();
-        parent::init();
-    }
-
     public function render()
     {
-        $this->processSubscriptionFunctionality();
-
         if (Registry::getSession()->getVariable('oscpaypal_payment_redirect')) {
             Registry::getSession()->deleteVariable('oscpaypal_payment_redirect');
             Registry::getUtils()->redirect(Registry::getConfig()->getShopHomeUrl() . 'cl=user', true, 302);
@@ -85,39 +77,6 @@ class OrderController extends OrderController_parent
             $result = (string) $country->getFieldData('oxisoalpha2');
         }
         return $result;
-    }
-
-    public function execute()
-    {
-        $ret = parent::execute();
-
-        if (strpos($ret, 'thankyou') === false) {
-            return $ret;
-        }
-
-        $session = $this->getSession();
-        $oBasket =  $session->getBasket();
-
-        if ($oBasket->getPaymentId() !== PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID) {
-            return $ret;
-        }
-
-        // save order id to subscription
-        if ($subscriptionProductOrderId = $session->getVariable('subscriptionProductOrderId')) {
-            $orderId = Registry::getSession()->getVariable('sess_challenge');
-            $sql = 'UPDATE oscpaypal_subscription SET OXORDERID = ? WHERE OXID = ?';
-            DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->execute(
-                $sql,
-                [
-                    $orderId,
-                    $subscriptionProductOrderId
-                ]
-            );
-        }
-
-        PayPalSession::subscriptionIsDoneProcessing();
-
-        return $ret;
     }
 
     public function createAcdcOrder(): void
@@ -310,27 +269,6 @@ class OrderController extends OrderController_parent
         $payment = $this->getBasket()->getPaymentId();
         if (($payment !== PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID)) {
             $this->getBasket()->setPayment(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
-        }
-    }
-
-    private function processSubscriptionFunctionality(): void
-    {
-        $isSubscribe = Registry::getRequest()->getRequestEscapedParameter('subscribe', 0);
-        $showOverlay = Registry::getRequest()->getRequestEscapedParameter('showOverlay', 0);
-
-        if ($showOverlay) {
-            $this->addTplParam('loadingScreen', 'true');
-        }
-
-        if ($isSubscribe) {
-            $func = Registry::getRequest()->getRequestEscapedParameter('func');
-
-            if ($func === 'doOrder') {
-                $this->addTplParam('submitCart', 1);
-                $session = $this->getSession();
-                $session->setVariable('isSubscriptionCheckout', true);
-            }
-            $this->setPayPalAsPaymentMethod();
         }
     }
 }

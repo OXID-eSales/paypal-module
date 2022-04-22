@@ -64,15 +64,6 @@ class ViewConfig extends ViewConfig_parent
     }
 
     /**
-     * @return Bool
-     */
-    public function showOverlay(): bool
-    {
-        return PayPalSession::isSubscriptionProcessing();
-    }
-
-
-    /**
      * @return array
      */
     public function getPayPalCurrencyCodes(): array
@@ -117,27 +108,18 @@ class ViewConfig extends ViewConfig_parent
     /**
      * Gets PayPal JS SDK url
      *
-     * @param bool $subscribe is it a PayPal Subscription
-     *
      * @return string
      */
-    public function getPayPalJsSdkUrl($subscribe = false): string
+    public function getPayPalJsSdkUrl(): string
     {
         $config = Registry::getConfig();
 
         $params = [];
 
         $params['client-id'] = $this->getServiceFromContainer(ModuleSettings::class)->getClientId();
-
-        if ($subscribe) {
-            $params['vault'] = 'true';
-            $params['intent'] = 'subscription';
-            $params['locale'] = 'de_DE';
-        } else {
-            $params['integration-date'] = Constants::PAYPAL_INTEGRATION_DATE;
-            $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
-            $params['commit'] = 'false';
-        }
+        $params['integration-date'] = Constants::PAYPAL_INTEGRATION_DATE;
+        $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
+        $params['commit'] = 'false';
 
         if ($currency = $config->getActShopCurrencyObject()) {
             $params['currency'] = strtoupper($currency->name);
@@ -171,8 +153,6 @@ class ViewConfig extends ViewConfig_parent
 
     /**
      * Gets PayPal JS SDK url
-     *
-     * @param bool $subscribe is it a PayPal Subscription
      *
      * @return string
      */
