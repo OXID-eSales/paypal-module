@@ -108,21 +108,26 @@ class Order extends Order_parent
 
         $this->_updateOrderDate();
 
-        //TODO: Order is still not finished, need to doublecheck uapm payment status
-        $this->_setOrderStatus('NOT_FINISHED');
-
         $basket = Registry::getSession()->getBasket();
         $user = Registry::getSession()->getUser();
         $userPayment = oxNew(UserPayment::class);
         $userPayment->load($this->getFieldData('oxpaymentid'));
+        $paymentsId = $userPayment->oxuserpayments__oxpaymentsid->value;
         $this->afterOrderCleanUp($basket, $user);
 
-        $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($userPayment->oxuserpayments__oxpaymentsid->value);
-        $isPayPalStandard = $userPayment->oxuserpayments__oxpaymentsid->value === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
-        $isPayPalPayLater = $userPayment->oxuserpayments__oxpaymentsid->value === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID;
+        $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($paymentsId);
+        $isPayPalACDC = $paymentsId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
+        $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
+        $isPayPalPayLater = $paymentsId === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID;
 
         if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater) {
+            //TODO: Order is still not finished, need to doublecheck uapm payment status
+            $this->_setOrderStatus('NOT_FINISHED');
             $this->doExecutePayPalPayment($payPalOrderId);
+        }
+        elseif ($isPayPalACDC) {
+            $this->markOrderPaid();
+            $this->setTransId($payPalOrderId);
         }
 
         return $this->_sendOrderByEmail($user, $basket, $userPayment);
@@ -163,10 +168,12 @@ class Order extends Order_parent
     protected function _executePayment($basket, $userpayment) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
     {
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
 
-        $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($paymentService->getSessionPaymentId());
-        $isPayPalStandard = (string) $paymentService->getSessionPaymentId() === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
-        $isPayPalPayLater = (string) $paymentService->getSessionPaymentId() === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID;
+        $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($sessionPaymentId);
+        $isPayPalACDC = $sessionPaymentId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
+        $isPayPalStandard = $sessionPaymentId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
+        $isPayPalPayLater = $sessionPaymentId === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID;
 
         //catch UAPM, Standard and Pay Later PayPal payments here
         if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater) {
@@ -189,7 +196,7 @@ class Order extends Order_parent
                 Registry::getLogger()->error($exception->getMessage(), [$exception]);
             }
             return self::ORDER_STATE_PAYMENTERROR;
-        } elseif ((string) $paymentService->getSessionPaymentId() === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) {
+        } elseif ($isPayPalACDC) {
             return self::ORDER_STATE_ACDCINPROGRESS;
         } else {
             return parent::_executePayment($basket, $userpayment);
@@ -215,7 +222,7 @@ class Order extends Order_parent
         return $this->payPalOrder;
     }
 
-    protected function doExecutePayPalPayment($checkoutOrderId): bool
+    protected function doExecutePayPalPayment($payPalOrderId): bool
     {
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
@@ -224,13 +231,15 @@ class Order extends Order_parent
 
         // Capture Order
         try {
-            $paymentService->doCapturePayPalOrder($this, $checkoutOrderId);
+            $paymentService->doCapturePayPalOrder($this, $payPalOrderId);
             $success = true;
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on order capture call.", [$exception]);
         }
 
         $this->markOrderPaid();
+
+        $this->setTransId($payPalOrderId);
 
         // destroy PayPal-Session
         PayPalSession::storePayPalOrderId('');
@@ -243,7 +252,7 @@ class Order extends Order_parent
      */
     public function markOrderPaid()
     {
-        parent::_setOrderStatus('OK');
+        $this->_setOrderStatus('OK');
 
         $db = DatabaseProvider::getDb();
         $utilsDate = Registry::getUtilsDate();
@@ -256,15 +265,23 @@ class Order extends Order_parent
         $this->oxorder__oxpaid = new Field($date);
     }
 
+    /**
+     * Update order oxtransid
+     */
+    public function setTransId($sTransId)
+    {
+        $db = DatabaseProvider::getDb();
+
+        $query = 'update oxorder set oxtransid=? where oxid=?';
+        $db->execute($query, [$sTransId, $this->getId()]);
+
+        //updating order object
+        $this->oxorder__oxtransid = new Field($sTransId);
+    }
+
     public function markOrderPaymentFailed()
     {
-        $this->assign(
-            [
-                'OXTRANSSTATUS' => 'ERROR',
-                'OXFOLDER' => 'ORDERFOLDER_ERROR'
-            ]
-        );
-        $this->save();
+        $this->_setOrderStatus('ERROR');
     }
 
     /**
