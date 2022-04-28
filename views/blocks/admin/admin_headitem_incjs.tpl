@@ -1,14 +1,6 @@
 [{if
     $oViewConf->getTopActiveClassName()|lower=="oscpaypalconfig" ||
-    $oViewConf->getTopActiveClassName()|lower=="oscpaypalorder" ||
-    $oViewConf->getTopActiveClassName()|lower=="oscpaypaltransactions" ||
-    $oViewConf->getTopActiveClassName()|lower=="oscpaypalbalance" ||
-    $oViewConf->getTopActiveClassName()|lower=="oscpaypalsubscription" ||
-    $oViewConf->getTopActiveClassName()|lower=="oscpaypalsubscriptiondetails" ||
-    $oViewConf->getTopActiveClassName()|lower=="oscpaypalsubscriptiontransaction" ||
-    $oViewConf->getTopActiveClassName()|lower=="oscpaypaldisputedetails" ||
-    $oViewConf->getTopActiveClassName()|lower=="oscpaypaldispute" ||
-    $oViewConf->getTopActiveClassName()|lower=="oscpaypalsubscribe"
+    $oViewConf->getTopActiveClassName()|lower=="oscpaypalorder"
 }]
     [{oxscript include="js/libs/jquery.min.js" priority=1}]
     [{oxscript add="$.noConflict();" priority=10}]

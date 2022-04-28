@@ -66,29 +66,6 @@ class User extends User_parent
         return $result;
     }
 
-    /**
-     * @return false if User has no subscriped the product
-     * @throws \OxidEsales\Eshop\Core\Exception\DatabaseConnectionException
-     */
-    public function hasSubscribed($subscriptionPlanId = '')
-    {
-        $select = 'SELECT oscpaypal_subscription.`oxid`
-            FROM oscpaypal_subscription
-            LEFT JOIN oscpaypal_subscription_product
-            ON (oscpaypal_subscription.`oxpaypalsubprodid` = oscpaypal_subscription_product.`oxid`)
-            WHERE oscpaypal_subscription.`oxuserid` = ?
-            AND oscpaypal_subscription_product.`paypalsubscriptionplanid` = ?';
-
-        $result = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getRow(
-            $select,
-            [
-                $this->getId(),
-                $subscriptionPlanId
-            ]
-        );
-
-        return $result ? true : false;
-    }
 
     /**
      * get the InvoiceAddress from user with all required fields

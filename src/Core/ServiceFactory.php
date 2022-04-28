@@ -16,10 +16,6 @@ use OxidSolutionCatalysts\PayPalApi\Service\Catalog;
 use OxidSolutionCatalysts\PayPalApi\Service\GenericService;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 use OxidSolutionCatalysts\PayPalApi\Service\Payments;
-use OxidSolutionCatalysts\PayPalApi\Service\Subscriptions;
-use OxidSolutionCatalysts\PayPalApi\Service\TransactionSearch;
-use OxidSolutionCatalysts\PayPal\Core\Api\DisputeService as FileAwareDisputeService;
-use OxidSolutionCatalysts\PayPal\Core\Api\DisputeService;
 use OxidSolutionCatalysts\PayPal\Core\Api\IdentityService;
 
 /**
@@ -35,11 +31,6 @@ class ServiceFactory
      */
     private $client;
 
-    public function getSubscriptionService(): Subscriptions
-    {
-        return oxNew(Subscriptions::class, $this->getClient());
-    }
-
     /**
      * @return Payments
      */
@@ -54,14 +45,6 @@ class ServiceFactory
     public function getOrderService(): Orders
     {
         return oxNew(Orders::class, $this->getClient());
-    }
-
-    /**
-     * @return Catalog
-     */
-    public function getCatalogService(): Catalog
-    {
-        return oxNew(Catalog($this->getClient()));
     }
 
     /**
@@ -97,30 +80,6 @@ class ServiceFactory
             Partner::class,
             $this->getClient()
         );
-    }
-
-    /**
-     * @return TransactionSearch
-     */
-    public function getTransactionSearchService(): TransactionSearch
-    {
-        return oxNew(TransactionSearch::class, $this->getClient());
-    }
-
-    /**
-     * @return DisputeService
-     */
-    public function getDisputeService(): DisputeService
-    {
-        return oxNew(DisputeService::class, $this->getClient());
-    }
-
-    /**
-     * @return DisputeService
-     */
-    public function getFileAwareDisputeService(): FileAwareDisputeService
-    {
-        return oxNew(FileAwareDisputeService::class, $this->getClient());
     }
 
     /**

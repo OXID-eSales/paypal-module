@@ -29,7 +29,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
-use OxidSolutionCatalysts\PayPal\Repository\SubscriptionRepository;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -131,76 +130,11 @@ class ProxyController extends FrontendController
         $this->outputJson($response);
     }
 
-    public function createSubscriptionOrder()
-    {
-        // Remove all items from the basket
-        // because subscriptions can only work with one subscription product at a time
-        $session = Registry::getSession();
-        $session->getBasket()->deleteBasket();
-
-        $subscriptionPlanId = Registry::getRequest()->getRequestEscapedParameter('subscriptionPlanId');
-        $session->setVariable('subscriptionPlanIdForBasket', $subscriptionPlanId);
-
-        $this->addToBasket();
-        $this->setPayPalPaymentMethod();
-        $this->outputJson([true]);
-    }
-
-    public function saveSubscriptionOrder()
-    {
-        PayPalSession::subscriptionIsProcessing();
-
-        $billingAgreementId = Registry::getRequest()->getRequestEscapedParameter('billingAgreementId');
-        $subscriptionPlanId = Registry::getRequest()->getRequestEscapedParameter('subscriptionPlanId');
-
-        $repository = new SubscriptionRepository();
-        $repository->saveSubscriptionOrder($billingAgreementId, $subscriptionPlanId);
-    }
-
     public function cancelPayPalPayment()
     {
         PayPalSession::unsetPayPalOrderId();
         Registry::getSession()->getBasket()->setPayment(null);
         Registry::getUtils()->redirect(Registry::getConfig()->getShopHomeUrl() . 'cl=payment', false, 301);
-    }
-
-    public function sendCancelRequest()
-    {
-        $repository = new SubscriptionRepository();
-        $lang = Registry::getLang();
-        $orderId = Registry::getRequest()->getRequestEscapedParameter('orderId');
-
-        if (
-            $orderId &&
-            !$repository->isCancelRequestSended($orderId)
-        ) {
-            $repository->setCancelRequestSended($orderId);
-
-            $order = oxNew(Order::class);
-            $order->load($orderId);
-
-            $user = oxNew(User::class);
-            $user->load($order->oxorder__oxuserid->value);
-
-            $userName = $user->oxuser__oxfname->value . ' ' . $user->oxuser__oxlname->value;
-            $customerNo = $user->oxuser__oxcustnr->value;
-            $orderNo = $order->oxorder__oxordernr->value;
-
-            $message = sprintf(
-                $lang->translateString('OSC_PAYPAL_SUBSCRIPTION_UNSUBSCRIBE_MAIL'),
-                $userName,
-                $customerNo,
-                $orderNo
-            );
-
-            $mailer = oxNew(Email::class);
-            $mailer->sendContactMail(
-                '',
-                $lang->translateString('OSC_PAYPAL_SUBSCRIPTION_UNSUBSCRIBE_HEAD'),
-                $message
-            );
-        }
-        $this->outputJson([true]);
     }
 
     /**

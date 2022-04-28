@@ -95,24 +95,6 @@ class PayPalSession
         return Registry::getSession()->getVariable(Constants::SESSION_CHECKOUT_ORDER_ID);
     }
 
-    public static function subscriptionIsProcessing(): void
-    {
-        Registry::getSession()->setVariable('SessionIsProcessing', true);
-    }
-
-    public static function subscriptionIsDoneProcessing(): void
-    {
-        $session = Registry::getSession();
-        $session->deleteVariable('SessionIsProcessing');
-        $session->deleteVariable('subscriptionProductOrderId');
-    }
-
-    public static function isSubscriptionProcessing(): bool
-    {
-        $isSubscriptionProcessing = Registry::getSession()->getVariable('SessionIsProcessing');
-        return empty($isSubscriptionProcessing) ? false : true;
-    }
-
     public static function setSessionRedirectLink(string $link): void
     {
         Registry::getSession()->setVariable(

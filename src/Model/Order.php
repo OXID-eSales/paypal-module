@@ -23,7 +23,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalOrder;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
-use OxidSolutionCatalysts\PayPal\Traits\AdminOrderFunctionTrait;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -37,8 +36,6 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 class Order extends Order_parent
 {
     use ServiceContainer;
-
-    use AdminOrderFunctionTrait;
 
     /**
      * Uapm payment in progress
@@ -299,77 +296,6 @@ class Order extends Order_parent
     }
 
     /**
-     * Returns PayPal Session id.
-     *
-     * @param string|null $oxId
-     *
-     * @return string
-     */
-    public function getPayPalProductIdForOxOrderId(string $oxId = null)
-    {
-        if (is_null($this->payPalProductId)) {
-            $this->payPalProductId = '';
-            $oxId = is_null($oxId) ? $this->getId() : $oxId;
-            $db = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC);
-
-            $sql = 'SELECT OXPAYPALSUBPRODID
-                      FROM oscpaypal_subscription
-                     WHERE PAYPALBILLINGAGREEMENTID = ?';
-
-            /** @var $paypalSubscriptionId $subProdId @Todo Specify this!*/
-            $paypalSubscriptionId = null;
-
-            $subProdId = $db->getOne(
-                $sql,
-                [
-                    $paypalSubscriptionId
-                ]
-            );
-
-            if ($subProdId) {
-                $sql = 'SELECT PAYPALPRODUCTID
-                          FROM oscpaypal_subscription_product
-                         WHERE OXID = ?';
-
-                $this->payPalProductId = $db->getOne(
-                    $sql,
-                    [
-                        $subProdId
-                    ]
-                );
-            }
-        }
-        return $this->payPalProductId;
-    }
-
-    /**
-     * Returns PayPal BillingAgreementId
-     *
-     * @param string|null $oxId
-     *
-     * @return string
-     */
-    public function getPayPalBillingAgreementIdForOxOrderId(string $oxId = null)
-    {
-        if (is_null($this->payPalBillingAgreementId)) {
-            $this->payPalBillingAgreementId = '';
-            $oxId = is_null($oxId) ? $this->getId() : $oxId;
-            $table = 'oscpaypal_subscription';
-            $shopId = $this->getShopId();
-            $params = [$table . '.oxorderid' => $oxId, $table . '.oxshopid' => $shopId];
-
-            $paypalOrderObj = oxNew(BaseModel::class);
-            $paypalOrderObj->init($table);
-            $select = $paypalOrderObj->buildSelectString($params);
-
-            if ($data = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getRow($select)) {
-                $this->payPalBillingAgreementId = $data['paypalbillingagreementid'];
-            }
-        }
-        return $this->payPalBillingAgreementId;
-    }
-
-    /**
      * Checks if the order was paid using PayPal
      *
      * @return bool
@@ -388,17 +314,5 @@ class Order extends Order_parent
     public function getOrderPaymentCapture(): ?Capture
     {
         return $this->getPayPalOrder()->purchase_units[0]->payments->captures[0] ?? null;
-    }
-
-
-
-    /**
-     * template-getter getPayPalSubscriptionForHistory
-     * @return obj
-     */
-    public function getPayPalSubscriptionForHistory()
-    {
-        $billingAgreementId = $this->getPayPalBillingAgreementIdForOxOrderId();
-        return $this->getPayPalSubscription($billingAgreementId);
     }
 }
