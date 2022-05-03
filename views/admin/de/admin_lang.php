@@ -132,6 +132,7 @@ $aLang = [
     'OSC_PAYPAL_BILLING'                          => 'Abrechnung',
 
     'OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'     => 'Einstellungen aus dem klassischen PayPal-Modul übernehmen',
+    'OSC_PAYPAL_BANNER_TRANSFERREDOLDSETTINGS'     => 'Banner-Einstellungen wurden aus dem klassischen PayPal-Modul übertragen.',
     'OSC_PAYPAL_BANNER_CREDENTIALS'                => 'Banner-Einstellungen',
     'OSC_PAYPAL_BANNER_INFOTEXT'                   => 'Bieten Sie Ihren Kunden PayPal Ratenzahlung mit 0% effektiven Jahreszins an. <a href="https://www.paypal.com/de/webapps/mpp/installments" target="_blank">Erfahren Sie hier mehr</a>.',
     'OSC_PAYPAL_BANNER_SHOW_ALL'                   => 'Ratenzahlung-Banner aktivieren',

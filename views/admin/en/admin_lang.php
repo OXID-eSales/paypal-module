@@ -131,6 +131,7 @@ $aLang = [
     'OSC_PAYPAL_BILLING'                          => 'Billing',
 
     'OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'     => 'Apply settings from the classic PayPal module',
+    'OSC_PAYPAL_BANNER_TRANSFERREDOLDSETTINGS'     => 'Banner settings have been transferred from the classig PayPal module.',
     'OSC_PAYPAL_BANNER_CREDENTIALS'                => 'Banner settings',
     'OSC_PAYPAL_BANNER_INFOTEXT'                   => 'Offer your customers PayPal installment payment with 0% effective annual interest. <a href="https://www.paypal.com/de/webapps/mpp/installments" target="_blank">Read more</a>.',
     'OSC_PAYPAL_BANNER_SHOW_ALL'                   => 'Enable installment banners',

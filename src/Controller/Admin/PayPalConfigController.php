@@ -290,5 +290,11 @@ class PayPalConfigController extends AdminController
 
         // Save legacy settings transfer status
         $this->getServiceFromContainer(ModuleSettings::class)->save('oscPayPalLegacySettingsTransferred', true);
+
+        Registry::getUtilsView()->addErrorToDisplay(
+            Registry::getLang()->translateString('OSC_PAYPAL_BANNER_TRANSFERREDOLDSETTINGS'),
+            false,
+            true
+        );
     }
 }
