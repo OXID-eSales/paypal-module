@@ -130,7 +130,7 @@ $aLang = [
     'OSC_PAYPAL_SHIPPING'                         => 'Shipping',
     'OSC_PAYPAL_BILLING'                          => 'Billing',
 
-    // PSPAYPAL-491 -->
+    'OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'     => 'Apply settings from the classic PayPal module',
     'OSC_PAYPAL_BANNER_CREDENTIALS'                => 'Banner settings',
     'OSC_PAYPAL_BANNER_INFOTEXT'                   => 'Offer your customers PayPal installment payment with 0% effective annual interest. <a href="https://www.paypal.com/de/webapps/mpp/installments" target="_blank">Read more</a>.',
     'OSC_PAYPAL_BANNER_SHOW_ALL'                   => 'Enable installment banners',
@@ -157,5 +157,4 @@ $aLang = [
     'OSC_PAYPAL_BANNER_COLORSCHEMEBLACK'            => 'black',
     'OSC_PAYPAL_BANNER_COLORSCHEMEWHITE'            => 'white',
     'OSC_PAYPAL_BANNER_COLORSCHEMEWHITENOBORDER'    => 'white, no border',
-    // <-- PSPAYPAL-491
 ];

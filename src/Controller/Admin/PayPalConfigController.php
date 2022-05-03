@@ -15,6 +15,7 @@ use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Core\LegacyModuleSettings;
 
 /**
  * Controller for admin > PayPal/Configuration page
@@ -242,5 +243,38 @@ class PayPalConfigController extends AdminController
         }
 
         return $array;
+    }
+
+    /**
+     * Transcribe banner settings from the classic PayPal Module (oepaypal)
+     */
+    public function transferBannerSettings()
+    {
+        $LegacyModuleSettings = Registry::get(LegacyModuleSettings::class);
+        $transferrableSettings = $LegacyModuleSettings->getTransferrableSettings();
+        $oldConfigKeys = array_keys($transferrableSettings);
+        $currentShopId = Registry::getConfig()->getActiveShop()->getId();
+
+        foreach ($oldConfigKeys as $configKeyName)
+        {
+            // Read old values
+            $legacyConfigValue = Registry::getConfig()->getShopConfVar(
+                $configKeyName,
+                $currentShopId,
+                LegacyModuleSettings::LEGACY_MODULE_ID
+            );
+
+            // Invert "hide" option
+            if ($configKeyName == 'oePayPalBannersHideAll')
+            {
+                $legacyConfigValue = !$legacyConfigValue;
+            }
+
+            // Write new config values
+            $this->getServiceFromContainer(ModuleSettings::class)->save(
+                $transferrableSettings[$configKeyName],
+                $legacyConfigValue
+            );
+        }
     }
 }
