@@ -298,4 +298,13 @@ class ModuleSettings
     {
         return $this->moduleSettingBridge->get($key, Module::MODULE_ID);
     }
+
+    /**
+     * This setting indicates whether settings from the legacy modules have been transferred.
+     * @return bool
+     */
+    public function getLegacySettingsTransferStatus(): bool
+    {
+        return (bool) $this->getSettingValue('oscPayPalLegacySettingsTransferred');
+    }
 }

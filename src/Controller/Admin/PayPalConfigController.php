@@ -246,6 +246,17 @@ class PayPalConfigController extends AdminController
     }
 
     /**
+     * Template variable getter, show button when config value is false
+     * @return bool
+     */
+    public function showTransferLegacySettingsButton(): bool
+    {
+        $showButton = !$this->getServiceFromContainer(ModuleSettings::class)->getLegacySettingsTransferStatus();
+
+        return $showButton;
+    }
+
+    /**
      * Transcribe banner settings from the classic PayPal Module (oepaypal)
      */
     public function transferBannerSettings()
@@ -276,5 +287,8 @@ class PayPalConfigController extends AdminController
                 $legacyConfigValue
             );
         }
+
+        // Save legacy settings transfer status
+        $this->getServiceFromContainer(ModuleSettings::class)->save('oscPayPalLegacySettingsTransferred', true);
     }
 }

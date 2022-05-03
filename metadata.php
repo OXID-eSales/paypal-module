@@ -364,6 +364,12 @@ $aModule = [
             'group' => null
         ],
         [
+            'name' => 'oscPayPalLegacySettingsTransferred',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
             'name' => 'oscPayPalShowCheckoutButton',
             'type' => 'bool',
             'value' => true,
