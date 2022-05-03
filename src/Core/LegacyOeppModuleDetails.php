@@ -7,9 +7,18 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
-class LegacyModuleSettings
+class LegacyOeppModuleDetails
 {
     public const LEGACY_MODULE_ID = 'module:oepaypal';
+
+    /**
+     * Determines whether the legacy PayPal module "oepaypal" is present in the system
+     * @return bool
+     */
+    public function isLegacyModulePresent(): bool
+    {
+        return file_exists(OX_BASE_PATH.'modules'.DIRECTORY_SEPARATOR.'oe'.DIRECTORY_SEPARATOR.'oepaypal'.DIRECTORY_SEPARATOR.'metadata.php');
+    }
 
     /**
      * @var string[] Array of the legacy settings with their corresponding settings in this module.

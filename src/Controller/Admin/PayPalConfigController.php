@@ -15,7 +15,7 @@ use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
-use OxidSolutionCatalysts\PayPal\Core\LegacyModuleSettings;
+use OxidSolutionCatalysts\PayPal\Core\LegacyOeppModuleDetails;
 
 /**
  * Controller for admin > PayPal/Configuration page
@@ -246,14 +246,20 @@ class PayPalConfigController extends AdminController
     }
 
     /**
-     * Template variable getter, show button when config value is false
+     * Template variable getter,  check whether legacy oepaypal module exists and show button when config value is false
      * @return bool
      */
     public function showTransferLegacySettingsButton(): bool
     {
-        $showButton = !$this->getServiceFromContainer(ModuleSettings::class)->getLegacySettingsTransferStatus();
+        $LegacyOeppModuleDetails = Registry::get(LegacyOeppModuleDetails::class);
 
-        return $showButton;
+        if ($LegacyOeppModuleDetails->isLegacyModulePresent()) {
+            $showButton = !$this->getServiceFromContainer(ModuleSettings::class)->getLegacySettingsTransferStatus();
+
+            return $showButton;
+        }
+
+        return false;
     }
 
     /**
@@ -261,8 +267,8 @@ class PayPalConfigController extends AdminController
      */
     public function transferBannerSettings()
     {
-        $LegacyModuleSettings = Registry::get(LegacyModuleSettings::class);
-        $transferrableSettings = $LegacyModuleSettings->getTransferrableSettings();
+        $LegacyOeppModuleDetails = Registry::get(LegacyOeppModuleDetails::class);
+        $transferrableSettings = $LegacyOeppModuleDetails->getTransferrableSettings();
         $oldConfigKeys = array_keys($transferrableSettings);
         $currentShopId = Registry::getConfig()->getActiveShop()->getId();
 
@@ -272,7 +278,7 @@ class PayPalConfigController extends AdminController
             $legacyConfigValue = Registry::getConfig()->getShopConfVar(
                 $configKeyName,
                 $currentShopId,
-                LegacyModuleSettings::LEGACY_MODULE_ID
+                LegacyOeppModuleDetails::LEGACY_MODULE_ID
             );
 
             // Invert "hide" option
