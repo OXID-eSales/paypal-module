@@ -28,9 +28,9 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: OXID-eSales/paypal-client
-          ref: v1.0.2
+          ref: v1.0.3
           path: paypal-client
-          
+
       - name: move paypal-client to projects folder
         run: |
           cp -r paypal-client/ /build/oxid/project-modules/
