@@ -47,5 +47,11 @@
         "psalm-automatic": "psalm --alter --issues=MissingReturnType,MissingParamType",
         "phpcs": "phpcs --standard=Tests/phpcs.xml",
         "phpcbf": "phpcbf --standard=Tests/phpcs.xml"
+    },
+    "config": {
+        "allow-plugins": {
+            "oxid-esales/oxideshop-unified-namespace-generator": true,
+            "oxid-esales/oxideshop-composer-plugin": true
+        }
     }
 }
