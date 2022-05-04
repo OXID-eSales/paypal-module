@@ -168,9 +168,9 @@ class Basket extends Basket_parent
      * Collects all basket discounts (basket, payment and vouchers)
      * and returns sum of collected discounts.
      *
-     * @return double
+     * @return float
      */
-    public function getDiscountSumPayPalBasket()
+    public function getDiscountSumPayPalBasket(): float
     {
         // collect discounts
         $discount = 0.0;
@@ -255,7 +255,7 @@ class Basket extends Basket_parent
         $basketVatValue += $this->getPayPalCheckoutGiftCardVatValue();
         $basketVatValue += $this->getPayPalCheckoutPaymentVatValue();
 
-        if ($this->getDeliveryCosts() < round($this->getDeliveryCosts(), 2)) {
+        if ($this->getDeliveryCosts() < round((float)$this->getDeliveryCosts(), 2)) {
             return floor($basketVatValue * 100) / 100;
         }
 

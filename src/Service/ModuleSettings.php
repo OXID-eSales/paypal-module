@@ -40,8 +40,6 @@ class ModuleSettings
 
     /**
      * Checks if module configurations are valid
-     *
-     * @throws StandardException
      */
     public function checkHealth(): bool
     {

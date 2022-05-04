@@ -20,14 +20,4 @@ class Payment extends Payment_parent
     {
         return PayPalDefinitions::isUAPMPayment($this->getId());
     }
-
-    /**
-     * return the Payment-Sourcename for uAPM-Payments
-     *
-     * @return string
-     */
-    public function getUAPMPaymentSource(): string
-    {
-        return PayPalDefinitions::getUAPMPaymentSource($this->getId());
-    }
 }

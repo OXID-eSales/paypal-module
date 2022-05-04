@@ -234,7 +234,7 @@ class Order extends Order_parent
         try {
             $paymentService->doCapturePayPalOrder($this, $payPalOrderId);
             $success = true;
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             Registry::getLogger()->error("Error on order capture call.", [$exception]);
         }
 
@@ -320,7 +320,7 @@ class Order extends Order_parent
      */
     public function paidWithPayPal(): bool
     {
-        return (bool) ($this->getPayPalOrderIdForOxOrderId() || $this->getPayPalBillingAgreementIdForOxOrderId());
+        return ($this->getPayPalOrderIdForOxOrderId() || $this->getPayPalBillingAgreementIdForOxOrderId());
     }
 
     /**

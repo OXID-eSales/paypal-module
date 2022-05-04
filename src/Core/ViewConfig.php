@@ -126,7 +126,7 @@ class ViewConfig extends ViewConfig_parent
         }
 
         // Available components: enable messages+buttons for PDP
-        if ($this->getActiveClassName('details')) {
+        if ($this->getActiveClassName() === 'details') {
             $params['components'] = 'messages,buttons';
         }
 
@@ -173,11 +173,13 @@ class ViewConfig extends ViewConfig_parent
 
     public function getDataClientToken(): string
     {
+
+        /** @var \OxidSolutionCatalysts\PayPal\Core\Api\IdentityService $identityService */
         $identityService = Registry::get(ServiceFactory::class)->getIdentityService();
 
         $response = $identityService->requestClientToken();
 
-        return is_array($response) ? (string) $response['client_token'] : '';
+        return $response['client_token'] ?? '';
     }
 
     /**
@@ -206,7 +208,7 @@ class ViewConfig extends ViewConfig_parent
 
         $components = 'messages';
         // enable buttons for PDP
-        if ($this->getActiveClassName('details')) {
+        if ($this->getActiveClassName() === 'details') {
             $components .= ',buttons';
         }
 
@@ -404,6 +406,7 @@ class ViewConfig extends ViewConfig_parent
      * Template variable getter. Check if is a ??? Theme Compatible Theme
      *
      * @return boolean
+     * @psalm-suppress InternalMethod
      */
     public function isCompatibleTheme($themeId = null)
     {

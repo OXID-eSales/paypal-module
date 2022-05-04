@@ -5,7 +5,11 @@
  * See LICENSE file for license details.
  */
 
-namespace OxidSolutionCatalysts\Unzer\Core;
+namespace OxidSolutionCatalysts\PayPal\Core;
+
+class UserComponent_parent extends OxidEsales\Eshop\Application\Component\UserComponent
+{
+}
 
 class ShopControl_parent extends \OxidEsales\Eshop\Core\ShopControl
 {
@@ -15,9 +19,17 @@ class ViewConfig_parent extends \OxidEsales\Eshop\Core\ViewConfig
 {
 }
 
-namespace OxidSolutionCatalysts\Unzer\Model;
+namespace OxidSolutionCatalysts\PayPal\Model;
 
 class PaymentGateway_parent extends \OxidEsales\Eshop\Application\Model\PaymentGateway
+{
+}
+
+class Basket_parent extends \OxidEsales\Eshop\Application\Model\Basket
+{
+}
+
+class User_parent extends \OxidEsales\Eshop\Application\Model\User
 {
 }
 

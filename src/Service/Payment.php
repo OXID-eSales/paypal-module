@@ -18,6 +18,7 @@ use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
@@ -214,6 +215,7 @@ class Payment
 
         /** @var OrderRequestFactory $requestFactory */
         $requestFactory = Registry::get(ConfirmOrderRequestFactory::class);
+        /** @var ConfirmOrderRequest $request */
         $request = $requestFactory->getRequest(
             $basket,
             $uapmName
