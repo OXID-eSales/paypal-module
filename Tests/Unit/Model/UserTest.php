@@ -20,7 +20,8 @@ final class UserTest extends UnitTestCase
     public function testPuiBirthDate(): void
     {
         $this->setRequestParameter(
-            'pui_required', [
+            'pui_required',
+            [
                     'birthdate' => [
                         'day' => 1,
                         'month' => 4,
@@ -38,7 +39,8 @@ final class UserTest extends UnitTestCase
     public function testPuiBirthDateNotSet(): void
     {
         $this->setRequestParameter(
-            'pui_required', [
+            'pui_required',
+            [
                 'birthdate' => [
                     'day' => null,
                     'month' => null,
@@ -55,7 +57,8 @@ final class UserTest extends UnitTestCase
     public function testPuiPhone(): void
     {
         $this->setRequestParameter(
-            'pui_required', [
+            'pui_required',
+            [
                 'phonenumber' => '040 111222333'
             ]
         );
@@ -71,14 +74,15 @@ final class UserTest extends UnitTestCase
         $apiPhone = $user->getPhoneNumberForPuiRequest();
 
         $this->assertInstanceOf(ApiModelPhone::class, $apiPhone);
-        $this->assertEquals('49',  $apiPhone->country_code);
-        $this->assertEquals('40111222333',  $apiPhone->national_number);
+        $this->assertEquals('49', $apiPhone->country_code);
+        $this->assertEquals('40111222333', $apiPhone->national_number);
     }
 
     public function testPuiPhoneWithCountryPrefix(): void
     {
         $this->setRequestParameter(
-            'pui_required', [
+            'pui_required',
+            [
                 'phonenumber' => '+49 40 111222333'
             ]
         );
@@ -94,14 +98,15 @@ final class UserTest extends UnitTestCase
         $apiPhone = $user->getPhoneNumberForPuiRequest();
 
         $this->assertInstanceOf(ApiModelPhone::class, $apiPhone);
-        $this->assertEquals('49',  $apiPhone->country_code);
-        $this->assertEquals('40111222333',  $apiPhone->national_number);
+        $this->assertEquals('49', $apiPhone->country_code);
+        $this->assertEquals('40111222333', $apiPhone->national_number);
     }
 
     public function testPuiPhoneInvalid(): void
     {
         $this->setRequestParameter(
-            'pui_required', [
+            'pui_required',
+            [
                 'phonenumber' => 'NO_PHONE'
             ]
         );

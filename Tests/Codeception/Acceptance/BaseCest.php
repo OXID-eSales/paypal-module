@@ -177,8 +177,11 @@ abstract class BaseCest
         );
     }
 
-    protected function proceedToPaymentStep(AcceptanceTester $I, string $userName = null, bool $ensureCheckoutButton = true): void
-    {
+    protected function proceedToPaymentStep(
+        AcceptanceTester $I,
+        string $userName = null,
+        bool $ensureCheckoutButton = true
+    ): void {
         if ($ensureCheckoutButton) {
             $I->updateModuleConfiguration('oscPayPalShowCheckoutButton', true);
         }

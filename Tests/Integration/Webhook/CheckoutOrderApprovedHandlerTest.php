@@ -21,7 +21,6 @@ use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 
-
 final class CheckoutOrderApprovedHandlerTest extends UnitTestCase
 {
     public function testRequestMissingData(): void
@@ -136,7 +135,7 @@ final class CheckoutOrderApprovedHandlerTest extends UnitTestCase
     {
         $response = new ApiOrderResponse($data);
 
-        $orderServiceMock =  $this->getMockBuilder(PayPalApiOrders::class)
+        $orderServiceMock = $this->getMockBuilder(PayPalApiOrders::class)
             ->disableOriginalConstructor()
             ->getMock();
         $orderServiceMock->expects($this->any())

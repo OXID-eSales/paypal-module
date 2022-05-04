@@ -34,7 +34,8 @@ class CheckoutOrderApprovedHandler implements HandlerInterface
 
         $payPalOrderId = $this->getPayPalOrderId($event);
 
-        //TODO: tbd: query order details from paypal. On the other hand, we just got verified that this data came from PayPal.
+        //TODO: tbd: query order details from paypal. On the other hand,
+        // we just got verified that this data came from PayPal.
 
         //This one needs a capture
         $response = $this->capturePayment($payPalOrderId);

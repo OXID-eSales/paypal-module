@@ -232,7 +232,8 @@ class Basket extends Basket_parent
      *
      * @return double
      */
-    public function getPayPalProductNetto() {
+    public function getPayPalProductNetto()
+    {
         $result = 0;
         foreach ($this->getContents() as $basketItem) {
             $itemUnitPrice = $basketItem->getUnitPrice();

@@ -12,7 +12,6 @@ namespace OxidSolutionCatalysts\PayPal\Core\Utils;
 use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Money;
-
 use stdClass;
 
 class PriceToMoney

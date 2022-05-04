@@ -15,7 +15,6 @@ use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 
-
 class UserRepository
 {
     /** @var QueryBuilderFactoryInterface */
@@ -29,10 +28,9 @@ class UserRepository
 
     public function __construct(
         QueryBuilderFactoryInterface $queryBuilderFactory,
-        ContextInterface             $context,
-        EshopCoreConfig              $config
-    )
-    {
+        ContextInterface $context,
+        EshopCoreConfig $config
+    ) {
         $this->queryBuilderFactory = $queryBuilderFactory;
         $this->context = $context;
         $this->config = $config;

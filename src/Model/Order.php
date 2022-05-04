@@ -7,7 +7,6 @@
 
 declare(strict_types=1);
 
-
 namespace OxidSolutionCatalysts\PayPal\Model;
 
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
@@ -42,21 +41,21 @@ class Order extends Order_parent
      *
      * @var int
      */
-    const ORDER_STATE_SESSIONPAYMENT_INPROGRESS = 500;
+    public const ORDER_STATE_SESSIONPAYMENT_INPROGRESS = 500;
 
     /**
      * ACDC payment in progress
      *
      * @var int
      */
-    const ORDER_STATE_ACDCINPROGRESS = 700;
+    public const ORDER_STATE_ACDCINPROGRESS = 700;
 
     /**
      * Error during payment execution
      *
      * @var int
      */
-    const ORDER_STATE_PAYMENTERROR = 2;
+    public const ORDER_STATE_PAYMENTERROR = 2;
 
     /**
      * PayPal order information
@@ -103,7 +102,10 @@ class Order extends Order_parent
         if (!$this->oxorder__oxordernr->value) {
             $this->_setNumber();
         } else {
-            oxNew(\OxidEsales\Eshop\Core\Counter::class)->update($this->_getCounterIdent(), $this->oxorder__oxordernr->value);
+            oxNew(\OxidEsales\Eshop\Core\Counter::class)->update(
+                $this->_getCounterIdent(),
+                $this->oxorder__oxordernr->value
+            );
         }
 
         $this->_updateOrderDate();
@@ -124,8 +126,7 @@ class Order extends Order_parent
             //TODO: Order is still not finished, need to doublecheck uapm payment status
             $this->_setOrderStatus('NOT_FINISHED');
             $this->doExecutePayPalPayment($payPalOrderId);
-        }
-        elseif ($isPayPalACDC) {
+        } elseif ($isPayPalACDC) {
             $this->markOrderPaid();
             $this->setTransId($payPalOrderId);
         }

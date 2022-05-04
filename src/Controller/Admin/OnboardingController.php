@@ -39,7 +39,8 @@ class OnboardingController extends AdminController
 
     public function returnFromSignup()
     {
-        if (('true' === (string) Registry::getRequest()->getRequestParameter('permissionsGranted')) &&
+        if (
+            ('true' === (string) Registry::getRequest()->getRequestParameter('permissionsGranted')) &&
             ('true' === (string) Registry::getRequest()->getRequestParameter('consentStatus'))
         ) {
             PayPalSession::storeMerchantIdInPayPal(Registry::getRequest()->getRequestParameter('merchantIdInPayPal'));
@@ -52,8 +53,9 @@ class OnboardingController extends AdminController
 
         Registry::getUtils()->redirect(
             Registry::getConfig()->getCurrentShopUrl(true) . 'index.php?cl=oscpaypalconfig&aoc=ready' .
-            '&stoken=' . (string) Registry::getSession()->getSessionChallengeToken()
-            , false, 302
+            '&stoken=' . (string) Registry::getSession()->getSessionChallengeToken(),
+            false,
+            302
         );
     }
 

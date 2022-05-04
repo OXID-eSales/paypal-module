@@ -26,7 +26,10 @@ final class CheckoutCest extends BaseCest
 {
     public function checkoutWithPaypalStandard(AcceptanceTester $I): void
     {
-        $I->wantToTest('checking out as logged in user with PayPal as payment method. Shop login and PayPal login mail are the same.');
+        $I->wantToTest(
+            'checking out as logged in user with PayPal as payment method.'
+            . ' Shop login and PayPal login mail are the same.'
+        );
 
         $this->setUserDataSameAsPayPal($I);
         $this->proceedToPaymentStep($I, $_ENV['sBuyerLogin']);
@@ -72,7 +75,10 @@ final class CheckoutCest extends BaseCest
 
     public function checkoutWithPaypalStandardDifferentEmail(AcceptanceTester $I): void
     {
-        $I->wantToTest('checking out as logged in user with PayPal as payment method. Shop login and PayPal login mail are different.');
+        $I->wantToTest(
+            'checking out as logged in user with PayPal as payment method.'
+            . ' Shop login and PayPal login mail are different.'
+        );
 
         $this->proceedToPaymentStep($I);
         $token = $this->approvePayPalTransaction($I);
@@ -163,7 +169,9 @@ final class CheckoutCest extends BaseCest
 
     public function checkoutWithPaypalInBasketStep(AcceptanceTester $I): void
     {
-        $I->wantToTest('checking out as logged in user with PayPal in basket step. Shop login and PayPal login mail are the same.');
+        $I->wantToTest(
+            'checking out as logged in user with PayPal in basket step. Shop login and PayPal login mail are the same.'
+        );
 
         $this->setUserDataSameAsPayPal($I);
         $this->proceedToBasketStep($I, $_ENV['sBuyerLogin']);
@@ -196,7 +204,10 @@ final class CheckoutCest extends BaseCest
 
     public function checkoutWithPaypalInBasketStepDifferentMail(AcceptanceTester $I): void
     {
-        $I->wantToTest('checking out as logged in user with PayPal in basket step. Shop login and PayPal login mail are different.');
+        $I->wantToTest(
+            'checking out as logged in user with PayPal in basket step.'
+                . ' Shop login and PayPal login mail are different.'
+        );
 
         $this->proceedToBasketStep($I);
         $token = $this->approvePayPalTransaction($I);

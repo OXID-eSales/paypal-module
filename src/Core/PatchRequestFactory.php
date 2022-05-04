@@ -84,7 +84,9 @@ class PatchRequestFactory
         if ($deliveryId && $deliveryAddress->load($deliveryId)) {
             $patch = new Patch();
             $patch->op = Patch::OP_REPLACE;
-            $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/shipping/address";
+            $patch->path = "/purchase_units/@reference_id=='"
+                . Constants::PAYPAL_ORDER_REFERENCE_ID
+                . "'/shipping/address";
 
             $address = new AddressPortable();
 
@@ -116,7 +118,9 @@ class PatchRequestFactory
             $fullName = $deliveryAddress->oxaddress__oxfname->value . " " . $deliveryAddress->oxaddress__oxlname->value;
             $patch = new Patch();
             $patch->op = Patch::OP_REPLACE;
-            $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/shipping/name";
+            $patch->path = "/purchase_units/@reference_id=='"
+                . Constants::PAYPAL_ORDER_REFERENCE_ID
+                . "'/shipping/name";
             $patch->value = new \stdClass();
             $patch->value->full_name = $fullName;
 

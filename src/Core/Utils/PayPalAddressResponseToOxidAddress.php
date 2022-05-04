@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core\Utils;
 
 use OxidEsales\Eshop\Application\Model\Country;
-use \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrderModel;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrderModel;
 use VIISON\AddressSplitter\AddressSplitter;
 use VIISON\AddressSplitter\Exceptions\SplittingException;
 
@@ -57,11 +57,13 @@ class PayPalAddressResponseToOxidAddress
         ];
     }
 
-    protected static function getFirstName($name) {
+    protected static function getFirstName($name)
+    {
         return implode(' ', array_slice(explode(' ', $name), 0, -1));
     }
 
-    protected static function getLastName($name) {
+    protected static function getLastName($name)
+    {
         return array_slice(explode(' ', $name), -1)[0];
     }
 }

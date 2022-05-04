@@ -21,11 +21,9 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\Redirect;
 use OxidSolutionCatalysts\PayPal\Exception\RedirectWithMessage;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
-
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
-
 
 /**
  * Class PaymentGateway
@@ -70,7 +68,6 @@ class PaymentGateway extends PaymentGateway_parent
         $success = false;
 
         if ($checkoutOrderId = PayPalSession::getCheckoutOrderId()) {
-
             // Update Order
             try {
                 $paymentService->doPatchPayPalOrder(Registry::getSession()->getBasket(), $checkoutOrderId);
@@ -102,9 +99,9 @@ class PaymentGateway extends PaymentGateway_parent
         $success = false;
         try {
             $success = $paymentService->doExecutePuiPayment(
-                    $order,
-                    Registry::getSession()->getBasket(),
-                    PayPalSession::getPayPalPuiCmId()
+                $order,
+                Registry::getSession()->getBasket(),
+                PayPalSession::getPayPalPuiCmId()
             );
             PayPalSession::unsetPayPalPuiCmId();
         } catch (Exception $exception) {

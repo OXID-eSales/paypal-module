@@ -28,7 +28,7 @@ trait WebhookHandlerTrait
             $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
             /** @var EshopModelOrder $order */
             $order = $orderRepository->getShopOrderByPayPalOrderId($payPalOrderId);
-        } catch(NotFound $exception) {
+        } catch (NotFound $exception) {
             throw WebhookEventException::byPayPalOrderId($payPalOrderId);
         }
 

@@ -110,7 +110,7 @@ class PayPalSession
         );
     }
 
-    public static function unsetSessionRedirectLink():void
+    public static function unsetSessionRedirectLink(): void
     {
         Registry::getSession()->deleteVariable(
             Constants::SESSION_REDIRECTLINK

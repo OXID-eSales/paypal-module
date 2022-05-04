@@ -26,7 +26,7 @@ class PayPalConfigController extends AdminController
     /**
      * @var string Current class template name.
      */
-    protected $_sThisTemplate = 'oscpaypalconfig.tpl';
+    protected $_sThisTemplate = 'oscpaypalconfig.tpl'; // phpcs:ignore PSR2.Classes.PropertyDeclaration
 
     /**
      * @return string

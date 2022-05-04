@@ -95,7 +95,7 @@ class PayPalOrderController extends AdminDetailsController
     public function capture(): void
     {
         $order = $this->getOrder();
-        $paypalOrder =  $this->getPayPalOrder();
+        $paypalOrder = $this->getPayPalOrder();
         $orderId = $paypalOrder->id;
 
         /** @var ServiceFactory $serviceFactory */
@@ -297,9 +297,15 @@ class PayPalOrderController extends AdminDetailsController
                 $payPalOrder->purchase_units[0]->payments ?
                 $payPalOrder->purchase_units[0]->payments : null;
             $purchaseUnitData = [
-                'captures' => is_array($purchaseUnitPayments->captures) ? $purchaseUnitPayments->captures : [],
-                'refunds' =>  is_array($purchaseUnitPayments->refunds) ? $purchaseUnitPayments->refunds : [],
-                'authorizations' => is_array($purchaseUnitPayments->authorizations) ? $purchaseUnitPayments->authorizations : [],
+                'captures' => is_array($purchaseUnitPayments->captures) ?
+                    $purchaseUnitPayments->captures :
+                    [],
+                'refunds' => is_array($purchaseUnitPayments->refunds) ?
+                    $purchaseUnitPayments->refunds :
+                    [],
+                'authorizations' => is_array($purchaseUnitPayments->authorizations) ?
+                    $purchaseUnitPayments->authorizations :
+                    [],
             ];
 
             foreach ($purchaseUnitData['captures'] as $capture) {

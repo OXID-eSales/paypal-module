@@ -17,7 +17,6 @@ use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher as WebhookEventDis
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutOrderCompletedHandler;
 
-
 final class WebhookEventDispatcherTest extends UnitTestCase
 {
     public function testEventIsMappedToExpectedHandler(): void

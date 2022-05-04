@@ -37,7 +37,7 @@ class IdentityService extends BaseService
             $this->client->auth();
         }
 
-        $headers = array();
+        $headers = [];
         $headers['Authorization'] = 'Bearer ' . $this->client->getTokenResponse()['access_token'];
 
         return $headers;

@@ -87,7 +87,7 @@ class OrderController extends OrderController_parent
 
         try {
             $status = $this->execute();
-        } catch(\Exception $exception) {
+        } catch (\Exception $exception) {
             Registry::getLogger()->error($exception->getMessage(), [$exception]);
             $this->outputJson(['acdcerror' => 'failed to execute shop order']);
             return;
@@ -177,7 +177,6 @@ class OrderController extends OrderController_parent
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
             $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);
-
         } catch (\Exception $exception) {
             $this->cancelpaypalsession('cannot finalize order');
         }
@@ -225,7 +224,8 @@ class OrderController extends OrderController_parent
      *
      * @param $response
      */
-    public function getPayPalPuiFraudnetCmId(): string {
+    public function getPayPalPuiFraudnetCmId(): string
+    {
 
         if (!($cmId = PayPalSession::getPayPalPuiCmId())) {
             $cmId = Registry::getUtilsObject()->generateUId();

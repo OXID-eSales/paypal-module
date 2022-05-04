@@ -46,7 +46,7 @@ class Webhook
         $hook = [];
         foreach ($allClientHooks as $hook) {
             if ($url === $hook['url']) {
-               return $hook;
+                return $hook;
             }
         }
         return $hook;

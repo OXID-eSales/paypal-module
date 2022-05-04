@@ -24,8 +24,7 @@ class ModuleSettings
 
     public function __construct(
         ModuleSettingBridgeInterface $moduleSettingBridge
-    )
-    {
+    ) {
         $this->moduleSettingBridge = $moduleSettingBridge;
     }
 

@@ -32,7 +32,6 @@ class Onboarding
             // fetch and save Eligibility
             $merchantInformations = $this->fetchMerchantInformations();
             $this->saveEligibility($merchantInformations);
-
         } catch (\Exception $exception) {
             throw OnboardingException::autoConfiguration($exception->getMessage());
         }
@@ -67,7 +66,8 @@ class Onboarding
     {
         $response = json_decode(PayPalSession::getOnboardingPayload(), true);
 
-        if (!is_array($response) ||
+        if (
+            !is_array($response) ||
             !isset($response['authCode']) ||
             !isset($response['sharedId']) ||
             !isset($response['isSandBox'])
@@ -86,7 +86,8 @@ class Onboarding
 
     public function saveCredentials(array $credentials): array
     {
-        if (!isset($credentials['client_id']) ||
+        if (
+            !isset($credentials['client_id']) ||
             !isset($credentials['client_secret'])
         ) {
             throw OnboardingException::mandatoryDataNotFound();
@@ -136,7 +137,8 @@ class Onboarding
 
     public function saveEligibility(array $merchantInformations): array
     {
-        if (!isset($merchantInformations['products'])
+        if (
+            !isset($merchantInformations['products'])
         ) {
             throw OnboardingException::merchantInformationsNotFound();
         }
@@ -148,10 +150,9 @@ class Onboarding
             if (
                 $product['name'] === 'PAYMENT_METHODS' &&
                 in_array('PAY_UPON_INVOICE', $product['capabilities'])
-            ){
+            ) {
                 $isPuiEligibility = true;
-            }
-            elseif (
+            } elseif (
                 $product['name'] === 'PPCP_CUSTOM' &&
                 in_array('CUSTOM_CARD_PROCESSING', $product['capabilities'])
             ) {

@@ -30,7 +30,7 @@ class UserComponent extends UserComponent_parent
         return $return;
     }
 
-    public function login_noredirect()
+    public function login_noredirect() //phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps
     {
         $return = parent::login_noredirect();
         $redirect = $this->getSession()->getVariable('paypalRedirect');

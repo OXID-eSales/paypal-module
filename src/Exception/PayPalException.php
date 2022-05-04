@@ -33,6 +33,11 @@ class PayPalException extends StandardException
 
     public static function cannotFinalizeOrderAfterExternalPaymentSuccess(string $payPalOrderId): self
     {
-        return new self(sprintf('uAPM-Payment error. We might have PayPal order %s with incomplete shop order', $payPalOrderId));
+        return new self(
+            sprintf(
+                'uAPM-Payment error. We might have PayPal order %s with incomplete shop order',
+                $payPalOrderId
+            )
+        );
     }
 }

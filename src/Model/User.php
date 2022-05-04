@@ -6,7 +6,6 @@
  */
 
 namespace OxidSolutionCatalysts\PayPal\Model;
-
 namespace OxidSolutionCatalysts\PayPal\Model;
 
 use DateTimeImmutable;

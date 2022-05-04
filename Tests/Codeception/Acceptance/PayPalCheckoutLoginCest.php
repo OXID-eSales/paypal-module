@@ -26,7 +26,9 @@ final class PayPalCheckoutLoginCest extends BaseCest
 {
     public function checkoutWithPaypalFromBasketStepAutomaticLogin(AcceptanceTester $I): void
     {
-        $I->wantToTest('automatic login as existing but not logged in shop user. Shop login and PayPal login mail are the same.');
+        $I->wantToTest(
+            'automatic login as existing but not logged in shop user. Shop login and PayPal login mail are the same.'
+        );
 
         $I->updateModuleConfiguration('oscPayPalLoginWithPayPalEMail', true);
 
@@ -64,7 +66,9 @@ final class PayPalCheckoutLoginCest extends BaseCest
 
     public function checkoutWithPaypalFromBasketStepNoAutomaticLoginFinalizeAsSameUser(AcceptanceTester $I): void
     {
-        $I->wantToTest('no automatic login as existing but not logged in shop user. Shop login and PayPal login mail are the same.');
+        $I->wantToTest(
+            'no automatic login as existing but not logged in shop user. Shop login and PayPal login mail are the same.'
+        );
 
         $I->updateModuleConfiguration('oscPayPalLoginWithPayPalEMail', false);
 
@@ -100,7 +104,9 @@ final class PayPalCheckoutLoginCest extends BaseCest
 
     public function checkoutWithPaypalFromBasketStepNoAutomaticLoginFinalizeAsDifferentUser(AcceptanceTester $I): void
     {
-        $I->wantToTest('no automatic login as existing but not logged in shop user. Log into shop with different account.');
+        $I->wantToTest(
+            'no automatic login as existing but not logged in shop user. Log into shop with different account.'
+        );
 
         $I->updateModuleConfiguration('oscPayPalLoginWithPayPalEMail', false);
 
@@ -139,7 +145,11 @@ final class PayPalCheckoutLoginCest extends BaseCest
      */
     public function checkoutWithPaypalExpressNewCustomer(AcceptanceTester $I, Example $example): void
     {
-        $I->wantToTest('checking out with PayPal payment as not existing shop user will end me up with passwordless shop login, PPlogin is ' . (int) $example['oscPayPalLoginWithPayPalEMail']);
+        $I->wantToTest(
+            'checking out with PayPal payment as not existing shop user will end me up with passwordless shop login, '
+            . ' PPlogin is '
+            . (int) $example['oscPayPalLoginWithPayPalEMail']
+        );
 
         //login flag does not make a difference in this case
         $I->updateModuleConfiguration('oscPayPalLoginWithPayPalEMail', $example['oscPayPalLoginWithPayPalEMail']);
@@ -191,7 +201,10 @@ final class PayPalCheckoutLoginCest extends BaseCest
      */
     public function checkoutWithPaypalExpressRepeatGuestBuySameAddress(AcceptanceTester $I, Example $example): void
     {
-        $I->wantToTest('returning passwordless shop login customer, PPlogin is ' . (int) $example['oscPayPalLoginWithPayPalEMail']);
+        $I->wantToTest(
+            'returning passwordless shop login customer, PPlogin is '
+            . (int) $example['oscPayPalLoginWithPayPalEMail']
+        );
 
         //login flag should not make a difference in this case as we only have a guest account anyway
         $I->updateModuleConfiguration('oscPayPalLoginWithPayPalEMail', $example['oscPayPalLoginWithPayPalEMail']);
@@ -239,7 +252,10 @@ final class PayPalCheckoutLoginCest extends BaseCest
      */
     public function checkoutWithPaypalExpressRepeatGuestBuyDifferentAddress(AcceptanceTester $I, Example $example): void
     {
-        $I->wantToTest('passwordless guest user, shop and PayPal email are same, invoice and names different, PPlogin is ' . (int) $example['oscPayPalLoginWithPayPalEMail']);
+        $I->wantToTest(
+            'passwordless guest user, shop and PayPal email are same, invoice and names different, PPlogin is '
+            . (int) $example['oscPayPalLoginWithPayPalEMail']
+        );
 
         //login flag should not make a difference in this case as we only have a guest account anyway
         $I->updateModuleConfiguration('oscPayPalLoginWithPayPalEMail', $example['oscPayPalLoginWithPayPalEMail']);
@@ -248,7 +264,13 @@ final class PayPalCheckoutLoginCest extends BaseCest
         //Shop name and invoice address is different from paypal, only email is the same
         $this->setUserNameSameAsPayPal($I);
         $this->removePassword($I);
-        $I->seeInDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin'], 'oxfname' => Fixtures::get('details')['firstname']]);
+        $I->seeInDatabase(
+            'oxuser',
+            [
+                'oxusername' => $_ENV['sBuyerLogin'],
+                'oxfname' => Fixtures::get('details')['firstname']
+            ]
+        );
 
         $this->proceedToBasketStep($I, $_ENV['sBuyerLogin'], false);
         $token = $this->approvePayPalTransaction($I);
@@ -291,7 +313,10 @@ final class PayPalCheckoutLoginCest extends BaseCest
      */
     public function checkoutWithPaypalFromBasketAlreadyLoggedIn(AcceptanceTester $I, Example $example): void
     {
-        $I->wantToTest('Logged in shop user, shop and PayPal email and address are different, PPlogin is ' . (int) $example['oscPayPalLoginWithPayPalEMail']);
+        $I->wantToTest(
+            'Logged in shop user, shop and PayPal email and address are different, PPlogin is '
+                . (int) $example['oscPayPalLoginWithPayPalEMail']
+        );
 
         //setting should not make a difference, user is already logged in
         $I->updateModuleConfiguration('oscPayPalLoginWithPayPalEMail', $example['oscPayPalLoginWithPayPalEMail']);
@@ -336,7 +361,13 @@ final class PayPalCheckoutLoginCest extends BaseCest
             ]
         );
 
-        $I->seeInDatabase('oxuser', ['oxusername' => Fixtures::get('userName'), 'oxfname' => Fixtures::get('details')['firstname']]);
+        $I->seeInDatabase(
+            'oxuser',
+            [
+                'oxusername' => Fixtures::get('userName'),
+                'oxfname' => Fixtures::get('details')['firstname']
+            ]
+        );
         $I->dontseeInDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin']]);
     }
 

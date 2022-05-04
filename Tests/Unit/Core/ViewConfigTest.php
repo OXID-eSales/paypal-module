@@ -181,7 +181,9 @@ final class ViewConfigTest extends UnitTestCase
      */
     private function updateModuleSetting(string $name, $value): void
     {
-        $moduleSettingsBridge = ContainerFactory::getInstance()->getContainer()->get(ModuleSettingBridgeInterface::class);
+        $moduleSettingsBridge = ContainerFactory::getInstance()
+            ->getContainer()
+            ->get(ModuleSettingBridgeInterface::class);
         $moduleSettingsBridge->save($name, $value, OscPayPalModule::MODULE_ID);
     }
 }

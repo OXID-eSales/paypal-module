@@ -138,12 +138,10 @@ class ViewConfig extends ViewConfig_parent
 
         if ($this->getServiceFromContainer(ModuleSettings::class)->isAcdcEligibility()) {
             $params['disable-funding'] .= ',card';
-        }
-        else {
+        } else {
             if (isset($params['enable-funding'])) {
                 $params['enable-funding'] .= ',card';
-            }
-            else {
+            } else {
                 $params['enable-funding'] = 'card';
             }
         }

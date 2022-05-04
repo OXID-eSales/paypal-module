@@ -116,8 +116,11 @@ class OrderRequestFactory
      *
      * @return OrderApplicationContext
      */
-    protected function getApplicationContext(?string $userAction, ?string $returnUrl, ?string $cancelUrl): OrderApplicationContext
-    {
+    protected function getApplicationContext(
+        ?string $userAction,
+        ?string $returnUrl,
+        ?string $cancelUrl
+    ): OrderApplicationContext {
         $context = new OrderApplicationContext();
         $context->brand_name = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
         $context->shipping_preference = 'GET_FROM_FILE';
@@ -142,14 +145,13 @@ class OrderRequestFactory
         ?string $transactionId,
         ?string $invoiceId,
         bool $withArticles = true
-    ): array
-    {
+    ): array {
         $purchaseUnit = new PurchaseUnitRequest();
         $shopName = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
         $lang = Registry::getLang();
 
         $purchaseUnit->custom_id = $transactionId;
-        $purchaseUnit->invoice_id =  $invoiceId;
+        $purchaseUnit->invoice_id = $invoiceId;
         $description = sprintf($lang->translateString('OSC_PAYPAL_DESCRIPTION'), $shopName);
         $purchaseUnit->description = $description;
 
@@ -292,7 +294,7 @@ class OrderRequestFactory
      */
     protected function getPayer(string $payerClass = Payer::class): Payer
     {
-        $payer = new $payerClass;
+        $payer = new $payerClass();
         $user = $this->basket->getBasketUser();
 
         $name = $payer->initName();
@@ -453,7 +455,7 @@ class OrderRequestFactory
         $billingAddress->postal_code = $payer->address->postal_code;
         $billingAddress->country_code = $payer->address->country_code;
 
-        $paymentSource = new PuiPaymentSource;
+        $paymentSource = new PuiPaymentSource();
         $paymentSource->name = $payer->name;
         $paymentSource->email = $payer->email_address;
         $paymentSource->billing_address = $billingAddress;
@@ -463,13 +465,15 @@ class OrderRequestFactory
             $paymentSource->birth_date = $fromRequest->format('Y-m-d');
         }
 
+        $activeShop = Registry::getConfig()->getActiveShop();
         $experienceContext = new ExperienceContext();
-        $experienceContext->brand_name = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
-        $experienceContext->locale = strtolower($payer->address->country_code) . '-' .  strtoupper($payer->address->country_code);
-        $experienceContext->customer_service_instructions[] =  Registry::getConfig()->getActiveShop()->getFieldData('oxinfoemail');
+        $experienceContext->brand_name = $activeShop->getFieldData('oxname');
+        $experienceContext->locale = strtolower($payer->address->country_code)
+            . '-'
+            .  strtoupper($payer->address->country_code);
+        $experienceContext->customer_service_instructions[] = $activeShop->getFieldData('oxinfoemail');
         $paymentSource->experience_context = $experienceContext;
 
         return $paymentSource;
     }
 }
-
