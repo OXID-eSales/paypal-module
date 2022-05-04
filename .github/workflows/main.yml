@@ -15,7 +15,7 @@ jobs:
     env:
       MODULE_NAME: oxid-solution-catalysts/paypal-module
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: install
         run: composer create-project oxid-professional-services/test-oxid /build/oxid dev-oxid${{matrix.oxid}} --no-interaction -s dev --repository="{\"url\":\"https://github.com/keywan-ghadami-oxid/test-oxid.git\", \"type\":\"vcs\"}" --remove-vcs
@@ -23,6 +23,18 @@ jobs:
       - name: move artifacts to projects folder
         run: |
           mkdir -p /build/oxid/project-modules/module-under-test && cp -r * /build/oxid/project-modules/module-under-test
+
+      - name: Checkout paypal-client repo
+        uses: actions/checkout@v3
+        with:
+          repository: OXID-eSales/paypal-client
+          ref: v1.0.2
+          path: paypal-client
+          
+      - name: move paypal-client to projects folder
+        run: |
+          cp -r paypal-client/ /build/oxid/project-modules/
+
       - name: add project module folder
         run:
           composer config repositories.build path /build/oxid/project-modules/\*
