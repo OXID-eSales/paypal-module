@@ -17,7 +17,10 @@ class LegacyOeppModuleDetails
      */
     public function isLegacyModulePresent(): bool
     {
-        return file_exists(OX_BASE_PATH.'modules'.DIRECTORY_SEPARATOR.'oe'.DIRECTORY_SEPARATOR.'oepaypal'.DIRECTORY_SEPARATOR.'metadata.php');
+        return file_exists(OX_BASE_PATH . 'modules'
+            . DIRECTORY_SEPARATOR . 'oe'
+            . DIRECTORY_SEPARATOR . 'oepaypal'
+            . DIRECTORY_SEPARATOR . 'metadata.php');
     }
 
     /**

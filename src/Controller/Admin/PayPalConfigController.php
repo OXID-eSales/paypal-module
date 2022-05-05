@@ -272,8 +272,7 @@ class PayPalConfigController extends AdminController
         $oldConfigKeys = array_keys($transferrableSettings);
         $currentShopId = Registry::getConfig()->getActiveShop()->getId();
 
-        foreach ($oldConfigKeys as $configKeyName)
-        {
+        foreach ($oldConfigKeys as $configKeyName) {
             // Read old values
             $legacyConfigValue = Registry::getConfig()->getShopConfVar(
                 $configKeyName,
@@ -282,8 +281,7 @@ class PayPalConfigController extends AdminController
             );
 
             // Invert "hide" option
-            if ($configKeyName == 'oePayPalBannersHideAll')
-            {
+            if ($configKeyName == 'oePayPalBannersHideAll') {
                 $legacyConfigValue = !$legacyConfigValue;
             }
 
