@@ -16,7 +16,6 @@ use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 
-
 final class PaymentCaptureDeniedHandlerTest extends UnitTestCase
 {
     public function testPaymentCaptureDenied(): void

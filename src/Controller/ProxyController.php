@@ -110,8 +110,8 @@ class ProxyController extends FrontendController
             $deliveryAddress = PayPalAddressResponseToOxidAddress::mapAddress($response, 'oxaddress__');
             $user->changeUserData(
                 $user->oxuser__oxusername->value,
-                null,
-                null,
+                '',
+                '',
                 $user->getInvoiceAddress(),
                 $deliveryAddress
             );
@@ -120,9 +120,8 @@ class ProxyController extends FrontendController
             Registry::getSession()->setVariable('blshowshipaddress', false);
 
             $this->setPayPalPaymentMethod();
-        }
-        // if we have no user, we stop the process
-        else {
+        } else {
+            // if we have no user, we stop the process
             $response->status = 'ERROR';
             PayPalSession::unsetPayPalOrderId();
             Registry::getSession()->getBasket()->setPayment(null);
@@ -172,7 +171,7 @@ class ProxyController extends FrontendController
     {
         $session = Registry::getSession();
         $basket = $session->getBasket();
-        $countryId = $this->getDeliveryCountryId;
+        $countryId = $this->getDeliveryCountryId();
         $user = null;
 
         if ($activeUser = $this->getUser()) {
@@ -217,8 +216,6 @@ class ProxyController extends FrontendController
     {
         $config = Registry::getConfig();
         $user = $this->getUser();
-
-        $countryId = null;
 
         if (!$user) {
             $homeCountry = $config->getConfigParam('aHomeCountry');

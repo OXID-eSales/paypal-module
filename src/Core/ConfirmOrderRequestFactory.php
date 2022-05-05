@@ -14,8 +14,8 @@ use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Core\Language;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderConfirmApplicationContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderValidateApplicationContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
 
 /**
@@ -77,11 +77,11 @@ class ConfirmOrderRequestFactory
     /**
      * Sets application context
      *
-     * @return OrderValidateApplicationContext
+     * @return OrderConfirmApplicationContext
      */
-    protected function getApplicationContext(): OrderValidateApplicationContext
+    protected function getApplicationContext(): OrderConfirmApplicationContext
     {
-        $context = new OrderValidateApplicationContext();
+        $context = new OrderConfirmApplicationContext();
         $language = new Language();
         $config = Registry::getConfig();
 

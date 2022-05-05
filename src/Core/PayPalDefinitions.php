@@ -473,19 +473,23 @@ final class PayPalDefinitions
         ]
     ];
 
-    public static function getPayPalDefinitions() {
+    public static function getPayPalDefinitions()
+    {
         return self::PAYPAL_DEFINTIONS;
     }
 
-    public static function getPayPalStaticContents() {
+    public static function getPayPalStaticContents()
+    {
         return self::PAYPAL_STATIC_CONTENTS;
     }
 
-    public static function isUAPMPayment(string $oxid) : bool {
+    public static function isUAPMPayment(string $oxid): bool
+    {
         return (isset(self::PAYPAL_DEFINTIONS[$oxid]['uapmpaymentsource']));
     }
 
-    public static function getPaymentSourceRequestName(string $oxid) : string {
+    public static function getPaymentSourceRequestName(string $oxid): string
+    {
         return self::isUAPMPayment($oxid) ?
             self::PAYPAL_DEFINTIONS[$oxid]['uapmpaymentsource'] :
             '';

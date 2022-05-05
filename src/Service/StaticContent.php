@@ -31,8 +31,7 @@ class StaticContent
     public function __construct(
         QueryBuilderFactoryInterface $queryBuilderFactory,
         ContextInterface $context
-    )
-    {
+    ) {
         $this->queryBuilderFactory = $queryBuilderFactory;
         $this->context = $context;
     }
@@ -67,7 +66,7 @@ class StaticContent
                 $assignToCountries[] = $activeCountriesIso2Id[strtoupper($countryIsoAlpha2)];
             }
         }
-        $assignToCountries = empty($assignToCountries) ? $activeCountriesIso2Id :  $assignToCountries;
+        $assignToCountries = empty($assignToCountries) ? $activeCountriesIso2Id : $assignToCountries;
 
         foreach ($assignToCountries as $countryId) {
             $this->assignPaymentToCountry($paymentId, $countryId);
@@ -111,14 +110,15 @@ class StaticContent
         $activeCountries = $this->getActiveCountries();
         $iso2LanguageId = array_flip($this->getLanguageIds());
 
-        $active = empty($definitions['countries']) || 0 < count(array_intersect($definitions['countries'], $activeCountries));
+        $active = empty($definitions['countries']) ||
+            0 < count(array_intersect($definitions['countries'], $activeCountries));
         $paymentModel->assign(
-           [
+            [
                'oxactive' => (int) $active,
                'oxfromamount' => (int) $definitions['constraints']['oxfromamount'],
                'oxtoamount' => (int) $definitions['constraints']['oxtoamount'],
                'oxaddsumtype' => (string) $definitions['constraints']['oxaddsumtype']
-           ]
+            ]
         );
         $paymentModel->save();
 
@@ -151,8 +151,8 @@ class StaticContent
                     [
                         'oxloadid'  => $loadId,
                         'oxactive'  => $content['oxactive'],
-                        'oxtitle'   => isset($content['oxtitle_' . $langAbbr]) ? $content['oxtitle_' . $langAbbr] : '',
-                        'oxcontent' => isset($content['oxcontent_' . $langAbbr]) ? $content['oxcontent_' . $langAbbr] : '',
+                        'oxtitle'   => $content['oxtitle_' . $langAbbr] ?? '',
+                        'oxcontent' => $content['oxcontent_' . $langAbbr] ?? '',
                     ]
                 );
                 $contentModel->save();

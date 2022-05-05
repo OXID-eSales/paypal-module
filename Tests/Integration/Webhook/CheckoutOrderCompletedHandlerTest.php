@@ -21,7 +21,6 @@ use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 
-
 final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
 {
     public function testRequestMissingData(): void

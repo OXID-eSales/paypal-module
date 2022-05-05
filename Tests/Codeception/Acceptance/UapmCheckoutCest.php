@@ -56,7 +56,8 @@ final class UapmCheckoutCest extends BaseCest
         $I->dontSee(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
 
         //we now decide for PayPal again
-        //NOTE: there's still a paypal order id in the session but with current implementation it will be replaced by a fresh one
+        //NOTE: there's still a paypal order id in the session but with current implementation
+        // it will be replaced by a fresh one
         $productNavigation = new ProductNavigation($I);
         $productNavigation->openProductDetailsPage(Fixtures::get('product')['oxid']);
         $I->seeElement("#PayPalButtonProductMain");

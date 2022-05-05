@@ -34,7 +34,7 @@ class PayPalOrderController extends AdminDetailsController
     protected $order;
 
     /**
-     * @var PayPalOrder
+     * @var array
      */
     protected $payPalOrderHistory;
 
@@ -47,7 +47,7 @@ class PayPalOrderController extends AdminDetailsController
             parent::executeFunction($functionName);
         } catch (ApiException $exception) {
             $this->addTplParam('error', $exception->getErrorDescription());
-            Registry::getLogger()->error($exception);
+            Registry::getLogger()->error($exception->getMessage());
         }
     }
 
@@ -77,7 +77,7 @@ class PayPalOrderController extends AdminDetailsController
             }
         } catch (ApiException $exception) {
             $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()));
-            Registry::getLogger()->error($exception);
+            Registry::getLogger()->error($exception->getMessage());
         }
 
         if (!$order->paidWithPayPal()) {
@@ -95,7 +95,7 @@ class PayPalOrderController extends AdminDetailsController
     public function capture(): void
     {
         $order = $this->getOrder();
-        $paypalOrder =  $this->getPayPalOrder();
+        $paypalOrder = $this->getPayPalOrder();
         $orderId = $paypalOrder->id;
 
         /** @var ServiceFactory $serviceFactory */
@@ -110,7 +110,7 @@ class PayPalOrderController extends AdminDetailsController
         ) {
             $order->markOrderPaid();
 
-            /** @var PayPalModelOrder $paypalOrderModel */
+            /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
             $paypalOrderModel = $this->getServiceFromContainer(OrderRepository::class)
                 ->paypalOrderByOrderIdAndPayPalId($order->getId(), $orderId);
             $paypalOrderModel->setStatus($response->status);
@@ -134,19 +134,20 @@ class PayPalOrderController extends AdminDetailsController
         $noteToPayer = $request->getRequestParameter('noteToPayer');
 
         $capture = $this->getOrder()->getOrderPaymentCapture();
+        if ($capture instanceof Capture) {
+            $request = new RefundRequest();
+            $request->note_to_payer = $noteToPayer;
+            $request->invoice_id = !empty($invoiceId) ? $invoiceId : null;
+            if (!$refundAll) {
+                $request->initAmount();
+                $request->amount->currency_code = $capture->amount->currency_code;
+                $request->amount->value = $refundAmount;
+            }
 
-        $request = new RefundRequest();
-        $request->note_to_payer = $noteToPayer;
-        $request->invoice_id = !empty($invoiceId) ? $invoiceId : null;
-        if (!$refundAll) {
-            $request->initAmount();
-            $request->amount->currency_code = $capture->amount->currency_code;
-            $request->amount->value = $refundAmount;
+            /** @var Payments $paymentService */
+            $paymentService = Registry::get(ServiceFactory::class)->getPaymentService();
+            $paymentService->refundCapturedPayment($capture->id, $request, '');
         }
-
-        /** @var Payments $paymentService */
-        $paymentService = Registry::get(ServiceFactory::class)->getPaymentService();
-        $paymentService->refundCapturedPayment($capture->id, $request, '');
     }
 
     /**
@@ -154,7 +155,7 @@ class PayPalOrderController extends AdminDetailsController
      * @throws StandardException
      * @throws ApiException
      */
-    protected function getPayPalOrder(): ?PayPalOrder
+    protected function getPayPalOrder(): PayPalOrder
     {
         return $this->getOrder()->getPayPalOrder();
     }
@@ -182,10 +183,10 @@ class PayPalOrderController extends AdminDetailsController
     /**
      * Get order payment capture id
      *
-     * @return Capture
+     * @return Capture|null
      * @throws StandardException|ApiException
      */
-    protected function getOrderPaymentCapture(): Capture
+    protected function getOrderPaymentCapture(): ?Capture
     {
         return $this->getPayPalOrder()->purchase_units[0]->payments->captures[0];
     }
@@ -283,7 +284,7 @@ class PayPalOrderController extends AdminDetailsController
     /**
      * Template getter for order History
      *
-     * @return PayPalTransactions
+     * @return array
      * @throws StandardException|ApiException
      */
     public function getPayPalHistory()
@@ -292,14 +293,20 @@ class PayPalOrderController extends AdminDetailsController
             $this->payPalOrderHistory = [];
 
             $payPalOrder = $this->getPayPalOrder();
-            $purchaseUnitPayments = $payPalOrder &&
+            $purchaseUnitPayments =
                 $payPalOrder->purchase_units[0] &&
                 $payPalOrder->purchase_units[0]->payments ?
                 $payPalOrder->purchase_units[0]->payments : null;
             $purchaseUnitData = [
-                'captures' => is_array($purchaseUnitPayments->captures) ? $purchaseUnitPayments->captures : [],
-                'refunds' =>  is_array($purchaseUnitPayments->refunds) ? $purchaseUnitPayments->refunds : [],
-                'authorizations' => is_array($purchaseUnitPayments->authorizations) ? $purchaseUnitPayments->authorizations : [],
+                'captures' => is_array($purchaseUnitPayments->captures) ?
+                    $purchaseUnitPayments->captures :
+                    [],
+                'refunds' => is_array($purchaseUnitPayments->refunds) ?
+                    $purchaseUnitPayments->refunds :
+                    [],
+                'authorizations' => is_array($purchaseUnitPayments->authorizations) ?
+                    $purchaseUnitPayments->authorizations :
+                    [],
             ];
 
             foreach ($purchaseUnitData['captures'] as $capture) {

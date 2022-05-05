@@ -21,14 +21,15 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 
 final class OrderTest extends BaseTestCase
 {
-    const TEST_USER_ID = 'e7af1c3b786fd02906ccd75698f4e6b9';
+    protected const TEST_USER_ID = 'e7af1c3b786fd02906ccd75698f4e6b9';
 
-    const TEST_PRODUCT_ID = 'dc5ffdf380e15674b56dd562a7cb6aec';
+    protected const TEST_PRODUCT_ID = 'dc5ffdf380e15674b56dd562a7cb6aec';
 
     public function testCreatePuiPayPalOrderRequestWithPuiRequiredFields(): void
     {
         $this->setRequestParameter(
-            'pui_required', [
+            'pui_required',
+            [
                 'birthdate' => [
                     'day' => 1,
                     'month' => 4,

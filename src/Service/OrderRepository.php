@@ -31,10 +31,9 @@ class OrderRepository
 
     public function __construct(
         QueryBuilderFactoryInterface $queryBuilderFactory,
-        ContextInterface             $context,
-        EshopCoreConfig              $config
-    )
-    {
+        ContextInterface $context,
+        EshopCoreConfig $config
+    ) {
         $this->queryBuilderFactory = $queryBuilderFactory;
         $this->context = $context;
         $this->config = $config;

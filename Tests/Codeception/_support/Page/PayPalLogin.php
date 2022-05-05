@@ -96,8 +96,7 @@ class PayPalLogin extends Page
         AcceptanceTester $I,
         string $addParams = '',
         array $headers = []
-    ): self
-    {
+    ): self {
         //send this as post request
         $I->postTo(
             $I->getShopUrl() . '/index.php?cl=oscpaypalproxy&fnc=createOrder&context=continue' . $addParams,
@@ -150,7 +149,8 @@ class PayPalLogin extends Page
         $this->waitForPayPalPage();
         $this->removeCookieConsent();
 
-        if ($I->seePageHasElement($this->splitPassword)
+        if (
+            $I->seePageHasElement($this->splitPassword)
             && $I->seePageHasElement($this->rememberedEmail)
             && $I->seePageHasElement($this->backToInputEmail)
         ) {
@@ -159,7 +159,7 @@ class PayPalLogin extends Page
                 $I->waitForDocumentReadyState();
                 $this->waitForSpinnerDisappearance();
                 $I->waitForElementNotVisible($this->backToInputEmail);
-            } catch(ElementNotVisibleException $e) {
+            } catch (ElementNotVisibleException $e) {
                 //nothing to be done, element was not visible
             }
         }
@@ -295,7 +295,8 @@ class PayPalLogin extends Page
         }
 
         //we should be redirected back to shop at this point
-        if ($I->dontSeeElement($this->breadCrumb) &&
+        if (
+            $I->dontSeeElement($this->breadCrumb) &&
             $I->dontSeeElement(strtolower($this->breadCrumb)) &&
             !$isRetry
         ) {

@@ -18,6 +18,7 @@ use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
@@ -60,14 +61,14 @@ class Payment
         PatchRequestFactory $patchRequestFactory = null,
         OrderRequestFactory $orderRequestFactory = null,
         ConfirmOrderRequestFactory $confirmOrderRequestFactory = null
-    )
-    {
+    ) {
         $this->eshopSession = $eshopSession;
         $this->orderRepository = $orderRepository;
         $this->serviceFactory = $serviceFactory ?: Registry::get(ServiceFactory::class);
         $this->patchRequestFactory = $patchRequestFactory ?: Registry::get(PatchRequestFactory::class);
         $this->orderRequestFactory = $orderRequestFactory ?: Registry::get(OrderRequestFactory::class);
-        $this->confirmOrderRequestFactory = $confirmOrderRequestFactory ?: Registry::get(ConfirmOrderRequestFactory::class);
+        $this->confirmOrderRequestFactory = $confirmOrderRequestFactory ?:
+            Registry::get(ConfirmOrderRequestFactory::class);
     }
 
     public function doCreatePayPalOrder(
@@ -82,9 +83,8 @@ class Payment
         string $returnUrl = null,
         string $cancelUrl = null,
         bool $withArticles = true
-    #): ?ApiModelOrder
-    ) //TODO return value
-    {
+        #): ?ApiModelOrder
+    ) { //TODO return value
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
 
@@ -120,8 +120,7 @@ class Payment
 
     public function doCreatePatchedOrder(
         EshopModelBasket $basket
-    ): array
-    {
+    ): array {
         // PatchOrders access an OrderCall that has taken place before.
         // For this reason, the payPalPartnerAttributionId does not have
         // to be transmitted again in the case of a PatchCall
@@ -155,8 +154,12 @@ class Payment
         return $return;
     }
 
-    public function doPatchPayPalOrder(EshopModelBasket $basket, string $checkoutOrderId, string $paymentSource = '', string $shopOrderId = ''): void
-    {
+    public function doPatchPayPalOrder(
+        EshopModelBasket $basket,
+        string $checkoutOrderId,
+        string $paymentSource = '',
+        string $shopOrderId = ''
+    ): void {
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
 
@@ -170,7 +173,6 @@ class Payment
             Registry::getLogger()->error("Error on order patch call.", [$exception]);
             throw $exception;
         }
-
     }
 
     public function doCapturePayPalOrder(EshopModelOrder $order, string $checkoutOrderId): ApiOrderModel
@@ -203,18 +205,25 @@ class Payment
         return $result;
     }
 
-    public function doConfirmUAPM(EshopModelOrder $order, EshopModelBasket $basket, string $checkoutOrderId, string $uapmName): string
-    {
+    public function doConfirmUAPM(
+        EshopModelOrder $order,
+        EshopModelBasket $basket,
+        string $checkoutOrderId,
+        string $uapmName
+    ): string {
         $redirectLink = '';
 
         /** @var OrderRequestFactory $requestFactory */
         $requestFactory = Registry::get(ConfirmOrderRequestFactory::class);
+        /** @var ConfirmOrderRequest $request */
         $request = $requestFactory->getRequest(
             $basket,
             $uapmName
         );
 
-        // toDo: Clearing with Marcus. Optional. Verifies that the payment originates from a valid, user-consented device and application. Reduces fraud and decreases declines. Transactions that do not include a client metadata ID are not eligible for PayPal Seller Protection.
+        // toDo: Clearing with Marcus. Optional. Verifies that the payment originates from a valid,
+        // user-consented device and application. Reduces fraud and decreases declines.
+        // Transactions that do not include a client metadata ID are not eligible for PayPal Seller Protection.
         $payPalClientMetadataId = '';
 
         /** @var ApiOrderService $orderService */
@@ -302,7 +311,6 @@ class Payment
                 $uapmOrderId,
                 PayPalDefinitions::getPaymentSourceRequestName($basket->getPaymentId())
             );
-
         } catch (Exception $exception) {
             PayPalSession::unsetPayPalOrderId();
             $this->removeTemporaryOrder();
@@ -381,8 +389,11 @@ class Payment
         return $response->id ?: '';
     }
 
-    public function doExecutePuiPayment(EshopModelOrder $order, EshopModelBasket $basket, string $payPalClientMetadataId = ''): bool
-    {
+    public function doExecutePuiPayment(
+        EshopModelOrder $order,
+        EshopModelBasket $basket,
+        string $payPalClientMetadataId = ''
+    ): bool {
         try {
             $result = $this->doCreatePayPalOrder(
                 $basket,
@@ -403,7 +414,7 @@ class Payment
        # $paymentSource = $this->fetchOrderFields((string) $payPalOrderId, 'payment_source');
        # Registry::getLogger()->error(serialize($paymentSource));
 
-        if (!$payPalOrderId ) {
+        if (!$payPalOrderId) {
             return false;
         }
 
@@ -424,8 +435,7 @@ class Payment
         string $payPalOrderId,
         string $paymentMethodId,
         string $status
-    ): PayPalOrderModel
-    {
+    ): PayPalOrderModel {
         /** @var PayPalOrderModel $payPalOrder */
         $payPalOrder = $this->getPayPalOrder($shopOrderId, $payPalOrderId);
 
@@ -453,5 +463,4 @@ class Payment
             ->getOrderService()
             ->showOrderDetails($paypalOrderId, $fields);
     }
-
 }

@@ -18,7 +18,7 @@ use OxidSolutionCatalysts\PayPalApi\Service\GenericService;
 
 final class WebhookRequestVerificationTest extends UnitTestCase
 {
-    private  $defaultHeaders =  [
+    private $defaultHeaders = [
         'PAYPAL-CERT-URL' => '',
         'PAYPAL-AUTH-ALGO' => '',
         'PAYPAL-TRANSMISSION-ID' => '',
@@ -79,7 +79,7 @@ final class WebhookRequestVerificationTest extends UnitTestCase
 
     private function setServiceFactoryMock(array $verificationResponse): void
     {
-        $notificationServiceMock =  $this->getMockBuilder(GenericService::class)
+        $notificationServiceMock = $this->getMockBuilder(GenericService::class)
             ->disableOriginalConstructor()
             ->getMock();
         $notificationServiceMock->expects($this->any())

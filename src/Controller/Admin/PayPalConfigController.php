@@ -27,7 +27,7 @@ class PayPalConfigController extends AdminController
     /**
      * @var string Current class template name.
      */
-    protected $_sThisTemplate = 'oscpaypalconfig.tpl';
+    protected $_sThisTemplate = 'oscpaypalconfig.tpl'; // phpcs:ignore PSR2.Classes.PropertyDeclaration
 
     /**
      * @return string
@@ -272,18 +272,16 @@ class PayPalConfigController extends AdminController
         $oldConfigKeys = array_keys($transferrableSettings);
         $currentShopId = Registry::getConfig()->getActiveShop()->getId();
 
-        foreach ($oldConfigKeys as $configKeyName)
-        {
+        foreach ($oldConfigKeys as $configKeyName) {
             // Read old values
             $legacyConfigValue = Registry::getConfig()->getShopConfVar(
                 $configKeyName,
                 $currentShopId,
-                'module:'.LegacyOeppModuleDetails::LEGACY_MODULE_ID
+                'module:' . LegacyOeppModuleDetails::LEGACY_MODULE_ID
             );
 
             // Invert "hide" option
-            if ($configKeyName == 'oePayPalBannersHideAll')
-            {
+            if ($configKeyName == 'oePayPalBannersHideAll') {
                 $legacyConfigValue = !$legacyConfigValue;
             }
 

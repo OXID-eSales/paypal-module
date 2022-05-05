@@ -23,7 +23,7 @@ abstract class BaseTestCase extends UnitTestCase
         parent::setUp();
 
         $dotenv = new \Symfony\Component\Dotenv\Dotenv();
-        $dotenv->load(__DIR__.'/../../.env');
+        $dotenv->load(__DIR__ . '/../../.env');
 
         $this->updateModuleConfiguration('oscPayPalSandboxClientId', $_ENV['oscPayPalSandboxClientId']);
         $this->updateModuleConfiguration('oscPayPalSandboxMode', true);

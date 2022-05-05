@@ -19,8 +19,6 @@ use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
-
-
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as PayPalApiOrders;
@@ -32,10 +30,9 @@ use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 
 final class PaymentTest extends BaseTestCase
 {
+    protected const TEST_USER_ID = 'e7af1c3b786fd02906ccd75698f4e6b9';
 
-    const TEST_USER_ID = 'e7af1c3b786fd02906ccd75698f4e6b9';
-
-    const TEST_PRODUCT_ID = 'dc5ffdf380e15674b56dd562a7cb6aec';
+    protected const TEST_PRODUCT_ID = 'dc5ffdf380e15674b56dd562a7cb6aec';
 
     public function testCreatePayPalOrder(): void
     {
@@ -105,7 +102,12 @@ final class PaymentTest extends BaseTestCase
             ->getOrderService();
 
         $result = $orderService->createOrder(
-            $this->getPuiOrderRequest(), '', 'test-' . microtime(), 'return=minimal', 'request-id-' . microtime());
+            $this->getPuiOrderRequest(),
+            '',
+            'test-' . microtime(),
+            'return=minimal',
+            'request-id-' . microtime()
+        );
 
         $this->assertNotEmpty($result->id);
     }
@@ -118,7 +120,7 @@ final class PaymentTest extends BaseTestCase
         $request->intent = OrderRequest::INTENT_CAPTURE;
         $request->purchase_units = $decoded['purchase_units'];
         $request->application_context = $decoded['application_context'];
-        $request->payment_source =  $decoded['payment_source'];
+        $request->payment_source = $decoded['payment_source'];
         $request->processing_instruction = "ORDER_COMPLETE_ON_PAYMENT_APPROVAL";
 
         return $request;

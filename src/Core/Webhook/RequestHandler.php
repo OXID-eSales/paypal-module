@@ -32,8 +32,7 @@ final class RequestHandler
         RequestReader $requestReader,
         VerificationService $verificationService,
         WebhookDispatcher $webhookDispatcher
-    )
-    {
+    ) {
         $this->requestReader = $requestReader;
         $this->verificationService = $verificationService;
         $this->webhookDispatcher = $webhookDispatcher;
@@ -67,7 +66,8 @@ final class RequestHandler
     private function processEvent(string $data): void
     {
         $data = json_decode($data, true);
-        if (is_array($data) &&
+        if (
+            is_array($data) &&
             isset($data['event_type'])
         ) {
             $this->webhookDispatcher->dispatch(new Event($data, $data['event_type']));
