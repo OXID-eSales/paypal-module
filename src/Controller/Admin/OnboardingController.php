@@ -88,7 +88,7 @@ class OnboardingController extends AdminController
             $handler = oxNew(Webhook::class);
             $webhookId = $handler->ensureWebhook();
         } catch (OnboardingException $exception) {
-            Registry::getUtilsView()->addErrorToDisplay($exception);
+            Registry::getUtilsView()->addErrorToDisplay($exception->getMessage());
         } catch (\Exception $exception) {
             Registry::getLogger()->error($exception->getMessage(), [$exception]);
         }

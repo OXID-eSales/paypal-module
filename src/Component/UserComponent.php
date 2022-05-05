@@ -62,7 +62,7 @@ class UserComponent extends UserComponent_parent
     }
 
     /**
-     * @param object $response \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order
+     * @param \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order $response
      */
     public function loginPayPalCustomer(\OxidSolutionCatalysts\PayPalApi\Model\Orders\Order $response): bool
     {

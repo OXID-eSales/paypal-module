@@ -7,7 +7,9 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
-use OxidEsales\Eshop\Core\Module\Module;
+use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Setup\Bridge\ModuleActivationBridgeInterface;
 
 class LegacyOeppModuleDetails
 {
@@ -19,13 +21,14 @@ class LegacyOeppModuleDetails
      */
     public function isLegacyModulePresent(): bool
     {
-        $oepaypalModule = oxNew(Module::class);
-        if ($oepaypalModule->load(self::LEGACY_MODULE_ID))
-        {
-            return $oepaypalModule->isActive();
-        }
+        $container = ContainerFactory::getInstance()->getContainer();
+        $moduleActivationBridge = $container
+            ->get(ModuleActivationBridgeInterface::class);
 
-        return false;
+        return $moduleActivationBridge->isActive(
+            self::LEGACY_MODULE_ID,
+            Registry::getConfig()->getShopId()
+        );
     }
 
     /**
