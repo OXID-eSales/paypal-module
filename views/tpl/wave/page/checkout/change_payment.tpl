@@ -1,5 +1,5 @@
 [{if 'oscpaypal_express'|array_key_exists:$oView->getPaymentList() && $oViewConf->isPayPalExpressSessionActive()}]
-    [{assign var="config" value=$oViewConf->getPayPalConfig()}]
+    [{assign var="config" value=$oViewConf->getPayPalCheckoutConfig()}]
     <div class="card-deck">
         <div class="card">
             <div class="card-header">

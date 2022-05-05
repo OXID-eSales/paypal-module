@@ -1,4 +1,4 @@
-[{if $oViewConf->isPayPalActive()}]
+[{if $oViewConf->isPayPalCheckoutActive()}]
     [{if $submitCart}]
     <script>
         document.getElementById('orderConfirmAgbBottom').submit();
