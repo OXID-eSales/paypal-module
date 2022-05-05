@@ -15,6 +15,7 @@ use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Core\LegacyOeppModuleDetails;
 
 /**
  * Controller for admin > PayPal/Configuration page
@@ -242,5 +243,64 @@ class PayPalConfigController extends AdminController
         }
 
         return $array;
+    }
+
+    /**
+     * Template variable getter,  check whether legacy oepaypal module exists and show button when config value is false
+     * @return bool
+     */
+    public function showTransferLegacySettingsButton(): bool
+    {
+        $LegacyOeppModuleDetails = Registry::get(LegacyOeppModuleDetails::class);
+
+        if ($LegacyOeppModuleDetails->isLegacyModulePresent()) {
+            $showButton = !$this->getServiceFromContainer(ModuleSettings::class)->getLegacySettingsTransferStatus();
+
+            return $showButton;
+        }
+
+        return false;
+    }
+
+    /**
+     * Transcribe banner settings from the classic PayPal Module (oepaypal)
+     */
+    public function transferBannerSettings()
+    {
+        $LegacyOeppModuleDetails = Registry::get(LegacyOeppModuleDetails::class);
+        $transferrableSettings = $LegacyOeppModuleDetails->getTransferrableSettings();
+        $oldConfigKeys = array_keys($transferrableSettings);
+        $currentShopId = Registry::getConfig()->getActiveShop()->getId();
+
+        foreach ($oldConfigKeys as $configKeyName)
+        {
+            // Read old values
+            $legacyConfigValue = Registry::getConfig()->getShopConfVar(
+                $configKeyName,
+                $currentShopId,
+                LegacyOeppModuleDetails::LEGACY_MODULE_ID
+            );
+
+            // Invert "hide" option
+            if ($configKeyName == 'oePayPalBannersHideAll')
+            {
+                $legacyConfigValue = !$legacyConfigValue;
+            }
+
+            // Write new config values
+            $this->getServiceFromContainer(ModuleSettings::class)->save(
+                $transferrableSettings[$configKeyName],
+                $legacyConfigValue
+            );
+        }
+
+        // Save legacy settings transfer status
+        $this->getServiceFromContainer(ModuleSettings::class)->save('oscPayPalLegacySettingsTransferred', true);
+
+        Registry::getUtilsView()->addErrorToDisplay(
+            Registry::getLang()->translateString('OSC_PAYPAL_BANNER_TRANSFERREDOLDSETTINGS'),
+            false,
+            true
+        );
     }
 }
