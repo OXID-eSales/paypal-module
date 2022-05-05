@@ -303,4 +303,13 @@ class PayPalConfigController extends AdminController
             true
         );
     }
+
+    /**
+     * Transfer transaction data from the classic oepaypal extension
+     * @return void
+     */
+    public function showTransferOeppTransactiondataButton()
+    {
+        return true;
+    }
 }

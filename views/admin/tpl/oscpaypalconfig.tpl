@@ -355,6 +355,22 @@
                     </div>
                 </div>
             </div>
+
+            <div class="card">
+                <div class="card-header" id="heading6">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
+                        [{oxmultilang ident="OSC_PAYPAL_MIGRATELEGACTRANSACTIONDATA"}]
+                    </h4>
+                </div>
+                <div id="collapse5" class="collapse" aria-labelledby="heading6" data-parent="#accordion">
+                    <div class="card-body">
+                        <p>[{oxmultilang ident='OSC_PAYPAL_MIGRATELEGACTRANSACTIONDATA_DETAIL'}]</p>
+                        [{if $oView->showTransferOeppTransactiondataButton()}]
+                            <a class="btn btn-primary bottom-space" href="[{$oViewConf->getSelfLink()|cat:"cl=oscpaypalconfig&fnc=transferOeppTransactiondata"}]">[{oxmultilang ident='OSC_PAYPAL_TRANSFERLEGACY_OEPP_DATA'}]</a>
+                        [{/if}]
+                    </div>
+                </div>
+            </div>
         </div>
         <button type="submit" class="btn btn-primary bottom-space">[{oxmultilang ident="GENERAL_SAVE"}]</button>
     </form>
