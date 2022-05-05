@@ -44,7 +44,7 @@ class PriceToMoney
         if (!$currency) {
             $currency = Registry::getConfig()->getActShopCurrencyObject();
         }
-        $value = Registry::getUtils()->fRound($value, $currency);
+        $value = Registry::getUtils()->fRound((string)$value, $currency);
         $value = number_format($value, (int) $currency->decimal, '.', '');
 
         $money = new Money();

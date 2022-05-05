@@ -14,6 +14,7 @@ use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
+use OxidSolutionCatalysts\PayPalApi\Service\GenericService;
 
 class Webhook
 {
@@ -65,7 +66,7 @@ class Webhook
             $webhookService = Registry::get(ServiceFactory::class)->getWebhookService();
             $webHookResponse = $webhookService->request('post', $paypload);
 
-            $webhookId = isset($webHookResponse['id']) ? $webHookResponse['id'] : '';
+            $webhookId = $webHookResponse['id'] ?? '';
         } catch (\Exception $exception) {
             Registry::getLogger()->error(
                 'PayPal Webhook creation failed: ' . $exception->getMessage(),

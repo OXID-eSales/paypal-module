@@ -32,8 +32,7 @@ final class UserTest extends UnitTestCase
 
         $user = oxNew(EshopModelUser::class);
 
-        $this->assertInstanceOf(DateTimeImmutable::class, $user->getBirthDateForPuiRequest());
-        $this->assertSame('2000-04-01', $user->getBirthDateForPuiRequest()->format('Y-m-d'));
+        $this->assertSame('2000-04-01', $user->getBirthDateForPuiRequest());
     }
 
     public function testPuiBirthDateNotSet(): void

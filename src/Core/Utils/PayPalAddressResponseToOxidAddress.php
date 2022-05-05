@@ -17,7 +17,7 @@ use VIISON\AddressSplitter\Exceptions\SplittingException;
 class PayPalAddressResponseToOxidAddress
 {
     /**
-     * @param obj $response PayPal Response
+     * @param PayPalApiOrderModel $response PayPal Response
      * @param string $DBTablePrefix
      * @return array
      */

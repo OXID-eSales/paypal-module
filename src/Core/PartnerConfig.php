@@ -22,7 +22,7 @@ class PartnerConfig
             // throws Exception if it was not possible to gather sufficient entropy.
             $nonce = bin2hex(random_bytes(42));
         } catch (\Exception $e) {
-            $nonce = md5(uniqid('', true) . '|' . microtime()) . substr(md5(mt_rand()), 0, 24);
+            $nonce = md5(uniqid('', true) . '|' . microtime()) . substr(md5((string)mt_rand()), 0, 24);
         }
 
         return $nonce;

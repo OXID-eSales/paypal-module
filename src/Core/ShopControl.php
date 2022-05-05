@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Core\DisplayError;
+use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Exception\Redirect;

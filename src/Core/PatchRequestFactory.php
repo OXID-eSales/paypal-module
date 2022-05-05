@@ -148,12 +148,12 @@ class PatchRequestFactory
 
         //Item total cost
         $itemTotal = $this->basket->getSumOfCostOfAllItemsPayPalBasket();
-        $breakdown->item_total = PriceToMoney::convert($itemTotal, $currency, $priceVatMode);
+        $breakdown->item_total = PriceToMoney::convert((float)$itemTotal, $currency, $priceVatMode);
 
         if ($this->basket->isCalculationModeNetto()) {
             //Item tax sum
             $tax = $this->basket->getPayPalProductVatValue();
-            $breakdown->tax_total = PriceToMoney::convert($tax, $currency, $priceVatMode);
+            $breakdown->tax_total = PriceToMoney::convert((float)$tax, $currency, $priceVatMode);
         }
 
         if ($this->basket->getDeliveryCost()) {
@@ -164,7 +164,7 @@ class PatchRequestFactory
 
         if ($discount = $this->basket->getDiscountSumPayPalBasket()) {
             //Discount
-            $breakdown->discount = PriceToMoney::convert($discount, $currency, $priceVatMode);
+            $breakdown->discount = PriceToMoney::convert((float)$discount, $currency, $priceVatMode);
         }
         $patch->value = $amount;
 
@@ -194,7 +194,7 @@ class PatchRequestFactory
         if ($nettoPrices) {
             $item->tax = PriceToMoney::convert($itemUnitPrice->getVatValue(), $currency, $priceVatMode);
         }
-        $item->quantity = $basketItem->getAmount();
+        $item->quantity = (string) $basketItem->getAmount();
 
         $patch->value = $item;
 

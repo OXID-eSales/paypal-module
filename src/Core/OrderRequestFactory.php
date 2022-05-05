@@ -20,6 +20,7 @@ use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item;
@@ -100,10 +101,7 @@ class OrderRequestFactory
         }
 
         if ($paymentSource) {
-            $request->payment_source =
-                [
-                    $paymentSource => $this->getPaymentSource()
-                ];
+            $request->payment_source = $this->getPaymentSource();
         }
 
         return $request;
@@ -139,7 +137,7 @@ class OrderRequestFactory
     }
 
     /**
-     * @return PurchaseUnit[]
+     * @return PurchaseUnitRequest[]
      */
     protected function getPurchaseUnits(
         ?string $transactionId,
@@ -194,11 +192,11 @@ class OrderRequestFactory
 
         //Item total cost
         $itemTotal = $basket->getPayPalProductNetto();
-        $breakdown->item_total = PriceToMoney::convert($itemTotal, $currency);
+        $breakdown->item_total = PriceToMoney::convert((float)$itemTotal, $currency);
 
         //Item tax sum
         $tax = $basket->getPayPalProductVatValue();
-        $breakdown->tax_total = PriceToMoney::convert($tax, $currency);
+        $breakdown->tax_total = PriceToMoney::convert((float)$tax, $currency);
 
         if ($basket->getDeliveryCost()) {
             //Shipping cost
@@ -208,7 +206,7 @@ class OrderRequestFactory
 
         if ($discount = $basket->getDiscountSumPayPalBasket()) {
             //Discount
-            $breakdown->discount = PriceToMoney::convert($discount, $currency);
+            $breakdown->discount = PriceToMoney::convert((float)$discount, $currency);
         }
 
         return $amount;
@@ -232,12 +230,12 @@ class OrderRequestFactory
 
             $item->unit_amount = PriceToMoney::convert($itemUnitPrice->getNettoPrice(), $currency);
             $item->tax = PriceToMoney::convert($itemUnitPrice->getVatValue(), $currency);
-            $item->tax_rate = $itemUnitPrice->getVat();
+            $item->tax_rate = (string)$itemUnitPrice->getVat();
             // TODO: There are usually still categories for digital products.
             // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
             $item->category = 'PHYSICAL_GOODS';
 
-            $item->quantity = $basketItem->getAmount();
+            $item->quantity = (string)$basketItem->getAmount();
             $items[] = $item;
         }
 
@@ -245,14 +243,14 @@ class OrderRequestFactory
             $item = new Item();
             $item->name = $language->translateString('GIFT_WRAPPING');
 
-            $item->unit_amount = PriceToMoney::convert($wrapping, $currency);
-            $item->tax = PriceToMoney::convert($basket->getPayPalCheckoutWrappingVatValue(), $currency);
+            $item->unit_amount = PriceToMoney::convert((float)$wrapping, $currency);
+            $item->tax = PriceToMoney::convert((float)$basket->getPayPalCheckoutWrappingVatValue(), $currency);
             $item->tax_rate = $basket->getPayPalCheckoutWrappingVat();
             // TODO: There are usually still categories for digital products.
             // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
             $item->category = 'PHYSICAL_GOODS';
 
-            $item->quantity = 1;
+            $item->quantity = '1';
             $items[] = $item;
         }
 
@@ -260,14 +258,14 @@ class OrderRequestFactory
             $item = new Item();
             $item->name = $language->translateString('GREETING_CARD');
 
-            $item->unit_amount = PriceToMoney::convert($giftCard, $currency);
-            $item->tax = PriceToMoney::convert($basket->getPayPalCheckoutGiftCardVatValue(), $currency);
+            $item->unit_amount = PriceToMoney::convert((float)$giftCard, $currency);
+            $item->tax = PriceToMoney::convert((float)$basket->getPayPalCheckoutGiftCardVatValue(), $currency);
             $item->tax_rate = $basket->getPayPalCheckoutGiftCardVat();
             // TODO: There are usually still categories for digital products.
             // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
             $item->category = 'PHYSICAL_GOODS';
 
-            $item->quantity = 1;
+            $item->quantity = '1';
             $items[] = $item;
         }
 
@@ -275,14 +273,14 @@ class OrderRequestFactory
             $item = new Item();
             $item->name = $language->translateString('PAYMENT_METHOD');
 
-            $item->unit_amount = PriceToMoney::convert($payment, $currency);
-            $item->tax = PriceToMoney::convert($basket->getPayPalCheckoutPaymentVatValue(), $currency);
+            $item->unit_amount = PriceToMoney::convert((float)$payment, $currency);
+            $item->tax = PriceToMoney::convert((float)$basket->getPayPalCheckoutPaymentVatValue(), $currency);
             $item->tax_rate = $basket->getPayPalCheckoutPaymentVat();
             // TODO: There are usually still categories for digital products.
             // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
             $item->category = 'PHYSICAL_GOODS';
 
-            $item->quantity = 1;
+            $item->quantity = '1';
             $items[] = $item;
         }
 
@@ -317,9 +315,9 @@ class OrderRequestFactory
     }
 
     /**
-     * @return AddressPortable
+     * @return AddressPortable3
      */
-    protected function getBillingAddress(): AddressPortable
+    protected function getBillingAddress(): AddressPortable3
     {
         $user = $this->basket->getBasketUser();
 
@@ -329,7 +327,7 @@ class OrderRequestFactory
         $country = oxNew(Country::class);
         $country->load($user->getFieldData('oxcountryid'));
 
-        $address = new AddressPortable();
+        $address = new AddressPortable3();
         $addressLine = $user->getFieldData('oxstreet') . " " . $user->getFieldData('oxstreetnr');
         $address->address_line_1 = $addressLine;
         $address->admin_area_1 = $state->getFieldData('oxtitle');
@@ -354,7 +352,7 @@ class OrderRequestFactory
             $fullName = $deliveryAddress->oxaddress__oxfname->value . " " . $deliveryAddress->oxaddress__oxlname->value;
             $name->full_name = $fullName;
 
-            $address = new AddressPortable();
+            $address = new AddressPortable3();
 
             $state = oxNew(State::class);
             $state->load($deliveryAddress->getFieldData('oxstateid'));
@@ -461,8 +459,8 @@ class OrderRequestFactory
         $paymentSource->billing_address = $billingAddress;
 
         $paymentSource->phone = $user->getPhoneNumberForPuiRequest();
-        if ($fromRequest = $user->getBirthDateForPuiRequest()) {
-            $paymentSource->birth_date = $fromRequest->format('Y-m-d');
+        if ($birthdate = $user->getBirthDateForPuiRequest()) {
+            $paymentSource->birth_date = $birthdate;
         }
 
         $activeShop = Registry::getConfig()->getActiveShop();
