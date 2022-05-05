@@ -134,7 +134,7 @@ class PayPalOrderController extends AdminDetailsController
         $noteToPayer = $request->getRequestParameter('noteToPayer');
 
         $capture = $this->getOrder()->getOrderPaymentCapture();
-        if ($capture instanceof Capture){
+        if ($capture instanceof Capture) {
             $request = new RefundRequest();
             $request->note_to_payer = $noteToPayer;
             $request->invoice_id = !empty($invoiceId) ? $invoiceId : null;
