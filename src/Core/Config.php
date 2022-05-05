@@ -211,14 +211,14 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->showBannersOnCheckoutPage();
     }
 
-    public function getPayPalBannerCartPageSelector(): string
+    public function getPayPalCheckoutBannerCartPageSelector(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalBannerCartPageSelector();
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalCheckoutBannerCartPageSelector();
     }
 
-    public function getPayPalBannerPaymentPageSelector(): string
+    public function getPayPalCheckoutBannerPaymentPageSelector(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalBannerPaymentPageSelector();
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalCheckoutBannerPaymentPageSelector();
     }
 
     /**

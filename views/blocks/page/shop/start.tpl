@@ -1,10 +1,10 @@
-[{if $oViewConf->isModuleActive('osc_paypal') && $oViewConf->showPayPalBannerOnStartPage()}]
+[{if $oViewConf->isModuleActive('osc_paypal') && $oViewConf->showPayPalCheckoutBannerOnStartPage()}]
     [{assign var="paypalInstallmentPrice" value=$oxcmp_basket->getBruttoSum()}]
     [{if $oxcmp_basket->isPriceViewModeNetto()}]
         [{assign var="paypalInstallmentPrice" value=$oxcmp_basket->getNettoSum()}]
     [{/if}]
 
     [{oxstyle include=$oViewConf->getModuleUrl('osc_paypal','out/src/css/paypal_installment.css')}]
-    [{include file="modules/osc/paypal/installment_banners.tpl" amount=$paypalInstallmentPrice selector=$oViewConf->getPayPalBannerStartPageSelector()}]
+    [{include file="modules/osc/paypal/installment_banners.tpl" amount=$paypalInstallmentPrice selector=$oViewConf->getPayPalCheckoutBannerStartPageSelector()}]
 [{/if}]
 [{$smarty.block.parent}]

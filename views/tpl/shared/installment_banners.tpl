@@ -32,7 +32,7 @@
                 countryCode: '[{$oViewConf->getActLanguageAbbr()|upper}]',
                 style: {
                     layout: bannerLayout,
-                    color: '[{$oViewConf->getPayPalBannersColorScheme()}]',
+                    color: '[{$oViewConf->getPayPalCheckoutBannersColorScheme()}]',
                     ratio: '[{$size}]'
                 }
             }).render('#paypal-installment-banner-container');

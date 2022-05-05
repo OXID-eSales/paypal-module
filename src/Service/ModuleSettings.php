@@ -196,17 +196,17 @@ class ModuleSettings
         return (bool) $this->getSettingValue('oscPayPalBannersCheckoutPage');
     }
 
-    public function getPayPalBannerCartPageSelector(): string
+    public function getPayPalCheckoutBannerCartPageSelector(): string
     {
         return (string) $this->getSettingValue('oscPayPalBannersCartPageSelector');
     }
 
-    public function getPayPalBannerPaymentPageSelector(): string
+    public function getPayPalCheckoutBannerPaymentPageSelector(): string
     {
         return (string) $this->getSettingValue('oscPayPalBannersPaymentPageSelector');
     }
 
-    public function getPayPalBannersColorScheme(): string
+    public function getPayPalCheckoutBannersColorScheme(): string
     {
         return (string) $this->getSettingValue('oscPayPalBannersColorScheme');
     }
