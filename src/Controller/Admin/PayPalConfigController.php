@@ -311,14 +311,7 @@ class PayPalConfigController extends AdminController
     public function showTransferOeppTransactiondataButton(): bool
     {
         $LegacyOeppModuleDetails = Registry::get(LegacyOeppModuleDetails::class);
-        $showButton = !$this->getServiceFromContainer(ModuleSettings::class)->getLegacyOeppTransactionsTransferStatus();
-
-        if ($showButton && $LegacyOeppModuleDetails->showTransferTransactiondataButton())
-        {
-            return true;
-        }
-
-        return false;
+        return $LegacyOeppModuleDetails->showTransferTransactiondataButton();
     }
 
     /**

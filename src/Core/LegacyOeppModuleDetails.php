@@ -9,9 +9,13 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Core\Module\Module;
 use OxidEsales\Eshop\Core\DatabaseProvider;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
 class LegacyOeppModuleDetails
 {
+    use ServiceContainer;
+
     public const LEGACY_MODULE_ID = 'oepaypal';
 
     /**
@@ -58,12 +62,17 @@ class LegacyOeppModuleDetails
     }
 
     /**
-     * Checks whether oepaypal and its transaction data tables are present
+     * Checks whether oepaypal and its transaction data tables are present and the transfer hasn't been executed yet.
      * @return bool
      */
     public function showTransferTransactiondataButton(): bool
     {
         if (!$this->isLegacyModulePresent()) {
+            return false;
+        }
+
+        if ($this->getServiceFromContainer(ModuleSettings::class)->getLegacyOeppTransactionsTransferStatus())
+        {
             return false;
         }
 
