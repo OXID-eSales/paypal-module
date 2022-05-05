@@ -7,17 +7,25 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
+use OxidEsales\Eshop\Core\Module\Module;
+
 class LegacyOeppModuleDetails
 {
-    public const LEGACY_MODULE_ID = 'module:oepaypal';
+    public const LEGACY_MODULE_ID = 'oepaypal';
 
     /**
-     * Determines whether the legacy PayPal module "oepaypal" is present in the system
+     * Determines whether the legacy PayPal module "oepaypal" is enabled
      * @return bool
      */
     public function isLegacyModulePresent(): bool
     {
-        return file_exists(OX_BASE_PATH.'modules'.DIRECTORY_SEPARATOR.'oe'.DIRECTORY_SEPARATOR.'oepaypal'.DIRECTORY_SEPARATOR.'metadata.php');
+        $oepaypalModule = oxNew(Module::class);
+        if ($oepaypalModule->load(self::LEGACY_MODULE_ID))
+        {
+            return $oepaypalModule->isActive();
+        }
+
+        return false;
     }
 
     /**
