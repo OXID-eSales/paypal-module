@@ -79,6 +79,9 @@ class OrderController extends OrderController_parent
         return $result;
     }
 
+    /**
+     * @psalm-suppress InternalMethod
+     */
     public function createAcdcOrder(): void
     {
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
@@ -223,6 +226,7 @@ class OrderController extends OrderController_parent
      * Template-Getter get a Fraudnet CmId
      *
      * @param $response
+     * @psalm-suppress InternalMethod
      */
     public function getPayPalPuiFraudnetCmId(): string
     {
@@ -258,7 +262,7 @@ class OrderController extends OrderController_parent
         }
 
         if (\OxidSolutionCatalysts\PayPal\Model\Order::ORDER_STATE_ACDCINPROGRESS == $success) {
-            return $success;
+            return (string)$success;
         }
 
         return parent::_getNextStep($success);

@@ -283,7 +283,7 @@ class PayPalOrderController extends AdminDetailsController
     /**
      * Template getter for order History
      *
-     * @return PayPalTransactions
+     * @return array
      * @throws StandardException|ApiException
      */
     public function getPayPalHistory()

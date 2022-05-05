@@ -71,7 +71,7 @@ class User extends User_parent
      * get the InvoiceAddress from user with all required fields
      * @return array
      */
-    public function getInvoiceAddress()
+    public function getInvoiceAddress(): array
     {
         $result = [];
         $requiredAddressFields = oxNew(RequiredAddressFields::class);
