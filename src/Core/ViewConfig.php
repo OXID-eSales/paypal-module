@@ -34,7 +34,7 @@ class ViewConfig extends ViewConfig_parent
     /**
      * @return bool
      */
-    public function isPayPalActive(): bool
+    public function isPayPalCheckoutActive(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->checkHealth();
     }
@@ -58,7 +58,7 @@ class ViewConfig extends ViewConfig_parent
     /**
      * @return Config
      */
-    public function getPayPalConfig(): Config
+    public function getPayPalCheckoutConfig(): Config
     {
         return oxNew(Config::class);
     }
@@ -228,7 +228,7 @@ class ViewConfig extends ViewConfig_parent
     /**
      * Returns whether PayPal banners should be shown on the start page
      */
-    public function showPayPalBannerOnStartPage(): bool
+    public function showPayPalCheckoutBannerOnStartPage(): bool
     {
         $config = Registry::getConfig();
         $settings = $this->getServiceFromContainer(ModuleSettings::class);
@@ -244,7 +244,7 @@ class ViewConfig extends ViewConfig_parent
     /**
      * Returns PayPal banners selector for the start page
      */
-    public function getPayPalBannerStartPageSelector(): string
+    public function getPayPalCheckoutBannerStartPageSelector(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getStartPageBannerSelector();
     }
@@ -252,7 +252,7 @@ class ViewConfig extends ViewConfig_parent
     /**
      * Returns whether PayPal banners should be shown on the category page
      */
-    public function showPayPalBannerOnCategoryPage(): bool
+    public function showPayPalCheckoutBannerOnCategoryPage(): bool
     {
         $config = Registry::getConfig();
         $settings = $this->getServiceFromContainer(ModuleSettings::class);
@@ -268,7 +268,7 @@ class ViewConfig extends ViewConfig_parent
     /**
      * Returns PayPal banners selector for the category page
      */
-    public function getPayPalBannerCategoryPageSelector(): string
+    public function getPayPalCheckoutBannerCategoryPageSelector(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getCategoryPageBannerSelector();
     }
@@ -276,7 +276,7 @@ class ViewConfig extends ViewConfig_parent
     /**
      * Returns whether PayPal banners should be shown on the search results page
      */
-    public function showPayPalBannerOnSearchResultsPage(): bool
+    public function showPayPalCheckoutBannerOnSearchResultsPage(): bool
     {
         $config = Registry::getConfig();
         $settings = $this->getServiceFromContainer(ModuleSettings::class);
@@ -292,7 +292,7 @@ class ViewConfig extends ViewConfig_parent
     /**
      * Returns PayPal banners selector for the search page
      */
-    public function getPayPalBannerSearchPageSelector(): string
+    public function getPayPalCheckoutBannerSearchPageSelector(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getSearchPageBannerSelector();
     }
@@ -300,7 +300,7 @@ class ViewConfig extends ViewConfig_parent
     /**
      * Returns whether PayPal banners should be shown on the product details page
      */
-    public function showPayPalBannerOnProductDetailsPage(): bool
+    public function showPayPalCheckoutBannerOnProductDetailsPage(): bool
     {
         $config = Registry::getConfig();
         $settings = $this->getServiceFromContainer(ModuleSettings::class);
@@ -316,7 +316,7 @@ class ViewConfig extends ViewConfig_parent
     /**
      * Returns PayPal banners selector for the product detail page
      */
-    public function getPayPalBannerProductDetailsPageSelector(): string
+    public function getPayPalCheckoutBannerProductDetailsPageSelector(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getProductDetailsPageBannerSelector();
     }
@@ -324,7 +324,7 @@ class ViewConfig extends ViewConfig_parent
     /**
      * Returns whether PayPal banners should be shown on the checkout page
      */
-    public function showPayPalBannerOnCheckoutPage(): bool
+    public function showPayPalCheckoutBannerOnCheckoutPage(): bool
     {
         $showBanner = false;
         $actionClassName = $this->getActionClassName();
@@ -335,14 +335,14 @@ class ViewConfig extends ViewConfig_parent
             $showBanner = (
                 $settings->showAllPayPalBanners() &&
                 $settings->showBannersOnCheckoutPage() &&
-                $settings->getPayPalBannerCartPageSelector() &&
+                $settings->getPayPalCheckoutBannerCartPageSelector() &&
                 $config->getConfigParam('bl_perfLoadPrice')
             );
         } elseif ($actionClassName === 'payment') {
             $showBanner = (
                 $settings->showAllPayPalBanners() &&
                 $settings->showBannersOnCheckoutPage() &&
-                $settings->getPayPalBannerPaymentPageSelector() &&
+                $settings->getPayPalCheckoutBannerPaymentPageSelector() &&
                 $config->getConfigParam('bl_perfLoadPrice')
             );
         }
@@ -353,25 +353,25 @@ class ViewConfig extends ViewConfig_parent
     /**
      * Returns PayPal banners selector for the cart page
      */
-    public function getPayPalBannerCartPageSelector(): string
+    public function getPayPalCheckoutBannerCartPageSelector(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalBannerCartPageSelector();
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalCheckoutBannerCartPageSelector();
     }
 
     /**
      * Returns PayPal banners selector for the payment page
      */
-    public function getPayPalBannerPaymentPageSelector(): string
+    public function getPayPalCheckoutBannerPaymentPageSelector(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalBannerPaymentPageSelector();
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalCheckoutBannerPaymentPageSelector();
     }
 
     /**
      * Returns the PayPal banners colour scheme
      */
-    public function getPayPalBannersColorScheme(): string
+    public function getPayPalCheckoutBannersColorScheme(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalBannersColorScheme();
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalCheckoutBannersColorScheme();
     }
 
     // <-- PSPAYPAL-491

@@ -1,5 +1,5 @@
 [{$smarty.block.parent}]
-[{if $oViewConf->isModuleActive('osc_paypal') && $oViewConf->showPayPalBannerOnProductDetailsPage()}]
+[{if $oViewConf->isModuleActive('osc_paypal') && $oViewConf->showPayPalCheckoutBannerOnProductDetailsPage()}]
     [{assign var="bannerAmount" value=$oxcmp_basket->getBruttoSum()}]
     [{if $oxcmp_basket->isPriceViewModeNetto()}]
         [{assign var="bannerAmount" value=$oxcmp_basket->getNettoSum()}]
@@ -13,5 +13,5 @@
         [{assign var="productPrice" value=$oPrice->getPrice()}]
         [{assign var="bannerAmount" value=$bannerAmount+$productPrice}]
     [{/if}]
-    [{include file="modules/osc/paypal/installment_banners.tpl" amount=$bannerAmount selector=$oViewConf->getPayPalBannerProductDetailsPageSelector()}]
+    [{include file="modules/osc/paypal/installment_banners.tpl" amount=$bannerAmount selector=$oViewConf->getPayPalCheckoutBannerProductDetailsPageSelector()}]
 [{/if}]
