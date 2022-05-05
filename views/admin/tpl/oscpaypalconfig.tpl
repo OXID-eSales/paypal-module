@@ -237,6 +237,9 @@
                 </div>
                 <div id="collapse4" class="collapse" aria-labelledby="heading5" data-parent="#accordion">
                     <div class="card-body">
+                        [{if $oView->showTransferLegacySettingsButton()}]
+                            <a class="btn btn-primary bottom-space" href="[{$oViewConf->getSelfLink()|cat:"cl=oscpaypalconfig&fnc=transferBannerSettings"}]">[{oxmultilang ident='OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'}]</a>
+                        [{/if}]
                         <p>[{oxmultilang ident="OSC_PAYPAL_BANNER_INFOTEXT"}]</p>
                         <div class="form-group">
                             <div class="controls">
