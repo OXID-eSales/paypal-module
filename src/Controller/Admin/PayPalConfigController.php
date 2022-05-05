@@ -305,11 +305,31 @@ class PayPalConfigController extends AdminController
     }
 
     /**
+     * Show button to transfer transaction data from the oepaypal extension
+     * @return bool
+     */
+    public function showTransferOeppTransactiondataButton(): bool
+    {
+        $LegacyOeppModuleDetails = Registry::get(LegacyOeppModuleDetails::class);
+        $showButton = !$this->getServiceFromContainer(ModuleSettings::class)->getLegacyOeppTransactionsTransferStatus();
+
+        if ($showButton && $LegacyOeppModuleDetails->showTransferTransactiondataButton())
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Transfer transaction data from the classic oepaypal extension
      * @return void
      */
-    public function showTransferOeppTransactiondataButton()
+    public function transferOeppTransactiondata()
     {
-        return true;
+
+
+        // Save transfer status
+        $this->getServiceFromContainer(ModuleSettings::class)->save('oscPayPalOeppTransactionsTransferred', true);
     }
 }

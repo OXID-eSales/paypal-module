@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Core\Module\Module;
+use OxidEsales\Eshop\Core\DatabaseProvider;
 
 class LegacyOeppModuleDetails
 {
@@ -54,5 +55,24 @@ class LegacyOeppModuleDetails
     public function getTransferrableSettings(): array
     {
         return $this->transferrableSettings;
+    }
+
+    /**
+     * Checks whether oepaypal and its transaction data tables are present
+     * @return bool
+     */
+    public function showTransferTransactiondataButton(): bool
+    {
+        if (!$this->isLegacyModulePresent()) {
+            return false;
+        }
+
+        $db = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC);
+        $out = $db->getAll(
+            "SELECT COUNT(*) as c FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?;",
+            ['oepaypal_order']
+        );
+
+        return $out[0]['c'];
     }
 }

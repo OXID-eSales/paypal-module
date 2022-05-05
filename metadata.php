@@ -370,6 +370,12 @@ $aModule = [
             'group' => null
         ],
         [
+            'name' => 'oscPayPalOeppTransactionsTransferred',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
             'name' => 'oscPayPalShowCheckoutButton',
             'type' => 'bool',
             'value' => true,

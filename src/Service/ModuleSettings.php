@@ -307,4 +307,13 @@ class ModuleSettings
     {
         return (bool) $this->getSettingValue('oscPayPalLegacySettingsTransferred');
     }
+
+    /**
+     * This setting indicates whether transactions the oepaypal legacy modules have been transferred.
+     * @return bool
+     */
+    public function getLegacyOeppTransactionsTransferStatus(): bool
+    {
+        return (bool) $this->getSettingValue('oscPayPalOeppTransactionsTransferred');
+    }
 }

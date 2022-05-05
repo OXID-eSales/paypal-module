@@ -356,6 +356,7 @@
                 </div>
             </div>
 
+            [{if $oView->showTransferOeppTransactiondataButton()}]
             <div class="card">
                 <div class="card-header" id="heading6">
                     <h4 class="collapsed" data-toggle="collapse" data-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
@@ -371,6 +372,7 @@
                     </div>
                 </div>
             </div>
+            [{/if}]
         </div>
         <button type="submit" class="btn btn-primary bottom-space">[{oxmultilang ident="GENERAL_SAVE"}]</button>
     </form>
