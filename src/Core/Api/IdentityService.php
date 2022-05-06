@@ -22,10 +22,10 @@ class IdentityService extends BaseService
         $method = 'post';
 
         /** @var ResponseInterface $response */
-        $response = $this->send($method, $path);
+        $response = $this->send($method, $path, [], $headers);
         $body = $response->getBody();
 
-        return $body ? json_decode($body, true) : [];
+        return $body ? json_decode((string)$body, true) : [];
     }
 
     /**

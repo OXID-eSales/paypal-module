@@ -112,9 +112,7 @@ class Order extends Order_parent
 
         $basket = Registry::getSession()->getBasket();
         $user = Registry::getSession()->getUser();
-        $userPayment = oxNew(UserPayment::class);
-        $userPayment->load($this->getFieldData('oxpaymentid'));
-        $paymentsId = $userPayment->oxuserpayments__oxpaymentsid->value;
+        $paymentsId = $this->getFieldData('oxpaymenttype');
         $this->afterOrderCleanUp($basket, $user);
 
         $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($paymentsId);
@@ -130,6 +128,9 @@ class Order extends Order_parent
             $this->markOrderPaid();
             $this->setTransId($payPalOrderId);
         }
+
+        $userPayment = oxNew(UserPayment::class);
+        $userPayment->load($this->getFieldData('oxpaymentid'));
 
         return $this->_sendOrderByEmail($user, $basket, $userPayment);
     }

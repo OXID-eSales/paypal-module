@@ -31,7 +31,7 @@ class PayPalOrderController extends AdminDetailsController
     /**
      * @var Order
      */
-    protected $order;
+    protected $order = null;
 
     /**
      * @var array
@@ -157,7 +157,8 @@ class PayPalOrderController extends AdminDetailsController
      */
     protected function getPayPalOrder(): PayPalOrder
     {
-        return $this->getOrder()->getPayPalOrder();
+        $order = $this->getOrder();
+        return $order->getPayPalOrder();
     }
 
     /**
@@ -168,7 +169,7 @@ class PayPalOrderController extends AdminDetailsController
      */
     protected function getOrder(): Order
     {
-        if (!$this->order) {
+        if (is_null($this->order)) {
             $order = oxNew(Order::class);
             $orderId = $this->getEditObjectId();
             if ($orderId === null || !$order->load($orderId)) {
@@ -236,7 +237,7 @@ class PayPalOrderController extends AdminDetailsController
      */
     public function getPayPalAuthorizationId()
     {
-        return $this->getPayPalOrder()->purchase_units[0]->payments->authorizations[0]->id->value;
+        return $this->getPayPalOrder()->purchase_units[0]->payments->authorizations[0]->id;
     }
 
     /**

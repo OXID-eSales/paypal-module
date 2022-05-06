@@ -113,7 +113,7 @@ class Webhook
         $webhookService = Registry::get(ServiceFactory::class)->getWebhookService();
         $result = $webhookService->request('get');
 
-        return is_array($result) && isset($result['webhooks']) ? $result['webhooks'] : [];
+        return $result['webhooks'] ?? [];
     }
 
     public function getAvailableEventNames(): array
