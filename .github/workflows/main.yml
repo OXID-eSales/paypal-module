@@ -69,7 +69,7 @@ jobs:
       options: --tmpfs=/build:exec,noatime
     steps:
       - name: Download oxid installation
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: oxid${{ matrix.oxid }}-php${{ matrix.php }}-with-deps
           path: /build
@@ -104,7 +104,7 @@ jobs:
       image: oxidprojects/oxid-apache-php:oxid${{ matrix.oxid }}-php${{ matrix.php }}
     steps:
       - name: Download oxid installation
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: oxid${{ matrix.oxid }}-php${{ matrix.php }}-with-deps
           path: /build
@@ -148,7 +148,7 @@ jobs:
       options: --tmpfs=/build:exec,noatime
     steps:
       - name: Download a single artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: oxid${{ matrix.oxid }}-php${{ matrix.php }}-with-deps
           path: /build
@@ -229,13 +229,13 @@ jobs:
           ls -alh
 
       - name: Load phpunit logs
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: logs
           path: logs
 
       - name: Load psalm logs
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: psalm-log
           path: logs/
