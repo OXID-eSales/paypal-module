@@ -101,7 +101,10 @@ class OrderRequestFactory
         }
 
         if ($paymentSource) {
-            $request->payment_source = $this->getPaymentSource();
+            $request->payment_source =
+            [
+                $paymentSource => $this->getPaymentSource()
+            ];
         }
 
         return $request;
