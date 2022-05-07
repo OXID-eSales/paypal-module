@@ -437,7 +437,7 @@ class Payment
         string $status
     ): PayPalOrderModel {
         /** @var PayPalOrderModel $payPalOrder */
-        $payPalOrder = $this->getPayPalOrder($shopOrderId, $payPalOrderId);
+        $payPalOrder = $this->getPayPalCheckoutOrder($shopOrderId, $payPalOrderId);
 
         $payPalOrder->setPaymentMethodId($paymentMethodId);
         $payPalOrder->setStatus($status);
@@ -446,7 +446,7 @@ class Payment
         return $payPalOrder;
     }
 
-    public function getPayPalOrder(
+    public function getPayPalCheckoutOrder(
         string $shopOrderId,
         string $payPalOrderId
     ) {

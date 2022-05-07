@@ -110,7 +110,7 @@ class OrderController extends OrderController_parent
         } else {
             PayPalSession::storePayPalOrderId($paypalOrderId);
             $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
-            $payPalOrder = $paymentService->getPayPalOrder($sessionOrderId, $paypalOrderId);
+            $payPalOrder = $paymentService->getPayPalCheckoutOrder($sessionOrderId, $paypalOrderId);
             $payPalOrder->setStatus($response['status']);
             $payPalOrder->save();
         }

@@ -212,7 +212,7 @@ class Order extends Order_parent
      * @return PayPalOrder
      * @throws ApiException
      */
-    public function getPayPalOrder(): PayPalOrder
+    public function getPayPalCheckoutOrder(): PayPalOrder
     {
         if (!$this->payPalOrder) {
             //Why do we need this call if we know it was no PayPal order ?
@@ -332,6 +332,6 @@ class Order extends Order_parent
      */
     public function getOrderPaymentCapture(): ?Capture
     {
-        return $this->getPayPalOrder()->purchase_units[0]->payments->captures[0] ?? null;
+        return $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures[0] ?? null;
     }
 }

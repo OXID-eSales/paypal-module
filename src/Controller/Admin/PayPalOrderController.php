@@ -72,7 +72,7 @@ class PayPalOrderController extends AdminDetailsController
             $this->addTplParam('payPalOrder', null);
 
             if ($order->getPayPalOrderIdForOxOrderId()) {
-                $this->addTplParam('payPalOrder', $this->getPayPalOrder());
+                $this->addTplParam('payPalOrder', $this->getPayPalCheckoutOrder());
                 $this->addTplParam('capture', $order->getOrderPaymentCapture());
             }
         } catch (ApiException $exception) {
@@ -95,7 +95,7 @@ class PayPalOrderController extends AdminDetailsController
     public function capture(): void
     {
         $order = $this->getOrder();
-        $paypalOrder = $this->getPayPalOrder();
+        $paypalOrder = $this->getPayPalCheckoutOrder();
         $orderId = $paypalOrder->id;
 
         /** @var ServiceFactory $serviceFactory */
@@ -155,10 +155,10 @@ class PayPalOrderController extends AdminDetailsController
      * @throws StandardException
      * @throws ApiException
      */
-    protected function getPayPalOrder(): PayPalOrder
+    protected function getPayPalCheckoutOrder(): PayPalOrder
     {
         $order = $this->getOrder();
-        return $order->getPayPalOrder();
+        return $order->getPayPalCheckoutOrder();
     }
 
     /**
@@ -189,7 +189,7 @@ class PayPalOrderController extends AdminDetailsController
      */
     protected function getOrderPaymentCapture(): ?Capture
     {
-        return $this->getPayPalOrder()->purchase_units[0]->payments->captures[0];
+        return $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures[0];
     }
 
     /**
@@ -197,7 +197,7 @@ class PayPalOrderController extends AdminDetailsController
      */
     public function getPayPalPaymentStatus()
     {
-        return $this->getPayPalOrder()->status;
+        return $this->getPayPalCheckoutOrder()->status;
     }
 
     /**
@@ -205,7 +205,7 @@ class PayPalOrderController extends AdminDetailsController
      */
     public function getPayPalTotalOrderSum()
     {
-        return $this->getPayPalOrder()->purchase_units[0]->amount->value;
+        return $this->getPayPalCheckoutOrder()->purchase_units[0]->amount->value;
     }
 
     /**
@@ -213,7 +213,7 @@ class PayPalOrderController extends AdminDetailsController
      */
     public function getPayPalCapturedAmount()
     {
-        return $this->getPayPalOrder()->purchase_units[0]->payments->captures[0]->amount->value;
+        return $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures[0]->amount->value;
     }
 
     /**
@@ -221,7 +221,7 @@ class PayPalOrderController extends AdminDetailsController
      */
     public function getPayPalRefundedAmount()
     {
-        return $this->getPayPalOrder()->purchase_units[0]->payments->refunds[0]->amount->value;
+        return $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->refunds[0]->amount->value;
     }
 
     /**
@@ -237,7 +237,7 @@ class PayPalOrderController extends AdminDetailsController
      */
     public function getPayPalAuthorizationId()
     {
-        return $this->getPayPalOrder()->purchase_units[0]->payments->authorizations[0]->id;
+        return $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->authorizations[0]->id;
     }
 
     /**
@@ -245,7 +245,7 @@ class PayPalOrderController extends AdminDetailsController
      */
     public function getPayPalCurrency()
     {
-        return $this->getPayPalOrder()->purchase_units[0]->amount->breakdown->item_total->currency_code;
+        return $this->getPayPalCheckoutOrder()->purchase_units[0]->amount->breakdown->item_total->currency_code;
     }
 
     /**
@@ -293,7 +293,7 @@ class PayPalOrderController extends AdminDetailsController
         if (!$this->payPalOrderHistory) {
             $this->payPalOrderHistory = [];
 
-            $payPalOrder = $this->getPayPalOrder();
+            $payPalOrder = $this->getPayPalCheckoutOrder();
             $purchaseUnitPayments =
                 $payPalOrder->purchase_units[0] &&
                 $payPalOrder->purchase_units[0]->payments ?
