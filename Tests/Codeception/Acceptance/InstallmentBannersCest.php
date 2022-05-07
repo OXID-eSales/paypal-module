@@ -30,7 +30,7 @@ final class InstallmentBannersCest extends BaseCest
         parent::_after($I);
     }
 
-    public function shopStartPageLoads(AcceptanceTester $I):void
+    public function shopStartPageLoads(AcceptanceTester $I): void
     {
         $I->wantToTest('shop start page loads with activated module and deactivated banners');
 

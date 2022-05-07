@@ -78,7 +78,10 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
 
     public function testDetailsButtonPlacementWithPrefilledCart(AcceptanceTester $I): void
     {
-        $I->wantToTest('checkout from details page from clean session and filled cart. Customer is guest buyer without shop account.');
+        $I->wantToTest(
+            'checkout from details page from clean session and filled cart.'
+            . ' Customer is guest buyer without shop account.'
+        );
 
         $this->enableExpressButtons($I);
         $I->updateModuleConfiguration('oscPayPalShowProductDetailsButton', true);
@@ -113,7 +116,8 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
             'oxorder',
             [
                 'OXID' => $orderId,
-                'OXTOTALORDERSUM' => 5 * Fixtures::get('product')['bruttoprice_single'], //the original 4 plus one from details
+                //the original 4 plus one from details
+                'OXTOTALORDERSUM' => 5 * Fixtures::get('product')['bruttoprice_single'],
                 'OXBILLFNAME' => $_ENV['sBuyerFirstName']
             ]
         );
@@ -121,7 +125,9 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
 
     public function testExpressCheckouFromDetailsAutomaticLogin(AcceptanceTester $I): void
     {
-        $I->wantToTest('checkout from details page with empty cart. Customer is not logged in but has shop account with password.');
+        $I->wantToTest(
+            'checkout from details page with empty cart. Customer is not logged in but has shop account with password.'
+        );
 
         $this->enableExpressButtons($I);
         $this->setUserNameSameAsPayPal($I);
@@ -166,5 +172,3 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
         );
     }
 }
-
-

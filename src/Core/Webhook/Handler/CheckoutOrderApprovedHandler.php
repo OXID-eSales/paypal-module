@@ -18,6 +18,7 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait;
+use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 
 class CheckoutOrderApprovedHandler implements HandlerInterface
 {
@@ -29,12 +30,13 @@ class CheckoutOrderApprovedHandler implements HandlerInterface
      */
     public function handle(Event $event): void
     {
-        /** @var EshopModelOrder\ $order */
+        /** @var \OxidEsales\Eshop\Application\Model\Order $order */
         $order = $this->getOrder($event);
 
         $payPalOrderId = $this->getPayPalOrderId($event);
 
-        //TODO: tbd: query order details from paypal. On the other hand, we just got verified that this data came from PayPal.
+        //TODO: tbd: query order details from paypal. On the other hand,
+        // we just got verified that this data came from PayPal.
 
         //This one needs a capture
         $response = $this->capturePayment($payPalOrderId);
@@ -45,7 +47,7 @@ class CheckoutOrderApprovedHandler implements HandlerInterface
         ) {
             $order->markOrderPaid();
 
-            /** @var PayPalModelOrder $paypalOrderModel */
+            /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
             $paypalOrderModel = $this->getServiceFromContainer(OrderRepository::class)
                 ->paypalOrderByOrderIdAndPayPalId($order->getId(), $payPalOrderId);
             $paypalOrderModel->setStatus($response->status);

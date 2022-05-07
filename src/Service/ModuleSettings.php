@@ -24,8 +24,7 @@ class ModuleSettings
 
     public function __construct(
         ModuleSettingBridgeInterface $moduleSettingBridge
-    )
-    {
+    ) {
         $this->moduleSettingBridge = $moduleSettingBridge;
     }
 
@@ -41,8 +40,6 @@ class ModuleSettings
 
     /**
      * Checks if module configurations are valid
-     *
-     * @throws StandardException
      */
     public function checkHealth(): bool
     {

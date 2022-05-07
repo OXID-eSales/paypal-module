@@ -24,7 +24,6 @@ use OxidEsales\TestingLibrary\helpers\ExceptionLogFileHelper;
  */
 final class WebhookCest extends BaseCest
 {
-
     public function _before(AcceptanceTester $I): void
     {
         parent::_before($I);

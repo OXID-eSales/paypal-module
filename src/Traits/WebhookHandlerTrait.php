@@ -28,7 +28,7 @@ trait WebhookHandlerTrait
             $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
             /** @var EshopModelOrder $order */
             $order = $orderRepository->getShopOrderByPayPalOrderId($payPalOrderId);
-        } catch(NotFound $exception) {
+        } catch (NotFound $exception) {
             throw WebhookEventException::byPayPalOrderId($payPalOrderId);
         }
 
@@ -39,7 +39,7 @@ trait WebhookHandlerTrait
     {
         $data = $this->getEventPayload($event);
 
-        if (!is_array($data) || !isset($data['resource'])) {
+        if (!isset($data['resource'])) {
             throw WebhookEventException::mandatoryDataNotFound();
         }
 
@@ -54,12 +54,6 @@ trait WebhookHandlerTrait
 
     public function getEventPayload(Event $event): array
     {
-        $data = $event->getData();
-
-        if (!is_array($data)) {
-            throw WebhookEventException::mandatoryDataNotFound();
-        }
-
-        return $data;
+        return $event->getData();
     }
 }

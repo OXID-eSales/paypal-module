@@ -22,10 +22,10 @@ class IdentityService extends BaseService
         $method = 'post';
 
         /** @var ResponseInterface $response */
-        $response = $this->send($method, $path);
+        $response = $this->send($method, $path, [], $headers);
         $body = $response->getBody();
 
-        return $body ? json_decode($body, true) : [];
+        return $body ? json_decode((string)$body, true) : [];
     }
 
     /**
@@ -37,7 +37,7 @@ class IdentityService extends BaseService
             $this->client->auth();
         }
 
-        $headers = array();
+        $headers = [];
         $headers['Authorization'] = 'Bearer ' . $this->client->getTokenResponse()['access_token'];
 
         return $headers;

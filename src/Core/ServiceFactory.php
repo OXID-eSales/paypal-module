@@ -83,7 +83,7 @@ class ServiceFactory
     }
 
     /**
-     * @return GenericService
+     * @return IdentityService
      */
     public function getIdentityService(): IdentityService
     {

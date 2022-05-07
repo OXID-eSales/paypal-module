@@ -6,7 +6,6 @@
  */
 
 namespace OxidSolutionCatalysts\PayPal\Model;
-
 namespace OxidSolutionCatalysts\PayPal\Model;
 
 use DateTimeImmutable;
@@ -27,7 +26,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
  */
 class User extends User_parent
 {
-    public function getBirthDateForPuiRequest(): ?DateTimeImmutable
+    public function getBirthDateForPuiRequest(): ?string
     {
         $required = EshopRegistry::getRequest()->getRequestParameter('pui_required');
         $day = $required['birthdate']['day'];
@@ -37,6 +36,7 @@ class User extends User_parent
         $result = null;
         if (checkdate($month, $day, $year)) {
             $result = (new DateTimeImmutable())->setDate($year, $month, $day);
+            $result = $result->format('Y-m-d');
         }
 
         return $result;
@@ -56,7 +56,7 @@ class User extends User_parent
             $phoneNumber = $phoneUtils->parse($rawNumber, $countryCode);
             if ($phoneUtils->isValidNumber($phoneNumber)) {
                 $result = new ApiModelPhone();
-                $result->country_code = $phoneNumber->getCountryCode();
+                $result->country_code = (string)$phoneNumber->getCountryCode();
                 $result->national_number = $phoneNumber->getNationalNumber();
             }
         } catch (NumberParseException $exception) {
@@ -71,7 +71,7 @@ class User extends User_parent
      * get the InvoiceAddress from user with all required fields
      * @return array
      */
-    public function getInvoiceAddress()
+    public function getInvoiceAddress(): array
     {
         $result = [];
         $requiredAddressFields = oxNew(RequiredAddressFields::class);

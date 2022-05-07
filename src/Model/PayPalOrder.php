@@ -19,7 +19,7 @@ class PayPalOrder extends BaseModel
      *
      * @var string
      */
-    protected $_sCoreTable = 'oscpaypal_order';
+    protected $_sCoreTable = 'oscpaypal_order'; // phpcs:ignore PSR2.Classes.PropertyDeclaration
 
     /**
      * Construct initialize class
@@ -67,5 +67,4 @@ class PayPalOrder extends BaseModel
             ]
         );
     }
-
 }

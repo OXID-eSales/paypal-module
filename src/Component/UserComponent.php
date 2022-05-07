@@ -30,7 +30,7 @@ class UserComponent extends UserComponent_parent
         return $return;
     }
 
-    public function login_noredirect()
+    public function login_noredirect() //phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps
     {
         $return = parent::login_noredirect();
         $redirect = $this->getSession()->getVariable('paypalRedirect');
@@ -62,7 +62,7 @@ class UserComponent extends UserComponent_parent
     }
 
     /**
-     * @param object $response \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order
+     * @param \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order $response
      */
     public function loginPayPalCustomer(\OxidSolutionCatalysts\PayPalApi\Model\Orders\Order $response): bool
     {

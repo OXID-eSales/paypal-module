@@ -60,7 +60,8 @@ class EventVerifier
         $notificationService = Registry::get(ServiceFactory::class)->getNotificationService();
         $response = $notificationService->request('post', $payload);
 
-        if (!$response['verification_status'] || (
+        if (
+            !$response['verification_status'] || (
             $response['verification_status'] !== self::VERIFICATION_STATUS_SUCCESS)
         ) {
             throw new WebhookEventVerificationException('Event verification failed');

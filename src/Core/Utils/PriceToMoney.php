@@ -12,7 +12,6 @@ namespace OxidSolutionCatalysts\PayPal\Core\Utils;
 use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Money;
-
 use stdClass;
 
 class PriceToMoney
@@ -45,7 +44,7 @@ class PriceToMoney
         if (!$currency) {
             $currency = Registry::getConfig()->getActShopCurrencyObject();
         }
-        $value = Registry::getUtils()->fRound($value, $currency);
+        $value = Registry::getUtils()->fRound((string)$value, $currency);
         $value = number_format($value, (int) $currency->decimal, '.', '');
 
         $money = new Money();

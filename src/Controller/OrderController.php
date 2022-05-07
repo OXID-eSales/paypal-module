@@ -79,6 +79,9 @@ class OrderController extends OrderController_parent
         return $result;
     }
 
+    /**
+     * @psalm-suppress InternalMethod
+     */
     public function createAcdcOrder(): void
     {
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
@@ -87,7 +90,7 @@ class OrderController extends OrderController_parent
 
         try {
             $status = $this->execute();
-        } catch(\Exception $exception) {
+        } catch (\Exception $exception) {
             Registry::getLogger()->error($exception->getMessage(), [$exception]);
             $this->outputJson(['acdcerror' => 'failed to execute shop order']);
             return;
@@ -107,7 +110,7 @@ class OrderController extends OrderController_parent
         } else {
             PayPalSession::storePayPalOrderId($paypalOrderId);
             $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
-            $payPalOrder = $paymentService->getPayPalOrder($sessionOrderId, $paypalOrderId);
+            $payPalOrder = $paymentService->getPayPalCheckoutOrder($sessionOrderId, $paypalOrderId);
             $payPalOrder->setStatus($response['status']);
             $payPalOrder->save();
         }
@@ -177,7 +180,6 @@ class OrderController extends OrderController_parent
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
             $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);
-
         } catch (\Exception $exception) {
             $this->cancelpaypalsession('cannot finalize order');
         }
@@ -224,8 +226,10 @@ class OrderController extends OrderController_parent
      * Template-Getter get a Fraudnet CmId
      *
      * @param $response
+     * @psalm-suppress InternalMethod
      */
-    public function getPayPalPuiFraudnetCmId(): string {
+    public function getPayPalPuiFraudnetCmId(): string
+    {
 
         if (!($cmId = PayPalSession::getPayPalPuiCmId())) {
             $cmId = Registry::getUtilsObject()->generateUId();
@@ -258,7 +262,7 @@ class OrderController extends OrderController_parent
         }
 
         if (\OxidSolutionCatalysts\PayPal\Model\Order::ORDER_STATE_ACDCINPROGRESS == $success) {
-            return $success;
+            return (string)$success;
         }
 
         return parent::_getNextStep($success);

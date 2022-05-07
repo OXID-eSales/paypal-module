@@ -35,7 +35,9 @@ final class ProxyControllerCest extends BaseCest
 
         //send this as post request
         $I->postTo(
-            $this->getShopUrl() . '/index.php?cl=oscpaypalproxy&fnc=createOrder&context=continue&aid=' . Fixtures::get('product')['oxid']
+            $this->getShopUrl()
+                . '/index.php?cl=oscpaypalproxy&fnc=createOrder&context=continue&aid='
+                . Fixtures::get('product')['oxid']
         );
 
         $response = $I->grabJsonResponseAsArray();
@@ -45,7 +47,9 @@ final class ProxyControllerCest extends BaseCest
         $I->assertNotEmpty($sid);
 
         $I->postTo(
-            $this->getShopUrl() . '/index.php?cl=oscpaypalproxy&fnc=createOrder&context=continue&aid=' . Fixtures::get('product')['oxid'],
+            $this->getShopUrl()
+                . '/index.php?cl=oscpaypalproxy&fnc=createOrder&context=continue&aid='
+                . Fixtures::get('product')['oxid'],
             ['Cookie' => 'language=0; sid=' . $sid . ';sid_key=oxid']
         );
         $response = $I->grabJsonResponseAsArray();
@@ -62,7 +66,9 @@ final class ProxyControllerCest extends BaseCest
 
         //pretend we send this as post request from details
         $I->postTo(
-            $this->getShopUrl() . '/index.php?cl=oscpaypalproxy&fnc=createOrder&context=continue&aid=' . Fixtures::get('product')['oxid']
+            $this->getShopUrl()
+                . '/index.php?cl=oscpaypalproxy&fnc=createOrder&context=continue&aid='
+                . Fixtures::get('product')['oxid']
         );
 
         $response = $I->grabJsonResponseAsArray();
@@ -73,18 +79,19 @@ final class ProxyControllerCest extends BaseCest
 
         //orderid mismatch
         $I->postTo(
-            $this->getShopUrl() . '/index.php?cl=oscpaypalproxy&fnc=approveOrder&context=continue&orderID=somethingDifferent',
+            $this->getShopUrl()
+                . '/index.php?cl=oscpaypalproxy&fnc=approveOrder&context=continue&orderID=somethingDifferent',
             ['Cookie' => 'language=0; sid=' . $sid . ';sid_key=oxid']
         );
         $response = $I->grabJsonResponseAsArray();
         $I->assertSame(['ERROR' => 'OrderId not found in PayPal session.'], $response);
 
         $I->postTo(
-            $this->getShopUrl() . '/index.php?cl=oscpaypalproxy&fnc=approveOrder&context=continue&orderID=' . $paypalOrderId,
+            $this->getShopUrl()
+                . '/index.php?cl=oscpaypalproxy&fnc=approveOrder&context=continue&orderID='
+                . $paypalOrderId,
             ['Cookie' => 'language=0; sid=' . $sid . ';sid_key=oxid']
         );
         $I->assertSame($paypalOrderId, $I->grabJsonResponseAsArray()['id']);
     }
 }
-
-

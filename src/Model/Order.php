@@ -7,7 +7,6 @@
 
 declare(strict_types=1);
 
-
 namespace OxidSolutionCatalysts\PayPal\Model;
 
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
@@ -42,21 +41,21 @@ class Order extends Order_parent
      *
      * @var int
      */
-    const ORDER_STATE_SESSIONPAYMENT_INPROGRESS = 500;
+    public const ORDER_STATE_SESSIONPAYMENT_INPROGRESS = 500;
 
     /**
      * ACDC payment in progress
      *
      * @var int
      */
-    const ORDER_STATE_ACDCINPROGRESS = 700;
+    public const ORDER_STATE_ACDCINPROGRESS = 700;
 
     /**
      * Error during payment execution
      *
      * @var int
      */
-    const ORDER_STATE_PAYMENTERROR = 2;
+    public const ORDER_STATE_PAYMENTERROR = 2;
 
     /**
      * PayPal order information
@@ -103,16 +102,17 @@ class Order extends Order_parent
         if (!$this->oxorder__oxordernr->value) {
             $this->_setNumber();
         } else {
-            oxNew(\OxidEsales\Eshop\Core\Counter::class)->update($this->_getCounterIdent(), $this->oxorder__oxordernr->value);
+            oxNew(\OxidEsales\Eshop\Core\Counter::class)->update(
+                $this->_getCounterIdent(),
+                $this->oxorder__oxordernr->value
+            );
         }
 
         $this->_updateOrderDate();
 
         $basket = Registry::getSession()->getBasket();
         $user = Registry::getSession()->getUser();
-        $userPayment = oxNew(UserPayment::class);
-        $userPayment->load($this->getFieldData('oxpaymentid'));
-        $paymentsId = $userPayment->oxuserpayments__oxpaymentsid->value;
+        $paymentsId = $this->getFieldData('oxpaymenttype');
         $this->afterOrderCleanUp($basket, $user);
 
         $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($paymentsId);
@@ -124,11 +124,13 @@ class Order extends Order_parent
             //TODO: Order is still not finished, need to doublecheck uapm payment status
             $this->_setOrderStatus('NOT_FINISHED');
             $this->doExecutePayPalPayment($payPalOrderId);
-        }
-        elseif ($isPayPalACDC) {
+        } elseif ($isPayPalACDC) {
             $this->markOrderPaid();
             $this->setTransId($payPalOrderId);
         }
+
+        $userPayment = oxNew(UserPayment::class);
+        $userPayment->load($this->getFieldData('oxpaymentid'));
 
         return $this->_sendOrderByEmail($user, $basket, $userPayment);
     }
@@ -210,7 +212,7 @@ class Order extends Order_parent
      * @return PayPalOrder
      * @throws ApiException
      */
-    public function getPayPalOrder(): PayPalOrder
+    public function getPayPalCheckoutOrder(): PayPalOrder
     {
         if (!$this->payPalOrder) {
             //Why do we need this call if we know it was no PayPal order ?
@@ -233,7 +235,7 @@ class Order extends Order_parent
         try {
             $paymentService->doCapturePayPalOrder($this, $payPalOrderId);
             $success = true;
-        } catch (Exception $exception) {
+        } catch (\Exception $exception) {
             Registry::getLogger()->error("Error on order capture call.", [$exception]);
         }
 
@@ -319,7 +321,7 @@ class Order extends Order_parent
      */
     public function paidWithPayPal(): bool
     {
-        return (bool) ($this->getPayPalOrderIdForOxOrderId() || $this->getPayPalBillingAgreementIdForOxOrderId());
+        return ($this->getPayPalOrderIdForOxOrderId() || $this->getPayPalBillingAgreementIdForOxOrderId());
     }
 
     /**
@@ -330,6 +332,6 @@ class Order extends Order_parent
      */
     public function getOrderPaymentCapture(): ?Capture
     {
-        return $this->getPayPalOrder()->purchase_units[0]->payments->captures[0] ?? null;
+        return $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures[0] ?? null;
     }
 }

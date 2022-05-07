@@ -112,7 +112,7 @@ final class WebhookTest extends BaseTestCase
         $this->assertEmpty(array_diff($service->getEnabledEvents($hook), $service->getAvailableEventNames()));
     }
 
-    protected function getServiceMock(string $url = SELF::TEST_WEBHOOK_URL, array $addMockMethods = []): Webhook
+    protected function getServiceMock(string $url = self::TEST_WEBHOOK_URL, array $addMockMethods = []): Webhook
     {
         $service = $this->getMockBuilder(Webhook::class)
             ->setMethods(array_merge(['getWebhookEndpoint'], $addMockMethods))
@@ -128,11 +128,11 @@ final class WebhookTest extends BaseTestCase
     {
         $service = $this->getServiceMock();
 
-        $hook = $service->getHookForUrl(SELF::TEST_WEBHOOK_URL);
+        $hook = $service->getHookForUrl(self::TEST_WEBHOOK_URL);
         $id = (isset($hook['id'])) ? $hook['id'] : '';
         $service->removeWebhook($id);
 
-        $hook = $service->getHookForUrl(SELF::TEST_WEBHOOK_URL);
+        $hook = $service->getHookForUrl(self::TEST_WEBHOOK_URL);
         $this->assertEquals([], $hook);
     }
 }

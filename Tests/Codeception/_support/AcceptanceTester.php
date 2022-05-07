@@ -123,8 +123,11 @@ class AcceptanceTester extends \Codeception\Actor
         return $this;
     }
 
-    public function checkInstallmentBannerData(float $amount = 0, string $ratio = '20x1', string $currency = 'EUR'): void
-    {
+    public function checkInstallmentBannerData(
+        float $amount = 0,
+        string $ratio = '20x1',
+        string $currency = 'EUR'
+    ): void {
         $I = $this;
 
         $onloadMethod = $I->executeJS("return PayPalMessage.toString()");
@@ -167,7 +170,7 @@ class AcceptanceTester extends \Codeception\Actor
     {
         $I = $this;
         $I->executeInSelenium(function (\Facebook\WebDriver\Remote\RemoteWebDriver $webdriver) {
-            $handles=$webdriver->getWindowHandles();
+            $handles = $webdriver->getWindowHandles();
             $last_window = end($handles);
             $webdriver->switchTo()->window($last_window);
             $size = new \Facebook\WebDriver\WebDriverDimension(1920, 1280);
