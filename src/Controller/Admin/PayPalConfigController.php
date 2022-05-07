@@ -16,7 +16,6 @@ use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Core\LegacyOeppModuleDetails;
-use OxidEsales\Eshop\Core\DatabaseProvider;
 
 /**
  * Controller for admin > PayPal/Configuration page
@@ -319,35 +318,10 @@ class PayPalConfigController extends AdminController
      */
     public function transferOeppTransactiondata()
     {
-        $oldRecords = $this->getOeppTransactionRecords();
-
-        foreach ($oldRecords as $record) {
-            // @Todo
-        }
+        $LegacyOeppModuleDetails = Registry::get(LegacyOeppModuleDetails::class);
+        $LegacyOeppModuleDetails->transferTransactionData();
 
         // Save transfer status
         $this->getServiceFromContainer(ModuleSettings::class)->save('oscPayPalOeppTransactionsTransferred', true);
-    }
-
-    /**
-     * @return array
-     * @throws \OxidEsales\Eshop\Core\Exception\DatabaseConnectionException
-     * @throws \OxidEsales\Eshop\Core\Exception\DatabaseErrorException
-     */
-    protected function getOeppTransactionRecords()
-    {
-        $db = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC);
-
-        $query = <<<'SQL'
-SELECT
-o.OEPAYPAL_ORDERID as 'orderid', p.OEPAYPAL_TRANSACTIONID as 'transactionid', p.OEPAYPAL_CORRELATIONID as 'corellationid',
-p.OEPAYPAL_STATUS as 'status', o.OEPAYPAL_PAYMENTSTATUS as 'paymentstatus',
-q.OXPAYMENTTYPE as 'paymenttype'
-FROM oepaypal_order o
-LEFT JOIN oepaypal_orderpayments p ON o.OEPAYPAL_ORDERID = p.OEPAYPAL_ORDERID
-LEFT JOIN oxorder q ON o.OEPAYPAL_ORDERID = q.OXID;
-SQL;
-
-        return $db->getAll($query);
     }
 }

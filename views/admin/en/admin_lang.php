@@ -162,4 +162,6 @@ $aLang = [
     'OSC_PAYPAL_MIGRATELEGACTRANSACTIONDATA'        => 'Transfer transaction data from legacy modules',
     'OSC_PAYPAL_MIGRATELEGACTRANSACTIONDATA_DETAIL' => 'If you have used older modules for PayPal so far, you can transfer the transaction data of previous orders here to view them with the new PayPal Checkout module.',
     'OSC_PAYPAL_TRANSFERLEGACY_OEPP_DATA'           => 'Migrate transaction data from the classic PayPal module (oepaypal version 6.3.x)',
+    'OSC_PAYPAL_TRANSFERLEGACY_OEPP_SUCCESS'        => 'Records transferred:',
+
 ];
