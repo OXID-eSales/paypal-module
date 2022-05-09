@@ -356,7 +356,7 @@
                 </div>
             </div>
 
-            [{if ($oView->showTransferOeppTransactiondataButton() || $oView->showTransferPaypalPlusTransactiondataButton)}]
+            [{if ($oView->showTransferOeppTransactiondataButton() || $oView->showTransferPaypalPlusTransactiondataButton())}]
             <div class="card">
                 <div class="card-header" id="heading6">
                     <h4 class="collapsed" data-toggle="collapse" data-target="#collapse5" aria-expanded="false" aria-controls="collapse5">

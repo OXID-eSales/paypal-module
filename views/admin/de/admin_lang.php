@@ -163,6 +163,6 @@ $aLang = [
     'OSC_PAYPAL_MIGRATELEGACTRANSACTIONDATA'        => 'Transaktionsdaten aus Altmodulen übertragen',
     'OSC_PAYPAL_MIGRATELEGACTRANSACTIONDATA_DETAIL' => 'Wenn Sie bisher ältere Module für PayPal eingesetzt haben, können Sie hier die Transaktionsdaten früherer Bestellungen übertragen, um diese mit dem neuen PayPal-Checkout-Modul einzusehen.',
     'OSC_PAYPAL_TRANSFERLEGACY_OEPP_DATA'           => 'Transaktionsdaten aus dem klassischen PayPal-Modul (oepaypal, Version 6.3.x) übertragen',
-    'OSC_PAYPAL_TRANSFERLEGACY_OEPP_SUCCESS'        => 'Anzahl übertragener Datensätze:',
     'OSC_PAYPAL_TRANSFERLEGACY_PAYPPLUS_DATA'       => 'Transaktionsdaten aus dem PayPal-Plus-Modul (payppaypalplus, Version 3.0.x) übertragen',
+    'OSC_PAYPAL_TRANSFERLEGACY_SUCCESS_RECORDS'     => 'Anzahl übertragener Datensätze:',
 ];

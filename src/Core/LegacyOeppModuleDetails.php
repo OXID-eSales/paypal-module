@@ -8,8 +8,6 @@
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Core\DatabaseProvider;
-use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 
 class LegacyOeppModuleDetails extends LegacyModulesCommonDetails
@@ -108,74 +106,6 @@ SQL;
         // 'paymentstatus' =>  null,
         'paymenttype'   =>  'OSCPAYMENTMETHODID',
     ];
-
-    /**
-     * @return string[] Getter for $this->transferrableTransactionData
-     */
-    protected function getTransferrableTransactionData(): array
-    {
-        return $this->transferrableTransactionData;
-    }
-
-    /**
-     * @return void
-     * @throws \OxidEsales\Eshop\Core\Exception\DatabaseConnectionException
-     * @throws \OxidEsales\Eshop\Core\Exception\DatabaseErrorException
-     */
-    public function transferTransactionData()
-    {
-        $this->updatePaymentKeys();
-
-        $OrderModel = Registry::get(PayPalOrder::class);
-        $db = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC);
-
-        $oldRecords = $this->getOeppTransactionRecords();
-        $transactionDataFieldMapping = $this->getTransferrableTransactionData();
-        $allowedKeys = array_keys($transactionDataFieldMapping);
-
-        $amountOfRecords = 0;
-
-        foreach ($oldRecords as $record) {
-            $query = "INSERT IGNORE INTO `".$OrderModel->getCoreTableName()."` SET ";
-
-            $last = count($record);
-            $i = 0;
-            foreach ($record as $key => $value)
-            {
-                if (in_array($key, $allowedKeys))
-                {
-                    if ($key == 'status')
-                    {
-                        $value = strtoupper($value);
-                    }
-
-                    $query .= "`".$transactionDataFieldMapping[$key]."` = '".$value."'";
-                    if ($i < $last - 1)
-                    {
-                        $query .= ", ";
-                    }
-                }
-                $i++;
-            }
-
-            $query .= ";";
-            $result = $db->execute($query);
-
-            if (is_numeric($result))
-            {
-                $amountOfRecords++;
-            }
-        }
-
-        if ($amountOfRecords)
-        {
-            Registry::getUtilsView()->addErrorToDisplay(
-                Registry::getLang()->translateString('OSC_PAYPAL_TRANSFERLEGACY_OEPP_SUCCESS')." ".$amountOfRecords,
-                false,
-                true
-            );
-        }
-    }
 
     /**
      * Update usages of old payment keys
