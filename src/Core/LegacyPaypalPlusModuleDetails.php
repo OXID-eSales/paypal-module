@@ -30,9 +30,13 @@ class LegacyPaypalPlusModuleDetails extends LegacyModulesCommonDetails
             return false;
         }
 
-        // @Todo Check for plus tables
+        $db = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC);
+        $out = $db->getAll(
+            "SELECT COUNT(*) as c FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ?;",
+            ['payppaypalpluspayment']
+        );
 
-        return true;
+        return $out[0]['c'];
     }
 
     /**
