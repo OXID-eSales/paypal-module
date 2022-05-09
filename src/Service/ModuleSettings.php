@@ -313,4 +313,13 @@ class ModuleSettings
     {
         return (bool) $this->getSettingValue('oscPayPalOeppTransactionsTransferred');
     }
+
+    /**
+     * This setting indicates whether transactions the PayPal Plus module have been transferred.
+     * @return bool
+     */
+    public function getLegacyPaypPlusTransactionsTransferStatus(): bool
+    {
+        return (bool) $this->getSettingValue('oscPayPalPaypPlusTransactionsTransferred');
+    }
 }

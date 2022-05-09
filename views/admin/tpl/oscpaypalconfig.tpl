@@ -356,7 +356,7 @@
                 </div>
             </div>
 
-            [{if $oView->showTransferOeppTransactiondataButton()}]
+            [{if ($oView->showTransferOeppTransactiondataButton() || $oView->showTransferPaypalPlusTransactiondataButton)}]
             <div class="card">
                 <div class="card-header" id="heading6">
                     <h4 class="collapsed" data-toggle="collapse" data-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
@@ -368,6 +368,10 @@
                         <p>[{oxmultilang ident='OSC_PAYPAL_MIGRATELEGACTRANSACTIONDATA_DETAIL'}]</p>
                         [{if $oView->showTransferOeppTransactiondataButton()}]
                             <a class="btn btn-primary bottom-space" href="[{$oViewConf->getSelfLink()|cat:"cl=oscpaypalconfig&fnc=transferOeppTransactiondata"}]">[{oxmultilang ident='OSC_PAYPAL_TRANSFERLEGACY_OEPP_DATA'}]</a>
+                        [{/if}]
+
+                        [{if $oView->showTransferPaypalPlusTransactiondataButton()}]
+                            <a class="btn btn-primary bottom-space" href="[{$oViewConf->getSelfLink()|cat:"cl=oscpaypalconfig&fnc=transferPaypalPlusTransactiondata"}]">[{oxmultilang ident='OSC_PAYPAL_TRANSFERLEGACY_PAYPPLUS_DATA'}]</a>
                         [{/if}]
                     </div>
                 </div>

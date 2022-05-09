@@ -11,32 +11,13 @@ use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
-use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
-use OxidEsales\EshopCommunity\Internal\Framework\Module\Setup\Bridge\ModuleActivationBridgeInterface;
 
-class LegacyOeppModuleDetails
+class LegacyOeppModuleDetails extends LegacyModulesCommonDetails
 {
-    use ServiceContainer;
+    /** @var string ID as found in metadata.php */
+    protected $legacyModuleId = 'oepaypal';
 
-    public const LEGACY_MODULE_ID = 'oepaypal';
     public const LEGACY_PAYMENT_ID = 'oxidpaypal';
-
-    /**
-     * Determines whether the legacy PayPal module "oepaypal" is enabled
-     * @return bool
-     */
-    public function isLegacyModulePresent(): bool
-    {
-        $container = ContainerFactory::getInstance()->getContainer();
-        $moduleActivationBridge = $container
-            ->get(ModuleActivationBridgeInterface::class);
-
-        return $moduleActivationBridge->isActive(
-            self::LEGACY_MODULE_ID,
-            Registry::getConfig()->getShopId()
-        );
-    }
 
     /**
      * @var string[] Array of the legacy settings with their corresponding settings in this module.
@@ -72,7 +53,7 @@ class LegacyOeppModuleDetails
      */
     public function showTransferTransactiondataButton(): bool
     {
-        if (!$this->isLegacyModulePresent()) {
+        if (!$this->isLegacyModuleActive()) {
             return false;
         }
 

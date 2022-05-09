@@ -16,6 +16,7 @@ use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Core\LegacyOeppModuleDetails;
+use OxidSolutionCatalysts\PayPal\Core\LegacyPaypalPlusModuleDetails;
 
 /**
  * Controller for admin > PayPal/Configuration page
@@ -253,7 +254,7 @@ class PayPalConfigController extends AdminController
     {
         $LegacyOeppModuleDetails = Registry::get(LegacyOeppModuleDetails::class);
 
-        if ($LegacyOeppModuleDetails->isLegacyModulePresent()) {
+        if ($LegacyOeppModuleDetails->isLegacyModuleActive()) {
             $showButton = !$this->getServiceFromContainer(ModuleSettings::class)->getLegacySettingsTransferStatus();
 
             return $showButton;
@@ -277,7 +278,7 @@ class PayPalConfigController extends AdminController
             $legacyConfigValue = Registry::getConfig()->getShopConfVar(
                 $configKeyName,
                 $currentShopId,
-                'module:' . LegacyOeppModuleDetails::LEGACY_MODULE_ID
+                'module:' . $LegacyOeppModuleDetails->getLegacyModuleId()
             );
 
             // Invert "hide" option
@@ -323,5 +324,28 @@ class PayPalConfigController extends AdminController
 
         // Save transfer status
         $this->getServiceFromContainer(ModuleSettings::class)->save('oscPayPalOeppTransactionsTransferred', true);
+    }
+
+    /**
+     * Show button to transfer transaction data from the payp-paypalplus extension
+     * @return bool
+     */
+    public function showTransferPaypalPlusTransactiondataButton(): bool
+    {
+        $LegacyPaypalPlusModuleDetails = Registry::get(LegacyPaypalPlusModuleDetails::class);
+        return $LegacyPaypalPlusModuleDetails->showTransferTransactiondataButton();
+    }
+
+    /**
+     * Transfer transaction data from the classic oepaypal extension
+     * @return void
+     */
+    public function transferPaypalPlusTransactiondata()
+    {
+        $LegacyPaypalPlusModuleDetails = Registry::get(LegacyPaypalPlusModuleDetails::class);
+        $LegacyPaypalPlusModuleDetails->transferTransactionData();
+
+        // Save transfer status
+        $this->getServiceFromContainer(ModuleSettings::class)->save('oscPayPalPaypPlusTransactionsTransferred', true);
     }
 }
