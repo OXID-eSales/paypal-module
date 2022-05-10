@@ -321,7 +321,7 @@ class Order extends Order_parent
      */
     public function paidWithPayPal(): bool
     {
-        return ($this->getPayPalOrderIdForOxOrderId() || $this->getPayPalBillingAgreementIdForOxOrderId());
+        return (bool)$this->getPayPalOrderIdForOxOrderId();
     }
 
     /**

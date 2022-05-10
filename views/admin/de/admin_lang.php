@@ -165,4 +165,7 @@ $aLang = [
     'OSC_PAYPAL_TRANSFERLEGACY_OEPP_DATA'           => 'Transaktionsdaten aus dem klassischen PayPal-Modul (oepaypal, Version 6.3.x) übertragen',
     'OSC_PAYPAL_TRANSFERLEGACY_PAYPPLUS_DATA'       => 'Transaktionsdaten aus dem PayPal-Plus-Modul (payppaypalplus, Version 3.0.x) übertragen',
     'OSC_PAYPAL_TRANSFERLEGACY_SUCCESS_RECORDS'     => 'Anzahl übertragener Datensätze:',
+
+    'OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'         => 'Bestellung wurde nicht über das PayPal-Checkout-Modul bezahlt',
+    'OSC_PAYPAL_ERROR_INVALID_RESOURCE_ID'          => 'Die PayPal-Checkout-Bestellung hat eine invalide Resource-ID',
 ];

@@ -165,4 +165,7 @@ $aLang = [
     'OSC_PAYPAL_TRANSFERLEGACY_PAYPPLUS_DATA'       => 'Migrate transaction data from the PayPal Plus module (payppaypalplus version 3.0.x)',
     'OSC_PAYPAL_TRANSFERLEGACY_SUCCESS_RECORDS'     => 'Records transferred:',
 
+    'OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'         => 'Order not paid via PayPal Checkout Module',
+    'OSC_PAYPAL_ERROR_INVALID_RESOURCE_ID'          => 'The PayPal-Checkout-Order has an invalid resource-ID',
+
 ];
