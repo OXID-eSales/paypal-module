@@ -278,7 +278,7 @@ class PayPalConfigController extends AdminController
             $legacyConfigValue = Registry::getConfig()->getShopConfVar(
                 $configKeyName,
                 $currentShopId,
-                'module:' . $LegacyOeppModuleDetails->getLegacyModuleId()
+                'module:' . LegacyOeppModuleDetails::LEGACY_MODULE_ID
             );
 
             // Invert "hide" option
