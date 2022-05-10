@@ -7,13 +7,17 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
+use OxidSolutionCatalysts\PayPal\Traits\LegacyModulesCommonDetails;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 
-class LegacyPaypalPlusModuleDetails extends LegacyModulesCommonDetails
+class LegacyPaypalPlusModuleDetails
 {
-    /** @var string ID as found in metadata.php */
-    protected $legacyModuleId = 'payppaypalplus';
+    use LegacyModulesCommonDetails;
+
+    public const LEGACY_MODULE_ID = 'payppaypalplus';
+
+    public const LEGACY_PAYMENT_ID = 'payppaypalplus';
 
     /**
      * Checks whether oepaypal and its transaction data tables are present and the transfer hasn't been executed yet.
@@ -45,14 +49,14 @@ class LegacyPaypalPlusModuleDetails extends LegacyModulesCommonDetails
      * @throws \OxidEsales\Eshop\Core\Exception\DatabaseConnectionException
      * @throws \OxidEsales\Eshop\Core\Exception\DatabaseErrorException
      */
-    public function getOeppTransactionRecords()
+    public function getTransactionRecords()
     {
         $db = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC);
 
         $query = <<<'SQL'
 SELECT
 r.OXID as 'recordid', s.OXSHOPID as 'shopid',
-r.OXORDERID as 'orderid', r.OXPAYMENTID as 'transactionid',
+r.OXORDERID as 'orderid', s.OXTRANSID as 'transactionid',
 r.OXSTATUS as 'status',
 s.OXPAYMENTTYPE as 'paymenttype'
 FROM payppaypalpluspayment r
@@ -60,31 +64,5 @@ LEFT JOIN oxorder s ON r.OXORDERID = s.OXID;
 SQL;
 
         return $db->getAll($query);
-    }
-
-    /**
-     * @var string[] Array of query results performed by getOeppTransactionRecords(), translated for osc_paypal
-     */
-    protected $transferrableTransactionData = [
-        // query keys   =>  oscpaypal_order
-        'recordid'      =>  'OXID',
-        'shopid'        =>  'OXSHOPID',
-        'orderid'       =>  'OXORDERID',
-        'transactionid' =>  'OXPAYPALORDERID',
-        'status'        =>  'OSCPAYPALSTATUS',
-        'paymenttype'   =>  'OSCPAYMENTMETHODID',
-    ];
-
-    /**
-     * Update usages of old payment keys
-     * @return void
-     * @throws \OxidEsales\Eshop\Core\Exception\DatabaseConnectionException
-     * @throws \OxidEsales\Eshop\Core\Exception\DatabaseErrorException
-     */
-    protected function updatePaymentKeys()
-    {
-        $db = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC);
-
-        // @Todo Transfer payment keys
     }
 }

@@ -7,13 +7,15 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
+use OxidSolutionCatalysts\PayPal\Traits\LegacyModulesCommonDetails;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 
-class LegacyOeppModuleDetails extends LegacyModulesCommonDetails
+class LegacyOeppModuleDetails
 {
-    /** @var string ID as found in metadata.php */
-    protected $legacyModuleId = 'oepaypal';
+    use LegacyModulesCommonDetails;
+
+    public const LEGACY_MODULE_ID = 'oepaypal';
 
     public const LEGACY_PAYMENT_ID = 'oxidpaypal';
 
@@ -75,7 +77,7 @@ class LegacyOeppModuleDetails extends LegacyModulesCommonDetails
      * @throws \OxidEsales\Eshop\Core\Exception\DatabaseConnectionException
      * @throws \OxidEsales\Eshop\Core\Exception\DatabaseErrorException
      */
-    public function getOeppTransactionRecords()
+    public function getTransactionRecords()
     {
         $db = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC);
 
@@ -91,45 +93,5 @@ LEFT JOIN oxorder q ON o.OEPAYPAL_ORDERID = q.OXID;
 SQL;
 
         return $db->getAll($query);
-    }
-
-    /**
-     * @var string[] Array of query results performed by getOeppTransactionRecords(), translated for osc_paypal
-     */
-    protected $transferrableTransactionData = [
-        // query keys   =>  oscpaypal_order
-        'recordid'      =>  'OXID',
-        'shopid'        =>  'OXSHOPID',
-        'orderid'       =>  'OXORDERID',
-        'transactionid' =>  'OXPAYPALORDERID',
-        'status'        =>  'OSCPAYPALSTATUS',
-        // 'paymentstatus' =>  null,
-        'paymenttype'   =>  'OSCPAYMENTMETHODID',
-    ];
-
-    /**
-     * Update usages of old payment keys
-     * @return void
-     * @throws \OxidEsales\Eshop\Core\Exception\DatabaseConnectionException
-     * @throws \OxidEsales\Eshop\Core\Exception\DatabaseErrorException
-     */
-    protected function updatePaymentKeys()
-    {
-        $db = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC);
-
-        $db->execute(
-            "UPDATE `oxorder` SET `OXPAYMENTTYPE` = ? WHERE `OXPAYMENTTYPE` = ?;",
-            [
-                PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID,
-                self::LEGACY_PAYMENT_ID
-            ]
-        );
-        $db->execute(
-            "UPDATE `oxuserpayments` SET `OXPAYMENTSID` = ? WHERE `OXPAYMENTSID` = ?;",
-            [
-                PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID,
-                self::LEGACY_PAYMENT_ID
-            ]
-        );
     }
 }

@@ -1,8 +1,8 @@
 <?php
 
-namespace OxidSolutionCatalysts\PayPal\Core;
+namespace OxidSolutionCatalysts\PayPal\Traits;
 
-/*
+/* For OXID eShop <= 6.1
 use OxidEsales\Eshop\Core\Module\Module;
 */
 
@@ -10,31 +10,22 @@ use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Setup\Bridge\ModuleActivationBridgeInterface;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
-class LegacyModulesCommonDetails
+trait LegacyModulesCommonDetails
 {
     use ServiceContainer;
 
-    /** @var string ID as found in metadata.php */
-    protected $legacyModuleId = 'empty';
-
-    /** @var string Getter to return the module ID */
-    public function getLegacyModuleId(): string
-    {
-        return $this->legacyModuleId;
-    }
-
     /**
-     * Determines whether the legacy PayPal module with the ID in $legacyModuleId is active
+     * Determines whether the legacy PayPal module with the ID in
      * @return bool
      */
     public function isLegacyModuleActive(): bool
     {
-        /* For OXID eShop <= 6.3
+        /* For OXID eShop <= 6.1
         $oepaypalModule = oxNew(Module::class);
-        if ($oepaypalModule->load($this->legacyModuleId))
+        if ($oepaypalModule->load(self::LEGACY_MODULE_ID))
         {
             return $oepaypalModule->isActive();
         }
@@ -46,7 +37,7 @@ class LegacyModulesCommonDetails
         $moduleActivationBridge = $container->get(ModuleActivationBridgeInterface::class);
 
         return $moduleActivationBridge->isActive(
-            $this->legacyModuleId,
+            self::LEGACY_MODULE_ID,
             Registry::getConfig()->getShopId()
         );
     }
@@ -60,7 +51,7 @@ class LegacyModulesCommonDetails
     }
 
     /**
-     * Gets transaction data from the legacy module's source table and transfers them to this module's core table.
+     * Gets transaction data from the legacy module's source table and transfers them to the new module's core table.
      * @return void
      * @throws \OxidEsales\Eshop\Core\Exception\DatabaseConnectionException
      * @throws \OxidEsales\Eshop\Core\Exception\DatabaseErrorException
@@ -72,7 +63,7 @@ class LegacyModulesCommonDetails
         $OrderModel = Registry::get(PayPalOrder::class);
         $db = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC);
 
-        $oldRecords = $this->getOeppTransactionRecords();
+        $oldRecords = $this->getTransactionRecords();
         $transactionDataFieldMapping = $this->getTransferrableTransactionData();
         $allowedKeys = array_keys($transactionDataFieldMapping);
 
@@ -118,5 +109,44 @@ class LegacyModulesCommonDetails
                 true
             );
         }
+    }
+
+    /**
+     * @var string[] Array of query results performed by getTransactionRecords(), translated for osc_paypal
+     */
+    protected $transferrableTransactionData = [
+        // query keys   =>  oscpaypal_order
+        'recordid'      =>  'OXID',
+        'shopid'        =>  'OXSHOPID',
+        'orderid'       =>  'OXORDERID',
+        'transactionid' =>  'OXPAYPALORDERID',
+        'status'        =>  'OSCPAYPALSTATUS',
+        'paymenttype'   =>  'OSCPAYMENTMETHODID',
+    ];
+
+    /**
+     * Update usages of old payment keys in OXID's tables
+     * @return void
+     * @throws \OxidEsales\Eshop\Core\Exception\DatabaseConnectionException
+     * @throws \OxidEsales\Eshop\Core\Exception\DatabaseErrorException
+     */
+    protected function updatePaymentKeys()
+    {
+        $db = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC);
+
+        $db->execute(
+            "UPDATE `oxorder` SET `OXPAYMENTTYPE` = ? WHERE `OXPAYMENTTYPE` = ?;",
+            [
+                PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID,
+                self::LEGACY_PAYMENT_ID
+            ]
+        );
+        $db->execute(
+            "UPDATE `oxuserpayments` SET `OXPAYMENTSID` = ? WHERE `OXPAYMENTSID` = ?;",
+            [
+                PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID,
+                self::LEGACY_PAYMENT_ID
+            ]
+        );
     }
 }
