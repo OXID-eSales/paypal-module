@@ -42,18 +42,22 @@ class EventVerifier
     {
         $config = new Config();
 
-        if (array_diff(self::VERIFICATION_EVENT_HEADERS, array_keys(array_change_key_case($headers, CASE_UPPER)))) {
+        $normalizedHeaders = array_change_key_case($headers, CASE_UPPER);
+        if (array_diff(self::VERIFICATION_EVENT_HEADERS, array_keys($normalizedHeaders))) {
             throw new WebhookEventVerificationException('Missing required verification headers');
         }
 
+        // body must be encoded so that it is not double-encoded later
+        $normalizedBody = json_decode($body, true);
+
         $payload = [
-            'auth_algo' => $headers['PAYPAL-AUTH-ALGO'],
-            'cert_url' => $headers['PAYPAL-CERT-URL'],
-            'transmission_id' => $headers['PAYPAL-TRANSMISSION-ID'],
-            'transmission_sig' => $headers['PAYPAL-TRANSMISSION-SIG'],
-            'transmission_time' => $headers['PAYPAL-TRANSMISSION-TIME'],
+            'auth_algo' => $normalizedHeaders['PAYPAL-AUTH-ALGO'],
+            'cert_url' => $normalizedHeaders['PAYPAL-CERT-URL'],
+            'transmission_id' => $normalizedHeaders['PAYPAL-TRANSMISSION-ID'],
+            'transmission_sig' => $normalizedHeaders['PAYPAL-TRANSMISSION-SIG'],
+            'transmission_time' => $normalizedHeaders['PAYPAL-TRANSMISSION-TIME'],
             'webhook_id' => $config->getWebhookId(),
-            'webhook_event' => $body
+            'webhook_event' => $normalizedBody
         ];
 
         /** @var GenericService $notificationService */

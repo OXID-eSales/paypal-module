@@ -107,7 +107,7 @@ class OrderRepository
             'oxpaypalorderid' => $paypalOrderId
         ];
 
-        $queryBuilder->select('oxid')
+        $queryBuilder->select('oxorderid')
             ->from('oscpaypal_order')
             ->where('oxpaypalorderid = :oxpaypalorderid')
             ->andWhere('LENGTH(oxorderid) > 0');
