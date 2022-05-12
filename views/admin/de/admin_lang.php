@@ -10,7 +10,7 @@ $sLangName = 'Deutsch';
 $aLang = [
     'charset'                                     => 'UTF-8',
     'paypal'                                      => 'PayPal',
-    'tbclorder_oscpaypal'                         => 'PayPal',
+    'tbclorder_oscpaypal'                         => 'PayPal Checkout',
     // PayPal Config
     'OSC_PAYPAL_CONFIG'                           => 'Konfiguration',
     'OSC_PAYPAL_GENERAL'                          => 'Allgemein',
@@ -159,4 +159,7 @@ $aLang = [
     'OSC_PAYPAL_BANNER_COLORSCHEMEBLACK'            => 'schwarz',
     'OSC_PAYPAL_BANNER_COLORSCHEMEWHITE'            => 'weiß',
     'OSC_PAYPAL_BANNER_COLORSCHEMEWHITENOBORDER'    => 'weiß, ohne Rand',
+
+    'OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'         => 'Bestellung wurde nicht über das PayPal-Checkout-Modul bezahlt',
+    'OSC_PAYPAL_ERROR_INVALID_RESOURCE_ID'          => 'Die PayPal-Checkout-Bestellung hat eine invalide Resource-ID',
 ];
