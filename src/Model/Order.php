@@ -72,6 +72,20 @@ class Order extends Order_parent
     protected $payPalOrderId;
 
     /**
+     * PayPalPlus order Id
+     *
+     * @var string
+     */
+    protected $payPalPlusOrderId;
+
+    /**
+     * PayPalPlus order Id
+     *
+     * @var string
+     */
+    protected $payPalSoapOrderId;
+
+    /**
      * PayPal Billing Agreement Id;
      *
      * @var string
@@ -215,7 +229,6 @@ class Order extends Order_parent
     public function getPayPalCheckoutOrder(): PayPalOrder
     {
         if (!$this->payPalOrder) {
-            //Why do we need this call if we know it was no PayPal order ?
             /** @var Orders $orderService */
             $orderService = Registry::get(ServiceFactory::class)->getOrderService();
             $this->payPalOrder = $orderService->showOrderDetails($this->getPayPalOrderIdForOxOrderId(), '');
@@ -315,6 +328,60 @@ class Order extends Order_parent
     }
 
     /**
+     * Returns PayPalPlus order id.
+     *
+     * @param string|null $oxId
+     *
+     * @return string
+     */
+    public function getPayPalPlusOrderIdForOxOrderId(string $oxId = null)
+    {
+        //TODO: model?
+        if (is_null($this->payPalPlusOrderId)) {
+            $this->payPalPlusOrderId = '';
+            $oxId = is_null($oxId) ? $this->getId() : $oxId;
+            $table = 'payppaypalpluspayment';
+            $params = [$table . '.oxorderid' => $oxId];
+
+            $paypalOrderObj = oxNew(BaseModel::class);
+            $paypalOrderObj->init($table);
+            $select = $paypalOrderObj->buildSelectString($params);
+
+            if ($data = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getRow($select)) {
+                $this->payPalPlusOrderId = $data['oxid'];
+            }
+        }
+        return $this->payPalPlusOrderId;
+    }
+
+    /**
+     * Returns PayPalSoap order id
+     *
+     * @param string|null $oxId
+     *
+     * @return string
+     */
+    public function getPayPalSoapOrderIdForOxOrderId(string $oxId = null)
+    {
+        //TODO: model?
+        if (is_null($this->payPalSoapOrderId)) {
+            $this->payPalSoapOrderId = '';
+            $oxId = is_null($oxId) ? $this->getId() : $oxId;
+            $table = 'oepaypal_order';
+            $params = [$table . '.oepaypal_orderid' => $oxId];
+
+            $paypalOrderObj = oxNew(BaseModel::class);
+            $paypalOrderObj->init($table);
+            $select = $paypalOrderObj->buildSelectString($params);
+
+            if ($data = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getRow($select)) {
+                $this->payPalSoapOrderId = $data['oepaypal_orderid'];
+            }
+        }
+        return $this->payPalSoapOrderId;
+    }
+
+    /**
      * Checks if the order was paid using PayPal
      *
      * @return bool
@@ -322,6 +389,26 @@ class Order extends Order_parent
     public function paidWithPayPal(): bool
     {
         return (bool)$this->getPayPalOrderIdForOxOrderId();
+    }
+
+    /**
+     * Checks if the order was paid using PayPalPlus
+     *
+     * @return bool
+     */
+    public function paidWithPayPalPlus(): bool
+    {
+        return (bool)$this->getPayPalPlusOrderIdForOxOrderId();
+    }
+
+    /**
+     * Checks if the order was paid using PayPalSoap
+     *
+     * @return bool
+     */
+    public function paidWithPayPalSoap(): bool
+    {
+        return (bool)$this->getPayPalSoapOrderIdForOxOrderId();
     }
 
     /**

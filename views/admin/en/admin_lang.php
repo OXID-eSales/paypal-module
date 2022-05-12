@@ -159,6 +159,32 @@ $aLang = [
     'OSC_PAYPAL_BANNER_COLORSCHEMEWHITE'            => 'white',
     'OSC_PAYPAL_BANNER_COLORSCHEMEWHITENOBORDER'    => 'white, no border',
 
+    'OSC_PAYPALPLUS_PAYMENT_OVERVIEW'               => 'Payment overview',
+    'OSC_PAYPALPLUS_PAYMENT_STATUS'                 => 'Payment status',
+    'OSC_PAYPALPLUS_ORDER_AMOUNT'                   => 'Payment total',
+    'OSC_PAYPALPLUS_REFUNDED_AMOUNT'                => 'Refunded amount',
+    'OSC_PAYPALPLUS_PAYMENT_ID'                     => 'Payment ID',
+    'OSC_PAYPALPLUS_PAYMENT_METHOD'                 => 'Payment method',
+
+    'OSC_PAYPALPLUS_PAYMENT_REFUNDING'              => 'Refunds',
+    'OSC_PAYPALPLUS_AVAILABLE_REFUNDS'              => 'Remaining number of refund operation:',
+    'OSC_PAYPALPLUS_AVAILABLE_REFUND_AMOUNT'        => 'Remaining payment amount to refund:',
+    'OSC_PAYPALPLUS_DATE'                           => 'Date',
+    'OSC_PAYPALPLUS_AMOUNT'                         => 'Amount',
+    'OSC_PAYPALPLUS_STATUS'                         => 'Status',
+    'OSC_PAYPALPLUS_NEW_REFUND'                     => 'Submit a refund',
+    'OSC_PAYPALPLUS_REFUND'                         => 'Refund',
+
+    'OSC_PAYPALPLUS_PUI'                            => 'Payment upon invoice',
+    'OSC_PAYPALPLUS_PUI_PAYMENT_INSTRUCTIONS'       => 'Payment Instructions',
+    'OSC_PAYPALPLUS_PUI_TERM'                       => 'Term',
+    'OSC_PAYPALPLUS_PUI_ACCOUNT_HOLDER'             => 'Benificiary',
+    'OSC_PAYPALPLUS_PUI_BANK_NAME'                  => 'Bank',
+    'OSC_PAYPALPLUS_PUI_AMOUNT'                     => 'Amount',
+    'OSC_PAYPALPLUS_PUI_REFERENCE_NUMBER'           => 'Reference Number',
+    'OSC_PAYPALPLUS_PUI_IBAN'                       => 'IBAN',
+    'OSC_PAYPALPLUS_PUI_BIC'                        => 'BIC',
+
     'OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'         => 'Order not paid via PayPal Checkout Module',
     'OSC_PAYPAL_ERROR_INVALID_RESOURCE_ID'          => 'The PayPal-Checkout-Order has an invalid resource-ID',
 ];

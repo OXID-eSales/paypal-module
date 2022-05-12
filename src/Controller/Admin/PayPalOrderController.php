@@ -18,6 +18,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\RefundRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Payments;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Model\PayPalPlusOrder;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 
@@ -29,14 +30,40 @@ class PayPalOrderController extends AdminDetailsController
     use ServiceContainer;
 
     /**
-     * @var Order
+     * @var PayPalOrder
      */
     protected $order = null;
+
+    /**
+     * @var PayPalPlusOrder
+     */
+    protected $payPalPlusOrder = null;
 
     /**
      * @var array
      */
     protected $payPalOrderHistory;
+
+    /**
+     * An amount still possible to refund for current order payment.
+     *
+     * @var null|double
+     */
+    protected $remainingPayPalPlusRefundAmount = null;
+
+    /**
+     * A number of remaining, possible refunds to make for current order payment.
+     *
+     * @var null|int
+     */
+    protected $remainingPayPalPlusRefunds = null;
+
+    /**
+     * Maximum number of refunds allowed per payment.
+     *
+     * @var int
+     */
+    protected $maxPayPalPlusRefunds = 10;
 
     /**
      * @inheritDoc
@@ -63,24 +90,38 @@ class PayPalOrderController extends AdminDetailsController
 
         $result = "oscpaypalorder.tpl";
 
-        // normal paypal order
-        try {
-            $order = $this->getOrder();
-            $orderId = $this->getEditObjectId();
-            $this->addTplParam('oxid', $orderId);
-            $this->addTplParam('order', $order);
-            $this->addTplParam('payPalOrder', null);
+        $order = $this->getOrder();
+        $orderId = $this->getEditObjectId();
+        $this->addTplParam('oxid', $orderId);
+        $this->addTplParam('order', $order);
+        $this->addTplParam('payPalOrder', null);
 
-            if ($order->getPayPalOrderIdForOxOrderId()) {
+        if ($order->paidWithPayPal()) {
+            // normal paypal order
+            try {
                 $this->addTplParam('payPalOrder', $this->getPayPalCheckoutOrder());
                 $this->addTplParam('capture', $order->getOrderPaymentCapture());
+            } catch (ApiException $exception) {
+                $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()));
+                Registry::getLogger()->error($exception->getMessage());
             }
-        } catch (ApiException $exception) {
-            $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()));
-            Registry::getLogger()->error($exception->getMessage());
         }
+        elseif ($order->paidWithPayPalPlus()) {
+            // old paypalplus order
+            try {
+                $this->addTplParam('payPalOrder', $this->getPayPalPlusOrder());
+                $result = "oscpaypalorder_ppplus.tpl";
+            } catch (ApiException $exception) {
+                $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()));
+                Registry::getLogger()->error($exception->getMessage());
+            }
 
-        if (!$order->paidWithPayPal()) {
+        }
+        elseif ($order->paidWithPayPalSoap()) {
+            // old paypalsoap order
+            $result = "oscpaypalorder_pp.tpl";
+        }
+        else {
             $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'));
         }
         return $result;
@@ -162,6 +203,25 @@ class PayPalOrderController extends AdminDetailsController
     }
 
     /**
+     * @return PayPalPlusOrder
+     * @throws StandardException
+     * @throws ApiException
+     */
+    protected function getPayPalPlusOrder(): PayPalPlusOrder
+    {
+        if (is_null($this->payPalPlusOrder)) {
+            $order = oxNew(PayPalPlusOrder::class);
+            $orderId = $this->getEditObjectId();
+            if ($orderId === null || !$order->loadByOrderId($orderId)) {
+                throw new StandardException('PayPalPlusOrder not found');
+            }
+            $this->payPalPlusOrder = $order;
+        }
+
+        return $this->payPalPlusOrder;
+    }
+
+    /**
      * Get active order
      *
      * @return Order
@@ -173,7 +233,7 @@ class PayPalOrderController extends AdminDetailsController
             $order = oxNew(Order::class);
             $orderId = $this->getEditObjectId();
             if ($orderId === null || !$order->load($orderId)) {
-                throw new StandardException('Order not found');
+                throw new StandardException('PayPalCheckout-Order not found');
             }
             $this->order = $order;
         }
@@ -346,5 +406,56 @@ class PayPalOrderController extends AdminDetailsController
             ksort($this->payPalOrderHistory);
         }
         return $this->payPalOrderHistory;
+    }
+
+    /**
+     * Get maximum possible, remaining payment amount to refund.
+     *
+     * @return double
+     */
+    public function getPayPalPlusRemainingRefundAmount(): float
+    {
+        if (is_null($this->remainingPayPalPlusRefundAmount)) {
+            $payPalPlusOrder = $this->getPayPalPlusOrder();
+
+            $dRemainingRefundAmount = $payPalPlusOrder->getTotal() -
+                                      $payPalPlusOrder->getTotalAmountRefunded();
+
+            if ($dRemainingRefundAmount < 0.0) {
+                $dRemainingRefundAmount = 0.0;
+            }
+
+            $this->remainingPayPalPlusRefundAmount = round($dRemainingRefundAmount, 2);
+        }
+
+        return (float)$this->remainingPayPalPlusRefundAmount;
+    }
+
+    /**
+     * Get remaining refunds count for current payment.
+     *
+     * @return int
+     */
+    public function getPayPalPlusRemainingRefundsCount()
+    {
+        if (is_null($this->remainingPayPalPlusRefunds)) {
+            $iMaxRefunds = $this->maxPayPalPlusRefunds;
+            $iRefundsAvailable = $iMaxRefunds;
+            $payPalPlusOrder = $this->getPayPalPlusOrder();
+            $iRefundsMade = 0;
+            if ($refundsList = $payPalPlusOrder->getRefundsList()) {
+                $iRefundsMade = $refundsList->count();
+            }
+
+            if ($iRefundsMade >= $iMaxRefunds) {
+                $iRefundsAvailable = 0;
+            } elseif ($iRefundsMade > 0) {
+                $iRefundsAvailable = $iMaxRefunds - $iRefundsMade;
+            }
+
+            $this->remainingPayPalPlusRefunds = $iRefundsAvailable;
+        }
+
+        return $this->remainingPayPalPlusRefunds;
     }
 }

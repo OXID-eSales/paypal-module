@@ -160,6 +160,32 @@ $aLang = [
     'OSC_PAYPAL_BANNER_COLORSCHEMEWHITE'            => 'weiß',
     'OSC_PAYPAL_BANNER_COLORSCHEMEWHITENOBORDER'    => 'weiß, ohne Rand',
 
+    'OSC_PAYPALPLUS_PAYMENT_OVERVIEW'               => 'Zahlungs&uuml;bersicht',
+    'OSC_PAYPALPLUS_PAYMENT_STATUS'                 => 'Zahlungsstatus',
+    'OSC_PAYPALPLUS_ORDER_AMOUNT'                   => 'Bestellpreis gesamt',
+    'OSC_PAYPALPLUS_REFUNDED_AMOUNT'                => 'Erstatteter Betrag',
+    'OSC_PAYPALPLUS_PAYMENT_ID'                     => 'Bezahlung-ID',
+    'OSC_PAYPALPLUS_PAYMENT_METHOD'                 => 'Zahlungsart',
+
+    'OSC_PAYPALPLUS_PAYMENT_REFUNDING'              => 'R&uuml;ckerstattungen',
+    'OSC_PAYPALPLUS_AVAILABLE_REFUNDS'              => 'Anzahl verf&uuml;gbarer R&uuml;ckerstattungen:',
+    'OSC_PAYPALPLUS_AVAILABLE_REFUND_AMOUNT'        => 'Verf&uuml;gbarer R&uuml;ckerstattungsbetrag:',
+    'OSC_PAYPALPLUS_DATE'                           => 'Datum',
+    'OSC_PAYPALPLUS_AMOUNT'                         => 'Betrag',
+    'OSC_PAYPALPLUS_STATUS'                         => 'Status',
+    'OSC_PAYPALPLUS_NEW_REFUND'                     => 'R&uuml;ckerstattung veranlassen',
+    'OSC_PAYPALPLUS_REFUND'                         => 'Erstatten',
+
+    'OSC_PAYPALPLUS_PUI'                            => 'Rechnungskauf',
+    'OSC_PAYPALPLUS_PUI_PAYMENT_INSTRUCTIONS'       => 'Zahlungshinweise',
+    'OSC_PAYPALPLUS_PUI_TERM'                       => 'Zahlungsziel',
+    'OSC_PAYPALPLUS_PUI_ACCOUNT_HOLDER'             => 'Empf&auml;nger',
+    'OSC_PAYPALPLUS_PUI_BANK_NAME'                  => 'Bank',
+    'OSC_PAYPALPLUS_PUI_AMOUNT'                     => 'Betrag',
+    'OSC_PAYPALPLUS_PUI_REFERENCE_NUMBER'           => 'Verwendungszweck',
+    'OSC_PAYPALPLUS_PUI_IBAN'                       => 'IBAN',
+    'OSC_PAYPALPLUS_PUI_BIC'                        => 'BIC',
+
     'OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'         => 'Bestellung wurde nicht über das PayPal-Checkout-Modul bezahlt',
     'OSC_PAYPAL_ERROR_INVALID_RESOURCE_ID'          => 'Die PayPal-Checkout-Bestellung hat eine invalide Resource-ID',
 ];
