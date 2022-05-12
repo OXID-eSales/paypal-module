@@ -261,7 +261,7 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
     public function getPaymentInstructions()
     {
         $oPaymentInstructions = null;
-        $oPayPalPlusPuiData = oxNew('paypPayPalPlusPuiData');
+        $oPayPalPlusPuiData = oxNew(PayPalPLusPui::class);
         if ($oPayPalPlusPuiData->loadByPaymentId($this->getPaymentId())) {
             $oPaymentInstructions = $oPayPalPlusPuiData;
         }
