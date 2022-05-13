@@ -162,7 +162,7 @@ class PayPalSoapOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      *
      * @return OrderPaymentList
      */
-    public function getPaymentList() :?PayPalSoapOrderPaymentList
+    public function getPaymentList(): ?PayPalSoapOrderPaymentList
     {
         if (is_null($this->paymentList)) {
             $paymentList = oxNew(PayPalSoapOrderPaymentList::class);

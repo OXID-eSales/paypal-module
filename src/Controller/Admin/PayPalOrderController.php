@@ -125,13 +125,19 @@ class PayPalOrderController extends AdminDetailsController
                 $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()));
                 Registry::getLogger()->error($exception->getMessage());
             }
-        } elseif ($order->getFieldData('oxpaymenttype') == $this->payPalPlusPaymentType && !$order->tableExitsForPayPalPlus()) {
+        } elseif (
+            $order->getFieldData('oxpaymenttype') == $this->payPalPlusPaymentType &&
+            !$order->tableExitsForPayPalPlus()
+        ) {
             $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_PAYPALPLUS_TABLE_DOES_NOT_EXISTS'));
         } elseif ($order->paidWithPayPalPlus()) {
             // old paypalplus order
             $this->addTplParam('payPalOrder', $this->getPayPalPlusOrder());
             $result = "oscpaypalorder_ppplus.tpl";
-        } elseif ($order->getFieldData('oxpaymenttype') == $this->payPalSoapPaymentType && !$order->tableExitsForPayPalSoap()) {
+        } elseif (
+            $order->getFieldData('oxpaymenttype') == $this->payPalSoapPaymentType &&
+            !$order->tableExitsForPayPalSoap()
+        ) {
             $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_PAYPALSOAP_TABLE_DOES_NOT_EXISTS'));
         } elseif ($order->paidWithPayPalSoap()) {
             // old paypalsoap order

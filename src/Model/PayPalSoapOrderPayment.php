@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Model;
 
 use OxidSolutionCatalysts\PayPal\Model\PayPalSoapOrderCommentList;
+
 /**
  * PayPal order payment list class
  */
