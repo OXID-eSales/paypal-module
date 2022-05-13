@@ -10,6 +10,8 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Application\Model\Article as EshopModelArticle;
+use OxidEsales\Eshop\Core\Exception\StandardException;
+use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidSolutionCatalysts\PayPal\Model\PayPalPLusRefundList;
 
@@ -27,28 +29,35 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      *
      * @var null|oxOrder
      */
-    protected $_oOrder = null; // phpcs:ignore PSR2.Classes.PropertyDeclaration
+    protected $order = null;
 
     /**
      * List of refunds associated with the payment.
      *
      * @var null|paypPayPalPlusRefundDataList
      */
-    protected $_oRefundList = null; // phpcs:ignore PSR2.Classes.PropertyDeclaration
+    protected $refundList = null;
 
     /**
      * A sum of refunded amounts for the payment.
      *
      * @var null|float
      */
-    protected $_dTotalAmountRefunded = null; // phpcs:ignore PSR2.Classes.PropertyDeclaration
+    protected $totalAmountRefunded = null;
 
     /**
      * Wrapper property for PayPal completed status
      *
      * @var array
      */
-    protected $_sPayPalStatusCompleted = 'completed';
+    protected $payPalStatusCompleted = 'completed';
+
+    /**
+     * Default oxorder PaymentType
+     *
+     * @var array
+     */
+    protected $payPalPlusPaymentType = 'payppaypalplus';
 
     /**
      * Construct initialize class
@@ -130,24 +139,13 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
     }
 
     /**
-     * Get PayPal Plus Payment object un-serialized.
+     * Check if the payment can be refunded.
      *
-     * @return bool|\PayPal\Api\Payment
+     * @return bool
      */
-    public function getPaymentObject()
+    public function isRefundable()
     {
-        $oPayment = null;
-
-        if ($this->payppaypalpluspayment__oxpaymentobject instanceof oxField) {
-            try {
-                $oSdk = $this->getShop()->getFromRegistry('paypPayPalPlusSdk');
-                $oPayment = $oSdk->newPayment();
-                $oPayment->fromJson($this->payppaypalpluspayment__oxpaymentobject->getRawValue());
-            } catch (Exception $e) {
-            }
-        }
-
-        return $oPayment;
+        return ($this->getStatus() === $this->payPalStatusCompleted);
     }
 
     /**
@@ -155,9 +153,9 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      *
      * @return bool
      */
-    public function isRefundable()
+    public function getPayPalPlusPaymentType()
     {
-        return ($this->getStatus() === $this->_sPayPalStatusCompleted);
+        return $this->payPalPlusPaymentType;
     }
 
     /**
@@ -205,19 +203,19 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getOrder()
     {
-        if (is_null($this->_oOrder)) {
+        if (is_null($this->order)) {
 
             /** @var oxOrder $oOrder */
             $oOrder = oxNew(Order::class);
 
             if ($oOrder->load($this->getOrderId())) {
-                $this->_oOrder = $oOrder;
+                $this->order = $oOrder;
             } else {
                 $this->_throwCouldNotLoadOrderError();
             }
         }
 
-        return $this->_oOrder;
+        return $this->order;
     }
 
     /**
@@ -227,18 +225,18 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getRefundsList()
     {
-        if (is_null($this->_oRefundList)) {
+        if (is_null($this->refundList)) {
 
             /** @var PayPalPLusRefundList $oRefundList */
             $oRefundList = oxNew(PayPalPLusRefundList::class);
             $oRefundList->loadRefundsBySaleId($this->getSaleId());
 
             if ($oRefundList->count() > 0) {
-                $this->_oRefundList = $oRefundList;
+                $this->refundList = $oRefundList;
             }
         }
 
-        return $this->_oRefundList;
+        return $this->refundList;
     }
 
     /**
@@ -248,14 +246,14 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getTotalAmountRefunded(): float
     {
-        if (is_null($this->_dTotalAmountRefunded)) {
+        if (is_null($this->totalAmountRefunded)) {
 
             /** @var PayPalPLusRefundList $oRefundList */
             $oRefundList = oxNew(PayPalPLusRefundList::class);
-            $this->_dTotalAmountRefunded = (double) $oRefundList->getRefundedSumBySaleId($this->getSaleId());
+            $this->totalAmountRefunded = (double) $oRefundList->getRefundedSumBySaleId($this->getSaleId());
         }
 
-        return (float)$this->_dTotalAmountRefunded;
+        return (float)$this->totalAmountRefunded;
     }
 
     public function getPaymentInstructions()
@@ -270,6 +268,17 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
     }
 
     /**
+     * check if payPalPlus Table exists
+     *
+     * @return bool
+     */
+    public function tableExists(): bool
+    {
+        $config = oxNew(Config::class);
+        return (bool) $config->tableExists($this->getCoreTableName());
+    }
+
+    /**
      * Load entry by a field name and value.
      * Used for loading by `OXORDERID`, `OXSALEID` and `OXPAYMENTID`.
      *
@@ -281,7 +290,7 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
     protected function _loadBy($sFieldName, $sFieldValue)
     {
         $db = DatabaseProvider::getDb();
-        if (!in_array($sFieldName, array('OXORDERID', 'OXSALEID', 'OXPAYMENTID'))) {
+        if (!in_array($sFieldName, ['OXORDERID', 'OXSALEID', 'OXPAYMENTID'])) {
             return false;
         }
 
@@ -291,9 +300,7 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
             $sFieldName,
             $db->quote($sFieldValue)
         );
-        $this->_isLoaded = $this->assignRecord($sSelect);
-
-        return $this->_isLoaded;
+        return $this->assignRecord($sSelect);
     }
 
     /**
@@ -303,10 +310,6 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     protected function _throwCouldNotLoadOrderError()
     {
-        /** @var paypPayPalPlusNoOrderException $oEx */
-        $oEx = $this->getShop()->getNew('paypPayPalPlusNoOrderException');
-        $oEx->setMessage($this->getShop()->translate('OSC_PAYPALPLUS_ERROR_NO_ORDER'));
-
-        throw $oEx;
+        throw oxNew(StandardException::class, 'OSC_PAYPALPLUS_ERROR_NO_ORDER');
     }
 }

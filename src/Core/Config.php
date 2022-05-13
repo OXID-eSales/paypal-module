@@ -11,6 +11,7 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Client;
@@ -221,24 +222,31 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalCheckoutBannerPaymentPageSelector();
     }
 
-    /**
-     * TODO: use Service\ModuleSettings
-     * Config value getter
-     * @Todo PSPAYPAL-491 Work in progress, add tests
-     * @Todo Ensure we fetch this setting from the active subshop.
-     * @param mixed oxconfig.OXVARNAME
-     * @return string|boolean value
-     */
-    public function getPayPalModuleConfigurationValue($varname)
+    public function getPayPalCheckoutBannerColorScheme(): string
     {
-        if ($varname == '') {
-            return (bool) false;
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalCheckoutBannerColorScheme();
+    }
+
+    public function tableExists(string $tableName = ''): bool
+    {
+        $exists = false;
+        if ($tableName) {
+            $exists = DatabaseProvider::getDb()->getOne(
+                "SELECT
+                    IF( EXISTS
+                        (SELECT * FROM information_schema.COLUMNS
+                            WHERE TABLE_SCHEMA = :database
+                            AND TABLE_NAME = :tablename
+                            LIMIT 1),
+                    1, 0)
+                    AS if_exists",
+                [
+                    ':database' => Registry::getConfig()->getConfigParam("dbName"),
+                    ':tablename' => $tableName
+                ]
+            );
         }
-
-        //TODO: try catch invalid settings
-        #return $this->getServiceFromContainer(ModuleSettings::class)->getRawValue($varname);
-
-        return (string) Registry::getConfig()->getConfigParam($varname);
+        return (bool)$exists;
     }
 
     /**

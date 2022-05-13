@@ -132,7 +132,7 @@ class PayPalPLusPui extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     protected function _loadBy($sFieldName, $sFieldValue)
     {
-        if (!in_array($sFieldName, array('OXREFERENCENUMBER', 'OXPAYMENTID'))) {
+        if (!in_array($sFieldName, ['OXREFERENCENUMBER', 'OXPAYMENTID'])) {
             return false;
         }
 

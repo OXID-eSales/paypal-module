@@ -22,10 +22,11 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalOrder;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
-use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Model\PayPalPlusOrder;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
 /**
  * PayPal Eshop model order class
@@ -336,19 +337,11 @@ class Order extends Order_parent
      */
     public function getPayPalPlusOrderIdForOxOrderId(string $oxId = null)
     {
-        //TODO: model?
         if (is_null($this->payPalPlusOrderId)) {
-            $this->payPalPlusOrderId = '';
             $oxId = is_null($oxId) ? $this->getId() : $oxId;
-            $table = 'payppaypalpluspayment';
-            $params = [$table . '.oxorderid' => $oxId];
-
-            $paypalOrderObj = oxNew(BaseModel::class);
-            $paypalOrderObj->init($table);
-            $select = $paypalOrderObj->buildSelectString($params);
-
-            if ($data = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getRow($select)) {
-                $this->payPalPlusOrderId = $data['oxid'];
+            $order = oxNew(PayPalPlusOrder::class);
+            if ($order->tableExists() && $order->loadByOrderId($oxId)) {
+                $this->payPalPlusOrderId = $order->getId();
             }
         }
         return $this->payPalPlusOrderId;
@@ -409,6 +402,34 @@ class Order extends Order_parent
     public function paidWithPayPalSoap(): bool
     {
         return (bool)$this->getPayPalSoapOrderIdForOxOrderId();
+    }
+
+    /**
+     * Checks if PayPalPlus-tables exists anymore
+     *
+     * @return bool
+     */
+    public function tableExitsForPayPalPlus(): bool
+    {
+        $order = oxNew(PayPalPlusOrder::class);
+        return (
+            $this->getFieldData('oxpaymenttype') == $order->getPayPalPlusPaymentType() &&
+            $order->tableExists()
+        );
+    }
+
+    /**
+     * Checks if PayPalSoap-tables exists anymore
+     *
+     * @return bool
+     */
+    public function tableExitsForPayPalSoap(): bool
+    {
+        $order = oxNew(PayPalSoapOrder::class);
+        return (
+            $this->getFieldData('oxpaymenttype') == $order->getPayPalSoapPaymentType() &&
+            $order->tableExists()
+        );
     }
 
     /**
