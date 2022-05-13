@@ -188,4 +188,6 @@ $aLang = [
 
     'OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'         => 'Bestellung wurde nicht über das PayPal-Checkout-Modul bezahlt',
     'OSC_PAYPAL_ERROR_INVALID_RESOURCE_ID'          => 'Die PayPal-Checkout-Bestellung hat eine invalide Resource-ID',
+    'OSC_PAYPAL_PAYPALPLUS_TABLE_DOES_NOT_EXISTS'   => 'Bestellung wurde mit dem PayPal-Plus-Modul bezahlt, aber die Datenbanken existieren nicht mehr',
+    'OSC_PAYPAL_PAYPALSOAP_TABLE_DOES_NOT_EXISTS'   => 'Bestellung wurde mit dem PayPal-Soap-Modul bezahlt, aber die Datenbanken existieren nicht mehr',
 ];
