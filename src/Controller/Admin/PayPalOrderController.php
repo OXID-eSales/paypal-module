@@ -19,6 +19,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Payments\RefundRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Payments;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalPlusOrder;
+use OxidSolutionCatalysts\PayPal\Model\PayPalSoapOrder;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 
@@ -38,6 +39,25 @@ class PayPalOrderController extends AdminDetailsController
      * @var PayPalPlusOrder
      */
     protected $payPalPlusOrder = null;
+
+    /**
+     * @var PayPalSoapOrder
+     */
+    protected $payPalSoapOrder = null;
+
+    /**
+     * Default oxorder PaymentType for PayPalPlus
+     *
+     * @var string
+     */
+    protected $payPalPlusPaymentType = 'payppaypalplus';
+
+    /**
+     * Default oxorder PaymentType for PayPalSoap
+     *
+     * @var string
+     */
+    protected $payPalSoapPaymentType = 'oxidpaypal';
 
     /**
      * @var array
@@ -105,23 +125,19 @@ class PayPalOrderController extends AdminDetailsController
                 $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()));
                 Registry::getLogger()->error($exception->getMessage());
             }
-        }
-        elseif ($order->paidWithPayPalPlus()) {
+        } elseif ($order->getFieldData('oxpaymenttype') == $this->payPalPlusPaymentType && !$order->tableExitsForPayPalPlus()) {
+            $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_PAYPALPLUS_TABLE_DOES_NOT_EXISTS'));
+        } elseif ($order->paidWithPayPalPlus()) {
             // old paypalplus order
-            try {
-                $this->addTplParam('payPalOrder', $this->getPayPalPlusOrder());
-                $result = "oscpaypalorder_ppplus.tpl";
-            } catch (ApiException $exception) {
-                $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()));
-                Registry::getLogger()->error($exception->getMessage());
-            }
-
-        }
-        elseif ($order->paidWithPayPalSoap()) {
+            $this->addTplParam('payPalOrder', $this->getPayPalPlusOrder());
+            $result = "oscpaypalorder_ppplus.tpl";
+        } elseif ($order->getFieldData('oxpaymenttype') == $this->payPalSoapPaymentType && !$order->tableExitsForPayPalSoap()) {
+            $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_PAYPALSOAP_TABLE_DOES_NOT_EXISTS'));
+        } elseif ($order->paidWithPayPalSoap()) {
             // old paypalsoap order
+            $this->addTplParam('payPalOrder', $this->getPayPalSoapOrder());
             $result = "oscpaypalorder_pp.tpl";
-        }
-        else {
+        } else {
             $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'));
         }
         return $result;
@@ -205,7 +221,6 @@ class PayPalOrderController extends AdminDetailsController
     /**
      * @return PayPalPlusOrder
      * @throws StandardException
-     * @throws ApiException
      */
     protected function getPayPalPlusOrder(): PayPalPlusOrder
     {
@@ -217,8 +232,24 @@ class PayPalOrderController extends AdminDetailsController
             }
             $this->payPalPlusOrder = $order;
         }
-
         return $this->payPalPlusOrder;
+    }
+
+    /**
+     * @return PayPalSoapOrder
+     * @throws StandardException
+     */
+    protected function getPayPalSoapOrder(): PayPalSoapOrder
+    {
+        if (is_null($this->payPalSoapOrder)) {
+            $order = oxNew(PayPalSoapOrder::class);
+            $orderId = $this->getEditObjectId();
+            if ($orderId === null || !$order->loadByOrderId($orderId)) {
+                throw new StandardException('PayPalSoapOrder not found');
+            }
+            $this->payPalSoapOrder = $order;
+        }
+        return $this->payPalSoapOrder;
     }
 
     /**
@@ -237,7 +268,6 @@ class PayPalOrderController extends AdminDetailsController
             }
             $this->order = $order;
         }
-
         return $this->order;
     }
 

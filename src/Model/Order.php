@@ -338,6 +338,7 @@ class Order extends Order_parent
     public function getPayPalPlusOrderIdForOxOrderId(string $oxId = null)
     {
         if (is_null($this->payPalPlusOrderId)) {
+            $this->payPalPlusOrderId = '';
             $oxId = is_null($oxId) ? $this->getId() : $oxId;
             $order = oxNew(PayPalPlusOrder::class);
             if ($order->tableExists() && $order->loadByOrderId($oxId)) {
@@ -356,19 +357,12 @@ class Order extends Order_parent
      */
     public function getPayPalSoapOrderIdForOxOrderId(string $oxId = null)
     {
-        //TODO: model?
         if (is_null($this->payPalSoapOrderId)) {
             $this->payPalSoapOrderId = '';
             $oxId = is_null($oxId) ? $this->getId() : $oxId;
-            $table = 'oepaypal_order';
-            $params = [$table . '.oepaypal_orderid' => $oxId];
-
-            $paypalOrderObj = oxNew(BaseModel::class);
-            $paypalOrderObj->init($table);
-            $select = $paypalOrderObj->buildSelectString($params);
-
-            if ($data = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getRow($select)) {
-                $this->payPalSoapOrderId = $data['oepaypal_orderid'];
+            $order = oxNew(PayPalSoapOrder::class);
+            if ($order->tableExists() && $order->loadByOrderId($oxId)) {
+                $this->payPalSoapOrderId = $order->getId();
             }
         }
         return $this->payPalSoapOrderId;
@@ -412,10 +406,7 @@ class Order extends Order_parent
     public function tableExitsForPayPalPlus(): bool
     {
         $order = oxNew(PayPalPlusOrder::class);
-        return (
-            $this->getFieldData('oxpaymenttype') == $order->getPayPalPlusPaymentType() &&
-            $order->tableExists()
-        );
+        return $order->tableExists();
     }
 
     /**
@@ -426,10 +417,7 @@ class Order extends Order_parent
     public function tableExitsForPayPalSoap(): bool
     {
         $order = oxNew(PayPalSoapOrder::class);
-        return (
-            $this->getFieldData('oxpaymenttype') == $order->getPayPalSoapPaymentType() &&
-            $order->tableExists()
-        );
+        return $order->tableExists();
     }
 
     /**

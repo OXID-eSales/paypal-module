@@ -53,13 +53,6 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
     protected $payPalStatusCompleted = 'completed';
 
     /**
-     * Default oxorder PaymentType
-     *
-     * @var array
-     */
-    protected $payPalPlusPaymentType = 'payppaypalplus';
-
-    /**
      * Construct initialize class
      */
     public function __construct()
@@ -146,16 +139,6 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
     public function isRefundable()
     {
         return ($this->getStatus() === $this->payPalStatusCompleted);
-    }
-
-    /**
-     * Check if the payment can be refunded.
-     *
-     * @return bool
-     */
-    public function getPayPalPlusPaymentType()
-    {
-        return $this->payPalPlusPaymentType;
     }
 
     /**
