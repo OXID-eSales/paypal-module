@@ -20,7 +20,8 @@ class PayPalPLusRefundList extends \OxidEsales\Eshop\Core\Model\ListModel
      *
      * @var string
      */
-    protected $_sObjectsInListName = 'OxidSolutionCatalysts\PayPal\Model\PayPalPLusRefund';
+    protected $_sObjectsInListName // phpcs:ignore PSR2.Classes.PropertyDeclaration
+        = 'OxidSolutionCatalysts\PayPal\Model\PayPalPLusRefund';
 
     /**
      * Load PayPal Plus refund models by sale ID and orders them by creation date and time.
