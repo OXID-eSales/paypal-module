@@ -15,7 +15,7 @@ use OxidEsales\Eshop\Core\DatabaseProvider;
  * Data model for Pay upon Invoice. This model reflects the payment instructions given by PayPal
  * in case "Payment upon Invoice" was chosen by the user.
  */
-class PayPalPLusPui extends \OxidEsales\Eshop\Core\Model\BaseModel
+class PayPalPlusPui extends \OxidEsales\Eshop\Core\Model\BaseModel
 {
     /**
      * Coretable name

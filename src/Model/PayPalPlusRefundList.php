@@ -13,7 +13,7 @@ use OxidEsales\Eshop\Core\DatabaseProvider;
  * PayPal Plus Refund data list manager class.
  * Collects a list of refunds according to payment sale ID.
  */
-class PayPalPLusRefundList extends \OxidEsales\Eshop\Core\Model\ListModel
+class PayPalPlusRefundList extends \OxidEsales\Eshop\Core\Model\ListModel
 {
     /**
      * List Object class name
@@ -21,7 +21,7 @@ class PayPalPLusRefundList extends \OxidEsales\Eshop\Core\Model\ListModel
      * @var string
      */
     protected $_sObjectsInListName // phpcs:ignore PSR2.Classes.PropertyDeclaration
-        = 'OxidSolutionCatalysts\PayPal\Model\PayPalPLusRefund';
+        = 'OxidSolutionCatalysts\PayPal\Model\PayPalPlusRefund';
 
     /**
      * Load PayPal Plus refund models by sale ID and orders them by creation date and time.

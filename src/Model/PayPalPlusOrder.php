@@ -13,7 +13,7 @@ use OxidEsales\Eshop\Application\Model\Article as EshopModelArticle;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
-use OxidSolutionCatalysts\PayPal\Model\PayPalPLusRefundList;
+use OxidSolutionCatalysts\PayPal\Model\PayPalPlusRefundList;
 
 class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
 {
@@ -210,8 +210,8 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
     {
         if (is_null($this->refundList)) {
 
-            /** @var PayPalPLusRefundList $oRefundList */
-            $oRefundList = oxNew(PayPalPLusRefundList::class);
+            /** @var PayPalPlusRefundList $oRefundList */
+            $oRefundList = oxNew(PayPalPlusRefundList::class);
             $oRefundList->loadRefundsBySaleId($this->getSaleId());
 
             if ($oRefundList->count() > 0) {
@@ -231,8 +231,8 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
     {
         if (is_null($this->totalAmountRefunded)) {
 
-            /** @var PayPalPLusRefundList $oRefundList */
-            $oRefundList = oxNew(PayPalPLusRefundList::class);
+            /** @var PayPalPlusRefundList $oRefundList */
+            $oRefundList = oxNew(PayPalPlusRefundList::class);
             $this->totalAmountRefunded = (double) $oRefundList->getRefundedSumBySaleId($this->getSaleId());
         }
 
@@ -242,7 +242,7 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
     public function getPaymentInstructions()
     {
         $oPaymentInstructions = null;
-        $oPayPalPlusPuiData = oxNew(PayPalPLusPui::class);
+        $oPayPalPlusPuiData = oxNew(PayPalPlusPui::class);
         if ($oPayPalPlusPuiData->loadByPaymentId($this->getPaymentId())) {
             $oPaymentInstructions = $oPayPalPlusPuiData;
         }

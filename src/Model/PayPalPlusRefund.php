@@ -13,7 +13,7 @@ use OxidEsales\Eshop\Core\DatabaseProvider;
  * Class paypPayPalPlusRefundData.
  * PayPal Plus refund data model.
  */
-class PayPalPLusRefund extends \OxidEsales\Eshop\Core\Model\BaseModel
+class PayPalPlusRefund extends \OxidEsales\Eshop\Core\Model\BaseModel
 {
     /**
      * Coretable name
