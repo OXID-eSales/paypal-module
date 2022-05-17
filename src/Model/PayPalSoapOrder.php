@@ -26,7 +26,7 @@ class PayPalSoapOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
     /**
      * List of order payments.
      *
-     * @var OrderPaymentList
+     * @var PayPalSoapOrderPaymentList
      */
     protected $paymentList = null;
 
@@ -89,7 +89,7 @@ class PayPalSoapOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getRemainingRefundAmount(): float
     {
-        return (float) round($this->getCapturedAmount() - $this->getRefundedAmount(), 2);
+        return round($this->getCapturedAmount() - $this->getRefundedAmount(), 2);
     }
 
     /**
@@ -144,7 +144,7 @@ class PayPalSoapOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getRemainingOrderSum(): float
     {
-        return (float) $this->getTotalOrderSum() - $this->getCapturedAmount();
+        return $this->getTotalOrderSum() - $this->getCapturedAmount();
     }
 
     /**
@@ -160,7 +160,7 @@ class PayPalSoapOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
     /**
      * Return order payment list.
      *
-     * @return OrderPaymentList
+     * @return PayPalSoapOrderPaymentList
      */
     public function getPaymentList(): ?PayPalSoapOrderPaymentList
     {
@@ -180,7 +180,7 @@ class PayPalSoapOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
     public function tableExists(): bool
     {
         $config = oxNew(Config::class);
-        return (bool) $config->tableExists($this->getCoreTableName());
+        return $config->tableExists($this->getCoreTableName());
     }
 
     /**

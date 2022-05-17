@@ -38,7 +38,7 @@ class PayPalSoapOrderCommentList extends \OxidEsales\Eshop\Core\Model\ListModel
             $sPaymentTable.`oepaypal_comment`
             from $sPaymentTable
             where $sPaymentTable.oepaypal_paymentid = " .
-            \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->quote($orderId);
+            \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->quote($paymentId);
 
         $this->selectString($sSelect);
     }

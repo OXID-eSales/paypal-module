@@ -28,13 +28,13 @@ class PayPalSoapOrderPayment extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getId(): string
     {
-        return (string) $this->getPaymentId();
+        return $this->getPaymentId();
     }
 
     /**
      * Payment comments
      *
-     * @var array
+     * @var null|PayPalSoapOrderCommentList
      */
     protected $commentList = null;
 
@@ -153,7 +153,7 @@ class PayPalSoapOrderPayment extends \OxidEsales\Eshop\Core\Model\BaseModel
     /**
      * Get comments
      *
-     * @return array
+     * @return null|PayPalSoapOrderCommentList
      */
     public function getCommentList(): ?PayPalSoapOrderCommentList
     {

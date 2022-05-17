@@ -31,7 +31,7 @@ class PayPalOrderController extends AdminDetailsController
     use ServiceContainer;
 
     /**
-     * @var PayPalOrder
+     * @var Order
      */
     protected $order = null;
 

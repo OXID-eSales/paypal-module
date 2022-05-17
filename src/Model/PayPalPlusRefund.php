@@ -94,18 +94,15 @@ class PayPalPlusRefund extends \OxidEsales\Eshop\Core\Model\BaseModel
     /**
      * Get PayPal Plus Refund object un-serialized.
      *
-     * @return bool|object
+     * @return object
      */
-    public function getRefundObject(): ?object
+    public function getRefundObject(): false|object
     {
-        $oRefundObject = null;
-        if ($this->payppaypalplusrefund__oxrefundobject instanceof oxField) {
-            $oRefundObject = unserialize(
-                htmlspecialchars_decode(
-                    $this->getFieldData('oxrefundobject')
-                )
-            );
-        }
+        $oRefundObject = unserialize(
+            htmlspecialchars_decode(
+                $this->getFieldData('oxrefundobject')
+            )
+        );
         return $oRefundObject;
     }
 

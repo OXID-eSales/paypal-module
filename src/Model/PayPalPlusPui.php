@@ -54,7 +54,7 @@ class PayPalPlusPui extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getTotal(): float
     {
-        return (string)$this->getFieldData('oxtotal');
+        return (float)$this->getFieldData('oxtotal');
     }
 
     /**
