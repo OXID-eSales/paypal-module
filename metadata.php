@@ -81,6 +81,8 @@ $aModule = [
 
         // Admin: Order
         'oscpaypalorder.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalorder.tpl',
+        'oscpaypalorder_ppplus.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalorder_ppplus.tpl',
+        'oscpaypalorder_pp.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalorder_pp.tpl',
 
         'modules/osc/paypal/paymentbuttons.tpl' => 'osc/paypal/views/tpl/shared/paymentbuttons.tpl',
 

@@ -22,10 +22,11 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalOrder;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
-use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Model\PayPalPlusOrder;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
 /**
  * PayPal Eshop model order class
@@ -70,6 +71,20 @@ class Order extends Order_parent
      * @var string
      */
     protected $payPalOrderId;
+
+    /**
+     * PayPalPlus order Id
+     *
+     * @var string
+     */
+    protected $payPalPlusOrderId;
+
+    /**
+     * PayPalPlus order Id
+     *
+     * @var string
+     */
+    protected $payPalSoapOrderId;
 
     /**
      * PayPal Billing Agreement Id;
@@ -215,7 +230,6 @@ class Order extends Order_parent
     public function getPayPalCheckoutOrder(): PayPalOrder
     {
         if (!$this->payPalOrder) {
-            //Why do we need this call if we know it was no PayPal order ?
             /** @var Orders $orderService */
             $orderService = Registry::get(ServiceFactory::class)->getOrderService();
             $this->payPalOrder = $orderService->showOrderDetails($this->getPayPalOrderIdForOxOrderId(), '');
@@ -315,13 +329,95 @@ class Order extends Order_parent
     }
 
     /**
+     * Returns PayPalPlus order id.
+     *
+     * @param string|null $oxId
+     *
+     * @return string
+     */
+    public function getPayPalPlusOrderIdForOxOrderId(string $oxId = null)
+    {
+        if (is_null($this->payPalPlusOrderId)) {
+            $this->payPalPlusOrderId = '';
+            $oxId = is_null($oxId) ? $this->getId() : $oxId;
+            $order = oxNew(PayPalPlusOrder::class);
+            if ($order->tableExists() && $order->loadByOrderId($oxId)) {
+                $this->payPalPlusOrderId = $order->getId();
+            }
+        }
+        return $this->payPalPlusOrderId;
+    }
+
+    /**
+     * Returns PayPalSoap order id
+     *
+     * @param string|null $oxId
+     *
+     * @return string
+     */
+    public function getPayPalSoapOrderIdForOxOrderId(string $oxId = null)
+    {
+        if (is_null($this->payPalSoapOrderId)) {
+            $this->payPalSoapOrderId = '';
+            $oxId = is_null($oxId) ? $this->getId() : $oxId;
+            $order = oxNew(PayPalSoapOrder::class);
+            if ($order->tableExists() && $order->loadByOrderId($oxId)) {
+                $this->payPalSoapOrderId = $order->getId();
+            }
+        }
+        return $this->payPalSoapOrderId;
+    }
+
+    /**
      * Checks if the order was paid using PayPal
      *
      * @return bool
      */
     public function paidWithPayPal(): bool
     {
-        return ($this->getPayPalOrderIdForOxOrderId() || $this->getPayPalBillingAgreementIdForOxOrderId());
+        return (bool)$this->getPayPalOrderIdForOxOrderId();
+    }
+
+    /**
+     * Checks if the order was paid using PayPalPlus
+     *
+     * @return bool
+     */
+    public function paidWithPayPalPlus(): bool
+    {
+        return (bool)$this->getPayPalPlusOrderIdForOxOrderId();
+    }
+
+    /**
+     * Checks if the order was paid using PayPalSoap
+     *
+     * @return bool
+     */
+    public function paidWithPayPalSoap(): bool
+    {
+        return (bool)$this->getPayPalSoapOrderIdForOxOrderId();
+    }
+
+    /**
+     * Checks if PayPalPlus-tables exists anymore
+     *
+     * @return bool
+     */
+    public function tableExitsForPayPalPlus(): bool
+    {
+        $order = oxNew(PayPalPlusOrder::class);
+        return $order->tableExists();
+    }
+
+    /**
+     * Checks if PayPalSoap-tables exists anymore
+     *
+     * @return bool
+     */
+    public function tableExitsForPayPalSoap(): bool
+    {
+        $order = oxNew(PayPalSoapOrder::class);
+        return $order->tableExists();
     }
 
     /**

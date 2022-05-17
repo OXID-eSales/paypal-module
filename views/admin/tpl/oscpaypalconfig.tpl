@@ -337,16 +337,16 @@
                             <label for="color-schema">[{oxmultilang ident="OSC_PAYPAL_BANNER_COLORSCHEME"}]</label>
                             <div class="controls">
                                 <select name="conf[oscPayPalBannersColorScheme]" id="color-schema" class="form-control">
-                                    <option value="blue" [{if $config->getPayPalModuleConfigurationValue('oscPayPalBannersColorScheme') == 'blue'}]selected[{/if}]>
+                                    <option value="blue" [{if $config->getPayPalCheckoutBannerColorScheme() == 'blue'}]selected[{/if}]>
                                         [{oxmultilang ident="OSC_PAYPAL_BANNER_COLORSCHEMEBLUE"}]
                                     </option>
-                                    <option value="black" [{if $config->getPayPalModuleConfigurationValue('oscPayPalBannersColorScheme') == 'black'}]selected[{/if}]>
+                                    <option value="black" [{if $config->getPayPalCheckoutBannerColorScheme() == 'black'}]selected[{/if}]>
                                         [{oxmultilang ident="OSC_PAYPAL_BANNER_COLORSCHEMEBLACK"}]
                                     </option>
-                                    <option value="white" [{if $config->getPayPalModuleConfigurationValue('oscPayPalBannersColorScheme') == 'white'}]selected[{/if}]>
+                                    <option value="white" [{if $config->getPayPalCheckoutBannerColorScheme() == 'white'}]selected[{/if}]>
                                         [{oxmultilang ident="OSC_PAYPAL_BANNER_COLORSCHEMEWHITE"}]
                                     </option>
-                                    <option value="white-no-border" [{if $config->getPayPalModuleConfigurationValue('oscPayPalBannersColorScheme') == 'white-no-border'}]selected[{/if}]>
+                                    <option value="white-no-border" [{if $config->getPayPalCheckoutBannerColorScheme() == 'white-no-border'}]selected[{/if}]>
                                         [{oxmultilang ident="OSC_PAYPAL_BANNER_COLORSCHEMEWHITENOBORDER"}]
                                     </option>
                                 </select>
