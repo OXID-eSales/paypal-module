@@ -9,57 +9,40 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
-use PDO;
-use Doctrine\DBAL\Query\QueryBuilder;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidEsales\Eshop\Application\Model\Content as EshopModelContent;
 use OxidEsales\Eshop\Application\Model\Payment as EshopModelPayment;
 use OxidEsales\Eshop\Core\Model\BaseModel as EshopBaseModel;
-use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
-use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
+use OxidEsales\Eshop\Core\DatabaseProvider;
 
 //NOTE: later we will do this on module installation, for now on first activation
 class StaticContent
 {
-    /** @var QueryBuilderFactoryInterface */
-    private $queryBuilderFactory;
-
-    /** @var ContextInterface */
-    private $context;
-
-    public function __construct(
-        QueryBuilderFactoryInterface $queryBuilderFactory,
-        ContextInterface $context
-    ) {
-        $this->queryBuilderFactory = $queryBuilderFactory;
-        $this->context = $context;
-    }
-
-    public function ensurePayPalPaymentMethods(): void
+    public static function ensurePayPalPaymentMethods(): void
     {
         foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
             $paymentMethod = oxNew(EshopModelPayment::class);
             if ($paymentMethod->load($paymentId)) {
                 continue;
             }
-            $this->createPaymentMethod($paymentId, $paymentDefinitions);
-            $this->assignPaymentToCountries($paymentId, $paymentDefinitions['countries']);
-            $this->assignPaymentToActiveDeliverySets($paymentId);
+            self::createPaymentMethod($paymentId, $paymentDefinitions);
+            self::assignPaymentToCountries($paymentId, $paymentDefinitions['countries']);
+            self::assignPaymentToActiveDeliverySets($paymentId);
         }
     }
 
-    protected function assignPaymentToActiveDeliverySets(string $paymentId): void
+    protected static function assignPaymentToActiveDeliverySets(string $paymentId): void
     {
-        $deliverySetIds = $this->getActiveDeliverySetIds();
+        $deliverySetIds = self::getActiveDeliverySetIds();
         foreach ($deliverySetIds as $deliverySetId) {
-            $this->assignPaymentToDelivery($paymentId, $deliverySetId);
+            self::assignPaymentToDelivery($paymentId, $deliverySetId);
         }
     }
 
-    protected function assignPaymentToCountries(string $paymentId, array $countries): void
+    protected static function assignPaymentToCountries(string $paymentId, array $countries): void
     {
-        $activeCountriesIso2Id = array_flip($this->getActiveCountries());
+        $activeCountriesIso2Id = array_flip(self::getActiveCountries());
         $assignToCountries = [];
         foreach ($countries as $countryIsoAlpha2) {
             if (isset($activeCountriesIso2Id[strtoupper($countryIsoAlpha2)])) {
@@ -69,11 +52,11 @@ class StaticContent
         $assignToCountries = empty($assignToCountries) ? $activeCountriesIso2Id : $assignToCountries;
 
         foreach ($assignToCountries as $countryId) {
-            $this->assignPaymentToCountry($paymentId, $countryId);
+            self::assignPaymentToCountry($paymentId, $countryId);
         }
     }
 
-    protected function assignPaymentToCountry(string $paymentId, string $countryId): void
+    protected static function assignPaymentToCountry(string $paymentId, string $countryId): void
     {
         $object2Paymentent = oxNew(EshopBaseModel::class);
         $object2Paymentent->init('oxobject2payment');
@@ -87,7 +70,7 @@ class StaticContent
         $object2Paymentent->save();
     }
 
-    protected function assignPaymentToDelivery(string $paymentId, string $deliverySetId): void
+    protected static function assignPaymentToDelivery(string $paymentId, string $deliverySetId): void
     {
         $object2Paymentent = oxNew(EshopBaseModel::class);
         $object2Paymentent->init('oxobject2payment');
@@ -101,14 +84,14 @@ class StaticContent
         $object2Paymentent->save();
     }
 
-    protected function createPaymentMethod(string $paymentId, array $definitions): void
+    protected static function createPaymentMethod(string $paymentId, array $definitions): void
     {
         /** @var EshopModelPayment $paymentModel */
         $paymentModel = oxNew(EshopModelPayment::class);
         $paymentModel->setId($paymentId);
 
-        $activeCountries = $this->getActiveCountries();
-        $iso2LanguageId = array_flip($this->getLanguageIds());
+        $activeCountries = self::getActiveCountries();
+        $iso2LanguageId = array_flip(self::getLanguageIds());
 
         $active = empty($definitions['countries']) ||
             0 < count(array_intersect($definitions['countries'], $activeCountries));
@@ -137,16 +120,16 @@ class StaticContent
         }
     }
 
-    public function ensureStaticContents(): void
+    public static function ensureStaticContents(): void
     {
         foreach (PayPalDefinitions::getPayPalStaticContents() as $content) {
             $loadId = $content['oxloadid'];
-            if (!$this->needToAddContent($loadId)) {
+            if (!self::needToAddContent($loadId)) {
                 continue;
             }
 
-            foreach ($this->getLanguageIds() as $langId => $langAbbr) {
-                $contentModel = $this->getContentModel($loadId, $langId);
+            foreach (self::getLanguageIds() as $langId => $langAbbr) {
+                $contentModel = self::getContentModel($loadId, $langId);
                 $contentModel->assign(
                     [
                         'oxloadid'  => $loadId,
@@ -160,7 +143,7 @@ class StaticContent
         }
     }
 
-    protected function needToAddContent(string $ident): bool
+    protected static function needToAddContent(string $ident): bool
     {
         $content = oxNew(EshopModelContent::class);
         if ($content->loadByIdent($ident)) {
@@ -169,7 +152,7 @@ class StaticContent
         return true;
     }
 
-    protected function getContentModel(string $ident, int $languageId): EshopModelContent
+    protected static function getContentModel(string $ident, int $languageId): EshopModelContent
     {
         $content = oxNew(EshopModelContent::class);
         if ($content->loadByIdent($ident)) {
@@ -179,16 +162,11 @@ class StaticContent
         return $content;
     }
 
-    protected function getActiveDeliverySetIds(): array
+    protected static function getActiveDeliverySetIds(): array
     {
-        /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $this->queryBuilderFactory->create();
-        $fromDb = $queryBuilder
-            ->select('oxid')
-            ->from('oxdeliveryset')
-            ->where('oxactive = 1')
-            ->execute()
-            ->fetchAll(PDO::FETCH_ASSOC);
+        $fromDb = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getAll(
+            'SELECT `oxid` FROM `oxdeliveryset` WHERE oxactive = 1'
+        );
 
         foreach ($fromDb as $row) {
             $result[$row['oxid']] = $row['oxid'];
@@ -200,23 +178,18 @@ class StaticContent
     /**
      * get the language-IDs
      */
-    protected function getLanguageIds(): array
+    protected static function getLanguageIds(): array
     {
         return EshopRegistry::getLang()->getLanguageIds();
     }
 
-    protected function getActiveCountries(): array
+    protected static function getActiveCountries(): array
     {
         $result = [];
 
-        /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $this->queryBuilderFactory->create();
-        $fromDb = $queryBuilder
-            ->select('oxid, oxisoalpha2')
-            ->from('oxcountry')
-            ->where('oxactive = 1')
-            ->execute()
-            ->fetchAll(PDO::FETCH_ASSOC);
+        $fromDb = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getAll(
+            'SELECT `oxid`, oxisoalpha2 FROM `oxcountry` WHERE oxactive = 1'
+        );
 
         foreach ($fromDb as $row) {
             $result[$row['oxid']] = $row['oxisoalpha2'];

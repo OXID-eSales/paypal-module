@@ -9,14 +9,11 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core\Events;
 
-use OxidEsales\DoctrineMigrationWrapper\MigrationsBuilder;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\StaticContent;
-use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
+use OxidEsales\Eshop\Core\DatabaseProvider;
 
 class Events
 {
-    use ServiceContainer;
 
     /**
      * Execute action on activate event
@@ -27,7 +24,6 @@ class Events
         self::executeModuleMigrations();
 
         //add static contents and payment methods
-        //NOTE: this assumes the module's servies.yaml is already in place at the time this method is called
         self::addStaticContents();
     }
 
@@ -47,8 +43,56 @@ class Events
      */
     private static function executeModuleMigrations(): void
     {
-        $migrations = (new MigrationsBuilder())->build();
-        $migrations->execute('migrations:migrate', 'osc_paypal');
+        $sql = sprintf(
+            'CREATE TABLE IF NOT EXISTS %s (
+                        `OXID`
+                            char(32)
+                            character set latin1
+                            collate latin1_general_ci
+                            NOT NULL
+                            COMMENT \'Record id\',
+                        `OXSHOPID`
+                             int(11)
+                            DEFAULT 1
+                            COMMENT \'Shop ID (oxshops)\',
+                        `OXORDERID`
+                            char(32)
+                            character set latin1
+                            collate latin1_general_ci
+                            NOT NULL
+                            COMMENT \'OXID Parent Order id (oxorder)\',
+                        `OXPAYPALORDERID`
+                            char(32)
+                            character set latin1
+                            collate latin1_general_ci
+                            NOT NULL
+                            COMMENT \'PayPal Transaction ID\',
+                        `OSCPAYPALSTATUS`
+                            char(32)
+                            character set latin1
+                            collate latin1_general_ci
+                            NOT NULL
+                            COMMENT \'PayPal Status\',
+                        `OSCPAYMENTMETHODID`
+                            char(32)
+                            character set latin1
+                            collate latin1_general_ci
+                            NOT NULL
+                            COMMENT \'PayPal payment id\',
+                       `OXTIMESTAMP`
+                            timestamp
+                            NOT NULL
+                            default CURRENT_TIMESTAMP
+                            on update CURRENT_TIMESTAMP
+                            COMMENT \'Timestamp\',
+                        PRIMARY KEY (`OXID`),
+                        UNIQUE KEY `ORDERID_PAYPALORDERID` (`OXORDERID`,`OXPAYPALORDERID`))
+                        ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
+                        COMMENT \'Paypal Checkout\'',
+            'oscpaypal_order'
+        );
+
+        DatabaseProvider::getDb()->execute($sql);
     }
 
     /**
@@ -58,12 +102,7 @@ class Events
      */
     private static function addStaticContents(): void
     {
-        /** @var StaticContent $service */
-        $service = ContainerFactory::getInstance()
-            ->getContainer()
-            ->get(StaticContent::class);
-
-        $service->ensureStaticContents();
-        $service->ensurePayPalPaymentMethods();
+        StaticContent::ensureStaticContents();
+        StaticContent::ensurePayPalPaymentMethods();
     }
 }
