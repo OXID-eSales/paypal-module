@@ -9,11 +9,25 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
-use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\Eshop\Core\DatabaseProvider;
+use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
+use OxidEsales\Eshop\Core\Database\Adapter\Doctrine\Database;
 
 class ModuleSettings
 {
+    /** @var DatabaseProvider */
+    private $db;
+
+    /** @var EshopCoreConfig */
+    private $config;
+
+    public function __construct(
+        EshopCoreConfig $config,
+        Database $db
+    ) {
+        $this->config = $config;
+        $this->db = $db;
+    }
+
     public function showAllPayPalBanners(): bool
     {
         return (bool) $this->getSettingValue('oscPayPalBannersShowAll');
@@ -226,21 +240,20 @@ class ModuleSettings
 
     public function save(string $name, $value, string $type = ''): void
     {
-        $oConfig = Registry::getConfig();
-        $oConfig->setConfigParam($name, $value);
-        $shopId = $oConfig->getActiveShop()->getId();
+        $this->config->setConfigParam($name, $value);
+        $shopId = $this->config->getShopId();
         $module = 'module:osc_paypal';
 
         if (!$type) {
             $query = "select oxvartype from oxconfig where oxshopid = :shopId and oxmodule = :module and oxvarname = :value";
-            $type = DatabaseProvider::getDb()->getOne($query, [
+            $type = $this->db->getOne($query, [
                 ':shopId' => $shopId,
                 ':module' => $module,
                 ':value' => $value
             ]);
         }
 
-        $oConfig->saveShopConfVar(
+        $this->config->saveShopConfVar(
             $type,
             $name,
             $value,
@@ -304,7 +317,7 @@ class ModuleSettings
      */
     private function getSettingValue(string $key)
     {
-        return Registry::getConfig()->getConfigParam($key);
+        return $this->config->getConfigParam($key);
     }
 
     /**

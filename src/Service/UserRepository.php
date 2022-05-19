@@ -9,31 +9,23 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
-use PDO;
-use Doctrine\DBAL\Query\QueryBuilder;
 use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
-use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
-use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
+use OxidEsales\Eshop\Core\Database\Adapter\Doctrine\Database;
 
 class UserRepository
 {
-    /** @var QueryBuilderFactoryInterface */
-    private $queryBuilderFactory;
-
-    /** @var ContextInterface */
-    private $context;
+    /** @var DatabaseProvider */
+    private $db;
 
     /** @var EshopCoreConfig */
     private $config;
 
     public function __construct(
-        QueryBuilderFactoryInterface $queryBuilderFactory,
-        ContextInterface $context,
-        EshopCoreConfig $config
+        EshopCoreConfig $config,
+        Database $db
     ) {
-        $this->queryBuilderFactory = $queryBuilderFactory;
-        $this->context = $context;
         $this->config = $config;
+        $this->db = $db;
     }
 
     /**
@@ -58,29 +50,12 @@ class UserRepository
 
     private function getUserId(string $userEmail, bool $hasPassword = true): string
     {
-        /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $this->queryBuilderFactory->create();
-
-        $parameters = [
-            'oxusername' => $userEmail
-        ];
-
         $passWordCheck = $hasPassword ? 'LENGTH(`oxpassword`) > 0' : 'LENGTH(`oxpassword`) = 0';
-
-        $queryBuilder->select('oxid')
-            ->from('oxuser')
-            ->where('oxusername = :oxusername')
-            ->andWhere($passWordCheck);
-
-        if (!$this->config->getConfigParam('blMallUsers')) {
-            $queryBuilder->andWhere('oxshopid = :oxshopid');
-            $parameters['oxshopid'] = $this->context->getCurrentShopId();
-        }
-
-        $userId = $queryBuilder->setParameters($parameters)
-            ->setMaxResults(1)
-            ->execute()
-            ->fetch(PDO::FETCH_COLUMN);
+        $userId = "select oxid from oxuser where oxusername = :oxusername and oxshopid = :shopid and " . $passWordCheck;
+        $type = $this->db->getOne($query, [
+            ':oxusername' => $userEmail,
+            ':shopid' => $this->config->getShopId()
+        ]);
 
         return (string) $userId;
     }

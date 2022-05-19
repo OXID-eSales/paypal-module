@@ -9,34 +9,26 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
-use PDO;
-use Doctrine\DBAL\Query\QueryBuilder;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
-use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
-use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
-use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
+use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
+use OxidEsales\Eshop\Core\Database\Adapter\Doctrine\Database;
 
 class OrderRepository
 {
-    /** @var QueryBuilderFactoryInterface */
-    private $queryBuilderFactory;
-
-    /** @var ContextInterface */
-    private $context;
+    /** @var DatabaseProvider */
+    private $db;
 
     /** @var EshopCoreConfig */
     private $config;
 
     public function __construct(
-        QueryBuilderFactoryInterface $queryBuilderFactory,
-        ContextInterface $context,
-        EshopCoreConfig $config
+        EshopCoreConfig $config,
+        Database $db
     ) {
-        $this->queryBuilderFactory = $queryBuilderFactory;
-        $this->context = $context;
         $this->config = $config;
+        $this->db = $db;
     }
 
     public function paypalOrderByOrderIdAndPayPalId(string $shopOrderId, string $paypalOrderId): PayPalOrderModel
@@ -77,45 +69,21 @@ class OrderRepository
 
     private function getId(string $shopOrderId, string $paypalOrderId): string
     {
-        /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $this->queryBuilderFactory->create();
-
-        $parameters = [
-            'oxorderid' => $shopOrderId,
-            'oxpaypalorderid' => $paypalOrderId
-        ];
-
-        $queryBuilder->select('oxid')
-            ->from('oscpaypal_order')
-            ->where('oxorderid = :oxorderid')
-            ->andWhere('oxpaypalorderid = :oxpaypalorderid');
-
-        $id = $queryBuilder->setParameters($parameters)
-            ->setMaxResults(1)
-            ->execute()
-            ->fetch(PDO::FETCH_COLUMN);
+        $query = "select oxid from oscpaypal_order where oxorderid = :oxorderid and oxpaypalorderid = :oxpaypalorderid";
+        $id = $this->db->getOne($query, [
+            ':oxorderid' => $shopOrderId,
+            ':oxpaypalorderid' => $paypalOrderId
+        ]);
 
         return (string) $id;
     }
 
     private function getShopOrderId(string $paypalOrderId): string
     {
-        /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $this->queryBuilderFactory->create();
-
-        $parameters = [
-            'oxpaypalorderid' => $paypalOrderId
-        ];
-
-        $queryBuilder->select('oxorderid')
-            ->from('oscpaypal_order')
-            ->where('oxpaypalorderid = :oxpaypalorderid')
-            ->andWhere('LENGTH(oxorderid) > 0');
-
-        $id = $queryBuilder->setParameters($parameters)
-            ->setMaxResults(1)
-            ->execute()
-            ->fetch(PDO::FETCH_COLUMN);
+        $query = "select oxorderid from oscpaypal_order where oxpaypalorderid = :oxpaypalorderid and LENGTH(oxorderid) > 0";
+        $id = $this->db->getOne($query, [
+            ':oxpaypalorderid' => $paypalOrderId
+        ]);
 
         return (string) $id;
     }
