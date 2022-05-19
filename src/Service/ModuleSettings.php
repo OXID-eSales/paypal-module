@@ -9,7 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
-use OxidSolutionCatalysts\PayPal\Module;
+use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\Eshop\Core\DatabaseProvider;
 
 class ModuleSettings
 {
@@ -223,58 +224,78 @@ class ModuleSettings
         return (bool) $this->getSettingValue('oscPayPalSandboxPuiEligibility');
     }
 
-    public function save(string $name, $value): void
+    public function save(string $name, $value, string $type = ''): void
     {
-        Registry::getConfig()->setConfigParam($$name, $value);
+        $oConfig = Registry::getConfig();
+        $oConfig->setConfigParam($name, $value);
+        $shopId = $oConfig->getActiveShop()->getId();
+        $module = 'module:osc_paypal';
+
+        if (!$type) {
+            $query = "select oxvartype from oxconfig where oxshopid = :shopId and oxmodule = :module and oxvarname = :value";
+            $type = DatabaseProvider::getDb()->getOne($query, [
+                ':shopId' => $shopId,
+                ':module' => $module,
+                ':value' => $value
+            ]);
+        }
+
+        $oConfig->saveShopConfVar(
+            $type,
+            $name,
+            $value,
+            $shopId,
+            $module
+        );
     }
 
     public function saveSandboxMode(bool $mode): void
     {
-        $this->save('oscPayPalSandboxMode', $mode);
+        $this->save('oscPayPalSandboxMode', $mode, 'bool');
     }
 
     public function saveClientId(string $clientId): void
     {
         if ($this->isSandbox()) {
-            $this->save('oscPayPalSandboxClientId', $clientId);
+            $this->save('oscPayPalSandboxClientId', $clientId, 'str');
         } else {
-            $this->save('oscPayPalClientId', $clientId);
+            $this->save('oscPayPalClientId', $clientId, 'str');
         }
     }
 
     public function saveClientSecret(string $clientSecret): void
     {
         if ($this->isSandbox()) {
-            $this->save('oscPayPalSandboxClientSecret', $clientSecret);
+            $this->save('oscPayPalSandboxClientSecret', $clientSecret, 'str');
         } else {
-            $this->save('oscPayPalClientSecret', $clientSecret);
+            $this->save('oscPayPalClientSecret', $clientSecret, 'str');
         }
     }
 
     public function saveAcdcEligibility(bool $eligibility): void
     {
         if ($this->isSandbox()) {
-            $this->save('oscPayPalSandboxAcdcEligibility', $eligibility);
+            $this->save('oscPayPalSandboxAcdcEligibility', $eligibility, 'bool');
         } else {
-            $this->save('oscPayPalAcdcEligibility', $eligibility);
+            $this->save('oscPayPalAcdcEligibility', $eligibility, 'bool');
         }
     }
 
     public function savePuiEligibility(bool $eligibility): void
     {
         if ($this->isSandbox()) {
-            $this->save('oscPayPalSandboxPuiEligibility', $eligibility);
+            $this->save('oscPayPalSandboxPuiEligibility', $eligibility, 'bool');
         } else {
-            $this->save('oscPayPalPuiEligibility', $eligibility);
+            $this->save('oscPayPalPuiEligibility', $eligibility, 'bool');
         }
     }
 
     public function saveWebhookId(string $webhookId): void
     {
         if ($this->isSandbox()) {
-            $this->save('oscPayPalSandboxWebhookId', $webhookId);
+            $this->save('oscPayPalSandboxWebhookId', $webhookId, 'str');
         } else {
-            $this->save('oscPayPalWebhookId', $webhookId);
+            $this->save('oscPayPalWebhookId', $webhookId, 'str');
         }
     }
 
