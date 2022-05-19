@@ -270,7 +270,7 @@ class PayPalConfigController extends AdminController
         $LegacyOeppModuleDetails = Registry::get(LegacyOeppModuleDetails::class);
         $transferrableSettings = $LegacyOeppModuleDetails->getTransferrableSettings();
         $oldConfigKeys = array_keys($transferrableSettings);
-        $currentShopId = Registry::getConfig()->getActiveShop()->getId();
+        $currentShopId = Registry::getConfig()->getShopId();
 
         foreach ($oldConfigKeys as $configKeyName) {
             // Read old values
