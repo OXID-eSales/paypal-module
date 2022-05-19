@@ -9,25 +9,10 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
-use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use OxidSolutionCatalysts\PayPal\Module;
 
 class ModuleSettings
 {
-    /** @var ModuleSettingBridgeInterface */
-    private $moduleSettingBridge;
-
-    //TODO: we need service for fetching module settings from db (this one)
-    //another class for moduleconfiguration (database values/edefaults)
-    //and the view configuration should go into some separate class
-    //also add shopcontext to get shop settings
-
-    public function __construct(
-        ModuleSettingBridgeInterface $moduleSettingBridge
-    ) {
-        $this->moduleSettingBridge = $moduleSettingBridge;
-    }
-
     public function showAllPayPalBanners(): bool
     {
         return (bool) $this->getSettingValue('oscPayPalBannersShowAll');
@@ -240,7 +225,7 @@ class ModuleSettings
 
     public function save(string $name, $value): void
     {
-        $this->moduleSettingBridge->save($name, $value, Module::MODULE_ID);
+        Registry::getConfig()->setConfigParam($$name, $value);
     }
 
     public function saveSandboxMode(bool $mode): void
@@ -298,7 +283,7 @@ class ModuleSettings
      */
     private function getSettingValue(string $key)
     {
-        return $this->moduleSettingBridge->get($key, Module::MODULE_ID);
+        return Registry::getConfig()->getConfigParam($key);
     }
 
     /**
