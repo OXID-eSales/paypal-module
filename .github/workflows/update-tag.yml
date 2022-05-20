@@ -15,6 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Show new tag
+        run: echo ${{ github.event.client_payload.tag }}
+
       - name: Find and Replace
         uses: jacobtomlinson/gha-find-replace@v2
         with:
