@@ -19,7 +19,7 @@ jobs:
         uses: jacobtomlinson/gha-find-replace@v2
         with:
           find: ([v](([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?)
-          replace: ${{ github.event.client_payload.tag }}
+          replace: "${{ github.event.client_payload.tag }}"
           include: .github/workflows/main.yml
 
       - name: commit changes
