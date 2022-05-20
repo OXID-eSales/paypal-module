@@ -10,12 +10,11 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core\Events;
 
 use OxidEsales\Eshop\Core\DatabaseProvider;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Service\StaticContent;
 
 class Events
 {
-    use ServiceContainer;
-
     /**
      * Execute action on activate event
      */
@@ -103,7 +102,10 @@ class Events
      */
     private static function addStaticContents(): void
     {
-        $staticContent = $this->getServiceFromContainer(StaticContent::class);
+        $staticContent = new StaticContent(
+            Registry::getConfig(),
+            DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)
+        );
 
         $staticContent->ensureStaticContents();
         $staticContent->ensurePayPalPaymentMethods();
