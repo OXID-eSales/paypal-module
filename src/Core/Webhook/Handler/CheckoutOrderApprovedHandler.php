@@ -11,14 +11,11 @@ use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as OrderResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
-use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait;
-use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 
 class CheckoutOrderApprovedHandler implements HandlerInterface
 {
@@ -30,28 +27,26 @@ class CheckoutOrderApprovedHandler implements HandlerInterface
      */
     public function handle(Event $event): void
     {
-        /** @var \OxidEsales\Eshop\Application\Model\Order $order */
+        /** @var EshopModelOrder $order */
         $order = $this->getOrder($event);
 
         $payPalOrderId = $this->getPayPalOrderId($event);
+        $data = $this->getEventPayload($event)['resource'];
 
         //TODO: tbd: query order details from paypal. On the other hand,
         // we just got verified that this data came from PayPal.
 
-        //This one needs a capture
-        $response = $this->capturePayment($payPalOrderId);
-
-        if (
-            $response->status == OrderResponse::STATUS_COMPLETED &&
-            $response->purchase_units[0]->payments->captures[0]->status == Capture::STATUS_COMPLETED
-        ) {
-            $order->markOrderPaid();
-
-            /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
-            $paypalOrderModel = $this->getServiceFromContainer(OrderRepository::class)
-                ->paypalOrderByOrderIdAndPayPalId($order->getId(), $payPalOrderId);
-            $paypalOrderModel->setStatus($response->status);
-            $paypalOrderModel->save();
+        if ($this->isCompleted($data)) {
+            $this->setStatus($order, $data['status'], $payPalOrderId);
+        } else {
+            //This one needs a capture
+            $response = $this->capturePayment($payPalOrderId);
+            if (
+                $response->status == OrderResponse::STATUS_COMPLETED &&
+                $response->purchase_units[0]->payments->captures[0]->status == Capture::STATUS_COMPLETED
+            ) {
+                $this->setStatus($order, $response->status, $payPalOrderId);
+            }
         }
     }
 
@@ -60,10 +55,10 @@ class CheckoutOrderApprovedHandler implements HandlerInterface
      *
      * @param string $orderId
      *
-     * @return Order
+     * @return OrderResponse
      * @throws ApiException
      */
-    private function capturePayment(string $orderId): Order
+    private function capturePayment(string $orderId): OrderResponse
     {
         /** @var ServiceFactory $serviceFactory */
         $serviceFactory = Registry::get(ServiceFactory::class);

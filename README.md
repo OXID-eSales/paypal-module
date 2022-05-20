@@ -1,6 +1,6 @@
 # PayPal Checkout for OXID
 
-PayPal checkout integration for OXID eShop 6.2 and above.
+PayPal checkout integration for OXID eShop 6.1 and above.
 
 ## Documentation
 
@@ -9,16 +9,17 @@ PayPal checkout integration for OXID eShop 6.2 and above.
 
 ## Branch Compatibility
 
-* b-6.3.x module branch is compatible with OXID eShop compilation 6.2
+* b-6.3.x module branch is compatible with OXID eShop compilation 6.2, 6.3, 6.4, 6.5
+* b-6.1.x module branch is compatible with OXID eShop compilation 6.1
 
-## Install
+## Install for OXID >= 6.2
 
 ```bash
 
 # Add Repositories source
 $ composer config repositories.oscpaypal composer https://paypal-module.packages.oxid-esales.com/
 # Install desired version of oxid-solution-catalysts/paypal module
-$ composer require oxid-solution-catalysts/paypal-module ^1.0.0
+$ composer require oxid-solution-catalysts/paypal-module ^2.0.0
 # Run install
 $ composer install
 # Activate the module
@@ -36,15 +37,38 @@ After requiring the module, you need to activate it, either via OXID eShop admin
 $ ./vendor/bin/oe-console oe:module:activate osc_paypal
 ```
 
+## Install for OXID 6.1
+
+```bash
+
+# Add Repositories source
+$ composer config repositories.oscpaypal composer https://paypal-module.packages.oxid-esales.com/
+# Install desired version of oxid-solution-catalysts/paypal module
+$ composer require oxid-solution-catalysts/paypal-module ^1.0.0
+# Run install
+$ composer install
+```
+
+### Activate the module
+
+Activate the module in the OXID Backend.
+Choose Extensions > Modules
+Choose the PayPal Checkout for OXID module and choose Overview > Activate
+
 ## Limitations
 
 * no limitations
+
+## Merging Strategy
+
+* The b-6.1.x branch is compatible with OXID6.1 and will not be merged into the b-6.3.x branch
+* if something changes in the b-6.3.x main branch, it must be ported to the b-6.1.x branch
 
 ## Running tests
 
 Warning: Running tests will reset the shop.
 
-#### Requirements:
+#### Requirements
 * Ensure test_config.yml is configured:
     * ```
     partial_module_paths: osc/paypal
@@ -72,11 +96,21 @@ XDEBUG_MODE=coverage vendor/bin/runtests-coverage
 ```
 
 Running codeception tests default way (Host: selenium, browser: chrome):
+in OXID 6.2 and above:
 ```
 vendor/bin/runtests-codeception
 ```
+in OXID 6.1:
+```
+vendor/bin/runtests-selenium
+```
 
 Running codeception tests example with specific host/browser/testgroup:
+in OXID 6.2 and above:
 ```
 SELENIUM_SERVER_HOST=seleniumchrome BROWSER_NAME=chrome vendor/bin/runtests-codeception --group=examplegroup
+```
+in OXID 6.1:
+```
+SELENIUM_SERVER_HOST=seleniumchrome BROWSER_NAME=chrome vendor/bin/runtests-selenium --group=examplegroup
 ```

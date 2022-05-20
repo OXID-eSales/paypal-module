@@ -203,6 +203,11 @@ class ModuleSettings
         return (string) $this->getSettingValue('oscPayPalBannersPaymentPageSelector');
     }
 
+    public function getPayPalCheckoutBannerColorScheme(): string
+    {
+        return (string) $this->getSettingValue('oscPayPalBannersColorScheme');
+    }
+
     public function getPayPalCheckoutBannersColorScheme(): string
     {
         return (string) $this->getSettingValue('oscPayPalBannersColorScheme');

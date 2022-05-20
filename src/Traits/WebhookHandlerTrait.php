@@ -14,6 +14,8 @@ use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as OrderResponse;
 
 trait WebhookHandlerTrait
 {
@@ -55,5 +57,28 @@ trait WebhookHandlerTrait
     public function getEventPayload(Event $event): array
     {
         return $event->getData();
+    }
+
+    public function isCompleted($data): bool
+    {
+        return (
+            isset($data['status']) &&
+            isset($data['purchase_units'][0]['payments']['captures'][0]['status']) &&
+            $data['status'] == OrderResponse::STATUS_COMPLETED &&
+            $data['purchase_units'][0]['payments']['captures'][0]['status'] == Capture::STATUS_COMPLETED
+        );
+    }
+
+    public function setStatus(EshopModelOrder $order, string $status, string $payPalOrderId)
+    {
+        $order->markOrderPaid();
+
+        if ($payPalOrderId && $status) {
+        }
+        /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
+        $paypalOrderModel = $this->getServiceFromContainer(OrderRepository::class)
+            ->paypalOrderByOrderIdAndPayPalId($order->getId(), $payPalOrderId);
+        $paypalOrderModel->setStatus($status);
+        $paypalOrderModel->save();
     }
 }
