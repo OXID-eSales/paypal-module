@@ -184,7 +184,8 @@ class StaticContent
         );
 
         foreach ($fromDb as $row) {
-            $result[$row['oxid']] = $row['oxid'];
+            $id = $row['oxid'] ?? $row[0];
+            $result[$id] =$id;
         }
 
         return $result;
@@ -207,7 +208,9 @@ class StaticContent
         );
 
         foreach ($fromDb as $row) {
-            $result[$row['oxid']] = $row['oxisoalpha2'];
+            $id = $row['oxid'] ?? $row[0];
+            $iso = $row['oxisoalpha2'] ?? $row[1];
+            $result[$id] = $iso;
         }
 
         return $result;
