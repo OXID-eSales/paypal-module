@@ -24,11 +24,15 @@ jobs:
         run: |
           mkdir -p /build/oxid/project-modules/module-under-test && cp -r * /build/oxid/project-modules/module-under-test
 
+      - name: set latest tag as env
+        run: |
+          echo "TAG=$(cat LATEST_CLIENT_TAG)" >> $GITHUB_ENV
+
       - name: Checkout paypal-client repo
         uses: actions/checkout@v3
         with:
           repository: OXID-eSales/paypal-client
-          ref: v1.0.3
+          ref: ${{ env.TAG }}
           path: paypal-client
 
       - name: move paypal-client to projects folder
