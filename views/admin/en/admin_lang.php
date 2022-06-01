@@ -103,6 +103,7 @@ $aLang = [
     'OSC_PAYPAL_STATUS_DECLINED'                  => 'Declined',
     'OSC_PAYPAL_STATUS_PARTIALLY_REFUNDED'        => 'Partially refunded',
     'OSC_PAYPAL_STATUS_PENDING'                   => 'Pending',
+    'OSC_PAYPAL_STATUS_PENDING_APPROVAL'          => 'Pending Approval',
     'OSC_PAYPAL_STATUS_REFUNDED'                  => 'Refunded',
     'OSC_PAYPAL_PAYMENT_METHOD'                   => 'Payment method',
     'OSC_PAYPAL_CLOSE'                            => 'Close',
