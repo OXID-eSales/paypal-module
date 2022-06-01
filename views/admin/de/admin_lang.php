@@ -130,6 +130,12 @@ $aLang = [
     'OSC_PAYPAL_COUNTRY_CODE'                     => 'Ländercode',
     'OSC_PAYPAL_SHIPPING'                         => 'Versand',
     'OSC_PAYPAL_BILLING'                          => 'Abrechnung',
+    'OSC_PAYPAL_PAYMENT_PUI'                      => 'Kauf auf Rechnung - Bankdaten',
+    'OSC_PAYPAL_PAYMENT_PUI_REFERENCE'            => 'Überweisungsvermerk',
+    'OSC_PAYPAL_PAYMENT_PUI_BIC'                  => 'BIC',
+    'OSC_PAYPAL_PAYMENT_PUI_IBAN'                 => 'IBAN',
+    'OSC_PAYPAL_PAYMENT_PUI_BANKNAME'             => 'Bankname',
+    'OSC_PAYPAL_PAYMENT_PUI_ACCOUNTHOLDER'        => 'Kontoinhaber',
 
     'OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'     => 'Einstellungen aus dem klassischen PayPal-Modul übernehmen',
     'OSC_PAYPAL_BANNER_TRANSFERREDOLDSETTINGS'     => 'Banner-Einstellungen wurden aus dem klassischen PayPal-Modul übertragen.',

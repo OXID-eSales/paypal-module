@@ -120,6 +120,12 @@ class PayPalOrderController extends AdminDetailsController
             // normal paypal order
             try {
                 $this->addTplParam('payPalOrder', $this->getPayPalCheckoutOrder());
+
+                /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
+                $paypalOrderModel = $this->getServiceFromContainer(OrderRepository::class)
+                    ->paypalOrderByOrderIdAndPayPalId($order->getId(), $orderId);
+                $this->addTplParam('payPalOrderDetails', $paypalOrderModel);
+
                 $this->addTplParam('capture', $order->getOrderPaymentCapture());
             } catch (ApiException $exception) {
                 $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()));
