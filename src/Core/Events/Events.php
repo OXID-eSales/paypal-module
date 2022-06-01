@@ -79,6 +79,32 @@ class Events
                             collate latin1_general_ci
                             NOT NULL
                             COMMENT \'PayPal payment id\',
+                        `OSCPAYPALPUIPAYMENTREFERENCE`
+                            char(32)
+                            character set latin1
+                            collate latin1_general_ci
+                            NOT NULL
+                            COMMENT \'PayPal Pui Payment Reference\',
+                        `OSCPAYPALPUIBIC`
+                            char(11)
+                            character set latin1
+                            collate latin1_general_ci
+                            NOT NULL
+                            COMMENT \'PayPal Pui Bic\',
+                        `OSCPAYPALPUIIBAN`
+                            char(22)
+                            character set latin1
+                            collate latin1_general_ci
+                            NOT NULL
+                            COMMENT \'PayPal Pui IBAN\',
+                        `OSCPAYPALPUIBANKNAME`
+                             varchar(255)
+                             NOT NULL
+                            COMMENT \'PayPal Pui Bankname\',
+                        `OSCPAYPALPUIACCOUNTHOLDERNAME`
+                            varchar(255)
+                             NOT NULL
+                            COMMENT \'PayPal Pui Account Holder Name\',
                        `OXTIMESTAMP`
                             timestamp
                             NOT NULL
@@ -93,6 +119,61 @@ class Events
         );
 
         DatabaseProvider::getDb()->execute($sql);
+
+        // additional Module-Update v1.1
+
+        if (!self::tableColumnExists('oscpaypal_order', 'OSCPAYPALPUIPAYMENTREFERENCE')) {
+            $sql = "ALTER TABLE `oscpaypal_order` ADD `OSCPAYPALPUIPAYMENTREFERENCE` char(32) collate latin1_general_ci";
+            DatabaseProvider::getDb()->execute($sql);
+        }
+
+        if (!self::tableColumnExists('oscpaypal_order', 'OSCPAYPALPUIBIC')) {
+            $sql = "ALTER TABLE `oscpaypal_order` ADD `OSCPAYPALPUIBIC` char(11) collate latin1_general_ci";
+            DatabaseProvider::getDb()->execute($sql);
+        }
+
+        if (!self::tableColumnExists('oscpaypal_order', 'OSCPAYPALPUIIBAN')) {
+            $sql = "ALTER TABLE `oscpaypal_order` ADD `OSCPAYPALPUIIBAN` char(22) collate latin1_general_ci";
+            DatabaseProvider::getDb()->execute($sql);
+        }
+
+        if (!self::tableColumnExists('oscpaypal_order', 'OSCPAYPALPUIBANKNAME')) {
+            $sql = "ALTER TABLE `oscpaypal_order` ADD `OSCPAYPALPUIBANKNAME` varchar(255) NOT NULL";
+            DatabaseProvider::getDb()->execute($sql);
+        }
+
+        if (!self::tableColumnExists('oscpaypal_order', 'OSCPAYPALPUIACCOUNTHOLDERNAME')) {
+            $sql = "ALTER TABLE `oscpaypal_order` ADD `OSCPAYPALPUIACCOUNTHOLDERNAME` varchar(255) NOT NULL";
+            DatabaseProvider::getDb()->execute($sql);
+        }
+    }
+
+    /**
+    * Check if table or table column exists
+    *
+    * @param  $tableName - Name of table
+    * @param  $columnName - Name of Column
+    *
+    * @return boolean
+    */
+    private static function tableColumnExists($tableName = '', $columnName = '')
+    {
+        $result = false;
+        if ($tableName) {
+            $db = DatabaseProvider::getDb();
+
+            if ($columnName) {
+                $sSql = "show columns from $tableName like " . $db->quote($columnName);
+            } else {
+                $sSql = "show tables like " . $db->quote($tableName);
+            }
+
+            $results = $db->select($sSql);
+            if ($results != false && $results->count() > 0) {
+                $result = true;
+            }
+        }
+        return $result;
     }
 
     /**

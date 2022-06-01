@@ -129,6 +129,12 @@ $aLang = [
     'OSC_PAYPAL_COUNTRY_CODE'                     => 'Country code',
     'OSC_PAYPAL_SHIPPING'                         => 'Shipping',
     'OSC_PAYPAL_BILLING'                          => 'Billing',
+    'OSC_PAYPAL_PAYMENT_PUI'                      => 'Pay upon Invoice - Bankdata',
+    'OSC_PAYPAL_PAYMENT_PUI_REFERENCE'            => 'Payment Reference',
+    'OSC_PAYPAL_PAYMENT_PUI_BIC'                  => 'BIC',
+    'OSC_PAYPAL_PAYMENT_PUI_IBAN'                 => 'IBAN',
+    'OSC_PAYPAL_PAYMENT_PUI_BANKNAME'             => 'Bankname',
+    'OSC_PAYPAL_PAYMENT_PUI_ACCOUNTHOLDER'        => 'Accountholder',
 
     'OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'     => 'Apply settings from the classic PayPal module',
     'OSC_PAYPAL_BANNER_TRANSFERREDOLDSETTINGS'     => 'Banner settings have been transferred from the classig PayPal module.',

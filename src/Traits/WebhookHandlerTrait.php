@@ -78,6 +78,19 @@ trait WebhookHandlerTrait
         /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
         $paypalOrderModel = $this->getServiceFromContainer(OrderRepository::class)
             ->paypalOrderByOrderIdAndPayPalId($order->getId(), $payPalOrderId);
+
+        $orderDetails = $this->serviceFactory
+            ->getOrderService()
+            ->showOrderDetails($payPalOrderId);
+
+        if ($puiPaymentDetails = $orderDetails->payment_source->pay_upon_invoice ?? null) {
+            $paypalOrderModel->setPuiPaymentReference($puiPaymentDetails->payment_reference);
+            $paypalOrderModel->setPuiBic($puiPaymentDetails->bic);
+            $paypalOrderModel->setPuiIban($puiPaymentDetails->iban);
+            $paypalOrderModel->setPuiBankName($puiPaymentDetails->bank_name);
+            $paypalOrderModel->setPuiAccountHolderName($puiPaymentDetails->account_holder_name);
+        }
+
         $paypalOrderModel->setStatus($status);
         $paypalOrderModel->save();
     }

@@ -64,4 +64,49 @@ class PayPalOrder extends BaseModel
             ]
         );
     }
+
+    public function setPuiPaymentReference(string $puiPaymentReference): void
+    {
+        $this->assign(
+            [
+                'oscpaypalpuipaymentreference' => $puiPaymentReference
+            ]
+        );
+    }
+
+    public function setPuiBic(string $puiBic): void
+    {
+        $this->assign(
+            [
+                'oscpaypalpuibic' => $puiBic
+            ]
+        );
+    }
+
+    public function setPuiIban(string $puiIban): void
+    {
+        $this->assign(
+            [
+                'oscpaypalpuiiban' => $puiIban
+            ]
+        );
+    }
+
+    public function setPuiBankName(string $puiBankName): void
+    {
+        $this->assign(
+            [
+                'oscpaypalpuibankname' => $puiBankName
+            ]
+        );
+    }
+
+    public function setPuiAccountHolderName(string $puiAccountHolderName): void
+    {
+        $this->assign(
+            [
+                'oscpaypalpuiaccountholdername' => $puiAccountHolderName
+            ]
+        );
+    }
 }
