@@ -104,6 +104,7 @@ $aLang = [
     'OSC_PAYPAL_STATUS_DECLINED'                  => 'abgelehnt',
     'OSC_PAYPAL_STATUS_PARTIALLY_REFUNDED'        => 'Teilweise erstattet',
     'OSC_PAYPAL_STATUS_PENDING'                   => 'steht aus',
+    'OSC_PAYPAL_STATUS_PENDING_APPROVAL'          => 'Genehmigung ausstehend',
     'OSC_PAYPAL_STATUS_REFUNDED'                  => 'Erstattet',
     'OSC_PAYPAL_PAYMENT_METHOD'                   => 'Zahlungsart',
     'OSC_PAYPAL_CLOSE'                            => 'Schließen',
