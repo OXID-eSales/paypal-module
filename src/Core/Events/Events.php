@@ -159,16 +159,16 @@ class Events
     private static function tableColumnExists($tableName = '', $columnName = '')
     {
         $result = false;
-        if ($tableName) {
+        if ($tableName && $columnName) {
             $db = DatabaseProvider::getDb();
 
-            if ($columnName) {
-                $sSql = "show columns from $tableName like " . $db->quote($columnName);
-            } else {
-                $sSql = "show tables like " . $db->quote($tableName);
-            }
-
-            $results = $db->select($sSql);
+            $results = $db->select(
+                "show columns from :tableName like :columnName",
+                [
+                    ':tableName' => $tableName,
+                    ':columnName' => $columnName
+                ]
+            );
             if ($results != false && $results->count() > 0) {
                 $result = true;
             }
