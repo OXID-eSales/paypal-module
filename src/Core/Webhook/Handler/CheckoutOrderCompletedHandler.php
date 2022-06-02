@@ -28,10 +28,7 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
         $payPalOrderId = $this->getPayPalOrderId($event);
         $data = $this->getEventPayload($event)['resource'];
 
-        //TODO: tbd: query order details from paypal. On the other hand,
-        // we just got verified that this data came from PayPal.
-        if ($this->isCompleted($data)) {
-            $this->setStatus($order, $data['status'], $payPalOrderId);
-        }
+        $this->setStatus($order, $data['status'], $payPalOrderId);
+        $order->markOrderPaid();
     }
 }

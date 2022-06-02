@@ -28,12 +28,7 @@ class PaymentCaptureDeniedHandler implements HandlerInterface
         $payPalOrderId = $this->getPayPalOrderId($event);
         $data = $this->getEventPayload($event)['resource'];
 
+        $this->setStatus($order, $data['status'], $payPalOrderId);
         $order->markOrderPaymentFailed();
-
-        /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
-        $paypalOrderModel = $this->getServiceFromContainer(OrderRepository::class)
-            ->paypalOrderByOrderIdAndPayPalId($order->getId(), $payPalOrderId);
-        $paypalOrderModel->setStatus($data['state']);
-        $paypalOrderModel->save();
     }
 }
