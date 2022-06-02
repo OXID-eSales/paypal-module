@@ -71,10 +71,6 @@ trait WebhookHandlerTrait
 
     public function setStatus(EshopModelOrder $order, string $status, string $payPalOrderId)
     {
-        $order->markOrderPaid();
-
-        if ($payPalOrderId && $status) {
-        }
         /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
         $paypalOrderModel = $this->getServiceFromContainer(OrderRepository::class)
             ->paypalOrderByOrderIdAndPayPalId($order->getId(), $payPalOrderId);
