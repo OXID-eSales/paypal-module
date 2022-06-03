@@ -119,11 +119,12 @@ class PayPalOrderController extends AdminDetailsController
         if ($order->paidWithPayPal()) {
             // normal paypal order
             try {
-                $this->addTplParam('payPalOrder', $this->getPayPalCheckoutOrder());
+                $paypalOrder = $this->getPayPalCheckoutOrder();
+                $this->addTplParam('payPalOrder', $paypalOrder);
 
                 /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
                 $paypalOrderModel = $this->getServiceFromContainer(OrderRepository::class)
-                    ->paypalOrderByOrderIdAndPayPalId($order->getId(), $orderId);
+                    ->paypalOrderByOrderIdAndPayPalId($orderId, $paypalOrder->id);
                 $this->addTplParam('payPalOrderDetails', $paypalOrderModel);
 
                 $this->addTplParam('capture', $order->getOrderPaymentCapture());

@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Traits;
 
+use OxidEsales\EshopCommunity\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
@@ -75,9 +77,9 @@ trait WebhookHandlerTrait
         $paypalOrderModel = $this->getServiceFromContainer(OrderRepository::class)
             ->paypalOrderByOrderIdAndPayPalId($order->getId(), $payPalOrderId);
 
-        $orderDetails = $this->serviceFactory
+        $orderDetails = Registry::get(ServiceFactory::class)
             ->getOrderService()
-            ->showOrderDetails($payPalOrderId);
+            ->showOrderDetails($payPalOrderId, '');
 
         if ($puiPaymentDetails = $orderDetails->payment_source->pay_upon_invoice ?? null) {
             $paypalOrderModel->setPuiPaymentReference($puiPaymentDetails->payment_reference);
