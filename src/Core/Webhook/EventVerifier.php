@@ -48,7 +48,7 @@ class EventVerifier
         }
 
         // body must be encoded so that it is not double-encoded later
-        $normalizedBody = json_decode($body, true);
+        $normalizedBody = json_decode($body);
 
         $payload = [
             'auth_algo' => $normalizedHeaders['PAYPAL-AUTH-ALGO'],
