@@ -8,6 +8,8 @@
 use OxidEsales\Eshop\Application\Component\UserComponent;
 use OxidEsales\Eshop\Application\Controller\OrderController;
 use OxidEsales\Eshop\Application\Controller\PaymentController;
+use OxidEsales\Eshop\Application\Controller\Admin\OrderMain;
+use OxidEsales\Eshop\Application\Controller\Admin\OrderOverview;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Application\Model\User;
@@ -20,6 +22,8 @@ use OxidSolutionCatalysts\PayPal\Component\UserComponent as PayPalUserComponent;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\OnboardingController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalConfigController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalOrderController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderMain as PayPalOrderMainController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderOverview as PayPalOrderOverviewController;
 use OxidSolutionCatalysts\PayPal\Controller\OrderController as PayPalFrontEndOrderController;
 use OxidSolutionCatalysts\PayPal\Controller\PaymentController as PayPalPaymentController;
 use OxidSolutionCatalysts\PayPal\Controller\ProxyController;
@@ -64,7 +68,9 @@ $aModule = [
         PaymentGateway::class => PayPalPaymentGateway::class,
         OrderController::class => PayPalFrontEndOrderController::class,
         PaymentController::class => PayPalPaymentController::class,
-        UserComponent::class => PayPalUserComponent::class
+        UserComponent::class => PayPalUserComponent::class,
+        OrderMain::class => PayPalOrderMainController::class,
+        OrderOverview::class => PayPalOrderOverviewController::class
     ],
     'controllers' => [
         'oscpaypalconfig' => PayPalConfigController::class,
@@ -273,6 +279,12 @@ $aModule = [
             'type' => 'bool',
             'value' => true,
             'group' => null
+        ],
+        [
+            'name' => 'oscPayPalStandardCaptureStrategy',
+            'type' => 'select',
+            'value' => 'directly',
+            'constraints' => 'directly|delivery|manually'
         ],
         [
             'name' => 'oscPayPalSetupFeeFailureAction',

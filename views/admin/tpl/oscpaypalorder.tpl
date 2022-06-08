@@ -32,6 +32,12 @@
                     </td>
                 </tr>
                 <tr>
+                    <td class="edittext">[{oxmultilang ident="OSC_PAYPAL_AUTHORIZED_AMOUNT" suffix="COLON"}]</td>
+                    <td class="edittext" align="right">
+                        <b>[{$oView->formatPrice($oView->getPayPalAuthorizationAmount())}] [{$currency}]</b>
+                    </td>
+                </tr>
+                <tr>
                     <td class="edittext">[{oxmultilang ident="OSC_PAYPAL_CAPTURED_AMOUNT" suffix="COLON"}]</td>
                     <td class="edittext" align="right">
                         <b>[{$oView->formatPrice($oView->getPayPalCapturedAmount())}] [{$currency}]</b>
@@ -46,7 +52,7 @@
                 <tr>
                     <td class="edittext">[{oxmultilang ident="OSC_PAYPAL_CAPTURED_NET" suffix="COLON"}]</td>
                     <td class="edittext" align="right">
-                        <b>[{$oView->formatPrice($oView->getPayPalRemainingRefundAmount())}] [{$currency}]</b>
+                        <b>[{$oView->formatPrice($oView->getPayPalResultedAmount())}] [{$currency}]</b>
                     </td>
                 </tr>
                 [{if $oView->getPayPalAuthorizationId()}]
@@ -194,20 +200,7 @@
 
     </tbody>
     </table>
-    [{if $oView->getPayPalPaymentStatus() == 'PENDING' || $oView->getPayPalPaymentStatus() == 'APPROVED'}]
-        <div style="margin-top: 10px">
-            <p><b>[{oxmultilang ident="OSC_PAYPAL_ACTIONS" suffix="COLON"}]</b></p>
-            <form action="[{$oViewConf->getSelfLink()}]" method="post">
-                [{$oViewConf->getHiddenSid()}]
-                <input type="hidden" name="fnc" value="capture">
-                <input type="hidden" name="cl" value="oscpaypalorder">
-                <input type="hidden" name="oxid" value="[{$oxid}]">
-                <input type="hidden" name="language" value="[{$actlang}]">
-                <input type="submit" value="[{oxmultilang ident="OSC_PAYPAL_CAPTURE"}]">
-            </form>
-        </div>
-    [{/if}]
-    [{if $oView->getPayPalPaymentStatus() == 'COMPLETED'}]
+    [{if $oView->getPayPalPaymentStatus() == 'COMPLETED' && $oView->getPayPalRemainingRefundAmount()}]
         <div style="margin-top: 10px">
             <p><b>[{oxmultilang ident="OSC_PAYPAL_ISSUE_REFUND"}]</b></p>
             <form action="[{$oViewConf->getSelfLink()}]" method="post">
@@ -238,6 +231,19 @@
                     </tr>
                 </table>
             </form>
+        </div>
+    [{elseif $oView->getPayPalPaymentStatus() !== 'COMPLETED'}]
+        <div style="margin-top: 10px">
+            <p><b>[{oxmultilang ident="OSC_PAYPAL_ACTIONS" suffix="COLON"}]</b></p>
+            <form action="[{$oViewConf->getSelfLink()}]" method="post">
+                [{$oViewConf->getHiddenSid()}]
+                <input type="hidden" name="fnc" value="capturePayPalStandard">
+                <input type="hidden" name="cl" value="oscpaypalorder">
+                <input type="hidden" name="oxid" value="[{$oxid}]">
+                <input type="hidden" name="language" value="[{$actlang}]">
+                <input type="submit" value="[{oxmultilang ident="OSC_PAYPAL_CAPTURE"}]">
+            </form>
+            <p>[{oxmultilang ident="OSC_PAYPAL_CAPTURE_DAYS_LEFT" args=$oView->getTimeLeftForPayPalCapture()}]</p>
         </div>
     [{/if}]
 [{/if}]

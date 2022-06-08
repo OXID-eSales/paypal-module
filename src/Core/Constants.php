@@ -14,6 +14,7 @@ class Constants
     public const PAYPAL_JS_SDK_URL = 'https://www.paypal.com/sdk/js';
     public const PAYPAL_INTEGRATION_DATE = '2020-07-29';
     public const PAYPAL_ORDER_INTENT_CAPTURE = 'CAPTURE';
+    public const PAYPAL_ORDER_INTENT_AUTHORIZE = 'AUTHORIZE';
     public const SESSION_CHECKOUT_ORDER_ID = 'paypal-checkout-session';
     public const SESSION_REDIRECTLINK = 'paypal-session-checkout-redirect';
 
@@ -29,6 +30,15 @@ class Constants
     public const PAYPAL_PUI_PROCESSING_INSTRUCTIONS = 'ORDER_COMPLETE_ON_PAYMENT_APPROVAL';
     public const PAYPAL_PUI_FNPARAMS = 'fnparams-dede7cc5-15fd-4c75-a9f4-36c430ee3a99';
     public const PAYPAL_PUI_FLOWID = 'Oxid_PayPal_PUI_Checkout';
+
+    /**
+     * Please note! The authorization of an order is valid for three days (1 Day = 86400 sec).
+     * It will be refreshed automatically for a maximum of 29 days after ordering.
+     * After that, it is no longer possible to capture the money.
+     */
+    public const PAYPAL_DAY = 86400;
+    public const PAYPAL_AUTHORIZATION_VALIDITY = 3 * self::PAYPAL_DAY;
+    public const PAYPAL_MAXIMUM_TIME_FOR_CAPTURE = 29 * self::PAYPAL_DAY;
 
     // BN Codes defined together with PayPal
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP = 'Oxid_Cart_Payments';

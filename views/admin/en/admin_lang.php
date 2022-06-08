@@ -30,7 +30,8 @@ $aLang = [
     'OSC_PAYPAL_ONBOARD_CLICK_HELP'               => 'Please close the page if you want to cancel the PayPal integration...',
     'OSC_PAYPAL_ONBOARD_CLOSE_HELP'               => 'You can now close the window.',
     'OSC_PAYPAL_ERR_CONF_INVALID'                 =>
-        'One or more configuration values are either not set or incorrect. Please double check them.<br>
+        'One or more configuration values are either not set or incorrect.
+        Please double check them.<br>
         <b>Module inactive.</b>',
     'OSC_PAYPAL_CONF_VALID'                       => 'Configuration values OK.<br><b>Module is active</b>',
     'OSC_PAYPAL_BUTTON_PLACEMEMT_TITLE'           => 'Button placement settings',
@@ -67,6 +68,7 @@ $aLang = [
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '(As an alternative to the missing payment method, an additional "credit card" button is displayed under the Paypal buttons.)',
 
     // PayPal ORDER
+    'OSC_PAYPAL_ACTIONS'                          => 'Actions',
     'OSC_PAYPAL_ISSUE_REFUND'                     => 'Issue refund',
     'OSC_PAYPAL_AMOUNT'                           => 'Amount',
     'OSC_PAYPAL_SHOP_PAYMENT_STATUS'              => 'Shop payment status',
@@ -76,6 +78,7 @@ $aLang = [
     'OSC_PAYPAL_REFUNDED'                         => 'Refunded',
     'OSC_PAYPAL_CAPTURED_NET'                     => 'Resulting payment amount',
     'OSC_PAYPAL_CAPTURED_AMOUNT'                  => 'Captured amount',
+    'OSC_PAYPAL_AUTHORIZED_AMOUNT'                => 'Autorisierter Betrag',
     'OSC_PAYPAL_REFUNDED_AMOUNT'                  => 'Refunded amount',
     'OSC_PAYPAL_MONEY_CAPTURE'                    => 'Money capture',
     'OSC_PAYPAL_MONEY_REFUND'                     => 'Money refund',
@@ -99,16 +102,16 @@ $aLang = [
     'OSC_PAYPAL_MONEY_ACTION_PARTIAL'             => 'partial',
     'OSC_PAYPAL_LIST_STATUS_ALL'                  => 'All',
     'OSC_PAYPAL_STATUS_APPROVED'                  => 'Approved',
+    'OSC_PAYPAL_STATUS_CREATED'                   => 'Created',
     'OSC_PAYPAL_STATUS_COMPLETED'                 => 'Completed',
+    'OSC_PAYPAL_STATUS_CAPTURED'                  => 'Captured',
     'OSC_PAYPAL_STATUS_DECLINED'                  => 'Declined',
     'OSC_PAYPAL_STATUS_PARTIALLY_REFUNDED'        => 'Partially refunded',
     'OSC_PAYPAL_STATUS_PENDING'                   => 'Pending',
     'OSC_PAYPAL_STATUS_PENDING_APPROVAL'          => 'Pending Approval',
     'OSC_PAYPAL_STATUS_REFUNDED'                  => 'Refunded',
     'OSC_PAYPAL_PAYMENT_METHOD'                   => 'Payment method',
-    'OSC_PAYPAL_CLOSE'                            => 'Close',
     'OSC_PAYPAL_COMMENT'                          => 'Comment',
-    'OSC_PAYPAL_RESPONSE_FROM_PAYPAL'             => 'Error message from PayPal: ',
     'OSC_PAYPAL_AUTHORIZATIONID'                  => 'Authorization ID',
     'OSC_PAYPAL_TRANSACTIONID'                    => 'Transaction ID',
     'OSC_PAYPAL_REFUND_AMOUNT'                    => 'Refund amount',
@@ -165,7 +168,14 @@ $aLang = [
     'OSC_PAYPAL_BANNER_COLORSCHEMEBLACK'            => 'black',
     'OSC_PAYPAL_BANNER_COLORSCHEMEWHITE'            => 'white',
     'OSC_PAYPAL_BANNER_COLORSCHEMEWHITENOBORDER'    => 'white, no border',
-
+    'OSC_PAYPAL_STANDARD_CAPTURE_TIME'              => 'PayPal Standard - Capture money',
+    'OSC_PAYPAL_STANDARD_CAPTURE_TIME_LABEL'        => 'A deviating collection of money at the time of the order is only possible for PayPal Standard. All other payment methods (incl. PayPal Express) will be capture immediately.',
+    'OSC_PAYPAL_STANDARD_CAPTURE_TIME_HELP'         => 'Please note! The authorization of an order is valid for three days. It will be refreshed automatically for a maximum of 29 days after ordering. After that, it is no longer possible to capture the money.',
+    'OSC_PAYPAL_STANDARD_CAPTURE_TIME_DIRECTLY'     => 'directly',
+    'OSC_PAYPAL_STANDARD_CAPTURE_TIME_DELIVERY'     => 'automatically upon delivery',
+    'OSC_PAYPAL_STANDARD_CAPTURE_TIME_MANUALLY'     => 'manually',
+    'OSC_PAYPAL_CAPTURE_DAYS_LEFT'                  => 'There are still %s days to capture the money',
+    'OSC_PAYPAL_CAPTURE_NOT_POSSIBLE_ANYMORE'       => 'Time for capture money unfortunately expired. Please contact the customer to discuss alternatives.',
     'OSC_PAYPALPLUS_PAYMENT_OVERVIEW'               => 'Payment overview',
     'OSC_PAYPALPLUS_PAYMENT_STATUS'                 => 'Payment status',
     'OSC_PAYPALPLUS_ORDER_AMOUNT'                   => 'Payment total',

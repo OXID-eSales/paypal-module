@@ -24,8 +24,9 @@ use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
-use OxidSolutionCatalysts\PayPal\Model\PayPalPlusOrder;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
 /**
@@ -130,18 +131,32 @@ class Order extends Order_parent
         $paymentsId = $this->getFieldData('oxpaymenttype');
         $this->afterOrderCleanUp($basket, $user);
 
+        $this->setTransId($payPalOrderId);
+
         $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($paymentsId);
         $isPayPalACDC = $paymentsId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
         $isPayPalPayLater = $paymentsId === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID;
 
         if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater) {
-            //TODO: Order is still not finished, need to doublecheck uapm payment status
-            $this->_setOrderStatus('NOT_FINISHED');
-            $this->doExecutePayPalPayment($payPalOrderId);
+            if (
+                $isPayPalStandard &&
+                $this->getServiceFromContainer(ModuleSettings::class)
+                    ->getPayPalStandardCaptureStrategy() !== 'directly'
+            ) {
+                $this->_setOrderStatus('NOT_FINISHED');
+                $paymentService = $this->getServiceFromContainer(PaymentService::class);
+                $paymentService->trackPayPalOrder(
+                    $this->getId(),
+                    $payPalOrderId,
+                    $paymentsId,
+                    PayPalOrder::STATUS_APPROVED
+                );
+            } else {
+                $this->doExecutePayPalPayment($payPalOrderId);
+            }
         } elseif ($isPayPalACDC) {
             $this->markOrderPaid();
-            $this->setTransId($payPalOrderId);
         }
 
         $userPayment = oxNew(UserPayment::class);
@@ -200,7 +215,12 @@ class Order extends Order_parent
                 if ($isPayPalUAPM) {
                     $redirectLink = $paymentService->doExecuteUAPMPayment($this, $basket);
                 } else {
-                    $redirectLink = $paymentService->doExecuteStandardPayment($this, $basket);
+                    $intent = $this->getServiceFromContainer(ModuleSettings::class)
+                        ->getPayPalStandardCaptureStrategy() === 'directly' ?
+                        Constants::PAYPAL_ORDER_INTENT_CAPTURE :
+                        Constants::PAYPAL_ORDER_INTENT_AUTHORIZE;
+
+                    $redirectLink = $paymentService->doExecuteStandardPayment($this, $basket, $intent);
                     if ($isPayPalPayLater) {
                         $redirectLink .= '&fundingSource=paylater';
                     }
@@ -242,20 +262,18 @@ class Order extends Order_parent
     {
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
-
+        $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
         $success = false;
 
         // Capture Order
         try {
-            $paymentService->doCapturePayPalOrder($this, $payPalOrderId);
+            $paymentService->doCapturePayPalOrder($this, $payPalOrderId, $sessionPaymentId);
             $success = true;
         } catch (\Exception $exception) {
             Registry::getLogger()->error("Error on order capture call.", [$exception]);
         }
 
         $this->markOrderPaid();
-
-        $this->setTransId($payPalOrderId);
 
         // destroy PayPal-Session
         PayPalSession::storePayPalOrderId('');
