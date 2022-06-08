@@ -227,6 +227,11 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalCheckoutBannerColorScheme();
     }
 
+    public function getPayPalStandardCaptureStrategy(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalStandardCaptureStrategy();
+    }
+
     public function tableExists(string $tableName = ''): bool
     {
         $exists = false;

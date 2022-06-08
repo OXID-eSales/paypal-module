@@ -17,9 +17,11 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderAuthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Payments\CaptureRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Payments\ReauthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
@@ -28,7 +30,6 @@ use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
-use phpDocumentor\Reflection\Types\Boolean;
 
 class Payment
 {
@@ -126,7 +127,7 @@ class Payment
         // to be transmitted again in the case of a PatchCall
         $response = $this->doCreatePayPalOrder(
             $basket,
-            OrderRequest::INTENT_CAPTURE,
+            Constants::PAYPAL_ORDER_INTENT_CAPTURE,
             OrderRequestFactory::USER_ACTION_CONTINUE,
             null,
             null,
@@ -175,22 +176,53 @@ class Payment
         }
     }
 
-    public function doCapturePayPalOrder(EshopModelOrder $order, string $checkoutOrderId): ApiOrderModel
-    {
+    public function doCapturePayPalOrder(
+        EshopModelOrder $order,
+        string $checkoutOrderId,
+        string $paymentId
+    ): ApiOrderModel {
+        $payPalOrder = $this->fetchOrderFields($checkoutOrderId);
+
+        /** @var ApiPaymentService $paymentService */
+        $paymentService = Registry::get(ServiceFactory::class)->getPaymentService();
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
 
         // Capture Order
         try {
-            $request = new OrderCaptureRequest();
-            /** @var ApiOrderModel */
-            $result = $orderService->capturePaymentForOrder('', $checkoutOrderId, $request, '');
+            if ($payPalOrder->intent === Constants::PAYPAL_ORDER_INTENT_AUTHORIZE) {
+                // if order approved then authorize
+                if ($payPalOrder->status === ApiOrderModel::STATUS_APPROVED) {
+                    $request = new OrderAuthorizeRequest();
+                    $payPalOrder = $orderService->authorizePaymentForOrder('', $checkoutOrderId, $request, '');
+                }
+
+                $authorizationId = $payPalOrder->purchase_units[0]->payments->authorizations[0]->id;
+
+                // check if we need a reauthorization
+                $timeAuthorizationValidity = time()
+                    - strtotime($payPalOrder->update_time)
+                    + Constants::PAYPAL_AUTHORIZATION_VALIDITY;
+                if ($timeAuthorizationValidity <= 0) {
+                    $reAuthorizeRequest = new ReauthorizeRequest();
+                    $paymentService->reauthorizeAuthorizedPayment($authorizationId, $reAuthorizeRequest);
+                }
+
+                // capture
+                $request = new CaptureRequest();
+                $paymentService->captureAuthorizedPayment($authorizationId, $request, '');
+                $result = $this->fetchOrderFields($checkoutOrderId);
+            } else {
+                $request = new OrderCaptureRequest();
+                /** @var ApiOrderModel */
+                $result = $orderService->capturePaymentForOrder('', $checkoutOrderId, $request, '');
+            }
 
             /** @var PayPalOrderModel $paypalOrder */
             $payPalOrder = $this->trackPayPalOrder(
                 $order->getId(),
                 $checkoutOrderId,
-                $this->getSessionPaymentId(),
+                $paymentId,
                 (string) $result->status
             );
         } catch (Exception $exception) {
@@ -325,8 +357,11 @@ class Payment
     /**
      * @throws PayPalException
      */
-    public function doExecuteStandardPayment(EshopModelOrder $order, EshopModelBasket $basket): string
-    {
+    public function doExecuteStandardPayment(
+        EshopModelOrder $order,
+        EshopModelBasket $basket,
+        $intent = Constants::PAYPAL_ORDER_INTENT_CAPTURE
+    ): string {
         //For Standard payment we should not yet have a paypal order in session.
         //We create a fresh paypal order at this point
         $config = Registry::getConfig();
@@ -335,7 +370,7 @@ class Payment
 
         $response = $this->doCreatePayPalOrder(
             $basket,
-            OrderRequest::INTENT_CAPTURE,
+            $intent,
             null,
             '',
             '',
@@ -377,7 +412,7 @@ class Payment
     {
         $response = $this->doCreatePayPalOrder(
             $basket,
-            OrderRequest::INTENT_CAPTURE,
+            Constants::PAYPAL_ORDER_INTENT_CAPTURE,
             null,
             '',
             '',
@@ -397,7 +432,7 @@ class Payment
         try {
             $result = $this->doCreatePayPalOrder(
                 $basket,
-                OrderRequest::INTENT_CAPTURE,
+                Constants::PAYPAL_ORDER_INTENT_CAPTURE,
                 null,
                 Constants::PAYPAL_PUI_PROCESSING_INSTRUCTIONS,
                 PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME,

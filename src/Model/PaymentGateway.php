@@ -64,7 +64,7 @@ class PaymentGateway extends PaymentGateway_parent
     {
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
-
+        $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
         $success = false;
 
         if ($checkoutOrderId = PayPalSession::getCheckoutOrderId()) {
@@ -77,7 +77,7 @@ class PaymentGateway extends PaymentGateway_parent
 
             // Capture Order
             try {
-                $paymentService->doCapturePayPalOrder($order, $checkoutOrderId);
+                $paymentService->doCapturePayPalOrder($order, $checkoutOrderId, $sessionPaymentId);
                 $success = true;
             } catch (Exception $exception) {
                 Registry::getLogger()->error("Error on order capture call.", [$exception]);
@@ -115,13 +115,14 @@ class PaymentGateway extends PaymentGateway_parent
     {
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
 
         $success = false;
 
         if ($checkoutOrderId = PayPalSession::getCheckoutOrderId()) {
             // Capture Order
             try {
-                $paymentService->doCapturePayPalOrder($order, $checkoutOrderId);
+                $paymentService->doCapturePayPalOrder($order, $checkoutOrderId, $sessionPaymentId);
                 $success = true;
             } catch (Exception $exception) {
                 Registry::getLogger()->error("Error on acdc order capture call.", [$exception]);

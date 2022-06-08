@@ -208,6 +208,11 @@ class ModuleSettings
         return (string) $this->getSettingValue('oscPayPalBannersColorScheme');
     }
 
+    public function getPayPalStandardCaptureStrategy(): string
+    {
+        return (string) $this->getSettingValue('oscPayPalStandardCaptureStrategy');
+    }
+
     public function getPayPalCheckoutBannersColorScheme(): string
     {
         return (string) $this->getSettingValue('oscPayPalBannersColorScheme');

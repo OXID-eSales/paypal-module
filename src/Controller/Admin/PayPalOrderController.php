@@ -8,7 +8,6 @@
 namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
 
 use OxidEsales\Eshop\Application\Controller\Admin\AdminDetailsController;
-use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
@@ -20,7 +19,7 @@ use OxidSolutionCatalysts\PayPalApi\Service\Payments;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalPlusOrder;
 use OxidSolutionCatalysts\PayPal\Model\PayPalSoapOrder;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPal\Traits\AdminOrderTrait;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 
 /**
@@ -28,12 +27,7 @@ use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
  */
 class PayPalOrderController extends AdminDetailsController
 {
-    use ServiceContainer;
-
-    /**
-     * @var Order
-     */
-    protected $order = null;
+    use AdminOrderTrait;
 
     /**
      * @var PayPalPlusOrder
@@ -157,38 +151,6 @@ class PayPalOrderController extends AdminDetailsController
     }
 
     /**
-     * Capture payment action
-     *
-     * @throws ApiException
-     * @throws StandardException
-     */
-    public function capture(): void
-    {
-        $order = $this->getOrder();
-        $paypalOrder = $this->getPayPalCheckoutOrder();
-        $orderId = $paypalOrder->id;
-
-        /** @var ServiceFactory $serviceFactory */
-        $serviceFactory = Registry::get(ServiceFactory::class);
-        $service = $serviceFactory->getOrderService();
-        $request = new OrderCaptureRequest();
-        $response = $service->capturePaymentForOrder('', $orderId, $request, '');
-
-        if (
-            $response->status == PayPalOrder::STATUS_COMPLETED &&
-            $response->purchase_units[0]->payments->captures[0]->status == Capture::STATUS_COMPLETED
-        ) {
-            $order->markOrderPaid();
-
-            /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
-            $paypalOrderModel = $this->getServiceFromContainer(OrderRepository::class)
-                ->paypalOrderByOrderIdAndPayPalId($order->getId(), $orderId);
-            $paypalOrderModel->setStatus($response->status);
-            $paypalOrderModel->save();
-        }
-    }
-
-    /**
      * Refund payment action
      *
      * @throws ApiException
@@ -218,17 +180,6 @@ class PayPalOrderController extends AdminDetailsController
             $paymentService = Registry::get(ServiceFactory::class)->getPaymentService();
             $paymentService->refundCapturedPayment($capture->id, $request, '');
         }
-    }
-
-    /**
-     * @return PayPalOrder
-     * @throws StandardException
-     * @throws ApiException
-     */
-    protected function getPayPalCheckoutOrder(): PayPalOrder
-    {
-        $order = $this->getOrder();
-        return $order->getPayPalCheckoutOrder();
     }
 
     /**
@@ -266,25 +217,6 @@ class PayPalOrderController extends AdminDetailsController
     }
 
     /**
-     * Get active order
-     *
-     * @return Order
-     * @throws StandardException
-     */
-    protected function getOrder(): Order
-    {
-        if (is_null($this->order)) {
-            $order = oxNew(Order::class);
-            $orderId = $this->getEditObjectId();
-            if ($orderId === null || !$order->load($orderId)) {
-                throw new StandardException('PayPalCheckout-Order not found');
-            }
-            $this->order = $order;
-        }
-        return $this->order;
-    }
-
-    /**
      * Get order payment capture id
      *
      * @return Capture|null
@@ -292,7 +224,7 @@ class PayPalOrderController extends AdminDetailsController
      */
     protected function getOrderPaymentCapture(): ?Capture
     {
-        return $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures[0];
+        return $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures[0] ?? null;
     }
 
     /**
@@ -316,7 +248,23 @@ class PayPalOrderController extends AdminDetailsController
      */
     public function getPayPalCapturedAmount()
     {
-        return $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures[0]->amount->value;
+        $captureAmount = 0;
+        foreach ($this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures as $capture) {
+            $captureAmount += $capture->amount->value;
+        }
+        return $captureAmount;
+    }
+
+    /**
+     * Template getter getPayPalCapturedAmount
+     */
+    public function getPayPalAuthorizationAmount()
+    {
+        $authorizationAmount = 0;
+        foreach ($this->getPayPalCheckoutOrder()->purchase_units[0]->payments->authorizations as $authorization) {
+            $authorizationAmount += $authorization->amount->value;
+        }
+        return $authorizationAmount;
     }
 
     /**
@@ -324,7 +272,11 @@ class PayPalOrderController extends AdminDetailsController
      */
     public function getPayPalRefundedAmount()
     {
-        return $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->refunds[0]->amount->value;
+        $refundAmount = 0;
+        foreach ($this->getPayPalCheckoutOrder()->purchase_units[0]->payments->refunds as $refund) {
+            $refundAmount += $refund->amount->value;
+        }
+        return $refundAmount;
     }
 
     /**
@@ -333,6 +285,14 @@ class PayPalOrderController extends AdminDetailsController
     public function getPayPalRemainingRefundAmount()
     {
         return $this->getPayPalCapturedAmount() - $this->getPayPalRefundedAmount();
+    }
+
+    /**
+     * Template getter getPayPalRemainingRefundAmount
+     */
+    public function getPayPalResultedAmount()
+    {
+        return $this->getPayPalTotalOrderSum() - $this->getPayPalCapturedAmount();
     }
 
     /**
@@ -349,14 +309,6 @@ class PayPalOrderController extends AdminDetailsController
     public function getPayPalCurrency()
     {
         return $this->getPayPalCheckoutOrder()->purchase_units[0]->amount->breakdown->item_total->currency_code;
-    }
-
-    /**
-     * Template getter getPayPalPaymentList
-     */
-    public function getPayPalPaymentList()
-    {
-        return null;
     }
 
     /**

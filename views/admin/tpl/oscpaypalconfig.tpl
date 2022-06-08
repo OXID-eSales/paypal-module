@@ -229,13 +229,44 @@
                     </div>
                 </div>
             </div>
+
+            <div class="card">
+                <div class="card-header" id="heading4">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+                        [{oxmultilang ident="OSC_PAYPAL_STANDARD_CAPTURE_TIME"}]
+                    </h4>
+                </div>
+
+                <div id="collapse4" class="collapse" aria-labelledby="heading4" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="capture-time">[{oxmultilang ident="OSC_PAYPAL_STANDARD_CAPTURE_TIME_LABEL"}]</label>
+                            <div class="controls">
+                                <select name="conf[oscPayPalStandardCaptureStrategy]" id="color-schema" class="form-control">
+                                    <option value="directly" [{if $config->getPayPalStandardCaptureStrategy() == 'directly'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STANDARD_CAPTURE_TIME_DIRECTLY"}]
+                                    </option>
+                                    <option value="delivery" [{if $config->getPayPalStandardCaptureStrategy() == 'delivery'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STANDARD_CAPTURE_TIME_DELIVERY"}]
+                                    </option>
+                                    <option value="manually" [{if $config->getPayPalStandardCaptureStrategy() == 'manually'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STANDARD_CAPTURE_TIME_MANUALLY"}]
+                                    </option>
+                                </select>
+                            </div>
+                            <span class="help-block">[{oxmultilang ident="OSC_PAYPAL_STANDARD_CAPTURE_TIME_HELP"}]</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="card">
                 <div class="card-header" id="heading5">
-                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
                         [{oxmultilang ident="OSC_PAYPAL_BANNER_CREDENTIALS"}]
                     </h4>
                 </div>
-                <div id="collapse4" class="collapse" aria-labelledby="heading5" data-parent="#accordion">
+                <div id="collapse5" class="collapse" aria-labelledby="heading5" data-parent="#accordion">
                     <div class="card-body">
                         [{if $oView->showTransferLegacySettingsButton()}]
                             <a class="btn btn-primary bottom-space" href="[{$oViewConf->getSelfLink()|cat:"cl=oscpaypalconfig&fnc=transferBannerSettings"}]">[{oxmultilang ident='OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'}]</a>
