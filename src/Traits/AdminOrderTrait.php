@@ -12,6 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Traits;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Exception\StandardException;
+use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -156,7 +157,9 @@ trait AdminOrderTrait
     protected function getPayPalCheckoutOrder(): PayPalOrder
     {
         $order = $this->getOrder();
-        return $order->getPayPalCheckoutOrder();
+        /** @var PayPalOrder $payPalOrder */
+        $payPalOrder = $order->getPayPalCheckoutOrder();
+        return $payPalOrder;
     }
 
     /**

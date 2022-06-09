@@ -27,6 +27,7 @@ use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
+use OxidSolutionCatalysts\PayPalApi\Service\Payments as ApiPaymentService;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -372,8 +373,8 @@ class Payment
             $basket,
             $intent,
             null,
-            '',
-            '',
+            null,
+            null,
             '',
             '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
@@ -414,8 +415,8 @@ class Payment
             $basket,
             Constants::PAYPAL_ORDER_INTENT_CAPTURE,
             null,
-            '',
-            '',
+            null,
+            null,
             '',
             '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
