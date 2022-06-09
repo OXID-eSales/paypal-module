@@ -5,6 +5,12 @@
     "keywords": ["oxid", "modules", "eShop", "paypal", "payment"],
     "homepage": "https://www.oxid-esales.com",
     "license": ["GPL-3.0"],
+    "support": {
+        "source": "https://github.com/OXID-eSales/paypal-module",
+        "issues": "https://github.com/OXID-eSales/paypal-module/issues",
+        "forum": "https://forum.oxid-esales.com",
+        "docs": "https://docs.oxid-esales.com/modules/paypal-checkout/en/latest"
+    },
     "extra": {
         "oxideshop": {
             "target-directory": "osc/paypal",
