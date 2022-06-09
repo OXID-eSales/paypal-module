@@ -55,14 +55,6 @@
                         <b>[{$oView->formatPrice($oView->getPayPalResultedAmount())}] [{$currency}]</b>
                     </td>
                 </tr>
-                [{if $oView->getPayPalAuthorizationId()}]
-                    <tr>
-                        <td class="edittext">[{oxmultilang ident="OSC_PAYPAL_AUTHORIZATIONID" suffix="COLON"}]</td>
-                        <td class="edittext">
-                            <b>[{$oView->getPayPalAuthorizationId()}]</b>
-                        </td>
-                    </tr>
-                [{/if}]
             </table>
         </td>
         <td class="edittext" valign="top">
