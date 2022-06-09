@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [2.1.0] - 2022-06-01
 
 - show PUI Banking-Data
+- add Option for capture later on PayPal Standard
 
 ## [2.0.0] - 2022-05-20
 
