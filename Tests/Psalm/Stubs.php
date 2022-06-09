@@ -56,3 +56,13 @@ class PaymentController_parent extends \OxidEsales\Eshop\Application\Controller\
 class OrderController_parent extends \OxidEsales\Eshop\Application\Controller\OrderController
 {
 }
+
+namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
+
+class OrderMain_parent extends \OxidEsales\Eshop\Application\Controller\Admin\OrderMain
+{
+}
+
+class OrderOverview_parent extends \OxidEsales\Eshop\Application\Controller\Admin\OrderOverview
+{
+}

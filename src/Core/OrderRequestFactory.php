@@ -27,6 +27,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderApplicationContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PhoneWithType;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnit;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
@@ -34,6 +35,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
 use OxidSolutionCatalysts\PayPalApi\Pui\ExperienceContext;
 use OxidSolutionCatalysts\PayPalApi\Pui\PuiPaymentSource;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
 
 /**
  * Class OrderRequestBuilder
@@ -100,11 +102,10 @@ class OrderRequestFactory
             $request->processing_instruction = $processingInstruction;
         }
 
-        if ($paymentSource) {
-            $request->payment_source =
-            [
-                $paymentSource => $this->getPaymentSource()
-            ];
+        if ($paymentSource == PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME) {
+            /** @var PaymentSource $puiPaymentSource */
+            $puiPaymentSource = $this->getPuiPaymentSource();
+            $request->payment_source = $puiPaymentSource;
         }
 
         return $request;
@@ -433,7 +434,10 @@ class OrderRequestFactory
         return $phone;
     }
 
-    protected function getPaymentSource(): PuiPaymentSource
+    /**
+     * @return PaymentSource[]
+     */
+    protected function getPuiPaymentSource(): array
     {
         $user = $this->basket->getBasketUser();
 
@@ -461,7 +465,9 @@ class OrderRequestFactory
         $paymentSource->email = $payer->email_address;
         $paymentSource->billing_address = $billingAddress;
 
-        $paymentSource->phone = $user->getPhoneNumberForPuiRequest();
+        /** @var ApiModelPhone $phoneNumberForPuiRequest */
+        $phoneNumberForPuiRequest = $user->getPhoneNumberForPuiRequest();
+        $paymentSource->phone = $phoneNumberForPuiRequest;
         if ($birthdate = $user->getBirthDateForPuiRequest()) {
             $paymentSource->birth_date = $birthdate;
         }
@@ -475,6 +481,6 @@ class OrderRequestFactory
         $experienceContext->customer_service_instructions[] = $activeShop->getFieldData('oxinfoemail');
         $paymentSource->experience_context = $experienceContext;
 
-        return $paymentSource;
+        return [PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME => $paymentSource];
     }
 }
