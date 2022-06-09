@@ -4,11 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.0.0] - Unreleased
+## [1.1.0] - 2022-06-01
 
-## [Undecided] - unreleased
+- show PUI Banking-Data
+- add Option for capture later on PayPal Standard
 
-## [1.0.0] - 2022-03-10
+## [1.0.0] - 2022-05-20
 
 ### Changed
-- initial release
+- initial release for OXID v6.1
+- for OXID >= v6.2 please use Version 2.*
