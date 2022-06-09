@@ -296,14 +296,6 @@ class PayPalOrderController extends AdminDetailsController
     }
 
     /**
-     * Template getter getPayPalAuthorizationId
-     */
-    public function getPayPalAuthorizationId()
-    {
-        return $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->authorizations[0]->id;
-    }
-
-    /**
      * Template getter getPayPalCurrency
      */
     public function getPayPalCurrency()
