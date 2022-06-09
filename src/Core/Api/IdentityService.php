@@ -15,7 +15,7 @@ class IdentityService extends BaseService
     public function requestClientToken(): array
     {
         $headers = [];
-        $headers[] = 'Content-Type: application/json';
+        $headers['Content-Type'] = 'application/json';
         $headers = array_merge($headers, $this->getAuthHeaders());
 
         $path = '/v1/identity/generate-token';

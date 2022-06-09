@@ -145,7 +145,8 @@ class OrderController extends OrderController_parent
             $order->load($sessionOrderId);
             $response = $this->getServiceFromContainer(PaymentService::class)->doCapturePayPalOrder(
                 $order,
-                $sessionAcdcOrderId
+                $sessionAcdcOrderId,
+                PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID
             );
             $result = [
                 'location' => [
