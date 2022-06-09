@@ -163,9 +163,8 @@ class Events
             $db = DatabaseProvider::getDb();
 
             $results = $db->select(
-                "show columns from :tableName like :columnName",
+                "show columns from {$tableName} like :columnName",
                 [
-                    ':tableName' => $tableName,
                     ':columnName' => $columnName
                 ]
             );
