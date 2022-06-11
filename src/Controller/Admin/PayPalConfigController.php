@@ -99,18 +99,14 @@ class PayPalConfigController extends AdminController
     private function buildSignUpLink(string $partnerClientId, string $partnerId, string $url): string
     {
         $lang = Registry::getLang();
-        $config = Registry::getConfig();
         $session = Registry::getSession();
+        $config = new Config();
 
         $countryCode = strtoupper($lang->getLanguageAbbr());
         $localeCode = $lang->getLanguageAbbr() . '-' . $countryCode;
 
-        $adminShopUrl = $config->getCurrentShopUrl(true);
-
-        $partnerLogoUrl = $config->getOutUrl(null, true) . 'admin/img/loginlogo.png';
-        $returnToPartnerUrl = $adminShopUrl .
-            'index.php?cl=oscpaypalonboarding&fnc=returnFromSignup' .
-            '&stoken=' . (string) $session->getSessionChallengeToken();
+        $partnerLogoUrl = Registry::getConfig()->getOutUrl(null, true) . 'admin/img/loginlogo.png';
+        $returnToPartnerUrl = $config->getAdminUrlForJSCalls() . 'cl=oscpaypalonboarding&fnc=returnFromSignup';
 
         $params = [
             'partnerClientId' => $partnerClientId,

@@ -255,6 +255,20 @@ class Config
     }
 
     /**
+     * Get a Admin URL with all necessary Admin-params
+     *
+     * @return string
+     */
+    public function getAdminUrlForJSCalls(): string
+    {
+        $config = Registry::getConfig();
+        $url = $config->getConfigParam('sAdminSSLURL') ?: $config->getConfigParam('sShopURL') . $config->getConfigParam('sAdminDir') . "/";
+        $url = Registry::getSession()->processUrl($url . 'index.php?');
+        $url = str_replace("&amp;", "&", $url);
+        return $url;
+    }
+
+    /**
      * Get webhook controller url
      *
      * @return string

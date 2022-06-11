@@ -11,6 +11,7 @@ use OxidEsales\Eshop\Application\Controller\Admin\AdminController;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Core\Onboarding\Onboarding;
 use OxidSolutionCatalysts\PayPal\Core\Onboarding\Webhook;
@@ -39,6 +40,7 @@ class OnboardingController extends AdminController
 
     public function returnFromSignup()
     {
+        $config = new Config();
         if (
             ('true' === (string) Registry::getRequest()->getRequestParameter('permissionsGranted')) &&
             ('true' === (string) Registry::getRequest()->getRequestParameter('consentStatus'))
@@ -49,14 +51,9 @@ class OnboardingController extends AdminController
         $this->autoConfiguration();
         $this->registerWebhooks();
 
-        $session = Registry::getSession();
+        $url = $config->getAdminUrlForJSCalls() . 'cl=oscpaypalconfig&aoc=ready';
 
-        Registry::getUtils()->redirect(
-            Registry::getConfig()->getCurrentShopUrl(true) . 'index.php?cl=oscpaypalconfig&aoc=ready' .
-            '&stoken=' . (string) Registry::getSession()->getSessionChallengeToken(),
-            false,
-            302
-        );
+        Registry::getUtils()->redirect($url, false, 302);
     }
 
     /**
