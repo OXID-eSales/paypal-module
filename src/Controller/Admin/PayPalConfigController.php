@@ -190,7 +190,8 @@ class PayPalConfigController extends AdminController
     {
         $config = new Config();
 
-        if (($config->isSandbox() && (
+        if (
+            ($config->isSandbox() && (
                 $confArr['oscPayPalSandboxClientId'] !== $config->getSandboxClientId() ||
                 $confArr['oscPayPalSandboxClientSecret'] !== $config->getSandboxClientSecret() ||
                 $confArr['oscPayPalSandboxWebhookId'] !== $config->getSandboxWebhookId()
