@@ -12,7 +12,7 @@ jQuery(document).ready(function(){
             if(localStorage.reloadoscpaypalconfig == "1"){
                 localStorage.reloadoscpaypalconfig = "0";
                 jQuery("#overlay").hide();
-                location.reload();
+                location.replace(window.selfControl);
             }
         }, 500);
     });
