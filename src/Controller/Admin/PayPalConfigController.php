@@ -15,6 +15,7 @@ use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Core\Onboarding\Onboarding;
 use OxidSolutionCatalysts\PayPal\Core\LegacyOeppModuleDetails;
 
 /**
@@ -159,6 +160,7 @@ class PayPalConfigController extends AdminController
         $shopId = Registry::getConfig()->getShopId();
 
         $confArr = $this->handleSpecialFields($confArr);
+        $this->checkEligibility($confArr);
         $this->saveConfig($confArr, $shopId);
 
         parent::save();
@@ -175,6 +177,42 @@ class PayPalConfigController extends AdminController
         foreach ($conf as $confName => $value) {
             $value = trim($value);
             $this->getServiceFromContainer(ModuleSettings::class)->save($confName, $value);
+        }
+    }
+
+    /**
+     * check Eligibility if config would be changed
+     *
+     * @param array $confArr
+
+     */
+    protected function checkEligibility($confArr): void
+    {
+        $config = new Config();
+
+        if (($config->isSandbox() && (
+                $confArr['oscPayPalSandboxClientId'] !== $config->getSandboxClientId() ||
+                $confArr['oscPayPalSandboxClientSecret'] !== $config->getSandboxClientSecret() ||
+                $confArr['oscPayPalSandboxWebhookId'] !== $config->getSandboxWebhookId()
+            ) &&
+                $confArr['oscPayPalSandboxClientId'] &&
+                $confArr['oscPayPalSandboxClientSecret'] &&
+                $confArr['oscPayPalSandboxWebhookId']
+            ) ||
+            (!$config->isSandbox() && (
+                $confArr['oscPayPalClientId'] !== $config->getClientId() ||
+                $confArr['oscPayPalClientSecret'] !== $config->getClientSecret() ||
+                $confArr['oscPayPalWebhookId'] !== $config->getWebhookId()
+            ) &&
+                $confArr['oscPayPalClientId'] &&
+                $confArr['oscPayPalClientSecret'] &&
+                $confArr['oscPayPalWebhookId']
+            )
+        ) {
+            $handler = oxNew(Onboarding::class);
+            $onBoardingClient = $handler->getOnboardingClient($config->isSandbox(), true);
+            $merchantInformations = $onBoardingClient->getMerchantInformations();
+            $handler->saveEligibility($merchantInformations);
         }
     }
 
