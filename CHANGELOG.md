@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - show PUI Banking-Data
 - add Option for capture later on PayPal Standard
+- fix save Credentials for Subshops
 
 ## [1.0.0] - 2022-05-20
 

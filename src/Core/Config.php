@@ -262,7 +262,8 @@ class Config
     public function getAdminUrlForJSCalls(): string
     {
         $config = Registry::getConfig();
-        $url = $config->getConfigParam('sAdminSSLURL') ?: $config->getConfigParam('sShopURL') . $config->getConfigParam('sAdminDir') . "/";
+        $url = $config->getConfigParam('sAdminSSLURL') ?:
+            $config->getConfigParam('sShopURL') . $config->getConfigParam('sAdminDir') . "/";
         $url = Registry::getSession()->processUrl($url . 'index.php?');
         $url = str_replace("&amp;", "&", $url);
         return $url;
