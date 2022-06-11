@@ -36,7 +36,7 @@
 </div>
 
 <!-- Implementation -->
-[{assign var="sSelfLink" value=$oViewConf->getSelfLink()|replace:"&amp;":"&"}]
+[{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
 
 <script>
 

@@ -1,9 +1,10 @@
-[{include file="headitem.tpl" title="paypal"}]
+[{include file="headitem.tpl" title="paypal" box="boxpaypal"}]
 [{assign var="isSandBox" value=$config->isSandbox()}]
 [{capture assign="sPayPalJS"}]
     [{strip}]
         window.isSandBox = '[{$isSandBox}]';
-        window.selfLink = '[{$oViewConf->getSelfLink()|replace:"&amp;":"&"}]';
+        window.selfLink = '[{$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]';
+        window.selfControl = window.selfLink + 'cl=oscpaypalconfig';
     [{/strip}]
 [{/capture}]
 
@@ -19,7 +20,7 @@
         [{/if}]
     </div>
     <div id="overlay"><div class="loader"></div></div>
-    <form id="configForm" name="configForm" action="[{$oViewConf->getSelfLink()}]" method="post" autocomplete="off">
+    <form id="configForm" name="configForm" action="[{$oViewConf->getSslSelfLink()}]" method="post" autocomplete="off">
         [{$oViewConf->getHiddenSid()}]
         <input type="hidden" name="cl" value="[{$oViewConf->getActiveClassName()}]">
         <input type="hidden" name="fnc" value="save">
@@ -63,7 +64,7 @@
                                </a>
                             </p>
 *}]
-                            <p class="live"><a href="[{$oViewConf->getSelfLink()|cat:"cl=oscpaypalconfig&aoc=live"}]" target="_blank"
+                            <p class="live"><a href="[{$oViewConf->getSslSelfLink()|cat:"cl=oscpaypalconfig&aoc=live"}]" target="_blank"
                                 class="popuplink paypal-button-PPLtBlue"
                                 id="paypalonboardingpopuplive">
                                     [{oxmultilang ident="OSC_PAYPAL_LIVE_BUTTON_CREDENTIALS_INIT"}]
@@ -117,7 +118,7 @@
                                 </a>
                             </p>
 *}]
-                            <p class="sandbox"><a href="[{$oViewConf->getSelfLink()|cat:"cl=oscpaypalconfig&aoc=sandbox"}]" target="_blank"
+                            <p class="sandbox"><a href="[{$oViewConf->getSslSelfLink()|cat:"cl=oscpaypalconfig&aoc=sandbox"}]" target="_blank"
                                 class="popuplink paypal-button-PPLtBlue"
                                 id="paypalonboardingpopupsandbox">
                                     [{oxmultilang ident="OSC_PAYPAL_SANDBOX_BUTTON_CREDENTIALS_INIT"}]
@@ -269,7 +270,7 @@
                 <div id="collapse5" class="collapse" aria-labelledby="heading5" data-parent="#accordion">
                     <div class="card-body">
                         [{if $oView->showTransferLegacySettingsButton()}]
-                            <a class="btn btn-primary bottom-space" href="[{$oViewConf->getSelfLink()|cat:"cl=oscpaypalconfig&fnc=transferBannerSettings"}]">[{oxmultilang ident='OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'}]</a>
+                            <a class="btn btn-primary bottom-space" href="[{$oViewConf->getSslSelfLink()|cat:"cl=oscpaypalconfig&fnc=transferBannerSettings"}]">[{oxmultilang ident='OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'}]</a>
                         [{/if}]
                         <p>[{oxmultilang ident="OSC_PAYPAL_BANNER_INFOTEXT"}]</p>
                         <div class="form-group">
