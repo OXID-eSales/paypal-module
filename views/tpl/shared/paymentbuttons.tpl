@@ -5,7 +5,7 @@
         [{if !$aid}]
             [{assign var="aid" value=""}]
         [{/if}]
-        [{assign var="sSelfLink" value=$oViewConf->getSelfLink()|replace:"&amp;":"&"}]
+        [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
         [{literal}]
         paypal.Buttons({
             createOrder: function(data, actions) {

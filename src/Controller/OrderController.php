@@ -35,7 +35,7 @@ class OrderController extends OrderController_parent
     {
         if (Registry::getSession()->getVariable('oscpaypal_payment_redirect')) {
             Registry::getSession()->deleteVariable('oscpaypal_payment_redirect');
-            Registry::getUtils()->redirect(Registry::getConfig()->getShopHomeUrl() . 'cl=user', true, 302);
+            Registry::getUtils()->redirect(Registry::getConfig()->getShopSecureHomeURL() . 'cl=user', true, 302);
         }
 
         $this->renderAcdcRetry();
