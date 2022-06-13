@@ -243,7 +243,7 @@
                         <div class="form-group">
                             <label for="capture-time">[{oxmultilang ident="OSC_PAYPAL_STANDARD_CAPTURE_TIME_LABEL"}]</label>
                             <div class="controls">
-                                <select name="conf[oscPayPalStandardCaptureStrategy]" id="color-schema" class="form-control">
+                                <select name="conf[oscPayPalStandardCaptureStrategy]" id="capture-time" class="form-control">
                                     <option value="directly" [{if $config->getPayPalStandardCaptureStrategy() == 'directly'}]selected[{/if}]>
                                         [{oxmultilang ident="OSC_PAYPAL_STANDARD_CAPTURE_TIME_DIRECTLY"}]
                                     </option>
