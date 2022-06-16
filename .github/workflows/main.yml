@@ -1,6 +1,10 @@
 name: oxid module tests
 
-on: [push]
+on:
+  push:
+    branches:
+      - '*'
+      - '!b-6.3.x'
 
 jobs:
   install:
