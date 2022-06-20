@@ -197,21 +197,20 @@ class OrderRequestFactory
 
         //Item total cost
         $itemTotal = $basket->getPayPalProductNetto();
-        $breakdown->item_total = PriceToMoney::convert((float)$itemTotal, $currency, $priceVatMode);
+        $breakdown->item_total = PriceToMoney::convert((float)$itemTotal, $currency);
 
         //Item tax sum
         $tax = $basket->getPayPalProductVatValue();
-        $breakdown->tax_total = PriceToMoney::convert((float)$tax, $currency, $priceVatMode);
+        $breakdown->tax_total = PriceToMoney::convert((float)$tax, $currency);
 
-        if ($basket->getDeliveryCost()) {
-            //Shipping cost
-            $shippingCost = $basket->getDeliveryCost();
-            $breakdown->shipping = PriceToMoney::convert($shippingCost, $currency, $priceVatMode);
+        //Shipping cost
+        if ($delivery = $basket->getPayPalCheckoutDeliveryCostsBrutto()) {
+            $breakdown->shipping = PriceToMoney::convert((float)$delivery, $currency);
         }
 
+        //Discount
         if ($discount = $basket->getDiscountSumPayPalBasket()) {
-            //Discount
-            $breakdown->discount = PriceToMoney::convert((float)$discount, $currency, $priceVatMode);
+            $breakdown->discount = PriceToMoney::convert((float)$discount, $currency);
         }
 
         return $amount;
@@ -223,7 +222,6 @@ class OrderRequestFactory
     public function getItems(): array
     {
         $basket = $this->basket;
-        $priceVatMode = ($this->basket->isCalculationModeNetto() ? 2 : 1);
         $currency = $basket->getBasketCurrency();
         $language = Registry::getLang();
         $items = [];
@@ -234,8 +232,8 @@ class OrderRequestFactory
             $item->name = $basketItem->getTitle();
             $itemUnitPrice = $basketItem->getUnitPrice();
 
-            $item->unit_amount = PriceToMoney::convert($itemUnitPrice->getNettoPrice(), $currency, $priceVatMode);
-            $item->tax = PriceToMoney::convert($itemUnitPrice->getVatValue(), $currency, $priceVatMode);
+            $item->unit_amount = PriceToMoney::convert((float)$itemUnitPrice->getNettoPrice(), $currency);
+            $item->tax = PriceToMoney::convert((float)$itemUnitPrice->getVatValue(), $currency);
             $item->tax_rate = (string)$itemUnitPrice->getVat();
             // TODO: There are usually still categories for digital products.
             // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
@@ -249,12 +247,8 @@ class OrderRequestFactory
             $item = new Item();
             $item->name = $language->translateString('GIFT_WRAPPING');
 
-            $item->unit_amount = PriceToMoney::convert((float)$wrapping, $currency, $priceVatMode);
-            $item->tax = PriceToMoney::convert(
-                (float)$basket->getPayPalCheckoutWrappingVatValue(),
-                $currency,
-                $priceVatMode
-            );
+            $item->unit_amount = PriceToMoney::convert((float)$wrapping, $currency);
+            $item->tax = PriceToMoney::convert((float)$basket->getPayPalCheckoutWrappingVatValue(), $currency);
             $item->tax_rate = $basket->getPayPalCheckoutWrappingVat();
             // TODO: There are usually still categories for digital products.
             // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
@@ -268,12 +262,8 @@ class OrderRequestFactory
             $item = new Item();
             $item->name = $language->translateString('GREETING_CARD');
 
-            $item->unit_amount = PriceToMoney::convert((float)$giftCard, $currency, $priceVatMode);
-            $item->tax = PriceToMoney::convert(
-                (float)$basket->getPayPalCheckoutGiftCardVatValue(),
-                $currency,
-                $priceVatMode
-            );
+            $item->unit_amount = PriceToMoney::convert((float)$giftCard, $currency);
+            $item->tax = PriceToMoney::convert((float)$basket->getPayPalCheckoutGiftCardVatValue(), $currency);
             $item->tax_rate = $basket->getPayPalCheckoutGiftCardVat();
             // TODO: There are usually still categories for digital products.
             // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
@@ -287,12 +277,8 @@ class OrderRequestFactory
             $item = new Item();
             $item->name = $language->translateString('PAYMENT_METHOD');
 
-            $item->unit_amount = PriceToMoney::convert((float)$payment, $currency, $priceVatMode);
-            $item->tax = PriceToMoney::convert(
-                (float)$basket->getPayPalCheckoutPaymentVatValue(),
-                $currency,
-                $priceVatMode
-            );
+            $item->unit_amount = PriceToMoney::convert((float)$payment, $currency);
+            $item->tax = PriceToMoney::convert((float)$basket->getPayPalCheckoutPaymentVatValue(), $currency);
             $item->tax_rate = $basket->getPayPalCheckoutPaymentVat();
             // TODO: There are usually still categories for digital products.
             // But only with PHYSICAL_GOODS, Payments like PUI will work fine.

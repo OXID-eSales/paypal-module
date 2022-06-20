@@ -147,24 +147,21 @@ class PatchRequestFactory
         $breakdown = $amount->breakdown = new AmountBreakdown();
 
         //Item total cost
-        $itemTotal = $this->basket->getSumOfCostOfAllItemsPayPalBasket();
-        $breakdown->item_total = PriceToMoney::convert((float)$itemTotal, $currency, $priceVatMode);
+        $itemTotal = $this->basket->getPayPalProductNetto();
+        $breakdown->item_total = PriceToMoney::convert((float)$itemTotal, $currency);
 
-        if ($this->basket->isCalculationModeNetto()) {
-            //Item tax sum
-            $tax = $this->basket->getPayPalProductVatValue();
-            $breakdown->tax_total = PriceToMoney::convert((float)$tax, $currency, $priceVatMode);
+        //Item tax sum
+        $tax = $this->basket->getPayPalProductVatValue();
+        $breakdown->tax_total = PriceToMoney::convert((float)$tax, $currency);
+
+        //Shipping cost
+        if ($delivery = $this->basket->getPayPalCheckoutDeliveryCostsBrutto()) {
+            $breakdown->shipping = PriceToMoney::convert((float)$delivery, $currency);
         }
 
-        if ($this->basket->getDeliveryCost()) {
-            //Shipping cost
-            $shippingCost = $this->basket->getDeliveryCost();
-            $breakdown->shipping = PriceToMoney::convert($shippingCost, $currency, $priceVatMode);
-        }
-
+        //Discount
         if ($discount = $this->basket->getDiscountSumPayPalBasket()) {
-            //Discount
-            $breakdown->discount = PriceToMoney::convert((float)$discount, $currency, $priceVatMode);
+            $breakdown->discount = PriceToMoney::convert((float)$discount, $currency);
         }
         $patch->value = $amount;
 
@@ -181,7 +178,6 @@ class PatchRequestFactory
         bool $nettoPrices,
         $currency
     ): void {
-        $priceVatMode = ($this->basket->isCalculationModeNetto() ? 2 : 1);
         $patch = new Patch();
         $patch->op = Patch::OP_REPLACE;
         $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/items";
@@ -189,10 +185,10 @@ class PatchRequestFactory
         $item = new Item();
         $item->name = $basketItem->getTitle();
         $itemUnitPrice = $basketItem->getUnitPrice();
-        $item->unit_amount = PriceToMoney::convert($itemUnitPrice->getPrice(), $currency, $priceVatMode);
+        $item->unit_amount = PriceToMoney::convert((float)$itemUnitPrice->getNettoPrice(), $currency);
 
         if ($nettoPrices) {
-            $item->tax = PriceToMoney::convert($itemUnitPrice->getVatValue(), $currency, $priceVatMode);
+            $item->tax = PriceToMoney::convert((float)$itemUnitPrice->getVatValue(), $currency);
         }
         $item->quantity = (string) $basketItem->getAmount();
 
