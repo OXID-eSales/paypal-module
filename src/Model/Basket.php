@@ -95,6 +95,23 @@ class Basket extends Basket_parent
     }
 
     /**
+     * Return wrapping VAT.
+     *
+     * @return double
+     */
+    public function getPayPalCheckoutWrappingVatValue()
+    {
+        $wrappingVat = 0.0;
+
+        $wrapping = $this->getCosts('oxwrapping');
+        if ($wrapping && $wrapping->getVatValue()) {
+            $wrappingVat = $wrapping->getVatValue();
+        }
+
+        return $wrappingVat;
+    }
+
+    /**
      * Returns greeting card cost value
      *
      * @return double
@@ -130,6 +147,23 @@ class Basket extends Basket_parent
     }
 
     /**
+     * Return gift card VAT.
+     *
+     * @return double
+     */
+    public function getPayPalCheckoutGiftCardVatValue()
+    {
+        $giftCardVat = 0.0;
+
+        $giftCard = $this->getCosts('oxgiftcard');
+        if ($giftCard && $giftCard->getVatValue()) {
+            $giftCardVat = $giftCard->getVatValue();
+        }
+
+        return $giftCardVat;
+    }
+
+    /**
      * Returns payment costs netto or brutto value.
      *
      * @return double
@@ -148,7 +182,7 @@ class Basket extends Basket_parent
     }
 
     /**
-     * Returns payment costs netto or brutto value.
+     * Returns payment Vat.
      *
      * @return double
      */
@@ -159,6 +193,40 @@ class Basket extends Basket_parent
         $paymentCost = $this->getCosts('oxpayment');
         if ($paymentCost) {
             $amount = $paymentCost->getVat();
+        }
+
+        return $amount;
+    }
+
+    /**
+     * Return payment VAT Value.
+     *
+     * @return double
+     */
+    public function getPayPalCheckoutPaymentVatValue()
+    {
+        $paymentVAT = 0.0;
+
+        $paymentCost = $this->getCosts('oxpayment');
+        if ($paymentCost && $paymentCost->getVatValue()) {
+            $paymentVAT = $paymentCost->getVatValue();
+        }
+
+        return $paymentVAT;
+    }
+
+    /**
+     * Returns delivery costs in Brutto!
+     *
+     * @return double
+     */
+    public function getPayPalCheckoutDeliveryCostsBrutto()
+    {
+        $amount = 0.0;
+
+        $deliveryCost = $this->getCosts('oxdelivery');
+        if ($deliveryCost) {
+            $amount = $deliveryCost->getBruttoPrice();
         }
 
         return $amount;
@@ -196,31 +264,6 @@ class Basket extends Basket_parent
     }
 
     /**
-     * Calculates basket costs (payment, GiftCard and gift card)
-     * and returns sum of all costs.
-     *
-     * @return double
-     */
-    public function getSumOfCostOfAllItemsPayPalBasket()
-    {
-        // basket items sum
-        $allCosts = $this->getProductsPrice()->getSum($this->isCalculationModeNetto());
-
-        //adding to additional costs only if payment is > 0
-        if (($costs = $this->getPayPalCheckoutPaymentCosts()) > 0) {
-            $allCosts += $costs;
-        }
-
-        // wrapping costs
-        $allCosts += $this->getPayPalCheckoutWrappingCosts();
-
-        // greeting card costs
-        $allCosts += $this->getPayPalCheckoutGiftCardCosts();
-
-        return $allCosts;
-    }
-
-    /**
      * collect the netto-sum of all articles in Basket
      * and returns sum of all costs.
      *
@@ -243,26 +286,6 @@ class Basket extends Basket_parent
     }
 
     /**
-     * Returns absolute VAT value.
-     *
-     * @return float
-     */
-    public function getPayPalBasketVatValue()
-    {
-        $basketVatValue = 0;
-        $basketVatValue += $this->getPayPalProductVatValue();
-        $basketVatValue += $this->getPayPalCheckoutWrappingVatValue();
-        $basketVatValue += $this->getPayPalCheckoutGiftCardVatValue();
-        $basketVatValue += $this->getPayPalCheckoutPaymentVatValue();
-
-        if ($this->getDeliveryCosts() < round((float)$this->getDeliveryCosts(), 2)) {
-            return floor($basketVatValue * 100) / 100;
-        }
-
-        return $basketVatValue;
-    }
-
-    /**
      * Return products VAT.
      *
      * Normally we could use the method: $this->getProductVats(false)
@@ -281,57 +304,6 @@ class Basket extends Basket_parent
             $result += $itemUnitPrice->getVatValue() * $basketItem->getAmount();
         }
         return $result;
-    }
-
-    /**
-     * Return wrapping VAT.
-     *
-     * @return double
-     */
-    public function getPayPalCheckoutWrappingVatValue()
-    {
-        $wrappingVat = 0.0;
-
-        $wrapping = $this->getCosts('oxwrapping');
-        if ($wrapping && $wrapping->getVatValue()) {
-            $wrappingVat = $wrapping->getVatValue();
-        }
-
-        return $wrappingVat;
-    }
-
-    /**
-     * Return gift card VAT.
-     *
-     * @return double
-     */
-    public function getPayPalCheckoutGiftCardVatValue()
-    {
-        $giftCardVat = 0.0;
-
-        $giftCard = $this->getCosts('oxgiftcard');
-        if ($giftCard && $giftCard->getVatValue()) {
-            $giftCardVat = $giftCard->getVatValue();
-        }
-
-        return $giftCardVat;
-    }
-
-    /**
-     * Return payment VAT.
-     *
-     * @return double
-     */
-    public function getPayPalCheckoutPaymentVatValue()
-    {
-        $paymentVAT = 0.0;
-
-        $paymentCost = $this->getCosts('oxpayment');
-        if ($paymentCost && $paymentCost->getVatValue()) {
-            $paymentVAT = $paymentCost->getVatValue();
-        }
-
-        return $paymentVAT;
     }
 
     /**

@@ -184,8 +184,9 @@ class OrderRequestFactory
         $amount = new AmountWithBreakdown();
         $basket = $this->basket;
         $currency = $this->basket->getBasketCurrency();
+        $priceVatMode = ($this->basket->isCalculationModeNetto() ? 2 : 1);
 
-        $total = PriceToMoney::convert($this->basket->getPrice(), $currency);
+        $total = PriceToMoney::convert($this->basket->getPrice(), $currency, $priceVatMode);
 
         //Total amount
         $amount->value = $total->value;
@@ -202,14 +203,13 @@ class OrderRequestFactory
         $tax = $basket->getPayPalProductVatValue();
         $breakdown->tax_total = PriceToMoney::convert((float)$tax, $currency);
 
-        if ($basket->getDeliveryCost()) {
-            //Shipping cost
-            $shippingCost = $basket->getDeliveryCost();
-            $breakdown->shipping = PriceToMoney::convert($shippingCost, $currency);
+        //Shipping cost
+        if ($delivery = $basket->getPayPalCheckoutDeliveryCostsBrutto()) {
+            $breakdown->shipping = PriceToMoney::convert((float)$delivery, $currency);
         }
 
+        //Discount
         if ($discount = $basket->getDiscountSumPayPalBasket()) {
-            //Discount
             $breakdown->discount = PriceToMoney::convert((float)$discount, $currency);
         }
 
@@ -232,8 +232,8 @@ class OrderRequestFactory
             $item->name = $basketItem->getTitle();
             $itemUnitPrice = $basketItem->getUnitPrice();
 
-            $item->unit_amount = PriceToMoney::convert($itemUnitPrice->getNettoPrice(), $currency);
-            $item->tax = PriceToMoney::convert($itemUnitPrice->getVatValue(), $currency);
+            $item->unit_amount = PriceToMoney::convert((float)$itemUnitPrice->getNettoPrice(), $currency);
+            $item->tax = PriceToMoney::convert((float)$itemUnitPrice->getVatValue(), $currency);
             $item->tax_rate = (string)$itemUnitPrice->getVat();
             // TODO: There are usually still categories for digital products.
             // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
