@@ -9,10 +9,10 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
-use OxidEsales\EshopCommunity\Core\Field;
 use PDO;
 use Doctrine\DBAL\Query\QueryBuilder;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
+use OxidEsales\Eshop\Core\Field;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidEsales\Eshop\Application\Model\Content as EshopModelContent;
 use OxidEsales\Eshop\Application\Model\Payment as EshopModelPayment;
