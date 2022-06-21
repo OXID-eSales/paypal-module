@@ -23,7 +23,7 @@ $aLang = [
     'OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD'           => 'Karteninhaber',
     'OSC_PAYPAL_ACDC_PLEASE_RETRY'                => 'Bitte geben Sie ihre Kreditkartendaten erneut ein.',
 
-    'OSC_PAYPAL_PUI_HELP'                         => 'Für die Abwicklung der Ratenzahlung benötigen wir Ihr Geburtsdatum sowie eine gültige Telefonnummer mit Ländervorwahl (z.B. +49 30 123456789)',
+    'OSC_PAYPAL_PUI_HELP'                         => 'Für die Abwicklung des Rechnungskaufes benötigen wir Ihr Geburtsdatum sowie eine gültige Telefonnummer mit Orts- oder Ländervorwahl (z.B. 030 123456789 oder +49 30 123456789)',
     'OSC_PAYPAL_PUI_BIRTHDAY'                     => 'Geburtstag',
     'OSC_PAYPAL_PUI_BIRTHDAY_PLACEHOLDER'         => '01.01.1970',
     'OSC_PAYPAL_PUI_PHONENUMBER'                  => 'Telefonnummer',
