@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
+use OxidEsales\EshopCommunity\Core\Field;
 use PDO;
 use Doctrine\DBAL\Query\QueryBuilder;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
@@ -41,11 +42,23 @@ class StaticContent
         foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
             $paymentMethod = oxNew(EshopModelPayment::class);
             if ($paymentMethod->load($paymentId)) {
+                $this->reActivatePaymentMethod($paymentId, $paymentDefinitions);
                 continue;
             }
             $this->createPaymentMethod($paymentId, $paymentDefinitions);
             $this->assignPaymentToCountries($paymentId, $paymentDefinitions['countries']);
             $this->assignPaymentToActiveDeliverySets($paymentId);
+        }
+    }
+
+    public function deactivatePayPalPaymentMethods(): void
+    {
+        foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
+            $paymentMethod = oxNew(EshopModelPayment::class);
+            if ($paymentMethod->load($paymentId)) {
+                $paymentMethod->oxpayments__oxactive = new Field(false);
+                $paymentMethod->save();
+            }
         }
     }
 
@@ -135,6 +148,31 @@ class StaticContent
             );
             $paymentModel->save();
         }
+    }
+
+    protected function reActivatePaymentMethod(string $paymentId, array $definitions): void
+    {
+        /** @var EshopModelPayment $paymentModel */
+        $paymentModel = oxNew(EshopModelPayment::class);
+        $paymentModel->load($paymentId);
+
+        $activeCountries = $this->getActiveCountries();
+
+        $paymentModel->oxpayments__oxactive = new Field(empty($definitions['countries']) ||
+            0 < count(array_intersect($definitions['countries'], $activeCountries)));
+
+        $paymentModel->save();
+    }
+
+    protected function deActivatePaymentMethod(string $paymentId): void
+    {
+        /** @var EshopModelPayment $paymentModel */
+        $paymentModel = oxNew(EshopModelPayment::class);
+        $paymentModel->load($paymentId);
+
+        $paymentModel->oxpayments__oxactive = new Field(false);
+
+        $paymentModel->save();
     }
 
     public function ensureStaticContents(): void

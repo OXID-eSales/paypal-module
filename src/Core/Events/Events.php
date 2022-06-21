@@ -38,6 +38,12 @@ class Events
      */
     public static function onDeactivate(): void
     {
+        /** @var StaticContent $service */
+        $service = ContainerFactory::getInstance()
+            ->getContainer()
+            ->get(StaticContent::class);
+
+        $service->deactivatePayPalPaymentMethods();
     }
 
     /**
