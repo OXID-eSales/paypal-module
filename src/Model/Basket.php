@@ -275,13 +275,19 @@ class Basket extends Basket_parent
      *
      * @return double
      */
-    public function getPayPalProductNetto()
+    public function getPayPalCheckoutItemsNetto()
     {
         $result = 0;
         foreach ($this->getContents() as $basketItem) {
             $itemUnitPrice = $basketItem->getUnitPrice();
             $result += $itemUnitPrice->getNettoPrice() * $basketItem->getAmount();
         }
+
+        // Wrapping-Costs, Gift-Cards and Payment-Costs are also Items for PayPal, so we add them
+        $result += $this->getPayPalCheckoutWrappingCosts();
+        $result += $this->getPayPalCheckoutGiftCardCosts();
+        $result += $this->getPayPalCheckoutPaymentCosts();
+
         return $result;
     }
 
@@ -296,13 +302,18 @@ class Basket extends Basket_parent
      *
      * @return double
      */
-    public function getPayPalProductVatValue()
+    public function getPayPalCheckoutItemsVatValue()
     {
         $result = 0;
         foreach ($this->getContents() as $basketItem) {
             $itemUnitPrice = $basketItem->getUnitPrice();
             $result += $itemUnitPrice->getVatValue() * $basketItem->getAmount();
         }
+        // Wrapping-Costs, Gift-Cards and Payment-Costs are also Items for PayPal, so we add them
+        $result += $this->getPayPalCheckoutWrappingVatValue();
+        $result += $this->getPayPalCheckoutGiftCardVatValue();
+        $result += $this->getPayPalCheckoutPaymentVatValue();
+
         return $result;
     }
 

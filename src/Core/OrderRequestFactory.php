@@ -196,11 +196,11 @@ class OrderRequestFactory
         $breakdown = $amount->breakdown = new AmountBreakdown();
 
         //Item total cost
-        $itemTotal = $basket->getPayPalProductNetto();
+        $itemTotal = $basket->getPayPalCheckoutItemsNetto();
         $breakdown->item_total = PriceToMoney::convert((float)$itemTotal, $currency);
 
         //Item tax sum
-        $tax = $basket->getPayPalProductVatValue();
+        $tax = $basket->getPayPalCheckoutItemsVatValue();
         $breakdown->tax_total = PriceToMoney::convert((float)$tax, $currency);
 
         //Shipping cost

@@ -147,11 +147,11 @@ class PatchRequestFactory
         $breakdown = $amount->breakdown = new AmountBreakdown();
 
         //Item total cost
-        $itemTotal = $this->basket->getPayPalProductNetto();
+        $itemTotal = $this->basket->getPayPalCheckoutItemsNetto();
         $breakdown->item_total = PriceToMoney::convert((float)$itemTotal, $currency);
 
         //Item tax sum
-        $tax = $this->basket->getPayPalProductVatValue();
+        $tax = $this->basket->getPayPalCheckoutItemsVatValue();
         $breakdown->tax_total = PriceToMoney::convert((float)$tax, $currency);
 
         //Shipping cost
