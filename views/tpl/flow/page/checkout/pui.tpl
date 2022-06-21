@@ -34,7 +34,7 @@
 
 <div id="card_container" class="card_container">
     <form id="pui_form">
-        <div class="form-group oxDate [{if !$iBirthdayMonth || !$iBirthdayDay || !$iBirthdayYear}]text-danger[{/if}]">
+        <div class="form-group oxDate [{if !$iBirthdayMonth || !$iBirthdayDay || !$iBirthdayYear}]text-danger[{else}]text-success[{/if}]">
             <label class="control-label col-xs-12 col-lg-3 req">[{oxmultilang ident="OSC_PAYPAL_PUI_BIRTHDAY"}]</label>
             <div class="col-xs-3 col-lg-3">
                 <input id="pui_required_birthdate_day" class="oxDay form-control" name="pui_required[birthdate][day]" type="text" maxlength="2" value="[{if $iBirthdayDay > 0}][{$iBirthdayDay}][{/if}]" placeholder="[{oxmultilang ident="DAY"}]" required="" />
@@ -54,19 +54,19 @@
             </div>
             <div class="col-lg-offset-3 col-lg-9 col-xs-12">
                 <div class="help-block pui_required_birthdate_day_help pui_required_birthdate_month_help pui_required_birthdate_year_help">
-                    <p class="text-danger [{if $iBirthdayMonth && $iBirthdayDay && $iBirthdayYear}]hidden[{/if}]">[{oxmultilang ident="DD_FORM_VALIDATION_REQUIRED"}]</p>
+                    <p class="text-danger hidden">[{oxmultilang ident="DD_FORM_VALIDATION_REQUIRED"}]</p>
                 </div>
             </div>
         </div>
 
-        <div class="form-group [{if !$phonenumber}]text-danger[{/if}]">
+        <div class="form-group [{if !$phonenumber}]text-danger[{else}]text-success[{/if}]">
             <label for="pui_required_phonenumber" class="control-label col-xs-12 col-lg-3 req">[{oxmultilang ident="OSC_PAYPAL_PUI_PHONENUMBER"}]</label>
             <div class="col-xs-12 col-lg-9">
                 <input id="pui_required_phonenumber" type="text" class="form-control" name="pui_required[phonenumber]" autocomplete="off" placeholder="[{oxmultilang ident="OSC_PAYPAL_PUI_PHONENUMBER_PLACEHOLDER"}]" value="[{$phonenumber}]" />
             </div>
             <div class="col-lg-offset-3 col-lg-9 col-xs-12">
                 <div class="help-block pui_required_phonenumber_help">
-                    <p class="text-danger [{if $phonenumber}]hidden[{/if}]">[{oxmultilang ident="DD_FORM_VALIDATION_REQUIRED"}]</p>
+                    <p class="text-danger hidden">[{oxmultilang ident="DD_FORM_VALIDATION_REQUIRED"}]</p>
                 </div>
             </div>
         </div>
