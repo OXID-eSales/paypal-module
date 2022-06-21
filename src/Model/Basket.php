@@ -69,9 +69,7 @@ class Basket extends Basket_parent
 
         $wrappingCost = $this->getCosts('oxwrapping');
         if ($wrappingCost) {
-            $amount = $this->isCalculationModeNetto() ?
-                $wrappingCost->getNettoPrice() :
-                $wrappingCost->getBruttoPrice();
+            $amount = $wrappingCost->getNettoPrice();
         }
 
         return $amount;
@@ -122,8 +120,7 @@ class Basket extends Basket_parent
 
         $giftCardCost = $this->getCosts('oxgiftcard');
         if ($giftCardCost) {
-            $amount = $this->isCalculationModeNetto() ?
-                $giftCardCost->getNettoPrice() : $giftCardCost->getBruttoPrice();
+            $amount = $giftCardCost->getNettoPrice();
         }
 
         return $amount;
@@ -174,8 +171,7 @@ class Basket extends Basket_parent
 
         $paymentCost = $this->getCosts('oxpayment');
         if ($paymentCost) {
-            $amount = $this->isCalculationModeNetto() ?
-                $paymentCost->getNettoPrice() : $paymentCost->getBruttoPrice();
+            $amount = $paymentCost->getNettoPrice();
         }
 
         return $amount;
