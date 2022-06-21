@@ -122,7 +122,7 @@ class ModuleSettings
 
     public function showPayPalBasketButton(): bool
     {
-        return (bool) ($this->getSettingValue('oscPayPalShowBasketButton') &&
+        return ($this->getSettingValue('oscPayPalShowBasketButton') &&
             $this->isPayPalCheckoutExpressPaymentEnabled());
     }
 
@@ -133,7 +133,7 @@ class ModuleSettings
 
     public function showPayPalProductDetailsButton(): bool
     {
-        return (bool) ($this->getSettingValue('oscPayPalShowProductDetailsButton') &&
+        return ($this->getSettingValue('oscPayPalShowProductDetailsButton') &&
             $this->isPayPalCheckoutExpressPaymentEnabled());
     }
 
