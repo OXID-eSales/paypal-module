@@ -10,10 +10,14 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Service;
 
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Module;
+use OxidEsales\Eshop\Application\Model\Payment;
 
 class ModuleSettings
 {
+    protected $payPalCheckoutExpressPaymentEnabled = null;
+
     /** @var ModuleSettingBridgeInterface */
     private $moduleSettingBridge;
 
@@ -118,7 +122,8 @@ class ModuleSettings
 
     public function showPayPalBasketButton(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalShowBasketButton');
+        return (bool) ($this->getSettingValue('oscPayPalShowBasketButton') &&
+            $this->isPayPalCheckoutExpressPaymentEnabled());
     }
 
     public function showPayPalPayLaterButton(): bool
@@ -128,7 +133,8 @@ class ModuleSettings
 
     public function showPayPalProductDetailsButton(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalShowProductDetailsButton');
+        return (bool) ($this->getSettingValue('oscPayPalShowProductDetailsButton') &&
+            $this->isPayPalCheckoutExpressPaymentEnabled());
     }
 
     public function getAutoBillOutstanding(): bool
@@ -299,6 +305,15 @@ class ModuleSettings
     }
 
     /**
+     * This setting indicates whether settings from the legacy modules have been transferred.
+     * @return bool
+     */
+    public function getLegacySettingsTransferStatus(): bool
+    {
+        return (bool) $this->getSettingValue('oscPayPalLegacySettingsTransferred');
+    }
+
+    /**
      * @return mixed
      */
     private function getSettingValue(string $key)
@@ -307,11 +322,15 @@ class ModuleSettings
     }
 
     /**
-     * This setting indicates whether settings from the legacy modules have been transferred.
-     * @return bool
+     * @return boolean
      */
-    public function getLegacySettingsTransferStatus(): bool
+    private function isPayPalCheckoutExpressPaymentEnabled(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalLegacySettingsTransferred');
+        if ($this->payPalCheckoutExpressPaymentEnabled === null) {
+            $payment = oxNew(Payment::class);
+            $payment->load(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
+            $this->payPalCheckoutExpressPaymentEnabled = (bool)$payment->oxpayments__oxactive->value;
+        }
+        return $this->payPalCheckoutExpressPaymentEnabled;
     }
 }
