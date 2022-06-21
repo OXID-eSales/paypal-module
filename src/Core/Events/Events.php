@@ -34,6 +34,12 @@ class Events
      */
     public static function onDeactivate(): void
     {
+        $staticContent = new StaticContent(
+            Registry::getConfig(),
+            DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)
+        );
+
+        $staticContent->deactivatePayPalPaymentMethods();
     }
 
     /**

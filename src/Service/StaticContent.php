@@ -15,6 +15,7 @@ use OxidEsales\Eshop\Application\Model\Content as EshopModelContent;
 use OxidEsales\Eshop\Application\Model\Payment as EshopModelPayment;
 use OxidEsales\Eshop\Core\Model\BaseModel as EshopBaseModel;
 use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
+use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Database\Adapter\Doctrine\Database;
 
 //NOTE: later we will do this on module installation, for now on first activation
@@ -39,11 +40,23 @@ class StaticContent
         foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
             $paymentMethod = oxNew(EshopModelPayment::class);
             if ($paymentMethod->load($paymentId)) {
+                $this->reActivatePaymentMethod($paymentId, $paymentDefinitions);
                 continue;
             }
             $this->createPaymentMethod($paymentId, $paymentDefinitions);
             $this->assignPaymentToCountries($paymentId, $paymentDefinitions['countries']);
             $this->assignPaymentToActiveDeliverySets($paymentId);
+        }
+    }
+
+    public function deactivatePayPalPaymentMethods(): void
+    {
+        foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
+            $paymentMethod = oxNew(EshopModelPayment::class);
+            if ($paymentMethod->load($paymentId)) {
+                $paymentMethod->oxpayments__oxactive = new Field(false);
+                $paymentMethod->save();
+            }
         }
     }
 
@@ -133,6 +146,20 @@ class StaticContent
             );
             $paymentModel->save();
         }
+    }
+
+    protected function reActivatePaymentMethod(string $paymentId, array $definitions): void
+    {
+        /** @var EshopModelPayment $paymentModel */
+        $paymentModel = oxNew(EshopModelPayment::class);
+        $paymentModel->load($paymentId);
+
+        $activeCountries = $this->getActiveCountries();
+
+        $paymentModel->oxpayments__oxactive = new Field(empty($definitions['countries']) ||
+            0 < count(array_intersect($definitions['countries'], $activeCountries)));
+
+        $paymentModel->save();
     }
 
     public function ensureStaticContents(): void
