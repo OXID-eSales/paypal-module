@@ -12,6 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Service;
 use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
 use OxidEsales\Eshop\Core\Database\Adapter\Doctrine\Database;
 use OxidEsales\Eshop\Application\Model\Payment;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 
 class ModuleSettings
 {
