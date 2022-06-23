@@ -48,8 +48,6 @@ class PatchRequestFactory
         string $orderId = ''
     ): array {
         $this->basket = $basket;
-        $nettoPrices = $this->basket->isCalculationModeNetto();
-        $currency = $this->basket->getBasketCurrency();
 
         $this->getShippingNamePatch();
         $this->getShippingAddressPatch();
@@ -58,14 +56,13 @@ class PatchRequestFactory
             $this->getCustomIdPatch($orderId);
         }
 
-
         /** @var BasketItem $basketItem */
         // PayPal cannot fully patch the items in the shopping cart.
         // At the moment only the amount and the title of the article
         // are relevant. However, no inventory.
         // So we ignore the Article-Patch
         //foreach ($this->basket->getContents() as $basketItem) {
-        //    $this->getPurchaseUnitsPatch($basketItem, $nettoPrices, $currency);
+        //    $this->getPurchaseUnitsPatch($basketItem);
         //}
 
         return $this->request;
@@ -147,11 +144,12 @@ class PatchRequestFactory
         $breakdown = $amount->breakdown = new AmountBreakdown();
 
         //Item total cost
-        $itemTotal = $this->basket->getPayPalCheckoutItemsNetto();
-        $breakdown->item_total = PriceToMoney::convert((float)$itemTotal, $currency);
+        $itemTotal = (float)$this->basket->getPayPalCheckoutItemsNetto(false);
+        $itemTotal += (float)$this->basket->getPayPalCheckoutRoundDiff();
+        $breakdown->item_total = PriceToMoney::convert($itemTotal, $currency);
 
         //Item tax sum
-        $tax = $this->basket->getPayPalCheckoutItemsVatValue();
+        $tax = $this->basket->getPayPalCheckoutItemsVatValue(false);
         $breakdown->tax_total = PriceToMoney::convert((float)$tax, $currency);
 
         //Shipping cost
@@ -174,10 +172,10 @@ class PatchRequestFactory
      * @param $currency
      */
     protected function getPurchaseUnitsPatch(
-        BasketItem $basketItem,
-        bool $nettoPrices,
-        $currency
+        BasketItem $basketItem
     ): void {
+        $currency = $this->basket->getBasketCurrency();
+
         $patch = new Patch();
         $patch->op = Patch::OP_REPLACE;
         $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/items";
@@ -186,10 +184,8 @@ class PatchRequestFactory
         $item->name = $basketItem->getTitle();
         $itemUnitPrice = $basketItem->getUnitPrice();
         $item->unit_amount = PriceToMoney::convert((float)$itemUnitPrice->getNettoPrice(), $currency);
+        $item->tax = PriceToMoney::convert((float)$itemUnitPrice->getVatValue(), $currency);
 
-        if ($nettoPrices) {
-            $item->tax = PriceToMoney::convert((float)$itemUnitPrice->getVatValue(), $currency);
-        }
         $item->quantity = (string) $basketItem->getAmount();
 
         $patch->value = $item;
