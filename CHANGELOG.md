@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.1.3] - 2022-06-23
+
+- fix difference between VAT-Calculation in OXID-Nettomode and PayPal-API
+
 ## [2.1.2] - 2022-06-22
 
 - dont show Express-buttons if express-payment is deactivated
