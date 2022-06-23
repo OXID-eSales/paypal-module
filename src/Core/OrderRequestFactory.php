@@ -292,7 +292,7 @@ class OrderRequestFactory
         // Dummy-Article for Rounding-Error
         if ($roundDiff = $basket->getPayPalCheckoutRoundDiff()) {
             $item = new Item();
-            $item->name = $language->translateString('FIX_VATROUNDING');
+            $item->name = $language->translateString('OSC_PAYPAL_VAT_CORRECTION');
 
             $item->unit_amount = PriceToMoney::convert((float)$roundDiff, $currency);
             $item->tax = PriceToMoney::convert(0, $currency);
