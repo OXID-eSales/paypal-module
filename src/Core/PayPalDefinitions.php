@@ -461,18 +461,24 @@ final class PayPalDefinitions
             'oxactive' => 1,
             'oxtitle_de' => 'Rechnungskauf Einverständniserklärung',
             'oxtitle_en' => 'Pay upon Invoice letter of acceptance',
-            'oxcontent_de' => 'Mit Klicken auf den "Zahlungspflichtig bestellen" - Button akzeptieren Sie die Ratepay
-                Zahlungsbedingungen und erklären sich mit der Durchführung einer Risikoprüfung durch Ratepay, unseren
-                Partner, einverstanden. Sie akzeptieren auch PayPals Datenschutzerklärung. Falls Ihre Transaktion per
-                Kauf auf Rechnung erfolgreich abgewickelt werden kann, wird der Kaufpreis an Ratepay abgetreten und Sie
-                dürfen nur an Ratepay überweisen, nicht an den Händler.',
-            'oxcontent_en' => ' By clicking on the "Order now" - button, you agree to the terms of payment and performance
-                of a risk check from the payment partner, Ratepay. You also agree to PayPal’s privacy statement. If your
-                request to purchase upon invoice is accepted, the purchase price claim will be assigned to Ratepay, and
-                you may only pay Ratepay, not the merchant.'
+            'oxcontent_de' => 'Mit Klicken auf den "Zahlungspflichtig bestellen" - Button akzeptieren Sie die
+                <a href="https://www.ratepay.com/legal-payment-terms" target="_blank">Ratepay Zahlungsbedingungen</a>
+                und erklären sich mit der Durchführung einer
+                <a href="https://www.ratepay.com/legal-payment-dataprivacy" target="_blank">Risikoprüfung durch Ratepay</a>,
+                unseren Partner, einverstanden. Sie akzeptieren auch PayPals
+                <a href="https://www.paypal.com/de/webapps/mpp/ua/rechnungskauf-mit-ratepay?locale.x=de_DE"
+                target="_blank">Datenschutzerklärung</a>. Falls Ihre Transaktion per Kauf auf Rechnung erfolgreich abgewickelt
+                werden kann, wird der Kaufpreis an Ratepay abgetreten und Sie dürfen nur an Ratepay überweisen, nicht an den Händler.',
+            'oxcontent_en' => ' By clicking on the "Order now" - button, you agree to the
+                <a href="https://www.ratepay.com/en/ratepay-terms-of-payment/" target="_blank">terms of payment</a>
+                and performance of a <a href="https://www.ratepay.com/en/ratepay-data-privacy-statement/" target="_blank">risk check</a>
+                from the payment partner, Ratepay. You also agree to PayPal’s
+                <a href="https://www.paypal.com/de/webapps/mpp/ua/rechnungskauf-mit-ratepay?locale.x=en_EN"
+                target="_blank">privacy statement</a>. If your request to purchase upon invoice is accepted, the purchase price claim
+                will be assigned to Ratepay, and you may only pay Ratepay, not the merchant.'
         ]
     ];
-
+Mit Klicken auf den Button ("Zahlungspflichtig bestellen") akzeptieren Sie die Ratepay Zahlungsbedingungen und erklären sich mit der Durchführung einer Risikoprüfung durch Ratepay, unseren Partner, einverstanden. Sie akzeptieren auch PayPals Datenschutzerklärung. Falls Ihre Transaktion per Kauf auf Rechnung erfolgreich abgewickelt werden kann, wird der Kaufpreis an Ratepay abgetreten und Sie dürfen nur an Ratepay überweisen, nicht an den Händler.
     public static function getPayPalDefinitions()
     {
         return self::PAYPAL_DEFINTIONS;

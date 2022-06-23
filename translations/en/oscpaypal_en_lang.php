@@ -28,6 +28,6 @@ $aLang = [
     'OSC_PAYPAL_PUI_HELP'                         => 'To process the invoice, we need your date of birth and a valid telephone number with city- or country code (e.g. 030 123456789 or +49 30 123456789)',
     'OSC_PAYPAL_PUI_BIRTHDAY'                     => 'Birthday',
     'OSC_PAYPAL_PUI_BIRTHDAY_PLACEHOLDER'         => '01.01.1970',
-    'OSC_PAYPAL_PUI_PHONENUMBER'                  => 'Phonenumber',
+    'OSC_PAYPAL_PUI_PHONENUMBER'                  => 'Phoneno.',
     'OSC_PAYPAL_PUI_PHONENUMBER_PLACEHOLDER'      => '+49 30 123456789',
 ];
