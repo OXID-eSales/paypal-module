@@ -439,7 +439,8 @@ final class PayPalDefinitions
                 'en' => [
                     'desc' => 'Trustly',
                     'longdesc' => '',
-                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_trustly_color.svg" title="Trustly" style="float: left;margin-right: 10px;" />
+                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_trustly_color.svg"
+                        title="Trustly" style="float: left;margin-right: 10px;" />
                         Trustly meets the high demand for bank transfer payments in key European markets.
                         With Trustly, consumers can initiate payments directly from their bank accounts, using a highly
                         secure payment option, with no risk of stolen details or fraud. Trustly integrates with banks
@@ -478,7 +479,7 @@ final class PayPalDefinitions
                 will be assigned to Ratepay, and you may only pay Ratepay, not the merchant.'
         ]
     ];
-Mit Klicken auf den Button ("Zahlungspflichtig bestellen") akzeptieren Sie die Ratepay Zahlungsbedingungen und erklären sich mit der Durchführung einer Risikoprüfung durch Ratepay, unseren Partner, einverstanden. Sie akzeptieren auch PayPals Datenschutzerklärung. Falls Ihre Transaktion per Kauf auf Rechnung erfolgreich abgewickelt werden kann, wird der Kaufpreis an Ratepay abgetreten und Sie dürfen nur an Ratepay überweisen, nicht an den Händler.
+
     public static function getPayPalDefinitions()
     {
         return self::PAYPAL_DEFINTIONS;
