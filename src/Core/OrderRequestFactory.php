@@ -196,11 +196,12 @@ class OrderRequestFactory
         $breakdown = $amount->breakdown = new AmountBreakdown();
 
         //Item total cost
-        $itemTotal = $basket->getPayPalCheckoutItemsNetto();
-        $breakdown->item_total = PriceToMoney::convert((float)$itemTotal, $currency);
+        $itemTotal = (float)$basket->getPayPalCheckoutItemsNetto(false);
+        $itemTotal += (float)$basket->getPayPalCheckoutRoundDiff();
+        $breakdown->item_total = PriceToMoney::convert($itemTotal, $currency);
 
         //Item tax sum
-        $tax = $basket->getPayPalCheckoutItemsVatValue();
+        $tax = $basket->getPayPalCheckoutItemsVatValue(false);
         $breakdown->tax_total = PriceToMoney::convert((float)$tax, $currency);
 
         //Shipping cost
@@ -243,7 +244,7 @@ class OrderRequestFactory
             $items[] = $item;
         }
 
-        if ($wrapping = $basket->getPayPalCheckoutWrappingCosts()) {
+        if ($wrapping = $basket->getPayPalCheckoutWrappingNetto()) {
             $item = new Item();
             $item->name = $language->translateString('GIFT_WRAPPING');
 
@@ -258,7 +259,7 @@ class OrderRequestFactory
             $items[] = $item;
         }
 
-        if ($giftCard = $basket->getPayPalCheckoutGiftCardCosts()) {
+        if ($giftCard = $basket->getPayPalCheckoutGiftCardNetto()) {
             $item = new Item();
             $item->name = $language->translateString('GREETING_CARD');
 
@@ -273,7 +274,7 @@ class OrderRequestFactory
             $items[] = $item;
         }
 
-        if (($payment = $basket->getPayPalCheckoutPaymentCosts()) > 0) {
+        if (($payment = $basket->getPayPalCheckoutPaymentNetto()) > 0) {
             $item = new Item();
             $item->name = $language->translateString('PAYMENT_METHOD');
 
@@ -288,6 +289,21 @@ class OrderRequestFactory
             $items[] = $item;
         }
 
+        // Dummy-Article for Rounding-Error
+        if ($roundDiff = $basket->getPayPalCheckoutRoundDiff()) {
+            $item = new Item();
+            $item->name = $language->translateString('FIX_VATROUNDING');
+
+            $item->unit_amount = PriceToMoney::convert((float)$roundDiff, $currency);
+            $item->tax = PriceToMoney::convert(0, $currency);
+            $item->tax_rate = '0';
+            // TODO: There are usually still categories for digital products.
+            // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
+            $item->category = 'PHYSICAL_GOODS';
+
+            $item->quantity = '1';
+            $items[] = $item;
+        }
         return $items;
     }
 
