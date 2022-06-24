@@ -133,9 +133,9 @@ class PatchRequestFactory
 
         $amount = new AmountWithBreakdown();
         $currency = $this->basket->getBasketCurrency();
-        $priceVatMode = ($this->basket->isCalculationModeNetto() ? 2 : 1);
 
-        $total = PriceToMoney::convert($this->basket->getPrice(), $currency, $priceVatMode);
+        $total = PriceToMoney::convert($this->basket->getPrice()->getBruttoPrice(), $currency);
+        $amount->value = PriceToMoney::convert($total, $currency);
 
         //Total amount
         $amount->value = $total->value;
@@ -144,21 +144,19 @@ class PatchRequestFactory
         $breakdown = $amount->breakdown = new AmountBreakdown();
 
         //Item total cost
-        $itemTotal = (float)$this->basket->getPayPalCheckoutItemsNetto(false);
-        $itemTotal += (float)$this->basket->getPayPalCheckoutRoundDiff();
+        $itemTotal = (float)$this->basket->getPayPalCheckoutItems();
         $breakdown->item_total = PriceToMoney::convert($itemTotal, $currency);
 
-        //Item tax sum
-        $tax = $this->basket->getPayPalCheckoutItemsVatValue(false);
-        $breakdown->tax_total = PriceToMoney::convert((float)$tax, $currency);
+        //Item tax sum - we use 0% and calculate with brutto to avoid rounding errors
+        $breakdown->tax_total = PriceToMoney::convert(0, $currency);
 
         //Shipping cost
-        if ($delivery = $this->basket->getPayPalCheckoutDeliveryCostsBrutto()) {
+        if ($delivery = $this->basket->getPayPalCheckoutDeliveryCosts()) {
             $breakdown->shipping = PriceToMoney::convert((float)$delivery, $currency);
         }
 
         //Discount
-        if ($discount = $this->basket->getDiscountSumPayPalBasket()) {
+        if ($discount = $this->basket->getPayPalCheckoutDiscount()) {
             $breakdown->discount = PriceToMoney::convert((float)$discount, $currency);
         }
         $patch->value = $amount;
@@ -183,8 +181,10 @@ class PatchRequestFactory
         $item = new Item();
         $item->name = $basketItem->getTitle();
         $itemUnitPrice = $basketItem->getUnitPrice();
-        $item->unit_amount = PriceToMoney::convert((float)$itemUnitPrice->getNettoPrice(), $currency);
-        $item->tax = PriceToMoney::convert((float)$itemUnitPrice->getVatValue(), $currency);
+        $item->unit_amount = PriceToMoney::convert((float)$itemUnitPrice->getBruttoPrice(), $currency);
+
+        //Item tax sum - we use 0% and calculate with brutto to avoid rounding errors
+        $item->tax = PriceToMoney::convert(0, $currency);
 
         $item->quantity = (string) $basketItem->getAmount();
 
