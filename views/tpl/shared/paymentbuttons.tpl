@@ -5,11 +5,12 @@
         [{if !$aid}]
             [{assign var="aid" value=""}]
         [{/if}]
+        [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
+
         [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
-        [{literal}]
         paypal.Buttons({
             createOrder: function(data, actions) {
-                return fetch('[{/literal}][{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue"|cat:"&aid="|cat:$aid}][{literal}]', {
+                return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue"|cat:"&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
                     method: 'post',
                     headers: {
                         'content-type': 'application/json'
@@ -23,31 +24,27 @@
             onApprove: function(data, actions) {
                 captureData = new FormData();
                 captureData.append('orderID', data.orderID);
-                return fetch('[{/literal}][{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue"|cat:"&aid="|cat:$aid}][{literal}]', {
+                return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue"|cat:"&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
                     method: 'post',
                     body: captureData
                 }).then(function(res) {
                     return res.json();
                 }).then(function(data) {
-                [{/literal}]
-
-                if (data.status == "ERROR") {
-                    location.reload();
-                }
-                else if (data.id && data.status == "APPROVED") {
-                    location.replace('[{$sSelfLink|cat:"cl=order"}]');
-                }
-                [{literal}]
+                    if (data.status == "ERROR") {
+                        location.reload();
+                    }
+                    else if (data.id && data.status == "APPROVED") {
+                        location.replace('[{$sSelfLink|cat:"cl=order"}]');
+                    }
                 })
             },
             onCancel: function(data, actions) {
-                fetch('[{/literal}][{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}][{literal}]');
+                fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
             },
             onError: function (data) {
-                fetch('[{/literal}][{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}][{literal}]');
+                fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
             }
-        }).render('#[{/literal}][{$buttonId}][{literal}]');
-        [{/literal}]
+        }).render('#[{$buttonId}]');
     [{/capture}]
     [{oxscript add=$paypal_init}]
 [{/block}]

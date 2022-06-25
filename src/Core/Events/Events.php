@@ -12,6 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Core\Events;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Service\StaticContent;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 
 class Events
 {
@@ -25,6 +26,9 @@ class Events
 
         //add static contents and payment methods
         self::addStaticContents();
+
+        //extend session required controller
+        self::addRequireSession();
     }
 
     /**
@@ -195,5 +199,17 @@ class Events
 
         $staticContent->ensureStaticContents();
         $staticContent->ensurePayPalPaymentMethods();
+    }
+
+    /**
+     * add details controller to requireSession
+     */
+    private static function addRequireSession(): void
+    {
+        $moduleSettings = new ModuleSettings(
+            Registry::getConfig(),
+            DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)
+        );
+        $moduleSettings->addRequireSession();
     }
 }

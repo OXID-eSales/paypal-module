@@ -16,6 +16,17 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 
 class ModuleSettings
 {
+    /**
+     * Force session start for details-controller, so PayPal-Express-Buttons works everytime
+     *
+     * @var array
+     */
+    protected $requireSessionWithParams = [
+        'cl' => [
+            'details' => true
+        ]
+    ];
+
     /** @var DatabaseProvider */
     private $db;
 
@@ -319,6 +330,17 @@ class ModuleSettings
         } else {
             $this->save('oscPayPalWebhookId', $webhookId, 'str');
         }
+    }
+
+    /**
+     * add details controller to requireSession
+     */
+    public function addRequireSession(): void
+    {
+        $cfg = $this->config->getConfigParam('aRequireSessionWithParams');
+        $cfg = is_array($cfg) ? $cfg : [];
+        $cfg = array_merge_recursive($cfg, $this->requireSessionWithParams);
+        $this->config->saveShopConfVar('arr', 'aRequireSessionWithParams', $cfg, (string)$this->config->getShopId());
     }
 
     /**
