@@ -5,10 +5,12 @@
         [{if !$aid}]
             [{assign var="aid" value=""}]
         [{/if}]
+        [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
+
         [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
         paypal.Buttons({
             createOrder: function(data, actions) {
-                return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue"|cat:"&aid="|cat:$aid|cat:"&token="|cat:$oViewConf->getSessionChallengeToken()}]', {
+                return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue"|cat:"&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
                     method: 'post',
                     headers: {
                         'content-type': 'application/json'
@@ -22,7 +24,7 @@
             onApprove: function(data, actions) {
                 captureData = new FormData();
                 captureData.append('orderID', data.orderID);
-                return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue"|cat:"&aid="|cat:$aid|cat:"&token="|cat:$oViewConf->getSessionChallengeToken()}]', {
+                return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue"|cat:"&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
                     method: 'post',
                     body: captureData
                 }).then(function(res) {

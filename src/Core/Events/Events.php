@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core\Events;
 
 use OxidEsales\DoctrineMigrationWrapper\MigrationsBuilder;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\StaticContent;
 use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
@@ -29,6 +30,9 @@ class Events
         //add static contents and payment methods
         //NOTE: this assumes the module's servies.yaml is already in place at the time this method is called
         self::addStaticContents();
+
+        //extend session required controller
+        self::addRequireSession();
     }
 
     /**
@@ -71,5 +75,17 @@ class Events
 
         $service->ensureStaticContents();
         $service->ensurePayPalPaymentMethods();
+    }
+
+    /**
+     * add details controller to requireSession
+     */
+    private static function addRequireSession(): void
+    {
+        /** @var StaticContent $service */
+        $moduleSettings = ContainerFactory::getInstance()
+            ->getContainer()
+            ->get(ModuleSettings::class);
+        $moduleSettings->addRequireSession();
     }
 }

@@ -9,17 +9,33 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
+use OxidEsales\EshopCommunity\Core\Registry;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
+use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Module;
 use OxidEsales\Eshop\Application\Model\Payment;
 
 class ModuleSettings
 {
+    /**
+     * Force session start for details-controller, so PayPal-Express-Buttons works everytime
+     *
+     * @var array
+     */
+    protected $requireSessionWithParams = [
+        'cl' => [
+            'details' => true
+        ]
+    ];
+
     protected $payPalCheckoutExpressPaymentEnabled = null;
 
     /** @var ModuleSettingBridgeInterface */
     private $moduleSettingBridge;
+
+    /** @var ContextInterface */
+    private $context;
 
     //TODO: we need service for fetching module settings from db (this one)
     //another class for moduleconfiguration (database values/edefaults)
@@ -27,9 +43,11 @@ class ModuleSettings
     //also add shopcontext to get shop settings
 
     public function __construct(
-        ModuleSettingBridgeInterface $moduleSettingBridge
+        ModuleSettingBridgeInterface $moduleSettingBridge,
+        ContextInterface $context
     ) {
         $this->moduleSettingBridge = $moduleSettingBridge;
+        $this->context = $context;
     }
 
     public function showAllPayPalBanners(): bool
@@ -302,6 +320,18 @@ class ModuleSettings
         } else {
             $this->save('oscPayPalWebhookId', $webhookId);
         }
+    }
+
+    /**
+     * add details controller to requireSession
+     */
+    public function addRequireSession(): void
+    {
+        $config = Registry::getConfig();
+        $cfg = $config->getConfigParam('aRequireSessionWithParams');
+        $cfg = is_array($cfg) ? $cfg : [];
+        $cfg = array_merge_recursive($cfg, $this->requireSessionWithParams);
+        $config->saveShopConfVar('arr', 'aRequireSessionWithParams', $cfg, $this->context->getCurrentShopId());
     }
 
     /**
