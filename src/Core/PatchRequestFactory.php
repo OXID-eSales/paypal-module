@@ -135,7 +135,6 @@ class PatchRequestFactory
         $currency = $this->basket->getBasketCurrency();
 
         $total = PriceToMoney::convert($this->basket->getPrice()->getBruttoPrice(), $currency);
-        $amount->value = PriceToMoney::convert($total, $currency);
 
         //Total amount
         $amount->value = $total->value;

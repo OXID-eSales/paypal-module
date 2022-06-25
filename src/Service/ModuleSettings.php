@@ -331,7 +331,7 @@ class ModuleSettings
         $cfg = $config->getConfigParam('aRequireSessionWithParams');
         $cfg = is_array($cfg) ? $cfg : [];
         $cfg = array_merge_recursive($cfg, $this->requireSessionWithParams);
-        $config->saveShopConfVar('arr', 'aRequireSessionWithParams', $cfg, $this->context->getCurrentShopId());
+        $config->saveShopConfVar('arr', 'aRequireSessionWithParams', $cfg, (string)$this->context->getCurrentShopId());
     }
 
     /**

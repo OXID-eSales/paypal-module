@@ -82,7 +82,7 @@ class Events
      */
     private static function addRequireSession(): void
     {
-        /** @var StaticContent $service */
+        /** @var ModuleSettings $moduleSettings */
         $moduleSettings = ContainerFactory::getInstance()
             ->getContainer()
             ->get(ModuleSettings::class);
