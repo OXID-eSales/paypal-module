@@ -242,7 +242,7 @@ class OrderRequestFactory
             $items[] = $item;
         }
 
-          if ($wrapping = $basket->getPayPalCheckoutWrapping()) {
+        if ($wrapping = $basket->getPayPalCheckoutWrapping()) {
             $item = new Item();
             $item->name = $language->translateString('GIFT_WRAPPING');
 
