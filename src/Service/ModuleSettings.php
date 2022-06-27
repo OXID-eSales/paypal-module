@@ -144,6 +144,12 @@ class ModuleSettings
             $this->isPayPalCheckoutExpressPaymentEnabled());
     }
 
+    public function showPayPalMiniBasketButton(): bool
+    {
+        return ($this->getSettingValue('oscPayPalShowMiniBasketButton') &&
+            $this->isPayPalCheckoutExpressPaymentEnabled());
+    }
+
     public function showPayPalPayLaterButton(): bool
     {
         return (bool) $this->getSettingValue('oscPayPalShowPayLaterButton');

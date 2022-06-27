@@ -37,6 +37,7 @@ $aLang = [
     'OSC_PAYPAL_BUTTON_PLACEMEMT_TITLE'           => 'Button placement settings',
     'OSC_PAYPAL_PRODUCT_DETAILS_BUTTON_PLACEMENT' => 'Product details page',
     'OSC_PAYPAL_BASKET_BUTTON_PLACEMENT'          => 'Basket',
+    'OSC_PAYPAL_MINIBASKET_BUTTON_PLACEMENT'      => 'Mini-Basket',
     'HELP_OSC_PAYPAL_BUTTON_PLACEMEMT'            => 'Toggle the display of PayPal buttons',
     'OSC_SHOW_PAYPAL_PAYLATER_BUTTON'             => 'Show "Pay later"-Button?',
     'HELP_OSC_SHOW_PAYPAL_PAYLATER_BUTTON'        => 'In addition to the classic PayPal button, there is a "Pay later"-button that can be displayed below the standard button. If it is activated, the customer has the option of paying for the goods later.',
