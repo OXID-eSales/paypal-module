@@ -37,6 +37,7 @@ $aLang = [
     'OSC_PAYPAL_BUTTON_PLACEMEMT_TITLE'           => 'Einstellungen für die Buttonplatzierung',
     'OSC_PAYPAL_PRODUCT_DETAILS_BUTTON_PLACEMENT' => 'Produktdetailseite',
     'OSC_PAYPAL_BASKET_BUTTON_PLACEMENT'          => 'Warenkorb',
+    'OSC_PAYPAL_MINIBASKET_BUTTON_PLACEMENT'      => 'Mini-Warenkorb',
     'HELP_OSC_PAYPAL_BUTTON_PLACEMEMT'            => 'Schalten Sie die Anzeige der PayPal-Schaltflächen um',
     'OSC_SHOW_PAYPAL_PAYLATER_BUTTON'             => '"Später Bezahlen"-Button anzeigen?',
     'HELP_OSC_SHOW_PAYPAL_PAYLATER_BUTTON'        => 'Neben den klassischen PayPal-Button gibt es ein "Später Bezahlen"-Button, der unter dem Standardbutton angezeigt werden kann. Ist der aktiviert, bekommt der Kunde direkt die Möglichkeit, die Ware später zu zahlen.',

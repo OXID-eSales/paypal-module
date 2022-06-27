@@ -189,6 +189,12 @@
                                             [{oxmultilang ident="OSC_PAYPAL_BASKET_BUTTON_PLACEMENT"}]
                                         </label>
                                     </div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="conf[oscPayPalShowMiniBasketButton]" [{if $config->showPayPalMiniBasketButton()}]checked[{/if}] value="1">
+                                            [{oxmultilang ident="OSC_PAYPAL_MINIBASKET_BUTTON_PLACEMENT"}]
+                                        </label>
+                                    </div>
                                 </div>
                                 <p><span class="help-block">[{oxmultilang ident="HELP_OSC_SHOW_PAYPAL_PAYLATER_BUTTON"}]</span></p>
                                 <div>

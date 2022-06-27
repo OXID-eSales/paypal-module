@@ -111,6 +111,8 @@ $aModule = [
         'modules/osc/paypal/select_payment.tpl' => 'osc/paypal/views/tpl/shared/page/checkout/select_payment.tpl',
         'modules/osc/paypal/details_productmain_tobasket.tpl' =>
             'osc/paypal/views/tpl/shared/page/details/inc/details_productmain_tobasket.tpl',
+        'modules/osc/paypal/dd_layout_page_header_icon_menu_minibasket_functions.tpl' =>
+            'osc/paypal/views/tpl/shared/widget/minibasket/dd_layout_page_header_icon_menu_minibasket_functions.tpl',
         // PAYPAL-486 Theme-specific
         'modules/osc/paypal/change_payment_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/change_payment.tpl',
         'modules/osc/paypal/change_payment_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/change_payment.tpl',
@@ -157,6 +159,11 @@ $aModule = [
             'template' => 'page/checkout/basket.tpl',
             'block' => 'basket_btn_next_bottom',
             'file' => '/views/blocks/page/checkout/basket_btn_next_bottom.tpl',
+        ],
+        [
+            'template' => 'widget/minibasket/minibasket.tpl',
+            'block' => 'dd_layout_page_header_icon_menu_minibasket_functions',
+            'file' => '/views/blocks/widget/minibasket/dd_layout_page_header_icon_menu_minibasket_functions.tpl',
         ],
         // @Todo PAYPAL-486: Using the same file, with 2 themes. Should be more generic, if possible.
         [
@@ -264,6 +271,12 @@ $aModule = [
         ],
         [
             'name' => 'oscPayPalShowBasketButton',
+            'type' => 'bool',
+            'value' => true,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalShowMiniBasketButton',
             'type' => 'bool',
             'value' => true,
             'group' => null
