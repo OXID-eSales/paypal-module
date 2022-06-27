@@ -1,6 +1,5 @@
 [{block name="oscpaypal_paymentbuttons"}]
     <div id="[{$buttonId}]" class="paypal-button-container [{$buttonClass}]"></div>
-    [{oxscript include=$oViewConf->getPayPalJsSdkUrl()}]
     [{capture assign="paypal_init"}]
         [{if !$aid}]
             [{assign var="aid" value=""}]
