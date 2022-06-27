@@ -158,6 +158,8 @@ class ProxyController extends FrontendController
         if ($aid = (string)Registry::getRequest()->getRequestEscapedParameter('aid')) {
             try {
                 $basket->addToBasket($aid, $qty);
+                // Remove flag of "new item added" to not show "Item added" popup when returning to checkout from paypal
+                $basket->isNewItemAdded();
             } catch (OutOfStockException $exception) {
                 $utilsView->addErrorToDisplay($exception);
             } catch (ArticleInputException $exception) {
