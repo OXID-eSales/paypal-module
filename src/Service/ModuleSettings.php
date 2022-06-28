@@ -350,17 +350,9 @@ class ModuleSettings
     }
 
     /**
-     * @return mixed
-     */
-    private function getSettingValue(string $key)
-    {
-        return $this->moduleSettingBridge->get($key, Module::MODULE_ID);
-    }
-
-    /**
      * @return boolean
      */
-    private function isPayPalCheckoutExpressPaymentEnabled(): bool
+    public function isPayPalCheckoutExpressPaymentEnabled(): bool
     {
         if ($this->payPalCheckoutExpressPaymentEnabled === null) {
             $payment = oxNew(Payment::class);
@@ -368,5 +360,13 @@ class ModuleSettings
             $this->payPalCheckoutExpressPaymentEnabled = (bool)$payment->oxpayments__oxactive->value;
         }
         return $this->payPalCheckoutExpressPaymentEnabled;
+    }
+
+    /**
+     * @return mixed
+     */
+    private function getSettingValue(string $key)
+    {
+        return $this->moduleSettingBridge->get($key, Module::MODULE_ID);
     }
 }
