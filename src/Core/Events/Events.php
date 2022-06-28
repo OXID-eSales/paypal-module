@@ -10,6 +10,9 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core\Events;
 
 use OxidEsales\DoctrineMigrationWrapper\MigrationsBuilder;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidEsales\Eshop\Core\Field;
+use OxidEsales\Eshop\Application\Model\Payment as EshopModelPayment;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\StaticContent;
@@ -42,12 +45,13 @@ class Events
      */
     public static function onDeactivate(): void
     {
-        /** @var StaticContent $service */
-        $service = ContainerFactory::getInstance()
-            ->getContainer()
-            ->get(StaticContent::class);
-
-        $service->deactivatePayPalPaymentMethods();
+        foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
+            $paymentMethod = oxNew(EshopModelPayment::class);
+            if ($paymentMethod->load($paymentId)) {
+                $paymentMethod->oxpayments__oxactive = new Field(false);
+                $paymentMethod->save();
+            }
+        }
     }
 
     /**

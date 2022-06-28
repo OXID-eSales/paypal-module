@@ -51,17 +51,6 @@ class StaticContent
         }
     }
 
-    public function deactivatePayPalPaymentMethods(): void
-    {
-        foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
-            $paymentMethod = oxNew(EshopModelPayment::class);
-            if ($paymentMethod->load($paymentId)) {
-                $paymentMethod->oxpayments__oxactive = new Field(false);
-                $paymentMethod->save();
-            }
-        }
-    }
-
     protected function assignPaymentToActiveDeliverySets(string $paymentId): void
     {
         $deliverySetIds = $this->getActiveDeliverySetIds();
