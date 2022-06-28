@@ -4,9 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.3] - 2022-06-23
+## [1.1.3] - 2022-06-28
 
 - fix difference between VAT-Calculation in OXID-Nettomode and PayPal-API
+- fix Login with PayPal
+- add PayPal Mini-Basket-Buttons
 
 ## [1.1.2] - 2022-06-22
 

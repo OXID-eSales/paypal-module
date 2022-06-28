@@ -56,6 +56,14 @@ class ViewConfig extends ViewConfig_parent
     }
 
     /**
+     * @return bool
+     */
+    public function isPayPalExpressPaymentEnabled(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isPayPalCheckoutExpressPaymentEnabled();
+    }
+
+    /**
      * @return Config
      */
     public function getPayPalCheckoutConfig(): Config

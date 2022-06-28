@@ -1,5 +1,7 @@
 [{if $oViewConf->isPayPalCheckoutActive()}]
-    [{oxscript include=$oViewConf->getPayPalJsSdkUrl()}]
+    [{if $oViewConf->isPayPalExpressPaymentEnabled()}]
+        [{oxscript include=$oViewConf->getPayPalJsSdkUrl()}]
+    [{/if}]
     [{if $submitCart}]
     <script>
         document.getElementById('orderConfirmAgbBottom').submit();
