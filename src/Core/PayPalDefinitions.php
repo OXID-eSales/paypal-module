@@ -40,6 +40,7 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => [],
+            'currencies' => [],
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         //Paylater PayPal
@@ -56,7 +57,8 @@ final class PayPalDefinitions
                     'longdesc_beta' => 'Buy now and pay later with PayPal.'
                 ]
             ],
-            'countries' => [],
+            'countries' => ['DE', 'ES', 'FR', 'UK', 'IT', 'US', 'AU'],
+            'currencies' => ['AUD', 'EUR', 'GBP', 'USD'],
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         //Express PayPal
@@ -74,6 +76,7 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => [],
+            'currencies' => [],
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         self::PUI_PAYPAL_PAYMENT_ID => [
@@ -92,6 +95,7 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['DE'],
+            'currencies' => ['EUR'],
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         self::ACDC_PAYPAL_PAYMENT_ID => [
@@ -109,7 +113,8 @@ final class PayPalDefinitions
                         Pay conveniently with Creditcard'
                 ]
             ],
-            'countries' => ['DE'],
+            'countries' => ['DE', 'CA', 'FR', 'AU', 'IT', 'ES', 'UK', 'US'],
+            'currencies' => ['AUD', 'CAD', 'CHF', 'CZK', 'DKK', 'EUR', 'GBP', 'HKD', 'HUF', 'JPY', 'NOK', 'NZD', 'PLN', 'SEK', 'SGD', 'USD'],
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM Bancontact
@@ -139,27 +144,8 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['BE'],
+            'currencies' => ['EUR'],
             'uapmpaymentsource' => 'bancontact',
-            'constraints' => self::PAYMENT_CONSTRAINTS
-        ],
-        // uAPM Boleto Bancário
-        'oscpaypal_boleto' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => 'Boleto Bancário',
-                    'longdesc' => '',
-                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_boleto_black.svg" title="Boleto Bancário" style="float: left;margin-right: 10px;" />
-                        Bezahlen Sie bequem mit Boleto Bancário'
-                ],
-                'en' => [
-                    'desc' => 'Boleto Bancário',
-                    'longdesc' => '',
-                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_boleto_black.svg" title="Boleto Bancário" style="float: left;margin-right: 10px;" />
-                        Pay conveniently with Boleto Bancário'
-                ]
-            ],
-            'countries' => ['BR'],
-            'uapmpaymentsource' => 'boletobancario',
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM BLIK
@@ -191,6 +177,7 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['PL'],
+            'currencies' => ['PLN'],
             'uapmpaymentsource' => 'blik',
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
@@ -218,6 +205,7 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['AT'],
+            'currencies' => ['EUR'],
             'uapmpaymentsource' => 'eps',
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
@@ -246,6 +234,7 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['DE'],
+            'currencies' => ['EUR'],
             'uapmpaymentsource' => 'giropay',
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
@@ -277,41 +266,11 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['NL'],
+            'currencies' => ['EUR'],
             'uapmpaymentsource' => 'ideal',
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
-        // uAPM Multibanco
-        'oscpaypal_multibanco' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => 'Multibanco',
-                    'longdesc' => '',
-                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_multibanco_color.svg" title="Multibanco" style="float: left;margin-right: 10px;" />
-                        Im Besitz und betrieben von SIBS (Sociedade Interbancária de Serviços S.A.),
-                         ermöglicht Multibanco den Verbrauchern, per Banküberweisung oder mit einer Multibanco-Karte an
-                         einem Geldautomaten zu bezahlen. Multibanco ist eine zentrale Zahlungsmethode für portugiesische
-                         Verbraucher und ist an 11.000 Automaten im ganzen Land an strategischen Orten wie Supermärkten,
-                         Flughäfen, Museen, Bahnhöfe, Banken und Einkaufszentren verfügbar. Verbraucher können Multibanco
-                         nutzen um für eine Reihe von Waren/Dienstleistungen zu bezahlen, einschließlich E-Commerce,
-                         Lizenzen und Steuern.'
-                ],
-                'en' => [
-                    'desc' => 'Multibanco',
-                    'longdesc' => '',
-                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_multibanco_color.svg" title="Multibanco" style="float: left;margin-right: 10px;" />
-                        Owned and operated by SIBS (Sociedade Interbancária de Serviços S.A.),
-                        Multibanco enables consumers to pay by bank transfer or with a Multibanco card at an ATM.
-                        Multibanco is a core payment method for Portuguese consumers and is available at over
-                        11,000 machines spread across the country in strategic spots such as supermarkets,
-                        airports, museums, stations, banks, and shopping centers. Consumers can use Multibanco
-                        to pay for a range of goods/services including e-commerce, licenses, and taxes.'
-                ]
-            ],
-            'countries' => ['PT'],
-            'uapmpaymentsource' => 'multibanco',
-            'constraints' => self::PAYMENT_CONSTRAINTS
-        ],
-        // uAPM Multibanco
+        // uAPM MyBank
         'oscpaypal_mybank' => [
             'descriptions' => [
                 'de' => [
@@ -336,35 +295,8 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['IT'],
+            'currencies' => ['EUR'],
             'uapmpaymentsource' => 'mybank',
-            'constraints' => self::PAYMENT_CONSTRAINTS
-        ],
-        // uAPM OXXO
-        'oscpaypal_oxxo' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => 'OXXO',
-                    'longdesc' => '',
-                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_oxxo_color.svg" title="OXXO" style="float: left;margin-right: 10px;" />
-                        OXXO ist eine Convenience-Store-Kette aus Mexiko mit über 18.000 Geschäften
-                        quer durch Lateinamerika. OXXO wurde vor über 30 Jahren gegründet und ist angeblich das größte
-                        Convenience-Store-Kette in Mexiko. E-Commerce-Kunden wählen einfach OXXO als Zahlungsmittel
-                        Methode, die einen Sofortgutschein mit einer bestimmten Zahlungsreferenz erstellt. Sobald
-                        sie genommen haben diese an einen OXXO-Store und bar bezahlt, versendet der Händler das Produkt.'
-                ],
-                'en' => [
-                    'desc' => 'OXXO',
-                    'longdesc' => '',
-                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_oxxo_color.svg" title="OXXO" style="float: left;margin-right: 10px;" />
-                        OXXO is a chain of convenience stores from Mexico, with over 18,000 stores
-                        across Latin America. Established over 30 years ago, OXXO is reportedly the largest
-                        convenience store chain in Mexico. E-commerce consumers simply choose OXXO as the payment
-                        method, creating an instant voucher with a specific payment reference. Once they have taken
-                        this to an OXXO store and paid in cash, the merchant ships the product.'
-                ]
-            ],
-            'countries' => ['MX'],
-            'uapmpaymentsource' => 'oxxo',
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         // uAPM Przelewy24
@@ -388,6 +320,7 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['PL'],
+            'currencies' => ['EUR', 'PLN'],
             'uapmpaymentsource' => 'p24',
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
@@ -419,40 +352,10 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => ['DE', 'AT', 'BE', 'IT', 'NL', 'UK', 'ES'],
+            'currencies' => ['EUR', 'GBP'],
             'uapmpaymentsource' => 'sofort',
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
-        // uAPM Trustly
-        'oscpaypal_trustly' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => 'Trustly',
-                    'longdesc' => '',
-                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_trustly_color.svg" title="Trustly" style="float: left;margin-right: 10px;" />
-                        Trustly erfüllt die hohe Nachfrage nach Banküberweisungszahlungen in wichtigen
-                        europäischen Märkten. Mit Trustly können Verbraucher Zahlungen direkt von ihren Bankkonten
-                        mit einem hoch sicheren Zahlungsoption ohne Risiko von gestohlenen Daten oder Betrug initiieren.
-                        Trustly integriert sich in Banken zum tranferieren von Geldern in ganz Europa und bietet
-                        Echtzeit-Abstimmung durch proprietäre Integrationen zu diesen Konten. Trustly unterstützt
-                        nativ Zahlungen an der Händlerkasse und ist für alle Geräte optimiert.'
-                ],
-                'en' => [
-                    'desc' => 'Trustly',
-                    'longdesc' => '',
-                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_trustly_color.svg"
-                        title="Trustly" style="float: left;margin-right: 10px;" />
-                        Trustly meets the high demand for bank transfer payments in key European markets.
-                        With Trustly, consumers can initiate payments directly from their bank accounts, using a highly
-                        secure payment option, with no risk of stolen details or fraud. Trustly integrates with banks
-                        to collect funds locally across Europe and offers real-time reconciliation through proprietary
-                        integrations to these accounts. Trustly natively supports payments on merchant checkout and
-                        is optimized for all devices.'
-                ]
-            ],
-            'countries' => ['SE', 'FI', 'NL', 'EE'],
-            'uapmpaymentsource' => 'trustly',
-            'constraints' => self::PAYMENT_CONSTRAINTS
-        ]
     ];
 
     private const PAYPAL_STATIC_CONTENTS = [
