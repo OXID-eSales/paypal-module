@@ -86,6 +86,20 @@ class PayPalSession
     }
 
     /**
+     * Checks if active PayPal Order exists
+     *
+     * @return bool
+     */
+    public static function isPayPalACDCOrderActive(): bool
+    {
+        $paymentId = Registry::getSession()->getBasket()->getPaymentId();
+        if (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID == $paymentId) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * PayPal checkout order id getter
      *
      * @return mixed
