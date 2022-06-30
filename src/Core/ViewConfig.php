@@ -58,6 +58,14 @@ class ViewConfig extends ViewConfig_parent
     /**
      * @return bool
      */
+    public function isPayPalACDCSessionActive(): bool
+    {
+        return PayPalSession::isPayPalACDCOrderActive();
+    }
+
+    /**
+     * @return bool
+     */
     public function isPayPalExpressPaymentEnabled(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isPayPalCheckoutExpressPaymentEnabled();

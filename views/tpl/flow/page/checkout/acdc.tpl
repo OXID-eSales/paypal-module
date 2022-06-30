@@ -1,8 +1,3 @@
-[{block name="oscpaypal_acdc"}]
-    [{* use original script tag instead of oxscript because of the additional params *}]
-    <script src="[{$oViewConf->getPayPalJsSdkUrlForACDC()}]" data-client-token="[{$oViewConf->getDataClientToken()}]"></script>
-[{/block}]
-
 <!-- Advanced credit and debit card payments form -->
 <div id="card_container" class="card_container">
     <form id="card_form">
