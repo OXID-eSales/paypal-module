@@ -355,9 +355,19 @@ class ModuleSettings
     public function isPayPalCheckoutExpressPaymentEnabled(): bool
     {
         if ($this->payPalCheckoutExpressPaymentEnabled === null) {
+            $expressEnabled = false;
             $payment = oxNew(Payment::class);
             $payment->load(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
-            $this->payPalCheckoutExpressPaymentEnabled = (bool)$payment->oxpayments__oxactive->value;
+            // check currency
+            if ($expressEnabled = (bool)$payment->oxpayments__oxactive->value) {
+                $actShopCurrency = Registry::getConfig()->getActShopCurrencyObject();
+                $payPalDefinitions = PayPalDefinitions::getPayPalDefinitions();
+                $expressEnabled = in_array(
+                    $actShopCurrency->name,
+                    $payPalDefinitions[PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID]['currencies']
+                );
+            }
+            $this->payPalCheckoutExpressPaymentEnabled = $expressEnabled;
         }
         return $this->payPalCheckoutExpressPaymentEnabled;
     }
