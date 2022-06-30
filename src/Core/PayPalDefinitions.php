@@ -40,7 +40,7 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => [],
-            'currencies' => [],
+            'currencies' => ['AUD', 'BRL', 'CAD', 'CNY', 'CZK', 'DKK', 'EUR', 'HKD', 'HUF', 'ILS', 'JPY', 'MYR', 'MXN', 'TWD', 'NZD', 'NOK', 'PHP', 'PLN', 'GBP', 'RUB', 'SGD', 'SEK', 'CHF', 'THB', 'USD'],
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         //Paylater PayPal
@@ -76,7 +76,7 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => [],
-            'currencies' => [],
+            'currencies' => ['AUD', 'BRL', 'CAD', 'CNY', 'CZK', 'DKK', 'EUR', 'HKD', 'HUF', 'ILS', 'JPY', 'MYR', 'MXN', 'TWD', 'NZD', 'NOK', 'PHP', 'PLN', 'GBP', 'RUB', 'SGD', 'SEK', 'CHF', 'THB', 'USD'],
             'constraints' => self::PAYMENT_CONSTRAINTS
         ],
         self::PUI_PAYPAL_PAYMENT_ID => [
