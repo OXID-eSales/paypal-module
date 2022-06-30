@@ -7,6 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Controller;
 
+use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -23,6 +24,21 @@ class PaymentController extends PaymentController_parent
     public function getPaymentList()
     {
         $paymentList = parent::getPaymentList();
+        $payPalDefinitions = PayPalDefinitions::getPayPalDefinitions();
+        $actShopCurrency = Registry::getConfig()->getActShopCurrencyObject();
+
+        // check currency
+        $paymentListRaw = $paymentList;
+        $paymentList = [];
+
+        foreach ($paymentListRaw as $key => $payment) {
+            if (
+                empty($payPalDefinitions[$key]['currencies']) ||
+                in_array($actShopCurrency->name, $payPalDefinitions[$key]['currencies'])
+            ) {
+                $paymentList[$key] = $payment;
+            }
+        }
 
         // check if basic config exists
         if (!$this->getServiceFromContainer(ModuleSettings::class)->checkHealth()) {
