@@ -227,7 +227,7 @@ class OrderRequestFactory
         /** @var BasketItem $basketItem */
         foreach ($basket->getContents() as $basketItem) {
             $item = new Item();
-            $item->name = $basketItem->getTitle();
+            $item->name = substr($basketItem->getTitle(), 0, 120);
             $itemUnitPrice = $basketItem->getUnitPrice();
 
             $item->unit_amount = PriceToMoney::convert((float)$itemUnitPrice->getBruttoPrice(), $currency);
