@@ -15,6 +15,7 @@ use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Module;
 use OxidEsales\Eshop\Application\Model\Payment;
+use OxidEsales\Eshop\Application\Model\User;
 
 class ModuleSettings
 {
@@ -370,6 +371,21 @@ class ModuleSettings
             $this->payPalCheckoutExpressPaymentEnabled = $expressEnabled;
         }
         return $this->payPalCheckoutExpressPaymentEnabled;
+    }
+
+    /**
+     * Checks and return true if price view mode is netto
+     *
+     * @return bool
+     */
+    public function isPriceViewModeNetto(): bool
+    {
+        $result = (bool) Registry::getConfig()->getConfigParam('blShowNetPrice');
+        $user = oxNew(User::class);
+        if ($user->loadActiveUser()) {
+            $result = $user->isPriceViewModeNetto();
+        }
+        return $result;
     }
 
     /**

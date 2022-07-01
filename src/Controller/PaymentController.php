@@ -27,14 +27,23 @@ class PaymentController extends PaymentController_parent
         $payPalDefinitions = PayPalDefinitions::getPayPalDefinitions();
         $actShopCurrency = Registry::getConfig()->getActShopCurrencyObject();
 
-        // check currency
+        // check currency & netto-view-mode
         $paymentListRaw = $paymentList;
         $paymentList = [];
 
         foreach ($paymentListRaw as $key => $payment) {
             if (
-                empty($payPalDefinitions[$key]['currencies']) ||
-                in_array($actShopCurrency->name, $payPalDefinitions[$key]['currencies'])
+                (
+                    empty($payPalDefinitions[$key]['currencies']) ||
+                    in_array($actShopCurrency->name, $payPalDefinitions[$key]['currencies'])
+                ) &&
+                (
+                    $payPalDefinitions[$key]['onlybrutto'] == false ||
+                    (
+                        $payPalDefinitions[$key]['onlybrutto'] == true &&
+                        !$this->getServiceFromContainer(ModuleSettings::class)->isPriceViewModeNetto()
+                    )
+                )
             ) {
                 $paymentList[$key] = $payment;
             }
