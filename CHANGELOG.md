@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.1.4]
+
+- add currencies as requirements (see list on in Documentation)
+- fix ACDC-Checkout against PPExpress-Button on Order-Page
+- additional allow creditcard in Countries: CA, FR, AU, IT, ES, UK, US
+- allow PayLater only for: DE, ES, FR, UK, IT, US, AU
+- remove Payment OXXO, Trustly, Boleto, Multibanco
+- PUI only allowed in Brutto-Shops (normally B2C)
+- Basket-Articles transfered only for PUI-Orders to PayPal
+
 ## [1.1.3] - 2022-06-28
 
 - fix difference between VAT-Calculation in OXID-Nettomode and PayPal-API
