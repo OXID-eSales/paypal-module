@@ -41,7 +41,8 @@ final class PayPalDefinitions
             ],
             'countries' => [],
             'currencies' => ['AUD', 'BRL', 'CAD', 'CNY', 'CZK', 'DKK', 'EUR', 'HKD', 'HUF', 'ILS', 'JPY', 'MYR', 'MXN', 'TWD', 'NZD', 'NOK', 'PHP', 'PLN', 'GBP', 'RUB', 'SGD', 'SEK', 'CHF', 'THB', 'USD'],
-            'constraints' => self::PAYMENT_CONSTRAINTS
+            'constraints' => self::PAYMENT_CONSTRAINTS,
+            'onlybrutto' => false
         ],
         //Paylater PayPal
         self::PAYLATER_PAYPAL_PAYMENT_ID => [
@@ -59,7 +60,8 @@ final class PayPalDefinitions
             ],
             'countries' => ['DE', 'ES', 'FR', 'UK', 'IT', 'US', 'AU'],
             'currencies' => ['AUD', 'EUR', 'GBP', 'USD'],
-            'constraints' => self::PAYMENT_CONSTRAINTS
+            'constraints' => self::PAYMENT_CONSTRAINTS,
+            'onlybrutto' => false
         ],
         //Express PayPal
         self::EXPRESS_PAYPAL_PAYMENT_ID => [
@@ -77,7 +79,8 @@ final class PayPalDefinitions
             ],
             'countries' => [],
             'currencies' => ['AUD', 'BRL', 'CAD', 'CNY', 'CZK', 'DKK', 'EUR', 'HKD', 'HUF', 'ILS', 'JPY', 'MYR', 'MXN', 'TWD', 'NZD', 'NOK', 'PHP', 'PLN', 'GBP', 'RUB', 'SGD', 'SEK', 'CHF', 'THB', 'USD'],
-            'constraints' => self::PAYMENT_CONSTRAINTS
+            'constraints' => self::PAYMENT_CONSTRAINTS,
+            'onlybrutto' => false
         ],
         self::PUI_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
@@ -96,7 +99,8 @@ final class PayPalDefinitions
             ],
             'countries' => ['DE'],
             'currencies' => ['EUR'],
-            'constraints' => self::PAYMENT_CONSTRAINTS
+            'constraints' => self::PAYMENT_CONSTRAINTS,
+            'onlybrutto' => true
         ],
         self::ACDC_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
@@ -115,7 +119,8 @@ final class PayPalDefinitions
             ],
             'countries' => ['DE', 'CA', 'FR', 'AU', 'IT', 'ES', 'UK', 'US'],
             'currencies' => ['AUD', 'CAD', 'CHF', 'CZK', 'DKK', 'EUR', 'GBP', 'HKD', 'HUF', 'JPY', 'NOK', 'NZD', 'PLN', 'SEK', 'SGD', 'USD'],
-            'constraints' => self::PAYMENT_CONSTRAINTS
+            'constraints' => self::PAYMENT_CONSTRAINTS,
+            'onlybrutto' => false
         ],
         // uAPM Bancontact
         'oscpaypal_bancontact' => [
@@ -146,7 +151,8 @@ final class PayPalDefinitions
             'countries' => ['BE'],
             'currencies' => ['EUR'],
             'uapmpaymentsource' => 'bancontact',
-            'constraints' => self::PAYMENT_CONSTRAINTS
+            'constraints' => self::PAYMENT_CONSTRAINTS,
+            'onlybrutto' => false
         ],
         // uAPM BLIK
         'oscpaypal_blik' => [
@@ -179,7 +185,8 @@ final class PayPalDefinitions
             'countries' => ['PL'],
             'currencies' => ['PLN'],
             'uapmpaymentsource' => 'blik',
-            'constraints' => self::PAYMENT_CONSTRAINTS
+            'constraints' => self::PAYMENT_CONSTRAINTS,
+            'onlybrutto' => false
         ],
         // uAPM EPS
         'oscpaypal_eps' => [
@@ -207,7 +214,8 @@ final class PayPalDefinitions
             'countries' => ['AT'],
             'currencies' => ['EUR'],
             'uapmpaymentsource' => 'eps',
-            'constraints' => self::PAYMENT_CONSTRAINTS
+            'constraints' => self::PAYMENT_CONSTRAINTS,
+            'onlybrutto' => false
         ],
         // uAPM GiroPay
         'oscpaypal_giropay' => [
@@ -236,7 +244,8 @@ final class PayPalDefinitions
             'countries' => ['DE'],
             'currencies' => ['EUR'],
             'uapmpaymentsource' => 'giropay',
-            'constraints' => self::PAYMENT_CONSTRAINTS
+            'constraints' => self::PAYMENT_CONSTRAINTS,
+            'onlybrutto' => false
         ],
         // uAPM iDEAL
         'oscpaypal_ideal' => [
@@ -268,7 +277,8 @@ final class PayPalDefinitions
             'countries' => ['NL'],
             'currencies' => ['EUR'],
             'uapmpaymentsource' => 'ideal',
-            'constraints' => self::PAYMENT_CONSTRAINTS
+            'constraints' => self::PAYMENT_CONSTRAINTS,
+            'onlybrutto' => false
         ],
         // uAPM MyBank
         'oscpaypal_mybank' => [
@@ -297,7 +307,8 @@ final class PayPalDefinitions
             'countries' => ['IT'],
             'currencies' => ['EUR'],
             'uapmpaymentsource' => 'mybank',
-            'constraints' => self::PAYMENT_CONSTRAINTS
+            'constraints' => self::PAYMENT_CONSTRAINTS,
+            'onlybrutto' => false
         ],
         // uAPM Przelewy24
         'oscpaypal_przelewy24' => [
@@ -322,7 +333,8 @@ final class PayPalDefinitions
             'countries' => ['PL'],
             'currencies' => ['EUR', 'PLN'],
             'uapmpaymentsource' => 'p24',
-            'constraints' => self::PAYMENT_CONSTRAINTS
+            'constraints' => self::PAYMENT_CONSTRAINTS,
+            'onlybrutto' => false
         ],
         // uAPM Sofort
         'oscpaypal_sofort' => [
@@ -354,7 +366,8 @@ final class PayPalDefinitions
             'countries' => ['DE', 'AT', 'BE', 'IT', 'NL', 'UK', 'ES'],
             'currencies' => ['EUR', 'GBP'],
             'uapmpaymentsource' => 'sofort',
-            'constraints' => self::PAYMENT_CONSTRAINTS
+            'constraints' => self::PAYMENT_CONSTRAINTS,
+            'onlybrutto' => false
         ],
     ];
 

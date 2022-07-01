@@ -8,21 +8,11 @@
 namespace OxidSolutionCatalysts\PayPal\Model;
 
 use Exception;
-use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\Eshop\Core\UtilsObject;
-use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
-use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
-use OxidSolutionCatalysts\PayPal\Exception\Redirect;
-use OxidSolutionCatalysts\PayPal\Exception\RedirectWithMessage;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
-use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 
 /**
