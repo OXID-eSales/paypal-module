@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
+use OxidEsales\EshopCommunity\Core\Registry;
 use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
 use OxidEsales\Eshop\Core\Database\Adapter\Doctrine\Database;
 use OxidEsales\Eshop\Application\Model\Payment;
