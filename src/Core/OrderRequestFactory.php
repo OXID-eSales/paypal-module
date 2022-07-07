@@ -230,16 +230,19 @@ class OrderRequestFactory
             $item->name = substr($basketItem->getTitle(), 0, 120);
             $itemUnitPrice = $basketItem->getUnitPrice();
 
-            $item->unit_amount = PriceToMoney::convert((float)$itemUnitPrice->getBruttoPrice(), $currency);
-            // tax - we use 0% and calculate with brutto to avoid rounding errors
-            $item->tax = PriceToMoney::convert((float)0, $currency);
-            $item->tax_rate = '0';
-            // TODO: There are usually still categories for digital products.
-            // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
-            $item->category = 'PHYSICAL_GOODS';
+            // no zero price articles in the list
+            if ((float)$itemUnitPrice->getBruttoPrice() > 0) {
+                $item->unit_amount = PriceToMoney::convert((float)$itemUnitPrice->getBruttoPrice(), $currency);
+                // tax - we use 0% and calculate with brutto to avoid rounding errors
+                $item->tax = PriceToMoney::convert((float)0, $currency);
+                $item->tax_rate = '0';
+                // TODO: There are usually still categories for digital products.
+                // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
+                $item->category = 'PHYSICAL_GOODS';
 
-            $item->quantity = (string)$basketItem->getAmount();
-            $items[] = $item;
+                $item->quantity = (string)$basketItem->getAmount();
+                $items[] = $item;
+            }
         }
 
         if ($wrapping = $basket->getPayPalCheckoutWrapping()) {
