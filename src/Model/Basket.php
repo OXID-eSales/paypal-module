@@ -173,7 +173,7 @@ class Basket extends Basket_parent
     {
         $result = 0;
         if ($isOxidSum) {
-            $result += $this->getProductsPrice()->getBruttoSum();
+            $result += $this->getBruttoSum();
         } else {
             foreach ($this->getContents() as $basketItem) {
                 $itemUnitPrice = $basketItem->getUnitPrice();
