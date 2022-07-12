@@ -1,4 +1,5 @@
 [{assign var="sPaymentID" value=$payment->getId()}]
+[{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
 <div class="row">
     <div class="col-12 col-md-6" id="orderShipping">
         <form action="[{$oViewConf->getSslSelfLink()}]" method="post">
@@ -32,7 +33,7 @@
                 <div class="card-header">
                     <h3 class="card-title">
                         [{oxmultilang ident="PAYMENT_METHOD"}]
-                        <a href="[{$oViewConf->getSslSelfLink()|cat:"cl=payment"}]" title="[{oxmultilang ident="EDIT"}]">
+                        <a href="[{$sSelfLink|cat:"cl=payment"}]" title="[{oxmultilang ident="EDIT"}]">
                             <span class="btn btn-sm btn-warning float-right submitButton largeButton edit-button">
                                 <i class="fas fa-pencil-alt"></i>
                             </span>
