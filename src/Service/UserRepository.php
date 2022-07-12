@@ -9,9 +9,11 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
-use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
 use OxidEsales\Eshop\Core\Database\Adapter\Doctrine\Database;
-
+use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
+use OxidEsales\Eshop\Core\Session as EshopSession;
+use OxidEsales\Eshop\Application\Model\Country;
+use OxidEsales\Eshop\Application\Model\State;
 class UserRepository
 {
     /** @var DatabaseProvider */
@@ -20,12 +22,17 @@ class UserRepository
     /** @var EshopCoreConfig */
     private $config;
 
+    /** @var EshopRegistry */
+    private $session;
+
     public function __construct(
         EshopCoreConfig $config,
-        Database $db
+        Database $db,
+        EshopSession $session
     ) {
         $this->config = $config;
         $this->db = $db;
+        $this->session = $session;
     }
 
     /**
@@ -58,5 +65,28 @@ class UserRepository
         ]);
 
         return (string) $userId;
+    }
+
+
+    public function getUserCountryIso(): string
+    {
+        $result = '';
+        if ($user = $this->session()->getUser()) {
+            $country = oxNew(Country::class);
+            $country->load($user->getFieldData('oxcountryid'));
+            $result = (string) $country->getFieldData('oxisoalpha2');
+        }
+        return $result;
+    }
+
+    public function getUserStateIso(): string
+    {
+        $result = '';
+        if ($user = $this->session()->getUser()) {
+            $country = oxNew(State::class);
+            $country->load($user->getFieldData('oxstateid'));
+            $result = (string) $country->getFieldData('oxisoalpha2');
+        }
+        return $result;
     }
 }

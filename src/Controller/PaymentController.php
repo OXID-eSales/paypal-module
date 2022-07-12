@@ -11,6 +11,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 
 class PaymentController extends PaymentController_parent
 {
@@ -26,8 +27,10 @@ class PaymentController extends PaymentController_parent
         $paymentList = parent::getPaymentList();
         $payPalDefinitions = PayPalDefinitions::getPayPalDefinitions();
         $actShopCurrency = Registry::getConfig()->getActShopCurrencyObject();
+        $userRepository = $this->getServiceFromContainer(UserRepository::class);
+        $userCountryIso = $userRepository->getUserCountryIso();
 
-        // check currency & netto-view-mode
+        // check currency & netto-view-mode & invoice-country
         $paymentListRaw = $paymentList;
         $paymentList = [];
 
@@ -35,12 +38,15 @@ class PaymentController extends PaymentController_parent
             if (
                 (
                     empty($payPalDefinitions[$key]['currencies']) ||
-                    in_array($actShopCurrency->name, $payPalDefinitions[$key]['currencies'])
+                    in_array($actShopCurrency->name, $payPalDefinitions[$key]['currencies'], true)
                 ) &&
                 (
-                    $payPalDefinitions[$key]['onlybrutto'] == false ||
+                    empty($payPalDefinitions[$key]['countries']) ||
+                    in_array($userCountryIso, $payPalDefinitions[$key]['countries'], true)
+                ) &&
+                (
+                    $payPalDefinitions[$key]['onlybrutto'] === false ||
                     (
-                        $payPalDefinitions[$key]['onlybrutto'] == true &&
                         !$this->getServiceFromContainer(ModuleSettings::class)->isPriceViewModeNetto()
                     )
                 )

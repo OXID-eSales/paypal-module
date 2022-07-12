@@ -60,7 +60,8 @@ trait ServiceContainer
             case 'OxidSolutionCatalysts\PayPal\Service\UserRepository':
                 $result = $this->services['OxidSolutionCatalysts\PayPal\Service\UserRepository'] = new UserRepository(
                     Registry::getConfig(),
-                    DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)
+                    DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC),
+                    Registry::getSession()
                 );
             break;
         }
