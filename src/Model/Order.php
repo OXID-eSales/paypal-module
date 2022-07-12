@@ -11,11 +11,11 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
+use OxidEsales\Eshop\Application\Model\UserPayment as EshopModelUserPayment;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Model\BaseModel;
 use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\EshopCommunity\Application\Model\UserPayment;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
@@ -109,19 +109,10 @@ class Order extends Order_parent
         $this->save();
     }
 
-    public function finalizeOrderAfterExternalPayment(string $payPalOrderId)
+    public function finalizeOrderAfterExternalPayment(string $payPalOrderId): void
     {
         if (!$this->isLoaded()) {
             throw PayPalException::cannotFinalizeOrderAfterExternalPaymentSuccess($payPalOrderId);
-        }
-
-        if (!$this->oxorder__oxordernr->value) {
-            $this->_setNumber();
-        } else {
-            oxNew(\OxidEsales\Eshop\Core\Counter::class)->update(
-                $this->_getCounterIdent(),
-                $this->oxorder__oxordernr->value
-            );
         }
 
         $this->_updateOrderDate();
@@ -158,11 +149,29 @@ class Order extends Order_parent
         } elseif ($isPayPalACDC) {
             $this->markOrderPaid();
         }
+    }
 
-        $userPayment = oxNew(UserPayment::class);
-        $userPayment->load($this->getFieldData('oxpaymentid'));
+    /**
+     * Send order to shop owner and user
+     *
+     * @param \OxidEsales\Eshop\Application\Model\User        $oUser    order user
+     * @param \OxidEsales\Eshop\Application\Model\Basket      $oBasket  current order basket
+     * @param \OxidEsales\Eshop\Application\Model\UserPayment $oPayment order payment
+     *
+     * @return bool
+     */
+    public function sendPayPalOrderByEmail($user = null, $basket = null, $payment = null) {
 
-        return $this->_sendOrderByEmail($user, $basket, $userPayment);
+        if (!$this->oxorder__oxordernr->value) {
+            $this->_setNumber();
+        } else {
+            oxNew(\OxidEsales\Eshop\Core\Counter::class)->update(
+                $this->_getCounterIdent(),
+                $this->oxorder__oxordernr->value
+            );
+        }
+
+        return $this->_sendOrderByEmail($user, $basket, $payment);
     }
 
     //TODO: this place should be refactored in shop core
@@ -210,8 +219,6 @@ class Order extends Order_parent
         //catch UAPM, Standard and Pay Later PayPal payments here
         if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater) {
             try {
-                /** @var EshopModelBasket $basket */
-                $basket = Registry::getSession()->getBasket();
                 if ($isPayPalUAPM) {
                     $redirectLink = $paymentService->doExecuteUAPMPayment($this, $basket);
                 } else {
