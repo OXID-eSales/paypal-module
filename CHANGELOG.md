@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.1.4]
+## [1.1.5] - 2022-07-14
+
+- change country-restriction from delivery-country to invoice-country
+- allow creditcard worldwide
+- remove irritating error message in case last item was purchased
+
+## [1.1.4] - 2022-07-01
 
 - add currencies as requirements (see list on in Documentation)
 - fix ACDC-Checkout against PPExpress-Button on Order-Page
