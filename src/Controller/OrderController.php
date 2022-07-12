@@ -12,9 +12,9 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\DatabaseProvider;
-use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
-use OxidSolutionCatalysts\PayPal\Model\Order as PayPalEshopModelOrder;
+use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidEsales\Eshop\Application\Model\UserPayment as EshopModelUserPayment;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -96,15 +96,16 @@ class OrderController extends OrderController_parent
             return;
         }
 
+        $basket = Registry::getSession()->getBasket();
         $response = $paymentService->doCreatePatchedOrder(
-            Registry::getSession()->getBasket()
+            $basket
         );
         if (!($paypalOrderId = $response['id'])) {
             $this->outputJson(['acdcerror' => 'cannot create paypal order']);
             return;
         }
 
-        if (!$status || (PayPalEshopModelOrder::ORDER_STATE_ACDCINPROGRESS != $status)) {
+        if (!$status || (\OxidSolutionCatalysts\PayPal\Model\Order::ORDER_STATE_ACDCINPROGRESS != $status)) {
             $response = ['acdcerror' => 'unexpected order status ' . $status];
             $paymentService->removeTemporaryOrder();
         } else {
@@ -113,6 +114,15 @@ class OrderController extends OrderController_parent
             $payPalOrder = $paymentService->getPayPalCheckoutOrder($sessionOrderId, $paypalOrderId);
             $payPalOrder->setStatus($response['status']);
             $payPalOrder->save();
+
+            $order = oxNew(EshopModelOrder::class);
+            $order->setId($sessionOrderId);
+            $order->load($sessionOrderId);
+
+            $user = Registry::getSession()->getUser();
+            $userPayment = oxNew(EshopModelUserPayment::class);
+            $userPayment->load($order->getFieldData('oxpaymentid'));
+            $order->sendPayPalOrderByEmail($user, $basket, $userPayment);
         }
 
         $this->outputJson($response);
