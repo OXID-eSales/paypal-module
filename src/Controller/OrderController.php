@@ -9,8 +9,6 @@ namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\Eshop\Application\Model\Country;
-use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
@@ -20,6 +18,7 @@ use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Exception\Redirect;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
+use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 
 /**
  * Class OrderController
@@ -59,24 +58,14 @@ class OrderController extends OrderController_parent
 
     public function getUserCountryIso(): string
     {
-        $result = '';
-        if ($user = Registry::getSession()->getUser()) {
-            $country = oxNew(Country::class);
-            $country->load($user->getFieldData('oxcountryid'));
-            $result = (string) $country->getFieldData('oxisoalpha2');
-        }
-        return $result;
+        $userRepository = $this->getServiceFromContainer(UserRepository::class);
+        return $userRepository->getUserCountryIso();
     }
 
     public function getUserStateIso(): string
     {
-        $result = '';
-        if ($user = Registry::getSession()->getUser()) {
-            $country = oxNew(State::class);
-            $country->load($user->getFieldData('oxstateid'));
-            $result = (string) $country->getFieldData('oxisoalpha2');
-        }
-        return $result;
+        $userRepository = $this->getServiceFromContainer(UserRepository::class);
+        return $userRepository->getUserStateIso();
     }
 
     /**

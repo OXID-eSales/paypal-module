@@ -117,7 +117,7 @@ final class PayPalDefinitions
                         Pay conveniently with Creditcard'
                 ]
             ],
-            'countries' => ['DE', 'CA', 'FR', 'AU', 'IT', 'ES', 'UK', 'US'],
+            'countries' => [],
             'currencies' => ['AUD', 'CAD', 'CHF', 'CZK', 'DKK', 'EUR', 'GBP', 'HKD', 'HUF', 'JPY', 'NOK', 'NZD', 'PLN', 'SEK', 'SGD', 'USD'],
             'constraints' => self::PAYMENT_CONSTRAINTS,
             'onlybrutto' => false

@@ -42,11 +42,10 @@ class StaticContent
         foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
             $paymentMethod = oxNew(EshopModelPayment::class);
             if ($paymentMethod->load($paymentId)) {
-                $this->reActivatePaymentMethod($paymentId, $paymentDefinitions);
+                $this->reActivatePaymentMethod($paymentId);
                 continue;
             }
             $this->createPaymentMethod($paymentId, $paymentDefinitions);
-            $this->assignPaymentToCountries($paymentId, $paymentDefinitions['countries']);
             $this->assignPaymentToActiveDeliverySets($paymentId);
         }
     }
@@ -57,36 +56,6 @@ class StaticContent
         foreach ($deliverySetIds as $deliverySetId) {
             $this->assignPaymentToDelivery($paymentId, $deliverySetId);
         }
-    }
-
-    protected function assignPaymentToCountries(string $paymentId, array $countries): void
-    {
-        $activeCountriesIso2Id = array_flip($this->getActiveCountries());
-        $assignToCountries = [];
-        foreach ($countries as $countryIsoAlpha2) {
-            if (isset($activeCountriesIso2Id[strtoupper($countryIsoAlpha2)])) {
-                $assignToCountries[] = $activeCountriesIso2Id[strtoupper($countryIsoAlpha2)];
-            }
-        }
-        $assignToCountries = empty($assignToCountries) ? $activeCountriesIso2Id : $assignToCountries;
-
-        foreach ($assignToCountries as $countryId) {
-            $this->assignPaymentToCountry($paymentId, $countryId);
-        }
-    }
-
-    protected function assignPaymentToCountry(string $paymentId, string $countryId): void
-    {
-        $object2Paymentent = oxNew(EshopBaseModel::class);
-        $object2Paymentent->init('oxobject2payment');
-        $object2Paymentent->assign(
-            [
-                'oxpaymentid' => $paymentId,
-                'oxobjectid'  => $countryId,
-                'oxtype'      => 'oxcountry'
-            ]
-        );
-        $object2Paymentent->save();
     }
 
     protected function assignPaymentToDelivery(string $paymentId, string $deliverySetId): void
@@ -109,14 +78,11 @@ class StaticContent
         $paymentModel = oxNew(EshopModelPayment::class);
         $paymentModel->setId($paymentId);
 
-        $activeCountries = $this->getActiveCountries();
         $iso2LanguageId = array_flip($this->getLanguageIds());
 
-        $active = empty($definitions['countries']) ||
-            0 < count(array_intersect($definitions['countries'], $activeCountries));
         $paymentModel->assign(
             [
-               'oxactive' => (int) $active,
+               'oxactive' => true,
                'oxfromamount' => (int) $definitions['constraints']['oxfromamount'],
                'oxtoamount' => (int) $definitions['constraints']['oxtoamount'],
                'oxaddsumtype' => (string) $definitions['constraints']['oxaddsumtype']
@@ -139,16 +105,13 @@ class StaticContent
         }
     }
 
-    protected function reActivatePaymentMethod(string $paymentId, array $definitions): void
+    protected function reActivatePaymentMethod(string $paymentId): void
     {
         /** @var EshopModelPayment $paymentModel */
         $paymentModel = oxNew(EshopModelPayment::class);
         $paymentModel->load($paymentId);
 
-        $activeCountries = $this->getActiveCountries();
-
-        $paymentModel->oxpayments__oxactive = new Field(empty($definitions['countries']) ||
-            0 < count(array_intersect($definitions['countries'], $activeCountries)));
+        $paymentModel->oxpayments__oxactive = new Field(true);
 
         $paymentModel->save();
     }
@@ -230,25 +193,5 @@ class StaticContent
     protected function getLanguageIds(): array
     {
         return EshopRegistry::getLang()->getLanguageIds();
-    }
-
-    protected function getActiveCountries(): array
-    {
-        $result = [];
-
-        /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $this->queryBuilderFactory->create();
-        $fromDb = $queryBuilder
-            ->select('oxid, oxisoalpha2')
-            ->from('oxcountry')
-            ->where('oxactive = 1')
-            ->execute()
-            ->fetchAll(PDO::FETCH_ASSOC);
-
-        foreach ($fromDb as $row) {
-            $result[$row['oxid']] = $row['oxisoalpha2'];
-        }
-
-        return $result;
     }
 }
