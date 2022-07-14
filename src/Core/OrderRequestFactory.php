@@ -197,14 +197,8 @@ class OrderRequestFactory
         //Item total cost
         $itemTotal = (float)$basket->getPayPalCheckoutItems();
         $breakdown->item_total = PriceToMoney::convert($itemTotal, $currency);
-
         //Item tax sum - we use 0% and calculate with brutto to avoid rounding errors
         $breakdown->tax_total = PriceToMoney::convert(0, $currency);
-
-        //Shipping cost
-        if ($delivery = $basket->getPayPalCheckoutDeliveryCosts()) {
-            $breakdown->shipping = PriceToMoney::convert((float)$delivery, $currency);
-        }
 
         //Discount
         if ($discount = $basket->getPayPalCheckoutDiscount()) {
@@ -282,6 +276,23 @@ class OrderRequestFactory
             $item->name = $language->translateString('PAYMENT_METHOD');
 
             $item->unit_amount = PriceToMoney::convert((float)$payment, $currency);
+            // tax - we use 0% and calculate with brutto to avoid rounding errors
+            $item->tax = PriceToMoney::convert(0, $currency);
+            $item->tax_rate = '0';
+            // TODO: There are usually still categories for digital products.
+            // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
+            $item->category = 'PHYSICAL_GOODS';
+
+            $item->quantity = '1';
+            $items[] = $item;
+        }
+
+        //Shipping cost
+        if ($delivery = $basket->getPayPalCheckoutDeliveryCosts()) {
+            $item = new Item();
+            $item->name = $language->translateString('SHIPPING_COST');
+
+            $item->unit_amount = PriceToMoney::convert((float)$delivery, $currency);
             // tax - we use 0% and calculate with brutto to avoid rounding errors
             $item->tax = PriceToMoney::convert(0, $currency);
             $item->tax_rate = '0';

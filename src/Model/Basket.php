@@ -185,6 +185,7 @@ class Basket extends Basket_parent
         $result += $this->getPayPalCheckoutWrapping();
         $result += $this->getPayPalCheckoutGiftCard();
         $result += $this->getPayPalCheckoutPayment();
+        $result += $this->getPayPalCheckoutDeliveryCosts();
 
         return $result;
     }

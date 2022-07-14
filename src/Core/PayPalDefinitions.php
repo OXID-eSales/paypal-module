@@ -19,8 +19,14 @@ final class PayPalDefinitions
     public const PUI_REQUEST_PAYMENT_SOURCE_NAME = 'pay_upon_invoice';
 
     private const PAYMENT_CONSTRAINTS = [
-        'oxfromamount' => 0,
+        'oxfromamount' => 1,
         'oxtoamount' => 10000,
+        'oxaddsumtype' => 'abs'
+    ];
+
+    private const PAYMENT_CONSTRAINTS_PUI = [
+        'oxfromamount' => 5,
+        'oxtoamount' => 1500,
         'oxaddsumtype' => 'abs'
     ];
 
@@ -99,7 +105,7 @@ final class PayPalDefinitions
             ],
             'countries' => ['DE'],
             'currencies' => ['EUR'],
-            'constraints' => self::PAYMENT_CONSTRAINTS,
+            'constraints' => self::PAYMENT_CONSTRAINTS_PUI,
             'onlybrutto' => true
         ],
         self::ACDC_PAYPAL_PAYMENT_ID => [
