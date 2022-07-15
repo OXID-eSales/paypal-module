@@ -46,14 +46,14 @@ class PayPalAddressResponseToOxidAddress
         }
 
         return [
-            $DBTablePrefix . 'oxfname' => self::getFirstName($shippingFullName),
-            $DBTablePrefix . 'oxlname' => self::getLastName($shippingFullName),
-            $DBTablePrefix . 'oxstreet' => $street,
-            $DBTablePrefix . 'oxstreetnr' => $streetNo,
-            $DBTablePrefix . 'oxcity' => $shippingAddress->admin_area_2,
-            $DBTablePrefix . 'oxcountryid' => $countryId,
-            $DBTablePrefix . 'oxcountry' => $countryName,
-            $DBTablePrefix . 'oxzip' => $shippingAddress->postal_code,
+            $DBTablePrefix . 'fname' => self::getFirstName($shippingFullName),
+            $DBTablePrefix . 'lname' => self::getLastName($shippingFullName),
+            $DBTablePrefix . 'street' => $street,
+            $DBTablePrefix . 'streetnr' => $streetNo,
+            $DBTablePrefix . 'city' => $shippingAddress->admin_area_2,
+            $DBTablePrefix . 'countryid' => $countryId,
+            $DBTablePrefix . 'country' => $countryName,
+            $DBTablePrefix . 'zip' => $shippingAddress->postal_code,
         ];
     }
 

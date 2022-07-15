@@ -32,7 +32,7 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
         $this->setStatus($order, $data['status'], $payPalOrderId);
         $order->markOrderPaid();
 
-        $deliveryAddress = PayPalAddressResponseToOxidAddress::mapAddress($data, 'oxorder__');
+        $deliveryAddress = PayPalAddressResponseToOxidAddress::mapAddress($data, 'oxorder__oxdel');
         $order->assign($deliveryAddress);
         $order->save();
     }
