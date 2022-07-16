@@ -27,7 +27,6 @@ use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
-use OxidEsales\Eshop\Application\Model\UserPayment as EshopModelUserPayment;
 use OxidSolutionCatalysts\PayPalApi\Service\Payments as ApiPaymentService;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiModelOrder;
@@ -352,12 +351,6 @@ class Payment
             Registry::getLogger()->error($exception->getMessage(), [$exception]);
         }
 
-        $user = Registry::getSession()->getUser();
-        $userPayment = oxNew(EshopModelUserPayment::class);
-        $userPayment->load($order->getFieldData('oxpaymentid'));
-
-        $order->sendPayPalOrderByEmail($user, $basket, $userPayment);
-
         //NOTE: payment not fully executed, we need customer interaction first
         return $redirectLink;
     }
@@ -412,12 +405,6 @@ class Payment
             $this->removeTemporaryOrder();
             throw PayPalException::sessionPaymentMissingRedirectLink();
         }
-
-        $user = Registry::getSession()->getUser();
-        $userPayment = oxNew(EshopModelUserPayment::class);
-        $userPayment->load($order->getFieldData('oxpaymentid'));
-
-        $order->sendPayPalOrderByEmail($user, $basket, $userPayment);
 
         //NOTE: payment not fully executed, we need customer interaction first
         return $redirectLink;
@@ -479,12 +466,6 @@ class Payment
         );
 
         $order->savePuiInvoiceNr($payPalOrderId);
-
-        $user = Registry::getSession()->getUser();
-        $userPayment = oxNew(EshopModelUserPayment::class);
-        $userPayment->load($order->getFieldData('oxpaymentid'));
-
-        $order->sendPayPalOrderByEmail($user, $basket, $userPayment);
 
         return (bool) $payPalOrderId;
     }

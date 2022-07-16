@@ -9,10 +9,8 @@ namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
-use OxidEsales\Eshop\Application\Model\UserPayment as EshopModelUserPayment;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -85,9 +83,8 @@ class OrderController extends OrderController_parent
             return;
         }
 
-        $basket = Registry::getSession()->getBasket();
         $response = $paymentService->doCreatePatchedOrder(
-            $basket
+            Registry::getSession()->getBasket()
         );
         if (!($paypalOrderId = $response['id'])) {
             $this->outputJson(['acdcerror' => 'cannot create paypal order']);
@@ -103,15 +100,6 @@ class OrderController extends OrderController_parent
             $payPalOrder = $paymentService->getPayPalCheckoutOrder($sessionOrderId, $paypalOrderId);
             $payPalOrder->setStatus($response['status']);
             $payPalOrder->save();
-
-            $order = oxNew(EshopModelOrder::class);
-            $order->setId($sessionOrderId);
-            $order->load($sessionOrderId);
-
-            $user = Registry::getSession()->getUser();
-            $userPayment = oxNew(EshopModelUserPayment::class);
-            $userPayment->load($order->getFieldData('oxpaymentid'));
-            $order->sendPayPalOrderByEmail($user, $basket, $userPayment);
         }
 
         $this->outputJson($response);

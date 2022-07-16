@@ -115,6 +115,15 @@ class Order extends Order_parent
             throw PayPalException::cannotFinalizeOrderAfterExternalPaymentSuccess($payPalOrderId);
         }
 
+        if (!$this->oxorder__oxordernr->value) {
+            $this->_setNumber();
+        } else {
+            oxNew(\OxidEsales\Eshop\Core\Counter::class)->update(
+                $this->_getCounterIdent(),
+                $this->oxorder__oxordernr->value
+            );
+        }
+
         $this->_updateOrderDate();
 
         $basket = Registry::getSession()->getBasket();
@@ -149,29 +158,10 @@ class Order extends Order_parent
         } elseif ($isPayPalACDC) {
             $this->markOrderPaid();
         }
-    }
 
-    /**
-     * Send order to shop owner and user
-     *
-     * @param \OxidEsales\Eshop\Application\Model\User        $oUser    order user
-     * @param \OxidEsales\Eshop\Application\Model\Basket      $oBasket  current order basket
-     * @param \OxidEsales\Eshop\Application\Model\UserPayment $oPayment order payment
-     *
-     * @return bool
-     */
-    public function sendPayPalOrderByEmail($user = null, $basket = null, $payment = null) {
-
-        if (!$this->oxorder__oxordernr->value) {
-            $this->_setNumber();
-        } else {
-            oxNew(\OxidEsales\Eshop\Core\Counter::class)->update(
-                $this->_getCounterIdent(),
-                $this->oxorder__oxordernr->value
-            );
-        }
-
-        return $this->_sendOrderByEmail($user, $basket, $payment);
+        $userPayment = oxNew(EshopModelUserPayment::class);
+        $userPayment->load($this->getFieldData('oxpaymentid'));
+        $this->_sendOrderByEmail($user, $basket, $userPayment);
     }
 
     //TODO: this place should be refactored in shop core
