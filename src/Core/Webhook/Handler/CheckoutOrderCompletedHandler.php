@@ -11,7 +11,6 @@ use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait;
-use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 
 class CheckoutOrderCompletedHandler implements HandlerInterface
 {
@@ -31,9 +30,5 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
 
         $this->setStatus($order, $data['status'], $payPalOrderId);
         $order->markOrderPaid();
-
-        $deliveryAddress = PayPalAddressResponseToOxidAddress::mapAddress($data, 'oxorder__oxdel');
-        $order->assign($deliveryAddress);
-        $order->save();
     }
 }

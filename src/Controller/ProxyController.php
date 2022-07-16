@@ -109,7 +109,7 @@ class ProxyController extends FrontendController
             /** @var array $userInvoiceAddress */
             $userInvoiceAddress = $user->getInvoiceAddress();
             // add PayPal-Address as Delivery-Address
-            $deliveryAddress = PayPalAddressResponseToOxidAddress::mapAddress($response, 'oxaddress__ox');
+            $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
             $user->changeUserData(
                 $user->oxuser__oxusername->value,
                 '',

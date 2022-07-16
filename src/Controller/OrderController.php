@@ -17,6 +17,7 @@ use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Exception\Redirect;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
+use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 
 /**
  * Class OrderController
@@ -160,14 +161,18 @@ class OrderController extends OrderController_parent
 
         try {
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
-            $order = $paymentService->fetchOrderFields((string) $sessionCheckoutOrderId, '');
-            if ('APPROVED' !== $order->status) {
+            $payPalOrder = $paymentService->fetchOrderFields((string) $sessionCheckoutOrderId, '');
+            if ('APPROVED' !== $payPalOrder->status) {
                 throw PayPalException::sessionPaymentFail();
             }
 
+            $deliveryAddress = PayPalAddressResponseToOxidAddress::mapOrderDeliveryAddress($payPalOrder);
             $order = oxNew(EshopModelOrder::class);
+            $order->assign($deliveryAddress);
             $order->load($sessionOrderId);
             $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);
+            $order->save();
+
         } catch (\Exception $exception) {
             $this->cancelpaypalsession('cannot finalize order');
         }

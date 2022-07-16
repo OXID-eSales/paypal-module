@@ -17,11 +17,50 @@ use VIISON\AddressSplitter\Exceptions\SplittingException;
 class PayPalAddressResponseToOxidAddress
 {
     /**
+     * @param PayPalLiteApiOrderModel $response PayPal Response
+     * @return array
+     */
+    public static function mapOrderDeliveryAddress(
+        PayPalLiteApiOrderModel $response
+    ): array {
+        return self::mapAddress(
+            $response,
+            'oxorder__oxdel'
+        );
+    }
+
+    /**
+     * @param PayPalLiteApiOrderModel $response PayPal Response
+     * @return array
+     */
+    public static function mapUserDeliveryAddress(
+        PayPalLiteApiOrderModel $response
+    ): array {
+        return self::mapAddress(
+            $response,
+            'oxaddress__ox'
+        );
+    }
+
+    /**
+     * @param PayPalLiteApiOrderModel $response PayPal Response
+     * @return array
+     */
+    public static function mapUserInvoiceAddress(
+        PayPalLiteApiOrderModel $response
+    ): array {
+        return self::mapAddress(
+            $response,
+            'oxuser__ox'
+        );
+    }
+
+    /**
      * @param PayPalApiOrderModel $response PayPal Response
      * @param string $DBTablePrefix
      * @return array
      */
-    public static function mapAddress(
+    private static function mapAddress(
         PayPalApiOrderModel $response,
         string $DBTablePrefix
     ): array {
