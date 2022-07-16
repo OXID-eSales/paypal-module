@@ -164,18 +164,20 @@ class Basket extends Basket_parent
      */
     public function getBasketArticles()
     {
-        /* This is a dirty hack. The getBasketArticles method is called when order emails are rendered
+        /* The getBasketArticles method is called from different places. Among other things when order emails are rendered.
          * In this method there is a call for the product: $oProduct = $oBasketItem->getArticle(true);
-         * The problem is that this method call checks the inventory. If we have bought a "last" article
+         * The problem is that this method call checks the stock. If we have bought a "last" article
          * and the article is then sold out, then the stock check leads to an error, because logically
          * there is no article left. This is not noticeable with normal payments, since the e-mail is
          * sent at a time when the order has not yet been finally saved and the stock has not yet been
          * adjusted. With PayPal payments, the order email will be sent later, when the order is saved
          * completely and the stock has changed (in our Example to 0)
          */
-        $caller = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)[2];
-        if ($caller['function'] === 'fetch' && $caller['class'] === 'Smarty') {
-            return $this->getBasketArticlesWithoutProductCheck();
+        if ($this->getConfig()->getConfigParam('blUseStock')) {
+            $caller = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)[2];
+            if ($caller['function'] === 'fetch' && $caller['class'] === 'Smarty') {
+                return $this->getBasketArticlesWithoutProductCheck();
+            }
         }
         return parent::getBasketArticles();
     }
