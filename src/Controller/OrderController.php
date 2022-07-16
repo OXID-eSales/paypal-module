@@ -168,8 +168,8 @@ class OrderController extends OrderController_parent
 
             $deliveryAddress = PayPalAddressResponseToOxidAddress::mapOrderDeliveryAddress($payPalOrder);
             $order = oxNew(EshopModelOrder::class);
-            $order->assign($deliveryAddress);
             $order->load($sessionOrderId);
+            $order->assign($deliveryAddress);
             $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);
             $order->save();
 

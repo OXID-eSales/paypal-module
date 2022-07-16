@@ -21,7 +21,7 @@ class PayPalAddressResponseToOxidAddress
      * @return array
      */
     public static function mapOrderDeliveryAddress(
-        PayPalLiteApiOrderModel $response
+        PayPalApiOrderModel $response
     ): array {
         return self::mapAddress(
             $response,
@@ -34,7 +34,7 @@ class PayPalAddressResponseToOxidAddress
      * @return array
      */
     public static function mapUserDeliveryAddress(
-        PayPalLiteApiOrderModel $response
+        PayPalApiOrderModel $response
     ): array {
         return self::mapAddress(
             $response,
@@ -47,7 +47,7 @@ class PayPalAddressResponseToOxidAddress
      * @return array
      */
     public static function mapUserInvoiceAddress(
-        PayPalLiteApiOrderModel $response
+        PayPalApiOrderModel $response
     ): array {
         return self::mapAddress(
             $response,
