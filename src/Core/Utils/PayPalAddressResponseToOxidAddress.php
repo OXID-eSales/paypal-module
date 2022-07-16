@@ -17,11 +17,50 @@ use VIISON\AddressSplitter\Exceptions\SplittingException;
 class PayPalAddressResponseToOxidAddress
 {
     /**
+     * @param PayPalLiteApiOrderModel $response PayPal Response
+     * @return array
+     */
+    public static function mapOrderDeliveryAddress(
+        PayPalApiOrderModel $response
+    ): array {
+        return self::mapAddress(
+            $response,
+            'oxorder__oxdel'
+        );
+    }
+
+    /**
+     * @param PayPalLiteApiOrderModel $response PayPal Response
+     * @return array
+     */
+    public static function mapUserDeliveryAddress(
+        PayPalApiOrderModel $response
+    ): array {
+        return self::mapAddress(
+            $response,
+            'oxaddress__ox'
+        );
+    }
+
+    /**
+     * @param PayPalLiteApiOrderModel $response PayPal Response
+     * @return array
+     */
+    public static function mapUserInvoiceAddress(
+        PayPalApiOrderModel $response
+    ): array {
+        return self::mapAddress(
+            $response,
+            'oxuser__ox'
+        );
+    }
+
+    /**
      * @param PayPalApiOrderModel $response PayPal Response
      * @param string $DBTablePrefix
      * @return array
      */
-    public static function mapAddress(
+    private static function mapAddress(
         PayPalApiOrderModel $response,
         string $DBTablePrefix
     ): array {
@@ -46,14 +85,14 @@ class PayPalAddressResponseToOxidAddress
         }
 
         return [
-            $DBTablePrefix . 'oxfname' => self::getFirstName($shippingFullName),
-            $DBTablePrefix . 'oxlname' => self::getLastName($shippingFullName),
-            $DBTablePrefix . 'oxstreet' => $street,
-            $DBTablePrefix . 'oxstreetnr' => $streetNo,
-            $DBTablePrefix . 'oxcity' => $shippingAddress->admin_area_2,
-            $DBTablePrefix . 'oxcountryid' => $countryId,
-            $DBTablePrefix . 'oxcountry' => $countryName,
-            $DBTablePrefix . 'oxzip' => $shippingAddress->postal_code,
+            $DBTablePrefix . 'fname' => self::getFirstName($shippingFullName),
+            $DBTablePrefix . 'lname' => self::getLastName($shippingFullName),
+            $DBTablePrefix . 'street' => $street,
+            $DBTablePrefix . 'streetnr' => $streetNo,
+            $DBTablePrefix . 'city' => $shippingAddress->admin_area_2,
+            $DBTablePrefix . 'countryid' => $countryId,
+            $DBTablePrefix . 'country' => $countryName,
+            $DBTablePrefix . 'zip' => $shippingAddress->postal_code,
         ];
     }
 
