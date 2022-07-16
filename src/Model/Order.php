@@ -161,7 +161,11 @@ class Order extends Order_parent
 
         $userPayment = oxNew(EshopModelUserPayment::class);
         $userPayment->load($this->getFieldData('oxpaymentid'));
+
+        $session = Registry::getSession();
+        $session->setVariable('blDontCheckProductStockForPayPalMails', true);
         $this->_sendOrderByEmail($user, $basket, $userPayment);
+        $session->deleteVariable('blDontCheckProductStockForPayPalMails');
     }
 
     //TODO: this place should be refactored in shop core
