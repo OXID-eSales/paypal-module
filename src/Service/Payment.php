@@ -300,6 +300,21 @@ class Payment
         return $this->eshopSession->getBasket() ? $this->eshopSession->getBasket()->getPaymentId() : null;
     }
 
+    /**
+     * Return the PaymentId from session basket
+     */
+    public function isPayPalPayment(): bool
+    {
+        $sessionPaymentId = $this->getSessionPaymentId();
+        return in_array($sessionPaymentId, [
+            PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID,
+            PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
+            PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID,
+            PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID,
+            PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID
+        ], true) || PayPalDefinitions::isUAPMPayment($sessionPaymentId);
+    }
+
     public function removeTemporaryOrder(): void
     {
         $sessionOrderId = $this->eshopSession->getVariable('sess_challenge');

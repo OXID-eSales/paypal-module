@@ -131,8 +131,6 @@ class Order extends Order_parent
         $paymentsId = $this->getFieldData('oxpaymenttype');
         $this->afterOrderCleanUp($basket, $user);
 
-        $this->setTransId($payPalOrderId);
-
         $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($paymentsId);
         $isPayPalACDC = $paymentsId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
@@ -157,6 +155,10 @@ class Order extends Order_parent
             }
         } elseif ($isPayPalACDC) {
             $this->markOrderPaid();
+        }
+
+        if ($capture = $this->getOrderPaymentCapture($payPalOrderId)) {
+            $this->setTransId($capture->id);
         }
 
         $userPayment = oxNew(EshopModelUserPayment::class);
@@ -248,12 +250,13 @@ class Order extends Order_parent
      * @return PayPalOrder
      * @throws ApiException
      */
-    public function getPayPalCheckoutOrder(): PayPalOrder
+    public function getPayPalCheckoutOrder($payPalOrderId = ''): PayPalOrder
     {
+        $payPalOrderId = $payPalOrderId ?: $this->getPayPalOrderIdForOxOrderId();
         if (!$this->payPalOrder) {
             /** @var Orders $orderService */
             $orderService = Registry::get(ServiceFactory::class)->getOrderService();
-            $this->payPalOrder = $orderService->showOrderDetails($this->getPayPalOrderIdForOxOrderId(), '');
+            $this->payPalOrder = $orderService->showOrderDetails($payPalOrderId, '');
         }
 
         return $this->payPalOrder;
@@ -445,8 +448,8 @@ class Order extends Order_parent
      * @return Capture|null
      * @throws ApiException
      */
-    public function getOrderPaymentCapture(): ?Capture
+    public function getOrderPaymentCapture($payPalOrderId = ''): ?Capture
     {
-        return $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures[0] ?? null;
+        return $this->getPayPalCheckoutOrder($payPalOrderId)->purchase_units[0]->payments->captures[0] ?? null;
     }
 }
