@@ -43,6 +43,7 @@ class CheckoutOrderApprovedHandler implements HandlerInterface
                 $response->purchase_units[0]->payments->captures[0]->status == Capture::STATUS_COMPLETED
             ) {
                 $order->markOrderPaid();
+                $order->setTransId($response->purchase_units[0]->payments->captures[0]->id);
                 $this->setStatus($order, $response->status, $payPalOrderId);
                 $statusSet = true;
             }

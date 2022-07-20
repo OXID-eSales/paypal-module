@@ -34,19 +34,25 @@ class PaymentGateway extends PaymentGateway_parent
      */
     public function executePayment($amount, &$order)
     {
-        $session = $this->getSession();
-
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $sessionPaymentId = $paymentService->getSessionPaymentId();
 
-        if (PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId()) {
+        if (PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID == $sessionPaymentId) {
             $success = $this->doExecutePayPalExpressPayment($order);
-        } elseif (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId()) {
+        } elseif (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID == $sessionPaymentId) {
             $success = $this->doExecuteAcdcPayPalPayment($order);
-        } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID == $paymentService->getSessionPaymentId()) {
+        } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID == $sessionPaymentId) {
             $success = $this->doExecutePuiPayment($order);
         } else {
             $success = parent::executePayment($amount, $order);
         }
+        if (
+            $paymentService->isPayPalPayment() &&
+            ($capture = $order->getOrderPaymentCapture()))
+        {
+            $order->setTransId($capture->id);
+        }
+
         return $success;
     }
 
