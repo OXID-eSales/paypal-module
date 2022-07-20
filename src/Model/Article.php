@@ -30,7 +30,7 @@ class Article extends Article_parent
      */
     public function isBuyable()
     {
-        if (Registry::getSession()->getVariable('blDontCheckProductsForPayPalMails')) {
+        if (Registry::getSession()->getVariable('blDontCheckProductStockForPayPalMails')) {
             return true;
         }
         return parent::isBuyable();
