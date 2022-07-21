@@ -35,6 +35,20 @@ class ModuleSettings
     /** @var EshopCoreConfig */
     private $config;
 
+    /**
+     * Country Restriction for PayPal as comma seperated string
+     *
+     * @var bool
+     */
+    protected $payPalCheckoutExpressPaymentEnabled = null;
+
+    /**
+     * Country Restriction for PayPal as comma seperated string
+     *
+     * @var string
+     */
+    protected $countryRestrictionForPayPalExpress = null;
+
     public function __construct(
         EshopCoreConfig $config,
         Database $db
@@ -396,6 +410,32 @@ class ModuleSettings
             $result = $user->isPriceViewModeNetto();
         }
         return $result;
+    }
+
+    /**
+     * Returns comma seperated String with the Country Restriction for PayPal Express
+     */
+    public function getCountryRestrictionForPayPalExpress(): string
+    {
+        if (is_null($this->countryRestrictionForPayPalExpress)) {
+            $this->countryRestrictionForPayPalExpress = '';
+            $payment = oxNew(Payment::class);
+            $payment->load(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
+            $countries = $payment->getCountries();
+            $countriesIso = [];
+            if (count($countries)) {
+                $country = oxNew(Country::class);
+                foreach ($countries as $countryId) {
+                    $country->load($countryId);
+                    $countriesIso[] = $country->getFieldData('oxisoalpha2');
+                }
+                $this->countryRestrictionForPayPalExpress = sprintf(
+                    "'%s'",
+                    implode("','", $countriesIso)
+                );
+            }
+        }
+        return $this->countryRestrictionForPayPalExpress;
     }
 
     /**

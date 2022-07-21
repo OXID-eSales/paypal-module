@@ -5,9 +5,20 @@
             [{assign var="aid" value=""}]
         [{/if}]
         [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
-
+        [{assign var="sCountryRestriction" value=$oViewConf->getCountryRestrictionForPayPalExpress()}]
         [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
+        [{if $sCountryRestriction}]
+        const countryRestriction = [[{$sCountryRestriction}]];
+        [{/if}]
         paypal.Buttons({
+            [{if $sCountryRestriction}]
+            onShippingChange: function(data, actions) {
+                if (!countryRestriction.includes(data.shipping_address.country_code)) {
+                    return actions.reject();
+                }
+                return actions.resolve();
+            },
+            [{/if}]
             createOrder: function(data, actions) {
                 return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue"|cat:"&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
                     method: 'post',

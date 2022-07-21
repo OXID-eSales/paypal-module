@@ -390,7 +390,13 @@ class ViewConfig extends ViewConfig_parent
         return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalCheckoutBannersColorScheme();
     }
 
-    // <-- PSPAYPAL-491
+    /**
+     * Returns comma seperated String with the Country Restriction for PayPal Express
+     */
+    public function getCountryRestrictionForPayPalExpress(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getCountryRestrictionForPayPalExpress();
+    }
 
     /**
      * Template variable getter. Check if is a Flow Theme Compatible Theme
