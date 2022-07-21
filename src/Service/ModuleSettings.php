@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
+use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\EshopCommunity\Core\Registry;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
@@ -30,7 +31,19 @@ class ModuleSettings
         ]
     ];
 
+    /**
+     * Country Restriction for PayPal as comma seperated string
+     *
+     * @var bool
+     */
     protected $payPalCheckoutExpressPaymentEnabled = null;
+
+    /**
+     * Country Restriction for PayPal as comma seperated string
+     *
+     * @var string
+     */
+    protected $countryRestrictionForPayPalExpress = null;
 
     /** @var ModuleSettingBridgeInterface */
     private $moduleSettingBridge;
@@ -386,6 +399,32 @@ class ModuleSettings
             $result = $user->isPriceViewModeNetto();
         }
         return $result;
+    }
+
+    /**
+     * Returns comma seperated String with the Country Restriction for PayPal Express
+     */
+    public function getCountryRestrictionForPayPalExpress(): string
+    {
+        if (is_null($this->countryRestrictionForPayPalExpress)) {
+            $this->countryRestrictionForPayPalExpress = '';
+            $payment = oxNew(Payment::class);
+            $payment->load(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
+            $countries = $payment->getCountries();
+            $countriesIso = [];
+            if (count($countries)) {
+                $country = oxNew(Country::class);
+                foreach ($countries as $countryId) {
+                    $country->load($countryId);
+                    $countriesIso[] = $country->getFieldData('oxisoalpha2');
+                }
+                $this->countryRestrictionForPayPalExpress = sprintf(
+                    "'%s'",
+                    implode("','", $countriesIso)
+                );
+            }
+        }
+        return $this->countryRestrictionForPayPalExpress;
     }
 
     /**
