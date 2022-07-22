@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait;
@@ -30,5 +31,11 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
 
         $this->setStatus($order, $data['status'], $payPalOrderId);
         $order->markOrderPaid();
+
+        // check for not finished orders and reset
+        /** @var ServiceFactory $serviceFactory */
+        $serviceFactory = Registry::get(ServiceFactory::class);
+        $orderService = $serviceFactory->getOrderService();
+        $orderService->cleanUpNotFinishedOrders();
     }
 }

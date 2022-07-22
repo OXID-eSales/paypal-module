@@ -31,6 +31,7 @@ class Constants
     public const PAYPAL_PUI_FNPARAMS = 'fnparams-dede7cc5-15fd-4c75-a9f4-36c430ee3a99';
     public const PAYPAL_PUI_FLOWID = 'Oxid_PayPal_PUI_Checkout';
 
+    public const PAYPAL_SESSION_TIMEOUT_IN_SEC = 600;
     /**
      * Please note! The authorization of an order is valid for three days (1 Day = 86400 sec).
      * It will be refreshed automatically for a maximum of 29 days after ordering.

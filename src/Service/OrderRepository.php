@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
+use OxidEsales\Eshop\Application\Model\Order;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use PDO;
 use Doctrine\DBAL\Query\QueryBuilder;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
@@ -73,6 +75,37 @@ class OrderRepository
         }
 
         return $order;
+    }
+
+    public function cleanUpNotFinishedOrders() : void
+    {
+        /** @var QueryBuilder $queryBuilder */
+        $queryBuilder = $this->queryBuilderFactory->create();
+
+        $parameters = [
+            'oxordernr' => '0',
+            'oxtransstatus' => 'NOT_FINISHED',
+            'oxpaymenttype' => 'oscpaypal',
+            'sessiontime' => Constants::PAYPAL_SESSION_TIMEOUT_IN_SEC
+        ];
+
+        $queryBuilder->select('oxid')
+            ->from('oxorder')
+            ->where('oxordernr = :oxordernr')
+            ->andWhere('oxtransstatus = :oxtransstatus')
+            ->andWhere('oxpaymenttype LIKE :oxpaymenttype')
+            ->andWhere('oxorderdate < now() - interval :sessiontime SECOND');
+
+        $ids = $queryBuilder->setParameters($parameters)
+            ->execute()
+            ->fetchAll(PDO::FETCH_COLUMN);
+
+        foreach ($ids as $id) {
+            $order = oxNew(Order::class);
+            if ($order->load($id)) {
+                $order->cancelOrder();
+            }
+        }
     }
 
     private function getId(string $shopOrderId, string $paypalOrderId): string
