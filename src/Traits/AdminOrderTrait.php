@@ -181,4 +181,9 @@ trait AdminOrderTrait
         }
         return $this->order;
     }
+
+    protected function refreshOrder(): void
+    {
+        $this->order = null;
+    }
 }

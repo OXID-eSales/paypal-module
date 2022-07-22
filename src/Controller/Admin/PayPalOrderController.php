@@ -180,6 +180,8 @@ class PayPalOrderController extends AdminDetailsController
             $paymentService = Registry::get(ServiceFactory::class)->getPaymentService();
             $paymentService->refundCapturedPayment($capture->id, $request, '');
         }
+        // reset the order to get new informations about successful refund
+        $this->refreshOrder();
     }
 
     /**
