@@ -14,6 +14,7 @@ use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
 use OxidEsales\Eshop\Core\Database\Adapter\Doctrine\Database;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 
 class OrderRepository
 {
@@ -65,6 +66,30 @@ class OrderRepository
         }
 
         return $order;
+    }
+
+    public function cleanUpNotFinishedOrders() : void
+    {
+        $query = "select oxid from oxorder where oxordernr = :oxordernr
+            and oxtransstatus = :oxtransstatus
+            and oxpaymenttype LIKE :oxpaymenttype
+            and oxorderdate < now() - interval :sessiontime SECOND";
+        $result = $this->db->select($query, [
+            ':oxordernr' => '0',
+            ':oxtransstatus' => 'NOT_FINISHED',
+            ':oxpaymenttype' => 'oscpaypal',
+            ':sessiontime' => Constants::PAYPAL_SESSION_TIMEOUT_IN_SEC
+        ]);
+        if ($result != false && $result->count() > 0) {
+            while (!$result->EOF) {
+                $order = oxNew(EshopModelOrder::class);
+                $id = $result->fields['oxid'];
+                if ($order->load($id)) {
+                    $order->cancelOrder();
+                }
+                $result->fetchRow();
+            }
+        }
     }
 
     private function getId(string $shopOrderId, string $paypalOrderId): string

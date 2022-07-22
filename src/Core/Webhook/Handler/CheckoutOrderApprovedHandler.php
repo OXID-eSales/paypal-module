@@ -52,6 +52,12 @@ class CheckoutOrderApprovedHandler implements HandlerInterface
         if (!$statusSet) {
             $this->setStatus($order, $data['status'], $payPalOrderId);
         }
+
+        // check for not finished orders and reset
+        /** @var ServiceFactory $serviceFactory */
+        $serviceFactory = Registry::get(ServiceFactory::class);
+        $orderService = $serviceFactory->getOrderService();
+        $orderService->cleanUpNotFinishedOrders();
     }
 
     /**
