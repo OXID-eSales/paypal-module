@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
-use OxidEsales\Eshop\Application\Model\Order;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use PDO;
 use Doctrine\DBAL\Query\QueryBuilder;
@@ -101,7 +100,7 @@ class OrderRepository
             ->fetchAll(PDO::FETCH_COLUMN);
 
         foreach ($ids as $id) {
-            $order = oxNew(Order::class);
+            $order = oxNew(EshopModelOrder::class);
             if ($order->load($id)) {
                 $order->cancelOrder();
             }
