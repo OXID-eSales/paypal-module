@@ -4,56 +4,17 @@ PayPal checkout integration for OXID eShop 6.1 and above.
 
 ## Documentation
 
-* official german PayPal checkout for OXID [Documentation](https://docs.oxid-esales.com/modules/paypal-checkout/de/latest/).
-* official english PayPal checkout for OXID [Documentation](https://docs.oxid-esales.com/modules/paypal-checkout/en/latest/).
+* Official German PayPal checkout for OXID [Documentation](https://docs.oxid-esales.com/modules/paypal-checkout/de/latest/).
+* Official English PayPal checkout for OXID [Documentation](https://docs.oxid-esales.com/modules/paypal-checkout/en/latest/).
 
 ## Branch Compatibility
 
 * b-6.3.x module branch is compatible with OXID eShop compilation 6.2, 6.3, 6.4, 6.5
 * b-6.1.x module branch is compatible with OXID eShop compilation 6.1
 
-## Install for OXID >= 6.2
+## Install for OXID
 
-```bash
-
-# Add Repositories source
-$ composer config repositories.oscpaypal composer https://paypal-module.packages.oxid-esales.com/
-# Install desired version of oxid-solution-catalysts/paypal module
-$ composer require oxid-solution-catalysts/paypal-module ^2.0.0
-# Run install
-$ composer install
-# Activate the module
-$ ./vendor/bin/oe-console oe:module:install-configuration source/modules/osc/paypal
-$ ./vendor/bin/oe-console oe:module:apply-configuration
-```
-
-**NOTE:** The location of the oe-console script depends on whether your root package
-is the oxideshop_ce (```./bin/oe-console```) or if the shop was installed from
-an OXID eShop edition metapackage (```./vendor/bin/oe-console```).
-
-After requiring the module, you need to activate it, either via OXID eShop admin or CLI.
-
-```bash
-$ ./vendor/bin/oe-console oe:module:activate osc_paypal
-```
-
-## Install for OXID 6.1
-
-```bash
-
-# Add Repositories source
-$ composer config repositories.oscpaypal composer https://paypal-module.packages.oxid-esales.com/
-# Install desired version of oxid-solution-catalysts/paypal module
-$ composer require oxid-solution-catalysts/paypal-module ^1.0.0
-# Run install
-$ composer install
-```
-
-### Activate the module
-
-Activate the module in the OXID Backend.
-Choose Extensions > Modules
-Choose the PayPal Checkout for OXID module and choose Overview > Activate
+* see Official documentation
 
 ## Limitations
 
