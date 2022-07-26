@@ -4,8 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.1.5] - 2022-07-14
+## [2.1.5] - 2022-07-28
 
+- admin: better reload after refund
+- reset not finished order via webhook
+- add Country-Restriction for PayPal Express
+- write first captured transaction id to oxorder->oxtransid
 - change country-restriction from delivery-country to invoice-country
 - allow creditcard worldwide
 - remove irritating error message in case last item was purchased
