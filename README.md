@@ -4,8 +4,8 @@ PayPal checkout integration for OXID eShop 6.1 and above.
 
 ## Documentation
 
-* Official German PayPal checkout for OXID [Documentation](https://docs.oxid-esales.com/modules/paypal-checkout/de/latest/).
-* Official English PayPal checkout for OXID [Documentation](https://docs.oxid-esales.com/modules/paypal-checkout/en/latest/).
+* Official German PayPal checkout for OXID [documentation](https://docs.oxid-esales.com/modules/paypal-checkout/de/latest/).
+* Official English PayPal checkout for OXID [documentation](https://docs.oxid-esales.com/modules/paypal-checkout/en/latest/).
 
 ## Branch Compatibility
 
