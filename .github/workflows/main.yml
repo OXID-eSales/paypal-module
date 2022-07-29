@@ -221,6 +221,67 @@ jobs:
           name: logs
           path: /build/oxid/logs
 
+  oxid_codeception_tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [ '7.4' ]
+    needs: [ install_shop_with_module ]
+    runs-on: self-hosted
+    steps:
+      - name: Load current installation from cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ./*
+          key: development-${{ matrix.php }}-${{ github.run_number }}-${{ github.run_attempt }}
+          restore-keys: |
+            development-${{ matrix.php }}-${{ github.run_number }}-${{ github.run_attempt }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Start containers
+        run: |
+          make up
+          sleep 2
+
+      - name: Install codeception dependencies
+        run: |
+          docker-compose exec -T php composer require codeception/module-rest:^1.4.2 --dev --no-update
+          docker-compose exec -T php composer require codeception/module-phpbrowser:^1.0.2 --dev --no-update
+          docker-compose exec -T php composer update
+
+      - name: Run tests
+        run: |
+          docker-compose exec -T \
+            -e PARTIAL_MODULE_PATHS=osc\paypal \
+            -e ACTIVATE_ALL_MODULES=1 \
+            -e RUN_TESTS_FOR_SHOP=0 \
+            -e RUN_TESTS_FOR_MODULES=0 \
+            -e ADDITIONAL_TEST_PATHS='/var/www/vendor//oxid-solution-catalysts/paypal-module/Tests' \
+            php php vendor/bin/runtests-codeception
+
+      - name: Stop containers
+        if: always()
+        run: |
+          docker-compose down
+          sleep 2
+
+      - name: Upload log artifact
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: CodeceptionTestsLog-${{ matrix.php }}
+          path: |
+            source/vendor/${{ env.PACKAGE_NAME }}/Tests/Codeception/_output/
+            source/source/log/oxideshop.log
+            source/source/log/unzer/
+            source/data/php/logs/error_log.txt
+
   sonarcloud:
     needs: [oxid_unit_tests, static_code_checks]
     runs-on: ubuntu-latest
