@@ -120,6 +120,12 @@ jobs:
         working-directory: source/test-module
         run: composer install
 
+      - name: Run psalm
+        id: psalm
+        if: always()
+        working-directory: source/test-module
+        run: php vendor/bin/psalm --show-info=true --no-cache --report=logs/psalm.sonarqube.json
+
       - name: Run phpcs
         id: phpcs
         if: always()
@@ -128,9 +134,11 @@ jobs:
 
       - name: Stop containers
         if: always()
+        working-directory: .
         run: |
           docker-compose down
           sleep 2
+
       - name: Upload log artifact
         if: always()
         uses: actions/upload-artifact@v2
