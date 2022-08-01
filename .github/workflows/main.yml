@@ -244,16 +244,7 @@ jobs:
         run: |
           sed -i 's+/var/www/test-module/++' tests/coverage.xml
           sed -i 's+/var/www/test-module/++' tests/phpunit.xml
-      - name: Download styles artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: StylesLog-8.0
-          path: ./styles/
 
-      - name: Fix paths in styles logs
-        continue-on-error: true
-        run: |
-          sed -i 's+\/home\/runner\/work\/.*?\/.*?\/source\/test-module\/++' styles/phpstan.report.json
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
         env:
