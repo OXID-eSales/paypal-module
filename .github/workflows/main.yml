@@ -178,7 +178,7 @@ jobs:
             -e RUN_TESTS_FOR_SHOP=0 \
             -e RUN_TESTS_FOR_MODULES=0 \
             -e XDEBUG_MODE=coverage \
-            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.TEST_PATH }}/tests' \
+            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.TEST_PATH }}/Tests' \
             php php vendor/bin/runtests \
               --coverage-clover=/var/www/coverage.xml \
               --coverage-text \
@@ -228,7 +228,7 @@ jobs:
             -e ACTIVATE_ALL_MODULES=1 \
             -e RUN_TESTS_FOR_SHOP=0 \
             -e RUN_TESTS_FOR_MODULES=0 \
-            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.TEST_NAME }}/tests' \
+            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.TEST_PATH }}/Tests' \
             php php vendor/bin/runtests-codeception
       - name: Stop containers
         if: always()
