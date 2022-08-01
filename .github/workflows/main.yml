@@ -67,10 +67,12 @@ jobs:
 
       - name: Install additional module
         run: |
+          git clone https://github.com/OXID-eSales/paypal-client --branch=b-6.3.x source/extensions/osc/paypal-client
           docker-compose exec -T \
             php composer config repositories.oscpaypalclient \
             --json '{"type":"path", "url":"./test-module", "options": {"symlink": true}}'
-          docker-compose exec -T php composer require oxid-solution-catalysts/paypal-client:* --no-update
+          docker-compose exec -T \
+            php composer require oxid-solution-catalysts/paypal-client:* --no-interaction --no-update
 
       - name: Install module
         run: |
