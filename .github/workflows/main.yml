@@ -134,8 +134,8 @@ jobs:
 
       - name: Stop containers
         if: always()
-        working-directory:
         run: |
+          pwd
           docker-compose down
           sleep 2
 
