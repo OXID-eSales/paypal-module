@@ -3,8 +3,7 @@ name: Development
 on: [ push, pull_request ]
 
 env:
-  PACKAGE_NAME: 'oxid-esales/paypal-module'
-  TEST_PATH: 'oxid-solution-catalysts/paypal-module'
+  PACKAGE_NAME: 'oxid-solution-catalysts/paypal-module'
   MODULE_PATH: 'osc/paypal'
   SONARCLOUD_ORGANIZATION: 'oxid-esales'
   SONARCLOUD_PROJECT_KEY: 'OXID-eSales_paypal-module'
@@ -20,7 +19,7 @@ jobs:
         run: git clone https://github.com/OXID-eSales/docker-eshop-sdk.git .
 
       - name: Clone the shop
-        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-6.4.x --single-branch source
+        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-6.5.x --single-branch source
 
       - name: Cache current installation
         uses: actions/cache@v2
@@ -65,6 +64,13 @@ jobs:
         uses: actions/checkout@v2
         with:
           path: source/test-module
+
+      - name: Install additional module
+        run: |
+          docker-compose exec -T \
+            php composer config repositories.oscpaypalclient \
+            --json '{"type":"path", "url":"./test-module", "options": {"symlink": true}}'
+          docker-compose exec -T php composer require oxid-solution-catalysts/paypal-client:* --no-update
 
       - name: Install module
         run: |
@@ -147,12 +153,6 @@ jobs:
         php: [ '7.4', '8.0' ]
     needs: [ install_shop_with_module ]
     runs-on: ubuntu-latest
-    env:
-      MYSQL_DATABASE: oxid
-      MYSQL_HOST: db
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
-      SHOP_URL: http://localhost/
     steps:
       - name: Load current installation from cache
         uses: actions/cache@v2
@@ -174,7 +174,7 @@ jobs:
             -e RUN_TESTS_FOR_SHOP=0 \
             -e RUN_TESTS_FOR_MODULES=0 \
             -e XDEBUG_MODE=coverage \
-            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.TEST_PATH }}/Tests' \
+            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.PACKAGE_NAME }}/Tests' \
             php php vendor/bin/runtests \
               --coverage-clover=/var/www/coverage.xml \
               --coverage-text \
@@ -225,7 +225,7 @@ jobs:
             -e ACTIVATE_ALL_MODULES=1 \
             -e RUN_TESTS_FOR_SHOP=0 \
             -e RUN_TESTS_FOR_MODULES=0 \
-            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.TEST_PATH }}/Tests' \
+            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.PACKAGE_NAME }}/Tests' \
             php php vendor/bin/runtests-codeception
       - name: Stop containers
         if: always()
