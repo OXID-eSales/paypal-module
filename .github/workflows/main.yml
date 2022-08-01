@@ -140,12 +140,19 @@ jobs:
           path: |
             source/test-module/phpstan.report.json
             source/test-module/phpmd.report.json
+
   unit_tests:
     strategy:
       matrix:
         php: [ '7.4', '8.0' ]
     needs: [ install_shop_with_module ]
     runs-on: ubuntu-latest
+    env:
+      MYSQL_DATABASE: oxid
+      MYSQL_HOST: db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      SHOP_URL: http://localhost/
     steps:
       - name: Load current installation from cache
         uses: actions/cache@v2
@@ -186,6 +193,7 @@ jobs:
           path: |
             source/coverage.xml
             source/phpunit.xml
+
   codeception_tests:
     strategy:
       matrix:
