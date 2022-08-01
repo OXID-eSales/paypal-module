@@ -227,7 +227,7 @@ jobs:
       matrix:
         php: [ '7.4' ]
     needs: install
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Start containers
         run: |
