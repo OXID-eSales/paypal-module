@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.1.5] - 2022-07-28
+## [2.1.5] - 2022-08-01
 
 - admin: better reload after refund
 - reset not finished order via webhook
