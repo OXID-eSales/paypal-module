@@ -151,6 +151,7 @@ jobs:
 
   unit_tests:
     strategy:
+      fail-fast: false
       matrix:
         php: [ '7.4', '8.0' ]
     needs: [ install_shop_with_module ]
@@ -198,6 +199,7 @@ jobs:
 
   codeception_tests:
     strategy:
+      fail-fast: false
       matrix:
         php: [ '7.4', '8.0' ]
     needs: [ install_shop_with_module ]
