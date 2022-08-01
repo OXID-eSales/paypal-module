@@ -132,13 +132,6 @@ jobs:
         working-directory: source/test-module
         run: composer phpcs
 
-      - name: Stop containers
-        if: always()
-        run: |
-          pwd
-          docker-compose down
-          sleep 2
-
       - name: Upload log artifact
         if: always()
         uses: actions/upload-artifact@v2
