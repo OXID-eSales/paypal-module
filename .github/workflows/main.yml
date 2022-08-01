@@ -3,7 +3,8 @@ name: Development
 on: [ push, pull_request ]
 
 env:
-  PACKAGE_NAME: 'oxid-solution-catalysts/paypal-module'
+  PACKAGE_NAME: 'oxid-esales/paypal-module'
+  TEST_PATH: 'oxid-solution-catalysts/paypal-module'
   MODULE_PATH: 'osc/paypal'
   SONARCLOUD_ORGANIZATION: 'oxid-esales'
   SONARCLOUD_PROJECT_KEY: 'OXID-eSales_paypal-module'
@@ -177,7 +178,7 @@ jobs:
             -e RUN_TESTS_FOR_SHOP=0 \
             -e RUN_TESTS_FOR_MODULES=0 \
             -e XDEBUG_MODE=coverage \
-            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.PACKAGE_NAME }}/tests' \
+            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.TEST_PATH }}/tests' \
             php php vendor/bin/runtests \
               --coverage-clover=/var/www/coverage.xml \
               --coverage-text \
@@ -227,7 +228,7 @@ jobs:
             -e ACTIVATE_ALL_MODULES=1 \
             -e RUN_TESTS_FOR_SHOP=0 \
             -e RUN_TESTS_FOR_MODULES=0 \
-            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.PACKAGE_NAME }}/tests' \
+            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.TEST_NAME }}/tests' \
             php php vendor/bin/runtests-codeception
       - name: Stop containers
         if: always()
