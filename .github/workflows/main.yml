@@ -126,18 +126,6 @@ jobs:
         working-directory: source/test-module
         run: composer phpcs
 
-      - name: Run phpstan
-        id: phpstan
-        if: always()
-        working-directory: source/test-module
-        run: composer phpstan-report || composer phpstan
-
-      - name: Run phpmd
-        id: phpmd
-        if: always()
-        working-directory: source/test-module
-        run: composer phpmd-report || composer phpmd
-
       - name: Stop containers
         if: always()
         run: |
