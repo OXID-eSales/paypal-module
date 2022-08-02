@@ -92,4 +92,12 @@ trait WebhookHandlerTrait
         $paypalOrderModel->setStatus($status);
         $paypalOrderModel->save();
     }
+
+    public function cleanUpNotFinishedOrders() : void
+    {
+        // check for not finished orders and reset
+        /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
+        $this->getServiceFromContainer(OrderRepository::class)
+            ->cleanUpNotFinishedOrders();
+    }
 }
