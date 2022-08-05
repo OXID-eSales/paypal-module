@@ -180,7 +180,8 @@ class Payment
     public function doCapturePayPalOrder(
         EshopModelOrder $order,
         string $checkoutOrderId,
-        string $paymentId
+        string $paymentId,
+        bool $markOrderPaidDirectly = true
     ): ApiOrderModel {
         $payPalOrder = $this->fetchOrderFields($checkoutOrderId);
 
@@ -231,7 +232,7 @@ class Payment
             throw oxNew(StandardException::class, 'OXPS_PAYPAL_ORDEREXECUTION_ERROR');
         }
 
-        if (ApiOrderModel::STATUS_COMPLETED === $payPalOrder->getStatus()) {
+        if ($markOrderPaidDirectly && ApiOrderModel::STATUS_COMPLETED === $payPalOrder->getStatus()) {
             $order->markOrderPaid();
         }
 
