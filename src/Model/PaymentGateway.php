@@ -118,7 +118,7 @@ class PaymentGateway extends PaymentGateway_parent
         if ($checkoutOrderId = PayPalSession::getCheckoutOrderId()) {
             // Capture Order
             try {
-                $paymentService->doCapturePayPalOrder($order, $checkoutOrderId, $sessionPaymentId, false);
+                $paymentService->doCapturePayPalOrder($order, $checkoutOrderId, $sessionPaymentId);
                 $success = true;
             } catch (Exception $exception) {
                 Registry::getLogger()->error("Error on acdc order capture call.", [$exception]);

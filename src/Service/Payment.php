@@ -180,8 +180,7 @@ class Payment
     public function doCapturePayPalOrder(
         EshopModelOrder $order,
         string $checkoutOrderId,
-        string $paymentId,
-        bool $markOrderPaidDirectly = true
+        string $paymentId
     ): ApiOrderModel {
         $payPalOrder = $this->fetchOrderFields($checkoutOrderId);
 
@@ -225,15 +224,11 @@ class Payment
                 $order->getId(),
                 $checkoutOrderId,
                 $paymentId,
-                (string) $result->status
+                ApiOrderModel::STATUS_SAVED
             );
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on order capture call.", [$exception]);
             throw oxNew(StandardException::class, 'OXPS_PAYPAL_ORDEREXECUTION_ERROR');
-        }
-
-        if ($markOrderPaidDirectly && ApiOrderModel::STATUS_COMPLETED === $payPalOrder->getStatus()) {
-            $order->markOrderPaid();
         }
 
         return $result;

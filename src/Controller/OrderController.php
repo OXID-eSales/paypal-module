@@ -134,8 +134,7 @@ class OrderController extends OrderController_parent
             $response = $this->getServiceFromContainer(PaymentService::class)->doCapturePayPalOrder(
                 $order,
                 $sessionAcdcOrderId,
-                PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                false
+                PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID
             );
             $result = [
                 'location' => [
