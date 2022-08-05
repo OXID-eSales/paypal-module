@@ -124,37 +124,39 @@ class Order extends Order_parent
             );
         }
 
-        $this->_updateOrderDate();
-
         $basket = Registry::getSession()->getBasket();
         $user = Registry::getSession()->getUser();
         $paymentsId = $this->getFieldData('oxpaymenttype');
         $this->afterOrderCleanUp($basket, $user);
 
-        $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($paymentsId);
         $isPayPalACDC = $paymentsId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
-        $isPayPalPayLater = $paymentsId === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID;
 
-        if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater) {
-            if (
-                $isPayPalStandard &&
-                $this->getServiceFromContainer(ModuleSettings::class)
-                    ->getPayPalStandardCaptureStrategy() !== 'directly'
-            ) {
-                $this->_setOrderStatus('NOT_FINISHED');
-                $paymentService = $this->getServiceFromContainer(PaymentService::class);
-                $paymentService->trackPayPalOrder(
-                    $this->getId(),
-                    $payPalOrderId,
-                    $paymentsId,
-                    PayPalOrder::STATUS_APPROVED
-                );
-            } else {
-                $this->doExecutePayPalPayment($payPalOrderId);
-            }
-        } elseif ($isPayPalACDC) {
-            $this->markOrderPaid();
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+
+        if ($isPayPalACDC) {
+            $this->_setOrderStatus('NOT_FINISHED');
+            $paymentService->trackPayPalOrder(
+                $this->getId(),
+                $payPalOrderId,
+                $paymentsId,
+                PayPalOrder::STATUS_CREATED
+            );
+        } elseif (
+            $isPayPalStandard &&
+            $this->getServiceFromContainer(ModuleSettings::class)
+                ->getPayPalStandardCaptureStrategy() !== 'directly'
+        ) {
+            $this->_setOrderStatus('NOT_FINISHED');
+            $paymentService->trackPayPalOrder(
+                $this->getId(),
+                $payPalOrderId,
+                $paymentsId,
+                PayPalOrder::STATUS_APPROVED
+            );
+        } else {
+            // uAPM, PayPal Standard directly, PayPal Paylater
+            $this->doExecutePayPalPayment($payPalOrderId);
         }
 
         if ($capture = $this->getOrderPaymentCapture($payPalOrderId)) {
@@ -278,6 +280,7 @@ class Order extends Order_parent
         }
 
         $this->markOrderPaid();
+        $this->_updateOrderDate();
 
         // destroy PayPal-Session
         PayPalSession::storePayPalOrderId('');
