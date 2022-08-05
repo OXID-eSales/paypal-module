@@ -15,6 +15,7 @@ use OxidEsales\Eshop\Core\Database\Adapter\Doctrine\Database;
 use OxidEsales\Eshop\Application\Model\Payment;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidEsales\Eshop\Application\Model\Country;
 
 class ModuleSettings
 {
