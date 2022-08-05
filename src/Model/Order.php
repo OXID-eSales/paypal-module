@@ -129,10 +129,8 @@ class Order extends Order_parent
         $paymentsId = $this->getFieldData('oxpaymenttype');
         $this->afterOrderCleanUp($basket, $user);
 
-        $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($paymentsId);
         $isPayPalACDC = $paymentsId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
-        $isPayPalPayLater = $paymentsId === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID;
 
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
