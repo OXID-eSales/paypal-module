@@ -174,7 +174,7 @@ class StaticContent
 
         foreach ($fromDb as $row) {
             $id = $row['oxid'] ?? $row[0];
-            $result[$id] =$id;
+            $result[$id] = $id;
         }
 
         return $result;

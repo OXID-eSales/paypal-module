@@ -35,13 +35,13 @@ trait ServiceContainer
                     Registry::getConfig(),
                     DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)
                 );
-            break;
+                break;
             case 'OxidSolutionCatalysts\PayPal\Service\OrderRepository':
                 $result = $this->services['OxidSolutionCatalysts\PayPal\Service\OrderRepository'] = new OrderRepository(
                     Registry::getConfig(),
                     DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)
                 );
-            break;
+                break;
             case 'OxidSolutionCatalysts\PayPal\Service\Payment':
                 $result = $this->services['OxidSolutionCatalysts\PayPal\Service\Payment'] = new Payment(
                     Registry::getSession(),
@@ -50,20 +50,20 @@ trait ServiceContainer
                         DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)
                     )
                 );
-            break;
+                break;
             case 'OxidSolutionCatalysts\PayPal\Service\StaticContent':
                 $result = $this->services['OxidSolutionCatalysts\PayPal\Service\StaticContent'] = new StaticContent(
                     Registry::getConfig(),
                     DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)
                 );
-            break;
+                break;
             case 'OxidSolutionCatalysts\PayPal\Service\UserRepository':
                 $result = $this->services['OxidSolutionCatalysts\PayPal\Service\UserRepository'] = new UserRepository(
                     Registry::getConfig(),
                     DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC),
                     Registry::getSession()
                 );
-            break;
+                break;
         }
         return $result;
     }

@@ -288,7 +288,11 @@ class ModuleSettings
         $module = 'module:osc_paypal';
 
         if (!$type) {
-            $query = "select oxvartype from oxconfig where oxshopid = :shopId and oxmodule = :module and oxvarname = :value";
+            $query = "select oxvartype
+                from oxconfig
+                where oxshopid = :shopId
+                and oxmodule = :module
+                and oxvarname = :value";
             $type = $this->db->getOne($query, [
                 ':shopId' => $shopId,
                 ':module' => $module,

@@ -20,8 +20,7 @@ class LegacyOeppModuleDetails
     public function isLegacyModulePresent(): bool
     {
         $oepaypalModule = oxNew(Module::class);
-        if ($oepaypalModule->load(self::LEGACY_MODULE_ID))
-        {
+        if ($oepaypalModule->load(self::LEGACY_MODULE_ID)) {
             return $oepaypalModule->isActive();
         }
         return false;

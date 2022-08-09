@@ -6,7 +6,6 @@
     <file>../src/</file>
     <file>./</file>
     <file>../translations</file>
-    <file>../migration</file>
 
     <!-- display progress -->
     <arg value="p"/>

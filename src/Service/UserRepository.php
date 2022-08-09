@@ -14,6 +14,7 @@ use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
 use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
+
 class UserRepository
 {
     /** @var DatabaseProvider */

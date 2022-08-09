@@ -91,7 +91,7 @@ class OrderRepository
         return $order;
     }
 
-    public function cleanUpNotFinishedOrders() : void
+    public function cleanUpNotFinishedOrders(): void
     {
         $query = "select oxid from oxorder where oxordernr = :oxordernr
             and oxtransstatus = :oxtransstatus
@@ -146,7 +146,10 @@ class OrderRepository
 
     private function getShopOrderIdByPaypalOrderId(string $paypalOrderId): string
     {
-        $query = "select oxorderid from oscpaypal_order where oxpaypalorderid = :oxpaypalorderid and LENGTH(oxorderid) > 0";
+        $query = "select oxorderid
+            from oscpaypal_order
+            where oxpaypalorderid = :oxpaypalorderid
+            and LENGTH(oxorderid) > 0";
         $id = $this->db->getOne($query, [
             ':oxpaypalorderid' => $paypalOrderId
         ]);
@@ -156,7 +159,10 @@ class OrderRepository
 
     private function getShopOrderIdByPaypalTransactionId(string $paypalTransactionId): string
     {
-        $query = "select oxorderid from oscpaypal_order where oscpaypaltransactionid = :oscpaypaltransactionid and LENGTH(oxorderid) > 0";
+        $query = "select oxorderid
+            from oscpaypal_order
+            where oscpaypaltransactionid = :oscpaypaltransactionid
+            and LENGTH(oxorderid) > 0";
         $id = $this->db->getOne($query, [
             ':oscpaypaltransactionid' => $paypalTransactionId
         ]);
