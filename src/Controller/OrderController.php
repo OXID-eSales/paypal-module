@@ -172,7 +172,6 @@ class OrderController extends OrderController_parent
             $order->assign($deliveryAddress);
             $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);
             $order->save();
-
         } catch (\Exception $exception) {
             $this->cancelpaypalsession('cannot finalize order');
         }

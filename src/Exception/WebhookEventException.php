@@ -30,5 +30,4 @@ class WebhookEventException extends Exception
     {
         return new self(sprintf("Shop Order for PayPal transaction '%s' not found", $payPalTransactionId));
     }
-
 }

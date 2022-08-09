@@ -40,8 +40,11 @@ class OrderRepository
         $this->config = $config;
     }
 
-    public function paypalOrderByOrderIdAndPayPalId(string $shopOrderId, string $paypalOrderId = '', string $payPalTransactionId = ''): PayPalOrderModel
-    {
+    public function paypalOrderByOrderIdAndPayPalId(
+        string $shopOrderId,
+        string $paypalOrderId = '',
+        string $payPalTransactionId = ''
+    ): PayPalOrderModel {
         $order = oxNew(PayPalOrderModel::class);
         $order->load($this->getId($shopOrderId, $paypalOrderId, $payPalTransactionId));
 
@@ -96,7 +99,7 @@ class OrderRepository
         return $order;
     }
 
-    public function cleanUpNotFinishedOrders() : void
+    public function cleanUpNotFinishedOrders(): void
     {
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->queryBuilderFactory->create();
@@ -207,5 +210,4 @@ class OrderRepository
 
         return (string) $id;
     }
-
 }

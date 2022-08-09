@@ -87,16 +87,23 @@ trait WebhookHandlerTrait
         );
     }
 
-    public function setStatus(EshopModelOrder $order, string $status, string $payPalOrderId = '', string $payPalTransactionId = '')
-    {
+    public function setStatus(
+        EshopModelOrder $order,
+        string $status,
+        string $payPalOrderId = '',
+        string $payPalTransactionId = ''
+    ) {
         /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
         $orderService = $this->getServiceFromContainer(OrderRepository::class);
 
         if ($payPalTransactionId) {
-            $paypalOrderModel = $orderService->paypalOrderByOrderIdAndPayPalId($order->getId(), $payPalOrderId, $payPalTransactionId);
+            $paypalOrderModel = $orderService->paypalOrderByOrderIdAndPayPalId(
+                $order->getId(),
+                $payPalOrderId,
+                $payPalTransactionId
+            );
             $payPalOrderId = $payPalOrderId ?: $paypalOrderModel->getPayPalOrderId();
-        }
-        else {
+        } else {
             $paypalOrderModel = $orderService->paypalOrderByOrderIdAndPayPalId($order->getId(), $payPalOrderId);
         }
 
@@ -116,7 +123,7 @@ trait WebhookHandlerTrait
         $paypalOrderModel->save();
     }
 
-    public function cleanUpNotFinishedOrders() : void
+    public function cleanUpNotFinishedOrders(): void
     {
         // check for not finished orders and reset
         /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */

@@ -48,8 +48,8 @@ class PaymentGateway extends PaymentGateway_parent
         }
         if (
             $paymentService->isPayPalPayment() &&
-            ($capture = $order->getOrderPaymentCapture()))
-        {
+            ($capture = $order->getOrderPaymentCapture())
+        ) {
             $order->setTransId($capture->id);
         }
 
