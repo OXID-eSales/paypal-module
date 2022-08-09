@@ -31,6 +31,10 @@ class PaymentGateway_parent extends \OxidEsales\Eshop\Application\Model\PaymentG
 {
 }
 
+class Article_parent extends \OxidEsales\Eshop\Application\Model\Article
+{
+}
+
 class Basket_parent extends \OxidEsales\Eshop\Application\Model\Basket
 {
 }
