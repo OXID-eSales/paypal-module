@@ -32,10 +32,13 @@ class OrderRepository
         $this->db = $db;
     }
 
-    public function paypalOrderByOrderIdAndPayPalId(string $shopOrderId, string $paypalOrderId): PayPalOrderModel
-    {
+    public function paypalOrderByOrderIdAndPayPalId(
+        string $shopOrderId,
+        string $paypalOrderId = '',
+        string $payPalTransactionId = ''
+    ): PayPalOrderModel {
         $order = oxNew(PayPalOrderModel::class);
-        $order->load($this->getId($shopOrderId, $paypalOrderId));
+        $order->load($this->getId($shopOrderId, $paypalOrderId, $payPalTransactionId));
 
         if (!$order->isLoaded()) {
             $order->assign(
@@ -44,6 +47,7 @@ class OrderRepository
                     'oxpaypalorderid' => $paypalOrderId
                 ]
             );
+            $order->setTransactionId($payPalTransactionId);
         }
 
         return $order;
@@ -54,9 +58,28 @@ class OrderRepository
      */
     public function getShopOrderByPayPalOrderId(string $paypalOrderId): EshopModelOrder
     {
-        $orderId = $this->getShopOrderId($paypalOrderId);
+        $orderId = $this->getShopOrderIdByPaypalOrderId($paypalOrderId);
         if (empty($orderId)) {
-            throw NotFound::orderNotFoundByPayPalId();
+            throw NotFound::orderNotFoundByPayPalOrderId();
+        }
+
+        $order = oxNew(EshopModelOrder::class);
+        $order->load($orderId);
+        if (!$order->isLoaded()) {
+            throw NotFound::orderNotFound();
+        }
+
+        return $order;
+    }
+
+    /**
+     * @throws NotFound
+     */
+    public function getShopOrderByPayPalTransactionId(string $paypalTransactionId): EshopModelOrder
+    {
+        $orderId = $this->getShopOrderIdByPaypalTransactionId($paypalTransactionId);
+        if (empty($orderId)) {
+            throw NotFound::orderNotFoundByPayPalTransactionId();
         }
 
         $order = oxNew(EshopModelOrder::class);
@@ -92,22 +115,50 @@ class OrderRepository
         }
     }
 
-    private function getId(string $shopOrderId, string $paypalOrderId): string
+    private function getId(string $shopOrderId, string $paypalOrderId = '', $payPalTransactionId = ''): string
     {
-        $query = "select oxid from oscpaypal_order where oxorderid = :oxorderid and oxpaypalorderid = :oxpaypalorderid";
+        $parameters = [
+            ':oxorderid' => $shopOrderId
+        ];
+
+        if ($paypalOrderId) {
+            $parameters[':oxpaypalorderid'] = $paypalOrderId;
+        }
+
+        if ($payPalTransactionId) {
+            $parameters[':oscpaypaltransactionid'] = $payPalTransactionId;
+        }
+
+        $query = "select oxid from oscpaypal_order where oxorderid = :oxorderid";
+
+        if ($paypalOrderId) {
+            $query .= " and oxpaypalorderid = :oxpaypalorderid";
+        }
+
+        if ($payPalTransactionId) {
+            $query .= " and oscpaypaltransactionid = :oscpaypaltransactionid";
+        }
+
+        $id = $this->db->getOne($query, $parameters);
+
+        return (string) $id;
+    }
+
+    private function getShopOrderIdByPaypalOrderId(string $paypalOrderId): string
+    {
+        $query = "select oxorderid from oscpaypal_order where oxpaypalorderid = :oxpaypalorderid and LENGTH(oxorderid) > 0";
         $id = $this->db->getOne($query, [
-            ':oxorderid' => $shopOrderId,
             ':oxpaypalorderid' => $paypalOrderId
         ]);
 
         return (string) $id;
     }
 
-    private function getShopOrderId(string $paypalOrderId): string
+    private function getShopOrderIdByPaypalTransactionId(string $paypalTransactionId): string
     {
-        $query = "select oxorderid from oscpaypal_order where oxpaypalorderid = :oxpaypalorderid and LENGTH(oxorderid) > 0";
+        $query = "select oxorderid from oscpaypal_order where oscpaypaltransactionid = :oscpaypaltransactionid and LENGTH(oxorderid) > 0";
         $id = $this->db->getOne($query, [
-            ':oxpaypalorderid' => $paypalOrderId
+            ':oscpaypaltransactionid' => $paypalTransactionId
         ]);
 
         return (string) $id;

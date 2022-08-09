@@ -25,5 +25,7 @@ interface HandlerInterface
      */
     public function handle(Event $event): void;
 
-    public function getOrder(Event $event): EshopModelOrder;
+    public function getOrderByOrderId(Event $event): EshopModelOrder;
+
+    public function getOrderByTransactionId(Event $event): EshopModelOrder;
 }

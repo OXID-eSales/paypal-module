@@ -13,7 +13,7 @@ use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait;
 
-class CheckoutOrderCompletedHandler implements HandlerInterface
+class PaymentCaptureCompletedHandler implements HandlerInterface
 {
     use WebhookHandlerTrait;
 
@@ -24,12 +24,12 @@ class CheckoutOrderCompletedHandler implements HandlerInterface
     public function handle(Event $event): void
     {
         /** @var EshopModelOrder $order */
-        $order = $this->getOrderByOrderId($event);
+        $order = $this->getOrderByTransactionId($event);
 
-        $payPalOrderId = $this->getPayPalId($event);
+        $payPalTransactionId = $this->getPayPalId($event);
         $data = $this->getEventPayload($event)['resource'];
 
-        $this->setStatus($order, $data['status'], $payPalOrderId);
+        $this->setStatus($order, $data['status'], '', $payPalTransactionId);
         $order->markOrderPaid();
 
         $this->cleanUpNotFinishedOrders();

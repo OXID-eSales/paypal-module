@@ -23,12 +23,12 @@ class PaymentCaptureDeniedHandler implements HandlerInterface
     public function handle(Event $event): void
     {
         /** @var \OxidEsales\Eshop\Application\Model\Order $order */
-        $order = $this->getOrder($event);
+        $order = $this->getOrderByTransactionId($event);
 
-        $payPalOrderId = $this->getPayPalOrderId($event);
+        $payPalTransactionId = $this->getPayPalId($event);
         $data = $this->getEventPayload($event)['resource'];
 
-        $this->setStatus($order, $data['status'], $payPalOrderId);
+        $this->setStatus($order, $data['status'], '', $payPalTransactionId);
         $order->markOrderPaymentFailed();
     }
 }

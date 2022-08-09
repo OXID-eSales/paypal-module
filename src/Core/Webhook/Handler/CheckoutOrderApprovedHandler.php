@@ -29,9 +29,9 @@ class CheckoutOrderApprovedHandler implements HandlerInterface
     public function handle(Event $event): void
     {
         /** @var EshopModelOrder $order */
-        $order = $this->getOrder($event);
+        $order = $this->getOrderByOrderId($event);
 
-        $payPalOrderId = $this->getPayPalOrderId($event);
+        $payPalOrderId = $this->getPayPalId($event);
         $data = $this->getEventPayload($event)['resource'];
 
         $statusSet = false;

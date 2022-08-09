@@ -30,7 +30,7 @@ final class PaymentCaptureDeniedHandlerTest extends UnitTestCase
             ->disableOriginalConstructor()
             ->getMock();
         $orderRepositoryMock->expects($this->once())
-            ->method('getShopOrderByPayPalOrderId')
+            ->method('getShopOrderByPayPalTransactionId')
             ->willReturn($orderMock);
         $orderRepositoryMock->expects($this->once())
             ->method('paypalOrderByOrderIdAndPayPalId')

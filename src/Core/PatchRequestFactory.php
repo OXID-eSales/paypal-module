@@ -145,14 +145,8 @@ class PatchRequestFactory
         //Item total cost
         $itemTotal = (float)$this->basket->getPayPalCheckoutItems();
         $breakdown->item_total = PriceToMoney::convert($itemTotal, $currency);
-
         //Item tax sum - we use 0% and calculate with brutto to avoid rounding errors
         $breakdown->tax_total = PriceToMoney::convert(0, $currency);
-
-        //Shipping cost
-        if ($delivery = $this->basket->getPayPalCheckoutDeliveryCosts()) {
-            $breakdown->shipping = PriceToMoney::convert((float)$delivery, $currency);
-        }
 
         //Discount
         if ($discount = $this->basket->getPayPalCheckoutDiscount()) {

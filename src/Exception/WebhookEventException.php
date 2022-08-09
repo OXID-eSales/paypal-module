@@ -21,8 +21,13 @@ class WebhookEventException extends Exception
         return new self(sprintf("Order with oxorder.oxid '%s' not found", $orderOxId));
     }
 
-    public static function byPayPalOrderId(string $payPalId): self
+    public static function byPayPalOrderId(string $payPalOrderId): self
     {
-        return new self(sprintf("Shop Order for PayPal order '%s' not found", $payPalId));
+        return new self(sprintf("Shop Order for PayPal order '%s' not found", $payPalOrderId));
+    }
+
+    public static function byPayPalTransactionId(string $payPalTransactionId): self
+    {
+        return new self(sprintf("Shop Order for PayPal transaction '%s' not found", $payPalTransactionId));
     }
 }

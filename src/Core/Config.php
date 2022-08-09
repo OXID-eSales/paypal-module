@@ -281,8 +281,14 @@ class Config
      */
     public function getWebhookControllerUrl(): string
     {
+        $webhookUrl = 'index.php?cl=oscpaypalwebhook';
+
+        if ($this->isSandbox()) {
+             $webhookUrl .= '&XDEBUG_SESSION_START=1';
+        }
+
         return html_entity_decode(
-            Registry::getConfig()->getCurrentShopUrl(false) . 'index.php?cl=oscpaypalwebhook'
+            Registry::getConfig()->getCurrentShopUrl(false) . $webhookUrl
         );
     }
 

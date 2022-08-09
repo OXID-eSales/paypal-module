@@ -89,6 +89,24 @@ class Events
                             collate latin1_general_ci
                             NOT NULL
                             COMMENT \'PayPal payment id\',
+                        `OSCPAYPALTRANSACTIONID`
+                            char(32)
+                            character set latin1
+                            collate latin1_general_ci
+                            NOT NULL
+                            COMMENT \'PayPal transaction id\',
+                        `OSCPAYPALTRACKINGID`
+                            char(32)
+                            character set latin1
+                            collate latin1_general_ci
+                            NOT NULL
+                            COMMENT \'PayPal tracking id\',
+                        `OSCPAYPALTRACKINGTYPE`
+                            char(32)
+                            character set latin1
+                            collate latin1_general_ci
+                            NOT NULL
+                            COMMENT \'PayPal tracking type\',
                         `OSCPAYPALPUIPAYMENTREFERENCE`
                             char(32)
                             character set latin1
@@ -130,7 +148,7 @@ class Events
 
         DatabaseProvider::getDb()->execute($sql);
 
-        // additional Module-Update v1.1
+        // additional Module-Update v1.1.0
 
         if (!self::tableColumnExists('oscpaypal_order', 'OSCPAYPALPUIPAYMENTREFERENCE')) {
             $sql = "ALTER TABLE `oscpaypal_order` ADD `OSCPAYPALPUIPAYMENTREFERENCE` char(32) collate latin1_general_ci";
@@ -154,6 +172,21 @@ class Events
 
         if (!self::tableColumnExists('oscpaypal_order', 'OSCPAYPALPUIACCOUNTHOLDERNAME')) {
             $sql = "ALTER TABLE `oscpaypal_order` ADD `OSCPAYPALPUIACCOUNTHOLDERNAME` varchar(255) NOT NULL";
+            DatabaseProvider::getDb()->execute($sql);
+        }
+
+        // additional Module-Update v1.1.6
+
+        if (!self::tableColumnExists('oscpaypal_order', 'OSCPAYPALTRANSACTIONID')) {
+            $sql = "ALTER TABLE `oscpaypal_order` ADD `OSCPAYPALTRANSACTIONID` char(32) collate latin1_general_ci";
+            DatabaseProvider::getDb()->execute($sql);
+        }
+        if (!self::tableColumnExists('oscpaypal_order', 'OSCPAYPALTRACKINGID')) {
+            $sql = "ALTER TABLE `oscpaypal_order` ADD `OSCPAYPALTRACKINGID` char(32) collate latin1_general_ci";
+            DatabaseProvider::getDb()->execute($sql);
+        }
+        if (!self::tableColumnExists('oscpaypal_order', 'OSCPAYPALTRACKINGTYPE')) {
+            $sql = "ALTER TABLE `oscpaypal_order` ADD `OSCPAYPALTRACKINGTYPE` char(32) collate latin1_general_ci";
             DatabaseProvider::getDb()->execute($sql);
         }
     }
