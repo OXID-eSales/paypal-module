@@ -20,7 +20,7 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20220601140200 extends AbstractMigration
+final class Version20220808154100 extends AbstractMigration
 {
     public function __construct($version)
     {
@@ -45,40 +45,32 @@ final class Version20220601140200 extends AbstractMigration
     {
         $order = $schema->getTable('oscpaypal_order');
 
-        if (!$order->hasColumn('OSCPAYPALPUIPAYMENTREFERENCE')) {
+        if (!$order->hasColumn('OSCPAYPALTRANSACTIONID')) {
             $order->addColumn(
-                'OSCPAYPALPUIPAYMENTREFERENCE',
+                'OSCPAYPALTRANSACTIONID',
                 Types::STRING,
                 ['columnDefinition' => 'char(32) collate latin1_general_ci']
             );
         }
-        if (!$order->hasColumn('OSCPAYPALPUIBIC')) {
+        if (!$order->hasColumn('OSCPAYPALTRACKINGID')) {
             $order->addColumn(
-                'OSCPAYPALPUIBIC',
+                'OSCPAYPALTRACKINGID',
                 Types::STRING,
-                ['columnDefinition' => 'char(11) collate latin1_general_ci']
+                ['columnDefinition' => 'char(32) collate latin1_general_ci']
             );
         }
-        if (!$order->hasColumn('OSCPAYPALPUIIBAN')) {
+        if (!$order->hasColumn('OSCPAYPALTRACKINGTYPE')) {
             $order->addColumn(
-                'OSCPAYPALPUIIBAN',
+                'OSCPAYPALTRACKINGTYPE',
                 Types::STRING,
-                ['columnDefinition' => 'char(22) collate latin1_general_ci']
+                ['columnDefinition' => 'char(32) collate latin1_general_ci']
             );
         }
-        if (!$order->hasColumn('OSCPAYPALPUIBANKNAME')) {
-            $order->addColumn(
-                'OSCPAYPALPUIBANKNAME',
-                Types::STRING,
-                ['columnDefinition' => 'varchar(255) NOT NULL']
-            );
+        if ($order->hasIndex('ORDERID_PAYPALORDERID')) {
+            $order->dropIndex('ORDERID_PAYPALORDERID');
         }
-        if (!$order->hasColumn('OSCPAYPALPUIACCOUNTHOLDERNAME')) {
-            $order->addColumn(
-                'OSCPAYPALPUIACCOUNTHOLDERNAME',
-                Types::STRING,
-                ['columnDefinition' => 'varchar(255) NOT NULL']
-            );
+        if (!$order->hasIndex('ORDERID_PAYPALORDERID_TRANSACTIONID')) {
+            $order->addUniqueIndex(['OXORDERID', 'OXPAYPALORDERID', 'OSCPAYPALTRANSACTIONID'], 'ORDERID_PAYPALORDERID_TRANSACTIONID');
         }
     }
 }
