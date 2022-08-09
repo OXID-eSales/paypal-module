@@ -40,10 +40,10 @@ class OrderRepository
         $this->config = $config;
     }
 
-    public function paypalOrderByOrderIdAndPayPalId(string $shopOrderId, string $paypalOrderId): PayPalOrderModel
+    public function paypalOrderByOrderIdAndPayPalId(string $shopOrderId, string $paypalOrderId = '', string $payPalTransactionId = ''): PayPalOrderModel
     {
         $order = oxNew(PayPalOrderModel::class);
-        $order->load($this->getId($shopOrderId, $paypalOrderId));
+        $order->load($this->getId($shopOrderId, $paypalOrderId, $payPalTransactionId));
 
         if (!$order->isLoaded()) {
             $order->assign(
@@ -52,6 +52,7 @@ class OrderRepository
                     'oxpaypalorderid' => $paypalOrderId
                 ]
             );
+            $order->setTransactionId($payPalTransactionId);
         }
 
         return $order;
@@ -62,9 +63,28 @@ class OrderRepository
      */
     public function getShopOrderByPayPalOrderId(string $paypalOrderId): EshopModelOrder
     {
-        $orderId = $this->getShopOrderId($paypalOrderId);
+        $orderId = $this->getShopOrderIdByPaypalOrderId($paypalOrderId);
         if (empty($orderId)) {
-            throw NotFound::orderNotFoundByPayPalId();
+            throw NotFound::orderNotFoundByPayPalOrderId();
+        }
+
+        $order = oxNew(EshopModelOrder::class);
+        $order->load($orderId);
+        if (!$order->isLoaded()) {
+            throw NotFound::orderNotFound();
+        }
+
+        return $order;
+    }
+
+    /**
+     * @throws NotFound
+     */
+    public function getShopOrderByPayPalTransactionId(string $paypalTransactionId): EshopModelOrder
+    {
+        $orderId = $this->getShopOrderIdByPaypalTransactionId($paypalTransactionId);
+        if (empty($orderId)) {
+            throw NotFound::orderNotFoundByPayPalTransactionId();
         }
 
         $order = oxNew(EshopModelOrder::class);
@@ -107,20 +127,34 @@ class OrderRepository
         }
     }
 
-    private function getId(string $shopOrderId, string $paypalOrderId): string
+    private function getId(string $shopOrderId, string $paypalOrderId = '', $payPalTransactionId = ''): string
     {
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->queryBuilderFactory->create();
 
         $parameters = [
-            'oxorderid' => $shopOrderId,
-            'oxpaypalorderid' => $paypalOrderId
+            'oxorderid' => $shopOrderId
         ];
+
+        if ($paypalOrderId) {
+            $parameters['oxpaypalorderid'] = $paypalOrderId;
+        }
+
+        if ($payPalTransactionId) {
+            $parameters['oscpaypaltransactionid'] = $payPalTransactionId;
+        }
 
         $queryBuilder->select('oxid')
             ->from('oscpaypal_order')
-            ->where('oxorderid = :oxorderid')
-            ->andWhere('oxpaypalorderid = :oxpaypalorderid');
+            ->where('oxorderid = :oxorderid');
+
+        if ($paypalOrderId) {
+            $queryBuilder->andWhere('oxpaypalorderid = :oxpaypalorderid');
+        }
+
+        if ($payPalTransactionId) {
+            $queryBuilder->andWhere('oscpaypaltransactionid = :oscpaypaltransactionid');
+        }
 
         $id = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
@@ -130,7 +164,7 @@ class OrderRepository
         return (string) $id;
     }
 
-    private function getShopOrderId(string $paypalOrderId): string
+    private function getShopOrderIdByPaypalOrderId(string $paypalOrderId): string
     {
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->queryBuilderFactory->create();
@@ -151,4 +185,27 @@ class OrderRepository
 
         return (string) $id;
     }
+
+    private function getShopOrderIdByPaypalTransactionId(string $paypalTransactionId): string
+    {
+        /** @var QueryBuilder $queryBuilder */
+        $queryBuilder = $this->queryBuilderFactory->create();
+
+        $parameters = [
+            'oscpaypaltransactionid' => $paypalTransactionId
+        ];
+
+        $queryBuilder->select('oxorderid')
+            ->from('oscpaypal_order')
+            ->where('oscpaypaltransactionid = :oscpaypaltransactionid')
+            ->andWhere('LENGTH(oxorderid) > 0');
+
+        $id = $queryBuilder->setParameters($parameters)
+            ->setMaxResults(1)
+            ->execute()
+            ->fetch(PDO::FETCH_COLUMN);
+
+        return (string) $id;
+    }
+
 }

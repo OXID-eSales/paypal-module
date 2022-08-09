@@ -23,9 +23,9 @@ trait WebhookHandlerTrait
 {
     use ServiceContainer;
 
-    public function getOrder(Event $event): EshopModelOrder
+    public function getOrderByOrderId(Event $event): EshopModelOrder
     {
-        $payPalOrderId = $this->getPayPalOrderId($event);
+        $payPalOrderId = $this->getPayPalId($event);
 
         //get PayPalOrder
         try {
@@ -39,7 +39,23 @@ trait WebhookHandlerTrait
         return $order;
     }
 
-    public function getPayPalOrderId(Event $event): string
+    public function getOrderByTransactionId(Event $event): EshopModelOrder
+    {
+        $payPalTransactionId = $this->getPayPalId($event);
+
+        //get PayPalOrder
+        try {
+            $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
+            /** @var EshopModelOrder $order */
+            $order = $orderRepository->getShopOrderByPayPalTransactionId($payPalTransactionId);
+        } catch (NotFound $exception) {
+            throw WebhookEventException::byPayPalTransactionId($payPalTransactionId);
+        }
+
+        return $order;
+    }
+
+    public function getPayPalId(Event $event): string
     {
         $data = $this->getEventPayload($event);
 
@@ -47,13 +63,13 @@ trait WebhookHandlerTrait
             throw WebhookEventException::mandatoryDataNotFound();
         }
 
-        $payPalOrderId = (string) $data['resource']['id'];
+        $payPalId = (string) $data['resource']['id'];
 
-        if (!$payPalOrderId) {
+        if (!$payPalId) {
             throw WebhookEventException::mandatoryDataNotFound();
         }
 
-        return $payPalOrderId;
+        return $payPalId;
     }
 
     public function getEventPayload(Event $event): array
@@ -71,11 +87,18 @@ trait WebhookHandlerTrait
         );
     }
 
-    public function setStatus(EshopModelOrder $order, string $status, string $payPalOrderId)
+    public function setStatus(EshopModelOrder $order, string $status, string $payPalOrderId = '', string $payPalTransactionId = '')
     {
         /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
-        $paypalOrderModel = $this->getServiceFromContainer(OrderRepository::class)
-            ->paypalOrderByOrderIdAndPayPalId($order->getId(), $payPalOrderId);
+        $orderService = $this->getServiceFromContainer(OrderRepository::class);
+
+        if ($payPalTransactionId) {
+            $paypalOrderModel = $orderService->paypalOrderByOrderIdAndPayPalId($order->getId(), $payPalOrderId, $payPalTransactionId);
+            $payPalOrderId = $payPalOrderId ?: $paypalOrderModel->getPayPalOrderId();
+        }
+        else {
+            $paypalOrderModel = $orderService->paypalOrderByOrderIdAndPayPalId($order->getId(), $payPalOrderId);
+        }
 
         $orderDetails = Registry::get(ServiceFactory::class)
             ->getOrderService()

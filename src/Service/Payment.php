@@ -213,18 +213,21 @@ class Payment
                 $request = new CaptureRequest();
                 $paymentService->captureAuthorizedPayment($authorizationId, $request, '');
                 $result = $this->fetchOrderFields($checkoutOrderId);
+                $payPalTransactionId = $result->purchase_units[0]->payments->captures[0]->id;
             } else {
                 $request = new OrderCaptureRequest();
                 /** @var ApiOrderModel */
                 $result = $orderService->capturePaymentForOrder('', $checkoutOrderId, $request, '');
+                $payPalTransactionId = $result->purchase_units[0]->payments->captures[0]->id;
             }
 
             /** @var PayPalOrderModel $paypalOrder */
-            $payPalOrder = $this->trackPayPalOrder(
+            $this->trackPayPalOrder(
                 $order->getId(),
                 $checkoutOrderId,
                 $paymentId,
-                ApiOrderModel::STATUS_SAVED
+                ApiOrderModel::STATUS_SAVED,
+                $payPalTransactionId
             );
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on order capture call.", [$exception]);
@@ -485,13 +488,15 @@ class Payment
         string $shopOrderId,
         string $payPalOrderId,
         string $paymentMethodId,
-        string $status
+        string $status,
+        string $payPalTransactionId = ''
     ): PayPalOrderModel {
         /** @var PayPalOrderModel $payPalOrder */
-        $payPalOrder = $this->getPayPalCheckoutOrder($shopOrderId, $payPalOrderId);
+        $payPalOrder = $this->getPayPalCheckoutOrder($shopOrderId, $payPalOrderId, $payPalTransactionId);
 
         $payPalOrder->setPaymentMethodId($paymentMethodId);
         $payPalOrder->setStatus($status);
+        $payPalOrder->setTransactionId($payPalTransactionId);
         $payPalOrder->save();
 
         return $payPalOrder;
@@ -499,12 +504,14 @@ class Payment
 
     public function getPayPalCheckoutOrder(
         string $shopOrderId,
-        string $payPalOrderId
+        string $payPalOrderId,
+        string $payPalTransactionId = ''
     ) {
         /** @var PayPalOrderModel $payPalOrder */
         return $this->orderRepository->paypalOrderByOrderIdAndPayPalId(
             $shopOrderId,
-            $payPalOrderId
+            $payPalOrderId,
+            $payPalTransactionId
         );
     }
 
