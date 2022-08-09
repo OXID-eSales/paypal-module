@@ -16,6 +16,7 @@ class LegacyOeppModuleDetails
     /**
      * Determines whether the legacy PayPal module "oepaypal" is enabled
      * @return bool
+     * @psalm-suppress InternalMethod
      */
     public function isLegacyModulePresent(): bool
     {

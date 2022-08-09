@@ -18,7 +18,7 @@ use OxidSolutionCatalysts\PayPal\Core\Constants;
 
 class OrderRepository
 {
-    /** @var DatabaseProvider */
+    /** @var Database */
     private $db;
 
     /** @var EshopCoreConfig */
@@ -97,6 +97,7 @@ class OrderRepository
             and oxtransstatus = :oxtransstatus
             and oxpaymenttype LIKE :oxpaymenttype
             and oxorderdate < now() - interval :sessiontime SECOND";
+        /** @var \OxidEsales\Eshop\Core\Database\Adapter\Doctrine\ResultSet $result */
         $result = $this->db->select($query, [
             ':oxordernr' => '0',
             ':oxtransstatus' => 'NOT_FINISHED',

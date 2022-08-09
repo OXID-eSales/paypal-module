@@ -21,7 +21,7 @@ use OxidEsales\Eshop\Core\Database\Adapter\Doctrine\Database;
 //NOTE: later we will do this on module installation, for now on first activation
 class StaticContent
 {
-    /** @var DatabaseProvider */
+    /** @var Database */
     private $db;
 
     /** @var EshopCoreConfig */

@@ -314,7 +314,7 @@ class PayPalConfigController extends AdminController
             // Read old values
             $legacyConfigValue = Registry::getConfig()->getShopConfVar(
                 $configKeyName,
-                $currentShopId,
+                (string)$currentShopId,
                 'module:' . LegacyOeppModuleDetails::LEGACY_MODULE_ID
             );
 

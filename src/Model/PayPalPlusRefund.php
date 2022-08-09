@@ -96,7 +96,7 @@ class PayPalPlusRefund extends \OxidEsales\Eshop\Core\Model\BaseModel
      *
      * @return object
      */
-    public function getRefundObject(): object
+    public function getRefundObject()
     {
         $oRefundObject = unserialize(
             htmlspecialchars_decode(

@@ -30,7 +30,7 @@ class ModuleSettings
         ]
     ];
 
-    /** @var DatabaseProvider */
+    /** @var Database */
     private $db;
 
     /** @var EshopCoreConfig */
@@ -284,7 +284,7 @@ class ModuleSettings
     public function save(string $name, $value, string $type = ''): void
     {
         $this->config->setConfigParam($name, $value);
-        $shopId = $this->config->getShopId();
+        $shopId = (string)$this->config->getShopId();
         $module = 'module:osc_paypal';
 
         if (!$type) {

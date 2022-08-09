@@ -17,13 +17,13 @@ use OxidEsales\Eshop\Application\Model\State;
 
 class UserRepository
 {
-    /** @var DatabaseProvider */
+    /** @var Database */
     private $db;
 
     /** @var EshopCoreConfig */
     private $config;
 
-    /** @var EshopRegistry */
+    /** @var EshopSession */
     private $session;
 
     public function __construct(
@@ -59,13 +59,13 @@ class UserRepository
     private function getUserId(string $userEmail, bool $hasPassword = true): string
     {
         $passWordCheck = $hasPassword ? 'LENGTH(`oxpassword`) > 0' : 'LENGTH(`oxpassword`) = 0';
-        $userId = "select oxid from oxuser where oxusername = :oxusername and oxshopid = :shopid and " . $passWordCheck;
-        $type = $this->db->getOne($query, [
+        $query = "select oxid from oxuser where oxusername = :oxusername and oxshopid = :shopid and " . $passWordCheck;
+        $userId = $this->db->getOne($query, [
             ':oxusername' => $userEmail,
             ':shopid' => $this->config->getShopId()
         ]);
 
-        return (string) $userId;
+        return $userId ?: '';
     }
 
 

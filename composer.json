@@ -47,10 +47,10 @@
         }
     },
     "scripts": {
-        "psalm": "psalm --show-info=true --no-cache",
-        "psalm-report": "psalm --show-info=true --no-cache --report=logs/psalm.sonarqube.json",
-        "psalm-errors": "psalm --no-cache",
-        "psalm-automatic": "psalm --alter --issues=MissingReturnType,MissingParamType",
+        "psalm": "psalm --show-info=true --no-cache --php-version=7.1",
+        "psalm-report": "psalm --show-info=true --no-cache --report=logs/psalm.sonarqube.json --php-version=7.1",
+        "psalm-errors": "psalm --no-cache --php-version=7.1",
+        "psalm-automatic": "psalm --alter --issues=MissingReturnType,MissingParamType --php-version=7.1",
         "phpcs": "phpcs --standard=Tests/phpcs.xml",
         "phpcbf": "phpcbf --standard=Tests/phpcs.xml"
     },
