@@ -140,7 +140,8 @@ class Events
                             on update CURRENT_TIMESTAMP
                             COMMENT \'Timestamp\',
                         PRIMARY KEY (`OXID`),
-                        UNIQUE KEY `ORDERID_PAYPALORDERID` (`OXORDERID`,`OXPAYPALORDERID`))
+                        UNIQUE KEY `OXORDERID_OXPAYPALORDERID_OSCPAYPALTRANSACTIONID`
+                            (`OXORDERID`,`OXPAYPALORDERID`, `OSCPAYPALTRANSACTIONID`))
                         ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
                         COMMENT \'Paypal Checkout\'',
             'oscpaypal_order'
@@ -197,6 +198,17 @@ class Events
                 ADD `OSCPAYPALTRACKINGTYPE` char(32) collate latin1_general_ci";
             DatabaseProvider::getDb()->execute($sql);
         }
+        if (self::tableIndexExists('oscpaypal_order', 'ORDERID_PAYPALORDERID')) {
+            $sql = "ALTER TABLE `oscpaypal_order`
+                DROP INDEX `ORDERID_PAYPALORDERID`";
+            DatabaseProvider::getDb()->execute($sql);
+        }
+        if (!self::tableIndexExists('oscpaypal_order', 'ORDERID_PAYPALORDERID')) {
+            $sql = "ALTER TABLE `oscpaypal_order`
+                ADD UNIQUE `OXORDERID_OXPAYPALORDERID_OSCPAYPALTRANSACTIONID`
+                (`OXORDERID`, `OXPAYPALORDERID`, `OSCPAYPALTRANSACTIONID`)";
+            DatabaseProvider::getDb()->execute($sql);
+        }
     }
 
     /**
@@ -217,6 +229,33 @@ class Events
                 "show columns from {$tableName} like :columnName",
                 [
                     ':columnName' => $columnName
+                ]
+            );
+            if ($results != false && $results->count() > 0) {
+                $result = true;
+            }
+        }
+        return $result;
+    }
+
+    /**
+    * Check if table or table column exists
+    *
+    * @param  $tableName - Name of table
+    * @param  $indexName - Name of Index
+    *
+    * @return boolean
+    */
+    private static function tableIndexExists($tableName = '', $indexName = '')
+    {
+        $result = false;
+        if ($tableName && $columnName) {
+            $db = DatabaseProvider::getDb();
+
+            $results = $db->select(
+                "show index from {$tableName} where key_name like :indexName",
+                [
+                    ':indexName' => $indexName
                 ]
             );
             if ($results != false && $results->count() > 0) {
