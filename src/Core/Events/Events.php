@@ -203,7 +203,7 @@ class Events
                 DROP INDEX `ORDERID_PAYPALORDERID`";
             DatabaseProvider::getDb()->execute($sql);
         }
-        if (!self::tableIndexExists('oscpaypal_order', 'ORDERID_PAYPALORDERID')) {
+        if (!self::tableIndexExists('oscpaypal_order', 'OXORDERID_OXPAYPALORDERID_OSCPAYPALTRANSACTIONID')) {
             $sql = "ALTER TABLE `oscpaypal_order`
                 ADD UNIQUE `OXORDERID_OXPAYPALORDERID_OSCPAYPALTRANSACTIONID`
                 (`OXORDERID`, `OXPAYPALORDERID`, `OSCPAYPALTRANSACTIONID`)";
@@ -249,7 +249,7 @@ class Events
     private static function tableIndexExists($tableName = '', $indexName = '')
     {
         $result = false;
-        if ($tableName && $columnName) {
+        if ($tableName && $indexName) {
             $db = DatabaseProvider::getDb();
 
             $results = $db->select(
