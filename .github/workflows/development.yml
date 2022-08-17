@@ -93,6 +93,12 @@ jobs:
           docker-compose exec -T php composer update --no-interaction
           docker-compose exec -T php php vendor/bin/reset-shop
 
+      - name: Put module settings
+        continue-on-error: true
+        run: |
+          echo "${{ secrets.MODULE_SETTINGS }}" > source/vendor/${{ env.PACKAGE_NAME }}/.env
+          docker-compose exec -T php php bin/oe-console oe:module:apply-configuration
+
       - name: Stop containers
         run: |
           docker-compose down
@@ -150,6 +156,7 @@ jobs:
 
   unit_tests:
     strategy:
+      fail-fast: false
       matrix:
         php: [ '7.4', '8.0', '8.1' ]
     needs: [ install_shop_with_module ]
@@ -195,6 +202,7 @@ jobs:
 
   codeception_tests:
     strategy:
+      fail-fast: false
       matrix:
         php: [ '7.4', '8.0', '8.1' ]
         group:
@@ -231,6 +239,21 @@ jobs:
             -e RUN_TESTS_FOR_MODULES=0 \
             -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.PACKAGE_NAME }}/Tests' \
             php php vendor/bin/runtests-codeception --group=${{ matrix.group }}
+
+      - name: Stop containers
+        if: always()
+        run: |
+          docker-compose down
+          sleep 2
+      - name: Upload log artifact
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: CodeceptionTestsLog-${{ matrix.php }}
+          path: |
+            source/vendor/${{ env.PACKAGE_NAME }}/Tests/Codeception/_output/
+            source/source/log/oxideshop.log
+            source/data/php/logs/error_log.txt
 
   sonarcloud:
     needs: [ styles, unit_tests ]
