@@ -238,7 +238,7 @@ jobs:
             -e RUN_TESTS_FOR_SHOP=0 \
             -e RUN_TESTS_FOR_MODULES=0 \
             -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.PACKAGE_NAME }}/Tests' \
-            php php vendor/bin/runtests-codeception --group=${{ matrix.group }}
+            php php vendor/bin/runtests-codeception
 
       - name: Stop containers
         if: always()
