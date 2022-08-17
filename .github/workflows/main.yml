@@ -90,7 +90,7 @@ jobs:
       - name: Put module settings
         continue-on-error: true
         run: |
-          echo "${{ secrets.MODULE_SETTINGS }}" > source/source/modules/${{ env.MODULE_PATH }}/.env
+          echo "${{ secrets.MODULE_SETTINGS }}" > source/vendor/${{ env.PACKAGE_NAME }}/.env
           docker-compose exec -T php php bin/oe-console oe:module:apply-configuration
 
       - name: Show docker log
