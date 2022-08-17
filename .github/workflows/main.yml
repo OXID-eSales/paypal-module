@@ -81,19 +81,29 @@ jobs:
             --json '{"type":"path", "url":"./test-module", "options": {"symlink": true}}'
           docker-compose exec -T \
             php composer require ${{ env.PACKAGE_NAME }}:* --no-interaction --no-update
+
       - name: Install dependencies and reset shop
         run: |
           docker-compose exec -T php composer update --no-interaction
           docker-compose exec -T php php vendor/bin/reset-shop
+
+      - name: Put module settings
+        continue-on-error: true
+        run: |
+          echo "${{ secrets.MODULE_SETTINGS }}" > source/source/modules/${{ env.MODULE_PATH }}/.env
+          docker-compose exec -T php php bin/oe-console oe:module:apply-configuration
+
       - name: Show docker log
         if: always()
         run: |
           docker-compose logs
+
       - name: Stop containers
         if: always()
         run: |
           docker-compose down
           sleep 2
+
       - name: Upload configuration artifacts
         if: always()
         uses: actions/upload-artifact@v3
