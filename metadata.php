@@ -433,6 +433,13 @@ $aModule = [
             'type' => 'bool',
             'value' => false,
             'group' => null
-        ]
+        ],
+        [
+            'name' => 'oscPayPalSCAContingency',
+            'type' => 'select',
+            'value' => '3D_SECURE',
+            'constraints' => '3D_SECURE|SCA_ALWAYS|SCA_WHEN_REQUIRED',
+            'group' => null
+        ],
     ]
 ];

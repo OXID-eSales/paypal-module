@@ -92,7 +92,11 @@
                 document.querySelector("#orderConfirmAgbBottom").addEventListener('submit', (event) => {
                     event.preventDefault();
 
-                    cardFields.submit({
+                    cardFields.submit( {
+
+                        // Trigger 3D Secure authentication
+                        contingencies: ['[{$oViewConf->getPayPalSCAContingency()}]'],
+
                         // Cardholder's first and last name
                         cardholderName: document.getElementById('card-holder-name').value,
                         // Billing Address

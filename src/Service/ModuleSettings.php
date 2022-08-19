@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\EshopCommunity\Core\Registry;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Module;
 use OxidEsales\Eshop\Application\Model\Payment;
@@ -425,6 +426,12 @@ class ModuleSettings
             }
         }
         return $this->countryRestrictionForPayPalExpress;
+    }
+
+    public function getPayPalSCAContingency(): string
+    {
+        $value = (string) $this->getSettingValue('oscPayPalSCAContingency');
+        return !empty($value) ? $value : 'SCA_WHEN_REQUIRED';
     }
 
     /**

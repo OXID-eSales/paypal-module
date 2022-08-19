@@ -447,4 +447,10 @@ class ViewConfig extends ViewConfig_parent
         }
         return $result;
     }
+
+    //TODO: remove duplicated config getters
+    public function getPayPalSCAContingency(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalSCAContingency();
+    }
 }

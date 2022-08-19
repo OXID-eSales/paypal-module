@@ -233,4 +233,15 @@ $aLang = [
     'OSC_PAYPAL_ERROR_INVALID_RESOURCE_ID'          => 'Die PayPal-Checkout-Bestellung hat eine invalide Resource-ID',
     'OSC_PAYPAL_PAYPALPLUS_TABLE_DOES_NOT_EXISTS'   => 'Bestellung wurde mit dem PayPal-Plus-Modul bezahlt, aber die Datenbanken existieren nicht mehr',
     'OSC_PAYPAL_PAYPALSOAP_TABLE_DOES_NOT_EXISTS'   => 'Bestellung wurde mit dem PayPal-Soap-Modul bezahlt, aber die Datenbanken existieren nicht mehr',
+
+    'OSC_PAYPAL_SCA_CONTINGENCY'                    => '3D Secure für Debit- und Kreditkarten',
+    'OSC_PAYPAL_3D_SECURE'                          => '3D Secure',
+    'OSC_PAYPAL_SCA_ALWAYS'                         => 'SCA Abfrage für jede Transaktion',
+    'OSC_PAYPAL_SCA_WHEN_REQUIRED'                  => 'SCA Abfrage wenn benötigt',
+    'OSC_PAYPAL_SCA_CONTINGENCY_LABEL'              => 'Kreditkarten Sicherheit',
+    'OSC_PAYPAL_SCA_CONTINGENCY_HELP'               => 'Use 3D Secure to authenticate card holders through card issuers. It reduces the likelihood of fraud when you use supported cards and improves transaction performance. <br>
+                                                        A successful 3D Secure authentication can shift liability for fraudulent chargebacks from you to the card issuer. <br>
+                                                        3D Secure authentication is performed only if the card is enrolled for the service. When your customer submits their card details on your website for processing, <br>
+                                                        you have the option of triggering 3D Secure. When triggered, customers are prompted by their card issuing bank to complete an additional verification step <br>
+                                                        to enter a one-time or static password, depending on the implementation.',
 ];

@@ -271,10 +271,40 @@
             <div class="card">
                 <div class="card-header" id="heading5">
                     <h4 class="collapsed" data-toggle="collapse" data-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
+                        [{oxmultilang ident="OSC_PAYPAL_SCA_CONTINGENCY"}]
+                    </h4>
+                </div>
+
+                <div id="collapse5" class="collapse" aria-labelledby="heading5" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="sca-config">[{oxmultilang ident="OSC_PAYPAL_SCA_CONTINGENCY_LABEL"}]</label>
+                            <div class="controls">
+                                <select name="conf[oscPayPalSCAContingency]" id="sca-config" class="form-control">
+                                    <option value="3D_SECURE" [{if $config->getPayPalSCAContingency() == '3D_SECURE'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_3D_SECURE"}]
+                                    </option>
+                                    <option value="SCA_ALWAYS" [{if $config->getPayPalSCAContingency() == 'SCA_ALWAYS'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_SCA_ALWAYS"}]
+                                    </option>
+                                    <option value="SCA_WHEN_REQUIRED" [{if $config->getPayPalSCAContingency() == 'SCA_WHEN_REQUIRED'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_SCA_WHEN_REQUIRED"}]
+                                    </option>
+                                </select>
+                            </div>
+                            <span class="help-block">[{oxmultilang ident="OSC_PAYPAL_SCA_CONTINGENCY_HELP"}]</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header" id="heading6">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse6" aria-expanded="false" aria-controls="collapse6">
                         [{oxmultilang ident="OSC_PAYPAL_BANNER_CREDENTIALS"}]
                     </h4>
                 </div>
-                <div id="collapse5" class="collapse" aria-labelledby="heading5" data-parent="#accordion">
+                <div id="collapse6" class="collapse" aria-labelledby="heading5" data-parent="#accordion">
                     <div class="card-body">
                         [{if $oView->showTransferLegacySettingsButton()}]
                             <a class="btn btn-primary bottom-space" href="[{$sSelfLink|cat:"cl=oscpaypalconfig&fnc=transferBannerSettings"}]">[{oxmultilang ident='OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'}]</a>
