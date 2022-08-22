@@ -56,9 +56,13 @@ class Payment
     /** @var ConfirmOrderRequestFactory */
     private $confirmOrderRequestFactory;
 
+    /** @var SCAValidatorInterface */
+    private $scaValidator;
+
     public function __construct(
         EshopSession $eshopSession,
         OrderRepository $orderRepository,
+        SCAValidatorInterface $scaValidator,
         ServiceFactory $serviceFactory = null,
         PatchRequestFactory $patchRequestFactory = null,
         OrderRequestFactory $orderRequestFactory = null,
@@ -66,6 +70,7 @@ class Payment
     ) {
         $this->eshopSession = $eshopSession;
         $this->orderRepository = $orderRepository;
+        $this->scaValidator = $scaValidator;
         $this->serviceFactory = $serviceFactory ?: Registry::get(ServiceFactory::class);
         $this->patchRequestFactory = $patchRequestFactory ?: Registry::get(PatchRequestFactory::class);
         $this->orderRequestFactory = $orderRequestFactory ?: Registry::get(OrderRequestFactory::class);
@@ -182,7 +187,10 @@ class Payment
         string $checkoutOrderId,
         string $paymentId
     ): ApiOrderModel {
-        $payPalOrder = $this->fetchOrderFields($checkoutOrderId);
+        $payPalOrder = $this->fetchOrderFields($checkoutOrderId, 'payment_source');
+
+        //Verify 3D result
+        $this->scaValidator->isCardUsableForPayment($payPalOrder);
 
         /** @var ApiPaymentService $paymentService */
         $paymentService = Registry::get(ServiceFactory::class)->getPaymentService();

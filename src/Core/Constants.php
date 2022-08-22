@@ -51,4 +51,3 @@ class Constants
     public const PAYPAL_SCA_ALWAYS = 'SCA_ALWAYS';
     public const PAYPAL_SCA_WHEN_REQUIRED = 'SCA_WHEN_REQUIRED';
 }
-
