@@ -189,8 +189,12 @@ class Payment
     ): ApiOrderModel {
         $payPalOrder = $this->fetchOrderFields($checkoutOrderId, 'payment_source');
 
-        //Verify 3D result
-        $this->scaValidator->isCardUsableForPayment($payPalOrder);
+        //Verify 3D result if acdc payment
+        if ( ($paymentId == PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) &&
+           !$this->scaValidator->isCardUsableForPayment($payPalOrder)
+        ) {
+            throw oxNew(StandardException::class, 'OXPS_PAYPAL_ORDEREXECUTION_ERROR');
+        }
 
         /** @var ApiPaymentService $paymentService */
         $paymentService = Registry::get(ServiceFactory::class)->getPaymentService();
