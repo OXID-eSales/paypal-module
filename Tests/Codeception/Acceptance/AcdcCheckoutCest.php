@@ -32,7 +32,7 @@ final class AcdcCheckoutCestCheckoutCest extends BaseCest
 
         $this->proceedToPaymentStep($I, Fixtures::get('userName'));
 
-        //first decide to use sofort via paypal
+        //first decide to use credit card via paypal
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
         $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_acdc')
@@ -40,31 +40,19 @@ final class AcdcCheckoutCestCheckoutCest extends BaseCest
         $paymentCheckout = $orderCheckout->goToPreviousStep();
         $I->dontSee(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
 
-        //change decision to standard PayPal
+        $I->amOnPage('/en/cart');
         $token = $this->approvePayPalTransaction($I);
+        $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
 
-        //pretend we are back in shop after clicking PayPal button and approving the order
         $I->amOnUrl($this->getShopUrl() . '?cl=payment');
         $I->see(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
+        $I->dontSeeElement('#payment_oscpaypal_acdc');
+        $I->click(Translator::translate('OSC_PAYPAL_PAY_UNLINK'));
 
-        //change decision again to use Sofort via PayPal
-        $paymentCheckout = new PaymentCheckout($I);
-        /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_acdc')
-            ->goToNextStep();
-        $paymentCheckout = $orderCheckout->goToPreviousStep();
+        $paymentCheckout->selectPayment('oscpaypal_acdc')
+            ->goToNextStep()
+            ->goToPreviousStep();
         $I->dontSee(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
-
-        //we now decide for PayPal again
-        //NOTE: there's still a paypal order id in the session but with
-        // current implementation it will be replaced by a fresh one
-        $productNavigation = new ProductNavigation($I);
-        $productNavigation->openProductDetailsPage(Fixtures::get('product')['oxid']);
-        $I->seeElement("#PayPalButtonProductMain");
-        $newToken = $this->approvePayPalTransaction($I, '&context=continue&aid=' . Fixtures::get('product')['oxid']);
-
-        //we got a fresh paypal order in the session
-        $I->assertNotEquals($token, $newToken);
     }
 
     public function checkoutWithAcdcViaPayPalNoCreditCardFieldsFilled(AcceptanceTester $I): void
@@ -83,7 +71,7 @@ final class AcdcCheckoutCestCheckoutCest extends BaseCest
         $I->waitForPageLoad();
         $I->waitForElementVisible("#card_form");
 
-        //This is as far as we get, look slike codecetion cannot interfere with paypal JS
+        //This is as far as we get, looks like codeception cannot interfere with paypal JS
         $I->seeElement("#card_form");
     }
 }

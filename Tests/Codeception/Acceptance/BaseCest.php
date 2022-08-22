@@ -179,12 +179,8 @@ abstract class BaseCest
 
     protected function proceedToPaymentStep(
         AcceptanceTester $I,
-        string $userName = null,
-        bool $ensureCheckoutButton = true
+        string $userName = null
     ): void {
-        if ($ensureCheckoutButton) {
-            $I->updateModuleConfiguration('oscPayPalShowCheckoutButton', true);
-        }
 
         $userName = $userName ?: Fixtures::get('userName');
 
@@ -195,10 +191,6 @@ abstract class BaseCest
         //add product to basket and start checkout
         $this->fillBasket($I);
         $this->fromBasketToPayment($I);
-
-        if ($ensureCheckoutButton) {
-            $I->seeElement("#PayPalButtonPaymentPage");
-        }
     }
 
     protected function fromBasketToPayment(AcceptanceTester $I): void
