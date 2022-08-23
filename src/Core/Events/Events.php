@@ -17,6 +17,7 @@ use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\StaticContent;
 use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
+use Symfony\Component\Console\Output\BufferedOutput;
 
 class Events
 {
@@ -62,7 +63,14 @@ class Events
     private static function executeModuleMigrations(): void
     {
         $migrations = (new MigrationsBuilder())->build();
-        $migrations->execute('migrations:migrate', 'osc_paypal');
+
+        $output = new BufferedOutput();
+        $migrations->setOutput($output);
+        $neeedsUpdate = $migrations->execute('migrations:up-to-date', 'osc_paypal');
+
+        if ($neeedsUpdate) {
+            $migrations->execute('migrations:migrate', 'osc_paypal');
+        }
     }
 
     /**
