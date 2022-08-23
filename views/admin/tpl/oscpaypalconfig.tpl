@@ -281,14 +281,14 @@
                             <label for="sca-config">[{oxmultilang ident="OSC_PAYPAL_SCA_CONTINGENCY_LABEL"}]</label>
                             <div class="controls">
                                 <select name="conf[oscPayPalSCAContingency]" id="sca-config" class="form-control">
-                                    <option value="3D_SECURE" [{if $config->getPayPalSCAContingency() == '3D_SECURE'}]selected[{/if}]>
-                                        [{oxmultilang ident="OSC_PAYPAL_3D_SECURE"}]
-                                    </option>
                                     <option value="SCA_ALWAYS" [{if $config->getPayPalSCAContingency() == 'SCA_ALWAYS'}]selected[{/if}]>
                                         [{oxmultilang ident="OSC_PAYPAL_SCA_ALWAYS"}]
                                     </option>
                                     <option value="SCA_WHEN_REQUIRED" [{if $config->getPayPalSCAContingency() == 'SCA_WHEN_REQUIRED'}]selected[{/if}]>
                                         [{oxmultilang ident="OSC_PAYPAL_SCA_WHEN_REQUIRED"}]
+                                    </option>
+                                    <option value="SCA_DISABLED" [{if $config->alwaysIgnoreSCAResult()}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_SCA_DISABLED"}]
                                     </option>
                                 </select>
                             </div>

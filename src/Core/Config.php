@@ -242,6 +242,11 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalSCAContingency();
     }
 
+    public function alwaysIgnoreSCAResult(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->alwaysIgnoreSCAResult();
+    }
+
     public function tableExists(string $tableName = ''): bool
     {
         $exists = false;

@@ -234,9 +234,9 @@ $aLang = [
     'OSC_PAYPAL_PAYPALSOAP_TABLE_DOES_NOT_EXISTS'   => 'Order was paid with the PayPal Soap module, but the databases no longer exist',
 
     'OSC_PAYPAL_SCA_CONTINGENCY'                    => '3D Secure for advanced credit and debit cards',
-    'OSC_PAYPAL_3D_SECURE'                          => '3D Secure',
-    'OSC_PAYPAL_SCA_ALWAYS'                         => 'SCA for every transaction',
-    'OSC_PAYPAL_SCA_WHEN_REQUIRED'                  => 'SCA when required by regional mandate',
+    'OSC_PAYPAL_SCA_ALWAYS'                         => '3D Secure for each ACDC transaction',
+    'OSC_PAYPAL_SCA_WHEN_REQUIRED'                  => 'SCA when required by regional mandate, decision by PayPal system',
+    'OSC_PAYPAL_SCA_DISABLED'                       => 'Disable 3D Secure result evaluation',
     'OSC_PAYPAL_SCA_CONTINGENCY_LABEL'              => 'Creditcard security',
     'OSC_PAYPAL_SCA_CONTINGENCY_HELP'               => 'Use 3D Secure to authenticate card holders through card issuers. It reduces the likelihood of fraud when you use supported cards and improves transaction performance. <br>
                                                         A successful 3D Secure authentication can shift liability for fraudulent chargebacks from you to the card issuer. <br>

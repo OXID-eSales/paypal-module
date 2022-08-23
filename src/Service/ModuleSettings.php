@@ -431,7 +431,13 @@ class ModuleSettings
     public function getPayPalSCAContingency(): string
     {
         $value = (string) $this->getSettingValue('oscPayPalSCAContingency');
-        return !empty($value) ? $value : 'SCA_WHEN_REQUIRED';
+        return $value === Constants::PAYPAL_SCA_ALWAYS ? $value : Constants::PAYPAL_SCA_WHEN_REQUIRED;
+    }
+
+    public function alwaysIgnoreSCAResult(): bool
+    {
+        $value = (string) $this->getSettingValue('oscPayPalSCAContingency');
+        return $value === Constants::PAYPAL_SCA_DISABLED;
     }
 
     /**

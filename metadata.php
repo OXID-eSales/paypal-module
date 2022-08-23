@@ -437,8 +437,8 @@ $aModule = [
         [
             'name' => 'oscPayPalSCAContingency',
             'type' => 'select',
-            'value' => '3D_SECURE',
-            'constraints' => '3D_SECURE|SCA_ALWAYS|SCA_WHEN_REQUIRED',
+            'value' => 'SCA_ALWAYS',
+            'constraints' => 'SCA_ALWAYS|SCA_WHEN_REQUIRED|SCA_DISABLED',
             'group' => null
         ],
     ]

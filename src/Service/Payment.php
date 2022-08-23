@@ -31,6 +31,7 @@ use OxidSolutionCatalysts\PayPalApi\Service\Payments as ApiPaymentService;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings as ModuleSettingsService;
 
 class Payment
 {
@@ -59,10 +60,14 @@ class Payment
     /** @var SCAValidatorInterface */
     private $scaValidator;
 
+    /** @var ModuleSettingsService */
+    private $moduleSettingsService;
+
     public function __construct(
         EshopSession $eshopSession,
         OrderRepository $orderRepository,
         SCAValidatorInterface $scaValidator,
+        ModuleSettingsService $moduleSettingsService,
         ServiceFactory $serviceFactory = null,
         PatchRequestFactory $patchRequestFactory = null,
         OrderRequestFactory $orderRequestFactory = null,
@@ -71,6 +76,7 @@ class Payment
         $this->eshopSession = $eshopSession;
         $this->orderRepository = $orderRepository;
         $this->scaValidator = $scaValidator;
+        $this->moduleSettingsService = $moduleSettingsService;
         $this->serviceFactory = $serviceFactory ?: Registry::get(ServiceFactory::class);
         $this->patchRequestFactory = $patchRequestFactory ?: Registry::get(PatchRequestFactory::class);
         $this->orderRequestFactory = $orderRequestFactory ?: Registry::get(OrderRequestFactory::class);
@@ -191,7 +197,8 @@ class Payment
 
         //Verify 3D result if acdc payment
         if ( ($paymentId == PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) &&
-           !$this->scaValidator->isCardUsableForPayment($payPalOrder)
+            !$this->moduleSettingsService->alwaysIgnoreSCAResult() &&
+            !$this->scaValidator->isCardUsableForPayment($payPalOrder)
         ) {
             throw oxNew(StandardException::class, 'OXPS_PAYPAL_ORDEREXECUTION_ERROR');
         }

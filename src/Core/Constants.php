@@ -47,7 +47,7 @@ class Constants
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_BANNER = 'oxid_Cart_Instbanners';
 
     //SCA contingencies parameter
-    public const PAYPAL_3D_SECURE = '3D_SECURE';
     public const PAYPAL_SCA_ALWAYS = 'SCA_ALWAYS';
+    public const PAYPAL_SCA_DISABLED = 'SCA_DISABLED';
     public const PAYPAL_SCA_WHEN_REQUIRED = 'SCA_WHEN_REQUIRED';
 }
