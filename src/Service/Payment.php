@@ -193,13 +193,11 @@ class Payment
         string $checkoutOrderId,
         string $paymentId
     ): ApiOrderModel {
+
         $payPalOrder = $this->fetchOrderFields($checkoutOrderId, 'payment_source');
 
         //Verify 3D result if acdc payment
-        if ( ($paymentId == PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) &&
-            !$this->moduleSettingsService->alwaysIgnoreSCAResult() &&
-            !$this->scaValidator->isCardUsableForPayment($payPalOrder)
-        ) {
+        if (!$this->verify3D($paymentId, $payPalOrder)) {
             throw oxNew(StandardException::class, 'OXPS_PAYPAL_ORDEREXECUTION_ERROR');
         }
 
@@ -246,7 +244,7 @@ class Payment
                 $checkoutOrderId,
                 $paymentId,
                 ApiOrderModel::STATUS_SAVED,
-                $payPalTransactionId
+                (string) $payPalTransactionId
             );
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on order capture call.", [$exception]);
@@ -539,5 +537,32 @@ class Payment
         return $this->serviceFactory
             ->getOrderService()
             ->showOrderDetails($paypalOrderId, $fields);
+    }
+
+    /**
+     * @throws StandardException
+     */
+    public function verify3D(string $paymentId, ApiOrderModel $payPalOrder ): bool
+    {
+        //no ACDC payment
+        if ($paymentId != PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) {
+            return true;
+        }
+        //case no check is needed
+        if ( $this->moduleSettingsService->alwaysIgnoreSCAResult()) {
+            return true;
+        }
+        //case check is to be done automatic but we have no result to check
+        if ((Constants::PAYPAL_SCA_WHEN_REQUIRED === $this->moduleSettingsService->getPayPalSCAContingency()) &&
+            is_null($this->scaValidator->getCardAuthenticationResult($payPalOrder))
+        ) {
+            return true;
+        }
+        //Verify 3D result if acdc payment
+        if ($this->scaValidator->isCardUsableForPayment($payPalOrder)) {
+            return true;
+        }
+
+        return false;
     }
 }

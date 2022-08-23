@@ -85,7 +85,7 @@ class SCAValidator implements SCAValidatorInterface
         return $isOk;
     }
 
-    public function getCardAuthenticationResult(PayPalApiOrder $order): AuthenticationResponse
+    public function getCardAuthenticationResult(PayPalApiOrder $order): ?AuthenticationResponse
     {
         if (is_null($order->payment_source)) {
             throw CardValidation::byMissingPaymentSource();
@@ -96,7 +96,7 @@ class SCAValidator implements SCAValidatorInterface
         }
 
         if (is_null($order->payment_source->card->authentication_result)) {
-            throw CardValidation::byMissingAuthenticationResult();
+            return null;
         }
 
         return $order->payment_source->card->authentication_result;

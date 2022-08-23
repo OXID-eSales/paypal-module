@@ -21,5 +21,5 @@ interface SCAValidatorInterface
 {
     public function isCardUsableForPayment(PayPalApiOrder $order): bool;
 
-    public function getCardAuthenticationResult(PayPalApiOrder $order): AuthenticationResponse;
+    public function getCardAuthenticationResult(PayPalApiOrder $order): ?AuthenticationResponse;
 }

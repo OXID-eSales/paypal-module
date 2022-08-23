@@ -72,10 +72,7 @@ class CardValidationTest extends UnitTestCase
     {
         $validator = new SCAValidator();
 
-        $this->expectException(CardValidationException::class);
-        $this->expectExceptionMessage(CardValidationException::byMissingAuthenticationResult()->getMessage());
-
-        $validator->getCardAuthenticationResult(unserialize($this->missingCardAuthentication));
+        $this->assertNull($validator->getCardAuthenticationResult(unserialize($this->missingCardAuthentication)));
     }
 
     public function testAuthenticationResultSuccess()
@@ -92,12 +89,8 @@ class CardValidationTest extends UnitTestCase
     {
         $validator = new SCAValidator();
 
-        $this->expectException(CardValidationException::class);
-        $this->expectExceptionMessage(CardValidationException::byMissingAuthenticationResult()->getMessage());
-
         $this->assertFalse($validator->isCardUsableForPayment(unserialize($this->missingCardAuthentication)));
     }
-
 
     /**
      * @dataProvider providerPayPalApiOrderResults
