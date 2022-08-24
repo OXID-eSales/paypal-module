@@ -239,9 +239,9 @@ $aLang = [
     'OSC_PAYPAL_SCA_WHEN_REQUIRED'                  => '3D Secure Abfrage automatisch, Entscheidung liegt beim PayPal System',
     'OSC_PAYPAL_SCA_DISABLED'                       => '3D Secure Ergebnis ignorieren',
     'OSC_PAYPAL_SCA_CONTINGENCY_LABEL'              => 'Kreditkarten Sicherheit',
-    'OSC_PAYPAL_SCA_CONTINGENCY_HELP'               => 'Use 3D Secure to authenticate card holders through card issuers. It reduces the likelihood of fraud when you use supported cards and improves transaction performance. <br>
-                                                        A successful 3D Secure authentication can shift liability for fraudulent chargebacks from you to the card issuer. <br>
-                                                        3D Secure authentication is performed only if the card is enrolled for the service. When your customer submits their card details on your website for processing, <br>
-                                                        you have the option of triggering 3D Secure. When triggered, customers are prompted by their card issuing bank to complete an additional verification step <br>
-                                                        to enter a one-time or static password, depending on the implementation.',
+    'OSC_PAYPAL_SCA_CONTINGENCY_HELP'               => 'Die 3D Secure-Authentifizierung dient der direkten und sicheren Interaktion zwischen der ausstellenden Bank und dem Verbraucher. 
+                                                        Hierbei hat PayPal keinen Zugriff auf die Bankdaten des Karteninhabers, ist jedoch für die Herstellung einer sicheren Verbindung zwischen der ausstellenden Bank
+                                                        und dem Kreditkarteninhaber verantwortlich. <br> Mit der Einstellung "3D Secure Abfrage automatisch" wird PayPal wird 3D Secure einführen, 
+                                                        sobald die entsprechenden Vorschriften wirksam werden.  
+                                                        Die Einstellung "3D Secure Abfrage für jede ACDC Transaktion" erzwingt die 3D Prüfung für jede ACDC Transaktion.',
 ];
