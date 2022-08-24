@@ -82,7 +82,7 @@ final class PaymentTest extends BaseTestCase
     'me";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"applicat' .
     'ion_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
 
-    public function _testCreatePayPalOrder(): void
+    public function testCreatePayPalOrder(): void
     {
         $user = oxNew(EshopModelUser::class);
         $user->load(self::TEST_USER_ID);
@@ -101,7 +101,7 @@ final class PaymentTest extends BaseTestCase
         $this->assertNotEmpty($result->id);
     }
 
-    public function _testCreatePuiPayPalOrder(): void
+    public function testCreatePuiPayPalOrder(): void
     {
         $this->setRequestParameter('pui_required_birthdate_day', 1);
         $this->setRequestParameter('pui_required_birthdate_month', 4);
@@ -143,7 +143,7 @@ final class PaymentTest extends BaseTestCase
         $this->assertTrue($result);
     }
 
-    public function _testSandboxAccountCanCreatePuiOrder(): void
+    public function testSandboxAccountCanCreatePuiOrder(): void
     {
         /** @var ApiOrderService $orderService */
         $orderService = EshopRegistry::get(ServiceFactory::class)
