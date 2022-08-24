@@ -158,8 +158,6 @@ final class StaticContentTest extends BaseTestCase
                 ),
                 $payment->getFieldData('oxlongdesc')
             );
-
-            $this->assertNotEmpty($payment->getCountries(), $paymentId);
         }
     }
 }
