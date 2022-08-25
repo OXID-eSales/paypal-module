@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Service;
 
+use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
@@ -103,10 +104,15 @@ final class PaymentTest extends BaseTestCase
 
     public function testCreatePuiPayPalOrder(): void
     {
-        $this->setRequestParameter('pui_required_birthdate_day', 1);
-        $this->setRequestParameter('pui_required_birthdate_month', 4);
-        $this->setRequestParameter('pui_required_birthdate_year', 2000);
-        $this->setRequestParameter('pui_required_phonenumber', '040 111222333');
+        //UnitTestCase::setRequestParameter only allos string values
+        $_POST['pui_required'] = [
+            'birthdate' => [
+                'day' => '1',
+                'month' => '4',
+                'year' => '2000'
+            ],
+            'phonenumber' => '040111222333'
+        ];
 
         $loggerMock = $this->getPsrLoggerMock();
         $loggerMock->expects($this->never())
@@ -138,9 +144,10 @@ final class PaymentTest extends BaseTestCase
             ->method('savePuiInvoiceNr');
 
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        $result = $paymentService->doExecutePuiPayment($order, $basket);
+        $result = $paymentService->doExecutePuiPayment($order, $basket, '007c7c9d810c4a4cb3f5b88e3e040083');
 
         $this->assertTrue($result);
+        $this->assertSame(PaymentService::PAYMENT_ERROR_NONE, $paymentService->getPaymentExecutionError());
     }
 
     public function testSandboxAccountCanCreatePuiOrder(): void
@@ -148,11 +155,11 @@ final class PaymentTest extends BaseTestCase
         /** @var ApiOrderService $orderService */
         $orderService = EshopRegistry::get(ServiceFactory::class)
             ->getOrderService();
-
+        
         $result = $orderService->createOrder(
             $this->getPuiOrderRequest(),
-            '',
-            'test-' . microtime(),
+            'Oxid_Cart_Payments',
+            '007c7c9d810c4a4cb3f5b88e3e040083', 
             'return=minimal',
             'request-id-' . microtime()
         );

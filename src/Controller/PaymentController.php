@@ -80,4 +80,18 @@ class PaymentController extends PaymentController_parent
 
         return $paymentList;
     }
+
+    /**
+     * Template variable getter. Returns error text of payments
+     *
+     * @return string
+     */
+    public function getPaymentErrorText()
+    {
+        return Registry::getLang()->translateString(
+            $this->_sPaymentErrorText,
+            Registry::getLang()->getBaseLanguage(),
+            false
+        );
+    }
 }

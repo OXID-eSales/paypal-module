@@ -17,6 +17,7 @@ use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
+use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderAuthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
@@ -39,6 +40,9 @@ class Payment
     public const PAYMENT_ERROR_NONE = 'PAYPAL_PAYMENT_ERROR_NONE';
     public const PAYMENT_ERROR_GENERIC = 'PAYPAL_PAYMENT_ERROR_GENERIC';
     public const PAYMENT_ERROR_PUI_PHONE = 'PAYPAL_PAYMENT_ERROR_PUI_PHONE';
+    public const PAYMENT_ERROR_PUI_GENERIC = 'PAYPAL_PAYMENT_ERROR_PUI_GENRIC';
+    public const PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED = 'PUI_PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED';
+    public const PAYMENT_SOURCE_DECLINED_BY_PROCESSOR = 'PUI_PAYMENT_SOURCE_DECLINED_BY_PROCESSOR';
 
     /**
      * @var string
@@ -108,6 +112,9 @@ class Payment
         bool $withArticles = true
         #): ?ApiModelOrder
     ) { //TODO return value
+
+        $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
+
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
 
@@ -134,6 +141,9 @@ class Payment
                 'return=minimal',
                 $payPalRequestId
             );
+        } catch (ApiException $exception) {
+            Registry::getLogger()->error("Api error on order create call. " . $exception->getErrorIssue(), [$exception]);
+            $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on order create call.", [$exception]);
         }
@@ -492,7 +502,7 @@ class Payment
             //mistyped phone in last order step
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_PHONE);
         } catch (Exception $exception) {
-            $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_GENERIC);
             Registry::getLogger()->error("Error on pui order creation call.", [$exception]);
         }
 
@@ -589,5 +599,18 @@ class Payment
         }
 
         return false;
+    }
+
+    private function handlePayPalApiError(ApiException $exception): void
+    {
+        if (self::PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED == 'PUI_' . $exception->getErrorIssue()) {
+            $this->setPaymentExecutionError(self::PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED);
+        } elseif (self::PAYMENT_SOURCE_DECLINED_BY_PROCESSOR == 'PUI_' . $exception->getErrorIssue()) {
+            $this->setPaymentExecutionError(self::PAYMENT_SOURCE_DECLINED_BY_PROCESSOR);
+        } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID == $this->getSessionPaymentId()){
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_GENERIC);
+        } else {
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
+        }
     }
 }

@@ -16,6 +16,7 @@ return [
     'defaultUserName' => 'defaultuser@oxid-esales.dev',
     'defaultUserFirstName' => 'UserName',
     'userName' => 'paypaluser@oxid-esales.dev',
+    'userId' => 'paypaluser',
     'details' => [
         'firstname' => 'TestUserName',
         'lastname' => 'TestUserSurname',
