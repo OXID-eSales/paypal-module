@@ -73,13 +73,13 @@ final class ButtonPlacementCest extends BaseCest
 
         //all buttons disabled
         $this->enableExpressButtons($I, false);
-        $this->proceedToPaymentStep($I, Fixtures::get('userName'), false);
+        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
         $I->dontSeeElement("#PayPalButtonPaymentPage");
 
         //switch it on
         $I->updateModuleConfiguration('oscPayPalShowCheckoutButton', true);
         $I->clearShopCache();
-        $this->proceedToPaymentStep($I, Fixtures::get('userName'), false);
+        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
         $I->seeElement("#PayPalButtonPaymentPage");
     }
 }
