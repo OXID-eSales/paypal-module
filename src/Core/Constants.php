@@ -45,4 +45,9 @@ class Constants
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP = 'Oxid_Cart_Payments';
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_EXPRESS = 'Oxid_Cart_PymtsShortcut';
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_BANNER = 'oxid_Cart_Instbanners';
+
+    //SCA contingencies parameter
+    public const PAYPAL_SCA_ALWAYS = 'SCA_ALWAYS';
+    public const PAYPAL_SCA_DISABLED = 'SCA_DISABLED';
+    public const PAYPAL_SCA_WHEN_REQUIRED = 'SCA_WHEN_REQUIRED';
 }

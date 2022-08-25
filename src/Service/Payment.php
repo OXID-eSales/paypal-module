@@ -31,6 +31,7 @@ use OxidSolutionCatalysts\PayPalApi\Service\Payments as ApiPaymentService;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings as ModuleSettingsService;
 
 class Payment
 {
@@ -56,9 +57,17 @@ class Payment
     /** @var ConfirmOrderRequestFactory */
     private $confirmOrderRequestFactory;
 
+    /** @var SCAValidatorInterface */
+    private $scaValidator;
+
+    /** @var ModuleSettingsService */
+    private $moduleSettingsService;
+
     public function __construct(
         EshopSession $eshopSession,
         OrderRepository $orderRepository,
+        SCAValidatorInterface $scaValidator,
+        ModuleSettingsService $moduleSettingsService,
         ServiceFactory $serviceFactory = null,
         PatchRequestFactory $patchRequestFactory = null,
         OrderRequestFactory $orderRequestFactory = null,
@@ -66,6 +75,8 @@ class Payment
     ) {
         $this->eshopSession = $eshopSession;
         $this->orderRepository = $orderRepository;
+        $this->scaValidator = $scaValidator;
+        $this->moduleSettingsService = $moduleSettingsService;
         $this->serviceFactory = $serviceFactory ?: Registry::get(ServiceFactory::class);
         $this->patchRequestFactory = $patchRequestFactory ?: Registry::get(PatchRequestFactory::class);
         $this->orderRequestFactory = $orderRequestFactory ?: Registry::get(OrderRequestFactory::class);
@@ -182,7 +193,13 @@ class Payment
         string $checkoutOrderId,
         string $paymentId
     ): ApiOrderModel {
-        $payPalOrder = $this->fetchOrderFields($checkoutOrderId);
+
+        $payPalOrder = $this->fetchOrderFields($checkoutOrderId, 'payment_source');
+
+        //Verify 3D result if acdc payment
+        if (!$this->verify3D($paymentId, $payPalOrder)) {
+            throw oxNew(StandardException::class, 'OXPS_PAYPAL_ORDEREXECUTION_ERROR');
+        }
 
         /** @var ApiPaymentService $paymentService */
         $paymentService = Registry::get(ServiceFactory::class)->getPaymentService();
@@ -227,7 +244,7 @@ class Payment
                 $checkoutOrderId,
                 $paymentId,
                 ApiOrderModel::STATUS_SAVED,
-                $payPalTransactionId
+                (string) $payPalTransactionId
             );
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on order capture call.", [$exception]);
@@ -520,5 +537,32 @@ class Payment
         return $this->serviceFactory
             ->getOrderService()
             ->showOrderDetails($paypalOrderId, $fields);
+    }
+
+    /**
+     * @throws StandardException
+     */
+    public function verify3D(string $paymentId, ApiOrderModel $payPalOrder ): bool
+    {
+        //no ACDC payment
+        if ($paymentId != PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) {
+            return true;
+        }
+        //case no check is needed
+        if ( $this->moduleSettingsService->alwaysIgnoreSCAResult()) {
+            return true;
+        }
+        //case check is to be done automatic but we have no result to check
+        if ((Constants::PAYPAL_SCA_WHEN_REQUIRED === $this->moduleSettingsService->getPayPalSCAContingency()) &&
+            is_null($this->scaValidator->getCardAuthenticationResult($payPalOrder))
+        ) {
+            return true;
+        }
+        //Verify 3D result if acdc payment
+        if ($this->scaValidator->isCardUsableForPayment($payPalOrder)) {
+            return true;
+        }
+
+        return false;
     }
 }

@@ -43,7 +43,7 @@
                 <div class="card-body">
                     [{$payment->oxpayments__oxdesc->value}]
                     [{if $sPaymentID == "oscpaypal_acdc"}]
-                        [{include file="modules/osc/paypal/acdc_wave.tpl"}]
+                        [{include file="modules/osc/paypal/acdc.tpl"}]
                     [{elseif $sPaymentID == "oscpaypal_pui"}]
                         [{include file="modules/osc/paypal/pui_wave.tpl"}]
                     [{/if}]

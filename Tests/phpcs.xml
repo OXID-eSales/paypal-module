@@ -29,6 +29,7 @@
         <exclude-pattern>../migration</exclude-pattern>
         <exclude-pattern>../src/Core/PayPalDefinitions.php</exclude-pattern>
         <exclude-pattern>Integration/Onboarding/OnboardingTest.php</exclude-pattern>
+        <exclude-pattern>Unit/Service/CardValidationTest.php</exclude-pattern>
     </rule>
 
     <!-- code coverage ignore comment breaks the rule -->

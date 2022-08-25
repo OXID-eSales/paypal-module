@@ -233,4 +233,15 @@ $aLang = [
     'OSC_PAYPAL_ERROR_INVALID_RESOURCE_ID'          => 'Die PayPal-Checkout-Bestellung hat eine invalide Resource-ID',
     'OSC_PAYPAL_PAYPALPLUS_TABLE_DOES_NOT_EXISTS'   => 'Bestellung wurde mit dem PayPal-Plus-Modul bezahlt, aber die Datenbanken existieren nicht mehr',
     'OSC_PAYPAL_PAYPALSOAP_TABLE_DOES_NOT_EXISTS'   => 'Bestellung wurde mit dem PayPal-Soap-Modul bezahlt, aber die Datenbanken existieren nicht mehr',
+
+    'OSC_PAYPAL_SCA_CONTINGENCY'                    => '3D Secure für Debit- und Kreditkarten',
+    'OSC_PAYPAL_SCA_ALWAYS'                         => '3D Secure Abfrage für jede ACDC Transaktion',
+    'OSC_PAYPAL_SCA_WHEN_REQUIRED'                  => '3D Secure Abfrage automatisch, Entscheidung liegt beim PayPal System',
+    'OSC_PAYPAL_SCA_DISABLED'                       => '3D Secure Ergebnis ignorieren',
+    'OSC_PAYPAL_SCA_CONTINGENCY_LABEL'              => 'Kreditkarten Sicherheit',
+    'OSC_PAYPAL_SCA_CONTINGENCY_HELP'               => 'Die 3D Secure-Authentifizierung dient der direkten und sicheren Interaktion zwischen der ausstellenden Bank und dem Verbraucher. 
+                                                        Hierbei hat PayPal keinen Zugriff auf die Bankdaten des Karteninhabers, ist jedoch für die Herstellung einer sicheren Verbindung zwischen der ausstellenden Bank
+                                                        und dem Kreditkarteninhaber verantwortlich. <br> Mit der Einstellung "3D Secure Abfrage automatisch" wird PayPal wird 3D Secure einführen, 
+                                                        sobald die entsprechenden Vorschriften wirksam werden.  
+                                                        Die Einstellung "3D Secure Abfrage für jede ACDC Transaktion" erzwingt die 3D Prüfung für jede ACDC Transaktion.',
 ];
