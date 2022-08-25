@@ -127,7 +127,7 @@
                         })
                     }).catch(function (err) {
                         console.log('Payment could not be processed! ' + JSON.stringify(err))
-                        window.location.href = '[{$sSelfLink|cat:"cl=order&acdcretry=true"}]'
+                        window.location.href = '[{$sSelfLink|cat:"cl=order&retryoscpp=acdcretry"}]'
                     })
                 })
             });

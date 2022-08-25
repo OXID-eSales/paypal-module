@@ -12,6 +12,7 @@ use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
+use OxidSolutionCatalysts\PayPal\Exception\UserPhone as UserPhoneException;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
@@ -35,6 +36,15 @@ use OxidSolutionCatalysts\PayPal\Service\ModuleSettings as ModuleSettingsService
 
 class Payment
 {
+    public const PAYMENT_ERROR_NONE = 'PAYPAL_PAYMENT_ERROR_NONE';
+    public const PAYMENT_ERROR_GENERIC = 'PAYPAL_PAYMENT_ERROR_GENERIC';
+    public const PAYMENT_ERROR_PUI_PHONE = 'PAYPAL_PAYMENT_ERROR_PUI_PHONE';
+
+    /**
+     * @var string
+     */
+    private $paymentExecutionError = self::PAYMENT_ERROR_NONE;
+
     /**
      * @var EshopSession
      */
@@ -465,6 +475,7 @@ class Payment
         EshopModelBasket $basket,
         string $payPalClientMetadataId = ''
     ): bool {
+        $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
         try {
             $result = $this->doCreatePayPalOrder(
                 $basket,
@@ -477,7 +488,11 @@ class Payment
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
             $payPalOrderId = $result->id;
+        } catch (UserPhoneException $e) {
+            //mistyped phone in last order step
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_PHONE);
         } catch (Exception $exception) {
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
             Registry::getLogger()->error("Error on pui order creation call.", [$exception]);
         }
 
@@ -499,6 +514,16 @@ class Payment
         $order->savePuiInvoiceNr($payPalOrderId);
 
         return (bool) $payPalOrderId;
+    }
+
+    public function setPaymentExecutionError(string $text): void
+    {
+        $this->paymentExecutionError = $text;
+    }
+
+    public function getPaymentExecutionError(): string
+    {
+        return $this->paymentExecutionError;
     }
 
     public function trackPayPalOrder(

@@ -18,6 +18,7 @@ use OxidSolutionCatalysts\PayPal\Exception\Redirect;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
+use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModel;
 
 /**
  * Class OrderController
@@ -29,6 +30,18 @@ class OrderController extends OrderController_parent
 {
     use ServiceContainer;
 
+    public const RETRY_OSC_PAYMENT_REQUEST_PARAM = 'retryoscpp';
+
+    private $removeTemporaryOrderOnRetry = [
+        PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
+        PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID
+    ];
+
+    private $retryPaymentMessages = [
+        'acdcretry' => 'OSC_PAYPAL_ACDC_PLEASE_RETRY',
+        'puiretry'  => 'OSC_PAYPAL_PUI_PLEASE_RETRY'
+    ];
+
     public function render()
     {
         if (Registry::getSession()->getVariable('oscpaypal_payment_redirect')) {
@@ -36,20 +49,22 @@ class OrderController extends OrderController_parent
             Registry::getUtils()->redirect(Registry::getConfig()->getShopSecureHomeURL() . 'cl=user', true, 302);
         }
 
-        $this->renderAcdcRetry();
+        $this->renderRetryOrderExecution();
 
         return parent::render();
     }
 
-    protected function renderAcdcRetry()
+    protected function renderRetryOrderExecution(): void
     {
-        if (Registry::getRequest()->getRequestParameter('acdcretry')) {
+        $retryRequest = Registry::getRequest()->getRequestParameter(self::RETRY_OSC_PAYMENT_REQUEST_PARAM);
+
+        if ($retryRequest && isset($this->retryPaymentMessages[$retryRequest])) {
             $displayError = oxNew(DisplayError::class);
-            $displayError->setMessage('OSC_PAYPAL_ACDC_PLEASE_RETRY');
+            $displayError->setMessage($this->retryPaymentMessages[$retryRequest]);
             Registry::getUtilsView()->addErrorToDisplay($displayError);
 
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
-            if ((string) $paymentService->getSessionPaymentId() === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) {
+            if (in_array((string) $paymentService->getSessionPaymentId(), $this->removeTemporaryOrderOnRetry)) {
                 $paymentService->removeTemporaryOrder();
             }
         }
@@ -246,15 +261,20 @@ class OrderController extends OrderController_parent
     protected function _getNextStep($success) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
     {
         if (
-            (\OxidSolutionCatalysts\PayPal\Model\Order::ORDER_STATE_SESSIONPAYMENT_INPROGRESS == $success) &&
+            (PayPalOrderModel::ORDER_STATE_SESSIONPAYMENT_INPROGRESS == $success) &&
             ($redirectLink = PayPalSession::getSessionRedirectLink())
         ) {
             PayPalSession::unsetSessionRedirectLink();
             throw new Redirect($redirectLink);
         }
 
-        if (\OxidSolutionCatalysts\PayPal\Model\Order::ORDER_STATE_ACDCINPROGRESS == $success) {
-            return (string)$success;
+        if (PayPalOrderModel::ORDER_STATE_ACDCINPROGRESS == $success) {
+            return (string) $success;
+        }
+
+        if (PaymentService::PAYMENT_ERROR_PUI_PHONE == $success) {
+            //user needs to retry, entered pui phone number was not accepted by PayPal
+            return 'order?retryoscpp=puiretry';
         }
 
         return parent::_getNextStep($success);

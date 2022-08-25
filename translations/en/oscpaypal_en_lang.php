@@ -30,4 +30,5 @@ $aLang = [
     'OSC_PAYPAL_PUI_BIRTHDAY_PLACEHOLDER'         => '01.01.1970',
     'OSC_PAYPAL_PUI_PHONENUMBER'                  => 'Phoneno.',
     'OSC_PAYPAL_PUI_PHONENUMBER_PLACEHOLDER'      => '+49 30 123456789',
+    'OSC_PAYPAL_PUI_PLEASE_RETRY'                 => 'Please enter your data once again.',
 ];

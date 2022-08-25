@@ -104,6 +104,8 @@ class PaymentGateway extends PaymentGateway_parent
             Registry::getLogger()->error("Error on execute pui payment call.", [$exception]);
         }
 
+        $this->_sLastError = $paymentService->getPaymentExecutionError();
+
         return $success;
     }
 
