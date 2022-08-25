@@ -46,7 +46,7 @@ class PaymentGateway extends PaymentGateway_parent
         } else {
             $success = parent::executePayment($amount, $order);
         }
-        if (
+        if ($success &&
             $paymentService->isPayPalPayment() &&
             ($capture = $order->getOrderPaymentCapture())
         ) {
