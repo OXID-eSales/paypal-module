@@ -10,17 +10,24 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
 use OxidEsales\TestingLibrary\UnitTestCase;
+use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureDeniedHandler;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
+use OxidSolutionCatalysts\PayPalApi\Service\Orders as PayPalApiOrders;
 
 final class PaymentCaptureDeniedHandlerTest extends UnitTestCase
 {
-    public function testPaymentCaptureDenied(): void
+    /**
+     * @dataProvider dataProviderWebhookEvent
+     */
+    public function testPaymentCaptureDenied(string $fixture): void
     {
-        $data = $this->getRequestData();
+        $data = $this->getRequestData($fixture);
         $event = new WebhookEvent($data, 'PAYMENT.CAPTURE.DENIED');
 
         $orderMock = $this->prepareOrderMock('order_oxid');
@@ -36,6 +43,22 @@ final class PaymentCaptureDeniedHandlerTest extends UnitTestCase
             ->method('paypalOrderByOrderIdAndPayPalId')
             ->willReturn($paypalOrderMock);
 
+        $orderServiceMock = $this->getMockBuilder(PayPalApiOrders::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderServiceMock->expects($this->any())
+            ->method('showOrderDetails')
+            ->willReturn($this->getOrderDetails());
+
+        $serviceFactoryMock = $this->getMockBuilder(ServiceFactory::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $serviceFactoryMock->expects($this->once())
+            ->method('getOrderService')
+            ->willReturn($orderServiceMock);
+
+        EshopRegistry::set(ServiceFactory::class, $serviceFactoryMock);
+
         $handler = $this->getMockBuilder(PaymentCaptureDeniedHandler::class)
             ->setMethods(['getServiceFromContainer'])
             ->getMock();
@@ -43,6 +66,18 @@ final class PaymentCaptureDeniedHandlerTest extends UnitTestCase
             ->method('getServiceFromContainer')
             ->willReturn($orderRepositoryMock);
         $handler->handle($event);
+    }
+
+    public function dataProviderWebhookEvent(): array
+    {
+        return [
+            'api_v1' => [
+                __DIR__ . '/../../Fixtures/payment_capture_denied_v1.json'
+            ],
+            'api_v2' => [
+                __DIR__ . '/../../Fixtures/payment_capture_denied_v2.json'
+            ],
+        ];
     }
 
     private function prepareOrderMock(string $orderId): EshopModelOrder
@@ -83,10 +118,17 @@ final class PaymentCaptureDeniedHandlerTest extends UnitTestCase
         return $mock;
     }
 
-    private function getRequestData(): array
+    private function getRequestData(string $fixture): array
     {
-        $json = file_get_contents(__DIR__ . '/../../Fixtures/payment_capture_denied.json');
+        $json = file_get_contents($fixture);
 
         return json_decode($json, true);
+    }
+
+    private function getOrderDetails(): ApiOrderResponse
+    {
+        $json = file_get_contents(__DIR__ . '/../../Fixtures/checkout_order_completed_with_pui.json');
+
+        return new ApiOrderResponse(json_decode($json, true));
     }
 }
