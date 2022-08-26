@@ -58,6 +58,22 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
         $orderMock = $this->prepareOrderMock('order_oxid');
         $paypalOrderMock = $this->preparePayPalOrderMock($data['resource']['id']);
 
+        $orderServiceMock = $this->getMockBuilder(PayPalApiOrders::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderServiceMock->expects($this->any())
+            ->method('showOrderDetails')
+            ->willReturn($this->getPuiOrderDetails());
+
+        $serviceFactoryMock = $this->getMockBuilder(ServiceFactory::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $serviceFactoryMock->expects($this->once())
+            ->method('getOrderService')
+            ->willReturn($orderServiceMock);
+
+        EshopRegistry::set(ServiceFactory::class, $serviceFactoryMock);
+
         $orderRepositoryMock = $this->getMockBuilder(OrderRepository::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -69,11 +85,12 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
             ->willReturn($paypalOrderMock);
 
         $handler = $this->getMockBuilder(CheckoutOrderCompletedHandler::class)
-            ->setMethods(['getServiceFromContainer'])
+            ->onlyMethods(['getServiceFromContainer'])
             ->getMock();
         $handler->expects($this->any())
             ->method('getServiceFromContainer')
             ->willReturn($orderRepositoryMock);
+
         $handler->handle($event);
     }
 
@@ -120,5 +137,12 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
         $json = file_get_contents(__DIR__ . '/../../Fixtures/checkout_order_completed.json');
 
         return json_decode($json, true);
+    }
+
+    private function getPuiOrderDetails(): ApiOrderResponse
+    {
+        $json = file_get_contents(__DIR__ . '/../../Fixtures/checkout_order_completed_with_pui.json');
+
+        return new ApiOrderResponse(json_decode($json, true));
     }
 }
