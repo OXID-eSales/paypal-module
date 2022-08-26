@@ -35,8 +35,13 @@ class CheckoutOrderApprovedHandler implements HandlerInterface
         $data = $this->getEventPayload($event)['resource'];
 
         $statusSet = false;
-        if (!$this->isCompleted($data) && ($data->intent === Constants::PAYPAL_ORDER_INTENT_CAPTURE)) {
+        if (
+            !$this->isCompleted($data) &&
+            isset($data['intent']) &&
+            ($data['intent'] === Constants::PAYPAL_ORDER_INTENT_CAPTURE)
+        ) {
             //This one needs a capture
+            /** @var OrderResponse $response */
             $response = $this->capturePayment($payPalOrderId);
             if (
                 $response->status == OrderResponse::STATUS_COMPLETED &&
