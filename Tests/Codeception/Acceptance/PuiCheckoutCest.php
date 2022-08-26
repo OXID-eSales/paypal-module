@@ -296,11 +296,10 @@ final class PuiCheckoutCest extends BaseCest
         $I->waitForPageLoad();
 
         $I->see(Translator::translate('PAYMENT_METHOD'));
-        $I->see(substr(Translator::translate($data['expected']),0, 30));
+        $I->see(substr(Translator::translate($data['expected']), 0, 30));
 
         //no change in database
         $I->seeNumRecords(0, 'oscpaypal_order');
         $I->seeNumRecords(1, 'oxorder');
-
     }
 }

@@ -41,8 +41,8 @@ final class PaymentTest extends BaseTestCase
 
     protected const TEST_PRODUCT_ID = 'dc5ffdf380e15674b56dd562a7cb6aec';
 
-    private $success3DCard = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";s:7:"some_id";s:14:' .
-    '"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";' .
+    private $success3DCard = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";s:7:"some_id";s:' .
+    '14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";' .
     'O:57:"OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse":11:{s:2:"id";N;s:4:"name";N;s:15:"billing_add' .
     'ress";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"7704";s:5:"brand";s:4:"VISA";s:4:"type";s:6:"CREDIT";' .
     's:6:"issuer";N;s:3:"bin";N;s:21:"authentication_result";O:67:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Aut' .
@@ -104,7 +104,7 @@ final class PaymentTest extends BaseTestCase
 
     public function testCreatePuiPayPalOrder(): void
     {
-        //UnitTestCase::setRequestParameter only allos string values
+        //UnitTestCase::setRequestParameter only allows string values
         $_POST['pui_required'] = [
             'birthdate' => [
                 'day' => '1',
@@ -155,11 +155,11 @@ final class PaymentTest extends BaseTestCase
         /** @var ApiOrderService $orderService */
         $orderService = EshopRegistry::get(ServiceFactory::class)
             ->getOrderService();
-        
+
         $result = $orderService->createOrder(
             $this->getPuiOrderRequest(),
             'Oxid_Cart_Payments',
-            '007c7c9d810c4a4cb3f5b88e3e040083', 
+            '007c7c9d810c4a4cb3f5b88e3e040083',
             'return=minimal',
             'request-id-' . microtime()
         );
@@ -258,8 +258,7 @@ final class PaymentTest extends BaseTestCase
         bool $alwaysIgnoreSCAResult,
         string $assert,
         string $sca
-    ): void
-    {
+    ): void {
         $paymentService = $this->getPaymentServiceMock($paypalOrder, [], $alwaysIgnoreSCAResult, $sca);
 
         $this->$assert(
@@ -296,8 +295,7 @@ final class PaymentTest extends BaseTestCase
         array $addMockMethods = [],
         bool $alwaysIgnoreSCAResult = false,
         string $sca = Constants::PAYPAL_SCA_ALWAYS
-    ): PaymentService
-    {
+    ): PaymentService {
         $moduleSettingsService = $this->getMockBuilder(ModuleSettingsService::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -310,7 +308,7 @@ final class PaymentTest extends BaseTestCase
             ->method('alwaysIgnoreSCAResult')
             ->willReturn($alwaysIgnoreSCAResult);
 
-        $serviceFactoryMock = $this->getMockBuilder( ServiceFactory::class)
+        $serviceFactoryMock = $this->getMockBuilder(ServiceFactory::class)
             ->disableOriginalConstructor()
             ->getMock();
 

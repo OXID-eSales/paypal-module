@@ -142,7 +142,8 @@ class Payment
                 $payPalRequestId
             );
         } catch (ApiException $exception) {
-            Registry::getLogger()->error("Api error on order create call. " . $exception->getErrorIssue(), [$exception]);
+            Registry::getLogger()->error("Api error on order create call. " .
+                                         $exception->getErrorIssue(), [$exception]);
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on order create call.", [$exception]);
@@ -577,18 +578,19 @@ class Payment
     /**
      * @throws StandardException
      */
-    public function verify3D(string $paymentId, ApiOrderModel $payPalOrder ): bool
+    public function verify3D(string $paymentId, ApiOrderModel $payPalOrder): bool
     {
         //no ACDC payment
         if ($paymentId != PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) {
             return true;
         }
         //case no check is needed
-        if ( $this->moduleSettingsService->alwaysIgnoreSCAResult()) {
+        if ($this->moduleSettingsService->alwaysIgnoreSCAResult()) {
             return true;
         }
         //case check is to be done automatic but we have no result to check
-        if ((Constants::PAYPAL_SCA_WHEN_REQUIRED === $this->moduleSettingsService->getPayPalSCAContingency()) &&
+        if (
+            (Constants::PAYPAL_SCA_WHEN_REQUIRED === $this->moduleSettingsService->getPayPalSCAContingency()) &&
             is_null($this->scaValidator->getCardAuthenticationResult($payPalOrder))
         ) {
             return true;
@@ -607,7 +609,7 @@ class Payment
             $this->setPaymentExecutionError(self::PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED);
         } elseif (self::PAYMENT_SOURCE_DECLINED_BY_PROCESSOR == 'PUI_' . $exception->getErrorIssue()) {
             $this->setPaymentExecutionError(self::PAYMENT_SOURCE_DECLINED_BY_PROCESSOR);
-        } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID == $this->getSessionPaymentId()){
+        } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID == $this->getSessionPaymentId()) {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_GENERIC);
         } else {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
