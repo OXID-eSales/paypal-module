@@ -39,41 +39,46 @@ final class CheckoutOrderCompletedHandlerTest extends WebhookHandlerBaseTestCase
 
     public function testEshopOrderNotFoundByPayPalOrderId(): void
     {
-        $data = [
-            'resource' => [
-                'id' => self::TEST_RESOURCE_ID
-            ]
-        ];
+        $data = $this->getRequestData('checkout_order_completed_pui_v2.json');
+        $payPalOrderId = $data['resource']['id'];
+
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
         $this->expectException(WebhookEventException::class);
-        $this->expectExceptionMessage(WebhookEventException::byPayPalOrderId(self::TEST_RESOURCE_ID)->getMessage());
+        $this->expectExceptionMessage(WebhookEventException::byPayPalOrderId($payPalOrderId)->getMessage());
 
         $handler = oxNew(CheckoutOrderCompletedHandler::class);
         $handler->handle($event);
     }
 
-    public function testCheckoutOrderCompleted(): void
+    public function dataProviderWebhookEvent(): array
     {
-        $data = $this->getRequestData(self::FIXTURE_NAME);
+        return [
+            'api_v1' => [
+                'checkout_order_completed.json'
+            ],
+            'api_v2' => [
+                'checkout_order_completed_pui_v2.json'
+            ]
+        ];
+    }
+
+    /**
+     * @dataProvider dataProviderWebhookEvent
+     */
+    public function testCheckoutOrderCompleted(string $fixture): void
+    {
+        $data = $this->getRequestData($fixture);
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
         $orderMock = $this->prepareOrderMock();
-        $paypalOrderMock = $this->preparePayPalOrderMock($data['resource']['id']);
-
-        $orderServiceMock = $this->getMockBuilder(PayPalApiOrders::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderServiceMock->expects($this->any())
-            ->method('showOrderDetails')
-            ->willReturn($this->getPuiOrderDetails());
+        $paypalOrderMock = $this->preparePayPalOrderMock($orderMock->getId(), $data['resource']['id']);
 
         $serviceFactoryMock = $this->getMockBuilder(ServiceFactory::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $serviceFactoryMock->expects($this->once())
-            ->method('getOrderService')
-            ->willReturn($orderServiceMock);
+        $serviceFactoryMock->expects($this->never())
+            ->method('getOrderService');
 
         EshopRegistry::set(ServiceFactory::class, $serviceFactoryMock);
 
@@ -95,12 +100,5 @@ final class CheckoutOrderCompletedHandlerTest extends WebhookHandlerBaseTestCase
             ->willReturn($orderRepositoryMock);
 
         $handler->handle($event);
-    }
-
-    private function getPuiOrderDetails(): ApiOrderResponse
-    {
-        $json = file_get_contents(__DIR__ . '/../../Fixtures/checkout_order_completed_with_pui.json');
-
-        return new ApiOrderResponse(json_decode($json, true));
     }
 }

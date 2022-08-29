@@ -10,17 +10,15 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
-use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureDeniedHandler;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureDeniedHandler;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
-use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as PayPalApiOrders;
-use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 
-class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
+final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
 {
     public const WEBHOOK_EVENT = 'PAYMENT.CAPTURE.DENIED';
 
@@ -37,58 +35,81 @@ class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
         $handler->handle($event);
     }
 
+    public function dataProviderWebhookEvent(): array
+    {
+        return [
+            'api_v1' => [
+                'payment_capture_denied_v1.json'
+            ],
+            'api_v2' => [
+                'payment_capture_denied_v2.json'
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider dataProviderWebhookEvent
+     */
+    public function testPayPalTransactionIdWithoutPayPalOrderId(string $fixture): void
+    {
+        $data = $this->getRequestData($fixture);
+        $resourceId = $data['resource']['id'];
+        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
+
+        $loggerMock = $this->getPsrLoggerMock();
+        $loggerMock->expects($this->once())
+            ->method('debug')
+            ->with(
+                "Not enough information to handle PAYMENT.CAPTURE.DENIED with PayPal order_id '' and " .
+                "PayPal transaction id '" . $resourceId . "'"
+            );
+        EshopRegistry::set('logger', $loggerMock);
+
+        $handler = oxNew(static::HANDLER_CLASS);
+        $handler->handle($event);
+    }
+
     public function testEshopOrderNotFoundByPayPalOrderId(): void
     {
-        $data = [
-            'resource' => [
-                'id' => self::TEST_RESOURCE_ID
-            ]
-        ];
+        $data = $this->getRequestData('payment_capture_denied_pui_v1.json');
+        $payPalOrderId = $data['resource']['supplementary_data']['related_ids']['order_id'];
+
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
         $this->expectException(WebhookEventException::class);
         $this->expectExceptionMessage(
-            WebhookEventException::byPayPalTransactionId(self::TEST_RESOURCE_ID)->getMessage()
+            WebhookEventException::byPayPalOrderId($payPalOrderId)->getMessage()
         );
 
         $handler = oxNew(static::HANDLER_CLASS);
         $handler->handle($event);
     }
 
-    /**
-     * @dataProvider dataProviderWebhookEvent
-     */
-    public function testPaymentCaptureDenied(string $fixture): void
+    public function testPuiPaymentCaptureDenied(): void
     {
-        $data = $this->getRequestData($fixture);
+        $data = $this->getRequestData('payment_capture_denied_pui_v1.json');
+        $payPalOrderId = $data['resource']['supplementary_data']['related_ids']['order_id'];
+
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
         $orderMock = $this->prepareOrderMock('order_oxid', 'markOrderPaymentFailed');
-        $paypalOrderMock = $this->preparePayPalOrderMock($data['resource']['id']);
+        $paypalOrderMock = $this->preparePayPalOrderMock($orderMock->getId(), $payPalOrderId);
 
         $orderRepositoryMock = $this->getMockBuilder(OrderRepository::class)
             ->disableOriginalConstructor()
             ->getMock();
         $orderRepositoryMock->expects($this->once())
-            ->method('getShopOrderByPayPalTransactionId')
+            ->method('getShopOrderByPayPalOrderId')
             ->willReturn($orderMock);
         $orderRepositoryMock->expects($this->once())
             ->method('paypalOrderByOrderIdAndPayPalId')
             ->willReturn($paypalOrderMock);
 
-        $orderServiceMock = $this->getMockBuilder(PayPalApiOrders::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderServiceMock->expects($this->any())
-            ->method('showOrderDetails')
-            ->willReturn($this->getOrderDetails());
-
         $serviceFactoryMock = $this->getMockBuilder(ServiceFactory::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $serviceFactoryMock->expects($this->once())
-            ->method('getOrderService')
-            ->willReturn($orderServiceMock);
+        $serviceFactoryMock->expects($this->never())
+            ->method('getOrderService');
 
         EshopRegistry::set(ServiceFactory::class, $serviceFactoryMock);
 
@@ -99,24 +120,5 @@ class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
             ->method('getOrderRepository')
             ->willReturn($orderRepositoryMock);
         $handler->handle($event);
-    }
-
-    public function dataProviderWebhookEvent(): array
-    {
-        return [
-            'api_v1' => [
-                'payment_capture_denied_v1.json'
-            ],
-            'api_v2' => [
-               'payment_capture_denied_v2.json'
-            ],
-        ];
-    }
-
-    protected function getOrderDetails(): ApiOrderResponse
-    {
-        $json = file_get_contents(__DIR__ . '/../../Fixtures/checkout_order_completed_with_pui.json');
-
-        return new ApiOrderResponse(json_decode($json, true));
     }
 }

@@ -9,6 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalModelOrder;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as OrderResponse;
@@ -19,44 +20,62 @@ use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 
 class CheckoutOrderApprovedHandler extends WebhookHandlerBase
 {
+    public const WEBHOOK_EVENT_NAME = 'CHECKOUT.ORDER.APPROVED';
+
     /**
      * @inheritDoc
      * @throws ApiException
      */
     public function handle(Event $event): void
     {
+        $eventPayload = $this->getEventPayload($event);
+
+        $payPalOrderId = $this->getPayPalOrderIdFromResource($eventPayload);
+
         /** @var EshopModelOrder $order */
-        $order = $this->getOrderByOrderId($event);
+        $order = $this->getOrderByPayPalOrderId($payPalOrderId);
 
-        $payPalOrderId = $this->getPayPalId($event);
-        $data = $this->getEventPayload($event)['resource'];
+        /** @var PayPalModelOrder $paypalOrderModel */
+        $paypalOrderModel = $this->getPayPalModelOrder(
+            (string) $order->getId(),
+            $payPalOrderId
+        );
 
-        $statusSet = false;
-        if (
-            !$this->isCompleted($data) &&
-            isset($data['intent']) &&
-            ($data['intent'] === Constants::PAYPAL_ORDER_INTENT_CAPTURE)
-        ) {
-            //TODO: check if Payment service can be used
-            //This one needs a capture
-            /** @var OrderResponse $response */
-            $response = $this->capturePayment($payPalOrderId);
-            if (
-                $response->status == OrderResponse::STATUS_COMPLETED &&
-                $response->purchase_units[0]->payments->captures[0]->status == Capture::STATUS_COMPLETED
-            ) {
-                $order->markOrderPaid();
-                $order->setTransId($response->purchase_units[0]->payments->captures[0]->id);
-                $this->setStatus($order, $response->status, $payPalOrderId);
-                $statusSet = true;
+        if ($this->needsCapture($eventPayload)) {
+            try {
+                //NOTE: capture will trigger CHECKOUT.ORDER.COMPLETED event which will mark order paid
+                $this->getPaymentService()
+                    ->doCapturePayPalOrder(
+                        $order,
+                        $payPalOrderId,
+                        $paypalOrderModel->getPaymentMethodId()
+                    );
+            } catch (\Exception $exception) {
+                Registry::getLogger()->debug(
+                    "Error during " . self::WEBHOOK_EVENT_NAME . " for PayPal order_id '" .
+                    $payPalOrderId . "'",
+                    [$exception]
+                );
             }
         }
+    }
 
-        if (!$statusSet) {
-            $this->setStatus($order, $data['status'], $payPalOrderId);
-        }
+    protected function getPayPalOrderIdFromResource(array $eventPayload): string
+    {
+        return (string) $eventPayload['id'];
+    }
 
-        parent::handle($event);
+    protected function getPayPalTransactionIdFromResource(array $eventPayload): string
+    {
+        $transactionId = isset($eventPayload['payments']['captures'][0]) ?
+            $eventPayload['payments']['captures'][0]['id'] : '';
+
+        return $transactionId;
+    }
+
+    protected function getStatusFromResource(array $eventPayload): string
+    {
+        return isset($eventPayload['status']) ? $eventPayload['status'] : '';
     }
 
     /**
@@ -75,5 +94,22 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
         $request = new OrderCaptureRequest();
 
         return $service->capturePaymentForOrder('', $orderId, $request, '');
+    }
+
+    private function needsCapture(array $eventPayload): bool
+    {
+        return !$this->isCompleted($eventPayload) &&
+            isset($eventPayload['intent']) &&
+            ($eventPayload['intent'] === Constants::PAYPAL_ORDER_INTENT_CAPTURE);
+    }
+
+    private function isCompleted(array $eventPayload): bool
+    {
+        return (
+            isset($eventPayload['status']) &&
+            isset($eventPayload['purchase_units'][0]['payments']['captures'][0]['status']) &&
+            $this->getStatusFromResource($eventPayload) == OrderResponse::STATUS_COMPLETED &&
+            $eventPayload['purchase_units'][0]['payments']['captures'][0]['status'] == Capture::STATUS_COMPLETED
+        );
     }
 }

@@ -1,0 +1,75 @@
+{
+    "id": "WH-7VE20867N9957753D-8U78193720627625J",
+    "event_version": "1.0",
+    "create_time": "2022-08-29T12:31:00.419Z",
+    "resource_type": "capture",
+    "resource_version": "2.0",
+    "event_type": "PAYMENT.CAPTURE.COMPLETED",
+    "summary": "Payment completed for EUR 33.8 EUR",
+    "resource": {
+        "amount": {
+            "value": "33.80",
+            "currency_code": "EUR"
+        },
+        "seller_protection": {
+            "dispute_categories": [
+                "ITEM_NOT_RECEIVED",
+                "UNAUTHORIZED_TRANSACTION"
+            ],
+            "status": "ELIGIBLE"
+        },
+        "supplementary_data": {
+            "related_ids": {
+                "order_id": "1SM14303E63237720"
+            }
+        },
+        "update_time": "2022-08-29T12:30:56Z",
+        "create_time": "2022-08-29T12:30:56Z",
+        "final_capture": true,
+        "seller_receivable_breakdown": {
+            "paypal_fee": {
+                "value": "0.99",
+                "currency_code": "EUR"
+            },
+            "gross_amount": {
+                "value": "33.80",
+                "currency_code": "EUR"
+            },
+            "net_amount": {
+                "value": "32.81",
+                "currency_code": "EUR"
+            }
+        },
+        "links": [
+            {
+                "method": "GET",
+                "rel": "self",
+                "href": "https://api.sandbox.paypal.com/v2/payments/captures/6AP66820XB505352G"
+            },
+            {
+                "method": "POST",
+                "rel": "refund",
+                "href": "https://api.sandbox.paypal.com/v2/payments/captures/6AP66820XB505352G/refund"
+            },
+            {
+                "method": "GET",
+                "rel": "up",
+                "href": "https://api.sandbox.paypal.com/v2/checkout/orders/1SM14303E63237720"
+            }
+        ],
+        "id": "6AP66820XB505352G",
+        "status": "COMPLETED"
+    },
+    "links": [
+        {
+            "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-7VE20867N9957753D-8U78193720627625J",
+            "rel": "self",
+            "method": "GET"
+        },
+        {
+            "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-7VE20867N9957753D-8U78193720627625J/resend",
+            "rel": "resend",
+            "method": "POST"
+        }
+    ]
+}

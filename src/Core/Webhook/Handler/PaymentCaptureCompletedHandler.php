@@ -8,29 +8,50 @@
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidEsales\EshopCommunity\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 
 class PaymentCaptureCompletedHandler extends WebhookHandlerBase
 {
-    /**
-     * @inheritDoc
-     * @throws ApiException
-     */
-    public function handle(Event $event): void
+    public const WEBHOOK_EVENT_NAME = 'PAYMENT.CAPTURE.COMPLETED';
+
+    protected function getPayPalOrderIdFromResource(array $eventPayload): string
     {
-        /** @var EshopModelOrder $order */
-        $order = $this->getOrderByTransactionId($event);
+        $orderId = isset($eventPayload['supplementary_data']['related_ids']['order_id']) ?
+            $eventPayload['supplementary_data']['related_ids']['order_id'] : '';
 
-        $payPalTransactionId = $this->getPayPalId($event);
-        $data = $this->getEventPayload($event)['resource'];
+        return $orderId;
+    }
 
-        //API v1 response uses 'state', v2 uses 'status'
-        $status = isset($data['state']) ? $data['state'] : $data['status'];
+    protected function getPayPalTransactionIdFromResource(array $eventPayload): string
+    {
+        return (string) $eventPayload['id'];
+    }
 
-        $this->setStatus($order, $status, '', $payPalTransactionId);
-        $order->markOrderPaid();
+    protected function getStatusFromResource(array $eventPayload): string
+    {
+        //API v1 response uses 'state', v2 uses 'status' and some webhook events don't come with a status
+        return isset($eventPayload['state']) ? $eventPayload['state'] :
+            (isset($eventPayload['status']) ? $eventPayload['status'] : '');
+    }
 
-        parent::handle($event);
+    protected function getPayPalOrderDetails(string $payPalOrderId): ?PayPalApiModelOrder
+    {
+        $apiOrder = null;
+
+        try {
+            $apiOrder = Registry::get(ServiceFactory::class)
+                ->getOrderService()
+                ->showOrderDetails($payPalOrderId, '');
+        } catch (ApiException $exception) {
+            Registry::getLogger()->debug(
+                'Exception during PaymentCaptureCompletedHandler::getPayPalOrderDetails().',
+                [$exception]
+            );
+        }
+
+        return $apiOrder;
     }
 }

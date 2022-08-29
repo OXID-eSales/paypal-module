@@ -273,12 +273,13 @@ class Order extends Order_parent
 
         // Capture Order
         try {
-            $paymentService->doCapturePayPalOrder($this, $payPalOrderId, $sessionPaymentId);
-            $success = true;
+            $order = $paymentService->doCapturePayPalOrder($this, $payPalOrderId, $sessionPaymentId);
+            $success = true; //TODO: why do we assume success in all cases?
         } catch (\Exception $exception) {
             Registry::getLogger()->error("Error on order capture call.", [$exception]);
         }
 
+        //TODO: only mark order paid id in success case
         $this->markOrderPaid();
         $this->_updateOrderDate();
 
