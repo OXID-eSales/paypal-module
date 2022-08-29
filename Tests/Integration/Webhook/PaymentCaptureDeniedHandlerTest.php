@@ -19,9 +19,40 @@ use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as PayPalApiOrders;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
+
 
 final class PaymentCaptureDeniedHandlerTest extends UnitTestCase
 {
+    public function testRequestMissingData(): void
+    {
+        $event = new WebhookEvent([], 'PAYMENT.CAPTURE.DENIED');
+
+        $this->expectException(WebhookEventException::class);
+        $this->expectExceptionMessage(WebhookEventException::mandatoryDataNotFound()->getMessage());
+
+        $handler = oxNew(PaymentCaptureDeniedHandler::class);
+        $handler->handle($event);
+    }
+
+    public function testEshopOrderNotFoundByPayPalOrderId(): void
+    {
+        $data = [
+            'resource' => [
+                'id' => 'PAYPALID123456789'
+            ]
+        ];
+        $event = new WebhookEvent($data, 'PAYMENT.CAPTURE.COMPLETED');
+
+        $this->expectException(WebhookEventException::class);
+        $this->expectExceptionMessage(
+            WebhookEventException::byPayPalTransactionId('PAYPALID123456789')->getMessage()
+        );
+
+        $handler = oxNew(PaymentCaptureDeniedHandler::class);
+        $handler->handle($event);
+    }
+
     /**
      * @dataProvider dataProviderWebhookEvent
      */
