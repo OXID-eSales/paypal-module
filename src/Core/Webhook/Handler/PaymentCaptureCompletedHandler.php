@@ -29,7 +29,10 @@ class PaymentCaptureCompletedHandler implements HandlerInterface
         $payPalTransactionId = $this->getPayPalId($event);
         $data = $this->getEventPayload($event)['resource'];
 
-        $this->setStatus($order, $data['status'], '', $payPalTransactionId);
+        //API v1 response uses 'state', v2 uses 'status'
+        $status = isset($data['state']) ? $data['state'] : $data['status'];
+
+        $this->setStatus($order, $status, '', $payPalTransactionId);
         $order->markOrderPaid();
 
         $this->cleanUpNotFinishedOrders();
