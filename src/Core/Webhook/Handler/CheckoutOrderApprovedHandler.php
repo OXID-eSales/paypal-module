@@ -37,6 +37,7 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
             isset($data['intent']) &&
             ($data['intent'] === Constants::PAYPAL_ORDER_INTENT_CAPTURE)
         ) {
+            //TODO: check if Payment service can be used
             //This one needs a capture
             /** @var OrderResponse $response */
             $response = $this->capturePayment($payPalOrderId);

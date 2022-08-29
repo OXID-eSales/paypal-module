@@ -86,6 +86,7 @@ trait WebhookHandlerTrait
         );
     }
 
+    //TODO: refactor, split into multiple methods
     public function setStatus(
         EshopModelOrder $order,
         string $status,

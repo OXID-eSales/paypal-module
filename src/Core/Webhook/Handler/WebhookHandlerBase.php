@@ -17,6 +17,7 @@ use OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait;
 
 class WebhookHandlerBase implements HandlerInterface
 {
+    //TODO remove trait, refactor webbhook, use DI
     use WebhookHandlerTrait;
 
     /**
