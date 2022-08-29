@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
-use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
@@ -21,8 +20,10 @@ use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 
-final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
+final class CheckoutOrderCompletedHandlerTest extends WebhookHandlerBaseTestCase
 {
+    const FIXTURE_NAME = 'checkout_order_completed.json';
+
     public function testRequestMissingData(): void
     {
         $event = new WebhookEvent([], 'CHECKOUT.ORDER.COMPLETED');
@@ -38,13 +39,13 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
     {
         $data = [
             'resource' => [
-                'id' => 'PAYPALID123456789'
+                'id' => self::TEST_RESOURCE_ID
             ]
         ];
         $event = new WebhookEvent($data, 'CHECKOUT.ORDER.COMPLETED');
 
         $this->expectException(WebhookEventException::class);
-        $this->expectExceptionMessage(WebhookEventException::byPayPalOrderId('PAYPALID123456789')->getMessage());
+        $this->expectExceptionMessage(WebhookEventException::byPayPalOrderId(self::TEST_RESOURCE_ID)->getMessage());
 
         $handler = oxNew(CheckoutOrderCompletedHandler::class);
         $handler->handle($event);
@@ -52,10 +53,10 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
 
     public function testCheckoutOrderCompleted(): void
     {
-        $data = $this->getRequestData();
+        $data = $this->getRequestData(self::FIXTURE_NAME);
         $event = new WebhookEvent($data, 'CHECKOUT.ORDER.COMPLETED');
 
-        $orderMock = $this->prepareOrderMock('order_oxid');
+        $orderMock = $this->prepareOrderMock();
         $paypalOrderMock = $this->preparePayPalOrderMock($data['resource']['id']);
 
         $orderServiceMock = $this->getMockBuilder(PayPalApiOrders::class)
@@ -92,51 +93,6 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
             ->willReturn($orderRepositoryMock);
 
         $handler->handle($event);
-    }
-
-    private function prepareOrderMock(string $orderId): EshopModelOrder
-    {
-        $mock = $this->getMockBuilder(EshopModelOrder::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $mock->expects($this->any())
-            ->method('load')
-            ->with($orderId)
-            ->willReturn(true);
-        $mock->expects($this->any())
-            ->method('getId')
-            ->willReturn($orderId);
-        $mock->expects($this->once())
-            ->method('markOrderPaid');
-
-        return $mock;
-    }
-
-    private function preparePaypalOrderMock(string $orderId): PayPalOrderModel
-    {
-        $mock = $this->getMockBuilder(PayPalOrderModel::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $mock->expects($this->any())
-            ->method('load')
-            ->with($orderId)
-            ->willReturn(true);
-        $mock->expects($this->any())
-            ->method('getId')
-            ->willReturn($orderId);
-        $mock->expects($this->once())
-            ->method('setStatus');
-        $mock->expects($this->once())
-            ->method('save');
-
-        return $mock;
-    }
-
-    private function getRequestData(): array
-    {
-        $json = file_get_contents(__DIR__ . '/../../Fixtures/checkout_order_completed.json');
-
-        return json_decode($json, true);
     }
 
     private function getPuiOrderDetails(): ApiOrderResponse

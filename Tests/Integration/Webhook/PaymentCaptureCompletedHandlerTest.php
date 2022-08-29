@@ -12,7 +12,6 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
-use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureCompletedHandler;
@@ -23,11 +22,9 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as PayPalApiOrders;
 
 
-final class PaymentCaptureCompletedHandlerTest extends UnitTestCase
+final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCase
 {
     const WEBHOOK_EVENT = 'PAYMENT.CAPTURE.COMPLETED';
-
-    const TEST_RESOURCE_ID = 'PAYPALID123456789';
 
     public function testRequestMissingData(): void
     {
@@ -62,10 +59,10 @@ final class PaymentCaptureCompletedHandlerTest extends UnitTestCase
     {
         return [
             'api_v1' => [
-                __DIR__ . '/../../Fixtures/payment_capture_completed_v1.json'
+                'payment_capture_completed_v1.json'
             ],
             'api_v2' => [
-                __DIR__ . '/../../Fixtures/payment_capture_completed_v2.json'
+                'payment_capture_completed_v2.json'
             ],
         ];
     }
@@ -114,51 +111,6 @@ final class PaymentCaptureCompletedHandlerTest extends UnitTestCase
             ->method('getServiceFromContainer')
             ->willReturn($orderRepositoryMock);
         $handler->handle($event);
-    }
-
-    private function prepareOrderMock(string $orderId = 'order_id'): EshopModelOrder
-    {
-        $mock = $this->getMockBuilder(EshopModelOrder::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $mock->expects($this->any())
-            ->method('load')
-            ->with($orderId)
-            ->willReturn(true);
-        $mock->expects($this->any())
-            ->method('getId')
-            ->willReturn($orderId);
-        $mock->expects($this->once())
-            ->method('markOrderPaid');
-
-        return $mock;
-    }
-
-    private function preparePaypalOrderMock(string $orderId): PayPalOrderModel
-    {
-        $mock = $this->getMockBuilder(PayPalOrderModel::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $mock->expects($this->any())
-            ->method('load')
-            ->with($orderId)
-            ->willReturn(true);
-        $mock->expects($this->any())
-            ->method('getId')
-            ->willReturn($orderId);
-        $mock->expects($this->once())
-            ->method('setStatus');
-        $mock->expects($this->once())
-            ->method('save');
-
-        return $mock;
-    }
-
-    private function getRequestData(string $fixture): array
-    {
-        $json = file_get_contents($fixture);
-
-        return json_decode($json, true);
     }
 
     private function getOrderDetails(): ApiOrderResponse
