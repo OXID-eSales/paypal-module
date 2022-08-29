@@ -22,11 +22,13 @@ use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 
 final class CheckoutOrderCompletedHandlerTest extends WebhookHandlerBaseTestCase
 {
-    const FIXTURE_NAME = 'checkout_order_completed.json';
+    public const FIXTURE_NAME = 'checkout_order_completed.json';
+
+    public const WEBHOOK_EVENT = 'CHECKOUT.ORDER.COMPLETED';
 
     public function testRequestMissingData(): void
     {
-        $event = new WebhookEvent([], 'CHECKOUT.ORDER.COMPLETED');
+        $event = new WebhookEvent([], static::WEBHOOK_EVENT);
 
         $this->expectException(WebhookEventException::class);
         $this->expectExceptionMessage(WebhookEventException::mandatoryDataNotFound()->getMessage());
@@ -42,7 +44,7 @@ final class CheckoutOrderCompletedHandlerTest extends WebhookHandlerBaseTestCase
                 'id' => self::TEST_RESOURCE_ID
             ]
         ];
-        $event = new WebhookEvent($data, 'CHECKOUT.ORDER.COMPLETED');
+        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
         $this->expectException(WebhookEventException::class);
         $this->expectExceptionMessage(WebhookEventException::byPayPalOrderId(self::TEST_RESOURCE_ID)->getMessage());
@@ -54,7 +56,7 @@ final class CheckoutOrderCompletedHandlerTest extends WebhookHandlerBaseTestCase
     public function testCheckoutOrderCompleted(): void
     {
         $data = $this->getRequestData(self::FIXTURE_NAME);
-        $event = new WebhookEvent($data, 'CHECKOUT.ORDER.COMPLETED');
+        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
         $orderMock = $this->prepareOrderMock();
         $paypalOrderMock = $this->preparePayPalOrderMock($data['resource']['id']);
@@ -86,10 +88,10 @@ final class CheckoutOrderCompletedHandlerTest extends WebhookHandlerBaseTestCase
             ->willReturn($paypalOrderMock);
 
         $handler = $this->getMockBuilder(CheckoutOrderCompletedHandler::class)
-            ->onlyMethods(['getServiceFromContainer'])
+            ->onlyMethods(['getOrderRepository'])
             ->getMock();
         $handler->expects($this->any())
-            ->method('getServiceFromContainer')
+            ->method('getOrderRepository')
             ->willReturn($orderRepositoryMock);
 
         $handler->handle($event);

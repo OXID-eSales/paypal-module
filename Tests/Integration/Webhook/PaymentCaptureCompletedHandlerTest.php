@@ -5,7 +5,6 @@
  * See LICENSE file for license details.
  */
 
-
 declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
@@ -21,14 +20,13 @@ use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as PayPalApiOrders;
 
-
 final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCase
 {
-    const WEBHOOK_EVENT = 'PAYMENT.CAPTURE.COMPLETED';
+    public const WEBHOOK_EVENT = 'PAYMENT.CAPTURE.COMPLETED';
 
     public function testRequestMissingData(): void
     {
-        $event = new WebhookEvent([], self::WEBHOOK_EVENT);
+        $event = new WebhookEvent([], static::WEBHOOK_EVENT);
 
         $this->expectException(WebhookEventException::class);
         $this->expectExceptionMessage(WebhookEventException::mandatoryDataNotFound()->getMessage());
@@ -44,7 +42,7 @@ final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCas
                 'id' => self::TEST_RESOURCE_ID
             ]
         ];
-        $event = new WebhookEvent($data, self::WEBHOOK_EVENT);
+        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
         $this->expectException(WebhookEventException::class);
         $this->expectExceptionMessage(
@@ -73,7 +71,7 @@ final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCas
     public function testPaymentCaptureCompleted(string $fixture): void
     {
         $data = $this->getRequestData($fixture);
-        $event = new WebhookEvent($data, self::WEBHOOK_EVENT);
+        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
         $orderMock = $this->prepareOrderMock();
         $paypalOrderMock = $this->preparePayPalOrderMock($data['resource']['id']);
@@ -105,10 +103,10 @@ final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCas
         EshopRegistry::set(ServiceFactory::class, $serviceFactoryMock);
 
         $handler = $this->getMockBuilder(PaymentCaptureCompletedHandler::class)
-            ->setMethods(['getServiceFromContainer'])
+            ->setMethods(['getOrderRepository'])
             ->getMock();
         $handler->expects($this->any())
-            ->method('getServiceFromContainer')
+            ->method('getOrderRepository')
             ->willReturn($orderRepositoryMock);
         $handler->handle($event);
     }

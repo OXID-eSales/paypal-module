@@ -9,4 +9,5 @@ namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
 class CheckoutPaymentApprovalReverseHandler extends PaymentCaptureDeniedHandler
 {
+    //TODO: is this class really necessary?
 }

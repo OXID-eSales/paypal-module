@@ -20,16 +20,20 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as PayPalApiOrders;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 
-final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
+class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
 {
+    public const WEBHOOK_EVENT = 'PAYMENT.CAPTURE.DENIED';
+
+    public const HANDLER_CLASS = PaymentCaptureDeniedHandler::class;
+
     public function testRequestMissingData(): void
     {
-        $event = new WebhookEvent([], 'PAYMENT.CAPTURE.DENIED');
+        $event = new WebhookEvent([], static::WEBHOOK_EVENT);
 
         $this->expectException(WebhookEventException::class);
         $this->expectExceptionMessage(WebhookEventException::mandatoryDataNotFound()->getMessage());
 
-        $handler = oxNew(PaymentCaptureDeniedHandler::class);
+        $handler = oxNew(static::HANDLER_CLASS);
         $handler->handle($event);
     }
 
@@ -40,14 +44,14 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
                 'id' => self::TEST_RESOURCE_ID
             ]
         ];
-        $event = new WebhookEvent($data, 'PAYMENT.CAPTURE.COMPLETED');
+        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
         $this->expectException(WebhookEventException::class);
         $this->expectExceptionMessage(
             WebhookEventException::byPayPalTransactionId(self::TEST_RESOURCE_ID)->getMessage()
         );
 
-        $handler = oxNew(PaymentCaptureDeniedHandler::class);
+        $handler = oxNew(static::HANDLER_CLASS);
         $handler->handle($event);
     }
 
@@ -57,7 +61,7 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
     public function testPaymentCaptureDenied(string $fixture): void
     {
         $data = $this->getRequestData($fixture);
-        $event = new WebhookEvent($data, 'PAYMENT.CAPTURE.DENIED');
+        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
         $orderMock = $this->prepareOrderMock('order_oxid', 'markOrderPaymentFailed');
         $paypalOrderMock = $this->preparePayPalOrderMock($data['resource']['id']);
@@ -88,11 +92,11 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
 
         EshopRegistry::set(ServiceFactory::class, $serviceFactoryMock);
 
-        $handler = $this->getMockBuilder(PaymentCaptureDeniedHandler::class)
-            ->setMethods(['getServiceFromContainer'])
+        $handler = $this->getMockBuilder(static::HANDLER_CLASS)
+            ->setMethods(['getOrderRepository'])
             ->getMock();
         $handler->expects($this->any())
-            ->method('getServiceFromContainer')
+            ->method('getOrderRepository')
             ->willReturn($orderRepositoryMock);
         $handler->handle($event);
     }
@@ -109,7 +113,7 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
         ];
     }
 
-    private function getOrderDetails(): ApiOrderResponse
+    protected function getOrderDetails(): ApiOrderResponse
     {
         $json = file_get_contents(__DIR__ . '/../../Fixtures/checkout_order_completed_with_pui.json');
 

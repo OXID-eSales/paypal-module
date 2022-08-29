@@ -16,12 +16,9 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
-use OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait;
 
-class CheckoutOrderApprovedHandler implements HandlerInterface
+class CheckoutOrderApprovedHandler extends WebhookHandlerBase
 {
-    use WebhookHandlerTrait;
-
     /**
      * @inheritDoc
      * @throws ApiException
@@ -58,7 +55,7 @@ class CheckoutOrderApprovedHandler implements HandlerInterface
             $this->setStatus($order, $data['status'], $payPalOrderId);
         }
 
-        $this->cleanUpNotFinishedOrders();
+        parent::handle($event);
     }
 
     /**

@@ -8,14 +8,10 @@
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
-use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
-use OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 
-class PaymentCaptureDeniedHandler implements HandlerInterface
+class PaymentCaptureDeniedHandler extends WebhookHandlerBase
 {
-    use WebhookHandlerTrait;
-
     /**
      * @inheritDoc
      * @throws ApiException
@@ -33,5 +29,7 @@ class PaymentCaptureDeniedHandler implements HandlerInterface
 
         $this->setStatus($order, (string) $status, '', $payPalTransactionId);
         $order->markOrderPaymentFailed();
+
+        parent::handle($event);
     }
 }

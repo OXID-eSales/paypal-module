@@ -15,7 +15,7 @@ use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 
 class WebhookHandlerBaseTestCase extends UnitTestCase
 {
-    const TEST_RESOURCE_ID = 'PAYPALID123456789';
+    public const TEST_RESOURCE_ID = 'PAYPALID123456789';
 
     protected function getRequestData(string $fixtureFileName): array
     {

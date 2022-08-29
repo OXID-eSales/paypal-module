@@ -8,15 +8,11 @@
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
-use OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait;
 
-class PaymentCaptureCompletedHandler implements HandlerInterface
+class PaymentCaptureCompletedHandler extends WebhookHandlerBase
 {
-    use WebhookHandlerTrait;
-
     /**
      * @inheritDoc
      * @throws ApiException
@@ -35,6 +31,6 @@ class PaymentCaptureCompletedHandler implements HandlerInterface
         $this->setStatus($order, $status, '', $payPalTransactionId);
         $order->markOrderPaid();
 
-        $this->cleanUpNotFinishedOrders();
+        parent::handle($event);
     }
 }

@@ -29,9 +29,9 @@ trait WebhookHandlerTrait
 
         //get PayPalOrder
         try {
-            $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
             /** @var EshopModelOrder $order */
-            $order = $orderRepository->getShopOrderByPayPalOrderId($payPalOrderId);
+            $order = $this->getOrderRepository()
+                ->getShopOrderByPayPalOrderId($payPalOrderId);
         } catch (NotFound $exception) {
             throw WebhookEventException::byPayPalOrderId($payPalOrderId);
         }
@@ -45,9 +45,8 @@ trait WebhookHandlerTrait
 
         //get PayPalOrder
         try {
-            $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
             /** @var EshopModelOrder $order */
-            $order = $orderRepository->getShopOrderByPayPalTransactionId($payPalTransactionId);
+            $order = $this->getOrderRepository()->getShopOrderByPayPalTransactionId($payPalTransactionId);
         } catch (NotFound $exception) {
             throw WebhookEventException::byPayPalTransactionId($payPalTransactionId);
         }
@@ -94,7 +93,7 @@ trait WebhookHandlerTrait
         string $payPalTransactionId = ''
     ) {
         /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
-        $orderService = $this->getServiceFromContainer(OrderRepository::class);
+        $orderService = $this->getOrderRepository();
 
         if ($payPalTransactionId) {
             $paypalOrderModel = $orderService->paypalOrderByOrderIdAndPayPalId(
@@ -127,7 +126,12 @@ trait WebhookHandlerTrait
     {
         // check for not finished orders and reset
         /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
-        $this->getServiceFromContainer(OrderRepository::class)
+        $this->getOrderRepository()
             ->cleanUpNotFinishedOrders();
+    }
+
+    public function getOrderRepository(): OrderRepository
+    {
+        return $this->getServiceFromContainer(OrderRepository::class);
     }
 }
