@@ -96,7 +96,9 @@ jobs:
       - name: Put module settings
         continue-on-error: true
         run: |
-          echo "${{ secrets.MODULE_SETTINGS }}" > source/vendor/${{ env.PACKAGE_NAME }}/.env
+          mkdir -p source/var/configuration/environment/
+          echo "${{ secrets.MODULE_SETTINGS }}" > source/var/configuration/environment/1.yaml
+          echo "${{ secrets.MODULE_ENV }}" > source/vendor/${{ env.PACKAGE_NAME }}/.env
           docker-compose exec -T php php bin/oe-console oe:module:apply-configuration
 
       - name: Stop containers
