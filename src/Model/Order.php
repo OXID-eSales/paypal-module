@@ -456,4 +456,9 @@ class Order extends Order_parent
     {
         return $this->getPayPalCheckoutOrder($payPalOrderId)->purchase_units[0]->payments->captures[0] ?? null;
     }
+
+    public function setOrderNumber(): void
+    {
+        $this->_setNumber();
+    }
 }

@@ -50,6 +50,7 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
                         $payPalOrderId,
                         $paypalOrderModel->getPaymentMethodId()
                     );
+                $order->setOrderNumber(); //ensure the order has a number
             } catch (\Exception $exception) {
                 Registry::getLogger()->debug(
                     "Error during " . self::WEBHOOK_EVENT_NAME . " for PayPal order_id '" .
