@@ -54,6 +54,9 @@ final class CheckoutOrderApprovedHandlerTest extends WebhookHandlerBaseTestCase
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
         $orderMock = $this->prepareOrderMock('oxid', 'markOrderPaid', 'never');
+        $orderMock->expects($this->never())
+            ->method('setOrderNumber');
+
         $paypalOrderMock = $this->getMockBuilder(PayPalOrderModel::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -94,6 +97,9 @@ final class CheckoutOrderApprovedHandlerTest extends WebhookHandlerBaseTestCase
 
         //NOTE: payment service which would trigger markOrderPaid is mocked in this test
         $orderMock = $this->prepareOrderMock('oxid', 'markOrderPaid', 'never');
+        $orderMock->expects($this->once())
+            ->method('setOrderNumber');
+
         $paypalOrderMock = $this->getMockBuilder(PayPalOrderModel::class)
             ->disableOriginalConstructor()
             ->getMock();
