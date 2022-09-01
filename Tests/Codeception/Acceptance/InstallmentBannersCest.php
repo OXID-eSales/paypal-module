@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 
 use Codeception\Util\Fixtures;
+use Codeception\Example;
 use OxidEsales\Codeception\Page\Home;
 use OxidEsales\Codeception\Module\Translation\Translator;
 use OxidEsales\Codeception\Step\Basket;
@@ -26,13 +27,27 @@ final class InstallmentBannersCest extends BaseCest
     {
         $I->setPayPalBannersVisibility(true);
         $I->setPayPalBannersFlowSelectors();
+        $this->setPayPalExpressActive($I, true);
 
         parent::_after($I);
     }
 
-    public function shopStartPageLoads(AcceptanceTester $I): void
+    protected function providerPayPalExpress(): array
+    {
+        return [
+            ['oscpaypal_express' => false],
+            ['oscpaypal_express' => true]
+        ];
+    }
+
+    /**
+     * @dataProvider providerPayPalExpress
+     */
+    public function shopStartPageLoads(AcceptanceTester $I, Example $data): void
     {
         $I->wantToTest('shop start page loads with activated module and deactivated banners');
+
+        $this->setPayPalExpressActive($I, $data['oscpaypal_express']);
 
         $homePage = new Home($I);
         $I->amOnPage($homePage->URL);
@@ -42,9 +57,14 @@ final class InstallmentBannersCest extends BaseCest
         $I->dontSeePayPalInstallmentBanner();
     }
 
-    public function shopStartPageShowsBanner(AcceptanceTester $I): void
+    /**
+     * @dataProvider providerPayPalExpress
+     */
+    public function shopStartPageShowsBanner(AcceptanceTester $I, Example $data): void
     {
         $I->wantToTest('shop start page with installment banner');
+
+        $this->setPayPalExpressActive($I, $data['oscpaypal_express']);
 
         $I->updateModuleConfiguration('oscPayPalBannersShowAll', true);
         $I->updateModuleConfiguration('oscPayPalBannersStartPage', true);
@@ -55,9 +75,14 @@ final class InstallmentBannersCest extends BaseCest
         $I->seePayPalInstallmentBanner();
     }
 
-    public function categoryPageShowsBanner(AcceptanceTester $I): void
+    /**
+     * @dataProvider providerPayPalExpress
+     */
+    public function categoryPageShowsBanner(AcceptanceTester $I, Example $data): void
     {
         $I->wantToTest('category page with installment banner');
+
+        $this->setPayPalExpressActive($I, $data['oscpaypal_express']);
 
         $I->updateModuleConfiguration('oscPayPalBannersShowAll', true);
         $I->updateModuleConfiguration('oscPayPalBannersCategoryPage', true);
@@ -70,9 +95,14 @@ final class InstallmentBannersCest extends BaseCest
         $I->seePayPalInstallmentBanner();
     }
 
-    public function searchResultsPageShowsBanner(AcceptanceTester $I): void
+    /**
+     * @dataProvider providerPayPalExpress
+     */
+    public function searchResultsPageShowsBanner(AcceptanceTester $I, Example $data): void
     {
         $I->wantToTest('search resuotes page with installment banner');
+
+        $this->setPayPalExpressActive($I, $data['oscpaypal_express']);
 
         $I->updateModuleConfiguration('oscPayPalBannersShowAll', true);
         $I->updateModuleConfiguration('oscPayPalBannersSearchResultsPage', true);
@@ -88,9 +118,14 @@ final class InstallmentBannersCest extends BaseCest
         $I->seePayPalInstallmentBanner();
     }
 
-    public function detailPageShowsBanner(AcceptanceTester $I): void
+    /**
+     * @dataProvider providerPayPalExpress
+     */
+    public function detailPageShowsBanner(AcceptanceTester $I, Example $data): void
     {
         $I->wantToTest('product details page with installment banner');
+
+        $this->setPayPalExpressActive($I, $data['oscpaypal_express']);
 
         $I->updateModuleConfiguration('oscPayPalBannersShowAll', true);
         $I->updateModuleConfiguration('oscPayPalBannersProductDetailsPage', true);
@@ -113,9 +148,14 @@ final class InstallmentBannersCest extends BaseCest
         $I->see(Fixtures::get('product')['shortdesc_1']);
     }
 
-    public function checkoutPageShowsBanner(AcceptanceTester $I): void
+    /**
+     * @dataProvider providerPayPalExpress
+     */
+    public function checkoutPageShowsBanner(AcceptanceTester $I, Example $data): void
     {
         $I->wantToTest('checkout page with installment banner and logged in user');
+
+        $this->setPayPalExpressActive($I, $data['oscpaypal_express']);
 
         $I->updateModuleConfiguration('oscPayPalBannersShowAll', true);
         $I->updateModuleConfiguration('oscPayPalBannersCheckoutPage', true);
@@ -146,9 +186,14 @@ final class InstallmentBannersCest extends BaseCest
         $I->seePayPalInstallmentBanner();
     }
 
-    public function disableAllBannersFlag(AcceptanceTester $I): void
+    /**
+     * @dataProvider providerPayPalExpress
+     */
+    public function disableAllBannersFlag(AcceptanceTester $I, Example $data): void
     {
         $I->wantToTest('one flag to disable all banners');
+
+        $this->setPayPalExpressActive($I, $data['oscpaypal_express']);
 
         //all flags set to true
         $I->setPayPalBannersVisibility(true);
@@ -180,9 +225,14 @@ final class InstallmentBannersCest extends BaseCest
         $this->checkBannersOnAllPages($I, true);
     }
 
-    public function bannersMessageInBruttoMode(AcceptanceTester $I): void
+    /**
+     * @dataProvider providerPayPalExpress
+     */
+    public function bannersMessageInBruttoMode(AcceptanceTester $I, Example $data): void
     {
         $I->wantToTest('shop in brutto mode banner with filled cart and variants');
+
+        $this->setPayPalExpressActive($I, $data['oscpaypal_express']);
 
         $I->setPayPalBannersVisibility(true);
 
@@ -231,9 +281,14 @@ final class InstallmentBannersCest extends BaseCest
         $I->checkInstallmentBannerData($product['bruttoprice_cart'] + $variant['bruttoprice']); //check on details page
     }
 
-    public function bannersMessageInNettoMode(AcceptanceTester $I): void
+    /**
+     * @dataProvider providerPayPalExpress
+     */
+    public function bannersMessageInNettoMode(AcceptanceTester $I, Example $data): void
     {
         $I->wantToTest('shop in netto mode banner with filled cart and variants');
+
+        $this->setPayPalExpressActive($I, $data['oscpaypal_express']);
 
         $I->setPayPalBannersVisibility(true);
         $I->updateConfigInDatabase('blShowNetPrice', true, 'bool');
@@ -282,7 +337,7 @@ final class InstallmentBannersCest extends BaseCest
         $I->checkInstallmentBannerData($product['nettoprice_cart'] + $variant['nettoprice']); //check on details page
     }
 
-    private function checkBannersOnAllPages($I, bool $visible = true)
+    private function checkBannersOnAllPages($I, bool $visible = true): void
     {
         $home = $I->openShop()
             ->loginUser(Fixtures::get('userName'), Fixtures::get('userPassword'));
@@ -315,5 +370,18 @@ final class InstallmentBannersCest extends BaseCest
         $I->$methodName();
 
         $home->logoutUser();
+    }
+
+    private function setPayPalExpressActive(AcceptanceTester $I, bool $active): void
+    {
+        $I->updateInDatabase(
+            'oxpayments',
+            [
+                'oxactive' => (int) $active
+            ],
+            [
+                'oxid' => 'oscpaypal_express'
+            ]
+        );
     }
 }

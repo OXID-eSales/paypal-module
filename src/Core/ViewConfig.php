@@ -142,6 +142,7 @@ class ViewConfig extends ViewConfig_parent
             $params['currency'] = strtoupper($currency->name);
         }
 
+        $params['components'] = 'messages';
         // Available components: enable messages+buttons for PDP
         if ($this->getActiveClassName() === 'details') {
             $params['components'] = 'messages,buttons';
