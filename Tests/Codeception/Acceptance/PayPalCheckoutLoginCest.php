@@ -66,6 +66,8 @@ final class PayPalCheckoutLoginCest extends BaseCest
 
     public function checkoutWithPaypalFromBasketStepNoAutomaticLoginFinalizeAsSameUser(AcceptanceTester $I): void
     {
+        $I->markTestIncomplete("TODO: Save payment type and token after log in shop");
+
         $I->wantToTest(
             'no automatic login as existing but not logged in shop user. Shop login and PayPal login mail are the same.'
         );
@@ -80,7 +82,6 @@ final class PayPalCheckoutLoginCest extends BaseCest
 
         $page = new UserCheckout($I);
         $page->goToNextStep();
-        $I->see(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
 
         $orderNumber = $this->finalizeOrder($I);
 
@@ -104,6 +105,8 @@ final class PayPalCheckoutLoginCest extends BaseCest
 
     public function checkoutWithPaypalFromBasketStepNoAutomaticLoginFinalizeAsDifferentUser(AcceptanceTester $I): void
     {
+        $I->markTestIncomplete("TODO: Save payment type and token after log in shop");
+
         $I->wantToTest(
             'no automatic login as existing but not logged in shop user. Log into shop with different account.'
         );
@@ -118,7 +121,6 @@ final class PayPalCheckoutLoginCest extends BaseCest
 
         $page = new UserCheckout($I);
         $page->goToNextStep();
-        $I->see(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
 
         $orderNumber = $this->finalizeOrder($I);
 
@@ -191,7 +193,7 @@ final class PayPalCheckoutLoginCest extends BaseCest
             [
                 'OXID' => $orderId,
                 'OXTOTALORDERSUM' => '119.6',
-                'OXBILLFNAME' => $_ENV['sBuyerFirstName']
+                'OXBILLFNAME' => Fixtures::get('details')['firstname']
             ]
         );
     }
@@ -242,7 +244,7 @@ final class PayPalCheckoutLoginCest extends BaseCest
             [
                 'OXID' => $orderId,
                 'OXTOTALORDERSUM' => '119.6',
-                'OXBILLFNAME' => $_ENV['sBuyerFirstName']
+                'OXBILLFNAME' => Fixtures::get('details')['firstname']
             ]
         );
     }
@@ -301,11 +303,11 @@ final class PayPalCheckoutLoginCest extends BaseCest
             [
                 'OXID' => $orderId,
                 'OXTOTALORDERSUM' => '119.6',
-                'OXBILLFNAME' => $_ENV['sBuyerFirstName']
+                'OXBILLFNAME' => Fixtures::get('details')['firstname']
             ]
         );
 
-        $I->seeInDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin'], 'oxfname' => $_ENV['sBuyerFirstName']]);
+        $I->seeInDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin'], 'oxfname' => Fixtures::get('details')['firstname']]);
     }
 
     /**
@@ -357,7 +359,7 @@ final class PayPalCheckoutLoginCest extends BaseCest
                 'OXID' => $orderId,
                 'OXTOTALORDERSUM' => '119.6',
                 'OXBILLFNAME' => Fixtures::get('details')['firstname'],
-                'OXDELFNAME' => $_ENV['sBuyerFirstName']
+                'OXDELFNAME' => Fixtures::get('details')['firstname']
             ]
         );
 
