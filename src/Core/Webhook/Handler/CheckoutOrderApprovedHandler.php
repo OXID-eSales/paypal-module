@@ -38,7 +38,8 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
         /** @var PayPalModelOrder $paypalOrderModel */
         $paypalOrderModel = $this->getPayPalModelOrder(
             (string) $order->getId(),
-            $payPalOrderId
+            $payPalOrderId,
+            ''
         );
 
         if ($this->needsCapture($eventPayload)) {

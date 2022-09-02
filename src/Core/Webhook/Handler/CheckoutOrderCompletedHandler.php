@@ -18,10 +18,8 @@ class CheckoutOrderCompletedHandler extends WebhookHandlerBase
 
     protected function getPayPalTransactionIdFromResource(array $eventPayload): string
     {
-        $transactionId = isset($eventPayload['payments']) &&
-        isset($eventPayload['payments']['captures']) &&
-        isset($eventPayload['payments']['captures'][0]) ?
-            $eventPayload['payments']['captures'][0]['id'] : '';
+        $transactionId = isset($eventPayload['purchase_units'][0]['payments']['captures'][0]) ?
+            $eventPayload['purchase_units'][0]['payments']['captures'][0]['id'] : '';
 
         return $transactionId;
     }

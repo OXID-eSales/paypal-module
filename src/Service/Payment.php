@@ -545,7 +545,7 @@ class Payment
         string $payPalTransactionId = ''
     ): PayPalOrderModel {
         /** @var PayPalOrderModel $payPalOrder */
-        $payPalOrder = $this->getPayPalCheckoutOrder($shopOrderId, $payPalOrderId);
+        $payPalOrder = $this->getPayPalCheckoutOrder($shopOrderId, $payPalOrderId, $payPalTransactionId);
 
         $payPalOrder->setPaymentMethodId($paymentMethodId);
         $payPalOrder->setStatus($status);

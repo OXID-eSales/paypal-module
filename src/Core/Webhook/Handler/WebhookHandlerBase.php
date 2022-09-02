@@ -24,6 +24,8 @@ abstract class WebhookHandlerBase
 {
     use ServiceContainer;
 
+    public const WEBHOOK_EVENT_NAME = '';
+
     /**
      * @inheritDoc
      * @throws WebhookEventException
@@ -45,7 +47,8 @@ abstract class WebhookHandlerBase
             /** @var PayPalModelOrder $paypalOrderModel */
             $paypalOrderModel = $this->getPayPalModelOrder(
                 (string) $order->getId(),
-                $payPalOrderId
+                $payPalOrderId,
+                $payPalTransactionId
             );
             $paypalOrderModel->setTransactionId($payPalTransactionId);
 
@@ -120,13 +123,15 @@ abstract class WebhookHandlerBase
 
     protected function getPayPalModelOrder(
         string $shopOrderId,
-        string $payPalOrderId
+        string $payPalOrderId,
+        string $payPalTransactionId
     ): PayPalModelOrder {
         /** @var PayPalModelOrder $paypalOrderModel */
         $paypalOrderModel = $this->getOrderRepository()
             ->paypalOrderByOrderIdAndPayPalId(
                 $shopOrderId,
-                $payPalOrderId
+                $payPalOrderId,
+                $payPalTransactionId
             );
 
         return $paypalOrderModel;
