@@ -12,6 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 use OxidEsales\Codeception\Step\ProductNavigation;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
+use Codeception\Example;
 use OxidEsales\Codeception\Page\Checkout\ThankYou;
 use OxidEsales\Codeception\Step\Basket;
 use OxidEsales\Codeception\Page\Checkout\PaymentCheckout;
@@ -26,16 +27,29 @@ use OxidEsales\Codeception\Module\Translation\Translator;
  */
 final class UapmCheckoutCest extends BaseCest
 {
-    public function checkoutWithUapmPayPalDoesNotInterfereWithStandardPayPal(AcceptanceTester $I): void
+
+    protected function providerPaymentMethods(): array
+    {
+        return [
+            ['paymentId' => 'oscpaypal_sofort'],
+            ['oscpaypal_giropay' => 'oscpaypal_giropay']
+        ];
+    }
+
+    /**
+     * @dataProvider providerPaymentMethods
+     */
+    public function checkoutWithUapmPayPalDoesNotInterfereWithStandardPayPal(AcceptanceTester $I, Example $data): void
     {
         $I->wantToTest('switching between payment methods');
 
         $this->proceedToPaymentStep($I, Fixtures::get('userName'));
+        $pamentMethodId = $data['paymentId'];
 
         //first decide to use sofort via paypal
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_sofort')
+        $orderCheckout = $paymentCheckout->selectPayment($pamentMethodId)
             ->goToNextStep();
         $paymentCheckout = $orderCheckout->goToPreviousStep();
         $I->dontSee(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
@@ -46,11 +60,13 @@ final class UapmCheckoutCest extends BaseCest
         //pretend we are back in shop after clicking PayPal button and approving the order
         $I->amOnUrl($this->getShopUrl() . '?cl=payment');
         $I->see(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
+        $I->see(Translator::translate('OSC_PAYPAL_PAY_UNLINK'));
+        $I->click(Translator::translate('OSC_PAYPAL_PAY_UNLINK'));
 
-        //change decision again to use Sofort via PayPal
+        //change decision again to use uapm via PayPal
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_sofort')
+        $orderCheckout = $paymentCheckout->selectPayment($pamentMethodId)
             ->goToNextStep();
         $paymentCheckout = $orderCheckout->goToPreviousStep();
         $I->dontSee(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
@@ -67,9 +83,14 @@ final class UapmCheckoutCest extends BaseCest
         $I->assertNotEquals($token, $newToken);
     }
 
-    public function checkoutWithSofortViaPayPalCancel(AcceptanceTester $I): void
+    /**
+     * @dataProvider providerPaymentMethods
+     */
+    public function checkoutWithUapmViaPayPalCancel(AcceptanceTester $I, Example $data): void
     {
-        $I->wantToTest('logged in user with Sofort via PayPal cancels payment after redirect.');
+        $pamentMethodId = $data['paymentId'];
+
+        $I->wantToTest('logged in user with ' . $pamentMethodId . ' via PayPal cancels payment after redirect.');
 
         $I->seeNumRecords(0, 'oscpaypal_order');
         $I->seeNumRecords(1, 'oxorder');
@@ -78,7 +99,7 @@ final class UapmCheckoutCest extends BaseCest
 
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_sofort')
+        $orderCheckout = $paymentCheckout->selectPayment($pamentMethodId)
             ->goToNextStep();
         $orderCheckout->submitOrder();
 
@@ -90,7 +111,7 @@ final class UapmCheckoutCest extends BaseCest
         $I->click('#cancelSubmit');
 
         $I->switchToWindow();
-        $I->seeElement("#PayPalButtonPaymentPage");
+        $I->seeElement('#payment_' . $pamentMethodId);
         //NOTE: simulation sends us error code on cancel
         $I->see(Translator::translate('MESSAGE_PAYMENT_AUTHORIZATION_FAILED'));
 
@@ -99,8 +120,13 @@ final class UapmCheckoutCest extends BaseCest
         $I->seeNumRecords(1, 'oxorder');
     }
 
-    public function checkoutWithSofortViaPayPalError(AcceptanceTester $I): void
+    /**
+     * @dataProvider providerPaymentMethods
+     */
+    public function checkoutWithSofortViaPayPalError(AcceptanceTester $I, Example $data): void
     {
+        $pamentMethodId = $data['paymentId'];
+
         $I->wantToTest('logged in user with Sofort via PayPal runs into payment error after redirect.');
 
         $I->seeNumRecords(0, 'oscpaypal_order');
@@ -110,7 +136,7 @@ final class UapmCheckoutCest extends BaseCest
 
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_sofort')
+        $orderCheckout = $paymentCheckout->selectPayment($pamentMethodId)
             ->goToNextStep();
         $orderCheckout->submitOrder();
 
@@ -120,7 +146,7 @@ final class UapmCheckoutCest extends BaseCest
         $I->click('#failureSubmit');
 
         $I->switchToWindow();
-        $I->seeElement("#PayPalButtonPaymentPage");
+        $I->seeElement('#payment_' . $pamentMethodId);
         $I->see(Translator::translate('MESSAGE_PAYMENT_AUTHORIZATION_FAILED'));
 
         //nothing changed
@@ -128,9 +154,14 @@ final class UapmCheckoutCest extends BaseCest
         $I->seeNumRecords(1, 'oxorder');
     }
 
-    public function checkoutWithSofortViaPayPalSuccess(AcceptanceTester $I): void
+    /**
+     * @dataProvider providerPaymentMethods
+     */
+    public function checkoutWithUapmViaPayPalSuccess(AcceptanceTester $I,  Example $data): void
     {
-        $I->wantToTest('logged in user with Sofort via PayPal successfully places an order.');
+        $pamentMethodId = $data['paymentId'];
+
+        $I->wantToTest('logged in user with ' . $pamentMethodId . ' via PayPal successfully places an order.');
 
         $I->seeNumRecords(0, 'oscpaypal_order');
         $I->seeNumRecords(1, 'oxorder');
@@ -139,7 +170,7 @@ final class UapmCheckoutCest extends BaseCest
 
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_sofort')
+        $orderCheckout = $paymentCheckout->selectPayment($pamentMethodId)
             ->goToNextStep();
         $orderCheckout->submitOrder();
 
