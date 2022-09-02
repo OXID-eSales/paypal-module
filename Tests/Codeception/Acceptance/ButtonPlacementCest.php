@@ -9,12 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 
-use OxidEsales\Codeception\Page\Checkout\Basket as BasketPage;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
-use OxidEsales\Codeception\Page\Checkout\ThankYou;
-use OxidEsales\Codeception\Step\Basket;
-use OxidEsales\Codeception\Page\Checkout\PaymentCheckout;
 use OxidEsales\Codeception\Module\Translation\Translator;
 use OxidEsales\Codeception\Step\ProductNavigation;
 
@@ -80,6 +76,6 @@ final class ButtonPlacementCest extends BaseCest
         $I->updateModuleConfiguration('oscPayPalShowCheckoutButton', true);
         $I->clearShopCache();
         $this->proceedToPaymentStep($I, Fixtures::get('userName'));
-        $I->seeElement("#PayPalButtonPaymentPage");
+        $I->see(Translator::translate("PAYMENT_METHOD"));
     }
 }

@@ -11,9 +11,7 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
-use OxidEsales\Codeception\Page\Checkout\ThankYou;
 use OxidEsales\Codeception\Step\Basket;
-use OxidEsales\Codeception\Page\Checkout\PaymentCheckout;
 use OxidEsales\Codeception\Module\Translation\Translator;
 
 /**
@@ -105,7 +103,7 @@ final class CheckoutCest extends BaseCest
                 'OXID' => $orderId,
                 'OXTOTALORDERSUM' => '119.6',
                 'OXBILLFNAME' => Fixtures::get('details')['firstname'],
-                'OXDELFNAME' => $_ENV['sBuyerFirstName']
+                'OXDELFNAME' => Fixtures::get('details')['firstname']
             ]
         );
 

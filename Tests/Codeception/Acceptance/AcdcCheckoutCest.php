@@ -9,11 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 
-use OxidEsales\Codeception\Step\ProductNavigation;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
-use OxidEsales\Codeception\Page\Checkout\ThankYou;
-use OxidEsales\Codeception\Step\Basket;
 use OxidEsales\Codeception\Page\Checkout\PaymentCheckout;
 use OxidEsales\Codeception\Page\Checkout\OrderCheckout;
 use OxidEsales\Codeception\Module\Translation\Translator;
@@ -24,7 +21,7 @@ use OxidEsales\Codeception\Module\Translation\Translator;
  * @group osc_paypal_checkout_acdc
  * @group osc_paypal_remote_login
  */
-final class AcdcCheckoutCestCheckoutCest extends BaseCest
+final class AcdcCheckoutCest extends BaseCest
 {
     public function checkoutWithAcdcPayPalDoesNotInterfereWithStandardPayPal(AcceptanceTester $I): void
     {
@@ -34,6 +31,10 @@ final class AcdcCheckoutCestCheckoutCest extends BaseCest
 
         //first decide to use credit card via paypal
         $paymentCheckout = new PaymentCheckout($I);
+        if ($I->seePageHasElement("//a[contains(@href, 'fnc=cancelPayPalPayment')]"))
+        {
+            $I->click(Translator::translate('OSC_PAYPAL_PAY_UNLINK'));
+        }
         /** @var OrderCheckout $orderCheckout */
         $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_acdc')
             ->goToNextStep();

@@ -9,12 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 
-use OxidEsales\Codeception\Page\Checkout\Basket as BasketPage;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
-use OxidEsales\Codeception\Page\Checkout\ThankYou;
-use OxidEsales\Codeception\Step\Basket;
-use OxidEsales\Codeception\Page\Checkout\PaymentCheckout;
 use OxidEsales\Codeception\Module\Translation\Translator;
 use OxidEsales\Codeception\Step\ProductNavigation;
 
@@ -118,7 +114,7 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
                 'OXID' => $orderId,
                 //the original 4 plus one from details
                 'OXTOTALORDERSUM' => 5 * Fixtures::get('product')['bruttoprice_single'],
-                'OXBILLFNAME' => $_ENV['sBuyerFirstName']
+                'OXBILLFNAME' => Fixtures::get('details')['firstname']
             ]
         );
     }
@@ -136,8 +132,6 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
         $productNavigation = new ProductNavigation($I);
         $productNavigation->openProductDetailsPage(Fixtures::get('product')['oxid']);
         $I->seeElement("#PayPalButtonProductMain");
-        $I->dontSeeCookie('sid');
-        $I->dontSeeCookie('sid_key');
 
         $token = $this->approveAnonymousPayPalTransaction($I, '&aid=' . Fixtures::get('product')['oxid']);
         $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
@@ -167,7 +161,7 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
                 'OXID' => $orderId,
                 'OXTOTALORDERSUM' => Fixtures::get('product')['one_item_total_with_shipping'],
                 'OXBILLFNAME' => Fixtures::get('details')['firstname'],
-                'OXDELFNAME' => $_ENV['sBuyerFirstName']
+                'OXDELFNAME' => Fixtures::get('details')['firstname']
             ]
         );
     }

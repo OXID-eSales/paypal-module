@@ -200,7 +200,10 @@ abstract class BaseCest
         $basketPage->goToNextStep()
             ->goToNextStep();
 
-        $I->see(Translator::translate('PAYMENT_METHOD'));
+        if (!$I->seePageHasElement("//a[contains(@href, 'fnc=cancelPayPalPayment')]"))
+        {
+            $I->see(Translator::translate('PAYMENT_METHOD'));
+        }
     }
 
     protected function proceedToBasketStep(AcceptanceTester $I, string $userName = null, bool $logMeIn = true): void
@@ -234,6 +237,9 @@ abstract class BaseCest
         $paymentPage = new PaymentCheckout($I);
         $paymentPage->goToNextStep()
             ->submitOrder();
+
+        $payPalPage = new PayPalLogin($I);
+        $payPalPage->confirmPayPal();
 
         $thankYouPage = new ThankYou($I);
 

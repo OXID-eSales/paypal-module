@@ -9,14 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 
-use OxidEsales\Codeception\Page\Checkout\Basket as BasketPage;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
-use OxidEsales\Codeception\Page\Checkout\ThankYou;
-use OxidEsales\Codeception\Step\Basket;
-use OxidEsales\Codeception\Page\Checkout\PaymentCheckout;
-use OxidEsales\Codeception\Module\Translation\Translator;
-use OxidEsales\Codeception\Step\ProductNavigation;
 
 /**
  * @group osc_paypal
@@ -92,6 +86,8 @@ final class ProxyControllerCest extends BaseCest
                 . $paypalOrderId,
             ['Cookie' => 'language=0; sid=' . $sid . ';sid_key=oxid']
         );
-        $I->assertSame($paypalOrderId, $I->grabJsonResponseAsArray()['id']);
+
+        $response = $I->grabJsonResponseAsArray();
+        $I->assertSame($paypalOrderId, $response['id']);
     }
 }
