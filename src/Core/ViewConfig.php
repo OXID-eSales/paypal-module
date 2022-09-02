@@ -42,6 +42,29 @@ class ViewConfig extends ViewConfig_parent
     /**
      * @return bool
      */
+    public function isPayPalBannerActive(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showAllPayPalBanners();
+    }
+
+    public function showPayPalBasketButton(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalBasketButton();
+    }
+
+    public function showPayPalMiniBasketButton(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalMiniBasketButton();
+    }
+
+    public function showPayPalProductDetailsButton(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalProductDetailsButton();
+    }
+
+    /**
+     * @return bool
+     */
     public function isPayPalSandbox(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isSandbox();
@@ -142,6 +165,7 @@ class ViewConfig extends ViewConfig_parent
             $params['currency'] = strtoupper($currency->name);
         }
 
+        $params['components'] = 'messages';
         // Available components: enable messages+buttons for PDP
         if ($this->getActiveClassName() === 'details') {
             $params['components'] = 'messages,buttons';
