@@ -47,8 +47,20 @@ final class Version20220901134100 extends AbstractMigration
         if ($order->hasColumn('OSCPAYPALTRANSACTIONID')) {
             $order->changeColumn(
                 'OSCPAYPALTRANSACTIONID',
-                [ 'notnull' => true,
-                  'default' => ''
+                [
+                    'notnull' => true,
+                    'default' => ''
+                ]
+            );
+        }
+
+        if ($order->hasColumn('OSCPAYPALSTATUS')) {
+            $order->changeColumn(
+                'OSCPAYPALSTATUS',
+                [
+                    'columnDefinition' => 'varchar(255) collate latin1_general_ci',
+                    'notnull' => true,
+                    'default' => ''
                 ]
             );
         }
