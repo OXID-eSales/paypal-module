@@ -9,12 +9,10 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 
-use OxidEsales\Codeception\Step\ProductNavigation;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
 use Codeception\Example;
 use OxidEsales\Codeception\Page\Checkout\ThankYou;
-use OxidEsales\Codeception\Step\Basket;
 use OxidEsales\Codeception\Page\Checkout\PaymentCheckout;
 use OxidEsales\Codeception\Page\Checkout\OrderCheckout;
 use OxidEsales\Codeception\Module\Translation\Translator;
@@ -160,6 +158,7 @@ final class PuiCheckoutCest extends BaseCest
 
         //As we have a PayPal order now, also check admin
         $this->openOrderPayPal($I, (string) $orderNumber);
+        $I->wait(1);
         $I->see(Translator::translate('OSC_PAYPAL_HISTORY_PAYPAL_STATUS'));
         $I->see(Translator::translate('OSC_PAYPAL_STATUS_COMPLETED'));
         $I->seeElement('//input[@id="refundAmount"]');
@@ -222,6 +221,7 @@ final class PuiCheckoutCest extends BaseCest
 
         //As we have a PayPal order now, also check admin
         $this->openOrderPayPal($I, (string) $orderNumber);
+        $I->wait(1);
         $I->see(Translator::translate('OSC_PAYPAL_HISTORY_PAYPAL_STATUS'));
         $I->see(Translator::translate('OSC_PAYPAL_STATUS_COMPLETED'));
         $I->seeElement('//input[@id="refundAmount"]');

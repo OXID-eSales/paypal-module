@@ -34,6 +34,18 @@ class PayPalSession
         Registry::getSession()->deleteVariable(
             Constants::SESSION_CHECKOUT_ORDER_ID
         );
+
+        $session = Registry::getSession();
+        $basket = $session->getBasket();
+        if ($basket != null) {
+            $basket->setPayment();
+            $basket->setShipping();
+        }
+
+        if ($session != null) {
+            $session->deleteVariable('sShipSet');
+            $session->deleteVariable('paymentid');
+        }
     }
 
     /**
