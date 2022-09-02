@@ -307,4 +307,18 @@ abstract class BaseCest
         $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oscpaypal_acdc']);
         $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oscpaypal']);
     }
+
+    protected function setProductAvailability(AcceptanceTester $I, int $stockflag, int $stock): void
+    {
+        $I->updateInDatabase(
+            'oxarticles',
+            [
+                'oxstockflag' => $stockflag,
+                'oxstock' => $stock
+            ],
+            [
+                'oxid' => Fixtures::get('product')['oxid']
+            ]
+        );
+    }
 }
