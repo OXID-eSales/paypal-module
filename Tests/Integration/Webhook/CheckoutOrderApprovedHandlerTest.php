@@ -9,19 +9,29 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
+use Doctrine\DBAL\Query\QueryBuilder;
+use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
+use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutOrderApprovedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 
 final class CheckoutOrderApprovedHandlerTest extends WebhookHandlerBaseTestCase
 {
     public const WEBHOOK_EVENT = 'CHECKOUT.ORDER.APPROVED';
+
+    protected function tearDown(): void
+    {
+        $this->cleanUpTable('oscpaypal_order');
+        $this->cleanUpTable('oxorder');
+
+        parent::tearDown();
+    }
 
     public function testRequestMissingData(): void
     {
@@ -95,46 +105,26 @@ final class CheckoutOrderApprovedHandlerTest extends WebhookHandlerBaseTestCase
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
         $payPalOrderId = $data['resource']['id'];
 
-        //NOTE: payment service which would trigger markOrderPaid is mocked in this test
-        $orderMock = $this->prepareOrderMock('oxid', 'markOrderPaid', 'never');
-        $orderMock->expects($this->once())
-            ->method('setOrderNumber');
-
-        $paypalOrderMock = $this->getMockBuilder(PayPalOrderModel::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $paypalOrderMock->expects($this->any())
-        ->method('getPaymentMethodId')
-        ->willReturn('test_payment');
-
-        $orderRepositoryMock = $this->getMockBuilder(OrderRepository::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderRepositoryMock->expects($this->once())
-            ->method('getShopOrderByPayPalOrderId')
-            ->willReturn($orderMock);
-        $orderRepositoryMock->expects($this->once())
-            ->method('paypalOrderByOrderIdAndPayPalId')
-            ->willReturn($paypalOrderMock);
+        $this->prepareTestData($payPalOrderId);
+        $this->assertFalse($this->hasNonZeroOrderNumber());
 
         $paymentServiceMock = $this->getMockBuilder(PaymentService::class)
             ->disableOriginalConstructor()
             ->getMock();
         $paymentServiceMock->expects($this->once())
-            ->method('doCapturePayPalOrder')
-            ->with($orderMock, $payPalOrderId, 'test_payment');
+            ->method('doCapturePayPalOrder');
 
         $handler = $this->getMockBuilder(CheckoutOrderApprovedHandler::class)
-            ->onlyMethods(['getOrderRepository', 'getPaymentService'])
+            ->onlyMethods(['getPaymentService'])
             ->getMock();
-        $handler->expects($this->any())
-            ->method('getOrderRepository')
-            ->willReturn($orderRepositoryMock);
         $handler->expects($this->any())
             ->method('getPaymentService')
             ->willReturn($paymentServiceMock);
 
         $handler->handle($event);
+
+        $this->assertPayPalOrderCount($payPalOrderId);
+        $this->assertTrue($this->hasNonZeroOrderNumber());
     }
 
     public function testCheckoutOrderApprovedNeedsCaptureException(): void
@@ -143,24 +133,7 @@ final class CheckoutOrderApprovedHandlerTest extends WebhookHandlerBaseTestCase
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
         $payPalOrderId = $data['resource']['id'];
 
-        //NOTE: payment service which would trigger markOrderPaid is mocked in this test
-        $orderMock = $this->prepareOrderMock('oxid', 'markOrderPaid', 'never');
-        $paypalOrderMock = $this->getMockBuilder(PayPalOrderModel::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $paypalOrderMock->expects($this->any())
-            ->method('getPaymentMethodId')
-            ->willReturn('test_payment');
-
-        $orderRepositoryMock = $this->getMockBuilder(OrderRepository::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderRepositoryMock->expects($this->once())
-            ->method('getShopOrderByPayPalOrderId')
-            ->willReturn($orderMock);
-        $orderRepositoryMock->expects($this->once())
-            ->method('paypalOrderByOrderIdAndPayPalId')
-            ->willReturn($paypalOrderMock);
+        $this->prepareTestData($payPalOrderId);
 
         $paymentServiceMock = $this->getMockBuilder(PaymentService::class)
             ->disableOriginalConstructor()
@@ -177,15 +150,38 @@ final class CheckoutOrderApprovedHandlerTest extends WebhookHandlerBaseTestCase
         EshopRegistry::set('logger', $loggerMock);
 
         $handler = $this->getMockBuilder(CheckoutOrderApprovedHandler::class)
-            ->onlyMethods(['getOrderRepository', 'getPaymentService'])
+            ->onlyMethods(['getPaymentService'])
             ->getMock();
-        $handler->expects($this->any())
-            ->method('getOrderRepository')
-            ->willReturn($orderRepositoryMock);
         $handler->expects($this->any())
             ->method('getPaymentService')
             ->willReturn($paymentServiceMock);
 
         $handler->handle($event);
+
+        $this->assertPayPalOrderCount($payPalOrderId);
+        $this->assertFalse($this->hasNonZeroOrderNumber());
+
+        $order = oxNew(EshopModelOrder::class);
+        $order->load(self::SHOP_ORDER_ID);
+        $this->assertSame('', $order->getFieldData('OXTRANSSTATUS'));
+        $this->assertSame('0000-00-00 00:00:00', $order->getFieldData('OXPAID'));
+    }
+
+    private function hasNonZeroOrderNumber(): bool
+    {
+        $parameters = [
+            'oxid' => self::SHOP_ORDER_ID,
+        ];
+
+        /** @var QueryBuilder $queryBuilder */
+        $queryBuilder = $this->get(QueryBuilderFactoryInterface::class)->create();
+        $queryBuilder->select('oxordernr')
+            ->from('oxorder')
+            ->where('oxid = :oxid');
+
+        $result = $queryBuilder->setParameters($parameters)
+            ->execute();
+
+        return 0 < (int) $result->fetchOne();
     }
 }

@@ -9,13 +9,11 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
-use OxidEsales\Eshop\Core\Registry as EshopRegistry;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutPaymentApprovalReverseHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
-use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
-use OxidSolutionCatalysts\PayPalApi\Service\Orders as PayPalApiOrders;
+use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
+use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 
 final class CheckoutPaymentApprovalReverseHandlerTest extends WebhookHandlerBaseTestCase
 {
@@ -57,33 +55,21 @@ final class CheckoutPaymentApprovalReverseHandlerTest extends WebhookHandlerBase
 
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
-        $orderMock = $this->prepareOrderMock('order_oxid', 'markOrderPaymentFailed');
-        $paypalOrderMock = $this->preparePayPalOrderMock($orderMock->getId(), $payPalOrderId);
+        $this->prepareTestData($payPalOrderId);
 
-        $orderRepositoryMock = $this->getMockBuilder(OrderRepository::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderRepositoryMock->expects($this->once())
-            ->method('getShopOrderByPayPalOrderId')
-            ->willReturn($orderMock);
-        $orderRepositoryMock->expects($this->once())
-            ->method('paypalOrderByOrderIdAndPayPalId')
-            ->willReturn($paypalOrderMock);
-
-        $serviceFactoryMock = $this->getMockBuilder(ServiceFactory::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $serviceFactoryMock->expects($this->never())
-            ->method('getOrderService');
-
-        EshopRegistry::set(ServiceFactory::class, $serviceFactoryMock);
-
-        $handler = $this->getMockBuilder(static::HANDLER_CLASS)
-            ->setMethods(['getOrderRepository'])
-            ->getMock();
-        $handler->expects($this->any())
-            ->method('getOrderRepository')
-            ->willReturn($orderRepositoryMock);
+        $handler = oxNew(static::HANDLER_CLASS);
         $handler->handle($event);
+
+        $this->assertPayPalOrderCount($payPalOrderId);
+
+        $payPalOrder = oxNew(PayPalOrder::class);
+        $payPalOrder->load(self::PAYPAL_OXID);
+        $this->assertSame('CHECKOUT.PAYMENT-APPROVAL.REVERSED', $payPalOrder->getStatus());
+        $this->assertSame('', $payPalOrder->getTransactionId());
+
+        $order = oxNew(EshopModelOrder::class);
+        $order->load(self::SHOP_ORDER_ID);
+        $this->assertSame('ERROR', $order->getFieldData('OXTRANSSTATUS'));
+        $this->assertSame('0000-00-00 00:00:00', $order->getFieldData('OXPAID'));
     }
 }
