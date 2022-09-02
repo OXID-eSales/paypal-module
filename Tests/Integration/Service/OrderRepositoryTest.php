@@ -97,7 +97,7 @@ final class OrderRepositoryTest extends BaseTestCase
         $orderRepo = $this->getServiceFromContainer(OrderRepository::class);
 
         $this->prepareTestOrder('');
-        $this->prepareTestOrder(self::PAYPAL_TRANSACTIONID,  self::PAYPAL_OXID . '_2');
+        $this->prepareTestOrder(self::PAYPAL_TRANSACTIONID, self::PAYPAL_OXID . '_2');
 
         //search by shop order id and paypal order id
         $fromRepo = $orderRepo->paypalOrderByOrderIdAndPayPalId(

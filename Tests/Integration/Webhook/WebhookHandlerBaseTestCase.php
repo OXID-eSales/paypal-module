@@ -26,7 +26,7 @@ class WebhookHandlerBaseTestCase extends UnitTestCase
     public const PAYPAL_OXID = '_test_oxid';
     public const SHOP_ORDER_ID = '_shop_order_id';
     public const PAYMENT_METHOD = 'test_payment';
-    
+
     protected function getRequestData(string $fixtureFileName): array
     {
         $json = file_get_contents(__DIR__ . '/../../Fixtures/' . $fixtureFileName);
