@@ -9,7 +9,13 @@
             ($className == 'basket' && $oViewConf->showPayPalBasketButton())
         )
     }]
-       <script src="[{$oViewConf->getPayPalJsSdkUrl()}]" data-partner-attribution-id="[{$oViewConf->getPayPalPartnerAttributionIdForBanner()}]"></script>
+        <script src="[{$oViewConf->getPayPalJsSdkUrl()}]" data-partner-attribution-id="[{$oViewConf->getPayPalPartnerAttributionIdForBanner()}]"></script>
+        [{assign var="sCountryRestriction" value=$oViewConf->getCountryRestrictionForPayPalExpress()}]
+        [{if $sCountryRestriction}]
+            <script>
+                const countryRestriction = [[{$sCountryRestriction}]];
+            </script>
+        [{/if}]
     [{elseif $className == 'order' && $oViewConf->isPayPalACDCSessionActive()}]
         <script src="[{$oViewConf->getPayPalJsSdkUrlForACDC()}]" data-client-token="[{$oViewConf->getDataClientToken()}]"></script>
     [{elseif $oViewConf->isPayPalBannerActive() && (($className == 'start') || ($className == 'search') || ($className == 'details') || ($className == 'alist') || ($className == 'basket') || ($className == 'payment'))}]
