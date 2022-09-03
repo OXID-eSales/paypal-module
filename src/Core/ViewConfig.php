@@ -153,10 +153,10 @@ class ViewConfig extends ViewConfig_parent
     public function getPayPalJsSdkUrl(): string
     {
         $config = Registry::getConfig();
-
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $params = [];
 
-        $params['client-id'] = $this->getServiceFromContainer(ModuleSettings::class)->getClientId();
+        $params['client-id'] = $moduleSettings->getClientId();
         $params['integration-date'] = Constants::PAYPAL_INTEGRATION_DATE;
         $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
         $params['commit'] = 'false';
@@ -165,7 +165,11 @@ class ViewConfig extends ViewConfig_parent
             $params['currency'] = strtoupper($currency->name);
         }
 
-        $params['components'] = 'messages,buttons';
+        $params['components'] = 'buttons';
+        // Available components: enable messages+buttons for PDP
+        if ($moduleSettings->showAllPayPalBanners()) {
+            $params['components'] .= ',messages';
+        }
 
         if ($this->getServiceFromContainer(ModuleSettings::class)->showPayPalPayLaterButton()) {
             $params['enable-funding'] = 'paylater';
