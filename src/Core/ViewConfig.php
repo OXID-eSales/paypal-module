@@ -165,11 +165,7 @@ class ViewConfig extends ViewConfig_parent
             $params['currency'] = strtoupper($currency->name);
         }
 
-        $params['components'] = 'messages';
-        // Available components: enable messages+buttons for PDP
-        if ($this->getActiveClassName() === 'details') {
-            $params['components'] = 'messages,buttons';
-        }
+        $params['components'] = 'messages,buttons';
 
         if ($this->getServiceFromContainer(ModuleSettings::class)->showPayPalPayLaterButton()) {
             $params['enable-funding'] = 'paylater';
@@ -247,13 +243,7 @@ class ViewConfig extends ViewConfig_parent
     {
         $params['client-id'] = $this->getPayPalClientId();
 
-        $components = 'messages';
-        // enable buttons for PDP
-        if ($this->getActiveClassName() === 'details') {
-            $components .= ',buttons';
-        }
-
-        $params['components'] = $components;
+        $params['components'] = 'messages';
 
         return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
     }
