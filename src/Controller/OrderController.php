@@ -49,12 +49,21 @@ class OrderController extends OrderController_parent
             Registry::getUtils()->redirect(Registry::getConfig()->getShopSecureHomeURL() . 'cl=user', true, 302);
         }
 
-        $this->renderRetryOrderExecution();
+        $this->addTplParam('oscpaypal_executing_order', false);
+        $isRetry = $this->renderRetryOrderExecution();
+
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        if (!$isRetry && $paymentService->isOrderExecutionInProgress()) {
+            $displayError = oxNew(DisplayError::class);
+            $displayError->setMessage('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS');
+            Registry::getUtilsView()->addErrorToDisplay($displayError);
+            $this->addTplParam('oscpaypal_executing_order', true);
+        }
 
         return parent::render();
     }
 
-    protected function renderRetryOrderExecution(): void
+    protected function renderRetryOrderExecution(): bool
     {
         $retryRequest = Registry::getRequest()->getRequestParameter(self::RETRY_OSC_PAYMENT_REQUEST_PARAM);
 
@@ -67,7 +76,10 @@ class OrderController extends OrderController_parent
             if (in_array((string) $paymentService->getSessionPaymentId(), $this->removeTemporaryOrderOnRetry)) {
                 $paymentService->removeTemporaryOrder();
             }
+            return true;
         }
+
+        return false;
     }
 
     public function getUserCountryIso(): string
@@ -275,6 +287,10 @@ class OrderController extends OrderController_parent
         if (PaymentService::PAYMENT_ERROR_PUI_PHONE == $success) {
             //user needs to retry, entered pui phone number was not accepted by PayPal
             return 'order?retryoscpp=puiretry';
+        }
+
+        if (PayPalOrderModel::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS == $success) {
+            return 'order';
         }
 
         return parent::_getNextStep($success);

@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Model;
 
+use DateTimeImmutable;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
 use OxidEsales\Eshop\Application\Model\UserPayment as EshopModelUserPayment;
@@ -17,6 +18,7 @@ use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Model\BaseModel;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
+use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalOrder;
@@ -58,6 +60,15 @@ class Order extends Order_parent
      * @var int
      */
     public const ORDER_STATE_PAYMENTERROR = 2;
+
+
+    /**
+     * Order finalizations is waiting for webhook events
+     *
+     * @var int
+     */
+    public const ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS = 600;
+
 
     /**
      * PayPal order information
@@ -460,5 +471,45 @@ class Order extends Order_parent
     public function setOrderNumber(): void
     {
         $this->_setNumber();
+    }
+
+    public function isOrderFinished(): bool
+    {
+        return 'OK' === $this->getFieldData('oxtransstatus');
+    }
+
+    public function isOrderPaid(): bool
+    {
+        return false === strpos((string) $this->getFieldData('oxpaid'), '0000');
+    }
+
+    public function isWaitForWebhookTimeoutReached(): bool
+    {
+        $orderTime = new DateTimeImmutable((string) $this->getFieldData('oxorderdate'));
+
+        return (new DateTimeImmutable('now'))->getTimestamp() >
+           $orderTime->getTimestamp() + Constants::PAYPAL_SESSION_TIMEOUT_IN_SEC;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function finalizeOrder(EshopModelBasket $basket, $user, $recalculatingOrder = false)
+    {
+        //we might have the case that the order is already stored but we are waiting for webhook events
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        if (
+            $paymentService->isPayPalPayment() &&
+            $paymentService->isOrderExecutionInProgress() &&
+            $this->load(Registry::getSession()->getVariable('sess_challenge')) &&
+            !$this->isOrderFinished() &&
+            !$this->isOrderPaid() &&
+            !$this->isWaitForWebhookTimeoutReached()
+        ) {
+            return self::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS;
+        }
+
+        return parent::finalizeOrder($basket, $user, $recalculatingOrder);
     }
 }
