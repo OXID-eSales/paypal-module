@@ -66,6 +66,7 @@ class PayPalAddressResponseToOxidAddress
     ): array {
         $country = oxNew(Country::class);
 
+        //TODO PSPAYPAL-567: in which cases do we not get a shpping address from PayPal?
         if (!isset($response->purchase_units[0]->shipping)) {
             return [];
         }

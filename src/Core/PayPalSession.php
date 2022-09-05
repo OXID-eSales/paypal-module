@@ -40,6 +40,7 @@ class PayPalSession
     {
         self::unsetPayPalOrderId();
 
+        //TODO PSPAYPAL-567: why do we need to reset shipping and payment method?
         $session = Registry::getSession();
         $basket = $session->getBasket();
         if ($basket != null) {
