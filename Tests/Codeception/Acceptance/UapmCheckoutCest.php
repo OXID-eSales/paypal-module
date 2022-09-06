@@ -37,7 +37,7 @@ final class UapmCheckoutCest extends BaseCest
     protected function providerPaymentMethods(): array
     {
         return [
-           # ['paymentId' => PayPalDefinitions::SOFORT_PAYPAL_PAYMENT_ID],
+            ['paymentId' => PayPalDefinitions::SOFORT_PAYPAL_PAYMENT_ID],
             ['paymentId' => PayPalDefinitions::GIROPAY_PAYPAL_PAYMENT_ID]
         ];
     }
@@ -50,12 +50,12 @@ final class UapmCheckoutCest extends BaseCest
         $I->wantToTest('switching between payment methods');
 
         $this->proceedToPaymentStep($I, Fixtures::get('userName'));
-        $pamentMethodId = $data['paymentId'];
+        $paymentMethodId = $data['paymentId'];
 
         //first decide to use uapm via paypal
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment($pamentMethodId)
+        $orderCheckout = $paymentCheckout->selectPayment($paymentMethodId)
             ->goToNextStep();
         $paymentCheckout = $orderCheckout->goToPreviousStep();
         $I->dontSee(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
@@ -73,7 +73,7 @@ final class UapmCheckoutCest extends BaseCest
         //change decision again to use uapm via PayPal
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment($pamentMethodId)
+        $orderCheckout = $paymentCheckout->selectPayment($paymentMethodId)
             ->goToNextStep();
         $paymentCheckout = $orderCheckout->goToPreviousStep();
         $I->dontSee(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
@@ -95,9 +95,9 @@ final class UapmCheckoutCest extends BaseCest
      */
     public function checkoutWithUapmViaPayPalCancel(AcceptanceTester $I, Example $data): void
     {
-        $pamentMethodId = $data['paymentId'];
+        $paymentMethodId = $data['paymentId'];
 
-        $I->wantToTest('logged in user with ' . $pamentMethodId . ' via PayPal cancels payment after redirect.');
+        $I->wantToTest('logged in user with ' . $paymentMethodId . ' via PayPal cancels payment after redirect.');
 
         $I->seeNumRecords(0, 'oscpaypal_order', ['oscpaypalstatus' => 'PAYER_ACTION_REQUIRED']);
         $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
@@ -106,7 +106,7 @@ final class UapmCheckoutCest extends BaseCest
 
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment($pamentMethodId)
+        $orderCheckout = $paymentCheckout->selectPayment($paymentMethodId)
             ->goToNextStep();
         $orderCheckout->submitOrder();
 
@@ -118,7 +118,7 @@ final class UapmCheckoutCest extends BaseCest
         $I->click('#cancelSubmit');
 
         $I->switchToWindow();
-        $I->seeElement('#payment_' . $pamentMethodId);
+        $I->seeElement('#payment_' . $paymentMethodId);
         //NOTE: simulation sends us error code on cancel
         $I->see(Translator::translate('MESSAGE_PAYMENT_AUTHORIZATION_FAILED'));
 
@@ -132,10 +132,10 @@ final class UapmCheckoutCest extends BaseCest
      */
     public function checkoutWithUapmViaPayPalError(AcceptanceTester $I, Example $data): void
     {
-        $pamentMethodId = $data['paymentId'];
+        $paymentMethodId = $data['paymentId'];
 
         $I->wantToTest(
-            'logged in user with ' . $pamentMethodId .
+            'logged in user with ' . $paymentMethodId .
             ' via PayPal runs into payment error after redirect.'
         );
 
@@ -146,7 +146,7 @@ final class UapmCheckoutCest extends BaseCest
 
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment($pamentMethodId)
+        $orderCheckout = $paymentCheckout->selectPayment($paymentMethodId)
             ->goToNextStep();
         $orderCheckout->submitOrder();
 
@@ -156,7 +156,7 @@ final class UapmCheckoutCest extends BaseCest
         $I->click('#failureSubmit');
 
         $I->switchToWindow();
-        $I->seeElement('#payment_' . $pamentMethodId);
+        $I->seeElement('#payment_' . $paymentMethodId);
         $I->see(Translator::translate('MESSAGE_PAYMENT_AUTHORIZATION_FAILED'));
 
         //nothing changed
@@ -268,31 +268,14 @@ final class UapmCheckoutCest extends BaseCest
      */
     public function checkoutWithUapmViaPayPalCancelDropOff(AcceptanceTester $I, Example $data): void
     {
-        $pamentMethodId = $data['paymentId'];
+        $paymentMethodId = $data['paymentId'];
 
         $I->wantToTest(
-            'logged in user with ' . $pamentMethodId .
+            'logged in user with ' . $paymentMethodId .
             ' via PayPal cancels payment after redirect and drops off, then reopens shop and tries again to order'
         );
 
-        $I->seeNumRecords(0, 'oscpaypal_order');
-        $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
-
-        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
-
-        $paymentCheckout = new PaymentCheckout($I);
-        /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment($pamentMethodId)
-            ->goToNextStep();
-        $orderCheckout->submitOrder();
-
-        //simulated payment popup
-        $I->switchToLastWindow();
-        $I->seeElement('#successSubmit');
-        $I->seeElement('#failureSubmit');
-        $I->seeElement('#cancelSubmit');
-        $I->executeJS('document.getElementById("dropOffPage").checked=true');
-        $I->click('#cancelSubmit');
+        $I->completeUapmPayment($I, $paymentMethodId, 'cancel', true);
 
         $I->waitForPageLoad();
         $I->seeElement('#redirectSubmit');
@@ -318,7 +301,7 @@ final class UapmCheckoutCest extends BaseCest
         $I->click('#cancelSubmit');
 
         $I->switchToWindow();
-        $I->seeElement('#payment_' . $pamentMethodId);
+        $I->seeElement('#payment_' . $paymentMethodId);
         //NOTE: simulation sends us error code on cancel
         $I->see(Translator::translate('MESSAGE_PAYMENT_AUTHORIZATION_FAILED'));
 
@@ -332,31 +315,14 @@ final class UapmCheckoutCest extends BaseCest
      */
     public function checkoutWithUapmViaPayPalPaymentFailDropOff(AcceptanceTester $I, Example $data): void
     {
-        $pamentMethodId = $data['paymentId'];
+        $paymentMethodId = $data['paymentId'];
 
         $I->wantToTest(
-            'logged in user with ' . $pamentMethodId .
+            'logged in user with ' . $paymentMethodId .
             ' via PayPal has failed payment after redirect and drops off, then reopens shop and tries again to order'
         );
 
-        $I->seeNumRecords(0, 'oscpaypal_order');
-        $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
-
-        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
-
-        $paymentCheckout = new PaymentCheckout($I);
-        /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment($pamentMethodId)
-            ->goToNextStep();
-        $orderCheckout->submitOrder();
-
-        //simulated payment popup
-        $I->switchToLastWindow();
-        $I->seeElement('#successSubmit');
-        $I->seeElement('#failureSubmit');
-        $I->seeElement('#cancelSubmit');
-        $I->executeJS('document.getElementById("dropOffPage").checked=true');
-        $I->click('#failureSubmit');
+        $I->completeUapmPayment($I, $paymentMethodId, 'failure', true);
 
         $I->waitForPageLoad();
         $I->seeElement('#redirectSubmit');
@@ -382,7 +348,7 @@ final class UapmCheckoutCest extends BaseCest
         $I->click('#failureSubmit');
 
         $I->switchToWindow();
-        $I->seeElement('#payment_' . $pamentMethodId);
+        $I->seeElement('#payment_' . $paymentMethodId);
         //NOTE: simulation sends us error code on cancel
         $I->see(Translator::translate('MESSAGE_PAYMENT_AUTHORIZATION_FAILED'));
 
@@ -397,31 +363,14 @@ final class UapmCheckoutCest extends BaseCest
      */
     public function checkoutWithUapmViaPayPalPaymentSuccessDropOff(AcceptanceTester $I, Example $data): void
     {
-        $pamentMethodId = $data['paymentId'];
+        $paymentMethodId = $data['paymentId'];
 
         $I->wantToTest(
-            'logged in user with ' . $pamentMethodId .
-            ' via PayPal has successful payment after redirect and drops off.'
+            'logged in user with ' . $paymentMethodId .
+            ' via PayPal has successful payment after redirect, drops off and retries order after webhook finished it.'
         );
 
-        $I->seeNumRecords(0, 'oscpaypal_order');
-        $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
-
-        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
-
-        $paymentCheckout = new PaymentCheckout($I);
-        /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment($pamentMethodId)
-            ->goToNextStep();
-        $orderCheckout->submitOrder();
-
-        //simulated payment popup
-        $I->switchToLastWindow();
-        $I->seeElement('#successSubmit');
-        $I->seeElement('#failureSubmit');
-        $I->seeElement('#cancelSubmit');
-        $I->executeJS('document.getElementById("dropOffPage").checked=true');
-        $I->click('#successSubmit');
+        $this->completeUapmPayment($I, $paymentMethodId, 'success', true);
 
         $I->waitForPageLoad();
         $I->seeElement('#redirectSubmit');
@@ -429,54 +378,121 @@ final class UapmCheckoutCest extends BaseCest
         //NOTE: we need the webhook events to get information about successful payment
         $I->wait(120);
 
-        //at this point we seen an unfinished order in the database
+        //at this point we see a completely finished order in the database
         $I->seeNumRecords(1, 'oscpaypal_order');
         $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
         $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'COMPLETED']);
 
         $orderId = $I->grabFromDatabase('oscpaypal_order', 'oxorderid', ['oscpaypalstatus' => 'COMPLETED']);
+        $orderNumberFromDb = $I->grabFromDatabase('oxorder', 'oxordernr', ['OXID' => $orderId]);
+        $I->assertGreaterThan(0, $orderNumberFromDb);
         $oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
         $I->assertStringStartsWith(date('Y-m-d'), $oxPaid);
         $transStatus = $I->grabFromDatabase('oxorder', 'oxtransstatus', ['OXID' => $orderId]);
         $I->assertStringStartsWith('OK', $transStatus);
 
-        //assume user is still logged in with same session and tries once more to finalize the order
+        //assume user is still logged in with same session and tries once more to finalize the (already completed) order
         $I->amOnUrl($this->getShopUrl() . '?cl=order');
-        //we should not get here, order is already completed
+        $I->see(Translator::translate('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'));
+
+        //NOTE: order is already completed
         $orderCheckout = new OrderCheckout($I);
         $orderCheckout->submitOrder();
 
-        $I->switchToLastWindow();
-        $I->seeElement('#failureSubmit');
-        $I->click('#failureSubmit');
+        $I->waitForPageLoad();
+        $I->see(Translator::translate('THANK_YOU_FOR_ORDER'));
 
-        $I->switchToWindow();
-        $I->seeElement('#payment_' . $pamentMethodId);
-        //NOTE: simulation sends us error code on cancel
-        $I->see(Translator::translate('MESSAGE_PAYMENT_AUTHORIZATION_FAILED'));
+        $thankYouPage = new ThankYou($I);
+        $orderNumber = $thankYouPage->grabOrderNumber();
+        $I->assertSame($orderNumberFromDb, $orderNumber);
 
-        //no empty order in database
-     #   $I->seeNumRecords(0, 'oscpaypal_order', ['oscpaypalstatus' => 'PAYER_ACTION_REQUIRED']);
-     #   $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
+        $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
+        $I->seeNumRecords(1, 'oxorder', ['oxordernr' => $orderNumber, 'oxtransstatus' => 'OK']);
+        $orderIdCurrent = $I->grabFromDatabase('oxorder', 'oxid', ['oxordernr' => $orderNumber]);
+        $I->assertSame($orderId, $orderIdCurrent);
+
+        $I->seeNumRecords(1, 'oscpaypal_order');
+        $I->seeNumRecords(
+            1,
+            'oscpaypal_order',
+            [
+                'oscpaypalstatus' => 'COMPLETED',
+                'oxorderid' => $orderId
+            ]
+        );
     }
 
-    private function doCheckout(AcceptanceTester $I, string $pamentMethodId): array
+    /**
+     * @group oscpaypal_with_webhook
+     * @dataProvider providerPaymentMethods
+     */
+    public function checkoutWithUapmViaPayPalPaymentSuccessDropOffQuickRetry(AcceptanceTester $I, Example $data): void
     {
-        $I->seeNumRecords(0, 'oscpaypal_order');
-        $I->seeNumRecords(1, 'oxorder');
+        $paymentMethodId = $data['paymentId'];
 
-        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
+        $I->wantToTest(
+            'logged in user with ' . $paymentMethodId .
+            ' via PayPal has successful payment after redirect, drops off and retries order before webhook finished it.'
+        );
 
-        $paymentCheckout = new PaymentCheckout($I);
-        /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment($pamentMethodId)
-            ->goToNextStep();
+        $this->completeUapmPayment($I, $paymentMethodId, 'success', true);
+
+        $I->waitForPageLoad();
+        $I->seeElement('#redirectSubmit');
+
+        //NOTE: do not wait for webhook, reload and try again
+
+        //at this point we see a completely finished order in the database
+        $I->seeNumRecords(1, 'oscpaypal_order');
+        $I->seeNumRecords(1, 'oxorder', ['oxordernr' => 0]);
+        $I->seeNumRecords(0, 'oscpaypal_order', ['oscpaypalstatus' => 'COMPLETED']);
+
+        $orderId = $I->grabFromDatabase('oscpaypal_order', 'oxorderid');
+        $oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
+        $I->assertStringStartsWith('0000-00-00', $oxPaid);
+        $transStatus = $I->grabFromDatabase('oxorder', 'oxtransstatus', ['OXID' => $orderId]);
+        $I->assertStringStartsWith('NOT_FINISHED', $transStatus);
+
+        //assume user is still logged in with same session and tries once more to finalize the (already completed) order
+        $I->amOnUrl($this->getShopUrl() . '?cl=order');
+        $I->see(Translator::translate('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'));
+
+        //NOTE: order is already being executed but we might still wait for webhook events
+        $orderCheckout = new OrderCheckout($I);
         $orderCheckout->submitOrder();
+        $I->waitForPageLoad();
+        $I->see(Translator::translate('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'));
 
-        //simulated payment popup
-        $I->switchToLastWindow();
-        $I->seeElement('#successSubmit');
-        $I->click('#successSubmit');
+        //now wait for webhook
+        $I->wait(120);
+        $orderCheckout = new OrderCheckout($I);
+        $orderCheckout->submitOrder();
+        $I->waitForPageLoad();
+        $I->see(Translator::translate('THANK_YOU_FOR_ORDER'));
+
+        $thankYouPage = new ThankYou($I);
+        $orderNumber = $thankYouPage->grabOrderNumber();
+        $I->assertGreaterThan(0, $orderNumber);
+
+        $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
+        $I->seeNumRecords(1, 'oxorder', ['oxordernr' => $orderNumber, 'oxtransstatus' => 'OK']);
+        $orderIdCurrent = $I->grabFromDatabase('oxorder', 'oxid', ['oxordernr' => $orderNumber]);
+        $I->assertSame($orderId, $orderIdCurrent);
+
+        $I->seeNumRecords(1, 'oscpaypal_order');
+        $I->seeNumRecords(
+            1,
+            'oscpaypal_order',
+            [
+                'oscpaypalstatus' => 'COMPLETED',
+                'oxorderid' => $orderId
+            ]
+        );
+    }
+
+    private function doCheckout(AcceptanceTester $I, string $paymentMethodId): array
+    {
+        $this->completeUapmPayment($I, $paymentMethodId);
 
         $I->switchToWindow();
         $I->seeNumRecords(1, 'oscpaypal_order');
@@ -505,5 +521,33 @@ final class UapmCheckoutCest extends BaseCest
         );
 
         return [$orderNumber, $orderId];
+    }
+
+    private function completeUapmPayment(
+        AcceptanceTester $I,
+        string $paymentMethodId,
+        string $submit = 'success',
+        bool $dropOff = false
+    ): void {
+        $I->seeNumRecords(0, 'oscpaypal_order');
+        $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
+
+        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
+
+        $paymentCheckout = new PaymentCheckout($I);
+        /** @var OrderCheckout $orderCheckout */
+        $orderCheckout = $paymentCheckout->selectPayment($paymentMethodId)
+            ->goToNextStep();
+        $orderCheckout->submitOrder();
+
+        //simulated payment popup
+        $I->switchToLastWindow();
+        $I->seeElement('#successSubmit');
+        $I->seeElement('#failureSubmit');
+        $I->seeElement('#cancelSubmit');
+        if ($dropOff) {
+            $I->executeJS('document.getElementById("dropOffPage").checked=true');
+        }
+        $I->click('#' . $submit . 'Submit');
     }
 }
