@@ -86,6 +86,9 @@ final class AcdcCheckoutCest extends BaseCest
         $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
     }
 
+    /**
+     * @group oscpaypal_with_webhook
+     */
     public function checkoutWithAcdcViaPayPal(AcceptanceTester $I): void
     {
         $I->wantToTest('logged in user with ACDC enters CC credentials and clicks order now');
@@ -106,21 +109,35 @@ final class AcdcCheckoutCest extends BaseCest
         $this->fillInCardFields($I);
         $orderCheckout->submitOrder();
 
-        $I->wait(60);
+        //Give page time to finish
+        $I->wait(30);
 
         $I->see(Translator::translate('THANK_YOU_FOR_ORDER'));
         $thankYouPage = new ThankYou($I);
         $orderNumber = $thankYouPage->grabOrderNumber();
         $I->assertGreaterThan(1, $orderNumber);
 
-        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'COMPLETED']);
-        $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
+        //Give webhook time to finish. NOTE: sometimes events get delayed, you can see this in PayPal developer account.
+        //So if test fails with order not paid webhook event might not have been sent in time. In this case rerun test.
+        $I->wait(60);
 
-        //TODO: doublecheck where the second entry comes from (webhook?) status: CREATED
-        $I->seeNumRecords(1, 'oscpaypal_order');
+        $this->assertOrderPaidAndFinished($I);
+
+        /*
+        //NOTE: this test will only pass if we have a valid webhook to handle events
+        //      In case there is no working webhook, we will have the following order state: unfinished, not paid
+        $orderId = $I->grabFromDatabase('oscpaypal_order', 'oxorderid');
+        $oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
+        $I->assertStringStartsWith('0000-00-00', $oxPaid);
+        $transStatus = $I->grabFromDatabase('oxorder', 'oxtransstatus', ['OXID' => $orderId]);
+        $I->assertStringStartsWith('NOT_FINISHED', $transStatus);
+        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'SAVED']);
+        $I->seeNumRecords(0, 'oscpaypal_order', ['oscpaypalstatus' => 'COMPLETED']);
+        */
     }
 
     /**
+     * @group mine
      * @group oscpaypal_with_webhook
      */
     public function checkoutWithAcdcViaPayPalImpatientCustomer(AcceptanceTester $I): void
@@ -146,26 +163,30 @@ final class AcdcCheckoutCest extends BaseCest
 
         //customer is very impatient, reloads order page and tries again
         $I->amOnUrl($this->getShopUrl() . '?cl=order');
+        $I->see(Translator::translate('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'));
 
-        //TODO: prevent second order/payment
+        //order execution is in progress so we should not see any card fields
+        $I->dontSeeElement("#card_form");
 
         /** @var OrderCheckout $orderCheckout */
         $orderCheckout = new OrderCheckout($I);
-        $this->fillInCardFields($I);
         $orderCheckout->submitOrder();
+        $I->waitForPageLoad();
+        $I->see(Translator::translate('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'));
 
+        //now it waits for webhook events
         $I->wait(120);
+
+        /** @var OrderCheckout $orderCheckout */
+        $orderCheckout = new OrderCheckout($I);
+        $orderCheckout->submitOrder();
 
         $I->see(Translator::translate('THANK_YOU_FOR_ORDER'));
         $thankYouPage = new ThankYou($I);
         $orderNumber = $thankYouPage->grabOrderNumber();
         $I->assertGreaterThan(1, $orderNumber);
 
-        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'COMPLETED']);
-        $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
-
-        //TODO: doublecheck where the second entry comes from (webhook?) status: CREATED
-        $I->seeNumRecords(1, 'oscpaypal_order');
+        $this->assertOrderPaidAndFinished($I);
     }
 
     public function checkoutWithAcdcViaPayPalImpatientCustomerOtherPaymentMethod(AcceptanceTester $I): void

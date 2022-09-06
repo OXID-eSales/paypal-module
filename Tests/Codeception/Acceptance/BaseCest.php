@@ -321,4 +321,25 @@ abstract class BaseCest
             ]
         );
     }
+
+    protected function assertOrderPaidAndFinished(AcceptanceTester $I): void
+    {
+        $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
+
+        $orderId = $I->grabFromDatabase('oscpaypal_order', 'oxorderid');
+        $transactionId = $I->grabFromDatabase('oscpaypal_order', 'oscpaypaltransactionid');
+
+        $oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
+        $I->assertStringStartsWith(date('Y-m-d'), $oxPaid);
+
+        $transStatus = $I->grabFromDatabase('oxorder', 'oxtransstatus', ['OXID' => $orderId]);
+        $I->assertStringStartsWith('OK', $transStatus);
+
+        $transId = $I->grabFromDatabase('oxorder', 'oxtransid', ['OXID' => $orderId]);
+        $I->assertEquals( $transactionId, $transId);
+
+        $I->seeNumRecords(1, 'oscpaypal_order');
+        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'COMPLETED']);
+
+    }
 }
