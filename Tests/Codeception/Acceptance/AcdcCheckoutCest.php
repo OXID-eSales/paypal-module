@@ -9,11 +9,10 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 
-use OxidEsales\Codeception\Step\ProductNavigation;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
 use OxidEsales\Codeception\Page\Checkout\ThankYou;
-use OxidEsales\Codeception\Step\Basket;
 use OxidEsales\Codeception\Page\Checkout\PaymentCheckout;
 use OxidEsales\Codeception\Page\Checkout\OrderCheckout;
 use OxidEsales\Codeception\Module\Translation\Translator;
@@ -26,6 +25,14 @@ use OxidEsales\Codeception\Module\Translation\Translator;
  */
 final class AcdcCheckoutCest extends BaseCest
 {
+    public function _before(AcceptanceTester $I): void
+    {
+        parent::_before($I);
+
+        $I->seeNumRecords(0, 'oscpaypal_order');
+        $I->seeNumRecords(1, 'oxorder');
+    }
+
     public function checkoutWithAcdcPayPalDoesNotInterfereWithStandardPayPal(AcceptanceTester $I): void
     {
         $I->wantToTest('switching between payment methods');
@@ -35,7 +42,7 @@ final class AcdcCheckoutCest extends BaseCest
         //first decide to use credit card via paypal
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_acdc')
+        $orderCheckout = $paymentCheckout->selectPayment(PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID)
             ->goToNextStep();
         $paymentCheckout = $orderCheckout->goToPreviousStep();
         $I->dontSee(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
@@ -59,14 +66,11 @@ final class AcdcCheckoutCest extends BaseCest
     {
         $I->wantToTest('logged in user with ACDC clicks order now without entering CC credentials');
 
-        $I->seeNumRecords(0, 'oscpaypal_order');
-        $I->seeNumRecords(1, 'oxorder');
-
         $this->proceedToPaymentStep($I, Fixtures::get('userName'));
 
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $paymentCheckout->selectPayment('oscpaypal_acdc')
+        $paymentCheckout->selectPayment(PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID)
             ->goToNextStep();
         $I->waitForPageLoad();
         $I->waitForElementVisible("#card_form");
@@ -93,14 +97,11 @@ final class AcdcCheckoutCest extends BaseCest
     {
         $I->wantToTest('logged in user with ACDC enters CC credentials and clicks order now');
 
-        $I->seeNumRecords(0, 'oscpaypal_order');
-        $I->seeNumRecords(1, 'oxorder');
-
         $this->proceedToPaymentStep($I, Fixtures::get('userName'));
 
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $paymentCheckout->selectPayment('oscpaypal_acdc')
+        $paymentCheckout->selectPayment(PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID)
             ->goToNextStep();
         $I->waitForPageLoad();
 
@@ -137,21 +138,17 @@ final class AcdcCheckoutCest extends BaseCest
     }
 
     /**
-     * @group mine
      * @group oscpaypal_with_webhook
      */
     public function checkoutWithAcdcViaPayPalImpatientCustomer(AcceptanceTester $I): void
     {
         $I->wantToTest('logged in user with ACDC enters CC credentials and clicks order now more than once');
 
-        $I->seeNumRecords(0, 'oscpaypal_order');
-        $I->seeNumRecords(1, 'oxorder');
-
         $this->proceedToPaymentStep($I, Fixtures::get('userName'));
 
         $paymentCheckout = new PaymentCheckout($I);
         /** @var OrderCheckout $orderCheckout */
-        $paymentCheckout->selectPayment('oscpaypal_acdc')
+        $paymentCheckout->selectPayment(PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID)
             ->goToNextStep();
         $I->waitForPageLoad();
 
@@ -174,7 +171,8 @@ final class AcdcCheckoutCest extends BaseCest
         $I->waitForPageLoad();
         $I->see(Translator::translate('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'));
 
-        //now it waits for webhook events
+        //Give webhook time to finish. NOTE: sometimes events get delayed, you can see this in PayPal developer account.
+        //So if test fails with order not paid webhook event might not have been sent in time. In this case rerun test.
         $I->wait(120);
 
         /** @var OrderCheckout $orderCheckout */
@@ -189,15 +187,52 @@ final class AcdcCheckoutCest extends BaseCest
         $this->assertOrderPaidAndFinished($I);
     }
 
+    /**
+     * @group oscpaypal_with_webhook
+     */
     public function checkoutWithAcdcViaPayPalImpatientCustomerOtherPaymentMethod(AcceptanceTester $I): void
     {
         $I->wantToTest(
             'logged in user with ACDC enters CC credentials and start execute order, ' .
-            'returns to payment step and executes order again with different payment method'
+            'returns to payment step and wants to execute order again with different payment method'
         );
 
-        //TODO
-        $I->markTestIncomplete('TODO implement test');
+        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
+
+        /** @var PaymentCheckout $paymentCheckout */
+        $paymentCheckout = new PaymentCheckout($I);
+        $paymentCheckout->selectPayment(PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID)
+            ->goToNextStep();
+        $I->waitForPageLoad();
+
+        /** @var OrderCheckout $orderCheckout */
+        $orderCheckout = new OrderCheckout($I);
+        $this->fillInCardFields($I);
+        $orderCheckout->submitOrder();
+        $I->wait(10);
+
+        //customer is very impatient, reloads order page and tries again
+        $I->amOnUrl($this->getShopUrl() . '?cl=payment');
+        //but shop detects that order is already too far progressed to select different payment method
+        //we are redirected to order
+        $I->see(Translator::translate('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'));
+        $I->dontSee(Translator::translate('SELECT_SHIPPING_METHOD'));
+
+        //Give webhook time to finish. NOTE: sometimes events get delayed, you can see this in PayPal developer account.
+        //So if test fails with order not paid webhook event might not have been sent in time. In this case rerun test.
+        $I->wait(120);
+
+        /** @var OrderCheckout $orderCheckout */
+        $orderCheckout = new OrderCheckout($I);
+        $orderCheckout->submitOrder();
+        $I->waitForPageLoad();
+
+        $I->see(Translator::translate('THANK_YOU_FOR_ORDER'));
+        $thankYouPage = new ThankYou($I);
+        $orderNumber = $thankYouPage->grabOrderNumber();
+        $I->assertGreaterThan(1, $orderNumber);
+
+        $this->assertOrderPaidAndFinished($I);
     }
 
     private function fillInCardFields(AcceptanceTester $I): void
