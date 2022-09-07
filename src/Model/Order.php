@@ -146,13 +146,7 @@ class Order extends Order_parent
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
         if ($isPayPalACDC) {
-            $this->_setOrderStatus('NOT_FINISHED');
-            $paymentService->trackPayPalOrder(
-                $this->getId(),
-                $payPalOrderId,
-                $paymentsId,
-                PayPalOrder::STATUS_CREATED
-            );
+            //do nothing, webhook will kick in and handle order state
         } elseif (
             $isPayPalStandard &&
             $this->getServiceFromContainer(ModuleSettings::class)
