@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -16,6 +17,18 @@ use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 class PaymentController extends PaymentController_parent
 {
     use ServiceContainer;
+
+    public function render()
+    {
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        if ($paymentService->isOrderExecutionInProgress()) {
+            //order execution is already in progress
+            Registry::getUtils()->redirect(
+                Registry::getConfig()->getShopSecureHomeURL() . 'cl=order', true);
+        }
+
+        return parent::render();
+    }
 
     /**
      * Template variable getter. Returns paymentlist
