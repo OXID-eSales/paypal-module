@@ -379,8 +379,13 @@ class Payment
     {
         $sessionOrderId = $this->eshopSession->getVariable('sess_challenge');
         $payPalOrderId = PayPalSession::getCheckoutOrderId();
+        $paymentId = $this->getSessionPaymentId();
 
-        return $sessionOrderId && $payPalOrderId;
+        return $sessionOrderId &&
+            $payPalOrderId &&
+            ((PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId) ||
+                PayPalDefinitions::isUAPMPayment($paymentId)
+            );
     }
 
     /**

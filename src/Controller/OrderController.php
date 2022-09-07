@@ -158,6 +158,8 @@ class OrderController extends OrderController_parent
             $order = oxNew(EshopModelOrder::class);
             $order->setId($sessionOrderId);
             $order->load($sessionOrderId);
+
+            //TODO: if capture fails, do we still end up with an order?
             $response = $this->getServiceFromContainer(PaymentService::class)->doCapturePayPalOrder(
                 $order,
                 $sessionAcdcOrderId,
@@ -211,12 +213,15 @@ class OrderController extends OrderController_parent
         $sessionOrderId = Registry::getSession()->getVariable('sess_challenge');
         $sessionAcdcOrderId = PayPalSession::getCheckoutOrderId();
 
+        $forceFetchDetails = (bool) Registry::getRequest()->getRequestParameter('fallbackfinalize');
+
         try {
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
-            $order->finalizeOrderAfterExternalPayment($sessionAcdcOrderId);
+            $order->finalizeOrderAfterExternalPayment($sessionAcdcOrderId, $forceFetchDetails);
             $goNext = 'thankyou';
         } catch (\Exception $exception) {
+            Registry::getLogger()->error('failure during finalizeOrderAfterExternalPayment', [$exception]);
             $this->cancelpaypalsession('cannot finalize order');
             $goNext = 'payment?payerror=2';
         }
@@ -291,6 +296,14 @@ class OrderController extends OrderController_parent
 
         if (PayPalOrderModel::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS == $success) {
             return 'order';
+        }
+
+        if (PayPalOrderModel::ORDER_STATE_NEED_CALL_ACDC_FINALIZE == $success) {
+            return 'order?fnc=finalizeacdc';
+        }
+
+        if (PayPalOrderModel::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS == $success) {
+            return 'order?fnc=finalizeacdc&fallbackfinalize=1';
         }
 
         return parent::_getNextStep($success);

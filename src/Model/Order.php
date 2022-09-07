@@ -18,9 +18,9 @@ use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Model\BaseModel;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
-use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as OrderResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalOrder;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
@@ -69,6 +69,19 @@ class Order extends Order_parent
      */
     public const ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS = 600;
 
+    /**
+     * Order finalizations waiting for webhook events timed out
+     *
+     * @var int
+     */
+    public const ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS = 900;
+
+    /**
+     * ACDC payment completed but order needs call on OrderController::
+     *
+     * @var int
+     */
+    public const ORDER_STATE_NEED_CALL_ACDC_FINALIZE = 800;
 
     /**
      * PayPal order information
@@ -120,12 +133,13 @@ class Order extends Order_parent
         $this->save();
     }
 
-    public function finalizeOrderAfterExternalPayment(string $payPalOrderId): void
+    public function finalizeOrderAfterExternalPayment(string $payPalOrderId, bool $forceFetchDetails = false): void
     {
         if (!$this->isLoaded()) {
             throw PayPalException::cannotFinalizeOrderAfterExternalPaymentSuccess($payPalOrderId);
         }
 
+        //TODO: why do we need to update the counter?
         if (!$this->oxorder__oxordernr->value) {
             $this->_setNumber();
         } else {
@@ -143,10 +157,27 @@ class Order extends Order_parent
         $isPayPalACDC = $paymentsId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
 
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        if ($isPayPalACDC && $forceFetchDetails) {
+            $paymentService = $this->getServiceFromContainer(PaymentService::class);
+            /** @var PayPalOrder $payPalOrder */
+            $payPalOrder = $paymentService->fetchOrderFields($payPalOrderId);
+
+            if ($this->isPayPalOrderCompleted($payPalOrder)) {
+                $this->markOrderPaid();
+                $transactionId = $this->extractTransactionId($payPalOrder);
+                $this->setTransId($transactionId);
+                $paymentService->trackPayPalOrder(
+                    $this->getId(),
+                    $payPalOrderId,
+                    $paymentsId,
+                    PayPalOrder::STATUS_COMPLETED,
+                    $transactionId
+                );
+            }
+        }
 
         if ($isPayPalACDC) {
-            //do nothing, webhook will kick in and handle order state
+            //webhook should kick in and handle order state and we should not call the api too often
         } elseif (
             $isPayPalStandard &&
             $this->getServiceFromContainer(ModuleSettings::class)
@@ -482,7 +513,12 @@ class Order extends Order_parent
         $orderTime = new DateTimeImmutable((string) $this->getFieldData('oxorderdate'));
 
         return (new DateTimeImmutable('now'))->getTimestamp() >
-           $orderTime->getTimestamp() + Constants::PAYPAL_SESSION_TIMEOUT_IN_SEC;
+           $orderTime->getTimestamp() + Constants::PAYPAL_WAIT_FOR_WEBOOK_TIMEOUT_IN_SEC;
+    }
+
+    public function hasOrderNumber(): bool
+    {
+        return 0 < (int) $this->getFieldData('oxordernr');
     }
 
     /**
@@ -496,14 +532,51 @@ class Order extends Order_parent
         if (
             $paymentService->isPayPalPayment() &&
             $paymentService->isOrderExecutionInProgress() &&
-            $this->load(Registry::getSession()->getVariable('sess_challenge')) &&
-            !$this->isOrderFinished() &&
-            !$this->isOrderPaid() &&
-            !$this->isWaitForWebhookTimeoutReached()
+            $this->load(Registry::getSession()->getVariable('sess_challenge'))
         ) {
-            return self::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS;
+            //order payment is being processed
+            if (!$this->isOrderFinished() &&
+                !$this->isOrderPaid() &&
+                !$this->isWaitForWebhookTimeoutReached()
+            ) {
+                return self::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS;
+            }
+
+            //ACDC payment dropoff scenario where webhook might have kicked in so we can continue
+            if ((PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentService->getSessionPaymentId()) &&
+                $this->isOrderFinished() &&
+                $this->isOrderPaid() &&
+                !$this->hasOrderNumber()
+            ) {
+                return self::ORDER_STATE_NEED_CALL_ACDC_FINALIZE;
+            }
+
+            //webhook events might be delayed so try to fetch information from PayPal api
+            if ((PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentService->getSessionPaymentId()) &&
+                !$this->isOrderFinished() &&
+                !$this->isOrderPaid() &&
+                !$this->hasOrderNumber() &&
+                $this->isWaitForWebhookTimeoutReached()
+            ) {
+                return self::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS;
+            }
         }
 
         return parent::finalizeOrder($basket, $user, $recalculatingOrder);
+    }
+
+    protected function isPayPalOrderCompleted(PayPalOrder $apiOrder): bool
+    {
+        return (
+            isset($apiOrder->status) &&
+            isset($apiOrder->purchase_units[0]->payments->captures[0]->status) &&
+            $apiOrder->status == OrderResponse::STATUS_COMPLETED &&
+            $apiOrder->purchase_units[0]->payments->captures[0]->status == Capture::STATUS_COMPLETED
+        );
+    }
+
+    protected function extractTransactionId(PayPalOrder $apiOrder): string
+    {
+        return (string) $apiOrder->purchase_units[0]->payments->captures[0]->id;
     }
 }
