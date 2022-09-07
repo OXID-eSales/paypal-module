@@ -14,9 +14,10 @@ class PaymentCaptureDeniedHandler extends PaymentCaptureCompletedHandler
 {
     public const WEBHOOK_EVENT_NAME = 'PAYMENT.CAPTURE.DENIED';
 
-    protected function markShopOrderPaymentStatus(EshopModelOrder $order): void
+    protected function markShopOrderPaymentStatus(EshopModelOrder $order, string $payPalTransactionId): void
     {
         $order->markOrderPaymentFailed();
+        $order->setTransId($payPalTransactionId);
     }
 
     protected function getPayPalOrderDetails(string $payPalOrderId): ?PayPalApiModelOrder
