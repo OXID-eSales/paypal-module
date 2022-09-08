@@ -193,7 +193,7 @@ final class UapmCheckoutCest extends BaseCest
     /**
      * NOTE: this test case requires a working webhook. On your local machine please use ngrok
      *       with correctly registered PayPal sandbox webhook.
-     *       Test might be unstable depending on how fast PayPal sends notofications.
+     *       Test might be unstable depending on how fast PayPal sends notifications.
      *       And this test will be slow because webhook needs some wait time.
      *
      * @group oscpaypal_with_webhook
@@ -218,16 +218,13 @@ final class UapmCheckoutCest extends BaseCest
         $I->see('119,60 EUR');
 
         //PayPal should have sent the information about successful payment by now
-        $oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
-        $I->assertStringStartsWith(date('Y-m-d'), $oxPaid);
-        $transStatus = $I->grabFromDatabase('oxorder', 'oxtransstatus', ['OXID' => $orderId]);
-        $I->assertStringStartsWith('OK', $transStatus);
+        $this->assertOrderPaidAndFinished($I);
     }
 
     /**
      * NOTE: this test case requires a working webhook. On your local machine please use ngrok
      *       with correctly registered PayPal sandbox webhook.
-     *       Test might be unstable depending on how fast PayPal sends notofications.
+     *       Test might be unstable depending on how fast PayPal sends notifications.
      *       And this test will be slow because webhook needs some wait time.
      *
      * @group oscpaypal_with_webhook
@@ -257,13 +254,12 @@ final class UapmCheckoutCest extends BaseCest
         $I->see('119,60 EUR');
 
         //PayPal should have sent the information about successful payment by now
-        $oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
-        $I->assertStringStartsWith(date('Y-m-d'), $oxPaid);
-        $transStatus = $I->grabFromDatabase('oxorder', 'oxtransstatus', ['OXID' => $orderId]);
-        $I->assertStringStartsWith('OK', $transStatus);
+        $this->assertOrderPaidAndFinished($I);
     }
 
     /**
+     * @group oscpaypal_uapm_dropoff
+     *
      * @dataProvider providerPaymentMethods
      */
     public function checkoutWithUapmViaPayPalCancelDropOff(AcceptanceTester $I, Example $data): void
@@ -275,7 +271,7 @@ final class UapmCheckoutCest extends BaseCest
             ' via PayPal cancels payment after redirect and drops off, then reopens shop and tries again to order'
         );
 
-        $I->completeUapmPayment($I, $paymentMethodId, 'cancel', true);
+        $this->completeUapmPayment($I, $paymentMethodId, 'cancel', true);
 
         $I->waitForPageLoad();
         $I->seeElement('#redirectSubmit');
@@ -288,29 +284,29 @@ final class UapmCheckoutCest extends BaseCest
 
         //assume user is still logged in with same session and tries once more to finalize the order
         $I->amOnUrl($this->getShopUrl() . '?cl=order');
+        $I->see(Translator::translate('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'));
 
         //empty order is gone from database on order controller render
-        $I->seeNumRecords(0, 'oscpaypal_order', ['oscpaypalstatus' => 'PAYER_ACTION_REQUIRED']);
-        $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
+        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'PAYER_ACTION_REQUIRED']);
+        $I->seeNumRecords(1, 'oxorder', ['oxordernr' => 0]);
 
         $orderCheckout = new OrderCheckout($I);
         $orderCheckout->submitOrder();
+        $I->see(Translator::translate('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'));
 
-        $I->switchToLastWindow();
-        $I->seeElement('#cancelSubmit');
-        $I->click('#cancelSubmit');
+        //As we have a dropoff scenario and no information was sent via webhook (tried a lot, there's none)
+        //this is an incomplete order which should be cancelled automatically after a certain time.
+        //That kind of order must not be paid, finished, have a transaction id and related paypal order
+        //must still show 'PAYER_ACTION_REQUIRED'. Then it is ok to remove.
 
-        $I->switchToWindow();
-        $I->seeElement('#payment_' . $paymentMethodId);
-        //NOTE: simulation sends us error code on cancel
-        $I->see(Translator::translate('MESSAGE_PAYMENT_AUTHORIZATION_FAILED'));
-
-        //no empty order in database
-        $I->seeNumRecords(0, 'oscpaypal_order', ['oscpaypalstatus' => 'PAYER_ACTION_REQUIRED']);
-        $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
+        //still empty order in database at this time
+        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'PAYER_ACTION_REQUIRED']);
+        $I->seeNumRecords(1, 'oxorder', ['oxordernr' => 0]);
     }
 
     /**
+     * @group oscpaypal_uapm_dropoff
+     *
      * @dataProvider providerPaymentMethods
      */
     public function checkoutWithUapmViaPayPalPaymentFailDropOff(AcceptanceTester $I, Example $data): void
@@ -322,7 +318,7 @@ final class UapmCheckoutCest extends BaseCest
             ' via PayPal has failed payment after redirect and drops off, then reopens shop and tries again to order'
         );
 
-        $I->completeUapmPayment($I, $paymentMethodId, 'failure', true);
+        $this->completeUapmPayment($I, $paymentMethodId, 'failure', true);
 
         $I->waitForPageLoad();
         $I->seeElement('#redirectSubmit');
@@ -335,26 +331,24 @@ final class UapmCheckoutCest extends BaseCest
 
         //assume user is still logged in with same session and tries once more to finalize the order
         $I->amOnUrl($this->getShopUrl() . '?cl=order');
+        $I->see(Translator::translate('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'));
 
         //empty order is gone from database on order controller render
-        $I->seeNumRecords(0, 'oscpaypal_order', ['oscpaypalstatus' => 'PAYER_ACTION_REQUIRED']);
-        $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
+        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'PAYER_ACTION_REQUIRED']);
+        $I->seeNumRecords(1, 'oxorder', ['oxordernr' => 0]);
 
         $orderCheckout = new OrderCheckout($I);
         $orderCheckout->submitOrder();
+        $I->see(Translator::translate('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'));
 
-        $I->switchToLastWindow();
-        $I->seeElement('#failureSubmit');
-        $I->click('#failureSubmit');
+        //As we have a dropoff scenario and no information was sent via webhook (tried a lot, there's none)
+        //this is an incomplete order which should be cancelled automatically after a certain time.
+        //That kind of order must not be paid, finished, have a transaction id and related paypal order
+        //must still show 'PAYER_ACTION_REQUIRED'. Then it is ok to remove.
 
-        $I->switchToWindow();
-        $I->seeElement('#payment_' . $paymentMethodId);
-        //NOTE: simulation sends us error code on cancel
-        $I->see(Translator::translate('MESSAGE_PAYMENT_AUTHORIZATION_FAILED'));
-
-        //no empty order in database
-        $I->seeNumRecords(0, 'oscpaypal_order', ['oscpaypalstatus' => 'PAYER_ACTION_REQUIRED']);
-        $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
+        //still empty order in database at this time
+        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'PAYER_ACTION_REQUIRED']);
+        $I->seeNumRecords(1, 'oxorder', ['oxordernr' => 0]);
     }
 
     /**
@@ -420,10 +414,13 @@ final class UapmCheckoutCest extends BaseCest
                 'oxorderid' => $orderId
             ]
         );
+
+        $this->assertOrderPaidAndFinished($I);
     }
 
     /**
      * @group oscpaypal_with_webhook
+     *
      * @dataProvider providerPaymentMethods
      */
     public function checkoutWithUapmViaPayPalPaymentSuccessDropOffQuickRetry(AcceptanceTester $I, Example $data): void
@@ -488,6 +485,53 @@ final class UapmCheckoutCest extends BaseCest
                 'oxorderid' => $orderId
             ]
         );
+
+        $this->assertOrderPaidAndFinished($I);
+    }
+
+    /**
+     * @dataProvider providerPaymentMethods
+     *
+     * @group oscpaypal_with_webhook
+     */
+    public function checkoutWithAcdcViaPayPalImpatientCustomerOtherPaymentMethod(
+        AcceptanceTester $I,
+        Example $data
+    ): void {
+        $paymentMethodId = $data['paymentId'];
+
+        $I->wantToTest(
+            'logged in user with ' . $paymentMethodId . ' has successful payment after redirect, drops off ' .
+            ' and retries order with different payment before webhook has finished'
+        );
+
+        $this->completeUapmPayment($I, $paymentMethodId, 'success', true);
+
+        $I->waitForPageLoad();
+        $I->seeElement('#redirectSubmit');
+
+        //customer is very impatient, reloads order page and tries again
+        $I->amOnUrl($this->getShopUrl() . '?cl=payment');
+        //but shop detects that order is already too far progressed to select different payment method
+        //we are redirected to order
+        $I->see(Translator::translate('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'));
+        $I->dontSee(Translator::translate('SELECT_SHIPPING_METHOD'));
+
+        //Give webhook time to finish. NOTE: sometimes events get delayed, you can see this in PayPal developer account.
+        //So if test fails with order not paid webhook event might not have been sent in time. In this case rerun test.
+        $I->wait(120);
+
+        /** @var OrderCheckout $orderCheckout */
+        $orderCheckout = new OrderCheckout($I);
+        $orderCheckout->submitOrder();
+        $I->waitForPageLoad();
+
+        $I->see(Translator::translate('THANK_YOU_FOR_ORDER'));
+        $thankYouPage = new ThankYou($I);
+        $orderNumber = $thankYouPage->grabOrderNumber();
+        $I->assertGreaterThan(1, $orderNumber);
+
+        $this->assertOrderPaidAndFinished($I);
     }
 
     private function doCheckout(AcceptanceTester $I, string $paymentMethodId): array
