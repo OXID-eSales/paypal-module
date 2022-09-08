@@ -138,6 +138,9 @@ final class AcdcCheckoutCest extends BaseCest
     }
 
     /**
+     * Test must work with and without webhook
+     *
+     * @group oscpaypal_without_webhook
      * @group oscpaypal_with_webhook
      */
     public function checkoutWithAcdcViaPayPalImpatientCustomer(AcceptanceTester $I): void
@@ -188,6 +191,9 @@ final class AcdcCheckoutCest extends BaseCest
     }
 
     /**
+     * Test must work with and without webhook
+     *
+     * @group oscpaypal_without_webhook
      * @group oscpaypal_with_webhook
      */
     public function checkoutWithAcdcViaPayPalImpatientCustomerOtherPaymentMethod(AcceptanceTester $I): void
@@ -233,6 +239,92 @@ final class AcdcCheckoutCest extends BaseCest
         $I->assertGreaterThan(1, $orderNumber);
 
         $this->assertOrderPaidAndFinished($I);
+    }
+
+    /**
+     * NOTE: this test case requires a working webhook. On your local machine please use ngrok
+     *       with correctly registered PayPal sandbox webhook.
+     *       Test might be unstable depending on how fast PayPal sends notifications.
+     *       And this test will be slow because webhook needs some wait time.
+     *
+     * @group oscpaypal_with_webhook
+     */
+    public function checkoutLastItemInStockWithACDCViaPayPal(AcceptanceTester $I): void
+    {
+        $I->wantToTest(
+            'logged in user with acdc via PayPal successfully places an order for last available item.'
+        );
+
+        $this->setProductAvailability($I, 3, 1);
+
+        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
+
+        $paymentCheckout = new PaymentCheckout($I);
+        /** @var OrderCheckout $orderCheckout */
+        $paymentCheckout->selectPayment(PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID)
+            ->goToNextStep();
+        $I->waitForPageLoad();
+
+        /** @var OrderCheckout $orderCheckout */
+        $orderCheckout = new OrderCheckout($I);
+        $this->fillInCardFields($I);
+        $orderCheckout->submitOrder();
+
+        //Give page time to finish
+        $I->wait(30);
+
+        $I->see(Translator::translate('THANK_YOU_FOR_ORDER'));
+        $thankYouPage = new ThankYou($I);
+        $orderNumber = $thankYouPage->grabOrderNumber();
+        $I->assertGreaterThan(1, $orderNumber);
+
+        //Give webhook time to finish. NOTE: sometimes events get delayed, you can see this in PayPal developer account.
+        //So if test fails with order not paid webhook event might not have been sent in time. In this case rerun test.
+        $I->wait(60);
+
+        $this->assertOrderPaidAndFinished($I);
+    }
+
+    /**
+     * NOTE: this test case requires a working webhook. On your local machine please use ngrok
+     *       with correctly registered PayPal sandbox webhook.
+     *       Test might be unstable depending on how fast PayPal sends notifications.
+     *       And this test will be slow because webhook needs some wait time.
+     *
+     * @group oscpaypal_with_webhook
+     */
+    public function checkoutLastItemInStockOutOfStockWithACDCViaPayPal(AcceptanceTester $I): void
+    {
+        $I->wantToTest(
+            'logged in user with acdc via PayPal cannot place an order for not buyable out of stock item.'
+        );
+
+        $this->setProductAvailability($I, 3, 1);
+
+        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
+
+        $paymentCheckout = new PaymentCheckout($I);
+        /** @var OrderCheckout $orderCheckout */
+        $paymentCheckout->selectPayment(PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID)
+            ->goToNextStep();
+        $I->waitForPageLoad();
+
+        //someone else was faster
+        $this->setProductAvailability($I, 3, 0);
+
+        /** @var OrderCheckout $orderCheckout */
+        $orderCheckout = new OrderCheckout($I);
+        $this->fillInCardFields($I);
+        $orderCheckout->submitOrder();
+
+        //Give page time to finish
+        $I->wait(30);
+
+        //TODO: doublecheck if we miss out of stock items during order validation
+        $I->see(Translator::translate('ERROR_MESSAGE_ARTICLE_ARTICLE_NOT_BUYABLE'));
+
+        $I->seeNumRecords(0, 'oscpaypal_order');
+        $I->seeNumRecords(1, 'oxorder');
     }
 
     private function fillInCardFields(AcceptanceTester $I): void
