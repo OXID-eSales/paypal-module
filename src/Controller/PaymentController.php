@@ -24,7 +24,9 @@ class PaymentController extends PaymentController_parent
         if ($paymentService->isOrderExecutionInProgress()) {
             //order execution is already in progress
             Registry::getUtils()->redirect(
-                Registry::getConfig()->getShopSecureHomeURL() . 'cl=order', true);
+                Registry::getConfig()->getShopSecureHomeURL() . 'cl=order',
+                true
+            );
         }
 
         return parent::render();

@@ -336,10 +336,9 @@ abstract class BaseCest
         $I->assertStringStartsWith('OK', $transStatus);
 
         $transId = $I->grabFromDatabase('oxorder', 'oxtransid', ['OXID' => $orderId]);
-        $I->assertEquals( $transactionId, $transId);
+        $I->assertEquals($transactionId, $transId);
 
         $I->seeNumRecords(1, 'oscpaypal_order');
         $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'COMPLETED']);
-
     }
 }
