@@ -495,7 +495,9 @@ class Order extends Order_parent
 
     public function setOrderNumber(): void
     {
-        $this->_setNumber();
+        if (!$this->hasOrderNumber()) {
+            $this->_setNumber();
+        }
     }
 
     public function isOrderFinished(): bool
@@ -513,7 +515,7 @@ class Order extends Order_parent
         $orderTime = new DateTimeImmutable((string) $this->getFieldData('oxorderdate'));
 
         return (new DateTimeImmutable('now'))->getTimestamp() >
-           $orderTime->getTimestamp() + Constants::PAYPAL_WAIT_FOR_WEBOOK_TIMEOUT_IN_SEC;
+            ($orderTime->getTimestamp() + Constants::PAYPAL_WAIT_FOR_WEBOOK_TIMEOUT_IN_SEC);
     }
 
     public function hasOrderNumber(): bool
@@ -535,7 +537,8 @@ class Order extends Order_parent
             $this->load(Registry::getSession()->getVariable('sess_challenge'))
         ) {
             //order payment is being processed
-            if (!$this->isOrderFinished() &&
+            if (
+                !$this->isOrderFinished() &&
                 !$this->isOrderPaid() &&
                 !$this->isWaitForWebhookTimeoutReached()
             ) {
@@ -543,7 +546,8 @@ class Order extends Order_parent
             }
 
             //ACDC payment dropoff scenario where webhook might have kicked in so we can continue
-            if ((PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentService->getSessionPaymentId()) &&
+            if (
+                (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentService->getSessionPaymentId()) &&
                 $this->isOrderFinished() &&
                 $this->isOrderPaid() &&
                 !$this->hasOrderNumber()
@@ -552,7 +556,8 @@ class Order extends Order_parent
             }
 
             //webhook events might be delayed so try to fetch information from PayPal api
-            if ((PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentService->getSessionPaymentId()) &&
+            if (
+                (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentService->getSessionPaymentId()) &&
                 !$this->isOrderFinished() &&
                 !$this->isOrderPaid() &&
                 !$this->hasOrderNumber() &&
