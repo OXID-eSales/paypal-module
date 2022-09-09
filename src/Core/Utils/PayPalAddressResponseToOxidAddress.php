@@ -20,32 +20,6 @@ class PayPalAddressResponseToOxidAddress
      * @param PayPalApiOrderModel $response PayPal Response
      * @return array
      */
-    public static function mapOrderDeliveryAddress(
-        PayPalApiOrderModel $response
-    ): array {
-        return self::mapAddress(
-            $response,
-            'oxorder__oxdel'
-        );
-    }
-
-    /**
-     * @param PayPalApiOrderModel $response PayPal Response
-     * @return array
-     */
-    public static function mapUserDeliveryAddress(
-        PayPalApiOrderModel $response
-    ): array {
-        return self::mapAddress(
-            $response,
-            'oxaddress__ox'
-        );
-    }
-
-    /**
-     * @param PayPalApiOrderModel $response PayPal Response
-     * @return array
-     */
     public static function mapUserInvoiceAddress(
         PayPalApiOrderModel $response
     ): array {

@@ -181,10 +181,8 @@ class OrderController extends OrderController_parent
                 throw PayPalException::sessionPaymentFail();
             }
 
-            $deliveryAddress = PayPalAddressResponseToOxidAddress::mapOrderDeliveryAddress($payPalOrder);
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
-            $order->assign($deliveryAddress);
             $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);
             $order->save();
         } catch (\Exception $exception) {

@@ -82,7 +82,8 @@ class OrderRequestFactory
         ?string $invoiceId = null,
         ?string $returnUrl = null,
         ?string $cancelUrl = null,
-        bool $withArticles = true
+        bool $withArticles = true,
+        bool $setProvidedAddress = true
     ): OrderRequest {
         $request = $this->request = new OrderRequest();
         $this->basket = $basket;
@@ -95,7 +96,7 @@ class OrderRequestFactory
         $request->purchase_units = $this->getPurchaseUnits($transactionId, $invoiceId, $withArticles);
 
         if ($userAction || $returnUrl || $cancelUrl) {
-            $request->application_context = $this->getApplicationContext($userAction, $returnUrl, $cancelUrl);
+            $request->application_context = $this->getApplicationContext($userAction, $returnUrl, $cancelUrl, $setProvidedAddress);
         }
 
         if ($processingInstruction) {
@@ -121,7 +122,8 @@ class OrderRequestFactory
     protected function getApplicationContext(
         ?string $userAction,
         ?string $returnUrl,
-        ?string $cancelUrl
+        ?string $cancelUrl,
+        ?bool $setProvidedAddress
     ): OrderApplicationContext {
         $context = new OrderApplicationContext();
         $context->brand_name = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
@@ -135,6 +137,9 @@ class OrderRequestFactory
         }
         if ($cancelUrl) {
             $context->cancel_url = $cancelUrl;
+        }
+        if ($setProvidedAddress) {
+            $context->shipping_preference = "SET_PROVIDED_ADDRESS";
         }
 
         return $context;
