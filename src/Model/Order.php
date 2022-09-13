@@ -149,6 +149,8 @@ class Order extends Order_parent
             );
         }
 
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+
         $basket = Registry::getSession()->getBasket();
         $user = Registry::getSession()->getUser();
         $paymentsId = $this->getFieldData('oxpaymenttype');
@@ -158,7 +160,6 @@ class Order extends Order_parent
         $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
 
         if ($isPayPalACDC && $forceFetchDetails) {
-            $paymentService = $this->getServiceFromContainer(PaymentService::class);
             /** @var PayPalOrder $payPalOrder */
             $payPalOrder = $paymentService->fetchOrderFields($payPalOrderId);
 

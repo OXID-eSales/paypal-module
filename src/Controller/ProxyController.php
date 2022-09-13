@@ -107,6 +107,21 @@ class ProxyController extends FrontendController
         }
 
         if ($user = $this->getUser()) {
+            /** @var array $userInvoiceAddress */
+            $userInvoiceAddress = $user->getInvoiceAddress();
+            // add PayPal-Address as Delivery-Address
+            $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
+            $user->changeUserData(
+                $user->oxuser__oxusername->value,
+                '',
+                '',
+                $userInvoiceAddress,
+                $deliveryAddress
+            );
+
+            // use a deliveryaddress in oxid-checkout
+            Registry::getSession()->setVariable('blshowshipaddress', false);
+
             $this->setPayPalPaymentMethod();
         } else {
             // if we have no user, we stop the process
