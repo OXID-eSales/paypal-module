@@ -68,13 +68,8 @@ class PatchRequestFactory
         return $this->request;
     }
 
-    /**
-     * @return Patch|null
-     */
-    protected function getShippingAddressPatch(): ?Patch
+    protected function getShippingAddressPatch(): void
     {
-        $patch = null;
-
         $deliveryId = Registry::getSession()->getVariable("deladrid");
         $deliveryAddress = oxNew(Address::class);
 
@@ -102,8 +97,9 @@ class PatchRequestFactory
             $address->postal_code = $deliveryAddress->getFieldData('oxzip');
 
             $patch->value = $address;
+
+            $this->request[] = $patch;
         }
-        return $patch;
     }
 
     protected function getShippingNamePatch(): void

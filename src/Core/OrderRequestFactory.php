@@ -29,7 +29,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PhoneWithType;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnit;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
@@ -65,10 +64,15 @@ class OrderRequestFactory
     /**
      * @param Basket $basket
      * @param string $intent Order::INTENT_CAPTURE or Order::INTENT_AUTHORIZE constant values
-     * @param string $userAction USER_ACTION_CONTINUE constant values
+     * @param null|string $userAction USER_ACTION_CONTINUE constant values
      * @param null|string $transactionId transaction id
-     * @param null|string $invoiceId custom invoice number
      * @param null|string $processingInstruction processing instruction
+     * @param null|string $paymentSource Payment-Source Name
+     * @param null|string $invoiceId custom invoice number
+     * @param null|string $returnUrl Return Url
+     * @param null|string $cancelUrl Cancel Url
+     * @param bool $withArticles Request with article information?
+     * @param bool $setProvidedAddress Address changeable in PayPal?
      *
      * @return OrderRequest
      */
