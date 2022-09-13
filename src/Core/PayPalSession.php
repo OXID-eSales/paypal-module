@@ -34,6 +34,11 @@ class PayPalSession
         Registry::getSession()->deleteVariable(
             Constants::SESSION_CHECKOUT_ORDER_ID
         );
+    }
+
+    public function unsetPayPalSession()
+    {
+        self::unsetPayPalOrderId();
 
         $session = Registry::getSession();
         $basket = $session->getBasket();

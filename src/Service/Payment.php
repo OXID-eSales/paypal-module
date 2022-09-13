@@ -480,7 +480,7 @@ class Payment
             }
         }
         if (!$redirectLink) {
-            PayPalSession::unsetPayPalOrderId();
+            PayPalSession::unsetPayPalSession();
             $this->removeTemporaryOrder();
             throw PayPalException::sessionPaymentMissingRedirectLink();
         }
