@@ -259,6 +259,7 @@ final class UapmCheckoutCest extends BaseCest
 
     /**
      * @group oscpaypal_uapm_dropoff
+     * @group oscpaypal_uapm_dropoff_cancel
      *
      * @dataProvider providerPaymentMethods
      */
@@ -302,10 +303,23 @@ final class UapmCheckoutCest extends BaseCest
         //still empty order in database at this time
         $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'PAYER_ACTION_REQUIRED']);
         $I->seeNumRecords(1, 'oxorder', ['oxordernr' => 0]);
+
+        //let's wait and then try to submit order once more
+        $I->wait(60);
+
+        //cannot complete the order, shop runs into Order::ORDER_STATE_ORDEREXISTS and redirects to start page
+        $orderCheckout = new OrderCheckout($I);
+        $orderCheckout->submitOrder();
+        $I->see(Translator::translate('START_BARGAIN_HEADER'));
+
+        //still empty order in database at this time TODO: improve
+        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'PAYER_ACTION_REQUIRED']);
+        $I->seeNumRecords(1, 'oxorder', ['oxordernr' => 0]);
     }
 
     /**
      * @group oscpaypal_uapm_dropoff
+     * @group oscpaypal_uapm_dropoff_fail
      *
      * @dataProvider providerPaymentMethods
      */
@@ -347,6 +361,18 @@ final class UapmCheckoutCest extends BaseCest
         //must still show 'PAYER_ACTION_REQUIRED'. Then it is ok to remove.
 
         //still empty order in database at this time
+        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'PAYER_ACTION_REQUIRED']);
+        $I->seeNumRecords(1, 'oxorder', ['oxordernr' => 0]);
+
+        //let's wait and then try to submit order once more
+        $I->wait(60);
+
+        //cannot complete the order, shop runs into Order::ORDER_STATE_ORDEREXISTS and redirects to start page
+        $orderCheckout = new OrderCheckout($I);
+        $orderCheckout->submitOrder();
+        $I->see(Translator::translate('START_BARGAIN_HEADER'));
+
+        //still empty order in database at this time TODO: improve
         $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'PAYER_ACTION_REQUIRED']);
         $I->seeNumRecords(1, 'oxorder', ['oxordernr' => 0]);
     }
