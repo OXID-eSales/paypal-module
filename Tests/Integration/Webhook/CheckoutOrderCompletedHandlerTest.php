@@ -9,23 +9,21 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
-use OxidEsales\TestingLibrary\UnitTestCase;
-use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
-use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
-use OxidSolutionCatalysts\PayPalApi\Service\Orders as PayPalApiOrders;
+use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutOrderCompletedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
-use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 
-final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
+final class CheckoutOrderCompletedHandlerTest extends WebhookHandlerBaseTestCase
 {
+    public const FIXTURE_NAME = 'checkout_order_completed.json';
+
+    public const WEBHOOK_EVENT = 'CHECKOUT.ORDER.COMPLETED';
+
     public function testRequestMissingData(): void
     {
-        $event = new WebhookEvent([], 'CHECKOUT.ORDER.COMPLETED');
+        $event = new WebhookEvent([], static::WEBHOOK_EVENT);
 
         $this->expectException(WebhookEventException::class);
         $this->expectExceptionMessage(WebhookEventException::mandatoryDataNotFound()->getMessage());
@@ -36,89 +34,57 @@ final class CheckoutOrderCompletedHandlerTest extends UnitTestCase
 
     public function testEshopOrderNotFoundByPayPalOrderId(): void
     {
-        $data = [
-            'resource' => [
-                'id' => 'PAYPALID123456789'
-            ]
-        ];
-        $event = new WebhookEvent($data, 'CHECKOUT.ORDER.COMPLETED');
+        $data = $this->getRequestData('checkout_order_completed_pui_v2.json');
+        $payPalOrderId = $data['resource']['id'];
+
+        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
         $this->expectException(WebhookEventException::class);
-        $this->expectExceptionMessage(WebhookEventException::byPayPalOrderId('PAYPALID123456789')->getMessage());
+        $this->expectExceptionMessage(WebhookEventException::byPayPalOrderId($payPalOrderId)->getMessage());
 
         $handler = oxNew(CheckoutOrderCompletedHandler::class);
         $handler->handle($event);
     }
 
-    public function testCheckoutOrderCompleted(): void
+    public function dataProviderWebhookEvent(): array
     {
-        $data = $this->getRequestData();
-        $event = new WebhookEvent($data, 'CHECKOUT.ORDER.COMPLETED');
+        return [
+            'api_v1' => [
+                'checkout_order_completed.json'
+            ],
+            'api_v2' => [
+                'checkout_order_completed_pui_v2.json'
+            ]
+        ];
+    }
 
-        $orderMock = $this->prepareOrderMock('order_oxid');
-        $paypalOrderMock = $this->preparePayPalOrderMock($data['resource']['id']);
+    /**
+     * @dataProvider dataProviderWebhookEvent
+     */
+    public function testCheckoutOrderCompleted(string $fixture): void
+    {
+        $data = $this->getRequestData($fixture);
+        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
-        $orderRepositoryMock = $this->getMockBuilder(OrderRepository::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderRepositoryMock->expects($this->once())
-            ->method('getShopOrderByPayPalOrderId')
-            ->willReturn($orderMock);
-        $orderRepositoryMock->expects($this->once())
-            ->method('paypalOrderByOrderIdAndPayPalId')
-            ->willReturn($paypalOrderMock);
+        $payPalOrderId = $data['resource']['id'];
+        $transactionId = $data['resource']['purchase_units'][0]['payments']['captures'][0]['id'];
+        $this->prepareTestData($payPalOrderId);
 
-        $handler = $this->getMockBuilder(CheckoutOrderCompletedHandler::class)
-            ->setMethods(['getServiceFromContainer'])
-            ->getMock();
-        $handler->expects($this->any())
-            ->method('getServiceFromContainer')
-            ->willReturn($orderRepositoryMock);
+        $handler = oxNew(CheckoutOrderCompletedHandler::class);
         $handler->handle($event);
-    }
 
-    private function prepareOrderMock(string $orderId): EshopModelOrder
-    {
-        $mock = $this->getMockBuilder(EshopModelOrder::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $mock->expects($this->any())
-            ->method('load')
-            ->with($orderId)
-            ->willReturn(true);
-        $mock->expects($this->any())
-            ->method('getId')
-            ->willReturn($orderId);
-        $mock->expects($this->once())
-            ->method('markOrderPaid');
+        $this->assertPayPalOrderCount($payPalOrderId);
 
-        return $mock;
-    }
+        $payPalOrder = oxNew(PayPalOrder::class);
+        $payPalOrder->load(self::PAYPAL_OXID);
 
-    private function preparePaypalOrderMock(string $orderId): PayPalOrderModel
-    {
-        $mock = $this->getMockBuilder(PayPalOrderModel::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $mock->expects($this->any())
-            ->method('load')
-            ->with($orderId)
-            ->willReturn(true);
-        $mock->expects($this->any())
-            ->method('getId')
-            ->willReturn($orderId);
-        $mock->expects($this->once())
-            ->method('setStatus');
-        $mock->expects($this->once())
-            ->method('save');
+        $this->assertSame('COMPLETED', $payPalOrder->getStatus());
+        $this->assertSame($transactionId, $payPalOrder->getTransactionId());
 
-        return $mock;
-    }
-
-    private function getRequestData(): array
-    {
-        $json = file_get_contents(__DIR__ . '/../../Fixtures/checkout_order_completed.json');
-
-        return json_decode($json, true);
+        $order = oxNew(EshopModelOrder::class);
+        $order->load(self::SHOP_ORDER_ID);
+        $this->assertSame('OK', $order->getFieldData('OXTRANSSTATUS'));
+        $this->assertSame($transactionId, $order->getFieldData('OXTRANSID'));
+        $this->assertStringStartsWith(date('Y-m-d'), $order->getFieldData('OXPAID'));
     }
 }

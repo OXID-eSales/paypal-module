@@ -5,6 +5,8 @@
  * See LICENSE file for license details.
  */
 
+declare(strict_types=1);
+
 namespace OxidSolutionCatalysts\PayPal\Service;
 
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse;

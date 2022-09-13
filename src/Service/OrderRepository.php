@@ -45,8 +45,15 @@ class OrderRepository
         string $paypalOrderId = '',
         string $payPalTransactionId = ''
     ): PayPalOrderModel {
+
+        $oxid = $this->getId($shopOrderId, $paypalOrderId, $payPalTransactionId);
+        //We might have a transactionid that is not yet saved to database, in that case we need
+        //to search for empty transactionid
+        $oxid = $oxid ?:
+            (empty($payPalTransactionId) ? '' : $this->getId($shopOrderId, $paypalOrderId, ''));
+
         $order = oxNew(PayPalOrderModel::class);
-        $order->load($this->getId($shopOrderId, $paypalOrderId, $payPalTransactionId));
+        $order->load($oxid);
 
         if (!$order->isLoaded()) {
             $order->assign(
@@ -143,9 +150,7 @@ class OrderRepository
             $parameters['oxpaypalorderid'] = $paypalOrderId;
         }
 
-        if ($payPalTransactionId) {
-            $parameters['oscpaypaltransactionid'] = $payPalTransactionId;
-        }
+        $parameters['oscpaypaltransactionid'] = $payPalTransactionId;
 
         $queryBuilder->select('oxid')
             ->from('oscpaypal_order')
@@ -155,9 +160,7 @@ class OrderRepository
             $queryBuilder->andWhere('oxpaypalorderid = :oxpaypalorderid');
         }
 
-        if ($payPalTransactionId) {
-            $queryBuilder->andWhere('oscpaypaltransactionid = :oscpaypaltransactionid');
-        }
+        $queryBuilder->andWhere('oscpaypaltransactionid = :oscpaypaltransactionid');
 
         $id = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)

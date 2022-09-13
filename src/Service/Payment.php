@@ -385,6 +385,21 @@ class Payment
         $this->eshopSession->deleteVariable('sess_challenge');
     }
 
+    //TODO: payment service is intended to trigger payments with API
+    //      all methods for order handling need to go to separate service
+    public function isOrderExecutionInProgress(): bool
+    {
+        $sessionOrderId = $this->eshopSession->getVariable('sess_challenge');
+        $payPalOrderId = PayPalSession::getCheckoutOrderId();
+        $paymentId = $this->getSessionPaymentId();
+
+        return $sessionOrderId &&
+            $payPalOrderId &&
+            ((PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId) ||
+                PayPalDefinitions::isUAPMPayment($paymentId)
+            );
+    }
+
     /**
      * @throws PayPalException
      */

@@ -17,6 +17,9 @@ final class PayPalDefinitions
     public const ACDC_PAYPAL_PAYMENT_ID = 'oscpaypal_acdc';
     public const PUI_PAYPAL_PAYMENT_ID = 'oscpaypal_pui';
     public const PUI_REQUEST_PAYMENT_SOURCE_NAME = 'pay_upon_invoice';
+    public const GIROPAY_PAYPAL_PAYMENT_ID = 'oscpaypal_giropay';
+    public const SOFORT_PAYPAL_PAYMENT_ID = 'oscpaypal_sofort';
+
 
     private const PAYMENT_CONSTRAINTS_PAYPAL = [
         'oxfromamount' => 0.01,
@@ -230,7 +233,7 @@ final class PayPalDefinitions
             'onlybrutto' => false
         ],
         // uAPM GiroPay
-        'oscpaypal_giropay' => [
+        self::GIROPAY_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
                     'desc' => 'GiroPay',
@@ -349,7 +352,7 @@ final class PayPalDefinitions
             'onlybrutto' => false
         ],
         // uAPM Sofort
-        'oscpaypal_sofort' => [
+        self::SOFORT_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
                     'desc' => 'Sofort',

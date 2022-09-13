@@ -7,32 +7,25 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
-use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
-use OxidEsales\EshopCommunity\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
-use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
-use OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait;
-
-class CheckoutOrderCompletedHandler implements HandlerInterface
+class CheckoutOrderCompletedHandler extends WebhookHandlerBase
 {
-    use WebhookHandlerTrait;
+    public const WEBHOOK_EVENT_NAME = 'CHECKOUT.ORDER.COMPLETED';
 
-    /**
-     * @inheritDoc
-     * @throws ApiException
-     */
-    public function handle(Event $event): void
+    protected function getPayPalOrderIdFromResource(array $eventPayload): string
     {
-        /** @var EshopModelOrder $order */
-        $order = $this->getOrderByOrderId($event);
+        return (string) $eventPayload['id'];
+    }
 
-        $payPalOrderId = $this->getPayPalId($event);
-        $data = $this->getEventPayload($event)['resource'];
+    protected function getPayPalTransactionIdFromResource(array $eventPayload): string
+    {
+        $transactionId = isset($eventPayload['purchase_units'][0]['payments']['captures'][0]) ?
+            $eventPayload['purchase_units'][0]['payments']['captures'][0]['id'] : '';
 
-        $this->setStatus($order, $data['status'], $payPalOrderId);
-        $order->markOrderPaid();
+        return $transactionId;
+    }
 
-        $this->cleanUpNotFinishedOrders();
+    protected function getStatusFromResource(array $eventPayload): string
+    {
+        return isset($eventPayload['status']) ? $eventPayload['status'] : '';
     }
 }
