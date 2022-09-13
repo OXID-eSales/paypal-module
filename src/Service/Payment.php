@@ -350,11 +350,11 @@ class Payment
     }
 
     /**
-     * Return the PaymentId from session basket
+     * Does the given payment id belong to PayPal
      */
-    public function isPayPalPayment(): bool
+    public function isPayPalPayment(string $paymentId = ''): bool
     {
-        $sessionPaymentId = (string) $this->getSessionPaymentId();
+        $sessionPaymentId = $paymentId ?: (string) $this->getSessionPaymentId();
         return in_array($sessionPaymentId, [
             PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID,
             PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,

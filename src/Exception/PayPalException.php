@@ -40,4 +40,15 @@ class PayPalException extends StandardException
             )
         );
     }
+
+    public static function cannotFinalizeOrderAfterExternalPayment(string $payPalOrderId, string $paymentId): self
+    {
+        return new self(
+            sprintf(
+                'Error during external payment order finalization. ' .
+                       'We might have PayPal order %s with incomplete shop order and non PayPal payment method %s',
+                $payPalOrderId, $paymentId
+            )
+        );
+    }
 }
