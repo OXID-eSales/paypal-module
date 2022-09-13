@@ -354,7 +354,7 @@ class Payment
      */
     public function isPayPalPayment(): bool
     {
-        $sessionPaymentId = $this->getSessionPaymentId();
+        $sessionPaymentId = (string) $this->getSessionPaymentId();
         return in_array($sessionPaymentId, [
             PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID,
             PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
