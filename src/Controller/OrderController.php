@@ -49,12 +49,21 @@ class OrderController extends OrderController_parent
             Registry::getUtils()->redirect(Registry::getConfig()->getShopSecureHomeURL() . 'cl=user', true, 302);
         }
 
-        $this->renderRetryOrderExecution();
+        $this->addTplParam('oscpaypal_executing_order', false);
+        $isRetry = $this->renderRetryOrderExecution();
+
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        if (!$isRetry && $paymentService->isOrderExecutionInProgress()) {
+            $displayError = oxNew(DisplayError::class);
+            $displayError->setMessage('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS');
+            Registry::getUtilsView()->addErrorToDisplay($displayError);
+            $this->addTplParam('oscpaypal_executing_order', true);
+        }
 
         return parent::render();
     }
 
-    protected function renderRetryOrderExecution(): void
+    protected function renderRetryOrderExecution(): bool
     {
         $retryRequest = Registry::getRequest()->getRequestParameter(self::RETRY_OSC_PAYMENT_REQUEST_PARAM);
 
@@ -67,7 +76,10 @@ class OrderController extends OrderController_parent
             if (in_array((string) $paymentService->getSessionPaymentId(), $this->removeTemporaryOrderOnRetry)) {
                 $paymentService->removeTemporaryOrder();
             }
+            return true;
         }
+
+        return false;
     }
 
     public function getUserCountryIso(): string
@@ -146,6 +158,8 @@ class OrderController extends OrderController_parent
             $order = oxNew(EshopModelOrder::class);
             $order->setId($sessionOrderId);
             $order->load($sessionOrderId);
+
+            //TODO: if capture fails, do we still end up with an order?
             $response = $this->getServiceFromContainer(PaymentService::class)->doCapturePayPalOrder(
                 $order,
                 $sessionAcdcOrderId,
@@ -197,12 +211,15 @@ class OrderController extends OrderController_parent
         $sessionOrderId = Registry::getSession()->getVariable('sess_challenge');
         $sessionAcdcOrderId = PayPalSession::getCheckoutOrderId();
 
+        $forceFetchDetails = (bool) Registry::getRequest()->getRequestParameter('fallbackfinalize');
+
         try {
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
-            $order->finalizeOrderAfterExternalPayment($sessionAcdcOrderId);
+            $order->finalizeOrderAfterExternalPayment($sessionAcdcOrderId, $forceFetchDetails);
             $goNext = 'thankyou';
         } catch (\Exception $exception) {
+            Registry::getLogger()->error('failure during finalizeOrderAfterExternalPayment', [$exception]);
             $this->cancelpaypalsession('cannot finalize order');
             $goNext = 'payment?payerror=2';
         }
@@ -273,6 +290,18 @@ class OrderController extends OrderController_parent
         if (PaymentService::PAYMENT_ERROR_PUI_PHONE == $success) {
             //user needs to retry, entered pui phone number was not accepted by PayPal
             return 'order?retryoscpp=puiretry';
+        }
+
+        if (PayPalOrderModel::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS == $success) {
+            return 'order';
+        }
+
+        if (PayPalOrderModel::ORDER_STATE_NEED_CALL_ACDC_FINALIZE == $success) {
+            return 'order?fnc=finalizeacdc';
+        }
+
+        if (PayPalOrderModel::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS == $success) {
+            return 'order?fnc=finalizeacdc&fallbackfinalize=1';
         }
 
         return parent::_getNextStep($success);

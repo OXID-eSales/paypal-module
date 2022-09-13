@@ -105,6 +105,7 @@ final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCas
         $order = oxNew(EshopModelOrder::class);
         $order->load(self::SHOP_ORDER_ID);
         $this->assertSame('OK', $order->getFieldData('OXTRANSSTATUS'));
-        $this->assertNotSame('0000-00-00 00:00:00', $order->getFieldData('OXPAID'));
+        $this->assertSame($transactionId, $order->getFieldData('OXTRANSID'));
+        $this->assertStringStartsWith(date('Y-m-d'), $order->getFieldData('OXPAID'));
     }
 }

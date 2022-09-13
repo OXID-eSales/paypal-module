@@ -34,4 +34,6 @@ $aLang = [
     'PAYPAL_PAYMENT_ERROR_PUI_GENRIC'             => 'Validierung der Kundendaten mit Ratepay fehlgeschlagen.',
     'PUI_PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED'  => 'Die Kombination aus Ihrem Namen und Ihrer Anschrift konnte nicht validiert werden. Bitte korrigieren Sie Ihre Daten und versuchen Sie es erneut. Weitere Informationen finden Sie in den <a href="https://www.ratepay.com/legal-payment-dataprivacy/?lang=de">Ratepay Datenschutzbestimmungen</a> oder nutzen Sie das <a href="https://www.ratepay.com/kontakt/">Ratepay Kontaktformular</a>.',
     'PUI_PAYMENT_SOURCE_DECLINED_BY_PROCESSOR'    => 'Die gewählte Zahlungsart kann nicht genutzt werden. Diese Entscheidung basiert auf einem automatisierten Datenverarbeitungsverfahren. Weitere Informationen finden Sie in den <a href="https://www.ratepay.com/legal-payment-dataprivacy/?lang=de">Ratepay Datenschutzbestimmungen</a> oder nutzen Sie das <a href="https://www.ratepay.com/kontakt/">Ratepay Kontaktformular</a>.',
+
+    'OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'      => 'Bestellabwicklung ist in Arbeit, bitte warten.',
 ];

@@ -61,7 +61,7 @@ abstract class WebhookHandlerBase
                 $orderDetail
             );
 
-            $this->markShopOrderPaymentStatus($order);
+            $this->markShopOrderPaymentStatus($order, $payPalTransactionId);
         } else {
             Registry::getLogger()->debug(
                 "Not enough information to handle " . static::WEBHOOK_EVENT_NAME .
@@ -162,9 +162,10 @@ abstract class WebhookHandlerBase
         $paypalOrderModel->save();
     }
 
-    protected function markShopOrderPaymentStatus(EshopModelOrder $order): void
+    protected function markShopOrderPaymentStatus(EshopModelOrder $order, string $payPalTransactionId): void
     {
         $order->markOrderPaid();
+        $order->setTransId($payPalTransactionId);
     }
 
     abstract protected function getPayPalTransactionIdFromResource(array $eventPayload): string;
