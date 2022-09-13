@@ -72,6 +72,10 @@ final class UapmCheckoutCest extends BaseCest
 
         //change decision again to use uapm via PayPal
         $paymentCheckout = new PaymentCheckout($I);
+        if ($I->seePageHasElement("//a[contains(@href, 'fnc=cancelPayPalPayment')]"))
+        {
+            $I->click(Translator::translate("OSC_PAYPAL_PAY_UNLINK"));
+        }
         /** @var OrderCheckout $orderCheckout */
         $orderCheckout = $paymentCheckout->selectPayment($paymentMethodId)
             ->goToNextStep();
@@ -565,7 +569,7 @@ final class UapmCheckoutCest extends BaseCest
         $this->completeUapmPayment($I, $paymentMethodId);
 
         $I->switchToWindow();
-        $I->seeNumRecords(1, 'oscpaypal_order');
+        $I->seeNumRecords(2, 'oscpaypal_order');
         $I->seeNumRecords(2, 'oxorder');
         $I->see(Translator::translate('THANK_YOU_FOR_ORDER'));
 
@@ -590,6 +594,11 @@ final class UapmCheckoutCest extends BaseCest
             ]
         );
 
+        //As we have a PayPal order now, also check admin
+        $this->openOrderPayPal($I, (string) $orderNumber);
+        $I->see(Translator::translate('OSC_PAYPAL_HISTORY_PAYPAL_STATUS'));
+        $I->seeElement('//input[@id="refundAmount"]');
+        $I->see('119,60 EUR');
         return [$orderNumber, $orderId];
     }
 
@@ -610,6 +619,9 @@ final class UapmCheckoutCest extends BaseCest
             ->goToNextStep();
         $orderCheckout->submitOrder();
 
+        //Order was not yet captured, so it should not be marked as paid
+        $oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
+        $I->assertStringStartsWith(date('Y-m-d'), $oxPaid);
         //simulated payment popup
         $I->switchToLastWindow();
         $I->seeElement('#successSubmit');

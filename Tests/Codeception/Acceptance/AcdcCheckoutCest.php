@@ -41,6 +41,10 @@ final class AcdcCheckoutCest extends BaseCest
 
         //first decide to use credit card via paypal
         $paymentCheckout = new PaymentCheckout($I);
+        if ($I->seePageHasElement("//a[contains(@href, 'fnc=cancelPayPalPayment')]"))
+        {
+            $I->click(Translator::translate('OSC_PAYPAL_PAY_UNLINK'));
+        }
         /** @var OrderCheckout $orderCheckout */
         $orderCheckout = $paymentCheckout->selectPayment(PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID)
             ->goToNextStep();
