@@ -49,7 +49,8 @@ class PaymentGateway extends PaymentGateway_parent
         if (
             $success &&
             $paymentService->isPayPalPayment() &&
-            ($capture = $order->getOrderPaymentCapture())
+            ($capture = $order->getOrderPaymentCapture()) &&
+            (string) $capture->status === 'COMPLETED'
         ) {
             $order->setTransId($capture->id);
             $order->markOrderPaid();
