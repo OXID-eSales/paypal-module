@@ -24,7 +24,6 @@ use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture as PayPalApiCapture;
 
-
 final class OrderTest extends BaseTestCase
 {
     private const TEST_ORDER_ID = '_testorder';
@@ -478,7 +477,8 @@ final class OrderTest extends BaseTestCase
         $this->expectExceptionMessage(
             (PayPalException::cannotFinalizeOrderAfterExternalPayment(
                 self::TEST_PAYPAL_ORDER_ID,
-                'oxidcashondel')
+                'oxidcashondel'
+            )
             )->getMessage()
         );
 
@@ -599,7 +599,7 @@ final class OrderTest extends BaseTestCase
         $orderMock->expects($this->once())
             ->method('_setOrderStatus')
             ->with($this->equalTo('NOT_FINISHED'));
-        
+
         $orderMock->load(self::TEST_ORDER_ID);
         $orderMock->assign(
             [

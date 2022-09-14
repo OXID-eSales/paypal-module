@@ -47,7 +47,8 @@ class PayPalException extends StandardException
             sprintf(
                 'Error during external payment order finalization. ' .
                        'We might have PayPal order %s with incomplete shop order and non PayPal payment method %s',
-                $payPalOrderId, $paymentId
+                $payPalOrderId,
+                $paymentId
             )
         );
     }

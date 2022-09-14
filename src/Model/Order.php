@@ -157,8 +157,7 @@ class Order extends Order_parent
         $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
         $transactionId = null;
 
-        if ($isPayPalACDC && $forceFetchDetails)
-        {
+        if ($isPayPalACDC && $forceFetchDetails) {
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
             /** @var PayPalOrder $payPalOrder */
             $payPalOrder = $paymentService->fetchOrderFields($payPalOrderId);
@@ -204,7 +203,7 @@ class Order extends Order_parent
             $this->setTransId($capture->id);
         }
 
-       $this->sendPayPalOrderByEmail($user, $basket);
+        $this->sendPayPalOrderByEmail($user, $basket);
     }
 
     /** @inheritDoc */
