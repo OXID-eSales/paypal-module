@@ -200,8 +200,7 @@ abstract class BaseCest
         $basketPage->goToNextStep()
             ->goToNextStep();
 
-        if (!$I->seePageHasElement("//a[contains(@href, 'fnc=cancelPayPalPayment')]"))
-        {
+        if (!$I->seePageHasElement("//a[contains(@href, 'fnc=cancelPayPalPayment')]")) {
             $I->see(Translator::translate('PAYMENT_METHOD'));
         }
     }

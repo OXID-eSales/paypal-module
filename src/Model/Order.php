@@ -153,12 +153,12 @@ class Order extends Order_parent
         $user = Registry::getSession()->getUser();
         $this->afterOrderCleanUp($basket, $user);
 
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $isPayPalACDC = $paymentsId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
         $transactionId = null;
 
         if ($isPayPalACDC && $forceFetchDetails) {
-            $paymentService = $this->getServiceFromContainer(PaymentService::class);
             /** @var PayPalOrder $payPalOrder */
             $payPalOrder = $paymentService->fetchOrderFields($payPalOrderId);
             $transactionId = '';
