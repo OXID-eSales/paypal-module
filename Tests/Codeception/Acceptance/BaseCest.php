@@ -327,7 +327,7 @@ abstract class BaseCest
         );
     }
 
-    protected function assertOrderPaidAndFinished(AcceptanceTester $I): void
+    protected function assertOrderPaidAndFinished(AcceptanceTester $I): string
     {
         $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
 
@@ -345,5 +345,7 @@ abstract class BaseCest
 
         $I->seeNumRecords(1, 'oscpaypal_order');
         $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'COMPLETED']);
+
+        return $orderId;
     }
 }
