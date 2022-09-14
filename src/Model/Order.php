@@ -30,6 +30,7 @@ use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidEsales\Eshop\Core\Counter as EshopCoreCounter;
 
 /**
  * PayPal Eshop model order class
@@ -153,7 +154,6 @@ class Order extends Order_parent
         $user = Registry::getSession()->getUser();
         $this->afterOrderCleanUp($basket, $user);
 
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $isPayPalACDC = $paymentsId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
         $transactionId = null;
@@ -506,6 +506,9 @@ class Order extends Order_parent
     {
         if (!$this->hasOrderNumber()) {
             $this->_setNumber();
+        } else {
+            oxNew(EshopCoreCounter::class)
+                ->update($this->_getCounterIdent(), $this->oxorder__oxordernr->value);
         }
     }
 

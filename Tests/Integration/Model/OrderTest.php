@@ -581,7 +581,12 @@ final class OrderTest extends BaseTestCase
             ->willReturn($captureMock);
         $orderMock->expects($this->never())
             ->method('doExecutePayPalPayment');
-        $orderMock->method('getServiceFromContainer')
+        $orderMock->expects($this->any())
+            ->method('getServiceFromContainer')
+            ->withConsecutive(
+                [$this->equalTo(PaymentService::class)],
+                [$this->equalTo(ModuleSettings::class)]
+            )
             ->willReturnOnConsecutiveCalls($paymentServiceMock, $moduleSettingsMock);
         $orderMock->expects($this->once())
             ->method('afterOrderCleanUp');
