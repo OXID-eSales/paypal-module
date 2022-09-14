@@ -178,16 +178,37 @@ final class UapmCheckoutCest extends BaseCest
 
         list($orderNumber, $orderId) = $this->doCheckout($I, $paymentMethodId);
 
+        $I->seeNumRecords(1, 'oscpaypal_order');
+        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'SAVED']);
+        //SAVED as webhook did not send information about capture
+
         //As we have a PayPal order now, also check admin
+        //NOTE: as data is fetched from PayPal API on the fly, we either see APPROVED or COMPLETED depending on
+        // PP sandbox speed
         $this->openOrderPayPal($I, (string) $orderNumber);
         $I->see(Translator::translate('OSC_PAYPAL_HISTORY_PAYPAL_STATUS'));
-        $I->see(Translator::translate('OSC_PAYPAL_STATUS_APPROVED'));
-        $I->seeElement('//input[@value="Capture"]');
+        $I->see(Translator::translate('OSC_PAYPAL_STATUS_COMPLETED'));
+        $I->dontSeeElement('//input[@value="Capture"]');
         $I->see('119,60 EUR');
 
-        //Order was not yet captured, so it should not be marked as paid (assuming we have no working webhook)
+        $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
+
+        $orderId = $I->grabFromDatabase('oscpaypal_order', 'oxorderid');
+        $transactionId = $I->grabFromDatabase('oscpaypal_order', 'oscpaypaltransactionid');
+
         $oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
-        $I->assertStringStartsWith('0000-00-00', $oxPaid);
+        $I->assertStringStartsWith(date('Y-m-d'), $oxPaid);
+
+        $transStatus = $I->grabFromDatabase('oxorder', 'oxtransstatus', ['OXID' => $orderId]);
+        $I->assertStringStartsWith('OK', $transStatus);
+
+        $transId = $I->grabFromDatabase('oxorder', 'oxtransid', ['OXID' => $orderId]);
+        $I->assertEquals($transactionId, $transId);
+
+        $I->seeNumRecords(1, 'oscpaypal_order');
+
+        //webhook did not yet kick in, so we still see it as saved
+        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'SAVED']);
     }
 
     /**
@@ -517,7 +538,7 @@ final class UapmCheckoutCest extends BaseCest
 
     /**
      * @dataProvider providerPaymentMethods
-     *
+     * @group checkmenow
      * @group oscpaypal_with_webhook
      */
     public function checkoutWithAcdcViaPayPalImpatientCustomerOtherPaymentMethod(
