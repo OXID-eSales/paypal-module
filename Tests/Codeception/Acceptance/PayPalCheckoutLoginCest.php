@@ -307,7 +307,13 @@ final class PayPalCheckoutLoginCest extends BaseCest
             ]
         );
 
-        $I->seeInDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin'], 'oxfname' => Fixtures::get('details')['firstname']]);
+        $I->seeInDatabase(
+            'oxuser',
+            [
+                'oxusername' => $_ENV['sBuyerLogin'],
+                'oxfname' => Fixtures::get('details')['firstname']
+            ]
+        );
     }
 
     /**

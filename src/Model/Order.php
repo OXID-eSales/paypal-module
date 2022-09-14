@@ -139,29 +139,29 @@ class Order extends Order_parent
             throw PayPalException::cannotFinalizeOrderAfterExternalPaymentSuccess($payPalOrderId);
         }
 
-        //TODO: why do we need to update the counter?
-        if (!$this->oxorder__oxordernr->value) {
-            $this->_setNumber();
-        } else {
-            oxNew(\OxidEsales\Eshop\Core\Counter::class)->update(
-                $this->_getCounterIdent(),
-                $this->oxorder__oxordernr->value
-            );
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $paymentsId = (string) $this->getFieldData('oxpaymenttype');
+        if (!$paymentService->isPayPalPayment($paymentsId)) {
+            throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
         }
+
+        //ensure order number
+        $this->setOrderNumber();
 
         $basket = Registry::getSession()->getBasket();
         $user = Registry::getSession()->getUser();
-        $paymentsId = $this->getFieldData('oxpaymenttype');
         $this->afterOrderCleanUp($basket, $user);
 
         $isPayPalACDC = $paymentsId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
+        $transactionId = null;
 
         if ($isPayPalACDC && $forceFetchDetails) {
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
             /** @var PayPalOrder $payPalOrder */
             $payPalOrder = $paymentService->fetchOrderFields($payPalOrderId);
-
+            $transactionId = '';
             if ($this->isPayPalOrderCompleted($payPalOrder)) {
                 $this->markOrderPaid();
                 $transactionId = $this->extractTransactionId($payPalOrder);
@@ -190,22 +190,31 @@ class Order extends Order_parent
                 $paymentsId,
                 PayPalOrder::STATUS_APPROVED
             );
+            //TODO: we should not yet have a transaction id in this case, so no need to call api for details
+            //$transactionId = '';
         } else {
             // uAPM, PayPal Standard directly, PayPal Paylater
             $this->doExecutePayPalPayment($payPalOrderId);
+            //TODO: maybe we can get transation id as return value if payment was completed
         }
 
-        if ($capture = $this->getOrderPaymentCapture($payPalOrderId)) {
+        //TODO: reduce calls to api, see above
+        if (is_null($transactionId) && ($capture = $this->getOrderPaymentCapture($payPalOrderId))) {
             $this->setTransId($capture->id);
         }
 
+        $this->sendPayPalOrderByEmail($user, $basket);
+    }
+
+    /** @inheritDoc */
+    protected function sendPayPalOrderByEmail(EshopModelUser $user, EshopModelBasket $basket): void
+    {
         $userPayment = oxNew(EshopModelUserPayment::class);
         $userPayment->load($this->getFieldData('oxpaymentid'));
 
-        $session = Registry::getSession();
-        $session->setVariable('blDontCheckProductStockForPayPalMails', true);
+        Registry::getSession()->setVariable('blDontCheckProductStockForPayPalMails', true);
         $this->_sendOrderByEmail($user, $basket, $userPayment);
-        $session->deleteVariable('blDontCheckProductStockForPayPalMails');
+        Registry::getSession()->deleteVariable('blDontCheckProductStockForPayPalMails');
     }
 
     //TODO: this place should be refactored in shop core
