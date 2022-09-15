@@ -377,6 +377,8 @@ class OrderRequestFactory
         $address = new AddressPortable3();
         $addressLine = $user->getFieldData('oxstreet') . " " . $user->getFieldData('oxstreetnr');
         $address->address_line_1 = $addressLine;
+        $addinfoLine = $user->getFieldData('oxcompany') . " " . $user->getFieldData('oxaddinfo');
+        $address->address_line_2 = $addinfoLine;
         $address->admin_area_1 = $state->getFieldData('oxtitle');
         $address->admin_area_2 = $user->getFieldData('oxcity');
         $address->country_code = $country->oxcountry__oxisoalpha2->value;
@@ -410,6 +412,11 @@ class OrderRequestFactory
             $addressLine =
                 $deliveryAddress->getFieldData('oxstreet') . " " . $deliveryAddress->getFieldData('oxstreetnr');
             $address->address_line_1 = $addressLine;
+
+            $addinfoLine = $deliveryAddress->getFieldData('oxcompany') . " " .
+                $deliveryAddress->getFieldData('oxaddinfo');
+            $address->address_line_2 = $addinfoLine;
+
             $address->admin_area_1 = $state->getFieldData('oxtitle');
             $address->admin_area_2 = $deliveryAddress->getFieldData('oxcity');
             $address->country_code = $country->oxcountry__oxisoalpha2->value;
@@ -499,6 +506,7 @@ class OrderRequestFactory
 
         $billingAddress = new AddressPortable();
         $billingAddress->address_line_1 = $payer->address->address_line_1;
+        $billingAddress->address_line_2 = $payer->address->address_line_2;
         $billingAddress->admin_area_2 = $payer->address->admin_area_2;
         $billingAddress->postal_code = $payer->address->postal_code;
         $billingAddress->country_code = $payer->address->country_code;

@@ -35,6 +35,7 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
     private const DELIVERY_POSTALCODE = '22547';
     private const DELIVERY_FIRSTNAME = 'Paypaltester';
     private const DELIVERY_LASTNAME = 'Shoppingisfun';
+    private const DELIVERY_OXADDINFO = 'some additional delivery info';
 
     public function _before(AcceptanceTester $I): void
     {
@@ -147,6 +148,7 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
 
     /**
      * @group oscpaypal_with_webhook
+     * @group oscpaypal_express_details_addresschange
      */
     public function expressCheckoutFromDetailsButtonWithShopDeliveryAddressChange(AcceptanceTester $I): void
     {
@@ -199,7 +201,8 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
                 'OXTOTALORDERSUM' => Fixtures::get('product')['one_item_total_with_shipping'],
                 'OXBILLFNAME' => Fixtures::get('details')['firstname'],
                 'OXDELFNAME' => self::DELIVERY_FIRSTNAME,
-                'OXDELCOMPANY' => self::DELIVERY_COMPANY
+                'OXDELCOMPANY' => self::DELIVERY_COMPANY,
+                'OXDELADDINFO' => self::DELIVERY_OXADDINFO
             ]
         );
 
@@ -363,6 +366,9 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
         );
     }
 
+    /**
+     * @group oscpaypal_express_details_addresschange
+     */
     public function testExpressCheckoutFromDetailsButtonAsGuestChangeAddressInOrderStep(AcceptanceTester $I): void
     {
         $I->wantToTest(
@@ -393,7 +399,9 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
                 'OXID' => $orderId,
                 'OXTOTALORDERSUM' => Fixtures::get('product')['one_item_total_with_shipping'],
                 'OXBILLFNAME' => $_ENV['sBuyerFirstName'],
-                'OXDELFNAME' => self::DELIVERY_FIRSTNAME
+                'OXDELFNAME' => self::DELIVERY_FIRSTNAME,
+                'OXDELCOMPANY' => self::DELIVERY_COMPANY,
+                'OXDELADDINFO' => self::DELIVERY_OXADDINFO
             ]
         );
 
@@ -432,6 +440,10 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
             self::DELIVERY_COMPANY,
             (string) $payPalOrder->purchase_units[0]->shipping->address->address_line_2
         );
+        $I->assertStringContainsString(
+            self::DELIVERY_OXADDINFO,
+            (string) $payPalOrder->purchase_units[0]->shipping->address->address_line_2
+        );
     }
 
     private function submitOrderWithUpdatedDeliveryAddress(AcceptanceTester $I): void
@@ -443,6 +455,7 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
         $I->fillField('deladr[oxaddress__oxfname]', self::DELIVERY_FIRSTNAME);
         $I->fillField('deladr[oxaddress__oxlname]', self::DELIVERY_LASTNAME);
         $I->fillField("deladr[oxaddress__oxcompany]", self::DELIVERY_COMPANY);
+        $I->fillField("deladr[oxaddress__oxaddinfo]", self::DELIVERY_OXADDINFO);
         $I->fillField("deladr[oxaddress__oxstreet]", "Meinestrasse");
         $I->fillField("deladr[oxaddress__oxstreetnr]", "10");
         $I->fillField("deladr[oxaddress__oxzip]", self::DELIVERY_POSTALCODE);
