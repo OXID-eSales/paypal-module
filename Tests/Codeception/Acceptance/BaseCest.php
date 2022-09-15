@@ -23,6 +23,12 @@ use OxidEsales\Codeception\Page\Checkout\Basket as BasketCheckout;
 
 abstract class BaseCest
 {
+    public const DELIVERY_COMPANY = 'VIP Company';
+    public const DELIVERY_POSTALCODE = '22547';
+    public const DELIVERY_FIRSTNAME = 'Paypaltester';
+    public const DELIVERY_LASTNAME = 'Shoppingisfun';
+    public const DELIVERY_OXADDINFO = 'some additional delivery info';
+
     public function _before(AcceptanceTester $I): void
     {
         $this->activateModules();
@@ -51,6 +57,7 @@ abstract class BaseCest
         $I->updateConfigInDatabase('blShowNetPrice', false, 'bool');
         $I->updateModuleConfiguration('oscPayPalLoginWithPayPalEMail', false);
 
+        $I->deleteFromDatabase('oxaddress', ['OXFNAME' => $_ENV['sBuyerFirstName']]);
         $I->deleteFromDatabase('oxorder', ['OXORDERNR >=' => '2']);
         $I->deleteFromDatabase('oxuserbaskets', ['OXTITLE >=' => 'savedbasket']);
         $I->deleteFromDatabase('oscpaypal_order', ['OXSHOPID >' => '0']);
@@ -347,5 +354,26 @@ abstract class BaseCest
         $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'COMPLETED']);
 
         return $orderId;
+    }
+
+    protected function submitOrderWithUpdatedDeliveryAddress(AcceptanceTester $I): void
+    {
+        /** @var UserCheckout $userCheckout */
+        $userCheckout = (new OrderCheckout($I))->editUserAddress()
+            ->openShippingAddressForm();
+        $I->executeJS('document.getElementById("shippingAddressForm").style=""');
+        $I->fillField('deladr[oxaddress__oxfname]', self::DELIVERY_FIRSTNAME);
+        $I->fillField('deladr[oxaddress__oxlname]', self::DELIVERY_LASTNAME);
+        $I->fillField("deladr[oxaddress__oxcompany]", self::DELIVERY_COMPANY);
+        $I->fillField("deladr[oxaddress__oxaddinfo]", self::DELIVERY_OXADDINFO);
+        $I->fillField("deladr[oxaddress__oxstreet]", "Meinestrasse");
+        $I->fillField("deladr[oxaddress__oxstreetnr]", "10");
+        $I->fillField("deladr[oxaddress__oxzip]", self::DELIVERY_POSTALCODE);
+        $I->fillField("deladr[oxaddress__oxcity]", "Hamburg");
+        $I->executeJS('document.getElementById("delCountrySelect").options[3].selected = true;');
+
+        $userCheckout->goToNextStep()
+            ->goToNextStep()
+            ->submitOrder();
     }
 }

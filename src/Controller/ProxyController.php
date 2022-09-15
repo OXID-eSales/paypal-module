@@ -61,6 +61,7 @@ class ProxyController extends FrontendController
             $this->getPayPalPartnerAttributionId(),
             null,
             null,
+            false,
             false
         );
 

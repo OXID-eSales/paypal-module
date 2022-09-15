@@ -12,7 +12,6 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 use OxidEsales\Codeception\Page\Checkout\OrderCheckout;
 use OxidEsales\Codeception\Page\Checkout\ThankYou;
 use OxidEsales\Codeception\Page\Checkout\UserCheckout;
-use OxidSolutionCatalysts\PayPal\Model\User;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
@@ -32,13 +31,18 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
 {
     use ServiceContainer; //we need service to compare with PayPal response
 
+    public function _before(AcceptanceTester $I): void
+    {
+        parent::_before($I);
+
+        $this->enableExpressButtons($I);
+        $I->updateModuleConfiguration('oscPayPalShowProductDetailsButton', true);
+    }
+
     public function expressCheckoutFromDetailsButton(AcceptanceTester $I): void
     {
         $I->wantToTest('checkout from details page with empty cart. Customer is logged in.
          Return to payment page after PP approval.');
-
-        $this->enableExpressButtons($I, false);
-        $I->updateModuleConfiguration('oscPayPalShowProductDetailsButton', true);
 
         $I->openShop()
             ->loginUser(Fixtures::get('userName'), Fixtures::get('userPassword'));
@@ -93,22 +97,7 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
             Test needs working webhook'
         );
 
-        $this->enableExpressButtons($I, false);
-        $I->updateModuleConfiguration('oscPayPalShowProductDetailsButton', true);
-
-        $I->dontSeeInDatabase(
-            'oxaddress',
-            [
-                'OXFNAME' => $_ENV['sBuyerFirstName']
-            ]
-        );
-
-        $I->dontSeeInDatabase(
-            'oxuser',
-            [
-                'OXUSERNAME' => $_ENV['sBuyerLogin']
-            ]
-        );
+        $this->assertPayPalBuyerNotExistsInShop($I);
 
         $I->openShop()
             ->loginUser(Fixtures::get('userName'), Fixtures::get('userPassword'));
@@ -117,7 +106,6 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
         $productNavigation = new ProductNavigation($I);
         $productNavigation->openProductDetailsPage(Fixtures::get('product')['oxid']);
         $I->seeElement("#PayPalButtonProductMain");
-        $I->click("#PayPalButtonProductMain");
 
         //We have an empty cart at this time
         //NOTE: manually express checkout works if we have no sid cookie at this point,
@@ -154,32 +142,16 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
 
     /**
      * @group oscpaypal_with_webhook
+     * @group oscpaypal_express_details_addresschange
      */
     public function expressCheckoutFromDetailsButtonWithShopDeliveryAddressChange(AcceptanceTester $I): void
     {
-        $I->markTestIncomplete('TODO address change and order patch');
-
         $I->wantToTest(
             'checkout from details page with empty cart. Customer is logged in to shop. Customer
              changes delivery address after return from PayPal.'
         );
 
-        $this->enableExpressButtons($I, false);
-        $I->updateModuleConfiguration('oscPayPalShowProductDetailsButton', true);
-
-        $I->dontSeeInDatabase(
-            'oxaddress',
-            [
-                'OXFNAME' => $_ENV['sBuyerFirstName']
-            ]
-        );
-
-        $I->dontSeeInDatabase(
-            'oxuser',
-            [
-                'OXUSERNAME' => $_ENV['sBuyerLogin']
-            ]
-        );
+        $this->assertPayPalBuyerNotExistsInShop($I);
 
         $I->openShop()
             ->loginUser(Fixtures::get('userName'), Fixtures::get('userPassword'));
@@ -188,12 +160,8 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
         $productNavigation = new ProductNavigation($I);
         $productNavigation->openProductDetailsPage(Fixtures::get('product')['oxid']);
         $I->seeElement("#PayPalButtonProductMain");
-        $I->click("#PayPalButtonProductMain");
 
         //We have an empty cart at this time
-        //NOTE: manually express checkout works if we have no sid cookie at this point,
-        //      but codeception test did not have sid cookie at end of approveOrder call.
-        //So for now, we test with a logged in customer
         $token = $this->approvePayPalTransaction($I, '&context=continue&aid=' . Fixtures::get('product')['oxid']);
         $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
 
@@ -210,19 +178,7 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
             ]
         );
 
-        /** @var UserCheckout $userCheckout */
-        $userCheckout = $orderCheckout->editUserAddress()
-            ->openShippingAddressForm();
-        $I->executeJS('document.getElementById("shippingAddressForm").style=""');
-        $I->fillField('deladr[oxaddress__oxfname]', 'Paypaltester');
-        $I->fillField('deladr[oxaddress__oxlname]', 'Shoppingisfun');
-        $I->fillField("deladr[oxaddress__oxstreet]", "Meinestrasse");
-        $I->fillField("deladr[oxaddress__oxstreetnr]", "10");
-        $I->fillField("deladr[oxaddress__oxzip]", "22547");
-        $I->fillField("deladr[oxaddress__oxcity]", "Hamburg");
-        $userCheckout->goToNextStep()
-            ->goToNextStep()
-            ->submitOrder();
+        $this->submitOrderWithUpdatedDeliveryAddress($I);
 
         $thankYouPage = new ThankYou($I);
         $orderNumber = $thankYouPage->grabOrderNumber();
@@ -238,23 +194,13 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
                 'OXID' => $orderId,
                 'OXTOTALORDERSUM' => Fixtures::get('product')['one_item_total_with_shipping'],
                 'OXBILLFNAME' => Fixtures::get('details')['firstname'],
-                'OXDELFNAME' => 'Paypaltester'
+                'OXDELFNAME' => self::DELIVERY_FIRSTNAME,
+                'OXDELCOMPANY' => self::DELIVERY_COMPANY,
+                'OXDELADDINFO' => self::DELIVERY_OXADDINFO
             ]
         );
 
-        $payPalOrderId = $I->grabFromDatabase(
-            'oscpaypal_order',
-            'OXPAYPALORDERID',
-            [
-                 'oxorderid' => $orderId
-             ]
-        );
-        /** @var PaymentService $paymentService */
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
-
-        /** @var PayPalOrder $payPalOrder */
-        $payPalOrder = $paymentService->fetchOrderFields($payPalOrderId);
-        $I->assertSame('22547', (string) $payPalOrder->purchase_units[0]->shipping->address->postal_code);
+        $this->assertDeliveryAddress($I, $orderId);
     }
 
     public function expressCheckoutFromDetailsButtonAsGuest(AcceptanceTester $I): void
@@ -264,33 +210,8 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
                  'Customer is guest buyer without shop account.'
         );
 
-        $I->dontSeeInDatabase(
-            'oxuser',
-            [
-                'OXUSERNAME' => $_ENV['sBuyerLogin']
-            ]
-        );
-
-        $this->enableExpressButtons($I);
-        $I->updateModuleConfiguration('oscPayPalShowProductDetailsButton', true);
-
-        $I->openShop();
-        $I->waitForText(Translator::translate('HOME'));
-        $I->dontSeeCookie('sid');
-        $I->dontSeeCookie('sid_key');
-
-        $productNavigation = new ProductNavigation($I);
-        $productNavigation->openProductDetailsPage(Fixtures::get('product')['oxid']);
-        $I->seeElement("#PayPalButtonProductMain");
-
-        $stoken = $I->grabValueFrom('//input[@name="stoken"]');
-        $token = $this->approvePayPalTransaction($I, '&aid=' . Fixtures::get('product')['oxid']);
-        $I->amOnUrl($this->getShopUrl() .
-                    '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token .
-                    '&stoken=' . $stoken);
-
-        $I->amOnUrl($this->getShopUrl() . '?cl=order');
-        $I->waitForPageLoad();
+        $this->assertPayPalBuyerNotExistsInShop($I);
+        $payPalOrderId = $this->anonymousProceedToOrderStep($I);
 
         /** @var OrderCheckout $orderCheckout */
         $orderCheckout = new OrderCheckout($I);
@@ -305,7 +226,7 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
             'oscpaypal_order',
             [
                 'OXORDERID' => $orderId,
-                'OXPAYPALORDERID' => $token
+                'OXPAYPALORDERID' => $payPalOrderId
             ]
         );
         $I->seeInDataBase(
@@ -333,15 +254,7 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
             . ' Customer is guest buyer without shop account.'
         );
 
-        $I->dontSeeInDatabase(
-            'oxuser',
-            [
-                'OXUSERNAME' => $_ENV['sBuyerLogin']
-            ]
-        );
-
-        $this->enableExpressButtons($I);
-        $I->updateModuleConfiguration('oscPayPalShowProductDetailsButton', true);
+        $this->assertPayPalBuyerNotExistsInShop($I);
 
         $this->proceedToBasketStep($I, $_ENV['sBuyerLogin'], false);
 
@@ -397,7 +310,6 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
             'with password.'
         );
 
-        $this->enableExpressButtons($I);
         $this->setUserNameSameAsPayPal($I);
         $I->updateModuleConfiguration('oscPayPalLoginWithPayPalEMail', true);
 
@@ -444,6 +356,133 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
                 'OXTOTALORDERSUM' => Fixtures::get('product')['one_item_total_with_shipping'],
                 'OXBILLFNAME' => Fixtures::get('details')['firstname'],
                 'OXDELFNAME' => $_ENV['sBuyerFirstName']
+            ]
+        );
+    }
+
+    /**
+     * @group oscpaypal_express_details_addresschange
+     */
+    public function testExpressCheckoutFromDetailsButtonAsGuestChangeAddressInOrderStep(AcceptanceTester $I): void
+    {
+        $I->wantToTest(
+            'checkout from details page from clean session and empty cart. ' .
+            'Customer is guest buyer without shop account. Address change on last order step.'
+        );
+
+        $this->assertPayPalBuyerNotExistsInShop($I);
+
+        $paypalOrderId = $this->anonymousProceedToOrderStep($I);
+        $this->submitOrderWithUpdatedDeliveryAddress($I);
+
+        $thankYouPage = new ThankYou($I);
+        $orderNumber = $thankYouPage->grabOrderNumber();
+        $I->assertGreaterThan(1, $orderNumber);
+
+        $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
+        $I->seeInDataBase(
+            'oscpaypal_order',
+            [
+                'OXORDERID' => $orderId,
+                'OXPAYPALORDERID' => $paypalOrderId
+            ]
+        );
+        $I->seeInDataBase(
+            'oxorder',
+            [
+                'OXID' => $orderId,
+                'OXTOTALORDERSUM' => Fixtures::get('product')['one_item_total_with_shipping'],
+                'OXBILLFNAME' => $_ENV['sBuyerFirstName'],
+                'OXDELFNAME' => self::DELIVERY_FIRSTNAME,
+                'OXDELCOMPANY' => self::DELIVERY_COMPANY,
+                'OXDELADDINFO' => self::DELIVERY_OXADDINFO
+            ]
+        );
+
+        $I->seeInDatabase(
+            'oxuser',
+            [
+                'OXUSERNAME' => $_ENV['sBuyerLogin']
+            ]
+        );
+
+        $this->assertDeliveryAddress($I, $orderId);
+    }
+
+    private function assertDeliveryAddress(
+        AcceptanceTester $I,
+        string $orderId
+    ): void {
+        $payPalOrderId = $I->grabFromDatabase(
+            'oscpaypal_order',
+            'OXPAYPALORDERID',
+            [
+                'oxorderid' => $orderId
+            ]
+        );
+
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+
+        /** @var PayPalOrder $payPalOrder */
+        $payPalOrder = $paymentService->fetchOrderFields($payPalOrderId);
+        $I->assertSame(
+            self::DELIVERY_POSTALCODE,
+            (string) $payPalOrder->purchase_units[0]->shipping->address->postal_code
+        );
+        $I->assertStringContainsString(
+            self::DELIVERY_COMPANY,
+            (string) $payPalOrder->purchase_units[0]->shipping->address->address_line_2
+        );
+        $I->assertStringContainsString(
+            self::DELIVERY_OXADDINFO,
+            (string) $payPalOrder->purchase_units[0]->shipping->address->address_line_2
+        );
+    }
+
+    private function anonymousProceedToOrderStep(AcceptanceTester $I): string
+    {
+        $I->openShop();
+        $I->waitForText(Translator::translate('HOME'));
+        $I->dontSeeCookie('sid');
+        $I->dontSeeCookie('sid_key');
+
+        $productNavigation = new ProductNavigation($I);
+        $productNavigation->openProductDetailsPage(Fixtures::get('product')['oxid']);
+        $I->seeElement("#PayPalButtonProductMain");
+
+        $stoken = $I->grabValueFrom('//input[@name="stoken"]');
+        $token = $this->approvePayPalTransaction($I, '&aid=' . Fixtures::get('product')['oxid']);
+
+        //shipping dropdown on PayPal page
+        $I->seeElement('//button[@id="change-shipping"]');
+        $I->click('//button[@id="change-shipping"]');
+        $I->wait(1);
+        $I->seeElement('//select[@id="shippingDropdown"]');
+
+        $I->amOnUrl($this->getShopUrl() .
+                    '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token .
+                    '&stoken=' . $stoken);
+
+        $I->amOnUrl($this->getShopUrl() . '?cl=order');
+        $I->waitForPageLoad();
+
+        return $token;
+    }
+
+    private function assertPayPalBuyerNotExistsInShop(AcceptanceTester $I): void
+    {
+        $I->dontSeeInDatabase(
+            'oxaddress',
+            [
+                'OXFNAME' => $_ENV['sBuyerFirstName']
+            ]
+        );
+
+        $I->dontSeeInDatabase(
+            'oxuser',
+            [
+                'OXUSERNAME' => $_ENV['sBuyerLogin']
             ]
         );
     }
