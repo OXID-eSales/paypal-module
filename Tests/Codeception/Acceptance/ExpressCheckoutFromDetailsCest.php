@@ -31,12 +31,6 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
 {
     use ServiceContainer; //we need service to compare with PayPal response
 
-    private const DELIVERY_COMPANY = 'VIP Company';
-    private const DELIVERY_POSTALCODE = '22547';
-    private const DELIVERY_FIRSTNAME = 'Paypaltester';
-    private const DELIVERY_LASTNAME = 'Shoppingisfun';
-    private const DELIVERY_OXADDINFO = 'some additional delivery info';
-
     public function _before(AcceptanceTester $I): void
     {
         parent::_before($I);
@@ -446,25 +440,6 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
         );
     }
 
-    private function submitOrderWithUpdatedDeliveryAddress(AcceptanceTester $I): void
-    {
-        /** @var UserCheckout $userCheckout */
-        $userCheckout = (new OrderCheckout($I))->editUserAddress()
-            ->openShippingAddressForm();
-        $I->executeJS('document.getElementById("shippingAddressForm").style=""');
-        $I->fillField('deladr[oxaddress__oxfname]', self::DELIVERY_FIRSTNAME);
-        $I->fillField('deladr[oxaddress__oxlname]', self::DELIVERY_LASTNAME);
-        $I->fillField("deladr[oxaddress__oxcompany]", self::DELIVERY_COMPANY);
-        $I->fillField("deladr[oxaddress__oxaddinfo]", self::DELIVERY_OXADDINFO);
-        $I->fillField("deladr[oxaddress__oxstreet]", "Meinestrasse");
-        $I->fillField("deladr[oxaddress__oxstreetnr]", "10");
-        $I->fillField("deladr[oxaddress__oxzip]", self::DELIVERY_POSTALCODE);
-        $I->fillField("deladr[oxaddress__oxcity]", "Hamburg");
-        $userCheckout->goToNextStep()
-            ->goToNextStep()
-            ->submitOrder();
-    }
-
     private function anonymousProceedToOrderStep(AcceptanceTester $I): string
     {
         $I->openShop();
@@ -478,6 +453,13 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
 
         $stoken = $I->grabValueFrom('//input[@name="stoken"]');
         $token = $this->approvePayPalTransaction($I, '&aid=' . Fixtures::get('product')['oxid']);
+
+        //shipping dropdown on PayPal page
+        $I->seeElement('//button[@id="change-shipping"]');
+        $I->click('//button[@id="change-shipping"]');
+        $I->wait(1);
+        $I->seeElement('//select[@id="shippingDropdown"]');
+
         $I->amOnUrl($this->getShopUrl() .
                     '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token .
                     '&stoken=' . $stoken);
