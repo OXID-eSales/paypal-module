@@ -100,7 +100,12 @@ class OrderRequestFactory
         $request->purchase_units = $this->getPurchaseUnits($transactionId, $invoiceId, $withArticles);
 
         if ($userAction || $returnUrl || $cancelUrl) {
-            $request->application_context = $this->getApplicationContext($userAction, $returnUrl, $cancelUrl, $setProvidedAddress);
+            $request->application_context = $this->getApplicationContext(
+                $userAction,
+                $returnUrl,
+                $cancelUrl,
+                $setProvidedAddress
+            );
         }
 
         if ($processingInstruction) {
