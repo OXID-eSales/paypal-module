@@ -198,7 +198,11 @@ class OrderController extends OrderController_parent
             $deliveryAddress = PayPalAddressResponseToOxidAddress::mapOrderDeliveryAddress($payPalOrder);
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
-            $order->assign($deliveryAddress);
+            $paymentsId = $order->getFieldData('oxpaymenttype');
+            $isPayPalExpress = $paymentsId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID;
+            if ($isPayPalExpress) {
+                $order->assign($deliveryAddress);
+            }
             $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);
             $order->save();
         } catch (\Exception $exception) {

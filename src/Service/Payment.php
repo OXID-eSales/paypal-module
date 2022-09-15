@@ -109,7 +109,8 @@ class Payment
         string $payPalPartnerAttributionId = '',
         string $returnUrl = null,
         string $cancelUrl = null,
-        bool $withArticles = true
+        bool $withArticles = true,
+        bool $setProvidedAddress = true
         #): ?ApiModelOrder
     ) { //TODO return value
 
@@ -128,7 +129,8 @@ class Payment
             null,
             $returnUrl,
             $cancelUrl,
-            $withArticles
+            $withArticles,
+            $setProvidedAddress
         );
 
         $response = [];
@@ -191,14 +193,13 @@ class Payment
     public function doPatchPayPalOrder(
         EshopModelBasket $basket,
         string $checkoutOrderId,
-        string $paymentSource = '',
         string $shopOrderId = ''
     ): void {
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
 
         $request = $this->patchRequestFactory
-            ->getRequest($basket, $shopOrderId, $paymentSource);
+            ->getRequest($basket, $shopOrderId);
 
         // Update Order
         try {
