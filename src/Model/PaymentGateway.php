@@ -53,10 +53,6 @@ class PaymentGateway extends PaymentGateway_parent
             (string) $capture->status === 'COMPLETED'
         ) {
             $order->setTransId($capture->id);
-
-            //TODO PSPAYPAL-567: Doublecheck, success might not mean the order was already paid at this point, for example pui
-            //      is only paid for sure when webhook gets the information.
-            $order->markOrderPaid();
         }
 
         return $success;

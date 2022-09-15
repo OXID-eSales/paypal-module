@@ -253,19 +253,6 @@ class Payment
                 $result = $this->fetchOrderFields($checkoutOrderId);
                 $payPalTransactionId = $result->purchase_units[0]->payments->captures[0]->id;
             } else {
-
-                //TODO PSPAYPAL-567: do not redirect from here
-                if ($payPalOrder->status !== ApiOrderModel::STATUS_APPROVED && isset($payPalOrder->links)) {
-                    foreach ($payPalOrder->links as $links) {
-                        if ($links['rel'] === 'approve') {
-                            $link = $links['href'];
-                            break;
-                        }
-                    }
-
-                    Registry::getUtils()->redirect($link);
-                }
-
                 $request = new OrderCaptureRequest();
                 /** @var ApiOrderModel */
                 $result = $orderService->capturePaymentForOrder('', $checkoutOrderId, $request, '');
