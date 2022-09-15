@@ -157,6 +157,8 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
      */
     public function expressCheckoutFromDetailsButtonWithShopDeliveryAddressChange(AcceptanceTester $I): void
     {
+        $I->markTestIncomplete('TODO address change and order patch');
+
         $I->wantToTest(
             'checkout from details page with empty cart. Customer is logged in to shop. Customer
              changes delivery address after return from PayPal.'
