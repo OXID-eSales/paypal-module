@@ -53,6 +53,7 @@ class PaymentGateway extends PaymentGateway_parent
             (string) $capture->status === 'COMPLETED'
         ) {
             $order->setTransId($capture->id);
+            $order->markOrderPaid();
         }
 
         return $success;
