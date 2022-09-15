@@ -93,6 +93,7 @@ class PayPalAddressResponseToOxidAddress
             $DBTablePrefix . 'lname' => self::getLastName($shippingFullName),
             $DBTablePrefix . 'street' => $street,
             $DBTablePrefix . 'streetnr' => $streetNo,
+            $DBTablePrefix . 'addinfo' => $shippingAddress->address_line_2,
             $DBTablePrefix . 'city' => $shippingAddress->admin_area_2,
             $DBTablePrefix . 'countryid' => $countryId,
             $DBTablePrefix . 'country' => $countryName,
