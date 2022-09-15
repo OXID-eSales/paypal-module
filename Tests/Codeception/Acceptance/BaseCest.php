@@ -51,6 +51,7 @@ abstract class BaseCest
         $I->updateConfigInDatabase('blShowNetPrice', false, 'bool');
         $I->updateModuleConfiguration('oscPayPalLoginWithPayPalEMail', false);
 
+        $I->deleteFromDatabase('oxaddress', ['OXFNAME' => $_ENV['sBuyerFirstName']]);
         $I->deleteFromDatabase('oxorder', ['OXORDERNR >=' => '2']);
         $I->deleteFromDatabase('oxuserbaskets', ['OXTITLE >=' => 'savedbasket']);
         $I->deleteFromDatabase('oscpaypal_order', ['OXSHOPID >' => '0']);
