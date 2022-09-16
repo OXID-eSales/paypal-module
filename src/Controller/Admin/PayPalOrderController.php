@@ -12,6 +12,7 @@ use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\RefundRequest;
@@ -116,12 +117,25 @@ class PayPalOrderController extends AdminDetailsController
                 $paypalOrder = $this->getPayPalCheckoutOrder();
                 $this->addTplParam('payPalOrder', $paypalOrder);
 
+                /** @var ?Capture $capture */
+                $capture = $order->getOrderPaymentCapture();
+                $this->addTplParam('capture', $capture);
+                $transactionId = $capture ? $capture->id : '';
+
                 /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
                 $paypalOrderModel = $this->getServiceFromContainer(OrderRepository::class)
-                    ->paypalOrderByOrderIdAndPayPalId($orderId, $paypalOrder->id);
+                    ->paypalOrderByOrderIdAndPayPalId($orderId, $paypalOrder->id, $transactionId);
                 $this->addTplParam('payPalOrderDetails', $paypalOrderModel);
 
-                $this->addTplParam('capture', $order->getOrderPaymentCapture());
+                //TODO: refactor, this is workaround if webhook failed to update information
+                if (
+                    $capture &&
+                    (ApiOrderModel::STATUS_SAVED === $paypalOrderModel->getStatus()) &&
+                    (Capture::STATUS_COMPLETED === $capture->status)
+                ) {
+                    $paypalOrderModel->setStatus(Capture::STATUS_COMPLETED);
+                    $paypalOrderModel->save();
+                }
             } catch (ApiException $exception) {
                 $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()));
                 Registry::getLogger()->error($exception->getMessage());
