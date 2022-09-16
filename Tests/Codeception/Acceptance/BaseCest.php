@@ -262,6 +262,17 @@ abstract class BaseCest
         return  $thankYouPage->grabOrderNumber();
     }
 
+    protected function approveExpressPayPalTransaction(AcceptanceTester $I, string $addParams = ''): string
+    {
+        //workaround to approve the transaction on PayPal side
+        $loginPage = new PayPalLogin($I);
+        $loginPage->openPayPalApprovalPage($I, $addParams);
+        $token = $loginPage->getToken();
+        $loginPage->approveExpressPayPal($_ENV['sBuyerLogin'], $_ENV['sBuyerPassword']);
+
+        return $token;
+    }
+
     protected function approvePayPalTransaction(AcceptanceTester $I, string $addParams = ''): string
     {
         //workaround to approve the transaction on PayPal side

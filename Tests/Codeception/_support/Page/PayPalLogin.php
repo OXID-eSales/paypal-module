@@ -223,13 +223,37 @@ class PayPalLogin extends Page
      * @param string $userName
      * @param string $userPassword
      */
+    public function approveExpressPayPal(string $userName, string $userPassword): void
+    {
+        $I = $this->user;
+
+        $this->loginToPayPal($userName, $userPassword);
+
+        $I->seeElement('//button[@id="change-shipping"]');
+        $I->click('//button[@id="change-shipping"]');
+        $I->wait(1);
+        $I->seeElement('//select[@id="shippingDropdown"]');
+
+        $this->confirmPayPal();
+    }
+
+    /**
+     * @param string $userName
+     * @param string $userPassword
+     */
     public function approveStandardPayPal(string $userName, string $userPassword): void
     {
         $I = $this->user;
 
         $this->loginToPayPal($userName, $userPassword);
 
+        $I->seeElement('//button[@id="change-shipping"]');
+        $I->click('//button[@id="change-shipping"]');
+        $I->wait(1);
+        $I->dontSeeElement('//select[@id="shippingDropdown"]');
+
         $this->confirmPayPal();
+        $I->waitForPageLoad();
     }
 
     public function confirmPayPal()
