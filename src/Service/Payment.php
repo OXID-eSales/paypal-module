@@ -260,12 +260,15 @@ class Payment
                 $payPalTransactionId = $result->purchase_units[0]->payments->captures[0]->id;
             }
 
+            $status = $result && $result->purchase_units[0]->payments->captures[0]->status ?
+                $result->purchase_units[0]->payments->captures[0]->status : ApiOrderModel::STATUS_SAVED;
+
             /** @var PayPalOrderModel $paypalOrder */
             $this->trackPayPalOrder(
                 $order->getId(),
                 $checkoutOrderId,
                 $paymentId,
-                ApiOrderModel::STATUS_SAVED,
+                $status,
                 (string) $payPalTransactionId
             );
         } catch (Exception $exception) {
