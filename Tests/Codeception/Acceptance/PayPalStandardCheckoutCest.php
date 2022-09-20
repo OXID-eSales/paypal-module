@@ -13,6 +13,7 @@ use OxidEsales\Codeception\Page\Checkout\OrderCheckout;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
+use Codeception\Example;
 use OxidEsales\Codeception\Module\Translation\Translator;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\Page\PayPalLogin;
 use OxidEsales\Codeception\Page\Checkout\PaymentCheckout;
@@ -422,5 +423,56 @@ final class PayPalStandardCheckoutCest extends BaseCest
 
         //order was not pay with PayPal
         $I->seeNumRecords(0, 'oscpaypal_order');
+    }
+
+    /**
+     * @dataProvider providerStock
+     *
+     * @group oscpaypal_stock
+     */
+    public function checkoutWithPaypalStandardLastItemsOnStock(AcceptanceTester $I, Example $data): void
+    {
+        $I->wantToTest(
+            'checking out as logged in user with PayPal as payment method.'
+            . ' Shop login and PayPal login mail are different. Checking out last items on stock.'
+        );
+
+        $this->setProductAvailability($I, $data['stockflag'], Fixtures::get('product')['amount']);
+
+        $this->proceedToPaymentStep($I);
+
+        /** @var PaymentCheckout $paymentCheckout */
+        $paymentCheckout = new PaymentCheckout($I);
+        $paymentCheckout->selectPayment(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID)
+            ->goToNextStep()
+            ->submitOrder();
+
+        /** @var PayPalLogin $payPalLogin */
+        $payPalLogin = new PayPalLogin($I);
+        $payPalLogin->approveStandardPayPal($_ENV['sBuyerLogin'], $_ENV['sBuyerPassword']);
+
+        /** @var ThankYou $thankYouPage */
+        $thankYouPage = new ThankYou($I);
+        $orderNumber = $thankYouPage->grabOrderNumber();
+        $I->assertGreaterThan(1, $orderNumber);
+
+        $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
+        $I->seeInDataBase(
+            'oscpaypal_order',
+            [
+                'OXORDERID' => $orderId
+            ]
+        );
+        $I->seeInDataBase(
+            'oxorder',
+            [
+                'OXID' => $orderId,
+                'OXTOTALORDERSUM' => '119.6',
+                'OXBILLFNAME' => Fixtures::get('details')['firstname']
+            ]
+        );
+
+        //check database
+        $this->assertOrderPaidAndFinished($I);
     }
 }

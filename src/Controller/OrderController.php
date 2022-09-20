@@ -210,6 +210,10 @@ class OrderController extends OrderController_parent
             $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);
             $order->save();
         } catch (\Exception $exception) {
+            Registry::getLogger()->debug(
+                'PayPal Checkout error during order finalization ' . $exception->getMessage(),
+                [$exception]
+            );
             $this->cancelpaypalsession('cannot finalize order');
         }
 

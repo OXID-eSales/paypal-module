@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 
+use Codeception\Example;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
@@ -174,6 +175,52 @@ final class PayPalExpressCheckoutCest extends BaseCest
         $I->see('Completed');
         $I->seeElement('//input[@value="Refund"]');
         $I->see('119,60 EUR');
+
+        //check database
+        $this->assertOrderPaidAndFinished($I);
+    }
+
+    /**
+     * @dataProvider providerStock
+     *
+     * @group oscpaypal_stock
+     */
+    public function checkoutLastItemInStockWithPUIViaPayPal(AcceptanceTester $I, Example $data): void
+    {
+        $I->wantToTest(
+            'logged in user with Express successfully places an order for last available items.'
+        );
+
+        $this->setProductAvailability($I, $data['stockflag'], Fixtures::get('product')['amount']);
+
+        $this->proceedToBasketStep($I);
+        $token = $this->approveExpressPayPalTransaction($I);
+
+        //We just skipped the address and payment step
+        //pretend we are back in shop after clicking PayPal button and approving order
+        $I->amOnUrl($this->getShopUrl() . '?cl=order');
+        $I->see(Translator::translate('MESSAGE_SUBMIT_BOTTOM'));
+
+        $orderNumber = $this->finalizeOrderInOrderStep($I);
+        $I->assertGreaterThan(1, $orderNumber);
+
+        $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
+        $I->seeInDataBase(
+            'oscpaypal_order',
+            [
+                'OXORDERID' => $orderId,
+                'OXPAYPALORDERID' => $token
+            ]
+        );
+        $I->seeInDataBase(
+            'oxorder',
+            [
+                'OXID' => $orderId,
+                'OXTOTALORDERSUM' => '119.6',
+                'OXBILLFNAME' => Fixtures::get('details')['firstname'],
+                'OXDELFNAME' => ''
+            ]
+        );
 
         //check database
         $this->assertOrderPaidAndFinished($I);

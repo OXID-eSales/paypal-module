@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
 use Codeception\Example;
@@ -227,7 +228,7 @@ final class PuiCheckoutCest extends BaseCest
         $I->seeElement('//input[@id="refundAmount"]');
         $I->see('119,60 EUR');
 
-        //NOTE: we have no available webhook end point during this test, so order will not yet be marked as paid
+        //NOTE: if we have no available webhook end point during this test, order will not yet be marked as paid
         //$oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
     }
 
@@ -301,5 +302,60 @@ final class PuiCheckoutCest extends BaseCest
         //no change in database
         $I->seeNumRecords(0, 'oscpaypal_order');
         $I->seeNumRecords(1, 'oxorder');
+    }
+
+    /**
+     * @dataProvider providerStock
+     *
+     * @group oscpaypal_stock
+     */
+    public function checkoutLastItemInStockWithPUIViaPayPal(AcceptanceTester $I, Example $data): void
+    {
+        $I->wantToTest(
+            'logged in user with pui via PayPal successfully places an order for last available items.'
+        );
+
+        $this->setProductAvailability($I, $data['stockflag'], Fixtures::get('product')['amount']);
+
+        $I->updateInDatabase(
+            'oxuser',
+            [
+                'oxfon' => '040111222333',
+                'oxbirthdate' => '2000-04-01'
+            ],
+            [
+                'oxusername' => Fixtures::get('userName')
+            ]
+        );
+
+        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
+
+        $paymentCheckout = new PaymentCheckout($I);
+        /** @var OrderCheckout $orderCheckout */
+        $paymentCheckout->selectPayment(PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID)
+            ->goToNextStep()
+            ->submitOrder();
+        $I->waitForPageLoad();
+
+        $thankYouPage = new ThankYou($I);
+        $orderNumber = $thankYouPage->grabOrderNumber();
+        $I->assertGreaterThan(1, $orderNumber);
+
+        $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
+        $I->seeInDataBase(
+            'oscpaypal_order',
+            [
+                'OXORDERID' => $orderId
+            ]
+        );
+
+        $I->seeInDataBase(
+            'oxorder',
+            [
+                'OXID' => $orderId,
+                'OXTOTALORDERSUM' => '119.6',
+                'OXBILLFNAME' => Fixtures::get('details')['firstname']
+            ]
+        );
     }
 }
