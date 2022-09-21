@@ -114,6 +114,7 @@ class PayPalOrderController extends AdminDetailsController
         if ($order->paidWithPayPal()) {
             // normal paypal order
             try {
+                /** @var PayPalOrder $paypalOrder */
                 $paypalOrder = $this->getPayPalCheckoutOrder();
                 $this->addTplParam('payPalOrder', $paypalOrder);
 
@@ -230,17 +231,6 @@ class PayPalOrderController extends AdminDetailsController
             $this->payPalSoapOrder = $order;
         }
         return $this->payPalSoapOrder;
-    }
-
-    /**
-     * Get order payment capture id
-     *
-     * @return Capture|null
-     * @throws StandardException|ApiException
-     */
-    protected function getOrderPaymentCapture(): ?Capture
-    {
-        return $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures[0] ?? null;
     }
 
     /**
