@@ -48,6 +48,8 @@
             "OxidSolutionCatalysts\\PayPal\\Tests\\": "Tests\\"
         }
     },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "scripts": {
        "phpcs": "phpcs --standard=tests/phpcs.xml",
        "phpcbf": "phpcbf --standard=tests/phpcs.xml",
