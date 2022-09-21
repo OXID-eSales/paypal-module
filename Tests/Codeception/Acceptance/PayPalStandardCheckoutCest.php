@@ -34,11 +34,11 @@ final class PayPalStandardCheckoutCest extends BaseCest
         parent::_after($I);
     }
 
-    public function checkoutWithPaypalStandard(AcceptanceTester $I): void
+    public function checkoutWithPaypalStandardAndRefund(AcceptanceTester $I): void
     {
         $I->wantToTest(
             'checking out as logged in user with PayPal as payment method.'
-            . ' Shop login and PayPal login mail are the same.'
+            . ' Shop login and PayPal login mail are the same. Refund after order completion.'
         );
 
         $this->setUserDataSameAsPayPal($I);
@@ -86,6 +86,22 @@ final class PayPalStandardCheckoutCest extends BaseCest
 
         //check database
         $this->assertOrderPaidAndFinished($I);
+
+        //click refund
+        $I->click('//input[@value="Refund"]');
+        $I->see('Refunded');
+        $I->dontSeeElement('//input[@value="Refund"]');
+
+        //check database
+        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'REFUNDED']);
+
+        $orderId = $I->grabFromDatabase('oscpaypal_order', 'oxorderid');
+        $transactionId = $I->grabFromDatabase(
+            'oscpaypal_order',
+            'oscpaypaltransactionid',
+            ['oscpaypalstatus' => 'REFUNDED']
+        );
+        $I->assertNotEmpty($transactionId);
     }
 
     public function checkoutWithPaypalStandardCaptureLater(AcceptanceTester $I): void
@@ -192,6 +208,7 @@ final class PayPalStandardCheckoutCest extends BaseCest
         $I->assertStringStartsWith('OK', $transStatus);
     }
 
+    /** @group man_capture */
     public function checkoutWithPaypalStandardDifferentEmail(AcceptanceTester $I): void
     {
         $I->wantToTest(
