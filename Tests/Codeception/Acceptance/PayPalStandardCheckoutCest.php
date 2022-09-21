@@ -154,6 +154,42 @@ final class PayPalStandardCheckoutCest extends BaseCest
 
         $I->seeNumRecords(1, 'oscpaypal_order');
         $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'APPROVED']);
+
+        //let's see what capture does
+        $I->click('//input[@value="Capture"]');
+        $I->waitForPageLoad();
+
+        $I->see(Translator::translate('OSC_PAYPAL_HISTORY_PAYPAL_STATUS'));
+        $I->see('Completed');
+        $I->seeElement('//input[@value="Refund"]');
+        $I->see('119,60 EUR');
+
+        //check database
+        $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
+
+        $orderId = $I->grabFromDatabase('oscpaypal_order', 'oxorderid');
+        $transactionId = $I->grabFromDatabase('oscpaypal_order', 'oscpaypaltransactionid');
+        $I->assertNotEmpty($transactionId);
+
+        $I->seeNumRecords(1, 'oscpaypal_order');
+        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'COMPLETED']);
+
+        $I->assertEquals(
+            $transactionId,
+            $I->grabFromDatabase(
+                'oscpaypal_order',
+                'oscpaypaltransactionid',
+                [
+                    'oscpaypalstatus' => 'COMPLETED'
+                ]
+            )
+        );
+
+        $oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
+        $I->assertStringStartsWith(date('Y-m-d'), $oxPaid);
+
+        $transStatus = $I->grabFromDatabase('oxorder', 'oxtransstatus', ['OXID' => $orderId]);
+        $I->assertStringStartsWith('OK', $transStatus);
     }
 
     public function checkoutWithPaypalStandardDifferentEmail(AcceptanceTester $I): void

@@ -21,6 +21,7 @@ use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderAuthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Payments\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\CaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\ReauthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
@@ -213,10 +214,14 @@ class Payment
     public function doCapturePayPalOrder(
         EshopModelOrder $order,
         string $checkoutOrderId,
-        string $paymentId
+        string $paymentId,
+        ApiOrderModel $payPalOrder = null
     ): ApiOrderModel {
 
-        $payPalOrder = $this->fetchOrderFields($checkoutOrderId, 'payment_source');
+        /** @var ApiOrderModel $payPalOrder */
+        $payPalOrder = is_null($payPalOrder) || !isset($payPalOrder->payment_source) ?
+            $this->fetchOrderFields($checkoutOrderId, 'payment_source') :
+            $payPalOrder;
 
         //Verify 3D result if acdc payment
         if (!$this->verify3D($paymentId, $payPalOrder)) {
@@ -250,15 +255,17 @@ class Payment
 
                 // capture
                 $request = new CaptureRequest();
-                $paymentService->captureAuthorizedPayment($authorizationId, $request, '');
+                /** @var Capture $capture */
+                $capture = $paymentService->captureAuthorizedPayment($authorizationId, $request, '');
                 $result = $this->fetchOrderFields($checkoutOrderId);
-                $payPalTransactionId = $result->purchase_units[0]->payments->captures[0]->id;
             } else {
                 $request = new OrderCaptureRequest();
                 /** @var ApiOrderModel */
                 $result = $orderService->capturePaymentForOrder('', $checkoutOrderId, $request, '');
-                $payPalTransactionId = $result->purchase_units[0]->payments->captures[0]->id;
             }
+
+            $payPalTransactionId = $result && isset($result->purchase_units[0]->payments->captures[0]->id) ?
+                        $result->purchase_units[0]->payments->captures[0]->id : '';
 
             $status = $result && $result->purchase_units[0]->payments->captures[0]->status ?
                 $result->purchase_units[0]->payments->captures[0]->status : ApiOrderModel::STATUS_SAVED;
