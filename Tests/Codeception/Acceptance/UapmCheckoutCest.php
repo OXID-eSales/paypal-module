@@ -540,7 +540,7 @@ final class UapmCheckoutCest extends BaseCest
 
     /**
      * @dataProvider providerPaymentMethods
-     * @group checkmenow
+     *
      * @group oscpaypal_with_webhook
      */
     public function checkoutWithAcdcViaPayPalImpatientCustomerOtherPaymentMethod(

@@ -208,7 +208,6 @@ final class PayPalStandardCheckoutCest extends BaseCest
         $I->assertStringStartsWith('OK', $transStatus);
     }
 
-    /** @group man_capture */
     public function checkoutWithPaypalStandardDifferentEmail(AcceptanceTester $I): void
     {
         $I->wantToTest(
