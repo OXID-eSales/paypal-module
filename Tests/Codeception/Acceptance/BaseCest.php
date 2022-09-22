@@ -302,7 +302,7 @@ abstract class BaseCest
         $loginPage = new PayPalLogin($I);
         $loginPage->openPayPalApprovalPageAsAnonymousUser($I, $addParams);
         $token = $loginPage->getToken();
-        $loginPage->approveStandardPayPal($_ENV['sBuyerLogin'], $_ENV['sBuyerPassword']);
+        $loginPage->approveExpressPayPal($_ENV['sBuyerLogin'], $_ENV['sBuyerPassword']);
 
         return $token;
     }
