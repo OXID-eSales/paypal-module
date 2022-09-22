@@ -218,6 +218,7 @@ final class UapmCheckoutCest extends BaseCest
      *       And this test will be slow because webhook needs some wait time.
      *
      * @group oscpaypal_with_webhook
+     * @group oscpaypal_with_webhook_uapm
      * @dataProvider providerPaymentMethods
      */
     public function checkoutWithUapmViaPayPalSuccessWebhook(AcceptanceTester $I, Example $data): void
