@@ -31,6 +31,8 @@ final class AdminOnboardingCest extends BaseCest
     {
         parent::_before($I);
 
+        $I->markTestIncomplete('TODO: use sandbox business account with disposable webhook');
+
         $I->updateModuleConfiguration('oscPayPalSandboxClientId', '');
         $I->updateModuleConfiguration('oscPayPalSandboxMode', false);
         $I->updateModuleConfiguration('oscPayPalSandboxClientSecret', '');
