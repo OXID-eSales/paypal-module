@@ -39,7 +39,146 @@ final class PuiCheckoutCest extends BaseCest
             ]
         );
 
+        $I->wait(5); //TODO: check in which cases we hit the sandbox rate limit
+
         parent::_after($I);
+    }
+
+    /**
+     * @group osc_paypal_checkout_pui_success
+     */
+    public function checkoutWithPUIViaPayPalSuccessEnterMandatoryFields(AcceptanceTester $I): void
+    {
+        $I->wantToTest('logged in user with PUI via PayPal successfully places an order.');
+
+        $I->seeNumRecords(0, 'oscpaypal_order');
+        $I->seeNumRecords(1, 'oxorder');
+
+        $I->updateInDatabase(
+            'oxuser',
+            [
+                'oxfon' => '',
+            ],
+            [
+                'oxid' => Fixtures::get('userId')
+            ]
+        );
+
+        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
+
+        $paymentCheckout = new PaymentCheckout($I);
+        /** @var OrderCheckout $orderCheckout */
+        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_pui')
+            ->goToNextStep();
+
+        $I->executeJS('document.getElementsByName("pui_required[phonenumber]")[0].value = "040111222333";');
+        $I->executeJS('document.getElementsByName("pui_required[birthdate][year]")[0].value = "2000";');
+        $I->executeJS('document.getElementsByName("pui_required[birthdate][month]")[0].value = "4";');
+        $I->executeJS('document.getElementsByName("pui_required[birthdate][day]")[0].value = "1";');
+
+        $orderCheckout->submitOrder();
+        $I->waitForPageLoad();
+
+        $thankYouPage = new ThankYou($I);
+        $orderNumber = $thankYouPage->grabOrderNumber();
+        $I->assertGreaterThan(1, $orderNumber);
+
+        $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
+        $I->seeInDataBase(
+            'oscpaypal_order',
+            [
+                'OXORDERID' => $orderId
+            ]
+        );
+
+        $I->seeInDataBase(
+            'oxorder',
+            [
+                'OXID' => $orderId,
+                'OXTOTALORDERSUM' => '119.6',
+                'OXBILLFNAME' => Fixtures::get('details')['firstname']
+            ]
+        );
+
+        //PayPal needs a little time to process the transaction
+        $I->wait(30);
+
+        //As we have a PayPal order now, also check admin
+        $this->openOrderPayPal($I, (string) $orderNumber);
+        $I->wait(1);
+        $I->see(Translator::translate('OSC_PAYPAL_HISTORY_PAYPAL_STATUS'));
+        $I->see(Translator::translate('OSC_PAYPAL_STATUS_COMPLETED'));
+        $I->seeElement('//input[@id="refundAmount"]');
+        $I->see('119,60 EUR');
+
+        //NOTE: we have no available webhook end point during this test, so order will not yet be marked as paid
+        //$oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
+    }
+
+    /**
+     * @group osc_paypal_checkout_pui_success
+     */
+    public function checkoutWithPUIViaPayPalSuccess(AcceptanceTester $I): void
+    {
+        $I->wantToTest('logged in user with PUI via PayPal successfully places an order.');
+
+        $I->seeNumRecords(0, 'oscpaypal_order');
+        $I->seeNumRecords(1, 'oxorder');
+
+        $I->updateInDatabase(
+            'oxuser',
+            [
+                'oxfon' => '040111222333',
+                'oxbirthdate' => '2000-04-01'
+            ],
+            [
+                'oxusername' => Fixtures::get('userName')
+            ]
+        );
+
+        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
+
+        $paymentCheckout = new PaymentCheckout($I);
+        /** @var OrderCheckout $orderCheckout */
+        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_pui')
+            ->goToNextStep();
+        $orderCheckout->submitOrder();
+        $I->waitForPageLoad();
+
+        $thankYouPage = new ThankYou($I);
+        $orderNumber = $thankYouPage->grabOrderNumber();
+        $I->assertGreaterThan(1, $orderNumber);
+
+        $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
+        $I->seeInDataBase(
+            'oscpaypal_order',
+            [
+                'OXORDERID' => $orderId
+            ]
+        );
+
+        $I->seeInDataBase(
+            'oxorder',
+            [
+                'OXID' => $orderId,
+                'OXTOTALORDERSUM' => '119.6',
+                'OXBILLFNAME' => Fixtures::get('details')['firstname']
+            ]
+        );
+
+        //PayPal needs a little time to process the transaction
+        $I->wait(30);
+
+        //As we have a PayPal order now, also check admin
+        $this->openOrderPayPal($I, (string) $orderNumber);
+        $I->wait(1);
+        $I->see(Translator::translate('OSC_PAYPAL_HISTORY_PAYPAL_STATUS'));
+        $I->see(Translator::translate('OSC_PAYPAL_STATUS_COMPLETED'));
+        $I->seeElement('//input[@id="refundAmount"]');
+        $I->see('119,60 EUR');
+
+        //NOTE: if we have no available webhook end point during this test, order will not yet be marked as paid
+        //$oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
     }
 
     public function checkoutWithPuiViaPayPalMissingRequiredFields(AcceptanceTester $I): void
@@ -48,6 +187,16 @@ final class PuiCheckoutCest extends BaseCest
 
         $I->seeNumRecords(0, 'oscpaypal_order');
         $I->seeNumRecords(1, 'oxorder');
+
+        $I->updateInDatabase(
+            'oxuser',
+            [
+                'oxfon' => ''
+            ],
+            [
+                'oxid' => Fixtures::get('userId')
+            ]
+        );
 
         $this->proceedToPaymentStep($I, Fixtures::get('userName'));
 
@@ -109,127 +258,6 @@ final class PuiCheckoutCest extends BaseCest
         //got an order
         $I->seeNumRecords(1, 'oscpaypal_order');
         $I->seeNumRecords(2, 'oxorder');
-    }
-
-    public function checkoutWithPUIViaPayPalSuccessEnterMandatoryFields(AcceptanceTester $I): void
-    {
-        $I->wantToTest('logged in user with PUI via PayPal successfully places an order.');
-
-        $I->seeNumRecords(0, 'oscpaypal_order');
-        $I->seeNumRecords(1, 'oxorder');
-
-        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
-
-        $paymentCheckout = new PaymentCheckout($I);
-        /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_pui')
-            ->goToNextStep();
-
-        $I->executeJS('document.getElementsByName("pui_required[phonenumber]")[0].value = "040111222333";');
-        $I->executeJS('document.getElementsByName("pui_required[birthdate][year]")[0].value = "2000";');
-        $I->executeJS('document.getElementsByName("pui_required[birthdate][month]")[0].value = "4";');
-        $I->executeJS('document.getElementsByName("pui_required[birthdate][day]")[0].value = "1";');
-
-        $orderCheckout->submitOrder();
-        $I->waitForPageLoad();
-
-        $thankYouPage = new ThankYou($I);
-        $orderNumber = $thankYouPage->grabOrderNumber();
-        $I->assertGreaterThan(1, $orderNumber);
-
-        $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
-        $I->seeInDataBase(
-            'oscpaypal_order',
-            [
-                'OXORDERID' => $orderId
-            ]
-        );
-
-        $I->seeInDataBase(
-            'oxorder',
-            [
-                'OXID' => $orderId,
-                'OXTOTALORDERSUM' => '119.6',
-                'OXBILLFNAME' => Fixtures::get('details')['firstname']
-            ]
-        );
-
-        //PayPal needs a little time to process the transaction
-        $I->wait(5);
-
-        //As we have a PayPal order now, also check admin
-        $this->openOrderPayPal($I, (string) $orderNumber);
-        $I->wait(1);
-        $I->see(Translator::translate('OSC_PAYPAL_HISTORY_PAYPAL_STATUS'));
-        $I->see(Translator::translate('OSC_PAYPAL_STATUS_COMPLETED'));
-        $I->seeElement('//input[@id="refundAmount"]');
-        $I->see('119,60 EUR');
-
-        //NOTE: we have no available webhook end point during this test, so order will not yet be marked as paid
-        //$oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
-    }
-
-    public function checkoutWithPUIViaPayPalSuccess(AcceptanceTester $I): void
-    {
-        $I->wantToTest('logged in user with PUI via PayPal successfully places an order.');
-
-        $I->seeNumRecords(0, 'oscpaypal_order');
-        $I->seeNumRecords(1, 'oxorder');
-
-        $I->updateInDatabase(
-            'oxuser',
-            [
-                'oxfon' => '040111222333',
-                'oxbirthdate' => '2000-04-01'
-            ],
-            [
-                'oxusername' => Fixtures::get('userName')
-            ]
-        );
-
-        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
-
-        $paymentCheckout = new PaymentCheckout($I);
-        /** @var OrderCheckout $orderCheckout */
-        $orderCheckout = $paymentCheckout->selectPayment('oscpaypal_pui')
-            ->goToNextStep();
-        $orderCheckout->submitOrder();
-        $I->waitForPageLoad();
-
-        $thankYouPage = new ThankYou($I);
-        $orderNumber = $thankYouPage->grabOrderNumber();
-        $I->assertGreaterThan(1, $orderNumber);
-
-        $orderId = $I->grabFromDatabase('oxorder', 'oxid', ['OXORDERNR' => $orderNumber]);
-        $I->seeInDataBase(
-            'oscpaypal_order',
-            [
-                'OXORDERID' => $orderId
-            ]
-        );
-
-        $I->seeInDataBase(
-            'oxorder',
-            [
-                'OXID' => $orderId,
-                'OXTOTALORDERSUM' => '119.6',
-                'OXBILLFNAME' => Fixtures::get('details')['firstname']
-            ]
-        );
-
-        //PayPal needs a little time to process the transaction
-        $I->wait(5);
-
-        //As we have a PayPal order now, also check admin
-        $this->openOrderPayPal($I, (string) $orderNumber);
-        $I->wait(1);
-        $I->see(Translator::translate('OSC_PAYPAL_HISTORY_PAYPAL_STATUS'));
-        $I->see(Translator::translate('OSC_PAYPAL_STATUS_COMPLETED'));
-        $I->seeElement('//input[@id="refundAmount"]');
-        $I->see('119,60 EUR');
-
-        //NOTE: if we have no available webhook end point during this test, order will not yet be marked as paid
-        //$oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
     }
 
     protected function providerPUIFailure(): array

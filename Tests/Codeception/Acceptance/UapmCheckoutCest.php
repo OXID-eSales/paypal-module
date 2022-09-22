@@ -37,7 +37,7 @@ final class UapmCheckoutCest extends BaseCest
     protected function providerPaymentMethods(): array
     {
         return [
-            ['paymentId' => PayPalDefinitions::SOFORT_PAYPAL_PAYMENT_ID],
+           # ['paymentId' => PayPalDefinitions::SOFORT_PAYPAL_PAYMENT_ID],
             ['paymentId' => PayPalDefinitions::GIROPAY_PAYPAL_PAYMENT_ID]
         ];
     }
@@ -179,8 +179,7 @@ final class UapmCheckoutCest extends BaseCest
         list($orderNumber, $orderId) = $this->doCheckout($I, $paymentMethodId);
 
         $I->seeNumRecords(1, 'oscpaypal_order');
-        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'SAVED']);
-        //SAVED as webhook did not send information about capture
+        $I->wait(20); //some time for PP to process
 
         //As we have a PayPal order now, also check admin
         //NOTE: as data is fetched from PayPal API on the fly, we either see APPROVED or COMPLETED depending on
@@ -206,9 +205,7 @@ final class UapmCheckoutCest extends BaseCest
         $I->assertEquals($transactionId, $transId);
 
         $I->seeNumRecords(1, 'oscpaypal_order');
-
-        //webhook did not yet kick in, so we still see it as saved
-        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'SAVED']);
+        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'COMPLETED']);
     }
 
     /**
