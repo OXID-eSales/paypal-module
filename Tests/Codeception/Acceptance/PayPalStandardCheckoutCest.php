@@ -266,7 +266,6 @@ final class PayPalStandardCheckoutCest extends BaseCest
         $paymentCheckout = new PaymentCheckout($I);
         $paymentCheckout->selectPayment(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID)
             ->goToNextStep();
-
         $this->submitOrderWithUpdatedDeliveryAddress($I);
 
         /** @var PayPalLogin $payPalLogin */
