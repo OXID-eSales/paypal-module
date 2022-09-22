@@ -19,6 +19,7 @@ use OxidSolutionCatalysts\PayPal\Tests\Codeception\Page\PayPalAdmin;
  *
  * @group osc_paypal
  * @group osc_paypal_admin
+ * @group osc_paypal_admin_config
  */
 final class AdminCest extends BaseCest
 {
