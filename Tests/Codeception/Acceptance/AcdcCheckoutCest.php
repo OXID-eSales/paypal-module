@@ -34,7 +34,7 @@ final class AcdcCheckoutCest extends BaseCest
         $I->seeNumRecords(1, 'oxorder');
     }
 
-    public function checkoutWithAcdcPayPalDoesNotInterfereWithStandardPayPal(AcceptanceTester $I): void
+    public function checkoutWithAcdcPayPalDoesNotInterfereWithExpressPayPal(AcceptanceTester $I): void
     {
         $I->wantToTest('switching between payment methods');
 

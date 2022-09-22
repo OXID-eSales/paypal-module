@@ -45,7 +45,7 @@ final class UapmCheckoutCest extends BaseCest
     /**
      * @dataProvider providerPaymentMethods
      */
-    public function checkoutWithUapmPayPalDoesNotInterfereWithStandardPayPal(AcceptanceTester $I, Example $data): void
+    public function checkoutWithUapmPayPalDoesNotInterfereWithExpressPayPal(AcceptanceTester $I, Example $data): void
     {
         $I->wantToTest('switching between payment methods');
 
@@ -62,7 +62,7 @@ final class UapmCheckoutCest extends BaseCest
 
         //change decision to standard PayPal
         //NOTE: this is approving PayPal 'brute force' by simulating PayPal redirect
-        $token = $this->approvePayPalTransaction($I);
+        $token = $this->approveExpressPayPalTransaction($I);
 
         //pretend we are back in shop after clicking PayPal button and approving the order
         $I->amOnUrl($this->getShopUrl() . '?cl=payment');
@@ -84,7 +84,7 @@ final class UapmCheckoutCest extends BaseCest
         $productNavigation = new ProductNavigation($I);
         $productNavigation->openProductDetailsPage(Fixtures::get('product')['oxid']);
         $I->seeElement("#PayPalButtonProductMain");
-        $newToken = $this->approvePayPalTransaction($I, '&context=continue&aid=' . Fixtures::get('product')['oxid']);
+        $newToken = $this->approveExpressPayPalTransaction($I, '&context=continue&aid=' . Fixtures::get('product')['oxid']);
 
         //we got a fresh paypal order in the session
         $I->assertNotEquals($token, $newToken);

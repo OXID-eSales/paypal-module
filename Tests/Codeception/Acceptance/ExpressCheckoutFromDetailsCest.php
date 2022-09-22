@@ -454,7 +454,7 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
         $I->seeElement("#PayPalButtonProductMain");
 
         $stoken = $I->grabValueFrom('//input[@name="stoken"]');
-        $token = $this->approvePayPalTransaction($I, '&aid=' . Fixtures::get('product')['oxid']);
+        $token = $this->approveExpressPayPalTransaction($I, '&aid=' . Fixtures::get('product')['oxid']);
 
         //shipping dropdown on PayPal page
         $I->seeElement('//button[@id="change-shipping"]');
