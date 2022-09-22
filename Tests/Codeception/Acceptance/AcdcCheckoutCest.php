@@ -49,7 +49,7 @@ final class AcdcCheckoutCest extends BaseCest
         $I->dontSee(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
 
         $I->amOnPage('/en/cart');
-        $token = $this->approvePayPalTransaction($I);
+        $token = $this->approveExpressPayPalTransaction($I);
         $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
 
         $I->amOnUrl($this->getShopUrl() . '?cl=payment');
