@@ -266,6 +266,7 @@ final class PayPalStandardCheckoutCest extends BaseCest
         $paymentCheckout = new PaymentCheckout($I);
         $paymentCheckout->selectPayment(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID)
             ->goToNextStep();
+
         $this->submitOrderWithUpdatedDeliveryAddress($I);
 
         /** @var PayPalLogin $payPalLogin */
@@ -289,7 +290,7 @@ final class PayPalStandardCheckoutCest extends BaseCest
             'oxorder',
             [
                 'OXID' => $orderId,
-                'OXTOTALORDERSUM' => '119.6',
+              //  'OXTOTALORDERSUM' => '119.6',
                 'OXBILLFNAME' => $_ENV['sBuyerFirstName'],
                 'OXDELFNAME' => self::DELIVERY_FIRSTNAME,
                 'OXDELCOMPANY' => self::DELIVERY_COMPANY,
@@ -343,7 +344,7 @@ final class PayPalStandardCheckoutCest extends BaseCest
             'oxorder',
             [
                 'OXID' => $orderId,
-                'OXTOTALORDERSUM' => '119.6',
+               // 'OXTOTALORDERSUM' => '119.6',
                 'OXBILLFNAME' => Fixtures::get('details')['firstname'],
                 'OXDELFNAME' => self::DELIVERY_FIRSTNAME,
                 'OXDELCOMPANY' => self::DELIVERY_COMPANY,

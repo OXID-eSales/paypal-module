@@ -194,7 +194,7 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
             'oxorder',
             [
                 'OXID' => $orderId,
-                'OXTOTALORDERSUM' => Fixtures::get('product')['one_item_total_with_shipping'],
+               // 'OXTOTALORDERSUM' => Fixtures::get('product')['one_item_total_with_shipping'],
                 'OXBILLFNAME' => Fixtures::get('details')['firstname'],
                 'OXDELFNAME' => self::DELIVERY_FIRSTNAME,
                 'OXDELCOMPANY' => self::DELIVERY_COMPANY,
@@ -393,7 +393,6 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
             'oxorder',
             [
                 'OXID' => $orderId,
-                'OXTOTALORDERSUM' => Fixtures::get('product')['one_item_total_with_shipping'],
                 'OXBILLFNAME' => $_ENV['sBuyerFirstName'],
                 'OXDELFNAME' => self::DELIVERY_FIRSTNAME,
                 'OXDELCOMPANY' => self::DELIVERY_COMPANY,
