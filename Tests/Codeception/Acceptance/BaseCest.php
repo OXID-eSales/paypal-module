@@ -43,7 +43,7 @@ abstract class BaseCest
         $I->updateModuleConfiguration('oscPayPalSandboxClientId', $_ENV['oscPayPalSandboxClientId']);
         $I->updateModuleConfiguration('oscPayPalSandboxMode', true);
         $I->updateModuleConfiguration('oscPayPalSandboxClientSecret', $_ENV['oscPayPalSandboxClientSecret']);
-        $I->updateModuleConfiguration('oscPayPalSandboxWebhookId', 'dummy_webhook_id');
+        $I->updateModuleConfiguration('oscPayPalSandboxWebhookId', $_ENV['oscPayPalSandboxWebhookId']);
 
         $I->updateConfigInDatabase('blUseStock', true);
         $this->setProductAvailability($I, 1, 15);
