@@ -87,6 +87,7 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
     }
 
     /**
+     * @group oscpaypal_with_webhook_from_details
      * @group oscpaypal_with_webhook
      */
     public function expressCheckoutFromDetailsButtonWithWebhook(AcceptanceTester $I): void
