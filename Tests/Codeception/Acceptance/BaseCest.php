@@ -221,8 +221,6 @@ abstract class BaseCest
 
     protected function proceedToBasketStep(AcceptanceTester $I, string $userName = null, bool $logMeIn = true): void
     {
-        $I->updateModuleConfiguration('oscPayPalShowCheckoutButton', true);
-
         $userName = $userName ?: Fixtures::get('userName');
 
         $home = $I->openShop();
@@ -324,7 +322,6 @@ abstract class BaseCest
     {
         $I->updateModuleConfiguration('oscPayPalShowProductDetailsButton', $flag);
         $I->updateModuleConfiguration('oscPayPalShowBasketButton', $flag);
-        $I->updateModuleConfiguration('oscPayPalShowCheckoutButton', $flag);
     }
 
     protected function checkWeAreStillInAdminPanel(AcceptanceTester $I): void
