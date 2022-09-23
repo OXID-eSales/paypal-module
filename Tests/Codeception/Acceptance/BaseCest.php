@@ -45,6 +45,9 @@ abstract class BaseCest
         $I->updateModuleConfiguration('oscPayPalSandboxClientSecret', $_ENV['oscPayPalSandboxClientSecret']);
         $I->updateModuleConfiguration('oscPayPalSandboxWebhookId', 'dummy_webhook_id');
 
+        $I->updateConfigInDatabase('blUseStock', true);
+        $this->setProductAvailability($I, 1, 15);
+
         $this->ensureShopUserData($I);
         $this->enableExpressButtons($I);
         $this->enablePayments($I);
@@ -234,8 +237,14 @@ abstract class BaseCest
         //add product to basket and start checkout
         $product = Fixtures::get('product');
         $basket = new Basket($I);
-        $basket->addProductToBasketAndOpenBasket($product['oxid'], $product['amount'], 'basket');
+
+        /** @var BasketCheckout $basketPage */
+        $basketPage = $basket->addProductToBasketAndOpenBasket($product['oxid'], $product['amount'], 'basket');
         $I->see(Translator::translate('CONTINUE_TO_NEXT_STEP'));
+
+        $I->seeElement($basketPage->basketUpdateButton);
+        $I->click($basketPage->basketUpdateButton);
+        $I->waitForPageLoad();
     }
 
     protected function finalizeOrder(AcceptanceTester $I): string
@@ -386,5 +395,20 @@ abstract class BaseCest
         $userCheckout->goToNextStep()
             ->goToNextStep()
             ->submitOrder();
+    }
+
+    protected function providerStock(): array
+    {
+        return [
+            'outofstock_none' => [
+                'stockflag' => 1
+            ],
+            'outofstock_offline' => [
+                'stockflag' => 2
+            ],
+            'outofstock_notbuyable' => [
+                'stockflag' => 3
+            ],
+        ];
     }
 }

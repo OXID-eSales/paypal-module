@@ -60,6 +60,10 @@ class OrderController extends OrderController_parent
             $this->addTplParam('oscpaypal_executing_order', true);
         }
 
+        if ($paymentService->getSessionPaymentId() === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID) {
+            $paymentService->removeTemporaryOrder();
+        }
+
         return parent::render();
     }
 
@@ -206,6 +210,10 @@ class OrderController extends OrderController_parent
             $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);
             $order->save();
         } catch (\Exception $exception) {
+            Registry::getLogger()->debug(
+                'PayPal Checkout error during order finalization ' . $exception->getMessage(),
+                [$exception]
+            );
             $this->cancelpaypalsession('cannot finalize order');
         }
 

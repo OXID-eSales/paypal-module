@@ -38,7 +38,8 @@ return [
         'nettoprice_single' => 25.13,
         'nettoprice_cart' => 100.52,
         'total_price' => '119,6 €',
-        'one_item_total_with_shipping' => '33.80'
+        'one_item_total_with_shipping' => '33.80',
+        'oxartnum' => '3503'
     ],
     'parent' => [
         'id' => '531b537118f5f4d7a427cdb825440922',

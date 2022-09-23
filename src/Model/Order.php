@@ -582,7 +582,7 @@ class Order extends Order_parent
         return parent::finalizeOrder($basket, $user, $recalculatingOrder);
     }
 
-    protected function isPayPalOrderCompleted(PayPalOrder $apiOrder): bool
+    public function isPayPalOrderCompleted(PayPalOrder $apiOrder): bool
     {
         return (
             isset($apiOrder->status) &&

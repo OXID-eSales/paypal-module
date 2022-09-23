@@ -16,7 +16,7 @@
             "target-directory": "osc/paypal",
         "blacklist-filter": [
                 "resources/**/*",
-                "tests/**/*"
+                "Tests/**/*"
             ]
         }
     },
@@ -27,7 +27,7 @@
         }
     ],
     "require": {
-         "oxid-esales/oxideshop-ce": "^6.12 | 6.5.x-dev",
+        "oxid-esales/oxideshop-ce": "^6.12 | 6.5.x-dev",
         "giggsey/libphonenumber-for-php": "^8.12",
         "viison/address-splitter": "^0.3.4",
         "webmozart/path-util": "^2.3.0",
@@ -48,6 +48,8 @@
             "OxidSolutionCatalysts\\PayPal\\Tests\\": "Tests\\"
         }
     },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
     "scripts": {
        "phpcs": "phpcs --standard=tests/phpcs.xml",
        "phpcbf": "phpcbf --standard=tests/phpcs.xml",

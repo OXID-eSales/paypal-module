@@ -12,6 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
+use Codeception\Example;
 use OxidEsales\Codeception\Page\Checkout\ThankYou;
 use OxidEsales\Codeception\Page\Checkout\PaymentCheckout;
 use OxidEsales\Codeception\Page\Checkout\OrderCheckout;
@@ -247,15 +248,18 @@ final class AcdcCheckoutCest extends BaseCest
      *       Test might be unstable depending on how fast PayPal sends notifications.
      *       And this test will be slow because webhook needs some wait time.
      *
+     * @dataProvider providerStock
+     *
+     * @group oscpaypal_stock
      * @group oscpaypal_with_webhook
      */
-    public function checkoutLastItemInStockWithACDCViaPayPal(AcceptanceTester $I): void
+    public function checkoutLastItemInStockWithACDCViaPayPal(AcceptanceTester $I, Example $data): void
     {
         $I->wantToTest(
             'logged in user with acdc via PayPal successfully places an order for last available item.'
         );
 
-        $this->setProductAvailability($I, 3, 1);
+        $this->setProductAvailability($I, $data['stockflag'], Fixtures::get('product')['amount']);
 
         $this->proceedToPaymentStep($I, Fixtures::get('userName'));
 
@@ -291,6 +295,7 @@ final class AcdcCheckoutCest extends BaseCest
      *       Test might be unstable depending on how fast PayPal sends notifications.
      *       And this test will be slow because webhook needs some wait time.
      *
+     * @group oscpaypal_stock
      * @group oscpaypal_with_webhook
      */
     public function checkoutLastItemInStockOutOfStockWithACDCViaPayPal(AcceptanceTester $I): void
@@ -299,7 +304,7 @@ final class AcdcCheckoutCest extends BaseCest
             'logged in user with acdc via PayPal cannot place an order for not buyable out of stock item.'
         );
 
-        $this->setProductAvailability($I, 3, 1);
+        $this->setProductAvailability($I, 2, Fixtures::get('product')['amount']);
 
         $this->proceedToPaymentStep($I, Fixtures::get('userName'));
 
@@ -310,7 +315,7 @@ final class AcdcCheckoutCest extends BaseCest
         $I->waitForPageLoad();
 
         //someone else was faster
-        $this->setProductAvailability($I, 3, 0);
+        $this->setProductAvailability($I, 2, 0);
 
         /** @var OrderCheckout $orderCheckout */
         $orderCheckout = new OrderCheckout($I);
@@ -320,8 +325,12 @@ final class AcdcCheckoutCest extends BaseCest
         //Give page time to finish
         $I->wait(30);
 
-        //TODO: doublecheck if we miss out of stock items during order validation
-        $I->see(Translator::translate('ERROR_MESSAGE_ARTICLE_ARTICLE_NOT_BUYABLE'));
+        $I->see(sprintf(
+            Translator::translate(
+                'ERROR_MESSAGE_ARTICLE_ARTICLE_DOES_NOT_EXIST'
+            ),
+            Fixtures::get('product')['oxartnum']
+        ));
 
         $I->seeNumRecords(0, 'oscpaypal_order');
         $I->seeNumRecords(1, 'oxorder');

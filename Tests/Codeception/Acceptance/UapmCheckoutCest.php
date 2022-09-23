@@ -248,19 +248,21 @@ final class UapmCheckoutCest extends BaseCest
      *       Test might be unstable depending on how fast PayPal sends notifications.
      *       And this test will be slow because webhook needs some wait time.
      *
+     * @dataProvider providerStock
+     *
+     * @group oscpaypal_stock
      * @group oscpaypal_with_webhook
-     * @dataProvider providerPaymentMethods
      */
     public function checkoutLastItemInStockWithUapmViaPayPal(AcceptanceTester $I, Example $data): void
     {
-        $paymentMethodId = $data['paymentId'];
+        $paymentMethodId = PayPalDefinitions::GIROPAY_PAYPAL_PAYMENT_ID;
 
         $I->wantToTest(
             'logged in user with ' . $paymentMethodId .
             ' via PayPal successfully places an order for last available item.'
         );
 
-        $this->setProductAvailability($I, 3, 1);
+        $this->setProductAvailability($I, $data['stockflag'], Fixtures::get('product')['amount']);
 
         list($orderNumber, $orderId) = $this->doCheckout($I, $paymentMethodId);
 
@@ -538,7 +540,7 @@ final class UapmCheckoutCest extends BaseCest
 
     /**
      * @dataProvider providerPaymentMethods
-     * @group checkmenow
+     *
      * @group oscpaypal_with_webhook
      */
     public function checkoutWithAcdcViaPayPalImpatientCustomerOtherPaymentMethod(
