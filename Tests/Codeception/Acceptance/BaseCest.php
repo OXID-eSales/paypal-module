@@ -43,7 +43,10 @@ abstract class BaseCest
         $I->updateModuleConfiguration('oscPayPalSandboxClientId', $_ENV['oscPayPalSandboxClientId']);
         $I->updateModuleConfiguration('oscPayPalSandboxMode', true);
         $I->updateModuleConfiguration('oscPayPalSandboxClientSecret', $_ENV['oscPayPalSandboxClientSecret']);
-        $I->updateModuleConfiguration('oscPayPalSandboxWebhookId', 'dummy_webhook_id');
+        $I->updateModuleConfiguration('oscPayPalSandboxWebhookId', $_ENV['oscPayPalSandboxWebhookId']);
+
+        $I->updateModuleConfiguration('oscPayPalSandboxAcdcEligibility', true);
+        $I->updateModuleConfiguration('oscPayPalSandboxPuiEligibility', true);
 
         $I->updateConfigInDatabase('blUseStock', true);
         $this->setProductAvailability($I, 1, 15);
@@ -62,6 +65,7 @@ abstract class BaseCest
 
         $I->deleteFromDatabase('oxaddress', ['OXFNAME' => $_ENV['sBuyerFirstName']]);
         $I->deleteFromDatabase('oxorder', ['OXORDERNR >=' => '2']);
+        $I->deleteFromDatabase('oxorder', ['OXORDERNR <' => '1']);
         $I->deleteFromDatabase('oxuserbaskets', ['OXTITLE >=' => 'savedbasket']);
         $I->deleteFromDatabase('oscpaypal_order', ['OXSHOPID >' => '0']);
         $I->resetCookie('sid');
@@ -217,8 +221,6 @@ abstract class BaseCest
 
     protected function proceedToBasketStep(AcceptanceTester $I, string $userName = null, bool $logMeIn = true): void
     {
-        $I->updateModuleConfiguration('oscPayPalShowCheckoutButton', true);
-
         $userName = $userName ?: Fixtures::get('userName');
 
         $home = $I->openShop();
@@ -299,7 +301,7 @@ abstract class BaseCest
         $loginPage = new PayPalLogin($I);
         $loginPage->openPayPalApprovalPageAsAnonymousUser($I, $addParams);
         $token = $loginPage->getToken();
-        $loginPage->approveStandardPayPal($_ENV['sBuyerLogin'], $_ENV['sBuyerPassword']);
+        $loginPage->approveExpressPayPal($_ENV['sBuyerLogin'], $_ENV['sBuyerPassword']);
 
         return $token;
     }
@@ -320,7 +322,6 @@ abstract class BaseCest
     {
         $I->updateModuleConfiguration('oscPayPalShowProductDetailsButton', $flag);
         $I->updateModuleConfiguration('oscPayPalShowBasketButton', $flag);
-        $I->updateModuleConfiguration('oscPayPalShowCheckoutButton', $flag);
     }
 
     protected function checkWeAreStillInAdminPanel(AcceptanceTester $I): void

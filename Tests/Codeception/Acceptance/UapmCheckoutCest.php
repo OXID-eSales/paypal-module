@@ -37,7 +37,7 @@ final class UapmCheckoutCest extends BaseCest
     protected function providerPaymentMethods(): array
     {
         return [
-            ['paymentId' => PayPalDefinitions::SOFORT_PAYPAL_PAYMENT_ID],
+           # ['paymentId' => PayPalDefinitions::SOFORT_PAYPAL_PAYMENT_ID],
             ['paymentId' => PayPalDefinitions::GIROPAY_PAYPAL_PAYMENT_ID]
         ];
     }
@@ -45,7 +45,7 @@ final class UapmCheckoutCest extends BaseCest
     /**
      * @dataProvider providerPaymentMethods
      */
-    public function checkoutWithUapmPayPalDoesNotInterfereWithStandardPayPal(AcceptanceTester $I, Example $data): void
+    public function checkoutWithUapmPayPalDoesNotInterfereWithExpressPayPal(AcceptanceTester $I, Example $data): void
     {
         $I->wantToTest('switching between payment methods');
 
@@ -62,7 +62,7 @@ final class UapmCheckoutCest extends BaseCest
 
         //change decision to standard PayPal
         //NOTE: this is approving PayPal 'brute force' by simulating PayPal redirect
-        $token = $this->approvePayPalTransaction($I);
+        $token = $this->approveExpressPayPalTransaction($I);
 
         //pretend we are back in shop after clicking PayPal button and approving the order
         $I->amOnUrl($this->getShopUrl() . '?cl=payment');
@@ -84,7 +84,7 @@ final class UapmCheckoutCest extends BaseCest
         $productNavigation = new ProductNavigation($I);
         $productNavigation->openProductDetailsPage(Fixtures::get('product')['oxid']);
         $I->seeElement("#PayPalButtonProductMain");
-        $newToken = $this->approvePayPalTransaction($I, '&context=continue&aid=' . Fixtures::get('product')['oxid']);
+        $newToken = $this->approveExpressPayPalTransaction($I, '&context=continue&aid=' . Fixtures::get('product')['oxid']);
 
         //we got a fresh paypal order in the session
         $I->assertNotEquals($token, $newToken);
@@ -179,8 +179,7 @@ final class UapmCheckoutCest extends BaseCest
         list($orderNumber, $orderId) = $this->doCheckout($I, $paymentMethodId);
 
         $I->seeNumRecords(1, 'oscpaypal_order');
-        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'SAVED']);
-        //SAVED as webhook did not send information about capture
+        $I->wait(20); //some time for PP to process
 
         //As we have a PayPal order now, also check admin
         //NOTE: as data is fetched from PayPal API on the fly, we either see APPROVED or COMPLETED depending on
@@ -206,9 +205,7 @@ final class UapmCheckoutCest extends BaseCest
         $I->assertEquals($transactionId, $transId);
 
         $I->seeNumRecords(1, 'oscpaypal_order');
-
-        //webhook did not yet kick in, so we still see it as saved
-        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'SAVED']);
+        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'COMPLETED']);
     }
 
     /**
@@ -218,6 +215,7 @@ final class UapmCheckoutCest extends BaseCest
      *       And this test will be slow because webhook needs some wait time.
      *
      * @group oscpaypal_with_webhook
+     * @group oscpaypal_with_webhook_uapm
      * @dataProvider providerPaymentMethods
      */
     public function checkoutWithUapmViaPayPalSuccessWebhook(AcceptanceTester $I, Example $data): void

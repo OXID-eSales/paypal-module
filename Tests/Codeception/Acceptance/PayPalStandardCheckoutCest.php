@@ -289,7 +289,7 @@ final class PayPalStandardCheckoutCest extends BaseCest
             'oxorder',
             [
                 'OXID' => $orderId,
-                'OXTOTALORDERSUM' => '119.6',
+              //  'OXTOTALORDERSUM' => '119.6',
                 'OXBILLFNAME' => $_ENV['sBuyerFirstName'],
                 'OXDELFNAME' => self::DELIVERY_FIRSTNAME,
                 'OXDELCOMPANY' => self::DELIVERY_COMPANY,
@@ -343,7 +343,7 @@ final class PayPalStandardCheckoutCest extends BaseCest
             'oxorder',
             [
                 'OXID' => $orderId,
-                'OXTOTALORDERSUM' => '119.6',
+               // 'OXTOTALORDERSUM' => '119.6',
                 'OXBILLFNAME' => Fixtures::get('details')['firstname'],
                 'OXDELFNAME' => self::DELIVERY_FIRSTNAME,
                 'OXDELCOMPANY' => self::DELIVERY_COMPANY,

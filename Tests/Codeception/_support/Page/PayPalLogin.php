@@ -231,7 +231,7 @@ class PayPalLogin extends Page
 
         $I->seeElement('//button[@id="change-shipping"]');
         $I->click('//button[@id="change-shipping"]');
-        $I->wait(1);
+        $I->wait(2);
         $I->seeElement('//select[@id="shippingDropdown"]');
 
         $this->confirmPayPal();

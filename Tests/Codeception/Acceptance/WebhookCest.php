@@ -58,7 +58,7 @@ final class WebhookCest extends BaseCest
         }
 
         //ensure log is empty and written to by this test
-        $I->retryAssertEmpty(file_get_contents(OX_LOG_FILE));
+        $I->retryAssertEmpty(file_get_contents(OX_LOG_FILE), file_get_contents(OX_LOG_FILE));
 
         EshopRegistry::getLogger()->debug('START WEBHOOK TEST');
         $I->retryAssertStringContainsString('START WEBHOOK TEST', file_get_contents(OX_LOG_FILE));

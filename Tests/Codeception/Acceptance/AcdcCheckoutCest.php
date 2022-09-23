@@ -34,7 +34,7 @@ final class AcdcCheckoutCest extends BaseCest
         $I->seeNumRecords(1, 'oxorder');
     }
 
-    public function checkoutWithAcdcPayPalDoesNotInterfereWithStandardPayPal(AcceptanceTester $I): void
+    public function checkoutWithAcdcPayPalDoesNotInterfereWithExpressPayPal(AcceptanceTester $I): void
     {
         $I->wantToTest('switching between payment methods');
 
@@ -49,7 +49,7 @@ final class AcdcCheckoutCest extends BaseCest
         $I->dontSee(Translator::translate('OSC_PAYPAL_PAY_PROCESSED'));
 
         $I->amOnPage('/en/cart');
-        $token = $this->approvePayPalTransaction($I);
+        $token = $this->approveExpressPayPalTransaction($I);
         $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
 
         $I->amOnUrl($this->getShopUrl() . '?cl=payment');
