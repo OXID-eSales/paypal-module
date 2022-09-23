@@ -116,4 +116,18 @@ class User extends User_parent
             parent::onLogin($userName, $password);
         }
     }
+
+    /**
+     * Updates query for selecting orders.
+     *
+     * @param string $query
+     *
+     * @return string
+     */
+    protected function updateGetOrdersQuery($query)
+    {
+        $query = parent::updateGetOrdersQuery($query) . ' and oxordernr > 0 ';
+
+        return $query;
+    }
 }
