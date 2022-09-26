@@ -56,7 +56,10 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
         //NOTE: manually express checkout works if we have no sid cookie at this point,
         //      but codeception test did not have sid cookie at end of approveOrder call.
         //So for now, we test with a logged in customer
-        $token = $this->approveExpressPayPalTransaction($I, '&context=continue&aid=' . Fixtures::get('product')['oxid']);
+        $token = $this->approveExpressPayPalTransaction(
+            $I,
+            '&context=continue&aid=' . Fixtures::get('product')['oxid']
+        );
         $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
 
         //button will not be shown anymore because of started paypal session
@@ -112,7 +115,10 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
         //NOTE: manually express checkout works if we have no sid cookie at this point,
         //      but codeception test did not have sid cookie at end of approveOrder call.
         //So for now, we test with a logged in customer
-        $token = $this->approveExpressPayPalTransaction($I, '&context=continue&aid=' . Fixtures::get('product')['oxid']);
+        $token = $this->approveExpressPayPalTransaction(
+            $I,
+            '&context=continue&aid=' . Fixtures::get('product')['oxid']
+        );
         $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
 
         $I->amOnUrl($this->getShopUrl() . '?cl=order');
@@ -164,7 +170,10 @@ final class ExpressCheckoutFromDetailsCest extends BaseCest
         $I->seeElement("#PayPalButtonProductMain");
 
         //We have an empty cart at this time
-        $token = $this->approveExpressPayPalTransaction($I, '&context=continue&aid=' . Fixtures::get('product')['oxid']);
+        $token = $this->approveExpressPayPalTransaction(
+            $I,
+            '&context=continue&aid=' . Fixtures::get('product')['oxid']
+        );
         $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
 
         $I->amOnUrl($this->getShopUrl() . '?cl=order');

@@ -84,7 +84,10 @@ final class UapmCheckoutCest extends BaseCest
         $productNavigation = new ProductNavigation($I);
         $productNavigation->openProductDetailsPage(Fixtures::get('product')['oxid']);
         $I->seeElement("#PayPalButtonProductMain");
-        $newToken = $this->approveExpressPayPalTransaction($I, '&context=continue&aid=' . Fixtures::get('product')['oxid']);
+        $newToken = $this->approveExpressPayPalTransaction(
+            $I,
+            '&context=continue&aid=' . Fixtures::get('product')['oxid']
+        );
 
         //we got a fresh paypal order in the session
         $I->assertNotEquals($token, $newToken);
