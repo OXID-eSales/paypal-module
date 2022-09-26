@@ -143,14 +143,14 @@ class OrderRepository
         $queryBuilder = $this->queryBuilderFactory->create();
 
         $parameters = [
-            'oxorderid' => $shopOrderId
+            'oxorderid' => $shopOrderId,
+            'oscpaypaltransactionid' => $payPalTransactionId,
+            'oscpaypaltransactiontype' => Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
         ];
 
         if ($paypalOrderId) {
             $parameters['oxpaypalorderid'] = $paypalOrderId;
         }
-
-        $parameters['oscpaypaltransactionid'] = $payPalTransactionId;
 
         $queryBuilder->select('oxid')
             ->from('oscpaypal_order')
@@ -161,6 +161,7 @@ class OrderRepository
         }
 
         $queryBuilder->andWhere('oscpaypaltransactionid = :oscpaypaltransactionid');
+        $queryBuilder->andWhere('oscpaypaltransactiontype = :oscpaypaltransactiontype');
 
         $id = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)

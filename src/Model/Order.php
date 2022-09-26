@@ -183,15 +183,19 @@ class Order extends Order_parent
             $this->getServiceFromContainer(ModuleSettings::class)
                 ->getPayPalStandardCaptureStrategy() !== 'directly'
         ) {
+            //manual capture for PayPal standard will be done later, so no transaction id yet
+            $transactionId = '';
+
             $this->_setOrderStatus('NOT_FINISHED');
+            //prepare capture tracking
             $paymentService->trackPayPalOrder(
                 $this->getId(),
                 $payPalOrderId,
                 $paymentsId,
-                PayPalOrder::STATUS_APPROVED
+                PayPalOrder::STATUS_APPROVED,
+                '',
+                Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
             );
-            //TODO: we should not yet have a transaction id in this case, so no need to call api for details
-            //$transactionId = '';
         } else {
             // uAPM, PayPal Standard directly, PayPal Paylater
             $this->doExecutePayPalPayment($payPalOrderId);

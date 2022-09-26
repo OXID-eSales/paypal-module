@@ -20,6 +20,7 @@ use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModel;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 
 /**
  * Class OrderController
@@ -198,6 +199,8 @@ class OrderController extends OrderController_parent
 
         try {
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
+
+            /** @var PayPalApiModelOrder $payPalOrder */
             $payPalOrder = $paymentService->fetchOrderFields((string) $sessionCheckoutOrderId, '');
             if ('APPROVED' !== $payPalOrder->status) {
                 throw PayPalException::sessionPaymentFail();
