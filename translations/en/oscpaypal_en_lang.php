@@ -36,4 +36,5 @@ $aLang = [
     'PUI_PAYMENT_SOURCE_DECLINED_BY_PROCESSOR'    => 'It is not possible to use the selected payment method. This decision is based on automated data processing. You can find further information in the  <a href="https://www.ratepay.com/en/ratepay-data-privacy-statement/">Ratepay Data Privacy Statement</a> or you can contact Ratepay using this <a href="https://www.ratepay.com/en/contact/">contact form</a>.',
 
     'OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'      => 'Order execution in progress, please wait.',
+    'OSC_PAYPAL_LOG_IN_TO_CONTINUE'               => 'Please log in to continue checking out.',
 ];

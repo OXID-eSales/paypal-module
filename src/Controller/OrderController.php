@@ -12,6 +12,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Exception\RedirectWithMessage;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Exception\Redirect;
@@ -46,7 +47,10 @@ class OrderController extends OrderController_parent
     {
         if (Registry::getSession()->getVariable('oscpaypal_payment_redirect')) {
             Registry::getSession()->deleteVariable('oscpaypal_payment_redirect');
-            Registry::getUtils()->redirect(Registry::getConfig()->getShopSecureHomeURL() . 'cl=user', true, 302);
+            throw new RedirectWithMessage(
+                Registry::getConfig()->getShopSecureHomeURL() . 'cl=user',
+                'OSC_PAYPAL_LOG_IN_TO_CONTINUE'
+            );
         }
 
         $this->addTplParam('oscpaypal_executing_order', false);

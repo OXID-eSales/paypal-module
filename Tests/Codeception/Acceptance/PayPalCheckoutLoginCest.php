@@ -81,6 +81,7 @@ final class PayPalCheckoutLoginCest extends BaseCest
         //finalize order with logging in same user as paypal email
         $home = new Home($I);
         $home->loginUser($_ENV['sBuyerLogin'], Fixtures::get('userPassword'));
+        $I->dontSee(Translator::translate('OSC_PAYPAL_LOG_IN_TO_CONTINUE'));
 
         $page = new UserCheckout($I);
         $page->goToNextStep();
@@ -119,6 +120,7 @@ final class PayPalCheckoutLoginCest extends BaseCest
         //finalize order with logging in different user than paypal email
         $home = new Home($I);
         $home->loginUser(Fixtures::get('defaultUserName'), Fixtures::get('userPassword'));
+        $I->dontSee(Translator::translate('OSC_PAYPAL_LOG_IN_TO_CONTINUE'));
 
         $page = new UserCheckout($I);
         $page->goToNextStep();
@@ -420,6 +422,7 @@ final class PayPalCheckoutLoginCest extends BaseCest
         $I->waitForPageLoad();
 
         //we already have an account with password, we are just not logged in
+        $I->see(Translator::translate('OSC_PAYPAL_LOG_IN_TO_CONTINUE'));
         $I->dontSee(sprintf(Translator::translate('ERROR_MESSAGE_USER_USEREXISTS'), $_ENV['sBuyerLogin']));
         $I->dontSee(Translator::translate('MY_ACCOUNT'));
         $I->see(Translator::translate('LOGIN'));
