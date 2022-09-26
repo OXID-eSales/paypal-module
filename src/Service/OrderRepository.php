@@ -106,6 +106,27 @@ class OrderRepository
         return $order;
     }
 
+    public function getPayPalOrderIdByShopOrderId(string $shopOrderId): string
+    {
+        /** @var QueryBuilder $queryBuilder */
+        $queryBuilder = $this->queryBuilderFactory->create();
+
+        $parameters = [
+            'oxorderid' => $shopOrderId
+        ];
+
+        $queryBuilder->select('oxpaypalorderid')
+            ->from('oscpaypal_order')
+            ->where('oxorderid = :oxorderid');
+
+        $id = $queryBuilder->setParameters($parameters)
+            ->setMaxResults(1)
+            ->execute()
+            ->fetch(PDO::FETCH_COLUMN);
+
+        return (string) $id;
+    }
+
     public function cleanUpNotFinishedOrders(): void
     {
         /** @var QueryBuilder $queryBuilder */

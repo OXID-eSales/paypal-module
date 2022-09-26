@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Service;
 
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
@@ -119,6 +120,18 @@ final class OrderRepositoryTest extends BaseTestCase
         $this->assertSame(self::PAYPAL_TRANSACTIONID, $fromRepo->getTransactionId());
     }
 
+    public function testGetPayPalOrderIdByOrderId(): void
+    {
+        $orderRepo = $this->getServiceFromContainer(OrderRepository::class);
+
+        $this->prepareTestOrder();
+
+        $this->assertEquals(
+            self::PAYPAL_ORDERID,
+            $orderRepo->getPayPalOrderIdByShopOrderId(self::SHOP_ORDER_ID)
+        );
+    }
+
     private function prepareTestOrder(
         string $transId = self::PAYPAL_TRANSACTIONID,
         string $oxid = self::PAYPAL_OXID
@@ -132,7 +145,8 @@ final class OrderRepositoryTest extends BaseTestCase
                 'oxpaypalorderid' => self::PAYPAL_ORDERID,
                 'oscpaypalstatus' => self::PAYPAL_STATUS,
                 'oscpaymentmethodid' => self::PAYMENT_METHOD,
-                'oscpaypaltransactionid' => $transId
+                'oscpaypaltransactionid' => $transId,
+                'oscpaypaltransactiontype' => Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
             ]
         );
         $payPalOrder->save();
