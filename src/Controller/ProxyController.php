@@ -259,7 +259,8 @@ class ProxyController extends FrontendController
             $userComponent->loginPayPalCustomer($apiOrder);
             $isLoggedIn = true;
         } else {
-            //TODO: we should redirect to user step/login page via exception/ShopControl
+            //NOTE: ProxyController must not redirect from create Order/approvaOrder methods,
+            //      it has to show a json response in all cases.
             //tell order controller to redirect to checkout login
             Registry::getSession()->setVariable('oscpaypal_payment_redirect', true);
         }
