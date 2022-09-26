@@ -14,6 +14,7 @@ use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidEsales\EshopCommunity\Tests\Integration\Internal\ContainerTrait;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
 use Psr\Log\LoggerInterface;
@@ -147,7 +148,8 @@ class WebhookHandlerBaseTestCase extends UnitTestCase
                 'oxshopid' => '1',
                 'oxorderid' => self::SHOP_ORDER_ID,
                 'oxpaypalorderid' => $payPalOrderId,
-                'oscpaymentmethodid' => self::PAYMENT_METHOD
+                'oscpaymentmethodid' => self::PAYMENT_METHOD,
+                'oscpaypaltransactiontype' => Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
             ]
         );
         $payPalOrder->save();
