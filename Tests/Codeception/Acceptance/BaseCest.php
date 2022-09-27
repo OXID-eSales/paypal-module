@@ -12,6 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 use OxidEsales\Facts\Facts;
 use Codeception\Util\Fixtures;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Setup\Exception\ModuleSetupException;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\Page\PayPalLogin;
 use OxidEsales\Codeception\Module\Translation\Translator;
@@ -360,7 +361,11 @@ abstract class BaseCest
         $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
 
         $orderId = $I->grabFromDatabase('oscpaypal_order', 'oxorderid');
-        $transactionId = $I->grabFromDatabase('oscpaypal_order', 'oscpaypaltransactionid');
+        $transactionId = $I->grabFromDatabase(
+            'oscpaypal_order',
+            'oscpaypaltransactionid',
+            ['oscpaypaltransactiontype' => Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE]
+        );
 
         $oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
         $I->assertStringStartsWith(date('Y-m-d'), $oxPaid);
@@ -372,7 +377,14 @@ abstract class BaseCest
         $I->assertEquals($transactionId, $transId);
 
         $I->seeNumRecords(1, 'oscpaypal_order');
-        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'COMPLETED']);
+        $I->seeNumRecords(
+            1,
+            'oscpaypal_order',
+            [
+                              'oscpaypalstatus' => 'COMPLETED',
+                              'oscpaypaltransactiontype' => Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
+                          ]
+        );
 
         return $orderId;
     }

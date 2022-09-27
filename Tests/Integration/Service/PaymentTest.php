@@ -104,6 +104,8 @@ final class PaymentTest extends BaseTestCase
 
     public function testCreatePuiPayPalOrder(): void
     {
+        $this->markTestSkipped('For manual use only, for automatic tests we have codeception tests');
+
         //UnitTestCase::setRequestParameter only allows string values
         $_POST['pui_required'] = [
             'birthdate' => [
@@ -152,6 +154,8 @@ final class PaymentTest extends BaseTestCase
 
     public function testSandboxAccountCanCreatePuiOrder(): void
     {
+        $this->markTestSkipped('For manual use only, for automatic tests we have codeception tests');
+
         /** @var ApiOrderService $orderService */
         $orderService = EshopRegistry::get(ServiceFactory::class)
             ->getOrderService();

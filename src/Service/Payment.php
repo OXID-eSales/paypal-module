@@ -18,6 +18,7 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthorizationWithAdditionalData;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderAuthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
@@ -235,6 +236,7 @@ class Payment
 
         // Capture Order
         try {
+            //TODO: split into multiple methods
             if ($payPalOrder->intent === Constants::PAYPAL_ORDER_INTENT_AUTHORIZE) {
                 // if order approved then authorize
                 if ($payPalOrder->status === ApiOrderModel::STATUS_APPROVED) {
@@ -242,7 +244,9 @@ class Payment
                     $payPalOrder = $orderService->authorizePaymentForOrder('', $checkoutOrderId, $request, '');
                 }
 
-                $authorizationId = $payPalOrder->purchase_units[0]->payments->authorizations[0]->id;
+                /** @var AuthorizationWithAdditionalData $authorization */
+                $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
+                $authorizationId = $authorization->id;
 
                 // check if we need a reauthorization
                 $timeAuthorizationValidity = time()
@@ -252,6 +256,16 @@ class Payment
                     $reAuthorizeRequest = new ReauthorizeRequest();
                     $paymentService->reauthorizeAuthorizedPayment($authorizationId, $reAuthorizeRequest);
                 }
+
+                //track authorization
+                $this->trackPayPalOrder(
+                    $order->getId(),
+                    $checkoutOrderId,
+                    (string) $order->getFieldData('oxpaymenttype'),
+                    $authorization->status,
+                    $authorizationId,
+                    Constants::PAYPAL_TRANSACTION_TYPE_AUTH
+                );
 
                 // capture
                 $request = new CaptureRequest();
@@ -568,7 +582,8 @@ class Payment
         string $payPalOrderId,
         string $paymentMethodId,
         string $status,
-        string $payPalTransactionId = ''
+        string $payPalTransactionId = '',
+        string $transactionType = Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
     ): PayPalOrderModel {
         /** @var PayPalOrderModel $payPalOrder */
         $payPalOrder = $this->getPayPalCheckoutOrder($shopOrderId, $payPalOrderId, $payPalTransactionId);
@@ -576,6 +591,7 @@ class Payment
         $payPalOrder->setPaymentMethodId($paymentMethodId);
         $payPalOrder->setStatus($status);
         $payPalOrder->setTransactionId($payPalTransactionId);
+        $payPalOrder->setTransactionType($transactionType);
         $payPalOrder->save();
 
         return $payPalOrder;

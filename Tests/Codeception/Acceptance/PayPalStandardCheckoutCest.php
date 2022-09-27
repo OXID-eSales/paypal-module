@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 
 use OxidEsales\Codeception\Page\Checkout\OrderCheckout;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
@@ -93,13 +94,33 @@ final class PayPalStandardCheckoutCest extends BaseCest
         $I->dontSeeElement('//input[@value="Refund"]');
 
         //check database
-        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'REFUNDED']);
+        $I->seeNumRecords(
+            1,
+            'oscpaypal_order',
+            [
+                'oxorderid' => $orderId,
+                'oscpaypalstatus' => 'REFUNDED',
+                'oscpaypaltransactiontype' => Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
+            ]
+        );
 
-        $orderId = $I->grabFromDatabase('oscpaypal_order', 'oxorderid');
+        $I->seeNumRecords(
+            1,
+            'oscpaypal_order',
+            [
+                'oxorderid' => $orderId,
+                'oscpaypalstatus' => 'COMPLETED',
+                'oscpaypaltransactiontype' => Constants::PAYPAL_TRANSACTION_TYPE_REFUND
+            ]
+        );
+
         $transactionId = $I->grabFromDatabase(
             'oscpaypal_order',
             'oscpaypaltransactionid',
-            ['oscpaypalstatus' => 'REFUNDED']
+            [
+                'oxorderid' => $orderId,
+                'oscpaypaltransactiontype' => Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
+            ]
         );
         $I->assertNotEmpty($transactionId);
     }
@@ -160,7 +181,16 @@ final class PayPalStandardCheckoutCest extends BaseCest
         $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
 
         $orderId = $I->grabFromDatabase('oscpaypal_order', 'oxorderid');
-        $I->assertEmpty($I->grabFromDatabase('oscpaypal_order', 'oscpaypaltransactionid'));
+
+        $I->seeNumRecords(1, 'oscpaypal_order', ['oxorderid' => $orderId]);
+        $I->assertEmpty($I->grabFromDatabase(
+            'oscpaypal_order',
+            'oscpaypaltransactionid',
+            [
+                   'oxorderid' => $orderId,
+                   'oscpaypaltransactiontype' => Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
+               ]
+        ));
 
         $oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
         $I->assertStringStartsWith(date('0000-00-00'), $oxPaid);
@@ -181,22 +211,43 @@ final class PayPalStandardCheckoutCest extends BaseCest
         $I->see('119,60 EUR');
 
         //check database
-        $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
-
-        $orderId = $I->grabFromDatabase('oscpaypal_order', 'oxorderid');
-        $transactionId = $I->grabFromDatabase('oscpaypal_order', 'oscpaypaltransactionid');
+        $transactionId = $I->grabFromDatabase(
+            'oscpaypal_order',
+            'oscpaypaltransactionid',
+            [
+                'oxorderid' => $orderId,
+                'oscpaypaltransactiontype' => Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE,
+                'oscpaypalstatus' => 'COMPLETED'
+            ]
+        );
         $I->assertNotEmpty($transactionId);
 
-        $I->seeNumRecords(1, 'oscpaypal_order');
-        $I->seeNumRecords(1, 'oscpaypal_order', ['oscpaypalstatus' => 'COMPLETED']);
+        $I->seeNumRecords(2, 'oscpaypal_order');
+        $I->seeNumRecords(
+            1,
+            'oscpaypal_order',
+            [
+                              'oxorderid' => $orderId,
+                              'oscpaypaltransactiontype' => Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
+                          ]
+        );
+
+        $I->seeNumRecords(
+            1,
+            'oscpaypal_order',
+            [
+                              'oxorderid' => $orderId,
+                              'oscpaypaltransactiontype' => Constants::PAYPAL_TRANSACTION_TYPE_AUTH
+                          ]
+        );
 
         $I->assertEquals(
             $transactionId,
             $I->grabFromDatabase(
-                'oscpaypal_order',
-                'oscpaypaltransactionid',
+                'oxorder',
+                'OXTRANSID',
                 [
-                    'oscpaypalstatus' => 'COMPLETED'
+                    'oxid' => $orderId
                 ]
             )
         );

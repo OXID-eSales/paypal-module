@@ -35,6 +35,10 @@ class Constants
 
     public const PAYPAL_WAIT_FOR_WEBOOK_TIMEOUT_IN_SEC = 60;
 
+    public const PAYPAL_TRANSACTION_TYPE_CAPTURE = 'capture';
+    public const PAYPAL_TRANSACTION_TYPE_AUTH = 'authorization';
+    public const PAYPAL_TRANSACTION_TYPE_REFUND = 'refund';
+
     /**
      * Please note! The authorization of an order is valid for three days (1 Day = 86400 sec).
      * It will be refreshed automatically for a maximum of 29 days after ordering.

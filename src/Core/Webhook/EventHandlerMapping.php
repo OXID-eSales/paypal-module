@@ -12,6 +12,7 @@ use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutOrderCompletedHand
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutOrderApprovedHandler;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutPaymentApprovalReverseHandler;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureDeniedHandler;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureRefundedHandler;
 
 class EventHandlerMapping
 {
@@ -21,5 +22,6 @@ class EventHandlerMapping
         'CHECKOUT.ORDER.APPROVED' => CheckoutOrderApprovedHandler::class,
         'CHECKOUT.PAYMENT-APPROVAL.REVERSED' => CheckoutPaymentApprovalReverseHandler::class,
         'PAYMENT.CAPTURE.DENIED' => PaymentCaptureDeniedHandler::class,
+        'PAYMENT.CAPTURE.REFUNDED' => PaymentCaptureRefundedHandler::class,
     ];
 }

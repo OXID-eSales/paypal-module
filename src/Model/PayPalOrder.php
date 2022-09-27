@@ -151,4 +151,13 @@ class PayPalOrder extends BaseModel
             ]
         );
     }
+
+    public function setTransactionType(string $type): void
+    {
+        $this->assign(
+            [
+                'oscpaypaltransactiontype' => $type
+            ]
+        );
+    }
 }

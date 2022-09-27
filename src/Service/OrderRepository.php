@@ -106,6 +106,27 @@ class OrderRepository
         return $order;
     }
 
+    public function getPayPalOrderIdByShopOrderId(string $shopOrderId): string
+    {
+        /** @var QueryBuilder $queryBuilder */
+        $queryBuilder = $this->queryBuilderFactory->create();
+
+        $parameters = [
+            'oxorderid' => $shopOrderId
+        ];
+
+        $queryBuilder->select('oxpaypalorderid')
+            ->from('oscpaypal_order')
+            ->where('oxorderid = :oxorderid');
+
+        $id = $queryBuilder->setParameters($parameters)
+            ->setMaxResults(1)
+            ->execute()
+            ->fetch(PDO::FETCH_COLUMN);
+
+        return (string) $id;
+    }
+
     public function cleanUpNotFinishedOrders(): void
     {
         /** @var QueryBuilder $queryBuilder */
@@ -143,14 +164,14 @@ class OrderRepository
         $queryBuilder = $this->queryBuilderFactory->create();
 
         $parameters = [
-            'oxorderid' => $shopOrderId
+            'oxorderid' => $shopOrderId,
+            'oscpaypaltransactionid' => $payPalTransactionId,
+            'oscpaypaltransactiontype' => Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
         ];
 
         if ($paypalOrderId) {
             $parameters['oxpaypalorderid'] = $paypalOrderId;
         }
-
-        $parameters['oscpaypaltransactionid'] = $payPalTransactionId;
 
         $queryBuilder->select('oxid')
             ->from('oscpaypal_order')
@@ -161,6 +182,7 @@ class OrderRepository
         }
 
         $queryBuilder->andWhere('oscpaypaltransactionid = :oscpaypaltransactionid');
+        $queryBuilder->andWhere('oscpaypaltransactiontype = :oscpaypaltransactiontype');
 
         $id = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)

@@ -8,20 +8,25 @@
 namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
 
 use OxidEsales\Eshop\Application\Controller\Admin\AdminDetailsController;
+use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Payments\Refund;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\RefundRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Payments;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalPlusOrder;
 use OxidSolutionCatalysts\PayPal\Model\PayPalSoapOrder;
+use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalModelPayPalOrder;
 use OxidSolutionCatalysts\PayPal\Traits\AdminOrderTrait;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 
 /**
  * Order class wrapper for PayPal module
@@ -183,7 +188,10 @@ class PayPalOrderController extends AdminDetailsController
         $refundAll = $request->getRequestEscapedParameter('refundAll');
         $noteToPayer = $request->getRequestParameter('noteToPayer');
 
-        $capture = $this->getOrder()->getOrderPaymentCapture();
+        /** @var Order $order */
+        $order = $this->getOrder();
+
+        $capture = $order->getOrderPaymentCapture();
         if ($capture instanceof Capture) {
             $request = new RefundRequest();
             $request->note_to_payer = $noteToPayer;
@@ -195,8 +203,30 @@ class PayPalOrderController extends AdminDetailsController
             }
 
             /** @var Payments $paymentService */
-            $paymentService = Registry::get(ServiceFactory::class)->getPaymentService();
-            $paymentService->refundCapturedPayment($capture->id, $request, '');
+            $apiPaymentService = Registry::get(ServiceFactory::class)->getPaymentService();
+
+            /** @var OrderRepository $orderRepository */
+            $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
+            /** @var PayPalModelPayPalOrder $payPalOrder */
+            $payPalOrder = $orderRepository->paypalOrderByOrderIdAndPayPalId(
+                $order->getId(),
+                '',
+                $order->getTransactionId()
+            );
+
+            /** @var Refund $refund */
+            $refund = $apiPaymentService->refundCapturedPayment($capture->id, $request, '');
+
+            /** @var PaymentService $paymentService */
+            $paymentService = $this->getServiceFromContainer(PaymentService::class);
+            $paymentService->trackPayPalOrder(
+                $order->getId(),
+                $payPalOrder->getPayPalOrderId(),
+                (string) $order->getFieldData('oxpaymenttype'),
+                (string) $refund->status,
+                (string) $refund->id,
+                Constants::PAYPAL_TRANSACTION_TYPE_REFUND
+            );
         }
         // reset the order to get new informations about successful refund
         $this->refreshOrder();
