@@ -16,6 +16,7 @@ use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\Payment;
 use OxidSolutionCatalysts\PayPal\Service\StaticContent;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
+use OxidSolutionCatalysts\PayPal\Service\SCAValidator;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 
 trait ServiceContainer
@@ -48,6 +49,11 @@ trait ServiceContainer
                     new OrderRepository(
                         Registry::getConfig(),
                         DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)
+                    ),
+                    new SCAValidator(),
+                    new ModuleSettings(
+                        Registry::getConfig(),
+                        DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)
                     )
                 );
                 break;
@@ -62,6 +68,10 @@ trait ServiceContainer
                     Registry::getConfig(),
                     DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC),
                     Registry::getSession()
+                );
+                break;
+            case 'OxidSolutionCatalysts\PayPal\Service\SCAValidator':
+                $result = $this->services['OxidSolutionCatalysts\PayPal\Service\SCAValidator'] = new SCAValidator(
                 );
                 break;
         }
