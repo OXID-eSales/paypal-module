@@ -47,10 +47,13 @@ class PaymentGateway extends PaymentGateway_parent
             $success = parent::executePayment($amount, $order);
         }
         if (
+            $success &&
             $paymentService->isPayPalPayment() &&
-            ($capture = $order->getOrderPaymentCapture())
+            ($capture = $order->getOrderPaymentCapture()) &&
+            (string) $capture->status === 'COMPLETED'
         ) {
             $order->setTransId($capture->id);
+            $order->markOrderPaid();
         }
 
         return $success;
@@ -104,6 +107,8 @@ class PaymentGateway extends PaymentGateway_parent
             Registry::getLogger()->error("Error on execute pui payment call.", [$exception]);
         }
 
+        $this->_sLastError = $paymentService->getPaymentExecutionError();
+
         return $success;
     }
 
@@ -124,7 +129,7 @@ class PaymentGateway extends PaymentGateway_parent
                 Registry::getLogger()->error("Error on acdc order capture call.", [$exception]);
             }
 
-            // destroy PayPal-Session
+            // remove PayPal order id from session
             PayPalSession::unsetPayPalOrderId();
         }
 

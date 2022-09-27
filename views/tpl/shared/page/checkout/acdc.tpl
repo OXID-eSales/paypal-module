@@ -92,7 +92,11 @@
                 document.querySelector("#orderConfirmAgbBottom").addEventListener('submit', (event) => {
                     event.preventDefault();
 
-                    cardFields.submit({
+                    cardFields.submit( {
+
+                        // Trigger 3D Secure authentication
+                        contingencies: ['[{$oViewConf->getPayPalSCAContingency()}]'],
+
                         // Cardholder's first and last name
                         cardholderName: document.getElementById('card-holder-name').value,
                         // Billing Address
@@ -123,7 +127,7 @@
                         })
                     }).catch(function (err) {
                         console.log('Payment could not be processed! ' + JSON.stringify(err))
-                        window.location.href = '[{$sSelfLink|cat:"cl=order&acdcretry=true"}]'
+                        window.location.href = '[{$sSelfLink|cat:"cl=order&retryoscpp=acdcretry"}]'
                     })
                 })
             });

@@ -443,6 +443,18 @@ class ModuleSettings
         return $this->countryRestrictionForPayPalExpress;
     }
 
+    public function getPayPalSCAContingency(): string
+    {
+        $value = (string) $this->getSettingValue('oscPayPalSCAContingency');
+        return $value === Constants::PAYPAL_SCA_ALWAYS ? $value : Constants::PAYPAL_SCA_WHEN_REQUIRED;
+    }
+
+    public function alwaysIgnoreSCAResult(): bool
+    {
+        $value = (string) $this->getSettingValue('oscPayPalSCAContingency');
+        return $value === Constants::PAYPAL_SCA_DISABLED;
+    }
+
     /**
      * @return mixed
      */

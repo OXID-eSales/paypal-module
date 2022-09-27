@@ -60,6 +60,8 @@ final class WebhookTest extends BaseTestCase
 
     public function testWebhookCreationRoundtrip(): void
     {
+        $this->markTestSkipped('Test removes existing webhooks, only use manually until refactored');
+
         $loggerMock = $this->getPsrLoggerMock();
         $loggerMock->expects($this->never())
             ->method('error');

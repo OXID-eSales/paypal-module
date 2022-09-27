@@ -1,0 +1,69 @@
+{
+    "id": "WH-11M70257FM3776948-8B478027S4286991F",
+    "event_version": "1.0",
+    "create_time": "2021-03-19T08:17:29.782Z",
+    "resource_type": "capture",
+    "resource_version": "2.0",
+    "event_type": "PAYMENT.CAPTURE.DENIED",
+    "summary": "Payment denied for EUR 100.0 EUR",
+    "resource": {
+        "id": "826413372K501814R",
+        "status": "DECLINED",
+        "amount": {
+            "value": "100.00",
+            "currency_code": "EUR"
+        },
+        "seller_receivable_breakdown": {
+            "gross_amount": {
+                "value": "100.00",
+                "currency_code": "EUR"
+            },
+            "net_amount": {
+                "value": "100.00",
+                "currency_code": "EUR"
+            }
+        },
+        "custom_id": "MERCHANT_CUSTOM_ID",
+        "invoice_id": "MERCHANT_INVOICE_ID",
+        "seller_protection": {
+            "status": "NOT_ELIGIBLE"
+        },
+        "supplementary_data": {
+            "related_ids": {
+                "order_id": "5O190127TN364715T"
+            }
+        },
+        "update_time": "2021-03-19T08:17:12Z",
+        "create_time": "2021-03-19T08:16:01Z",
+        "final_capture": true,
+        "links": [
+            {
+                "method": "GET",
+                "rel": "self",
+                "href": "https://api-m.sandbox.paypal.com/v2/payments/captures/826413372K501814R"
+            },
+            {
+                "method": "POST",
+                "rel": "refund",
+                "href": "https://api-m.sandbox.paypal.com/v2/payments/captures/826413372K501814R/refund"
+            },
+            {
+                "method": "GET",
+                "rel": "up",
+                "href": "https://api-m.sandbox.paypal.com/v2/checkout/orders/5O190127TN364715T"
+            }
+        ]
+    },
+    "links": [
+        {
+            "href": "https://api-m.sandbox.paypal.com/v1/notifications/webhooks-events/WH-11M70257FM3776948-8B478027S4286991F",
+            "rel": "self",
+            "method": "GET"
+        },
+        {
+            "href": "https://api-m.sandbox.paypal.com/v1/notifications/webhooks-events/WH-11M70257FM3776948-8B478027S4286991F/resend",
+            "rel": "resend",
+            "method": "POST"
+        }
+    ]
+}

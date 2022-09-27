@@ -7,28 +7,21 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
-use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
-use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
-use OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait;
-use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
+use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 
-class PaymentCaptureDeniedHandler implements HandlerInterface
+class PaymentCaptureDeniedHandler extends PaymentCaptureCompletedHandler
 {
-    use WebhookHandlerTrait;
+    public const WEBHOOK_EVENT_NAME = 'PAYMENT.CAPTURE.DENIED';
 
-    /**
-     * @inheritDoc
-     * @throws ApiException
-     */
-    public function handle(Event $event): void
+    protected function markShopOrderPaymentStatus(EshopModelOrder $order, string $payPalTransactionId): void
     {
-        /** @var \OxidEsales\Eshop\Application\Model\Order $order */
-        $order = $this->getOrderByTransactionId($event);
-
-        $payPalTransactionId = $this->getPayPalId($event);
-        $data = $this->getEventPayload($event)['resource'];
-
-        $this->setStatus($order, $data['status'], '', $payPalTransactionId);
         $order->markOrderPaymentFailed();
+        $order->setTransId($payPalTransactionId);
+    }
+
+    protected function getPayPalOrderDetails(string $payPalOrderId): ?PayPalApiModelOrder
+    {
+        return null;
     }
 }

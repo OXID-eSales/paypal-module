@@ -9,23 +9,33 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
-use OxidEsales\TestingLibrary\UnitTestCase;
-use OxidEsales\Eshop\Core\Registry as EshopRegistry;
+use Doctrine\DBAL\Query\QueryBuilder;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidEsales\Eshop\Core\Registry as EshopRegistry;
+use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
-use OxidSolutionCatalysts\PayPalApi\Service\Orders as PayPalApiOrders;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutOrderApprovedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 
-final class CheckoutOrderApprovedHandlerTest extends UnitTestCase
+final class CheckoutOrderApprovedHandlerTest extends WebhookHandlerBaseTestCase
 {
+    public const WEBHOOK_EVENT = 'CHECKOUT.ORDER.APPROVED';
+
+    protected function tearDown(): void
+    {
+        $this->cleanUpTable('oscpaypal_order');
+        $this->cleanUpTable('oxorder');
+
+        parent::tearDown();
+    }
+
     public function testRequestMissingData(): void
     {
-        $event = new WebhookEvent([], 'CHECKOUT.ORDER.APPROVED');
+        $event = new WebhookEvent([], static::WEBHOOK_EVENT);
 
         $this->expectException(WebhookEventException::class);
         $this->expectExceptionMessage(WebhookEventException::mandatoryDataNotFound()->getMessage());
@@ -36,27 +46,36 @@ final class CheckoutOrderApprovedHandlerTest extends UnitTestCase
 
     public function testEshopOrderNotFoundByPayPalOrderId(): void
     {
-        $data = [
-            'resource' => [
-                'id' => 'PAYPALID123456789'
-            ]
-        ];
-        $event = new WebhookEvent($data, 'CHECKOUT.ORDER.APPROVED');
+        $data = $this->getRequestData('checkout_order_approved.json');
+        $payPalOrderId = $data['resource']['id'];
+
+        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
         $this->expectException(WebhookEventException::class);
-        $this->expectExceptionMessage(WebhookEventException::byPayPalOrderId('PAYPALID123456789')->getMessage());
+        $this->expectExceptionMessage(WebhookEventException::byPayPalOrderId($payPalOrderId)->getMessage());
 
         $handler = oxNew(CheckoutOrderApprovedHandler::class);
         $handler->handle($event);
     }
 
-    public function testCheckoutOrderApproved(): void
+    public function testCheckoutOrderApprovedIsAlreadyCompleted(): void
     {
-        $data = $this->getRequestData();
-        $event = new WebhookEvent($data, 'CHECKOUT.ORDER.APPROVED');
+        $data = $this->getRequestData('checkout_order_approved_pui_v2.json');
+        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
-        $orderMock = $this->prepareOrderMock('order_oxid');
-        $paypalOrderMock = $this->preparePayPalOrderMock($data['resource']['id']);
+        $orderMock = $this->prepareOrderMock('oxid', 'markOrderPaid', 'never');
+        $orderMock->expects($this->never())
+            ->method('setOrderNumber');
+
+        $paypalOrderMock = $this->getMockBuilder(PayPalOrderModel::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $serviceFactoryMock = $this->getMockBuilder(ServiceFactory::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $serviceFactoryMock->expects($this->never())
+            ->method('getOrderService');
 
         $orderRepositoryMock = $this->getMockBuilder(OrderRepository::class)
             ->disableOriginalConstructor()
@@ -68,93 +87,101 @@ final class CheckoutOrderApprovedHandlerTest extends UnitTestCase
             ->method('paypalOrderByOrderIdAndPayPalId')
             ->willReturn($paypalOrderMock);
 
-        $data = [
-            'status' => 'COMPLETED',
-            'purchase_units' => [
-                0 => [
-                    'payments' => [
-                        'captures' => [
-                            0 => [
-                                'status' => 'COMPLETED'
-                            ]
-                        ]
-                    ]
-                ]
-            ]
-        ];
-        $this->setServiceFactoryMock($data);
-
         $handler = $this->getMockBuilder(CheckoutOrderApprovedHandler::class)
-            ->setMethods(['getServiceFromContainer'])
+            ->onlyMethods(['getOrderRepository', 'getPaymentService'])
             ->getMock();
         $handler->expects($this->any())
-            ->method('getServiceFromContainer')
+            ->method('getOrderRepository')
             ->willReturn($orderRepositoryMock);
+        $handler->expects($this->never())
+            ->method('getPaymentService');
+
         $handler->handle($event);
     }
 
-    private function prepareOrderMock(string $orderId): EshopModelOrder
+    public function testCheckoutOrderApprovedNeedsCapture(): void
     {
-        $mock = $this->getMockBuilder(EshopModelOrder::class)
+        $data = $this->getRequestData('checkout_order_approved.json');
+        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
+        $payPalOrderId = $data['resource']['id'];
+
+        $this->prepareTestData($payPalOrderId);
+        $this->assertFalse($this->hasNonZeroOrderNumber());
+
+        $paymentServiceMock = $this->getMockBuilder(PaymentService::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $mock->expects($this->any())
-            ->method('load')
-            ->with($orderId)
-            ->willReturn(true);
-        $mock->expects($this->any())
-            ->method('getId')
-            ->willReturn($orderId);
-        $mock->expects($this->once())
-            ->method('markOrderPaid');
+        $paymentServiceMock->expects($this->once())
+            ->method('doCapturePayPalOrder');
 
-        return $mock;
+        $handler = $this->getMockBuilder(CheckoutOrderApprovedHandler::class)
+            ->onlyMethods(['getPaymentService'])
+            ->getMock();
+        $handler->expects($this->any())
+            ->method('getPaymentService')
+            ->willReturn($paymentServiceMock);
+
+        $handler->handle($event);
+
+        $this->assertPayPalOrderCount($payPalOrderId);
+        $this->assertTrue($this->hasNonZeroOrderNumber());
     }
 
-    private function preparePaypalOrderMock(string $orderId): PayPalOrderModel
+    public function testCheckoutOrderApprovedNeedsCaptureException(): void
     {
-        $mock = $this->getMockBuilder(PayPalOrderModel::class)
+        $data = $this->getRequestData('checkout_order_approved.json');
+        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
+        $payPalOrderId = $data['resource']['id'];
+
+        $this->prepareTestData($payPalOrderId);
+
+        $paymentServiceMock = $this->getMockBuilder(PaymentService::class)
             ->disableOriginalConstructor()
             ->getMock();
-        $mock->expects($this->any())
-            ->method('load')
-            ->with($orderId)
-            ->willReturn(true);
-        $mock->expects($this->any())
-            ->method('getId')
-            ->willReturn($orderId);
-        $mock->expects($this->once())
-            ->method('setStatus');
-        $mock->expects($this->once())
-            ->method('save');
+        $paymentServiceMock->expects($this->once())
+            ->method('doCapturePayPalOrder')
+            ->willThrowException(new \Exception('hit a capture api errorr'));
 
-        return $mock;
+        $loggerMock = $this->getPsrLoggerMock();
+        $loggerMock->expects($this->once())
+            ->method('debug')
+            ->with("Error during CHECKOUT.ORDER.APPROVED for PayPal order_id '" . $payPalOrderId . "'");
+
+        EshopRegistry::set('logger', $loggerMock);
+
+        $handler = $this->getMockBuilder(CheckoutOrderApprovedHandler::class)
+            ->onlyMethods(['getPaymentService'])
+            ->getMock();
+        $handler->expects($this->any())
+            ->method('getPaymentService')
+            ->willReturn($paymentServiceMock);
+
+        $handler->handle($event);
+
+        $this->assertPayPalOrderCount($payPalOrderId);
+        $this->assertFalse($this->hasNonZeroOrderNumber());
+
+        $order = oxNew(EshopModelOrder::class);
+        $order->load(self::SHOP_ORDER_ID);
+        $this->assertSame('', $order->getFieldData('OXTRANSSTATUS'));
+        $this->assertSame('0000-00-00 00:00:00', $order->getFieldData('OXPAID'));
     }
 
-    private function setServiceFactoryMock(array $data): void
+    private function hasNonZeroOrderNumber(): bool
     {
-        $response = new ApiOrderResponse($data);
+        $parameters = [
+            'oxid' => self::SHOP_ORDER_ID,
+        ];
 
-        $orderServiceMock = $this->getMockBuilder(PayPalApiOrders::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $orderServiceMock->expects($this->any())
-            ->method('capturePaymentForOrder')
-            ->willReturn($response);
+        /** @var QueryBuilder $queryBuilder */
+        $queryBuilder = $this->get(QueryBuilderFactoryInterface::class)->create();
+        $queryBuilder->select('oxordernr')
+            ->from('oxorder')
+            ->where('oxid = :oxid');
 
-        $serviceFactoryMock = $this->getMockBuilder(ServiceFactory::class)
-            ->getMock();
-        $serviceFactoryMock->expects($this->any())
-            ->method('getOrderService')
-            ->willReturn($orderServiceMock);
+        $result = $queryBuilder->setParameters($parameters)
+            ->execute();
 
-        EshopRegistry::set(ServiceFactory::class, $serviceFactoryMock);
-    }
-
-    private function getRequestData(): array
-    {
-        $json = file_get_contents(__DIR__ . '/../../Fixtures/checkout_order_approved.json');
-
-        return json_decode($json, true);
+        return 0 < (int) $result->fetchOne();
     }
 }

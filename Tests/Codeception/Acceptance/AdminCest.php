@@ -19,6 +19,7 @@ use OxidSolutionCatalysts\PayPal\Tests\Codeception\Page\PayPalAdmin;
  *
  * @group osc_paypal
  * @group osc_paypal_admin
+ * @group osc_paypal_admin_config
  */
 final class AdminCest extends BaseCest
 {
@@ -40,6 +41,20 @@ final class AdminCest extends BaseCest
 
         $I->see(Translator::translate('OSC_PAYPAL_CREDENTIALS'));
         $I->see(Translator::translate('OSC_PAYPAL_OPMODE_SANDBOX'));
+    }
+
+    public function testPayPalAdmin3DConfiguration(AcceptanceTester $I): void
+    {
+        $I->wantToTest('that shop admin PayPal configuration section for 3Ds is shown');
+
+        $I->loginAdmin();
+        $adminPanel = new PayPalAdmin($I);
+        $adminPanel->openConfiguration();
+        $this->checkWeAreStillInAdminPanel($I);
+
+        $I->retryClick('#heading5');
+        $I->waitForElement("//select[@id='sca-config']");
+        $I->see(Translator::translate('OSC_PAYPAL_SCA_CONTINGENCY_LABEL'));
     }
 
     public function testPayPalAdminTransactions(AcceptanceTester $I): void

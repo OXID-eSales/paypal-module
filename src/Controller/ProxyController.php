@@ -61,6 +61,7 @@ class ProxyController extends FrontendController
             $this->getPayPalPartnerAttributionId(),
             null,
             null,
+            false,
             false
         );
 
@@ -95,9 +96,11 @@ class ProxyController extends FrontendController
             $userRepository = $this->getServiceFromContainer(UserRepository::class);
             $paypalEmail = (string) $response->payer->email_address;
 
+            $nonGuestAccountDetected = false;
             if ($userRepository->userAccountExists($paypalEmail)) {
                 //got a non-guest account, so either we log in or redirect customer to login step
-                $this->handleUserLogin($response);
+                $isLoggedIn = $this->handleUserLogin($response);
+                $nonGuestAccountDetected = true;
             } else {
                 //we need to use a guest account
                 $userComponent = oxNew(UserComponent::class);
@@ -122,7 +125,10 @@ class ProxyController extends FrontendController
             Registry::getSession()->setVariable('blshowshipaddress', false);
 
             $this->setPayPalPaymentMethod();
+        } elseif ($nonGuestAccountDetected && !$isLoggedIn) {
+            $this->setPayPalPaymentMethod();
         } else {
+            //TODO: we might end up in order step redirecting to start page without showing a message
             // if we have no user, we stop the process
             $response->status = 'ERROR';
             PayPalSession::unsetPayPalOrderId();
@@ -243,18 +249,23 @@ class ProxyController extends FrontendController
         return $countryId;
     }
 
-    protected function handleUserLogin(PayPalApiOrder $apiOrder): void
+    protected function handleUserLogin(PayPalApiOrder $apiOrder): bool
     {
         $paypalConfig = oxNew(Config::class);
         $userComponent = oxNew(UserComponent::class);
+        $isLoggedIn = false;
 
         if ($paypalConfig->loginWithPayPalEMail()) {
             $userComponent->loginPayPalCustomer($apiOrder);
+            $isLoggedIn = true;
         } else {
-            //TODO: we should redirect to user step/login page via exception/ShopControl
+            //NOTE: ProxyController must not redirect from create Order/approvaOrder methods,
+            //      it has to show a json response in all cases.
             //tell order controller to redirect to checkout login
             Registry::getSession()->setVariable('oscpaypal_payment_redirect', true);
         }
+
+        return $isLoggedIn;
     }
 
     protected function getPayPalPartnerAttributionId(): string

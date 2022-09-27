@@ -66,11 +66,23 @@ trait AdminOrderTrait
             $orderId = $paypalOrder->id;
 
             $service = $this->getServiceFromContainer(PaymentService::class);
-            $result = $service->doCapturePayPalOrder($order, $orderId, PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
-            $order->setTransId($result->purchase_units[0]->payments->captures[0]->id);
+            /** @var PayPalOrder $result */
+            $result = $service->doCapturePayPalOrder(
+                $order,
+                $orderId,
+                PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID,
+                $paypalOrder
+            );
+            if ($order->isPayPalOrderCompleted($result)) {
+                $order->setTransId($result->purchase_units[0]->payments->captures[0]->id);
+                $order->markOrderPaid();
+            }
         } else {
             Registry::getUtilsView()->addErrorToDisplay('OSC_PAYPAL_CAPTURE_NOT_POSSIBLE_ANYMORE');
         }
+
+        // reset the order to get new informations about successful capture
+        $this->refreshOrder();
     }
 
     /**

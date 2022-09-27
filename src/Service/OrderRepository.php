@@ -91,6 +91,17 @@ class OrderRepository
         return $order;
     }
 
+    public function getPayPalOrderIdByShopOrderId(string $shopOrderId): string
+    {
+        $query = "select oxpaypalorderid from oscpaypal_order where oxorderid = :oxorderid";
+
+        $id = $this->db->getOne($query, [
+            ':oxorderid' => $shopOrderId
+        ]);
+
+        return (string) $id;
+    }
+
     public function cleanUpNotFinishedOrders(): void
     {
         $query = "select oxid from oxorder where oxordernr = :oxordernr

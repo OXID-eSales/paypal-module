@@ -36,6 +36,23 @@ class PayPalSession
         );
     }
 
+    public function unsetPayPalSession()
+    {
+        self::unsetPayPalOrderId();
+
+        $session = Registry::getSession();
+        $basket = $session->getBasket();
+        if ($basket != null) {
+            $basket->setPayment();
+            $basket->setShipping();
+        }
+
+        if ($session != null) {
+            $session->deleteVariable('sShipSet');
+            $session->deleteVariable('paymentid');
+        }
+    }
+
     /**
      * PayPal store PUI-CM-Id
      *

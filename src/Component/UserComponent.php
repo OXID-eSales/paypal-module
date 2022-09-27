@@ -53,9 +53,7 @@ class UserComponent extends UserComponent_parent
         $this->setRequestParameterByPayPal('lgn_pwd2', $password);
 
         $invoiceAddress = PayPalAddressResponseToOxidAddress::mapUserInvoiceAddress($response);
-        $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
         $this->setRequestParameterByPayPal('invadr', $invoiceAddress);
-        $this->setRequestParameterByPayPal('deladr', $deliveryAddress);
 
         $this->registerUser();
     }

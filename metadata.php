@@ -55,7 +55,7 @@ $aModule = [
         'en' => 'Use of the online payment service from PayPal. Documentation: <a href="https://docs.oxid-esales.com/modules/paypal-checkout/en/latest/" target="_blank">PayPal Checkout</a>'
     ],
     'thumbnail' => 'out/img/paypal.png',
-    'version' => '1.1.6',
+    'version' => '1.2.0',
     'author' => 'OXID eSales AG',
     'url' => 'https://www.oxid-esales.com',
     'email' => 'info@oxid-esales.com',
@@ -95,8 +95,6 @@ $aModule = [
 
         'modules/osc/paypal/paymentbuttons.tpl' => 'osc/paypal/views/tpl/shared/paymentbuttons.tpl',
 
-        'modules/osc/paypal/acdc_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/acdc.tpl',
-        'modules/osc/paypal/acdc_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/acdc.tpl',
         'modules/osc/paypal/pui_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/pui.tpl',
         'modules/osc/paypal/pui_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/pui.tpl',
         'modules/osc/paypal/pui_fraudnet.tpl' => 'osc/paypal/views/tpl/shared/page/checkout/pui_fraudnet.tpl',
@@ -107,6 +105,7 @@ $aModule = [
 
         // PAYPAL-486 Register templates for overloading here;
         // use theme name in key when theme-specific. Shared templates don't receive a theme-specific key.
+        'modules/osc/paypal/acdc.tpl' => 'osc/paypal/views/tpl/shared/page/checkout/acdc.tpl',
         'modules/osc/paypal/base_js.tpl' => 'osc/paypal/views/tpl/shared/layout/base_js.tpl',
         'modules/osc/paypal/base_style.tpl' => 'osc/paypal/views/tpl/shared/layout/base_style.tpl',
         'modules/osc/paypal/basket_btn_next_bottom.tpl' =>
@@ -400,12 +399,6 @@ $aModule = [
             'group' => null
         ],
         [
-            'name' => 'oscPayPalShowCheckoutButton',
-            'type' => 'bool',
-            'value' => true,
-            'group' => null
-        ],
-        [
             'name' => 'oscPayPalLoginWithPayPalEMail',
             'type' => 'bool',
             'value' => true,
@@ -434,6 +427,13 @@ $aModule = [
             'type' => 'bool',
             'value' => false,
             'group' => null
-        ]
+        ],
+        [
+            'name' => 'oscPayPalSCAContingency',
+            'type' => 'select',
+            'value' => 'SCA_ALWAYS',
+            'constraints' => 'SCA_ALWAYS|SCA_WHEN_REQUIRED|SCA_DISABLED',
+            'group' => null
+        ],
     ]
 ];

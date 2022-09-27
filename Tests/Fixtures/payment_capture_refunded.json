@@ -1,0 +1,62 @@
+{
+    "id": "WH-42Y49762KY076625C-2GF36704MU0865255",
+    "event_version": "1.0",
+    "create_time": "2022-09-26T13:07:16.832Z",
+    "resource_type": "refund",
+    "resource_version": "2.0",
+    "event_type": "PAYMENT.CAPTURE.REFUNDED",
+    "summary": "A EUR 7.0 EUR capture payment was refunded",
+    "resource": {
+        "seller_payable_breakdown": {
+            "total_refunded_amount": {
+                "value": "18.00",
+                "currency_code": "EUR"
+            },
+            "paypal_fee": {
+                "value": "0.13",
+                "currency_code": "EUR"
+            },
+            "gross_amount": {
+                "value": "7.00",
+                "currency_code": "EUR"
+            },
+            "net_amount": {
+                "value": "6.87",
+                "currency_code": "EUR"
+            }
+        },
+        "amount": {
+            "value": "7.00",
+            "currency_code": "EUR"
+        },
+        "update_time": "2022-09-26T06:07:12-07:00",
+        "create_time": "2022-09-26T06:07:12-07:00",
+        "links": [
+            {
+                "method": "GET",
+                "rel": "self",
+                "href": "https://api.sandbox.paypal.com/v2/payments/refunds/97E25940SA3983253"
+            },
+            {
+                "method": "GET",
+                "rel": "up",
+                "href": "https://api.sandbox.paypal.com/v2/payments/captures/5YH4578629195611S"
+            }
+        ],
+        "id": "97E25940SA3983253",
+        "note_to_payer": "refund from PP",
+        "status": "COMPLETED"
+    },
+    "links": [
+        {
+            "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-42Y49762KY076625C-2GF36704MU0865255",
+            "rel": "self",
+            "method": "GET"
+        },
+        {
+            "href": "https://api.sandbox.paypal.com/v1/notifications/webhooks-events/WH-42Y49762KY076625C-2GF36704MU0865255/resend",
+            "rel": "resend",
+            "method": "POST"
+        }
+    ]
+}

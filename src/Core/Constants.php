@@ -32,6 +32,13 @@ class Constants
     public const PAYPAL_PUI_FLOWID = 'Oxid_PayPal_PUI_Checkout';
 
     public const PAYPAL_SESSION_TIMEOUT_IN_SEC = 600;
+
+    public const PAYPAL_WAIT_FOR_WEBOOK_TIMEOUT_IN_SEC = 60;
+
+    public const PAYPAL_TRANSACTION_TYPE_CAPTURE = 'capture';
+    public const PAYPAL_TRANSACTION_TYPE_AUTH = 'authorization';
+    public const PAYPAL_TRANSACTION_TYPE_REFUND = 'refund';
+
     /**
      * Please note! The authorization of an order is valid for three days (1 Day = 86400 sec).
      * It will be refreshed automatically for a maximum of 29 days after ordering.
@@ -45,4 +52,9 @@ class Constants
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP = 'Oxid_Cart_Payments';
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_EXPRESS = 'Oxid_Cart_PymtsShortcut';
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_BANNER = 'oxid_Cart_Instbanners';
+
+    //SCA contingencies parameter
+    public const PAYPAL_SCA_ALWAYS = 'SCA_ALWAYS';
+    public const PAYPAL_SCA_DISABLED = 'SCA_DISABLED';
+    public const PAYPAL_SCA_WHEN_REQUIRED = 'SCA_WHEN_REQUIRED';
 }

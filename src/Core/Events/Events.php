@@ -11,6 +11,9 @@ namespace OxidSolutionCatalysts\PayPal\Core\Events;
 
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\Eshop\Core\Field;
+use OxidEsales\Eshop\Application\Model\Payment as EshopModelPayment;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\StaticContent;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 
@@ -38,12 +41,13 @@ class Events
      */
     public static function onDeactivate(): void
     {
-        $staticContent = new StaticContent(
-            Registry::getConfig(),
-            DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)
-        );
-
-        $staticContent->deactivatePayPalPaymentMethods();
+        foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
+            $paymentMethod = oxNew(EshopModelPayment::class);
+            if ($paymentMethod->load($paymentId)) {
+                $paymentMethod->oxpayments__oxactive = new Field(false);
+                $paymentMethod->save();
+            }
+        }
     }
 
     /**
@@ -78,7 +82,7 @@ class Events
                             NOT NULL
                             COMMENT \'PayPal Transaction ID\',
                         `OSCPAYPALSTATUS`
-                            char(32)
+                            char(255)
                             character set latin1
                             collate latin1_general_ci
                             NOT NULL
@@ -95,6 +99,12 @@ class Events
                             collate latin1_general_ci
                             NOT NULL
                             COMMENT \'PayPal transaction id\',
+                        `OSCPAYPALTRANSACTIONTYPE`
+                            char(32)
+                            character set latin1
+                            collate latin1_general_ci
+                            NOT NULL
+                            COMMENT \'PayPal transaction type\',
                         `OSCPAYPALTRACKINGID`
                             char(32)
                             character set latin1
@@ -207,6 +217,26 @@ class Events
             $sql = "ALTER TABLE `oscpaypal_order`
                 ADD UNIQUE `OXORDERID_OXPAYPALORDERID_OSCPAYPALTRANSACTIONID`
                 (`OXORDERID`, `OXPAYPALORDERID`, `OSCPAYPALTRANSACTIONID`)";
+            DatabaseProvider::getDb()->execute($sql);
+        }
+
+        // additional Module-Update v1.2.0
+
+        if (!self::tableColumnExists('oscpaypal_order', 'OSCPAYPALTRANSACTIONTYPE')) {
+            $sql = "ALTER TABLE `oscpaypal_order`
+                ADD `OSCPAYPALTRANSACTIONTYPE` char(32) collate latin1_general_ci";
+            DatabaseProvider::getDb()->execute($sql);
+        }
+
+        if (self::tableColumnExists('oscpaypal_order', 'OSCPAYPALTRANSACTIONID')) {
+            $sql = "ALTER TABLE `oscpaypal_order`
+                CHANGE `OSCPAYPALTRANSACTIONID` `OSCPAYPALTRANSACTIONID` varchar(32) COLLATE 'latin1_general_ci' NOT NULL COMMENT 'PayPal transaction id'";
+            DatabaseProvider::getDb()->execute($sql);
+        }
+
+        if (self::tableColumnExists('oscpaypal_order', 'OSCPAYPALSTATUS')) {
+            $sql = "ALTER TABLE `oscpaypal_order`
+                CHANGE `OSCPAYPALSTATUS` `OSCPAYPALSTATUS` varchar(255) COLLATE 'latin1_general_ci' NOT NULL COMMENT 'PayPal Status'";
             DatabaseProvider::getDb()->execute($sql);
         }
     }

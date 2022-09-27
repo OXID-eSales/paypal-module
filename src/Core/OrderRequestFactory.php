@@ -29,7 +29,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PhoneWithType;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnit;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
@@ -65,10 +64,15 @@ class OrderRequestFactory
     /**
      * @param Basket $basket
      * @param string $intent Order::INTENT_CAPTURE or Order::INTENT_AUTHORIZE constant values
-     * @param string $userAction USER_ACTION_CONTINUE constant values
+     * @param null|string $userAction USER_ACTION_CONTINUE constant values
      * @param null|string $transactionId transaction id
-     * @param null|string $invoiceId custom invoice number
      * @param null|string $processingInstruction processing instruction
+     * @param null|string $paymentSource Payment-Source Name
+     * @param null|string $invoiceId custom invoice number
+     * @param null|string $returnUrl Return Url
+     * @param null|string $cancelUrl Cancel Url
+     * @param bool $withArticles Request with article information?
+     * @param bool $setProvidedAddress Address changeable in PayPal?
      *
      * @return OrderRequest
      */
@@ -82,7 +86,8 @@ class OrderRequestFactory
         ?string $invoiceId = null,
         ?string $returnUrl = null,
         ?string $cancelUrl = null,
-        bool $withArticles = true
+        bool $withArticles = true,
+        bool $setProvidedAddress = true
     ): OrderRequest {
         $request = $this->request = new OrderRequest();
         $this->basket = $basket;
@@ -95,7 +100,12 @@ class OrderRequestFactory
         $request->purchase_units = $this->getPurchaseUnits($transactionId, $invoiceId, $withArticles);
 
         if ($userAction || $returnUrl || $cancelUrl) {
-            $request->application_context = $this->getApplicationContext($userAction, $returnUrl, $cancelUrl);
+            $request->application_context = $this->getApplicationContext(
+                $userAction,
+                $returnUrl,
+                $cancelUrl,
+                $setProvidedAddress
+            );
         }
 
         if ($processingInstruction) {
@@ -121,7 +131,8 @@ class OrderRequestFactory
     protected function getApplicationContext(
         ?string $userAction,
         ?string $returnUrl,
-        ?string $cancelUrl
+        ?string $cancelUrl,
+        ?bool $setProvidedAddress
     ): OrderApplicationContext {
         $context = new OrderApplicationContext();
         $context->brand_name = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
@@ -135,6 +146,9 @@ class OrderRequestFactory
         }
         if ($cancelUrl) {
             $context->cancel_url = $cancelUrl;
+        }
+        if ($setProvidedAddress) {
+            $context->shipping_preference = "SET_PROVIDED_ADDRESS";
         }
 
         return $context;
@@ -368,6 +382,8 @@ class OrderRequestFactory
         $address = new AddressPortable3();
         $addressLine = $user->getFieldData('oxstreet') . " " . $user->getFieldData('oxstreetnr');
         $address->address_line_1 = $addressLine;
+        $addinfoLine = $user->getFieldData('oxcompany') . " " . $user->getFieldData('oxaddinfo');
+        $address->address_line_2 = $addinfoLine;
         $address->admin_area_1 = $state->getFieldData('oxtitle');
         $address->admin_area_2 = $user->getFieldData('oxcity');
         $address->country_code = $country->oxcountry__oxisoalpha2->value;
@@ -401,6 +417,11 @@ class OrderRequestFactory
             $addressLine =
                 $deliveryAddress->getFieldData('oxstreet') . " " . $deliveryAddress->getFieldData('oxstreetnr');
             $address->address_line_1 = $addressLine;
+
+            $addinfoLine = $deliveryAddress->getFieldData('oxcompany') . " " .
+                $deliveryAddress->getFieldData('oxaddinfo');
+            $address->address_line_2 = $addinfoLine;
+
             $address->admin_area_1 = $state->getFieldData('oxtitle');
             $address->admin_area_2 = $deliveryAddress->getFieldData('oxcity');
             $address->country_code = $country->oxcountry__oxisoalpha2->value;
@@ -490,6 +511,7 @@ class OrderRequestFactory
 
         $billingAddress = new AddressPortable();
         $billingAddress->address_line_1 = $payer->address->address_line_1;
+        $billingAddress->address_line_2 = $payer->address->address_line_2;
         $billingAddress->admin_area_2 = $payer->address->admin_area_2;
         $billingAddress->postal_code = $payer->address->postal_code;
         $billingAddress->country_code = $payer->address->country_code;
