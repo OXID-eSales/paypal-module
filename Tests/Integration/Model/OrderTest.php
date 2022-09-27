@@ -576,7 +576,7 @@ final class OrderTest extends BaseTestCase
             ->getMock();
         $captureMock->id = self::TEST_PAYPAL_TRANS_ID;
 
-        $orderMock->expects($this->once())
+        $orderMock->expects($this->never())
             ->method('getOrderPaymentCapture')
             ->willReturn($captureMock);
         $orderMock->expects($this->never())
@@ -593,12 +593,10 @@ final class OrderTest extends BaseTestCase
         $orderMock->expects($this->never())
             ->method('extractTransactionId')
             ->willReturn(self::TEST_PAYPAL_TRANS_ID);
-        $orderMock->expects($this->once())
-            ->method('setTransId')
-            ->with($this->equalTo(self::TEST_PAYPAL_TRANS_ID));
         $orderMock->expects($this->never())
-            ->method('isPayPalOrderCompleted')
-            ->willReturn(false);
+            ->method('setTransId');
+        $orderMock->expects($this->never())
+            ->method('isPayPalOrderCompleted');
         $orderMock->expects($this->once())
             ->method('_sendOrderByEmail');
         $orderMock->expects($this->once())
