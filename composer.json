@@ -27,8 +27,7 @@
         }
     ],
     "require": {
-        "php": ">=7.2",
-        "oxid-esales/oxideshop-ce": "^6.6.0",
+        "oxid-esales/oxideshop-ce": "^6.8.0",
         "giggsey/libphonenumber-for-php": "^8.12",
         "viison/address-splitter": "^0.3.4",
         "webmozart/path-util": "^2.3.0",
