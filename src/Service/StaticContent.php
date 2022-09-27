@@ -116,17 +116,6 @@ class StaticContent
         $paymentModel->save();
     }
 
-    protected function deActivatePaymentMethod(string $paymentId): void
-    {
-        /** @var EshopModelPayment $paymentModel */
-        $paymentModel = oxNew(EshopModelPayment::class);
-        $paymentModel->load($paymentId);
-
-        $paymentModel->oxpayments__oxactive = new Field(false);
-
-        $paymentModel->save();
-    }
-
     public function ensureStaticContents(): void
     {
         foreach (PayPalDefinitions::getPayPalStaticContents() as $content) {
