@@ -152,7 +152,7 @@ final class OrderTest extends BaseTestCase
                 'isWaitForWebhookTimeoutReached' => false,
                 'hasOrderNumber' => false,
                 'orderInProgress' => true,
-                'expected' => PayPalExtendModelOrder::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS
+                'expected' => 600 // PayPalExtendModelOrder::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS
             ],
             'wait_timeout' => [
                 'payment' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
@@ -161,7 +161,7 @@ final class OrderTest extends BaseTestCase
                 'isWaitForWebhookTimeoutReached' => true,
                 'hasOrderNumber' => false,
                 'orderInProgress' => true,
-                'expected' => PayPalExtendModelOrder::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS
+                'expected' => 900 //PayPalExtendModelOrder::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS
             ],
             'need_call_finalize' => [
                 'payment' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
@@ -170,7 +170,7 @@ final class OrderTest extends BaseTestCase
                 'isWaitForWebhookTimeoutReached' => true,  //does not matter in this case
                 'hasOrderNumber' => false,
                 'orderInProgress' => true,
-                'expected' => PayPalExtendModelOrder::ORDER_STATE_NEED_CALL_ACDC_FINALIZE
+                'expected' => 800 //PayPalExtendModelOrder::ORDER_STATE_NEED_CALL_ACDC_FINALIZE
             ],
             'wait_for_webhook_uapm_payment' => [
                 'payment' => PayPalDefinitions::GIROPAY_PAYPAL_PAYMENT_ID,
@@ -179,7 +179,7 @@ final class OrderTest extends BaseTestCase
                 'isWaitForWebhookTimeoutReached' => false,
                 'hasOrderNumber' => false,
                 'orderInProgress' => true,
-                'expected' => PayPalExtendModelOrder::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS
+                'expected' => 600 //PayPalExtendModelOrder::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS
             ],
             'wait_for_webhook_standard_payment' => [
                 'payment' => 'oxidcashondel',
@@ -188,7 +188,7 @@ final class OrderTest extends BaseTestCase
                 'isWaitForWebhookTimeoutReached' => false,
                 'hasOrderNumber' => false,
                 'orderInProgress' => true,
-                'expected' => EshopModelOrder::ORDER_STATE_INVALIDPAYMENT  //sure, we use empty basket
+                'expected' => 5 //EshopModelOrder::ORDER_STATE_INVALIDPAYMENT  //sure, we use empty basket
             ],
             'non_dropoff_acdc' => [
                 'payment' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
@@ -197,7 +197,7 @@ final class OrderTest extends BaseTestCase
                 'isWaitForWebhookTimeoutReached' => false,
                 'hasOrderNumber' => false,
                 'orderInProgress' => false,
-                'expected' => EshopModelOrder::ORDER_STATE_INVALIDPAYMENT  //sure, we use empty basket
+                'expected' => 5 //EshopModelOrder::ORDER_STATE_INVALIDPAYMENT  //sure, we use empty basket
             ],
         ];
     }
