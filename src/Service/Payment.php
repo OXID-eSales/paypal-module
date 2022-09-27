@@ -151,6 +151,7 @@ class Payment
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on order create call.", [$exception]);
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
         }
 
         return $response;
@@ -418,11 +419,14 @@ class Payment
      */
     public function doExecuteUAPMPayment(EshopModelOrder $order, EshopModelBasket $basket): string
     {
+        $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
+
         //For UAPM payment we should not yet have a paypal order in session.
         //We create a fresh paypal order at this point
 
         $uapmOrderId = $this->doCreateUAPMOrder($basket);
         if (!$uapmOrderId) {
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
             throw PayPalException::createPayPalOrderFail();
         }
 
@@ -455,6 +459,9 @@ class Payment
         EshopModelBasket $basket,
         $intent = Constants::PAYPAL_ORDER_INTENT_CAPTURE
     ): string {
+
+        $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
+
         //For Standard payment we should not yet have a paypal order in session.
         //We create a fresh paypal order at this point
         $config = Registry::getConfig();
@@ -478,6 +485,7 @@ class Payment
         $orderId = $response->id ?: '';
 
         if (!$orderId) {
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
             throw PayPalException::createPayPalOrderFail();
         }
 
