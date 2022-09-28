@@ -19,20 +19,6 @@ final class WebhookTest extends BaseTestCase
 {
     protected const TEST_WEBHOOK_URL = 'https://localhost.local?cl=oscpaypalwebhook';
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->ensureCleanUp();
-    }
-
-    protected function tearDown(): void
-    {
-        $this->ensureCleanUp();
-
-        parent::tearDown();
-    }
-
     public function testGetWebhookEndpoint(): void
     {
         $service = oxNew(Webhook::class);
@@ -62,6 +48,8 @@ final class WebhookTest extends BaseTestCase
     {
         $this->markTestSkipped('Test removes existing webhooks, only use manually until refactored');
 
+        $this->ensureCleanUp();
+
         $loggerMock = $this->getPsrLoggerMock();
         $loggerMock->expects($this->never())
             ->method('error');
@@ -81,10 +69,16 @@ final class WebhookTest extends BaseTestCase
         $this->assertNotEmpty($hook);
 
         $this->assertEmpty(array_diff($service->getEnabledEvents($hook), $service->getAvailableEventNames()));
+
+        $this->ensureCleanUp();
     }
 
     public function testWebhookCreationNewEvents(): void
     {
+        $this->markTestSkipped('Test removes existing webhooks, only use manually until refactored');
+
+        $this->ensureCleanUp();
+
         $loggerMock = $this->getPsrLoggerMock();
         $loggerMock->expects($this->never())
             ->method('error');
@@ -112,6 +106,8 @@ final class WebhookTest extends BaseTestCase
 
         $hook = $service->getHookForUrl(self::TEST_WEBHOOK_URL);
         $this->assertEmpty(array_diff($service->getEnabledEvents($hook), $service->getAvailableEventNames()));
+
+        $this->ensureCleanUp();
     }
 
     protected function getServiceMock(string $url = self::TEST_WEBHOOK_URL, array $addMockMethods = []): Webhook
