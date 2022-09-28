@@ -103,7 +103,7 @@ class Events
                             char(32)
                             character set latin1
                             collate latin1_general_ci
-                            NOT NULL
+                            DEFAULT \'capture\'
                             COMMENT \'PayPal transaction type\',
                         `OSCPAYPALTRACKINGID`
                             char(32)
@@ -224,7 +224,7 @@ class Events
 
         if (!self::tableColumnExists('oscpaypal_order', 'OSCPAYPALTRANSACTIONTYPE')) {
             $sql = "ALTER TABLE `oscpaypal_order`
-                ADD `OSCPAYPALTRANSACTIONTYPE` char(32) collate latin1_general_ci";
+                ADD `OSCPAYPALTRANSACTIONTYPE` char(32) collate latin1_general_ci DEFAULT \'capture\'";
             DatabaseProvider::getDb()->execute($sql);
         }
 
