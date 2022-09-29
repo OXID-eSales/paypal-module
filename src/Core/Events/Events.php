@@ -86,7 +86,7 @@ class Events
                             character set latin1
                             collate latin1_general_ci
                             NOT NULL
-                            DEFAULT ''
+                            DEFAULT \'\'
                             COMMENT \'PayPal Status\',
                         `OSCPAYMENTMETHODID`
                             char(32)
@@ -99,7 +99,7 @@ class Events
                             character set latin1
                             collate latin1_general_ci
                             NOT NULL
-                            DEFAULT ''
+                            DEFAULT \'\'
                             COMMENT \'PayPal transaction id\',
                         `OSCPAYPALTRANSACTIONTYPE`
                             char(32)
