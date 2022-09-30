@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
@@ -141,12 +142,67 @@ final class AcdcCheckoutCest extends BaseCest
     /**
      * Test must work with and without webhook
      *
+     * @group checkmenow
+     * @group oscpaypal_with_webhook
+     */
+    public function checkoutWithAcdcViaPayPalImpatientCustomerMultiSubmitDisabled(AcceptanceTester $I): void
+    {
+        $I->wantToTest('logged in user with ACDC enters CC credentials and is prevented from clicking order now mmultiple times');
+
+        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
+
+        $paymentCheckout = new PaymentCheckout($I);
+        /** @var OrderCheckout $orderCheckout */
+        $paymentCheckout->selectPayment(PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID)
+            ->goToNextStep();
+        $I->waitForPageLoad();
+
+        /** @var OrderCheckout $orderCheckout */
+        $orderCheckout = new OrderCheckout($I);
+        $this->fillInCardFields($I);
+        $orderCheckout->submitOrder();
+
+        //wait until PayPal order was created
+        $start = microtime();
+        do {
+            usleep(100);
+            $firstPayPalOrderId = $I->grabFromDatabase(
+                'oscpaypal_order',
+                'oxpaypalorderid',
+                [
+                    'oscpaypaltransactiontype' => 'capture',
+                    'oscpaypalstatus' => 'CREATED'
+                ]
+            );
+        } while (empty($firstPayPalOrderId) && ($start + 10 > microtime()));
+
+        //submit button is disabled, so normal customer would not be able to resubmit order
+        $I->seeElement('//form[@id="orderConfirmAgbBottom"]//button');
+        $I->assertEquals('true',
+            $I->grabAttributeFrom('//form[@id="orderConfirmAgbBottom"]//button', 'disabled')
+        );
+
+        $I->see(Translator::translate('THANK_YOU_FOR_ORDER'));
+        $thankYouPage = new ThankYou($I);
+        $orderNumber = $thankYouPage->grabOrderNumber();
+        $I->assertGreaterThan(1, $orderNumber);
+
+        //Give PayPal and webhook time to finish. NOTE: sometimes events get delayed, you can see this in PayPal developer account.
+        //So if test fails with order not paid webhook event might not have been sent in time. In this case rerun test.
+        $I->wait(120);
+
+        $this->assertOrderPaidAndFinished($I);
+    }
+
+    /**
+     * Test must work with and without webhook
+     *
      * @group oscpaypal_without_webhook
      * @group oscpaypal_with_webhook
      */
-    public function checkoutWithAcdcViaPayPalImpatientCustomer(AcceptanceTester $I): void
+    public function checkoutWithAcdcViaPayPalImpatientCustomerReloadOrderPage(AcceptanceTester $I): void
     {
-        $I->wantToTest('logged in user with ACDC enters CC credentials and clicks order now more than once');
+        $I->wantToTest('logged in user with ACDC enters CC credentials, reloads and clicks order now more than once');
 
         $this->proceedToPaymentStep($I, Fixtures::get('userName'));
 
@@ -175,7 +231,7 @@ final class AcdcCheckoutCest extends BaseCest
         $I->waitForPageLoad();
         $I->see(Translator::translate('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'));
 
-        //Give webhook time to finish. NOTE: sometimes events get delayed, you can see this in PayPal developer account.
+        //Give PayPal and webhook time to finish. NOTE: sometimes events get delayed, you can see this in PayPal developer account.
         //So if test fails with order not paid webhook event might not have been sent in time. In this case rerun test.
         $I->wait(120);
 
@@ -336,7 +392,7 @@ final class AcdcCheckoutCest extends BaseCest
         $I->seeNumRecords(1, 'oxorder');
     }
 
-    private function fillInCardFields(AcceptanceTester $I): void
+    private function fillInCardFields(AcceptanceTester $I, string $cardHolderName = null): void
     {
         $I->waitForElementVisible("#card_form");
         $I->seeElement("#cvv");
@@ -345,7 +401,9 @@ final class AcdcCheckoutCest extends BaseCest
 
         $I->seeElement("#card-holder-name");
         $I->click("#card-holder-name");
-        $I->type(Fixtures::get('details')['firstname'] . ' ' . Fixtures::get('details')['lastname']);
+        $cardHolderName = $cardHolderName ?:
+            Fixtures::get('details')['firstname'] . ' ' . Fixtures::get('details')['lastname'];
+        $I->type($cardHolderName);
 
         $I->seeElement("#expiration-date");
         $I->click("#expiration-date");

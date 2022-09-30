@@ -151,6 +151,7 @@ class Payment
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on order create call.", [$exception]);
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
         }
 
         return $response;
@@ -226,7 +227,7 @@ class Payment
 
         //Verify 3D result if acdc payment
         if (!$this->verify3D($paymentId, $payPalOrder)) {
-            throw oxNew(StandardException::class, 'OXPS_PAYPAL_ORDEREXECUTION_ERROR');
+            throw oxNew(StandardException::class, 'OSC_PAYPAL_3DSECURITY_ERROR');
         }
 
         /** @var ApiPaymentService $paymentService */
@@ -292,9 +293,15 @@ class Payment
                 $status,
                 (string) $payPalTransactionId
             );
+
+            if ($order->isPayPalOrderCompleted($result)) {
+                $order->setOrderNumber();
+                $order->setTransId((string) $payPalTransactionId);
+            }
+
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on order capture call.", [$exception]);
-            throw oxNew(StandardException::class, 'OXPS_PAYPAL_ORDEREXECUTION_ERROR');
+            throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
         }
 
         return $result;
@@ -385,7 +392,14 @@ class Payment
         }
 
         $orderModel = oxNew(EshopModelOrder::class);
-        if ($orderModel->load($sessionOrderId)) {
+        $orderModel->load($sessionOrderId);
+
+        if ($orderModel->hasOrderNumber()) {
+            Registry::getLogger()->error('Cannot delete valid order with id ' . $sessionOrderId);
+            throw PayPalException::createPayPalOrderFail();
+        }
+
+        if ($orderModel->isLoaded()) {
             $orderModel->delete();
         }
 
@@ -418,11 +432,14 @@ class Payment
      */
     public function doExecuteUAPMPayment(EshopModelOrder $order, EshopModelBasket $basket): string
     {
+        $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
+
         //For UAPM payment we should not yet have a paypal order in session.
         //We create a fresh paypal order at this point
 
         $uapmOrderId = $this->doCreateUAPMOrder($basket);
         if (!$uapmOrderId) {
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
             throw PayPalException::createPayPalOrderFail();
         }
 
@@ -455,6 +472,9 @@ class Payment
         EshopModelBasket $basket,
         $intent = Constants::PAYPAL_ORDER_INTENT_CAPTURE
     ): string {
+
+        $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
+
         //For Standard payment we should not yet have a paypal order in session.
         //We create a fresh paypal order at this point
         $config = Registry::getConfig();
@@ -478,6 +498,7 @@ class Payment
         $orderId = $response->id ?: '';
 
         if (!$orderId) {
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
             throw PayPalException::createPayPalOrderFail();
         }
 
