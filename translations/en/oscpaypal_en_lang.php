@@ -21,7 +21,7 @@ $aLang = [
     'OSC_PAYPAL_ACDC_CARD_EXDATE'                 => 'Expiration Date',
     'OSC_PAYPAL_ACDC_CARD_CVV'                    => 'CVV',
     'OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD'           => 'Name on Card',
-    'OSC_PAYPAL_ACDC_PLEASE_RETRY'                => 'Please enter credit card data once again',
+    'OSC_PAYPAL_ACDC_PLEASE_RETRY'                => 'Payment process was stopped due to security reasons. Please enter your credit card data again and press submit button once.',
 
     'OSC_PAYPAL_VAT_CORRECTION'                   => 'VAT. Correction',
 
@@ -37,4 +37,7 @@ $aLang = [
 
     'OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'      => 'Order execution in progress, please wait.',
     'OSC_PAYPAL_LOG_IN_TO_CONTINUE'               => 'Please log in to continue checking out.',
+
+    'OXPS_PAYPAL_3DSECURITY_ERROR'                => 'Security check failed, please retry.',
+    'OXPS_PAYPAL_ORDEREXECUTION_ERROR'            => 'Payment process could not be completed.'
 ];

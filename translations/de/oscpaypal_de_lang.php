@@ -21,7 +21,7 @@ $aLang = [
     'OSC_PAYPAL_ACDC_CARD_EXDATE'                 => 'Ablaufdatum',
     'OSC_PAYPAL_ACDC_CARD_CVV'                    => 'CVV',
     'OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD'           => 'Karteninhaber',
-    'OSC_PAYPAL_ACDC_PLEASE_RETRY'                => 'Bitte geben Sie ihre Kreditkartendaten erneut ein.',
+    'OSC_PAYPAL_ACDC_PLEASE_RETRY'                => 'Bezahlvorgang wurde aus Sicherheitsgründen abgebrochen. Bitte geben Sie ihre Kreditkartendaten erneut ein und klicken einmal auf den Bestellbutton.',
 
     'OSC_PAYPAL_VAT_CORRECTION'                   => 'Mwst. Korrektur',
 
@@ -37,4 +37,6 @@ $aLang = [
 
     'OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'      => 'Bestellabwicklung ist in Arbeit, bitte warten.',
     'OSC_PAYPAL_LOG_IN_TO_CONTINUE'               => 'Bitte loggen Sie sich ein, um die Bestellung abzuschliessen.',
+    'OXPS_PAYPAL_3DSECURITY_ERROR'                => 'Die Sicherheitsüberprüfung ist fehlgeschlagen, bitte erneut versuchen.',
+    'OXPS_PAYPAL_ORDEREXECUTION_ERROR'            => 'Der Bezahlvorgang wurde abgebrochen.'
 ];
