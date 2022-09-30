@@ -211,7 +211,7 @@ class PayPalOrderController extends AdminDetailsController
             $payPalOrder = $orderRepository->paypalOrderByOrderIdAndPayPalId(
                 $order->getId(),
                 '',
-                $order->getTransactionId()
+                $order->getFieldData('oxtransid')
             );
 
             /** @var Refund $refund */
