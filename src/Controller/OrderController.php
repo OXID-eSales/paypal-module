@@ -80,7 +80,7 @@ class OrderController extends OrderController_parent
         $order = oxNew(EshopModelOrder::class);
         $order->load(Registry::getSession()->getVariable('sess_challenge'));
 
-        if (!$order->getTransactionId() &&
+        if (!$order->getFieldData('oxtransid') &&
             $retryRequest &&
              isset($this->retryPaymentMessages[$retryRequest]) )
         {
@@ -173,7 +173,7 @@ class OrderController extends OrderController_parent
             $sessionOrderId &&
             $sessionAcdcOrderId
         ) {
-            Registry::getLogger()->debug('captureAcdcOrder already Completed');
+            Registry::getLogger()->debug('captureAcdcOrder already COMPLETED for PayPal Order id ' . $sessionAcdcOrderId);
 
             $result = [
                 'location' => [
