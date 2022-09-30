@@ -288,7 +288,9 @@ class PayPalOrderController extends AdminDetailsController
     public function getPayPalCapturedAmount()
     {
         $captureAmount = 0;
-        foreach ($this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures as $capture) {
+        $captures = (array) $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures;
+
+        foreach ($captures as $capture) {
             $captureAmount += $capture->amount->value;
         }
         return $captureAmount;
@@ -300,7 +302,9 @@ class PayPalOrderController extends AdminDetailsController
     public function getPayPalAuthorizationAmount()
     {
         $authorizationAmount = 0;
-        foreach ($this->getPayPalCheckoutOrder()->purchase_units[0]->payments->authorizations as $authorization) {
+        $authorizations = (array) $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->authorizations;
+
+        foreach ($authorizations as $authorization) {
             $authorizationAmount += $authorization->amount->value;
         }
         return $authorizationAmount;
@@ -312,7 +316,9 @@ class PayPalOrderController extends AdminDetailsController
     public function getPayPalRefundedAmount()
     {
         $refundAmount = 0;
-        foreach ($this->getPayPalCheckoutOrder()->purchase_units[0]->payments->refunds as $refund) {
+        $refunds = (array) $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->refunds;
+
+        foreach ($refunds as $refund) {
             $refundAmount += $refund->amount->value;
         }
         return $refundAmount;
