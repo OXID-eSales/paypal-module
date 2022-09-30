@@ -163,7 +163,7 @@ final class AcdcCheckoutCest extends BaseCest
         $orderCheckout->submitOrder();
 
         //wait until PayPal order was created
-        $start = microtime();
+        $start = microtime(true);
         do {
             usleep(100);
             $firstPayPalOrderId = $I->grabFromDatabase(
@@ -174,7 +174,7 @@ final class AcdcCheckoutCest extends BaseCest
                     'oscpaypalstatus' => 'CREATED'
                 ]
             );
-        } while (empty($firstPayPalOrderId) && ($start + 10 > microtime()));
+        } while (empty($firstPayPalOrderId) && ($start + 10 > microtime(true)));
 
         //submit button is disabled, so normal customer would not be able to resubmit order
         $I->seeElement('//form[@id="orderConfirmAgbBottom"]//button');
