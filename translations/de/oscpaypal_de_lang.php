@@ -37,6 +37,6 @@ $aLang = [
 
     'OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'      => 'Bestellabwicklung ist in Arbeit, bitte warten.',
     'OSC_PAYPAL_LOG_IN_TO_CONTINUE'               => 'Bitte loggen Sie sich ein, um die Bestellung abzuschliessen.',
-    'OXPS_PAYPAL_3DSECURITY_ERROR'                => 'Die Sicherheitsüberprüfung ist fehlgeschlagen, bitte erneut versuchen.',
-    'OXPS_PAYPAL_ORDEREXECUTION_ERROR'            => 'Der Bezahlvorgang wurde abgebrochen.'
+    'OSC_PAYPAL_3DSECURITY_ERROR'                => 'Die Sicherheitsüberprüfung ist fehlgeschlagen, bitte erneut versuchen.',
+    'OSC_PAYPAL_ORDEREXECUTION_ERROR'            => 'Der Bezahlvorgang wurde abgebrochen.'
 ];

@@ -202,7 +202,7 @@ final class PaymentTest extends BaseTestCase
         $shopOrderModel = oxNew(EshopModelOrder::class);
         $shopOrderModel->setId('order_id');
 
-        $this->expectExceptionMessage('OXPS_PAYPAL_3DSECURITY_ERROR');
+        $this->expectExceptionMessage('OSC_PAYPAL_3DSECURITY_ERROR');
 
         $paymentService->doCapturePayPalOrder(
             $shopOrderModel,

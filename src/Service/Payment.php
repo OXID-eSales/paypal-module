@@ -227,7 +227,7 @@ class Payment
 
         //Verify 3D result if acdc payment
         if (!$this->verify3D($paymentId, $payPalOrder)) {
-            throw oxNew(StandardException::class, 'OXPS_PAYPAL_3DSECURITY_ERROR');
+            throw oxNew(StandardException::class, 'OSC_PAYPAL_3DSECURITY_ERROR');
         }
 
         /** @var ApiPaymentService $paymentService */
@@ -301,7 +301,7 @@ class Payment
 
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on order capture call.", [$exception]);
-            throw oxNew(StandardException::class, 'OXPS_PAYPAL_ORDEREXECUTION_ERROR');
+            throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
         }
 
         return $result;

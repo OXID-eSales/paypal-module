@@ -38,6 +38,6 @@ $aLang = [
     'OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'      => 'Order execution in progress, please wait.',
     'OSC_PAYPAL_LOG_IN_TO_CONTINUE'               => 'Please log in to continue checking out.',
 
-    'OXPS_PAYPAL_3DSECURITY_ERROR'                => 'Security check failed, please retry.',
-    'OXPS_PAYPAL_ORDEREXECUTION_ERROR'            => 'Payment process could not be completed.'
+    'OSC_PAYPAL_3DSECURITY_ERROR'                => 'Security check failed, please retry.',
+    'OSC_PAYPAL_ORDEREXECUTION_ERROR'            => 'Payment process could not be completed.'
 ];
