@@ -374,6 +374,15 @@ class OrderController extends OrderController_parent
             return 'order?fnc=finalizeacdc&fallbackfinalize=1';
         }
 
+        if (
+            EshopModelOrder::ORDER_STATE_ORDEREXISTS == $success &&
+            Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS) ==
+            Constants::PAYPAL_STATUS_COMPLETED
+        ){
+            Registry::getSession()->deleteVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
+            PayPalSession::unsetPayPalSession();
+        }
+
         return parent::_getNextStep($success);
     }
 
