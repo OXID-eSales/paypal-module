@@ -296,8 +296,10 @@ class Order extends Order_parent
             }
             return self::ORDER_STATE_PAYMENTERROR;
         } elseif ($isPayPalACDC) {
-            if (Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS) ===
-                Constants::PAYPAL_STATUS_COMPLETED) {
+            if (
+                Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS) ===
+                Constants::PAYPAL_STATUS_COMPLETED
+            ) {
                 return self::ORDER_STATE_ACDCCOMPLETED;
             }
             return self::ORDER_STATE_ACDCINPROGRESS;
