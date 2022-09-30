@@ -56,6 +56,13 @@ class Order extends Order_parent
     public const ORDER_STATE_ACDCINPROGRESS = 700;
 
     /**
+     * ACDC payment in progress
+     *
+     * @var int
+     */
+    public const ORDER_STATE_ACDCCOMPLETED = 750;
+
+    /**
      * Error during payment execution
      *
      * @var int
@@ -178,6 +185,7 @@ class Order extends Order_parent
 
         if ($isPayPalACDC) {
             //webhook should kick in and handle order state and we should not call the api too often
+            Registry::getSession()->deleteVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
         } elseif (
             $isPayPalStandard &&
             $this->getServiceFromContainer(ModuleSettings::class)
@@ -288,6 +296,10 @@ class Order extends Order_parent
             }
             return self::ORDER_STATE_PAYMENTERROR;
         } elseif ($isPayPalACDC) {
+            if (Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS) ===
+                Constants::PAYPAL_STATUS_COMPLETED) {
+                return self::ORDER_STATE_ACDCCOMPLETED;
+            }
             return self::ORDER_STATE_ACDCINPROGRESS;
         } else {
             return parent::_executePayment($basket, $userpayment);

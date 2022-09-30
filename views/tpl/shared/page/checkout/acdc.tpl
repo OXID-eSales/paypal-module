@@ -46,6 +46,9 @@
 
                 // Call your server to set up the transaction
                 createOrder: function(data, actions) {
+                    //prevent additional submits
+                    document.getElementById("orderConfirmAgbBottom").getElementsByTagName('button')[0].disabled = 'disabled';
+
                     return fetch('[{$sSelfLink|cat:"cl=order&fnc=createAcdcOrder&ord_agb=1&stoken="}]' + '[{$oViewConf->getSessionChallengeToken()}]' + '&sDeliveryAddressMD5=' + '[{$oView->getDeliveryAddressMD5()}]', {
                         method: 'post',
                         headers: {
@@ -115,6 +118,8 @@
                             countryCodeAlpha2: document.getElementById('card-billing-address-country').value
                         }
                     }).then(function () {
+                        document.getElementById("orderConfirmAgbBottom").getElementsByTagName('button')[0].disabled = 'disabled';
+
                         fetch('[{$sSelfLink|cat:"cl=order&fnc=captureAcdcOrder&acdcorderid="}]' + orderId, {
                             method: 'post'
                         }).then(function (res) {
