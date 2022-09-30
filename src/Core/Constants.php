@@ -21,6 +21,7 @@ class Constants
     public const SESSION_ONBOARDING_PAYLOAD = 'paypal-onboarding-payload';
     public const SESSION_ONBOARDING_MERCHANTID = 'paypal-onboarding-merchantid';
     public const SESSION_PUI_CMID = 'paypal-pui-cmid';
+    public const SESSION_ACDC_PAYPALORDER_STATUS = 'oscpaypal-acdcorder-status';
 
     public const PAYPAL_ORDER_REFERENCE_ID = 'OXID_REFERENCE';
 
@@ -57,4 +58,6 @@ class Constants
     public const PAYPAL_SCA_ALWAYS = 'SCA_ALWAYS';
     public const PAYPAL_SCA_DISABLED = 'SCA_DISABLED';
     public const PAYPAL_SCA_WHEN_REQUIRED = 'SCA_WHEN_REQUIRED';
+
+    public const PAYPAL_STATUS_COMPLETED = 'COMPLETED';
 }
