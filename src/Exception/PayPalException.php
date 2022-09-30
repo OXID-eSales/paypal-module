@@ -26,9 +26,13 @@ class PayPalException extends StandardException
         return new self('Session-Payment reponse contains no redirect link.');
     }
 
-    public static function sessionPaymentFail(): self
+    public static function sessionPaymentFail(string $details = ''): self
     {
-        return new self('Session-Payment something is wrong');
+        return new self(
+            sprintf('Session-Payment something is wrong: %s',
+                $details
+            )
+        );
     }
 
     public static function cannotFinalizeOrderAfterExternalPaymentSuccess(string $payPalOrderId): self

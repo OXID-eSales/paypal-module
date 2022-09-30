@@ -293,6 +293,12 @@ class Payment
                 $status,
                 (string) $payPalTransactionId
             );
+
+            if ($order->isPayPalOrderCompleted($result)) {
+                $order->setOrderNumber();
+                $order->setTransId((string) $payPalTransactionId);
+            }
+
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on order capture call.", [$exception]);
             throw oxNew(StandardException::class, 'OXPS_PAYPAL_ORDEREXECUTION_ERROR');
@@ -386,7 +392,14 @@ class Payment
         }
 
         $orderModel = oxNew(EshopModelOrder::class);
-        if ($orderModel->load($sessionOrderId)) {
+        $orderModel->load($sessionOrderId);
+
+        if ($orderModel->hasOrderNumber()) {
+            Registry::getLogger()->error('Cannot delete valid order with id ' . $sessionOrderId);
+            throw PayPalException::createPayPalOrderFail();
+        }
+
+        if ($orderModel->isLoaded()) {
             $orderModel->delete();
         }
 
