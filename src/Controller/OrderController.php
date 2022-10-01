@@ -80,10 +80,11 @@ class OrderController extends OrderController_parent
         $order = oxNew(EshopModelOrder::class);
         $order->load(Registry::getSession()->getVariable('sess_challenge'));
 
-        if (!$order->getFieldData('oxtransid') &&
+        if (
+            !$order->getFieldData('oxtransid') &&
             $retryRequest &&
-             isset($this->retryPaymentMessages[$retryRequest]) )
-        {
+             isset($this->retryPaymentMessages[$retryRequest])
+        ) {
             $displayError = oxNew(DisplayError::class);
             $displayError->setMessage($this->retryPaymentMessages[$retryRequest]);
             Registry::getUtilsView()->addErrorToDisplay($displayError);
@@ -119,10 +120,11 @@ class OrderController extends OrderController_parent
         $sessionAcdcOrderId = (string) PayPalSession::getCheckoutOrderId();
         $acdcStatus = Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
 
-        if ($sessionOrderId &&
+        if (
+            $sessionOrderId &&
             $sessionAcdcOrderId &&
             $acdcStatus === Constants::PAYPAL_STATUS_COMPLETED
-        ){
+        ) {
             //we already have a completed acdc order
             $this->outputJson(['acdcerror' => 'shop order already completed']);
             return;
@@ -169,11 +171,14 @@ class OrderController extends OrderController_parent
         $sessionAcdcOrderId = (string) PayPalSession::getCheckoutOrderId();
         $acdcStatus = Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
 
-        if ('COMPLETED' === $acdcStatus &&
+        if (
+            'COMPLETED' === $acdcStatus &&
             $sessionOrderId &&
             $sessionAcdcOrderId
         ) {
-            Registry::getLogger()->debug('captureAcdcOrder already COMPLETED for PayPal Order id ' . $sessionAcdcOrderId);
+            Registry::getLogger()->debug(
+                'captureAcdcOrder already COMPLETED for PayPal Order id ' . $sessionAcdcOrderId
+            );
 
             $result = [
                 'location' => [
@@ -217,7 +222,6 @@ class OrderController extends OrderController_parent
             ];
             //track status in session
             Registry::getSession()->setVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS, $response->status);
-
         } catch (\Exception $exception) {
             Registry::getLogger()->error($exception->getMessage());
             $this->getServiceFromContainer(PaymentService::class)->removeTemporaryOrder();

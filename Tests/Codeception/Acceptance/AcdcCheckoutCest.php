@@ -142,12 +142,12 @@ final class AcdcCheckoutCest extends BaseCest
     /**
      * Test must work with and without webhook
      *
-     * @group checkmenow
      * @group oscpaypal_with_webhook
      */
     public function checkoutWithAcdcViaPayPalImpatientCustomerMultiSubmitDisabled(AcceptanceTester $I): void
     {
-        $I->wantToTest('logged in user with ACDC enters CC credentials and is prevented from clicking order now mmultiple times');
+        $I->wantToTest('logged in user with ACDC enters CC credentials and is prevented from' .
+                       ' clicking order now multiple times');
 
         $this->proceedToPaymentStep($I, Fixtures::get('userName'));
 
@@ -163,7 +163,7 @@ final class AcdcCheckoutCest extends BaseCest
         $orderCheckout->submitOrder();
 
         //wait until PayPal order was created
-        $start = microtime();
+        $start = microtime(true);
         do {
             usleep(100);
             $firstPayPalOrderId = $I->grabFromDatabase(
@@ -174,22 +174,26 @@ final class AcdcCheckoutCest extends BaseCest
                     'oscpaypalstatus' => 'CREATED'
                 ]
             );
-        } while (empty($firstPayPalOrderId) && ($start + 10 > microtime()));
+        } while (empty($firstPayPalOrderId) && ($start + 10 > microtime(true)));
 
         //submit button is disabled, so normal customer would not be able to resubmit order
         $I->seeElement('//form[@id="orderConfirmAgbBottom"]//button');
-        $I->assertEquals('true',
+        $I->assertEquals(
+            'true',
             $I->grabAttributeFrom('//form[@id="orderConfirmAgbBottom"]//button', 'disabled')
         );
+
+        $I->wait(30);
 
         $I->see(Translator::translate('THANK_YOU_FOR_ORDER'));
         $thankYouPage = new ThankYou($I);
         $orderNumber = $thankYouPage->grabOrderNumber();
         $I->assertGreaterThan(1, $orderNumber);
 
-        //Give PayPal and webhook time to finish. NOTE: sometimes events get delayed, you can see this in PayPal developer account.
+        //Give PayPal and webhook time to finish. NOTE: sometimes events get delayed, you can see this in
+        // PayPal developer account.
         //So if test fails with order not paid webhook event might not have been sent in time. In this case rerun test.
-        $I->wait(120);
+        $I->wait(90);
 
         $this->assertOrderPaidAndFinished($I);
     }
@@ -202,7 +206,8 @@ final class AcdcCheckoutCest extends BaseCest
      */
     public function checkoutWithAcdcViaPayPalImpatientCustomerReloadOrderPage(AcceptanceTester $I): void
     {
-        $I->wantToTest('logged in user with ACDC enters CC credentials, reloads and clicks order now more than once');
+        $I->wantToTest('logged in user with ACDC enters CC credentials, reloads and clicks' .
+                       ' order now more than once');
 
         $this->proceedToPaymentStep($I, Fixtures::get('userName'));
 
@@ -231,7 +236,8 @@ final class AcdcCheckoutCest extends BaseCest
         $I->waitForPageLoad();
         $I->see(Translator::translate('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'));
 
-        //Give PayPal and webhook time to finish. NOTE: sometimes events get delayed, you can see this in PayPal developer account.
+        //Give PayPal and webhook time to finish. NOTE: sometimes events get delayed, you can see this in
+        //PayPal developer account.
         //So if test fails with order not paid webhook event might not have been sent in time. In this case rerun test.
         $I->wait(120);
 

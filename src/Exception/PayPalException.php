@@ -29,7 +29,8 @@ class PayPalException extends StandardException
     public static function sessionPaymentFail(string $details = ''): self
     {
         return new self(
-            sprintf('Session-Payment something is wrong: %s',
+            sprintf(
+                'Session-Payment something is wrong: %s',
                 $details
             )
         );
