@@ -36,7 +36,7 @@ class PayPalSession
         );
     }
 
-    public function unsetPayPalSession()
+    public static function unsetPayPalSession()
     {
         self::unsetPayPalOrderId();
 
