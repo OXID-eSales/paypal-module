@@ -40,7 +40,6 @@ class StaticContent
         foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
             $paymentMethod = oxNew(EshopModelPayment::class);
             if ($paymentMethod->load($paymentId)) {
-                $this->reActivatePaymentMethod($paymentId);
                 continue;
             }
             $this->createPaymentMethod($paymentId, $paymentDefinitions);
@@ -80,7 +79,7 @@ class StaticContent
 
         $paymentModel->assign(
             [
-               'oxactive' => true,
+               'oxactive' => false,
                'oxfromamount' => (int) $definitions['constraints']['oxfromamount'],
                'oxtoamount' => (int) $definitions['constraints']['oxtoamount'],
                'oxaddsumtype' => (string) $definitions['constraints']['oxaddsumtype']
@@ -101,16 +100,6 @@ class StaticContent
             );
             $paymentModel->save();
         }
-    }
-
-    protected function reActivatePaymentMethod(string $paymentId): void
-    {
-        /** @var EshopModelPayment $paymentModel */
-        $paymentModel = oxNew(EshopModelPayment::class);
-        $paymentModel->load($paymentId);
-
-        $paymentModel->oxpayments__oxactive = new Field(true);
-        $paymentModel->save();
     }
 
     public function ensureStaticContents(): void
