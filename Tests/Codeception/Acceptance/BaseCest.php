@@ -13,6 +13,7 @@ use OxidEsales\Facts\Facts;
 use Codeception\Util\Fixtures;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Setup\Exception\ModuleSetupException;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\Page\PayPalLogin;
 use OxidEsales\Codeception\Module\Translation\Translator;
@@ -33,6 +34,7 @@ abstract class BaseCest
     public function _before(AcceptanceTester $I): void
     {
         $this->activateModules();
+        $this->ensurePaymentMethods($I);
 
         $I->clearShopCache();
         $I->setPayPalBannersVisibility(false);
@@ -423,5 +425,21 @@ abstract class BaseCest
                 'stockflag' => 3
             ],
         ];
+    }
+
+    protected function ensurePaymentMethods(AcceptanceTester $I): void
+    {
+        $paymentIds = array_keys(PayPalDefinitions::getPayPalDefinitions());
+        foreach ($paymentIds as $paymentId) {
+            $I->updateInDatabase(
+                'oxpayments',
+                [
+                    'oxactive' => 1
+                ],
+                [
+                    'oxid' => $paymentId
+                ]
+            );
+        }
     }
 }
