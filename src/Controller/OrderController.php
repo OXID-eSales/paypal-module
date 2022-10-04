@@ -223,7 +223,7 @@ class OrderController extends OrderController_parent
             //track status in session
             Registry::getSession()->setVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS, $response->status);
         } catch (\Exception $exception) {
-            Registry::getLogger()->error($exception->getMessage());
+            Registry::getLogger()->error($exception->getMessage(), [$exception]);
             $this->getServiceFromContainer(PaymentService::class)->removeTemporaryOrder();
         }
 
