@@ -223,7 +223,7 @@ class OrderController extends OrderController_parent
             //track status in session
             Registry::getSession()->setVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS, $response->status);
         } catch (\Exception $exception) {
-            Registry::getLogger()->error($exception->getMessage());
+            Registry::getLogger()->error($exception->getMessage(), [$exception]);
             $this->getServiceFromContainer(PaymentService::class)->removeTemporaryOrder();
         }
 
@@ -372,6 +372,15 @@ class OrderController extends OrderController_parent
 
         if (PayPalOrderModel::ORDER_STATE_ACDCCOMPLETED == $success) {
             return 'order?fnc=finalizeacdc&fallbackfinalize=1';
+        }
+
+        if (
+            EshopModelOrder::ORDER_STATE_ORDEREXISTS == $success &&
+            Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS) ==
+            Constants::PAYPAL_STATUS_COMPLETED
+        ){
+            Registry::getSession()->deleteVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
+            PayPalSession::unsetPayPalSession();
         }
 
         return parent::_getNextStep($success);

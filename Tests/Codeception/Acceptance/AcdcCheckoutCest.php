@@ -140,8 +140,6 @@ final class AcdcCheckoutCest extends BaseCest
     }
 
     /**
-     * Test must work with and without webhook
-     *
      * @group oscpaypal_with_webhook
      */
     public function checkoutWithAcdcViaPayPalImpatientCustomerMultiSubmitDisabled(AcceptanceTester $I): void
@@ -194,6 +192,73 @@ final class AcdcCheckoutCest extends BaseCest
         // PayPal developer account.
         //So if test fails with order not paid webhook event might not have been sent in time. In this case rerun test.
         $I->wait(90);
+
+        $this->assertOrderPaidAndFinished($I);
+    }
+
+    /**
+     * @group oscpaypal_with_webhook
+     */
+    public function checkoutWithAcdcViaPayPalImpatientCustomerGoesHome(AcceptanceTester $I): void
+    {
+        $I->wantToTest('logged in user with ACDC enters CC credentials jumps to start page ' .
+                       'while order is captured');
+
+        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
+
+        $paymentCheckout = new PaymentCheckout($I);
+        /** @var OrderCheckout $orderCheckout */
+        $paymentCheckout->selectPayment(PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID)
+            ->goToNextStep();
+        $I->waitForPageLoad();
+
+        /** @var OrderCheckout $orderCheckout */
+        $orderCheckout = new OrderCheckout($I);
+        $this->fillInCardFields($I);
+        $orderCheckout->submitOrder();
+
+        //wait until PayPal order was created
+        $start = microtime(true);
+        do {
+            usleep(100);
+            $firstPayPalOrderId = $I->grabFromDatabase(
+                'oscpaypal_order',
+                'oxpaypalorderid',
+                [
+                    'oscpaypaltransactiontype' => 'capture',
+                    'oscpaypalstatus' => 'CREATED'
+                ]
+            );
+        } while (empty($firstPayPalOrderId) && ($start + 10 > microtime(true)));
+
+        //submit button is disabled, so normal customer would not be able to resubmit order
+        $I->seeElement('//form[@id="orderConfirmAgbBottom"]//button');
+        $I->assertEquals(
+            'true',
+            $I->grabAttributeFrom('//form[@id="orderConfirmAgbBottom"]//button', 'disabled')
+        );
+
+        $I->amOnUrl($I->getShopUrl());
+        $I->waitForText(Translator::translate('HOME'));
+        $I->wait(30); //system processes the original order
+        $this->fillBasket($I);  //basket is changed but the original order will be shown as finished
+        $this->fromBasketToPayment($I);
+
+        $I->see(Translator::translate('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'));
+        $I->dontSeeElement("#card_form");
+        /** @var OrderCheckout $orderCheckout */
+        $orderCheckout = new OrderCheckout($I);
+        $orderCheckout->submitOrder();
+
+        $I->see(Translator::translate('THANK_YOU_FOR_ORDER'));
+        $thankYouPage = new ThankYou($I);
+        $orderNumber = $thankYouPage->grabOrderNumber();
+        $I->assertGreaterThan(1, $orderNumber);
+
+        //Give PayPal and webhook time to finish. NOTE: sometimes events get delayed, you can see this in
+        // PayPal developer account.
+        //So if test fails with order not paid webhook event might not have been sent in time. In this case rerun test.
+        $I->wait(120);
 
         $this->assertOrderPaidAndFinished($I);
     }
