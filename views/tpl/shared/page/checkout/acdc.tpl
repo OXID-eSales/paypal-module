@@ -1,6 +1,6 @@
 <!-- Advanced credit and debit card payments form -->
 <div id="card_container" class="card_container">
-    <form id="card_form">
+    <div id="card_form">
         <div class="form-group">
             <label for="card-number" class="control-label">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_NUMBER"}]</label>
             <div id="card-number" class="form-control card_field"></div>
@@ -27,7 +27,7 @@
             <input type="hidden" id="card-billing-address-zip" name="card-billing-address-zip" value="[{if $oxcmp_user->oxuser__oxzip->value}][{$oxcmp_user->oxuser__oxzip->value}][{/if}]" />
             <input type="hidden" id="card-billing-address-country" name="card-billing-address-country" value="[{$oView->getUserCountryIso()}]"/>
         </div>
-    </form>
+    </div>
 </div>
 
 <!-- Implementation -->
