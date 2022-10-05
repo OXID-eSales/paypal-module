@@ -360,7 +360,7 @@ final class OrderTest extends BaseTestCase
         $orderMock->expects($this->once())
             ->method('isPayPalOrderCompleted')
             ->willReturn(false);
-        $orderMock->expects($this->once())
+        $orderMock->expects($this->never())
             ->method('_sendOrderByEmail');
 
         $orderMock->load(self::TEST_ORDER_ID);
@@ -368,6 +368,15 @@ final class OrderTest extends BaseTestCase
             [
                 'oxpaymenttype' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID
             ]
+        );
+
+        $this->expectException(PayPalException::class);
+        $this->expectExceptionMessage(
+            (PayPalException::cannotFinalizeOrderAfterExternalPayment(
+                self::TEST_PAYPAL_ORDER_ID,
+                PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID
+            )
+            )->getMessage()
         );
 
         $orderMock->finalizeOrderAfterExternalPayment(self::TEST_PAYPAL_ORDER_ID, true);
