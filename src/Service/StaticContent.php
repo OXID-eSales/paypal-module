@@ -42,6 +42,7 @@ class StaticContent
         foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
             $paymentMethod = oxNew(EshopModelPayment::class);
             if ($paymentMethod->load($paymentId)) {
+                $this->reActivatePaymentMethod($paymentId);
                 continue;
             }
             $this->createPaymentMethod($paymentId, $paymentDefinitions);
@@ -102,6 +103,20 @@ class StaticContent
             );
             $paymentModel->save();
         }
+    }
+
+    /**
+     * @deprecated Method will be removed soon. It will be replaced by a solution in which only previously active payment methods are reactivated
+     */
+    protected function reActivatePaymentMethod(string $paymentId): void
+    {
+        /** @var EshopModelPayment $paymentModel */
+        $paymentModel = oxNew(EshopModelPayment::class);
+        $paymentModel->load($paymentId);
+
+        $paymentModel->oxpayments__oxactive = new Field(true);
+
+        $paymentModel->save();
     }
 
     public function ensureStaticContents(): void
