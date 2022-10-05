@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Use addresses from PayPal only for anonymus PP-Express.
 - During module ativation check necessity before running module migrations.
 - Do not show orders with `oxorder.oxordernr` equal to zero to customers. Those can be caused by uAPM dropoff scenarios.
-- Do not activate Payments during installation
+- Preperation for: Do not activate Payments during installation
 
 ### Removed
 - Trait `OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait` 
