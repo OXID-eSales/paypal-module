@@ -73,7 +73,7 @@ final class PayPalDefinitions
                     'longdesc_beta' => 'Buy now and pay later with PayPal.'
                 ]
             ],
-            'countries' => ['DE', 'ES', 'FR', 'UK', 'IT', 'US', 'AU'],
+            'countries' => ['DE', 'ES', 'FR', 'GB', 'IT', 'US', 'AU'],
             'currencies' => ['AUD', 'EUR', 'GBP', 'USD'],
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false
@@ -378,7 +378,7 @@ final class PayPalDefinitions
                         code is used by the consumer to authorize payment.'
                 ]
             ],
-            'countries' => ['DE', 'AT', 'BE', 'IT', 'NL', 'UK', 'ES'],
+            'countries' => ['DE', 'AT', 'BE', 'IT', 'NL', 'GB', 'ES'],
             'currencies' => ['EUR', 'GBP'],
             'uapmpaymentsource' => 'sofort',
             'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,

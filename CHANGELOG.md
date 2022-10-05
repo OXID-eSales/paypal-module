@@ -57,6 +57,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007357](https://bugs.oxid-esales.com/view.php?id=7357) Product "If out of stock, offline" then the order confirmation mail is missing that item.
 - If in progress order with PayPal payment is detected in last order step do not start another payment process, show message instead.
 - PayPalExpress detecting non guest shop user account no longer loses PayPal session after login.
+- fix CountryCode for United Kindom -> GB
 
 ## [2.1.6] - 2022-08-05
 
