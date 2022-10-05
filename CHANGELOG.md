@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.2.0] - unreleased
+## [2.2.0] - 2022-10-05
 
 ### Added
 - Column `oscpaypal_order.oscpaypaltransactiontype` to distinguish capture, authorization, refund transactions when tracking.
@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
   - `OxidSolutionCatalysts\PayPal\Service\Payment::getPaymentExecutionError()`
   - `OxidSolutionCatalysts\PayPal\Service\Payment::verify3D()`
   - `OxidSolutionCatalysts\PayPal\Service\Payment::getPaymentExecutionError()`
- 
+
 ### Changed
 - Method `OxidSolutionCatalysts\PayPal\Controller\OrderController::renderAcdcRetry()` converted to `OxidSolutionCatalysts\PayPal\Controller\OrderController::renderRetryOrderExecution()`.
 - New Class `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\WebhookHandlerBase` as base class for all webhook handlers.
@@ -47,7 +47,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Preparation for: Do not activate Payments during installation
 
 ### Removed
-- Trait `OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait` 
+- Trait `OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait`
 - Interface `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\WebhookHandlerInterface`, extend Handlers from `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\WebhookHandlerBase` instead.
 
 ### Fixed
