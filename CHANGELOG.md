@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.2.0] - unreleased
+## [1.2.0] - 2022-10-05
 
 ### Added
 - Column `oscpaypal_order.oscpaypaltransactiontype` to distinguish capture, authorization, refund transactions when tracking.
@@ -44,7 +44,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Use addresses from PayPal only for anonymus PP-Express.
 - During module ativation check necessity before running module migrations.
 - Do not show orders with `oxorder.oxordernr` equal to zero to customers. Those can be caused by uAPM dropoff scenarios.
-- Do not activate Payments during installation
+- Preparation for: Do not activate Payments during installation
 
 ### Removed
 - Trait `OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait`
@@ -57,6 +57,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007357](https://bugs.oxid-esales.com/view.php?id=7357) Product "If out of stock, offline" then the order confirmation mail is missing that item.
 - If in progress order with PayPal payment is detected in last order step do not start another payment process, show message instead.
 - PayPalExpress detecting non guest shop user account no longer loses PayPal session after login.
+- fix CountryCode for United Kindom -> GB
 
 ## [1.1.6] - 2022-08-05
 
