@@ -435,5 +435,11 @@ $aModule = [
             'constraints' => 'SCA_ALWAYS|SCA_WHEN_REQUIRED|SCA_DISABLED',
             'group' => null
         ],
+        [
+            'group' => null,
+            'name' => 'oscPayPalActivePayments',
+            'type' => 'arr',
+            'value' => []
+        ]
     ]
 ];
