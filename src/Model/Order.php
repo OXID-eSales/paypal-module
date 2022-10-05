@@ -154,9 +154,6 @@ class Order extends Order_parent
             throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
         }
 
-        //ensure order number
-        $this->setOrderNumber();
-
         $basket = Registry::getSession()->getBasket();
         $user = Registry::getSession()->getUser();
         $this->afterOrderCleanUp($basket, $user);
@@ -180,8 +177,13 @@ class Order extends Order_parent
                     PayPalOrder::STATUS_COMPLETED,
                     $transactionId
                 );
+            } else {
+                throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
             }
         }
+
+        //ensure order number
+        $this->setOrderNumber();
 
         if ($isPayPalACDC) {
             //webhook should kick in and handle order state and we should not call the api too often
