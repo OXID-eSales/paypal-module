@@ -49,40 +49,40 @@ class PaymentController extends PaymentController_parent
         $userRepository = $this->getServiceFromContainer(UserRepository::class);
         $userCountryIso = $userRepository->getUserCountryIso();
 
-        // check currency & netto-view-mode & invoice-country
         $paymentListRaw = $paymentList;
         $paymentList = [];
+        $payPalHealth = $this->getServiceFromContainer(ModuleSettings::class)->checkHealth();
+
+        /*
+         * check:
+         * - all none PP-Payments
+         * - payPalHealth
+         * - currency
+         * - country
+         * - netto-mode
+         */
 
         foreach ($paymentListRaw as $key => $payment) {
             if (
+                !isset($payPalDefinitions[$key]) ||
                 (
-                    empty($payPalDefinitions[$key]['currencies']) ||
-                    in_array($actShopCurrency->name, $payPalDefinitions[$key]['currencies'], true)
-                ) &&
-                (
-                    empty($payPalDefinitions[$key]['countries']) ||
-                    in_array($userCountryIso, $payPalDefinitions[$key]['countries'], true)
-                ) &&
-                (
-                    $payPalDefinitions[$key]['onlybrutto'] === false ||
+                    $payPalHealth &&
                     (
+                        empty($payPalDefinitions[$key]['currencies']) ||
+                        in_array($actShopCurrency->name, $payPalDefinitions[$key]['currencies'], true)
+                    ) &&
+                    (
+                        empty($payPalDefinitions[$key]['countries']) ||
+                        in_array($userCountryIso, $payPalDefinitions[$key]['countries'], true)
+                    ) &&
+                    (
+                        $payPalDefinitions[$key]['onlybrutto'] === false ||
+                        (
                         !$this->getServiceFromContainer(ModuleSettings::class)->isPriceViewModeNetto()
+                        )
                     )
                 )
             ) {
-                $paymentList[$key] = $payment;
-            }
-        }
-
-        // check if basic config exists
-        if (!$this->getServiceFromContainer(ModuleSettings::class)->checkHealth()) {
-            $paymentListRaw = $paymentList;
-            $paymentList = [];
-
-            foreach ($paymentListRaw as $key => $payment) {
-                if (strpos($key, 'oscpaypal') !== false) {
-                    continue;
-                }
                 $paymentList[$key] = $payment;
             }
         }
