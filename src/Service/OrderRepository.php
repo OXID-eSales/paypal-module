@@ -153,7 +153,10 @@ class OrderRepository
         foreach ($ids as $id) {
             $order = oxNew(EshopModelOrder::class);
             if ($order->load($id)) {
+                // storno
                 $order->cancelOrder();
+                // delete
+                $order->delete();
             }
         }
     }
