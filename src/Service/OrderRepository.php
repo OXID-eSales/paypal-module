@@ -120,7 +120,10 @@ class OrderRepository
                 $order = oxNew(EshopModelOrder::class);
                 $id = $result->fields['oxid'];
                 if ($order->load($id)) {
+                    // storno
                     $order->cancelOrder();
+                    // delete
+                    $order->delete();
                 }
                 $result->fetchRow();
             }
