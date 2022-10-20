@@ -112,7 +112,7 @@ class OrderRepository
         $result = $this->db->select($query, [
             ':oxordernr' => '0',
             ':oxtransstatus' => 'NOT_FINISHED',
-            ':oxpaymenttype' => 'oscpaypal%',
+            ':oxpaymenttype' => '%oscpaypal%',
             ':sessiontime' => Constants::PAYPAL_SESSION_TIMEOUT_IN_SEC
         ]);
         if ($result != false && $result->count() > 0) {
