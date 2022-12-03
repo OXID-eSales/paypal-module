@@ -51,7 +51,7 @@
 
                         <label>[{oxmultilang ident="OSC_PAYPAL_CREDENTIALS"}]</label>
 
-                        <p class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_CREDENTIALS"}]</p>
+                        <p class="help-block text-danger">[{oxmultilang ident="HELP_OSC_PAYPAL_CREDENTIALS"}]</p>
 
                         [{if !$config->getLiveClientId() && !$config->getLiveClientSecret() && !$config->getLiveWebhookId()}]
 [{*

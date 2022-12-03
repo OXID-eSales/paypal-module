@@ -7,6 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
 
+use GuzzleHttp\Exception\ClientException;
 use OxidEsales\Eshop\Application\Controller\Admin\AdminController;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
@@ -160,9 +161,8 @@ class PayPalConfigController extends AdminController
         $shopId = Registry::getConfig()->getShopId();
 
         $confArr = $this->handleSpecialFields($confArr);
-        $this->checkEligibility($confArr);
         $this->saveConfig($confArr, $shopId);
-
+        $this->checkEligibility();
         parent::save();
     }
 
@@ -186,34 +186,16 @@ class PayPalConfigController extends AdminController
      * @param array $confArr
 
      */
-    protected function checkEligibility($confArr): void
+    protected function checkEligibility(): void
     {
         $config = new Config();
-
-        if (
-            ($config->isSandbox() && (
-                $confArr['oscPayPalSandboxClientId'] !== $config->getSandboxClientId() ||
-                $confArr['oscPayPalSandboxClientSecret'] !== $config->getSandboxClientSecret() ||
-                $confArr['oscPayPalSandboxWebhookId'] !== $config->getSandboxWebhookId()
-            ) &&
-                $confArr['oscPayPalSandboxClientId'] &&
-                $confArr['oscPayPalSandboxClientSecret'] &&
-                $confArr['oscPayPalSandboxWebhookId']
-            ) ||
-            (!$config->isSandbox() && (
-                $confArr['oscPayPalClientId'] !== $config->getClientId() ||
-                $confArr['oscPayPalClientSecret'] !== $config->getClientSecret() ||
-                $confArr['oscPayPalWebhookId'] !== $config->getWebhookId()
-            ) &&
-                $confArr['oscPayPalClientId'] &&
-                $confArr['oscPayPalClientSecret'] &&
-                $confArr['oscPayPalWebhookId']
-            )
-        ) {
+        try {
             $handler = oxNew(Onboarding::class);
             $onBoardingClient = $handler->getOnboardingClient($config->isSandbox(), true);
             $merchantInformations = $onBoardingClient->getMerchantInformations();
             $handler->saveEligibility($merchantInformations);
+        } catch (ClientException $exception) {
+            Registry::getLogger()->error("Error on checkEligibility", [$exception]);
         }
     }
 
