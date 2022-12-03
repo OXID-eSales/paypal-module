@@ -16,7 +16,7 @@
             "target-directory": "osc/paypal",
         "blacklist-filter": [
                 "resources/**/*",
-                "tests/**/*"
+                "Tests/**/*"
             ]
         }
     },
