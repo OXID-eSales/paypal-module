@@ -232,13 +232,15 @@ class Events
 
         if (self::tableColumnExists('oscpaypal_order', 'OSCPAYPALTRANSACTIONID')) {
             $sql = "ALTER TABLE `oscpaypal_order`
-                CHANGE `OSCPAYPALTRANSACTIONID` `OSCPAYPALTRANSACTIONID` varchar(32) COLLATE 'latin1_general_ci' NOT NULL DEFAULT '' COMMENT 'PayPal transaction id'";
+                CHANGE `OSCPAYPALTRANSACTIONID` `OSCPAYPALTRANSACTIONID` varchar(32)
+                COLLATE 'latin1_general_ci' NOT NULL DEFAULT '' COMMENT 'PayPal transaction id'";
             DatabaseProvider::getDb()->execute($sql);
         }
 
         if (self::tableColumnExists('oscpaypal_order', 'OSCPAYPALSTATUS')) {
             $sql = "ALTER TABLE `oscpaypal_order`
-                CHANGE `OSCPAYPALSTATUS` `OSCPAYPALSTATUS` varchar(255) COLLATE 'latin1_general_ci' NOT NULL DEFAULT '' COMMENT 'PayPal Status'";
+                CHANGE `OSCPAYPALSTATUS` `OSCPAYPALSTATUS` varchar(255)
+                COLLATE 'latin1_general_ci' NOT NULL DEFAULT '' COMMENT 'PayPal Status'";
             DatabaseProvider::getDb()->execute($sql);
         }
     }
