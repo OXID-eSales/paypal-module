@@ -135,6 +135,11 @@ jobs:
         working-directory: source/test-module
         run: composer phpcs
 
+      - name: Run psalm
+        id: psalm
+        working-directory: source/test-module
+        run: composer psalm-report
+
 #      - name: Run phpstan
 #        id: phpstan
 #        if: always()
