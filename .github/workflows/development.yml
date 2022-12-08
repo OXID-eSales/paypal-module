@@ -153,9 +153,9 @@ jobs:
         with:
           name: StylesLog-${{ matrix.php }}
           path: |
+            source/test-module/psalm.sonarqube.json
 #            source/test-module/phpstan.report.json
 #            source/test-module/phpmd.report.json
-            source/test-module/psalm.sonarqube.json
 
   unit_tests:
     strategy:
