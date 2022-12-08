@@ -171,4 +171,6 @@ abstract class WebhookHandlerBase
     abstract protected function getPayPalTransactionIdFromResource(array $eventPayload): string;
 
     abstract protected function getStatusFromResource(array $eventPayload): string;
+
+    abstract protected function getPayPalOrderIdFromResource(array $eventPayload): string;
 }

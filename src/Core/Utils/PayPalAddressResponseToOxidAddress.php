@@ -99,11 +99,11 @@ class PayPalAddressResponseToOxidAddress
 
     protected static function getFirstName($name)
     {
-        return implode(' ', array_slice((array) explode(' ', (string) $name), 0, -1));
+        return implode(' ', array_slice(explode(' ', (string) $name), 0, -1));
     }
 
     protected static function getLastName($name)
     {
-        return array_slice((array) explode(' ', (string) $name), -1)[0];
+        return array_slice(explode(' ', (string) $name), -1)[0];
     }
 }
