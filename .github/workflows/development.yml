@@ -135,17 +135,17 @@ jobs:
         working-directory: source/test-module
         run: composer phpcs
 
-      - name: Run phpstan
-        id: phpstan
-        if: always()
-        working-directory: source/test-module
-        run: composer phpstan-report || composer phpstan
+#      - name: Run phpstan
+#        id: phpstan
+#        if: always()
+#        working-directory: source/test-module
+#        run: composer phpstan-report || composer phpstan
 
-      - name: Run phpmd
-        id: phpmd
-        if: always()
-        working-directory: source/test-module
-        run: composer phpmd-report || composer phpmd
+#      - name: Run phpmd
+#        id: phpmd
+#        if: always()
+#        working-directory: source/test-module
+#        run: composer phpmd-report || composer phpmd
 
       - name: Upload log artifact
         if: always()
@@ -153,8 +153,9 @@ jobs:
         with:
           name: StylesLog-${{ matrix.php }}
           path: |
-            source/test-module/phpstan.report.json
-            source/test-module/phpmd.report.json
+#            source/test-module/phpstan.report.json
+#            source/test-module/phpmd.report.json
+            source/test-module/psalm.sonarqube.json
 
   unit_tests:
     strategy:

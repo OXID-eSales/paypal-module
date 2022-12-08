@@ -56,7 +56,7 @@
         "phpcbf": "phpcbf --standard=Tests/phpcs.xml",
 
         "psalm": "psalm --show-info=true --no-cache",
-        "psalm-report": "psalm --show-info=true --no-cache --report=logs/psalm.sonarqube.json",
+        "psalm-report": "psalm --show-info=true --no-cache --report=psalm.sonarqube.json",
         "psalm-errors": "psalm --no-cache",
         "psalm-automatic": "psalm --alter --issues=MissingReturnType,MissingParamType",
 

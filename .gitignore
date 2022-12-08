@@ -1,5 +1,6 @@
 .phpunit.result.cache
 .php_cs.cache
+.psalm.sonarqube.json
 php-cs-fixer.phar
 /source/
 /var/
