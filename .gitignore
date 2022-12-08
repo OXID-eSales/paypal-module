@@ -7,4 +7,5 @@ php-cs-fixer.phar
 /vendor/
 /composer.lock
 /Tests/Codeception/_output/
+/Tests/.env
 /resources/node_modules/
