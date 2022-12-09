@@ -388,12 +388,4 @@ class OrderController extends OrderController_parent
 
         return parent::_getNextStep($success);
     }
-
-    private function setPayPalAsPaymentMethod()
-    {
-        $payment = $this->getBasket()->getPaymentId();
-        if (($payment !== PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID)) {
-            $this->getBasket()->setPayment(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
-        }
-    }
 }
