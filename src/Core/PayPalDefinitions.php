@@ -432,4 +432,9 @@ final class PayPalDefinitions
             self::PAYPAL_DEFINTIONS[$oxid]['uapmpaymentsource'] :
             '';
     }
+
+    public static function isPayPalPayment(string $paymentId): bool
+    {
+        return (isset(self::PAYPAL_DEFINTIONS[$paymentId]));
+    }
 }
