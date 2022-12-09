@@ -8,6 +8,7 @@
     <file>../translations</file>
     <file>../migration</file>
 
+    <exclude-pattern>\.env\.dist</exclude-pattern>
     <!-- display progress -->
     <arg value="p"/>
     <arg name="colors"/>

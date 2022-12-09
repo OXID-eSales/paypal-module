@@ -1,9 +1,12 @@
 .phpunit.result.cache
 .php_cs.cache
+psalm.sonarqube.json
 php-cs-fixer.phar
 /source/
 /var/
 /vendor/
 /composer.lock
 /Tests/Codeception/_output/
+/Tests/Codeception/_support/_generated/
+/Tests/.env
 /resources/node_modules/
