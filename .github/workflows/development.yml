@@ -98,7 +98,7 @@ jobs:
         run: |
           mkdir -p source/var/configuration/environment/
           echo "${{ secrets.MODULE_SETTINGS }}" > source/var/configuration/environment/1.yaml
-          echo "${{ secrets.MODULE_ENV }}" > source/vendor/${{ env.PACKAGE_NAME }}/.env
+          echo "${{ secrets.MODULE_ENV }}" > source/vendor/${{ env.PACKAGE_NAME }}/Tests/.env
           docker-compose exec -T php php bin/oe-console oe:module:apply-configuration
 
       - name: Stop containers
@@ -135,17 +135,22 @@ jobs:
         working-directory: source/test-module
         run: composer phpcs
 
-      - name: Run phpstan
-        id: phpstan
-        if: always()
+      - name: Run psalm
+        id: psalm
         working-directory: source/test-module
-        run: composer phpstan-report || composer phpstan
+        run: composer psalm-report
 
-      - name: Run phpmd
-        id: phpmd
-        if: always()
-        working-directory: source/test-module
-        run: composer phpmd-report || composer phpmd
+#      - name: Run phpstan
+#        id: phpstan
+#        if: always()
+#        working-directory: source/test-module
+#        run: composer phpstan-report || composer phpstan
+
+#      - name: Run phpmd
+#        id: phpmd
+#        if: always()
+#        working-directory: source/test-module
+#        run: composer phpmd-report || composer phpmd
 
       - name: Upload log artifact
         if: always()
@@ -153,8 +158,9 @@ jobs:
         with:
           name: StylesLog-${{ matrix.php }}
           path: |
-            source/test-module/phpstan.report.json
-            source/test-module/phpmd.report.json
+            source/test-module/psalm.sonarqube.json
+#            source/test-module/phpstan.report.json
+#            source/test-module/phpmd.report.json
 
   unit_tests:
     strategy:
