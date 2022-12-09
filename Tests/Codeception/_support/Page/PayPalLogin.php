@@ -371,5 +371,4 @@ class PayPalLogin extends Page
             $I->click($this->payLaterBubble);
         }
     }
-
 }
