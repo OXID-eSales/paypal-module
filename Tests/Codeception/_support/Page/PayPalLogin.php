@@ -36,6 +36,8 @@ class PayPalLogin extends Page
     public $gdprCookieBanner = "#gdprCookieBanner";
     public $acceptAllPaypalCookies = "#acceptAllButton";
 
+    public $payLaterBubble = "//button[contains(@class, 'ppvx_icon-button')]";
+
     public $loginSection = "#loginSection";
     public $oldLoginSection = "#passwordSection";
 
@@ -229,6 +231,8 @@ class PayPalLogin extends Page
 
         $this->loginToPayPal($userName, $userPassword);
 
+        $this->removePayLaterBubble();
+
         $I->seeElement('//button[@id="change-shipping"]');
         $I->click('//button[@id="change-shipping"]');
         $I->wait(2);
@@ -246,6 +250,8 @@ class PayPalLogin extends Page
         $I = $this->user;
 
         $this->loginToPayPal($userName, $userPassword);
+
+        $this->removePayLaterBubble();
 
         $I->seeElement('//button[@id="change-shipping"]');
         $I->click('//button[@id="change-shipping"]');
@@ -357,4 +363,13 @@ class PayPalLogin extends Page
             $I->executeJS("document.getElementById('" . substr($this->gdprCookieBanner, 1) . "').remove();");
         }
     }
+
+    private function removePayLaterBubble()
+    {
+        $I = $this->user;
+        if ($I->seePageHasElement($this->payLaterBubble)) {
+            $I->click($this->payLaterBubble);
+        }
+    }
+
 }
