@@ -46,9 +46,14 @@ class ProxyController extends FrontendController
 
         $this->addToBasket();
         $this->setPayPalPaymentMethod();
+        $basket = Registry::getSession()->getBasket();
+
+        if ($basket->getItemsCount() === 0) {
+            $this->outputJson(['ERROR' => 'No Article in the Basket']);
+        }
 
         $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
-            Registry::getSession()->getBasket(),
+            $basket,
             OrderRequest::INTENT_CAPTURE,
             OrderRequestFactory::USER_ACTION_CONTINUE,
             null,
@@ -173,7 +178,6 @@ class ProxyController extends FrontendController
             $basket->calculateBasket(false);
         }
     }
-
     public function setPayPalPaymentMethod(): void
     {
         $session = Registry::getSession();
