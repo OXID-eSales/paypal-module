@@ -10,9 +10,9 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Model;
 
 use DateTimeImmutable;
-use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
-use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
-use OxidEsales\Eshop\Application\Model\UserPayment as EshopModelUserPayment;
+use OxidEsales\Eshop\Application\Model\Basket;
+use OxidEsales\Eshop\Application\Model\User;
+use OxidEsales\Eshop\Application\Model\UserPayment;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Model\BaseModel;
@@ -20,7 +20,6 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as OrderResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalOrder;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
@@ -68,7 +67,6 @@ class Order extends Order_parent
      * @var int
      */
     public const ORDER_STATE_PAYMENTERROR = 2;
-
 
     /**
      * Order finalizations is waiting for webhook events
@@ -221,9 +219,9 @@ class Order extends Order_parent
     }
 
     /** @inheritDoc */
-    protected function sendPayPalOrderByEmail(EshopModelUser $user, EshopModelBasket $basket): void
+    protected function sendPayPalOrderByEmail(User $user, Basket $basket): void
     {
-        $userPayment = oxNew(EshopModelUserPayment::class);
+        $userPayment = oxNew(UserPayment::class);
         $userPayment->load($this->getFieldData('oxpaymentid'));
 
         Registry::getSession()->setVariable('blDontCheckProductStockForPayPalMails', true);
@@ -232,7 +230,7 @@ class Order extends Order_parent
     }
 
     //TODO: this place should be refactored in shop core
-    protected function afterOrderCleanUp(EshopModelBasket $basket, EshopModelUser $user): void
+    protected function afterOrderCleanUp(Basket $basket, User $user): void
     {
         // deleting remark info only when order is finished
         Registry::getSession()->deleteVariable('ordrem');
@@ -257,13 +255,14 @@ class Order extends Order_parent
      * and finally executes it (oxPaymentGateway::executePayment()). On failure -
      * deletes order and returns * error code 2.
      *
-     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket      basket object
-     * @param object                                     $oUserpayment user payment object
+     * @param Basket $basket      basket object
+     * @param object $userpayment user payment object
      *
      * @return  integer 2 or an error code
      * @deprecated underscore prefix violates PSR12, will be renamed to "executePayment" in next major
      */
-    protected function _executePayment($basket, $userpayment) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+    // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+    protected function _executePayment(Basket $basket, $userpayment)
     {
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
@@ -558,7 +557,7 @@ class Order extends Order_parent
     /**
      * @inheritdoc
      */
-    public function finalizeOrder(EshopModelBasket $basket, $user, $recalculatingOrder = false)
+    public function finalizeOrder(Basket $basket, $user, $recalculatingOrder = false)
     {
         //we might have the case that the order is already stored but we are waiting for webhook events
         /** @var PaymentService $paymentService */
@@ -607,7 +606,7 @@ class Order extends Order_parent
         return (
             isset($apiOrder->status) &&
             isset($apiOrder->purchase_units[0]->payments->captures[0]->status) &&
-            $apiOrder->status == OrderResponse::STATUS_COMPLETED &&
+            $apiOrder->status == PayPalOrder::STATUS_COMPLETED &&
             $apiOrder->purchase_units[0]->payments->captures[0]->status == Capture::STATUS_COMPLETED
         );
     }
