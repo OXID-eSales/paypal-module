@@ -29,7 +29,10 @@ class PaymentController extends PaymentController_parent
             );
         }
 
-        if ($paymentService->getSessionPaymentId() === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID) {
+        if (
+            $paymentService->getSessionPaymentId() === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID ||
+            $paymentService->getSessionPaymentId() === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID
+        ) {
             $paymentService->removeTemporaryOrder();
         }
 
@@ -103,7 +106,7 @@ class PaymentController extends PaymentController_parent
     /**
      * Template variable getter. Returns error text of payments
      *
-     * @return string
+     * @return string|array
      */
     public function getPaymentErrorText()
     {
