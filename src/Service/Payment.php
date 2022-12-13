@@ -180,10 +180,13 @@ class Payment
         $paypalOrderId = $response->id ?: '';
         $status = $response->status ?: '';
 
-        $this->doPatchPayPalOrder(
-            $basket,
-            $paypalOrderId
-        );
+        // patch the order only if paypalOrderId exists
+        if ($paypalOrderId) {
+            $this->doPatchPayPalOrder(
+                $basket,
+                $paypalOrderId
+            );
+        }
 
         $return = [
             'id' => $paypalOrderId,
