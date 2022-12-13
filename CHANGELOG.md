@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [2.2.3] - 2022-12-XX
 
 ### Fixed
+- [0007374](https://bugs.oxid-esales.com/view.php?id=7374) Fixed maintenance during manual saving of configuration
 
 ## [2.2.2] - 2022-10-18
 

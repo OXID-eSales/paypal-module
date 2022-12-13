@@ -49,9 +49,10 @@ $aLang = [
         Sicherheitsinteresse Ihrer Kunden',
 
     'HELP_OSC_PAYPAL_CREDENTIALS'                 =>
-        'Wenn Sie die API-Anmeldeinformationen (Client-ID, Client Passwort, Webhook-ID) bereits vorliegen haben, können Sie sie direkt eingeben.<br>
-        Sollten Sie noch keine API-Daten haben und die Eingafelder noch leer sein, können Sie auch den eingeblendeten
-        Button für eine komfortable Verknüpfung nutzen.',
+        'Bitte nutzen Sie für die Anmeldung den eingeblendeten "PayPal Integration"-Button. Während der Integration werden durch PayPal die Zahlarten "Kreditkarte"
+         und "Kauf auf Rechnung" freigeschaltet, sowie der Webhook automatisch registriert.<br />Tragen Sie die API-Anmeldeinformationen (Client-ID, Client Passwort,
+         Webhook-ID) nur dann per Hand ein, wenn Sie auf die Zahlarten "Kreditkarte" und "Kauf auf Rechnung" nicht benötigen und in der Lage sind einen Webhook im PayPal-
+         Backend selbst zu konfigurieren.',
     'HELP_OSC_PAYPAL_CLIENT_ID'                   => 'Client-ID des Live-Account für Live-Modus',
     'HELP_OSC_PAYPAL_CLIENT_SECRET'               => 'Secret des Live-Account für Live-Modus',
     'HELP_OSC_PAYPAL_SANDBOX_CLIENT_ID'           => 'Client-ID des Sandbox-Account für Sandbox-Modus',

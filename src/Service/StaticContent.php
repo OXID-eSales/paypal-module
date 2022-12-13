@@ -18,7 +18,6 @@ use OxidEsales\Eshop\Application\Model\Content as EshopModelContent;
 use OxidEsales\Eshop\Application\Model\Payment as EshopModelPayment;
 use OxidEsales\Eshop\Core\Model\BaseModel as EshopBaseModel;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
-use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 
 //NOTE: later we will do this on module installation, for now on first activation
 class StaticContent
@@ -26,15 +25,10 @@ class StaticContent
     /** @var QueryBuilderFactoryInterface */
     private $queryBuilderFactory;
 
-    /** @var ContextInterface */
-    private $context;
-
     public function __construct(
-        QueryBuilderFactoryInterface $queryBuilderFactory,
-        ContextInterface $context
+        QueryBuilderFactoryInterface $queryBuilderFactory
     ) {
         $this->queryBuilderFactory = $queryBuilderFactory;
-        $this->context = $context;
     }
 
     public function ensurePayPalPaymentMethods(): void
@@ -106,8 +100,8 @@ class StaticContent
     }
 
     /**
-     * @deprecated Method will be removed soon.
-     * It will be replaced by a solution in which only previously active payment methods are reactivated
+     * @deprecated Method will be removed soon. It will be replaced by a solution in
+     * which only previously active payment methods are reactivated
      */
     protected function reActivatePaymentMethod(string $paymentId): void
     {
