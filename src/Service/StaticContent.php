@@ -104,7 +104,8 @@ class StaticContent
     }
 
     /**
-     * @deprecated Method will be removed soon. It will be replaced by a solution in which only previously active payment methods are reactivated
+     * @deprecated Method will be removed soon.
+     * It will be replaced by a solution in which only previously active payment methods are reactivated
      */
     protected function reActivatePaymentMethod(string $paymentId): void
     {

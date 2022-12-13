@@ -6,7 +6,6 @@
     <file>../src/</file>
     <file>./</file>
     <file>../translations</file>
-    <file>../migration</file>
 
     <!-- display progress -->
     <arg value="p"/>
@@ -26,7 +25,6 @@
     <!-- some of the files can have longer lines, at least temporary -->
     <rule ref="Generic.Files.LineLength">
         <exclude-pattern>../translations</exclude-pattern>
-        <exclude-pattern>../migration</exclude-pattern>
         <exclude-pattern>../src/Core/PayPalDefinitions.php</exclude-pattern>
         <exclude-pattern>Integration/Onboarding/OnboardingTest.php</exclude-pattern>
         <exclude-pattern>Unit/Service/CardValidationTest.php</exclude-pattern>
