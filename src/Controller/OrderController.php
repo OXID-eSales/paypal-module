@@ -66,7 +66,10 @@ class OrderController extends OrderController_parent
             $this->addTplParam('oscpaypal_executing_order', true);
         }
 
-        if ($paymentService->getSessionPaymentId() === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID) {
+        if (
+            $paymentService->getSessionPaymentId() === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID ||
+            $paymentService->getSessionPaymentId() === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID
+        ) {
             $paymentService->removeTemporaryOrder();
         }
 

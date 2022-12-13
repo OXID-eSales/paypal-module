@@ -29,7 +29,10 @@ class PaymentController extends PaymentController_parent
             );
         }
 
-        if ($paymentService->getSessionPaymentId() === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID) {
+        if (
+            $paymentService->getSessionPaymentId() === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID ||
+            $paymentService->getSessionPaymentId() === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID
+        ) {
             $paymentService->removeTemporaryOrder();
         }
 
