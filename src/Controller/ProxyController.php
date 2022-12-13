@@ -9,8 +9,6 @@ namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use Exception;
 use OxidEsales\Eshop\Application\Model\Address;
-use OxidEsales\Eshop\Application\Model\Order;
-use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Application\Model\PaymentList;
 use OxidEsales\Eshop\Application\Model\DeliverySetList;
 use OxidEsales\Eshop\Application\Controller\FrontendController;
@@ -18,7 +16,6 @@ use OxidEsales\Eshop\Application\Component\UserComponent;
 use OxidEsales\Eshop\Core\Exception\ArticleInputException;
 use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
-use OxidEsales\Eshop\Core\Email;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -181,7 +178,6 @@ class ProxyController extends FrontendController
     {
         $session = Registry::getSession();
         $basket = $session->getBasket();
-        $countryId = $this->getDeliveryCountryId();
         $user = null;
 
         if ($activeUser = $this->getUser()) {
@@ -189,27 +185,13 @@ class ProxyController extends FrontendController
         }
 
         if ($session->getVariable('paymentid') !== PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID) {
-            $possibleDeliverySets = [];
+            // get the active shippingSetId
+            /** @psalm-suppress InvalidArgument */
+            list(, $shippingSetId,) =
+                Registry::get(DeliverySetList::class)->getDeliverySetData('', $user, $basket);
 
-            $deliverySetList = Registry::get(DeliverySetList::class)
-            ->getDeliverySetList(
-                $user,
-                $countryId
-            );
-            foreach ($deliverySetList as $deliverySet) {
-                $paymentList = Registry::get(PaymentList::class)->getPaymentList(
-                    $deliverySet->getId(),
-                    $basket->getPrice()->getBruttoPrice(),
-                    $user
-                );
-                if (array_key_exists(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID, $paymentList)) {
-                    $possibleDeliverySets[] = $deliverySet->getId();
-                }
-            }
-
-            if (count($possibleDeliverySets)) {
+            if ($shippingSetId) {
                 $basket->setPayment(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
-                $shippingSetId = reset($possibleDeliverySets);
                 $basket->setShipping($shippingSetId);
                 $session->setVariable('sShipSet', $shippingSetId);
                 $session->setVariable('paymentid', PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
