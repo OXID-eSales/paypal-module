@@ -278,7 +278,7 @@ class Config
     {
         $config = Registry::getConfig();
         $shopId = $config->getActiveShop()->getId();
-        return $config->getConfigParam('sCompileDir') . 'paypaltoken_' . $shopId . '.json';
+        return $config->getConfigParam('sCompileDir') . 'paypaltoken_' . $shopId . '.txt';
     }
 
     /**
