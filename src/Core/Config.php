@@ -270,6 +270,18 @@ class Config
     }
 
     /**
+     * get the full File Name of the Token Cache
+     *
+     * @return string
+     */
+    public function getTokenCacheFileName(): string
+    {
+        $config = Registry::getConfig();
+        $shopId = $config->getActiveShop()->getId();
+        return $config->getConfigParam('sCompileDir') . 'paypaltoken_' . $shopId . '.json';
+    }
+
+    /**
      * Get a Admin URL with all necessary Admin-params
      *
      * @return string
