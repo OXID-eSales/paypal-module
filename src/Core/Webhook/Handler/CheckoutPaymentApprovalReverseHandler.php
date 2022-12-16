@@ -9,7 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
 class CheckoutPaymentApprovalReverseHandler extends PaymentCaptureDeniedHandler
 {
-    public const WEBHOOK_EVENT_NAME = 'CHECKOUT.PAYMENT-APPROVAL.REVERSED';
+    const WEBHOOK_EVENT_NAME = 'CHECKOUT.PAYMENT-APPROVAL.REVERSED';
 
     protected function getPayPalOrderIdFromResource(array $eventPayload): string
     {

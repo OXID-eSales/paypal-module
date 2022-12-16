@@ -172,7 +172,7 @@ class PayPalConfigController extends AdminController
      * @param array $conf
      * @param int   $shopId
      */
-    protected function saveConfig(array $conf, int $shopId): void
+    protected function saveConfig(array $conf, int $shopId)
     {
         foreach ($conf as $confName => $value) {
             $value = trim($value);
@@ -186,7 +186,7 @@ class PayPalConfigController extends AdminController
      * @param array $confArr
 
      */
-    protected function checkEligibility(): void
+    protected function checkEligibility()
     {
         $config = new Config();
         try {

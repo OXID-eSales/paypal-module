@@ -42,7 +42,7 @@ class UserComponent extends UserComponent_parent
         return $return;
     }
 
-    public function createPayPalGuestUser(\OxidSolutionCatalysts\PayPalApi\Model\Orders\Order $response): void
+    public function createPayPalGuestUser(\OxidSolutionCatalysts\PayPalApi\Model\Orders\Order $response)
     {
         $this->setParent(oxNew('Register'));
 
@@ -82,7 +82,7 @@ class UserComponent extends UserComponent_parent
      * @param string $paramName
      * @param mixed $paramValue
      */
-    protected function setRequestParameterByPayPal(string $paramName, $paramValue): void
+    protected function setRequestParameterByPayPal(string $paramName, $paramValue)
     {
         $_POST[$paramName] = $paramValue;
     }

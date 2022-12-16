@@ -19,19 +19,19 @@ use OxidSolutionCatalysts\PayPal\Exception\CardValidation;
  */
 class SCAValidator implements SCAValidatorInterface
 {
-    public const LIABILITY_SHIFT_POSSIBLE = 'POSSIBLE';
-    public const LIABILITY_SHIFT_NO = 'NO';
-    public const LIABILITY_SHIFT_UNKNOWN = 'UNKNOWN';
+    const LIABILITY_SHIFT_POSSIBLE = 'POSSIBLE';
+    const LIABILITY_SHIFT_NO = 'NO';
+    const LIABILITY_SHIFT_UNKNOWN = 'UNKNOWN';
 
-    public const ENROLLMENT_STATUS_YES     = 'Y';
-    public const ENROLLMENT_STATUS_NO      = 'N';
-    public const ENROLLMENT_STATUS_UNKNOWN = 'U';
-    public const ENROLLMENT_STATUS_BYPASS  = 'B';
+    const ENROLLMENT_STATUS_YES     = 'Y';
+    const ENROLLMENT_STATUS_NO      = 'N';
+    const ENROLLMENT_STATUS_UNKNOWN = 'U';
+    const ENROLLMENT_STATUS_BYPASS  = 'B';
 
-    public const AUTH_STATUS_SUCCESS   = 'Y';
-    public const AUTH_STATUS_FAILED    = 'N';
-    public const AUTH_STATUS_REJECTED  = 'R';
-    public const AUTH_STATUS_ATTEMPTED = 'A';
+    const AUTH_STATUS_SUCCESS   = 'Y';
+    const AUTH_STATUS_FAILED    = 'N';
+    const AUTH_STATUS_REJECTED  = 'R';
+    const AUTH_STATUS_ATTEMPTED = 'A';
 
     private $okToProceed = [
         [
@@ -85,7 +85,10 @@ class SCAValidator implements SCAValidatorInterface
         return $isOk;
     }
 
-    public function getCardAuthenticationResult(PayPalApiOrder $order): ?AuthenticationResponse
+    /**
+     * @return null|AuthenticationResponse
+     */
+    public function getCardAuthenticationResult(PayPalApiOrder $order)
     {
         if (is_null($order->payment_source)) {
             throw CardValidation::byMissingPaymentSource();

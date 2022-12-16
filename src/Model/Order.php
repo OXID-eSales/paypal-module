@@ -45,49 +45,49 @@ class Order extends Order_parent
      *
      * @var int
      */
-    public const ORDER_STATE_SESSIONPAYMENT_INPROGRESS = 500;
+    const ORDER_STATE_SESSIONPAYMENT_INPROGRESS = 500;
 
     /**
      * ACDC payment in progress
      *
      * @var int
      */
-    public const ORDER_STATE_ACDCINPROGRESS = 700;
+    const ORDER_STATE_ACDCINPROGRESS = 700;
 
     /**
      * ACDC payment in progress
      *
      * @var int
      */
-    public const ORDER_STATE_ACDCCOMPLETED = 750;
+    const ORDER_STATE_ACDCCOMPLETED = 750;
 
     /**
      * Error during payment execution
      *
      * @var int
      */
-    public const ORDER_STATE_PAYMENTERROR = 2;
+    const ORDER_STATE_PAYMENTERROR = 2;
 
     /**
      * Order finalizations is waiting for webhook events
      *
      * @var int
      */
-    public const ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS = 600;
+    const ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS = 600;
 
     /**
      * Order finalizations waiting for webhook events timed out
      *
      * @var int
      */
-    public const ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS = 900;
+    const ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS = 900;
 
     /**
      * ACDC payment completed but order needs call on OrderController::
      *
      * @var int
      */
-    public const ORDER_STATE_NEED_CALL_ACDC_FINALIZE = 800;
+    const ORDER_STATE_NEED_CALL_ACDC_FINALIZE = 800;
 
     /**
      * PayPal order information
@@ -131,7 +131,7 @@ class Order extends Order_parent
      */
     protected $payPalProductId;
 
-    public function savePuiInvoiceNr(string $invoiceNr): void
+    public function savePuiInvoiceNr(string $invoiceNr)
     {
         $this->assign(
             ['oxinvoicenr' => $invoiceNr]
@@ -139,7 +139,7 @@ class Order extends Order_parent
         $this->save();
     }
 
-    public function finalizeOrderAfterExternalPayment(string $payPalOrderId, bool $forceFetchDetails = false): void
+    public function finalizeOrderAfterExternalPayment(string $payPalOrderId, bool $forceFetchDetails = false)
     {
         if (!$this->isLoaded()) {
             throw PayPalException::cannotFinalizeOrderAfterExternalPaymentSuccess($payPalOrderId);
@@ -219,7 +219,7 @@ class Order extends Order_parent
     }
 
     /** @inheritDoc */
-    protected function sendPayPalOrderByEmail(User $user, Basket $basket): void
+    protected function sendPayPalOrderByEmail(User $user, Basket $basket)
     {
         $userPayment = oxNew(UserPayment::class);
         $userPayment->load($this->getFieldData('oxpaymentid'));
@@ -230,7 +230,7 @@ class Order extends Order_parent
     }
 
     //TODO: this place should be refactored in shop core
-    protected function afterOrderCleanUp(Basket $basket, User $user): void
+    protected function afterOrderCleanUp(Basket $basket, User $user)
     {
         // deleting remark info only when order is finished
         Registry::getSession()->deleteVariable('ordrem');
@@ -515,12 +515,12 @@ class Order extends Order_parent
      * @return Capture|null
      * @throws ApiException
      */
-    public function getOrderPaymentCapture($payPalOrderId = ''): ?Capture
+    public function getOrderPaymentCapture($payPalOrderId = '')
     {
         return $this->getPayPalCheckoutOrder($payPalOrderId)->purchase_units[0]->payments->captures[0] ?? null;
     }
 
-    public function setOrderNumber(): void
+    public function setOrderNumber()
     {
         if (!$this->hasOrderNumber()) {
             $this->_setNumber();

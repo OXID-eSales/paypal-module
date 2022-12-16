@@ -11,5 +11,5 @@ namespace OxidSolutionCatalysts\PayPal;
 
 class Module
 {
-    public const MODULE_ID = 'osc_paypal';
+    const MODULE_ID = 'osc_paypal';
 }

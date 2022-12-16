@@ -175,7 +175,7 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      * @return null|Order
      * @throws StandardException
      */
-    public function getOrder(): ?Order
+    public function getOrder()
     {
         if (is_null($this->order)) {
 
@@ -197,7 +197,7 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      *
      * @return null|PayPalPlusRefundList
      */
-    public function getRefundsList(): ?PayPalPlusRefundList
+    public function getRefundsList()
     {
         if (is_null($this->refundList)) {
 

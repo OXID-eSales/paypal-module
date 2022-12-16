@@ -155,7 +155,7 @@ class PayPalSoapOrderPayment extends \OxidEsales\Eshop\Core\Model\BaseModel
      *
      * @return null|PayPalSoapOrderCommentList
      */
-    public function getCommentList(): ?PayPalSoapOrderCommentList
+    public function getCommentList()
     {
         if (is_null($this->commentList)) {
             $comments = oxNew(PayPalSoapOrderCommentList::class);

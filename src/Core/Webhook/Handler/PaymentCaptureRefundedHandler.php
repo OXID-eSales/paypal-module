@@ -22,13 +22,13 @@ use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 
 class PaymentCaptureRefundedHandler extends WebhookHandlerBase
 {
-    public const WEBHOOK_EVENT_NAME = 'PAYMENT.CAPTURE.REFUNDED';
+    const WEBHOOK_EVENT_NAME = 'PAYMENT.CAPTURE.REFUNDED';
 
     /**
      * @inheritDoc
      * @throws ApiException
      */
-    public function handle(Event $event): void
+    public function handle(Event $event)
     {
         $eventPayload = $this->getEventPayload($event);
 

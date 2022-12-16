@@ -22,9 +22,9 @@ use OxidSolutionCatalysts\PayPal\Exception\WebhookEventVerificationException;
  */
 class EventVerifier
 {
-    private const VERIFICATION_STATUS_SUCCESS = 'SUCCESS';
+    const VERIFICATION_STATUS_SUCCESS = 'SUCCESS';
 
-    private const VERIFICATION_EVENT_HEADERS = [
+    const VERIFICATION_EVENT_HEADERS = [
         'PAYPAL-AUTH-ALGO',
         'PAYPAL-CERT-URL',
         'PAYPAL-TRANSMISSION-ID',

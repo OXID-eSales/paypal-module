@@ -20,13 +20,13 @@ use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 
 class CheckoutOrderApprovedHandler extends WebhookHandlerBase
 {
-    public const WEBHOOK_EVENT_NAME = 'CHECKOUT.ORDER.APPROVED';
+    const WEBHOOK_EVENT_NAME = 'CHECKOUT.ORDER.APPROVED';
 
     /**
      * @inheritDoc
      * @throws ApiException
      */
-    public function handle(Event $event): void
+    public function handle(Event $event)
     {
         $eventPayload = $this->getEventPayload($event);
 

@@ -282,7 +282,7 @@ class ModuleSettings
         return (bool) $this->getSettingValue('oscPayPalSandboxPuiEligibility');
     }
 
-    public function save(string $name, $value, string $type = ''): void
+    public function save(string $name, $value, string $type = '')
     {
         $this->config->setConfigParam($name, $value);
         $shopId = (string)$this->config->getShopId();
@@ -310,12 +310,12 @@ class ModuleSettings
         );
     }
 
-    public function saveSandboxMode(bool $mode): void
+    public function saveSandboxMode(bool $mode)
     {
         $this->save('oscPayPalSandboxMode', $mode, 'bool');
     }
 
-    public function saveClientId(string $clientId): void
+    public function saveClientId(string $clientId)
     {
         if ($this->isSandbox()) {
             $this->save('oscPayPalSandboxClientId', $clientId, 'str');
@@ -324,7 +324,7 @@ class ModuleSettings
         }
     }
 
-    public function saveClientSecret(string $clientSecret): void
+    public function saveClientSecret(string $clientSecret)
     {
         if ($this->isSandbox()) {
             $this->save('oscPayPalSandboxClientSecret', $clientSecret, 'str');
@@ -333,7 +333,7 @@ class ModuleSettings
         }
     }
 
-    public function saveAcdcEligibility(bool $eligibility): void
+    public function saveAcdcEligibility(bool $eligibility)
     {
         if ($this->isSandbox()) {
             $this->save('oscPayPalSandboxAcdcEligibility', $eligibility, 'bool');
@@ -342,7 +342,7 @@ class ModuleSettings
         }
     }
 
-    public function savePuiEligibility(bool $eligibility): void
+    public function savePuiEligibility(bool $eligibility)
     {
         if ($this->isSandbox()) {
             $this->save('oscPayPalSandboxPuiEligibility', $eligibility, 'bool');
@@ -351,7 +351,7 @@ class ModuleSettings
         }
     }
 
-    public function saveWebhookId(string $webhookId): void
+    public function saveWebhookId(string $webhookId)
     {
         if ($this->isSandbox()) {
             $this->save('oscPayPalSandboxWebhookId', $webhookId, 'str');
@@ -363,7 +363,7 @@ class ModuleSettings
     /**
      * add details controller to requireSession
      */
-    public function addRequireSession(): void
+    public function addRequireSession()
     {
         $cfg = $this->config->getConfigParam('aRequireSessionWithParams');
         $cfg = is_array($cfg) ? $cfg : [];

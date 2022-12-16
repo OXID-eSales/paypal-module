@@ -34,7 +34,7 @@ class ShopControl extends ShopControl_parent
     /**
      * @param PayPalException $exception
      */
-    public function handleCustomPayPalException(PayPalException $exception): void
+    public function handleCustomPayPalException(PayPalException $exception)
     {
         if ($exception instanceof RedirectWithMessage) {
             $this->handleRedirectWithMessageException($exception);
@@ -49,7 +49,7 @@ class ShopControl extends ShopControl_parent
      * @param Redirect $redirectException
      * @param bool $blAddRedirectParam
      */
-    protected function handleRedirectException(Redirect $redirectException, bool $blAddRedirectParam = true): void
+    protected function handleRedirectException(Redirect $redirectException, bool $blAddRedirectParam = true)
     {
         Registry::getUtils()->redirect($redirectException->getDestination(), $blAddRedirectParam);
     }
@@ -57,7 +57,7 @@ class ShopControl extends ShopControl_parent
     /**
      * @param RedirectWithMessage $redirectException
      */
-    protected function handleRedirectWithMessageException(RedirectWithMessage $redirectException): void
+    protected function handleRedirectWithMessageException(RedirectWithMessage $redirectException)
     {
         $displayError = oxNew(DisplayError::class);
         $displayError->setMessage($redirectException->getMessageKey());

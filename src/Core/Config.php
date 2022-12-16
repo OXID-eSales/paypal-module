@@ -28,7 +28,7 @@ class Config
      *
      * @throws StandardException
      */
-    public function checkHealth(): void
+    public function checkHealth()
     {
         if (!$this->getServiceFromContainer(ModuleSettings::class)->checkHealth()) {
             throw oxNew(

@@ -51,7 +51,10 @@ final class RequestHandler
             $this->processEvent($requestBody);
 
             $result = true;
-        } catch (WebhookEventException | WebhookEventTypeException  $exception) {
+        } catch (WebhookEventException $exception) {
+            //we could not handle the call and don't want to receive it again, log and be done
+            EshopRegistry::getLogger()->error($exception->getMessage(), [$exception]);
+        } catch (WebhookEventTypeException $exception) {
             //we could not handle the call and don't want to receive it again, log and be done
             EshopRegistry::getLogger()->error($exception->getMessage(), [$exception]);
         } catch (ApiException $exception) {
@@ -63,7 +66,7 @@ final class RequestHandler
         return $result;
     }
 
-    private function processEvent(string $data): void
+    private function processEvent(string $data)
     {
         $data = json_decode($data, true);
         if (

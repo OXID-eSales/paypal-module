@@ -33,7 +33,7 @@ class OrderController extends OrderController_parent
 {
     use ServiceContainer;
 
-    public const RETRY_OSC_PAYMENT_REQUEST_PARAM = 'retryoscpp';
+    const RETRY_OSC_PAYMENT_REQUEST_PARAM = 'retryoscpp';
 
     private $removeTemporaryOrderOnRetry = [
         PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
@@ -117,7 +117,7 @@ class OrderController extends OrderController_parent
     /**
      * @psalm-suppress InternalMethod
      */
-    public function createAcdcOrder(): void
+    public function createAcdcOrder()
     {
         $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
         $sessionAcdcOrderId = (string) PayPalSession::getCheckoutOrderId();
@@ -167,7 +167,7 @@ class OrderController extends OrderController_parent
         $this->outputJson($response);
     }
 
-    public function captureAcdcOrder(): void
+    public function captureAcdcOrder()
     {
         $acdcRequestId = (string) Registry::getRequest()->getRequestParameter('acdcorderid');
         $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');

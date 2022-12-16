@@ -39,12 +39,12 @@ use OxidSolutionCatalysts\PayPal\Service\ModuleSettings as ModuleSettingsService
 
 class Payment
 {
-    public const PAYMENT_ERROR_NONE = 'PAYPAL_PAYMENT_ERROR_NONE';
-    public const PAYMENT_ERROR_GENERIC = 'PAYPAL_PAYMENT_ERROR_GENERIC';
-    public const PAYMENT_ERROR_PUI_PHONE = 'PAYPAL_PAYMENT_ERROR_PUI_PHONE';
-    public const PAYMENT_ERROR_PUI_GENERIC = 'PAYPAL_PAYMENT_ERROR_PUI_GENRIC';
-    public const PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED = 'PUI_PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED';
-    public const PAYMENT_SOURCE_DECLINED_BY_PROCESSOR = 'PUI_PAYMENT_SOURCE_DECLINED_BY_PROCESSOR';
+    const PAYMENT_ERROR_NONE = 'PAYPAL_PAYMENT_ERROR_NONE';
+    const PAYMENT_ERROR_GENERIC = 'PAYPAL_PAYMENT_ERROR_GENERIC';
+    const PAYMENT_ERROR_PUI_PHONE = 'PAYPAL_PAYMENT_ERROR_PUI_PHONE';
+    const PAYMENT_ERROR_PUI_GENERIC = 'PAYPAL_PAYMENT_ERROR_PUI_GENRIC';
+    const PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED = 'PUI_PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED';
+    const PAYMENT_SOURCE_DECLINED_BY_PROCESSOR = 'PUI_PAYMENT_SOURCE_DECLINED_BY_PROCESSOR';
 
     /**
      * @var string
@@ -200,7 +200,7 @@ class Payment
         EshopModelBasket $basket,
         string $checkoutOrderId,
         string $shopOrderId = ''
-    ): void {
+    ) {
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
 
@@ -366,8 +366,9 @@ class Payment
 
     /**
      * Return the PaymentId from session basket
+     * @return null|string
      */
-    public function getSessionPaymentId(): ?string
+    public function getSessionPaymentId()
     {
         return $this->eshopSession->getBasket() ? $this->eshopSession->getBasket()->getPaymentId() : null;
     }
@@ -387,7 +388,7 @@ class Payment
         ], true) || PayPalDefinitions::isUAPMPayment($sessionPaymentId);
     }
 
-    public function removeTemporaryOrder(): void
+    public function removeTemporaryOrder()
     {
         $sessionOrderId = $this->eshopSession->getVariable('sess_challenge');
         if (!$sessionOrderId) {
@@ -591,7 +592,7 @@ class Payment
         return (bool) $payPalOrderId;
     }
 
-    public function setPaymentExecutionError(string $text): void
+    public function setPaymentExecutionError(string $text)
     {
         $this->paymentExecutionError = $text;
     }
@@ -669,7 +670,7 @@ class Payment
         return false;
     }
 
-    private function handlePayPalApiError(ApiException $exception): void
+    private function handlePayPalApiError(ApiException $exception)
     {
         if (self::PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED == 'PUI_' . $exception->getErrorIssue()) {
             $this->setPaymentExecutionError(self::PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED);

@@ -48,7 +48,7 @@ class WebhookController extends WidgetController
         Registry::getUtils()->showMessageAndExit('');
     }
 
-    private function sendErrorResponse(): void
+    private function sendErrorResponse()
     {
         header('Content-Type: text/html', true, 500);
         exit;

@@ -18,7 +18,7 @@ class PayPalSession
      *
      * @param $checkoutOrderId
      */
-    public static function storePayPalOrderId(string $checkoutOrderId): void
+    public static function storePayPalOrderId(string $checkoutOrderId)
     {
         Registry::getSession()->setVariable(
             Constants::SESSION_CHECKOUT_ORDER_ID,
@@ -58,7 +58,7 @@ class PayPalSession
      *
      * @param $cmId
      */
-    public static function storePayPalPuiCmId(string $cmId): void
+    public static function storePayPalPuiCmId(string $cmId)
     {
         Registry::getSession()->setVariable(
             Constants::SESSION_PUI_CMID,
@@ -126,7 +126,7 @@ class PayPalSession
         return Registry::getSession()->getVariable(Constants::SESSION_CHECKOUT_ORDER_ID);
     }
 
-    public static function setSessionRedirectLink(string $link): void
+    public static function setSessionRedirectLink(string $link)
     {
         Registry::getSession()->setVariable(
             Constants::SESSION_REDIRECTLINK,
@@ -141,14 +141,14 @@ class PayPalSession
         );
     }
 
-    public static function unsetSessionRedirectLink(): void
+    public static function unsetSessionRedirectLink()
     {
         Registry::getSession()->deleteVariable(
             Constants::SESSION_REDIRECTLINK
         );
     }
 
-    public static function storeMerchantIdInPayPal(string $merchantId): void
+    public static function storeMerchantIdInPayPal(string $merchantId)
     {
         Registry::getSession()->setVariable(
             Constants::SESSION_ONBOARDING_MERCHANTID,
@@ -156,14 +156,17 @@ class PayPalSession
         );
     }
 
-    public static function getMerchantIdInPayPal(): ?string
+    /**
+     * @return null|string
+     */
+    public static function getMerchantIdInPayPal()
     {
         return Registry::getSession()->getVariable(
             Constants::SESSION_ONBOARDING_MERCHANTID
         );
     }
 
-    public static function storeOnboardingPayload(string $payload): void
+    public static function storeOnboardingPayload(string $payload)
     {
         Registry::getSession()->setVariable(
             Constants::SESSION_ONBOARDING_PAYLOAD,
@@ -171,14 +174,17 @@ class PayPalSession
         );
     }
 
-    public static function getOnboardingPayload(): ?string
+    /**
+     * @return null|string
+     */
+    public static function getOnboardingPayload()
     {
         return Registry::getSession()->getVariable(
             Constants::SESSION_ONBOARDING_PAYLOAD
         );
     }
 
-    public static function unsetOnboardingSession(): void
+    public static function unsetOnboardingSession()
     {
         Registry::getSession()->deleteVariable(
             Constants::SESSION_ONBOARDING_MERCHANTID

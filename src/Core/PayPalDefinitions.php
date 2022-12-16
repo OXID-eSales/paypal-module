@@ -11,35 +11,35 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 
 final class PayPalDefinitions
 {
-    public const STANDARD_PAYPAL_PAYMENT_ID = 'oscpaypal';
-    public const PAYLATER_PAYPAL_PAYMENT_ID = 'oscpaypal_paylater';
-    public const EXPRESS_PAYPAL_PAYMENT_ID = 'oscpaypal_express';
-    public const ACDC_PAYPAL_PAYMENT_ID = 'oscpaypal_acdc';
-    public const PUI_PAYPAL_PAYMENT_ID = 'oscpaypal_pui';
-    public const PUI_REQUEST_PAYMENT_SOURCE_NAME = 'pay_upon_invoice';
-    public const GIROPAY_PAYPAL_PAYMENT_ID = 'oscpaypal_giropay';
-    public const SOFORT_PAYPAL_PAYMENT_ID = 'oscpaypal_sofort';
+    const STANDARD_PAYPAL_PAYMENT_ID = 'oscpaypal';
+    const PAYLATER_PAYPAL_PAYMENT_ID = 'oscpaypal_paylater';
+    const EXPRESS_PAYPAL_PAYMENT_ID = 'oscpaypal_express';
+    const ACDC_PAYPAL_PAYMENT_ID = 'oscpaypal_acdc';
+    const PUI_PAYPAL_PAYMENT_ID = 'oscpaypal_pui';
+    const PUI_REQUEST_PAYMENT_SOURCE_NAME = 'pay_upon_invoice';
+    const GIROPAY_PAYPAL_PAYMENT_ID = 'oscpaypal_giropay';
+    const SOFORT_PAYPAL_PAYMENT_ID = 'oscpaypal_sofort';
 
 
-    private const PAYMENT_CONSTRAINTS_PAYPAL = [
+    const PAYMENT_CONSTRAINTS_PAYPAL = [
         'oxfromamount' => 0.01,
         'oxtoamount' => 60000,
         'oxaddsumtype' => 'abs'
     ];
 
-    private const PAYMENT_CONSTRAINTS_UAPM = [
+    const PAYMENT_CONSTRAINTS_UAPM = [
         'oxfromamount' => 1,
         'oxtoamount' => 10000,
         'oxaddsumtype' => 'abs'
     ];
 
-    private const PAYMENT_CONSTRAINTS_PUI = [
+    const PAYMENT_CONSTRAINTS_PUI = [
         'oxfromamount' => 5,
         'oxtoamount' => 1500,
         'oxaddsumtype' => 'abs'
     ];
 
-    private const PAYPAL_DEFINTIONS = [
+    const PAYPAL_DEFINTIONS = [
         //Standard PayPal
         self::STANDARD_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
@@ -386,7 +386,7 @@ final class PayPalDefinitions
         ],
     ];
 
-    private const PAYPAL_STATIC_CONTENTS = [
+    const PAYPAL_STATIC_CONTENTS = [
         'oscpaypalpuiconfirmation' =>
         [
             'oxloadid' => 'oscpaypalpuiconfirmation',

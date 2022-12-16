@@ -29,7 +29,7 @@ class User extends User_parent
     /**
      * @inheritDoc
      */
-    public function onOrderExecute($basket, $success): void
+    public function onOrderExecute($basket, $success)
     {
         // we manipulate the $success only for this parent onOrderExecute
         // to add the customers to the correct usergroup
@@ -49,8 +49,11 @@ class User extends User_parent
         }
         parent::onOrderExecute($basket, $success);
     }
-
-    public function getBirthDateForPuiRequest(): ?string
+    /**
+     * get the InvoiceAddress from user with all required fields
+     * @return null|string
+     */
+    public function getBirthDateForPuiRequest()
     {
         $required = EshopRegistry::getRequest()->getRequestParameter('pui_required');
         $day = $required['birthdate']['day'];
@@ -65,8 +68,11 @@ class User extends User_parent
 
         return $result;
     }
-
-    public function getPhoneNumberForPuiRequest(): ?ApiModelPhone
+    /**
+     * get the InvoiceAddress from user with all required fields
+     * @return null|ApiModelPhone
+     */
+    public function getPhoneNumberForPuiRequest()
     {
         $result = null;
         $rawNumber = EshopRegistry::getRequest()->getRequestParameter('pui_required')['phonenumber'];

@@ -62,7 +62,7 @@ class PayPalOrder extends BaseModel
         return (string) $this->getFieldData('oscpaymentmethodid');
     }
 
-    public function setStatus(string $status): void
+    public function setStatus(string $status)
     {
         $this->assign(
             [
@@ -71,7 +71,7 @@ class PayPalOrder extends BaseModel
         );
     }
 
-    public function setTransactionId(string $id): void
+    public function setTransactionId(string $id)
     {
         $this->assign(
             [
@@ -80,7 +80,7 @@ class PayPalOrder extends BaseModel
         );
     }
 
-    public function setTrackingId(string $id): void
+    public function setTrackingId(string $id)
     {
         $this->assign(
             [
@@ -89,7 +89,7 @@ class PayPalOrder extends BaseModel
         );
     }
 
-    public function setTrackingType(string $type): void
+    public function setTrackingType(string $type)
     {
         $this->assign(
             [
@@ -98,7 +98,7 @@ class PayPalOrder extends BaseModel
         );
     }
 
-    public function setPaymentMethodId(string $id): void
+    public function setPaymentMethodId(string $id)
     {
         $this->assign(
             [
@@ -107,7 +107,7 @@ class PayPalOrder extends BaseModel
         );
     }
 
-    public function setPuiPaymentReference(string $puiPaymentReference): void
+    public function setPuiPaymentReference(string $puiPaymentReference)
     {
         $this->assign(
             [
@@ -116,7 +116,7 @@ class PayPalOrder extends BaseModel
         );
     }
 
-    public function setPuiBic(string $puiBic): void
+    public function setPuiBic(string $puiBic)
     {
         $this->assign(
             [
@@ -125,7 +125,7 @@ class PayPalOrder extends BaseModel
         );
     }
 
-    public function setPuiIban(string $puiIban): void
+    public function setPuiIban(string $puiIban)
     {
         $this->assign(
             [
@@ -134,7 +134,7 @@ class PayPalOrder extends BaseModel
         );
     }
 
-    public function setPuiBankName(string $puiBankName): void
+    public function setPuiBankName(string $puiBankName)
     {
         $this->assign(
             [
@@ -143,7 +143,7 @@ class PayPalOrder extends BaseModel
         );
     }
 
-    public function setPuiAccountHolderName(string $puiAccountHolderName): void
+    public function setPuiAccountHolderName(string $puiAccountHolderName)
     {
         $this->assign(
             [
@@ -152,7 +152,7 @@ class PayPalOrder extends BaseModel
         );
     }
 
-    public function setTransactionType(string $type): void
+    public function setTransactionType(string $type)
     {
         $this->assign(
             [

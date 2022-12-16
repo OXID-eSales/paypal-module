@@ -102,7 +102,7 @@ class OrderRepository
         return (string) $id;
     }
 
-    public function cleanUpNotFinishedOrders(): void
+    public function cleanUpNotFinishedOrders()
     {
         $query = "select oxid from oxorder where oxordernr = :oxordernr
             and oxtransstatus = :oxtransstatus

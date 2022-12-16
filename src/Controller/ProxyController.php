@@ -158,7 +158,7 @@ class ProxyController extends FrontendController
         $utils->showMessageAndExit(json_encode($response));
     }
 
-    protected function addToBasket($qty = 1): void
+    protected function addToBasket($qty = 1)
     {
         $basket = Registry::getSession()->getBasket();
         $utilsView = Registry::getUtilsView();
@@ -178,7 +178,7 @@ class ProxyController extends FrontendController
             $basket->calculateBasket(false);
         }
     }
-    public function setPayPalPaymentMethod(): void
+    public function setPayPalPaymentMethod()
     {
         $session = Registry::getSession();
         $basket = $session->getBasket();

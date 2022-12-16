@@ -12,15 +12,17 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 
 class PaymentCaptureDeniedHandler extends PaymentCaptureCompletedHandler
 {
-    public const WEBHOOK_EVENT_NAME = 'PAYMENT.CAPTURE.DENIED';
+    const WEBHOOK_EVENT_NAME = 'PAYMENT.CAPTURE.DENIED';
 
-    protected function markShopOrderPaymentStatus(EshopModelOrder $order, string $payPalTransactionId): void
+    protected function markShopOrderPaymentStatus(EshopModelOrder $order, string $payPalTransactionId)
     {
         $order->markOrderPaymentFailed();
         $order->setTransId($payPalTransactionId);
     }
-
-    protected function getPayPalOrderDetails(string $payPalOrderId): ?PayPalApiModelOrder
+    /**
+     * @return null|PayPalApiModelOrder
+     */
+    protected function getPayPalOrderDetails(string $payPalOrderId)
     {
         return null;
     }
