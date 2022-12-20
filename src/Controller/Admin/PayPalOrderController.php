@@ -183,7 +183,8 @@ class PayPalOrderController extends AdminDetailsController
     {
         $request = Registry::getRequest();
         $refundAmount = $request->getRequestEscapedParameter('refundAmount');
-        $refundAmount = str_replace(',', '.', $refundAmount);
+        $refundAmount = str_replace(",", ".", $refundAmount);
+        $refundAmount = preg_replace("/[\,\.](\d{3})/", "$1", $refundAmount);
         $invoiceId = $request->getRequestEscapedParameter('invoiceId');
         $refundAll = $request->getRequestEscapedParameter('refundAll');
         $noteToPayer = $request->getRequestParameter('noteToPayer');
