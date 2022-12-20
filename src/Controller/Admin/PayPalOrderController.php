@@ -136,11 +136,19 @@ class PayPalOrderController extends AdminDetailsController
                 //TODO: refactor, this is workaround if webhook failed to update information
                 if (
                     $capture &&
-                    (ApiOrderModel::STATUS_SAVED === $paypalOrderModel->getStatus()) &&
-                    (Capture::STATUS_COMPLETED === $capture->status) ||
-                    (Capture::STATUS_COMPLETED === $paypalOrderModel->getStatus()) &&
-                    (Capture::STATUS_REFUNDED === $capture->status ||
-                        Capture::STATUS_PARTIALLY_REFUNDED === $capture->status)
+                    (
+                        (
+                            ApiOrderModel::STATUS_SAVED === $paypalOrderModel->getStatus() &&
+                            Capture::STATUS_COMPLETED === $capture->status
+                        ) ||
+                        (
+                            Capture::STATUS_COMPLETED === $paypalOrderModel->getStatus() &&
+                            (
+                                Capture::STATUS_REFUNDED === $capture->status ||
+                                Capture::STATUS_PARTIALLY_REFUNDED === $capture->status
+                            )
+                        )
+                    )
                 ) {
                     $paypalOrderModel->setStatus($capture->status);
                     $paypalOrderModel->save();
