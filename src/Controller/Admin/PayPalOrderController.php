@@ -191,7 +191,8 @@ class PayPalOrderController extends AdminDetailsController
     {
         $request = Registry::getRequest();
         $refundAmount = $request->getRequestEscapedParameter('refundAmount');
-        $refundAmount = str_replace(',', '.', $refundAmount);
+        $refundAmount = str_replace(",", ".", $refundAmount);
+        $refundAmount = preg_replace("/[\,\.](\d{3})/", "$1", $refundAmount);
         $invoiceId = $request->getRequestEscapedParameter('invoiceId');
         $refundAll = $request->getRequestEscapedParameter('refundAll');
         $noteToPayer = $request->getRequestParameter('noteToPayer');
@@ -299,7 +300,7 @@ class PayPalOrderController extends AdminDetailsController
         $captures = (array) $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures;
 
         foreach ($captures as $capture) {
-            $captureAmount += $capture->amount->value;
+            $captureAmount += (int)$capture->amount->value;
         }
         return $captureAmount;
     }
@@ -313,7 +314,7 @@ class PayPalOrderController extends AdminDetailsController
         $authorizations = (array) $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->authorizations;
 
         foreach ($authorizations as $authorization) {
-            $authorizationAmount += $authorization->amount->value;
+            $authorizationAmount += (int)$authorization->amount->value;
         }
         return $authorizationAmount;
     }
@@ -327,7 +328,7 @@ class PayPalOrderController extends AdminDetailsController
         $refunds = (array) $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->refunds;
 
         foreach ($refunds as $refund) {
-            $refundAmount += $refund->amount->value;
+            $refundAmount += (int)$refund->amount->value;
         }
         return $refundAmount;
     }
