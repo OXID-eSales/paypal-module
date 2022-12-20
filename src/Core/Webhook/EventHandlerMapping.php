@@ -16,7 +16,7 @@ use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureRefundedHand
 
 class EventHandlerMapping
 {
-    public const MAPPING = [
+    const MAPPING = [
         'PAYMENT.CAPTURE.COMPLETED' => PaymentCaptureCompletedHandler::class,
         'CHECKOUT.ORDER.COMPLETED' => CheckoutOrderCompletedHandler::class,
         'CHECKOUT.ORDER.APPROVED' => CheckoutOrderApprovedHandler::class,

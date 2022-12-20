@@ -22,7 +22,7 @@ class Events
     /**
      * Execute action on activate event
      */
-    public static function onActivate(): void
+    public static function onActivate()
     {
         // execute module migrations
         self::executeModuleMigrations();
@@ -39,7 +39,7 @@ class Events
      *
      * @return void
      */
-    public static function onDeactivate(): void
+    public static function onDeactivate()
     {
         foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
             $paymentMethod = oxNew(EshopModelPayment::class);
@@ -55,7 +55,7 @@ class Events
      *
      * @return void
      */
-    private static function executeModuleMigrations(): void
+    private static function executeModuleMigrations()
     {
         $sql = sprintf(
             'CREATE TABLE IF NOT EXISTS %s (
@@ -304,7 +304,7 @@ class Events
      *
      * @return void
      */
-    private static function addStaticContents(): void
+    private static function addStaticContents()
     {
         $staticContent = new StaticContent(
             Registry::getConfig(),
@@ -318,7 +318,7 @@ class Events
     /**
      * add details controller to requireSession
      */
-    private static function addRequireSession(): void
+    private static function addRequireSession()
     {
         $moduleSettings = new ModuleSettings(
             Registry::getConfig(),

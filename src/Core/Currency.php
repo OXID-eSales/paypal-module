@@ -14,7 +14,7 @@ class Currency
     /**
      * ISO-4217 currency codes that PayPal supports
      */
-    private const CODES = [
+    const CODES = [
         'AUD', 'BRL', 'CAD', 'CNY', 'CZK', 'DKK', 'EUR', 'HKD', 'HUF', 'INR', 'ILS', 'JPY', 'MYR', 'MXN', 'TWD',
         'NZD', 'NOK', 'PHP', 'PLN', 'GBP', 'RUB', 'SGD', 'SEK', 'CHF', 'THB', 'USD'
     ];
@@ -23,7 +23,7 @@ class Currency
     /**
      * Currency codes that PayPal does not support fractions for
      */
-    private const NON_DECIMAL = [
+    const NON_DECIMAL = [
         'JPY', 'HUF', 'TWD'
     ];
 

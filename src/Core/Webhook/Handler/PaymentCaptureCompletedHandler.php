@@ -15,7 +15,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 
 class PaymentCaptureCompletedHandler extends WebhookHandlerBase
 {
-    public const WEBHOOK_EVENT_NAME = 'PAYMENT.CAPTURE.COMPLETED';
+    const WEBHOOK_EVENT_NAME = 'PAYMENT.CAPTURE.COMPLETED';
 
     protected function getPayPalOrderIdFromResource(array $eventPayload): string
     {
@@ -37,7 +37,10 @@ class PaymentCaptureCompletedHandler extends WebhookHandlerBase
             (isset($eventPayload['status']) ? $eventPayload['status'] : '');
     }
 
-    protected function getPayPalOrderDetails(string $payPalOrderId): ?PayPalApiModelOrder
+    /**
+     * @return null|PayPalApiModelOrder
+     */
+    protected function getPayPalOrderDetails(string $payPalOrderId)
     {
         $apiOrder = null;
 

@@ -11,7 +11,7 @@ use OxidEsales\Eshop\Core\Module\Module;
 
 class LegacyOeppModuleDetails
 {
-    public const LEGACY_MODULE_ID = 'oepaypal';
+    const LEGACY_MODULE_ID = 'oepaypal';
 
     /**
      * Determines whether the legacy PayPal module "oepaypal" is enabled

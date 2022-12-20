@@ -16,7 +16,7 @@ namespace OxidSolutionCatalysts\PayPal\Core;
  */
 class TransactionEventCodes
 {
-    public const EVENT_CODES = [
+    const EVENT_CODES = [
         'T00' => ['T0000','T0001','T0002','T0003','T0004','T0005','T0006','T0007','T0008','T0009','T0010','T0011',
                   'T0012','T0013','T0014','T0015','T0016','T0017','T0018','T0019'],
         'T01' => ['T0100','T0101','T0102','T0103','T0104','T0105','T0106','T0107','T0108','T0109','T0110','T0111',

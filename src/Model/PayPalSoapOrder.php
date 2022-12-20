@@ -21,7 +21,7 @@ class PayPalSoapOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
     protected $_sCoreTable = 'oepaypal_order'; // phpcs:ignore PSR2.Classes.PropertyDeclaration
 
     /** Completion status */
-    protected const PAYPAL_ORDER_STATE_COMPLETED = 'completed';
+    const PAYPAL_ORDER_STATE_COMPLETED = 'completed';
 
     /**
      * List of order payments.
@@ -160,9 +160,9 @@ class PayPalSoapOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
     /**
      * Return order payment list.
      *
-     * @return PayPalSoapOrderPaymentList
+     * @return null|PayPalSoapOrderPaymentList
      */
-    public function getPaymentList(): ?PayPalSoapOrderPaymentList
+    public function getPaymentList()
     {
         if (is_null($this->paymentList)) {
             $paymentList = oxNew(PayPalSoapOrderPaymentList::class);

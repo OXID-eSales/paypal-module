@@ -35,7 +35,7 @@ class StaticContent
         $this->db = $db;
     }
 
-    public function ensurePayPalPaymentMethods(): void
+    public function ensurePayPalPaymentMethods()
     {
         foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
             $paymentMethod = oxNew(EshopModelPayment::class);
@@ -48,7 +48,7 @@ class StaticContent
         }
     }
 
-    protected function assignPaymentToActiveDeliverySets(string $paymentId): void
+    protected function assignPaymentToActiveDeliverySets(string $paymentId)
     {
         $deliverySetIds = $this->getActiveDeliverySetIds();
         foreach ($deliverySetIds as $deliverySetId) {
@@ -56,7 +56,7 @@ class StaticContent
         }
     }
 
-    protected function assignPaymentToDelivery(string $paymentId, string $deliverySetId): void
+    protected function assignPaymentToDelivery(string $paymentId, string $deliverySetId)
     {
         $object2Paymentent = oxNew(EshopBaseModel::class);
         $object2Paymentent->init('oxobject2payment');
@@ -70,7 +70,7 @@ class StaticContent
         $object2Paymentent->save();
     }
 
-    protected function createPaymentMethod(string $paymentId, array $definitions): void
+    protected function createPaymentMethod(string $paymentId, array $definitions)
     {
         /** @var EshopModelPayment $paymentModel */
         $paymentModel = oxNew(EshopModelPayment::class);
@@ -107,7 +107,7 @@ class StaticContent
      * @deprecated Method will be removed soon.
      * It will be replaced by a solution in which only previously active payment methods are reactivated
      */
-    protected function reActivatePaymentMethod(string $paymentId): void
+    protected function reActivatePaymentMethod(string $paymentId)
     {
         /** @var EshopModelPayment $paymentModel */
         $paymentModel = oxNew(EshopModelPayment::class);
@@ -118,7 +118,7 @@ class StaticContent
         $paymentModel->save();
     }
 
-    public function ensureStaticContents(): void
+    public function ensureStaticContents()
     {
         foreach (PayPalDefinitions::getPayPalStaticContents() as $content) {
             $loadId = $content['oxloadid'];

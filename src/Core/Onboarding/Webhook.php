@@ -77,7 +77,7 @@ class Webhook
         return $webhookId;
     }
 
-    public function removeWebhook(string $webhookId): void
+    public function removeWebhook(string $webhookId)
     {
         if (empty($webhookId)) {
             //no webhook exists yet, nothing to be deleted
@@ -101,7 +101,7 @@ class Webhook
         return $paypalConfig->getWebhookControllerUrl();
     }
 
-    public function saveWebhookId(string $webhookId): void
+    public function saveWebhookId(string $webhookId)
     {
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $moduleSettings->saveWebhookId($webhookId);

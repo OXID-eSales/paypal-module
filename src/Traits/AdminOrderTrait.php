@@ -56,7 +56,7 @@ trait AdminOrderTrait
      * @throws ApiException
      * @throws StandardException
      */
-    public function capturePayPalStandard(): void
+    public function capturePayPalStandard()
     {
         if (
             $this->getTimeLeftForPayPalCapture(false) > 0
@@ -194,7 +194,7 @@ trait AdminOrderTrait
         return $this->order;
     }
 
-    protected function refreshOrder(): void
+    protected function refreshOrder()
     {
         $this->order = null;
     }

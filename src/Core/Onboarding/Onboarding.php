@@ -78,7 +78,7 @@ class Onboarding
         return $response;
     }
 
-    public function saveSandboxMode(bool $isSandbox): void
+    public function saveSandboxMode(bool $isSandbox)
     {
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $moduleSettings->saveSandboxMode($isSandbox);

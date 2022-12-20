@@ -24,13 +24,13 @@ abstract class WebhookHandlerBase
 {
     use ServiceContainer;
 
-    public const WEBHOOK_EVENT_NAME = '';
+    const WEBHOOK_EVENT_NAME = '';
 
     /**
      * @inheritDoc
      * @throws WebhookEventException
      */
-    public function handle(Event $event): void
+    public function handle(Event $event)
     {
         $eventPayload = $this->getEventPayload($event);
 
@@ -75,7 +75,7 @@ abstract class WebhookHandlerBase
         $this->cleanUpNotFinishedOrders();
     }
 
-    public function cleanUpNotFinishedOrders(): void
+    public function cleanUpNotFinishedOrders()
     {
         // check for not finished orders and reset
         /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
@@ -137,16 +137,24 @@ abstract class WebhookHandlerBase
         return $paypalOrderModel;
     }
 
-    protected function getPayPalOrderDetails(string $payPalOrderId): ?PayPalApiModelOrder
+    /**
+     * @return null|PayPalApiModelOrder
+     */
+    protected function getPayPalOrderDetails(string $payPalOrderId)
     {
         return null; //only needed for PAYMENT.CAPTURE.COMPLETED webhook event
     }
 
+    /**
+     * @param string $status
+     * @param PayPalModelOrder $paypalOrderModel
+     * @param null|PayPalApiModelOrder $orderDetails
+     */
     protected function updateStatus(
         string $status,
-        PayPalModelOrder $paypalOrderModel,
-        ?PayPalApiModelOrder $orderDetails
-    ): void {
+        $paypalOrderModel,
+        $orderDetails
+    ) {
         if (
             $orderDetails &&
             ($puiPaymentDetails = $orderDetails->payment_source->pay_upon_invoice ?? null)
@@ -162,7 +170,7 @@ abstract class WebhookHandlerBase
         $paypalOrderModel->save();
     }
 
-    protected function markShopOrderPaymentStatus(EshopModelOrder $order, string $payPalTransactionId): void
+    protected function markShopOrderPaymentStatus(EshopModelOrder $order, string $payPalTransactionId)
     {
         $order->markOrderPaid();
         $order->setTransId($payPalTransactionId);

@@ -16,8 +16,8 @@ use stdClass;
 
 class PriceToMoney
 {
-    public const BRUTTO_MODE = 1;
-    public const NETTO_MODE = 2;
+    const BRUTTO_MODE = 1;
+    const NETTO_MODE = 2;
 
     /**
      * @param Price | double $price

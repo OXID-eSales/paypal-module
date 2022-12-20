@@ -47,9 +47,9 @@ class OrderRequestFactory
      * Use this option when the final amount is not known when the checkout flow is initiated and you want to
      * redirect the customer to the merchant page without processing the payment.
      */
-    public const USER_ACTION_CONTINUE = 'CONTINUE';
+    const USER_ACTION_CONTINUE = 'CONTINUE';
 
-    public const USER_ACTION_PAY_NOW = 'PAY_NOW';
+    const USER_ACTION_PAY_NOW = 'PAY_NOW';
 
     /**
      * @var OrderRequest
@@ -79,13 +79,13 @@ class OrderRequestFactory
     public function getRequest(
         Basket $basket,
         string $intent,
-        ?string $userAction = null,
-        ?string $transactionId = null,
-        ?string $processingInstruction = null,
-        ?string $paymentSource = null,
-        ?string $invoiceId = null,
-        ?string $returnUrl = null,
-        ?string $cancelUrl = null,
+        $userAction = null,
+        $transactionId = null,
+        $processingInstruction = null,
+        $paymentSource = null,
+        $invoiceId = null,
+        $returnUrl = null,
+        $cancelUrl = null,
         bool $withArticles = true,
         bool $setProvidedAddress = true
     ): OrderRequest {
@@ -124,15 +124,17 @@ class OrderRequestFactory
     /**
      * Sets application context
      *
-     * @param string $userAction
-     *
+     * @param null|string $userAction
+     * @param null|string $returnUrl
+     * @param null|string $cancelUrl
+     * @param null|bool $setProvidedAddress
      * @return OrderApplicationContext
      */
     protected function getApplicationContext(
-        ?string $userAction,
-        ?string $returnUrl,
-        ?string $cancelUrl,
-        ?bool $setProvidedAddress
+        $userAction,
+        $returnUrl,
+        $cancelUrl,
+        $setProvidedAddress
     ): OrderApplicationContext {
         $context = new OrderApplicationContext();
         $context->brand_name = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
@@ -155,11 +157,14 @@ class OrderRequestFactory
     }
 
     /**
+     * @param null|string $transactionId
+     * @param null|string $invoiceId
+     * @param bool $withArticles
      * @return PurchaseUnitRequest[]
      */
     protected function getPurchaseUnits(
-        ?string $transactionId,
-        ?string $invoiceId,
+        $transactionId,
+        $invoiceId,
         bool $withArticles = true
     ): array {
         $purchaseUnit = new PurchaseUnitRequest();
@@ -395,7 +400,7 @@ class OrderRequestFactory
     /**
      * @return ShippingDetail|null
      */
-    protected function getShippingAddress(): ?ShippingDetail
+    protected function getShippingAddress()
     {
         $user = $this->basket->getBasketUser();
         $deliveryId = Registry::getSession()->getVariable("deladrid");
@@ -441,7 +446,7 @@ class OrderRequestFactory
     /**
      * @return PhoneWithType|null
      */
-    protected function getPayerPhone(): ?PhoneWithType
+    protected function getPayerPhone()
     {
         $user = $this->basket->getBasketUser();
         $phoneUtils = PhoneNumberUtil::getInstance();

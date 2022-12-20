@@ -68,7 +68,7 @@ class PatchRequestFactory
         return $this->request;
     }
 
-    protected function getShippingAddressPatch(): void
+    protected function getShippingAddressPatch()
     {
         $deliveryId = Registry::getSession()->getVariable("deladrid");
         $deliveryAddress = oxNew(Address::class);
@@ -107,7 +107,7 @@ class PatchRequestFactory
         }
     }
 
-    protected function getShippingNamePatch(): void
+    protected function getShippingNamePatch()
     {
         $deliveryId = Registry::getSession()->getVariable("deladrid");
         $deliveryAddress = oxNew(Address::class);
@@ -126,7 +126,7 @@ class PatchRequestFactory
         }
     }
 
-    protected function getAmountPatch(): void
+    protected function getAmountPatch()
     {
         $patch = new Patch();
         $patch->op = Patch::OP_REPLACE;
@@ -165,7 +165,7 @@ class PatchRequestFactory
      */
     protected function getPurchaseUnitsPatch(
         BasketItem $basketItem
-    ): void {
+    ) {
         $currency = $this->basket->getBasketCurrency();
 
         $patch = new Patch();
@@ -187,7 +187,7 @@ class PatchRequestFactory
         $this->request[] = $patch;
     }
 
-    protected function getCustomIdPatch(string $shopOrderId): void
+    protected function getCustomIdPatch(string $shopOrderId)
     {
         $patch = new Patch();
         $patch->op = Patch::OP_ADD;

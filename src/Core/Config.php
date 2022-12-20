@@ -28,7 +28,7 @@ class Config
      *
      * @throws StandardException
      */
-    public function checkHealth(): void
+    public function checkHealth()
     {
         if (!$this->getServiceFromContainer(ModuleSettings::class)->checkHealth()) {
             throw oxNew(
@@ -267,6 +267,18 @@ class Config
             );
         }
         return (bool)$exists;
+    }
+
+    /**
+     * get the full File Name of the Token Cache
+     *
+     * @return string
+     */
+    public function getTokenCacheFileName(): string
+    {
+        $config = Registry::getConfig();
+        $shopId = $config->getActiveShop()->getId();
+        return $config->getConfigParam('sCompileDir') . 'paypaltoken_' . $shopId . '.json';
     }
 
     /**
