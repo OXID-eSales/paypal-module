@@ -20,7 +20,6 @@ use OxidEsales\Eshop\Core\InputValidator;
 use OxidEsales\Eshop\Core\ShopControl;
 use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Component\UserComponent as PayPalUserComponent;
-use OxidSolutionCatalysts\PayPal\Controller\Admin\OnboardingController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalConfigController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalOrderController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderMain as PayPalOrderMainController;
@@ -79,14 +78,11 @@ $aModule = [
         'oscpaypalconfig' => PayPalConfigController::class,
         'oscpaypalwebhook' => WebhookController::class,
         'oscpaypalproxy' => ProxyController::class,
-
-        'oscpaypalonboarding' => OnboardingController::class,
         'oscpaypalorder' => PayPalOrderController::class,
     ],
     'templates' => [
         // Admin: Config
         'oscpaypalconfig.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalconfig.tpl',
-        'oscpaypalconfig_popup.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalconfig_popup.tpl',
 
         // Admin: Order
         'oscpaypalorder.tpl' => 'osc/paypal/views/admin/tpl/oscpaypalorder.tpl',
