@@ -278,7 +278,7 @@ class Config
     {
         $config = Registry::getConfig();
         $shopId = $config->getActiveShop()->getId();
-        return $config->getConfigParam('sCompileDir') . 'paypaltoken_' . $shopId . '.json';
+        return $config->getConfigParam('sCompileDir') . 'paypaltoken_' . $shopId . '.txt';
     }
 
     /**
@@ -306,7 +306,7 @@ class Config
         $webhookUrl = 'index.php?cl=oscpaypalwebhook';
 
         if ($this->isSandbox()) {
-             $webhookUrl .= '&XDEBUG_SESSION_START=1';
+            $webhookUrl .= '&XDEBUG_SESSION_START=1';
         }
 
         return html_entity_decode(
