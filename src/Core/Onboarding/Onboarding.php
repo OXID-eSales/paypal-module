@@ -107,10 +107,9 @@ class Onboarding
     {
         $paypalConfig = oxNew(PayPalConfig::class);
         $partnerConfig = oxNew(PartnerConfig::class);
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
 
-        $clientId = $withCredentials ? $moduleSettings->getClientId() : '';
-        $clientSecret = $withCredentials ? $moduleSettings->getClientSecret() : '';
+        $clientId = $withCredentials ? $paypalConfig->getClientId() : '';
+        $clientSecret = $withCredentials ? $paypalConfig->getClientSecret() : '';
 
         return new ApiOnboardingClient(
             Registry::getLogger(),
@@ -118,7 +117,8 @@ class Onboarding
             $clientId,
             $clientSecret,
             $partnerConfig->getTechnicalPartnerId($isSandbox),
-            PayPalSession::getMerchantIdInPayPal()
+            PayPalSession::getMerchantIdInPayPal(),
+            $paypalConfig->getTokenCacheFileName()
         );
     }
 
