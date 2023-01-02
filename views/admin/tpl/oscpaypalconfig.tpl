@@ -54,7 +54,7 @@
                         <p class="help-block text-danger">[{oxmultilang ident="HELP_OSC_PAYPAL_CREDENTIALS_PART1"}]</p>
 
                         [{if !$config->getLiveClientId() && !$config->getLiveClientSecret() && !$config->getLiveWebhookId()}]
-                            <p class="help-block text-danger">[{oxmultilang ident="HELP_OSC_PAYPAL_CREDENTIALS_PART2"}]</p>
+                            <p class="live help-block text-danger">[{oxmultilang ident="HELP_OSC_PAYPAL_CREDENTIALS_PART2"}]</p>
                             <p class="live"><a target="_blank"
                                   class="popuplink2"
                                   href="[{$oView->getLiveSignUpMerchantIntegrationLink()}]"
@@ -101,7 +101,7 @@
                         </div>
 
                         [{if !$config->getSandboxClientId() && !$config->getSandboxClientSecret() && !$config->getSandboxWebhookId()}]
-                            <p class="help-block text-danger">[{oxmultilang ident="HELP_OSC_PAYPAL_CREDENTIALS_PART2"}]</p>
+                            <p class="sandbox help-block text-danger">[{oxmultilang ident="HELP_OSC_PAYPAL_CREDENTIALS_PART2"}]</p>
                             <p class="sandbox"><a target="_blank"
                                   class="popuplink"
                                   href="[{$oView->getSandboxSignUpMerchantIntegrationLink()}]"
