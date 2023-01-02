@@ -48,9 +48,10 @@ $aLang = [
         it is possible to be autonmatically be logged in to shop when logging in to PayPal. This behavior may not be in the
         security interests of your customers',
 
-    'HELP_OSC_PAYPAL_CREDENTIALS'                 => 'Please use the "PayPal integration"-button that appears to register. During the integration, PayPal will activate the "credit card"
-         and "Pay upon Invoice" payment methods and the webhook is automatically registered.<br />Enter the API login information (client ID, client password, Webhook ID)
+    'HELP_OSC_PAYPAL_CREDENTIALS_PART1'           => 'Enter the API login information (client ID, client password, Webhook ID)
          only if you do not need the "credit card" and "Pay upon Invoice" payment methods and are able to set up a webhook in the PayPal backend by yourself.',
+    'HELP_OSC_PAYPAL_CREDENTIALS_PART2'           => 'Please use the "PayPal integration"-button that appears to register. During the integration, PayPal will activate the "credit card"
+         and "Pay upon Invoice" payment methods and the webhook is automatically registered.',
     'HELP_OSC_PAYPAL_CLIENT_ID'                   => 'Client ID for live mode.',
     'HELP_OSC_PAYPAL_CLIENT_SECRET'               => 'Secret for live mode.',
     'HELP_OSC_PAYPAL_SANDBOX_CLIENT_ID'           => 'Client ID for sandbox mode.',
