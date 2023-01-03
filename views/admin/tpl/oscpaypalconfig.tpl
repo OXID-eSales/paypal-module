@@ -51,10 +51,10 @@
 
                         <label>[{oxmultilang ident="OSC_PAYPAL_CREDENTIALS"}]</label>
 
-                        <p class="help-block text-danger">[{oxmultilang ident="HELP_OSC_PAYPAL_CREDENTIALS"}]</p>
+                        <p class="help-block text-danger">[{oxmultilang ident="HELP_OSC_PAYPAL_CREDENTIALS_PART1"}]</p>
 
                         [{if !$config->getLiveClientId() && !$config->getLiveClientSecret() && !$config->getLiveWebhookId()}]
-[{*
+                            <p class="live help-block text-danger">[{oxmultilang ident="HELP_OSC_PAYPAL_CREDENTIALS_PART2"}]</p>
                             <p class="live"><a target="_blank"
                                   class="popuplink2"
                                   href="[{$oView->getLiveSignUpMerchantIntegrationLink()}]"
@@ -62,13 +62,6 @@
                                   data-paypal-onboard-complete="onboardedCallbackLive"
                                   data-paypal-button="PPLtBlue">
                                     [{oxmultilang ident="OSC_PAYPAL_LIVE_BUTTON_CREDENTIALS"}]
-                               </a>
-                            </p>
-*}]
-                            <p class="live"><a href="[{$sSelfLink|cat:"cl=oscpaypalconfig&aoc=live"}]" target="_blank"
-                                class="popuplink paypal-button-PPLtBlue"
-                                id="paypalonboardingpopuplive">
-                                    [{oxmultilang ident="OSC_PAYPAL_LIVE_BUTTON_CREDENTIALS_INIT"}]
                                </a>
                             </p>
                         [{/if}]
@@ -108,7 +101,7 @@
                         </div>
 
                         [{if !$config->getSandboxClientId() && !$config->getSandboxClientSecret() && !$config->getSandboxWebhookId()}]
-[{*
+                            <p class="sandbox help-block text-danger">[{oxmultilang ident="HELP_OSC_PAYPAL_CREDENTIALS_PART2"}]</p>
                             <p class="sandbox"><a target="_blank"
                                   class="popuplink"
                                   href="[{$oView->getSandboxSignUpMerchantIntegrationLink()}]"
@@ -117,13 +110,6 @@
                                   data-paypal-button="PPLtBlue">
                                     [{oxmultilang ident="OSC_PAYPAL_SANDBOX_BUTTON_CREDENTIALS"}]
                                 </a>
-                            </p>
-*}]
-                            <p class="sandbox"><a href="[{$sSelfLink|cat:"cl=oscpaypalconfig&aoc=sandbox"}]" target="_blank"
-                                class="popuplink paypal-button-PPLtBlue"
-                                id="paypalonboardingpopupsandbox">
-                                    [{oxmultilang ident="OSC_PAYPAL_SANDBOX_BUTTON_CREDENTIALS_INIT"}]
-                               </a>
                             </p>
                         [{/if}]
 
@@ -430,6 +416,4 @@
 </div>
 [{include file="bottomitem.tpl"}]
 
-[{*
 <script id="paypal-js" src="https://www.sandbox.paypal.com/webapps/merchantboarding/js/lib/lightbox/partner.js"></script>
-*}]

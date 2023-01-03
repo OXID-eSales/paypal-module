@@ -48,11 +48,11 @@ $aLang = [
         besteht die Möglichkeit, sich durch ein Login bei PayPal auch automatisch im Shop anzumelden. Möglicherweise ist dieses Verhalten nicht im
         Sicherheitsinteresse Ihrer Kunden',
 
-    'HELP_OSC_PAYPAL_CREDENTIALS'                 =>
-        'Bitte nutzen Sie für die Anmeldung den eingeblendeten "PayPal Integration"-Button. Während der Integration werden durch PayPal die Zahlarten "Kreditkarte"
-         und "Kauf auf Rechnung" freigeschaltet, sowie der Webhook automatisch registriert.<br />Tragen Sie die API-Anmeldeinformationen (Client-ID, Client Passwort,
+    'HELP_OSC_PAYPAL_CREDENTIALS_PART1'           => 'Tragen Sie die API-Anmeldeinformationen (Client-ID, Client Passwort,
          Webhook-ID) nur dann per Hand ein, wenn Sie auf die Zahlarten "Kreditkarte" und "Kauf auf Rechnung" nicht benötigen und in der Lage sind einen Webhook im PayPal-
          Backend selbst zu konfigurieren.',
+    'HELP_OSC_PAYPAL_CREDENTIALS_PART2'           => 'Bitte nutzen Sie für die Anmeldung den eingeblendeten "PayPal Integration"-Button. Während der Integration werden durch PayPal die Zahlarten "Kreditkarte"
+         und "Kauf auf Rechnung" freigeschaltet, sowie der Webhook automatisch registriert.',
     'HELP_OSC_PAYPAL_CLIENT_ID'                   => 'Client-ID des Live-Account für Live-Modus',
     'HELP_OSC_PAYPAL_CLIENT_SECRET'               => 'Secret des Live-Account für Live-Modus',
     'HELP_OSC_PAYPAL_SANDBOX_CLIENT_ID'           => 'Client-ID des Sandbox-Account für Sandbox-Modus',
