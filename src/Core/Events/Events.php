@@ -12,11 +12,17 @@ namespace OxidSolutionCatalysts\PayPal\Core\Events;
 use OxidEsales\DoctrineMigrationWrapper\MigrationsBuilder;
 use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Application\Model\Payment as EshopModelPayment;
+use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
+use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\StaticContent;
 use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 class Events
@@ -32,7 +38,6 @@ class Events
         self::executeModuleMigrations();
 
         //add static contents and payment methods
-        //NOTE: this assumes the module's servies.yaml is already in place at the time this method is called
         self::addStaticContents();
 
         //extend session required controller
@@ -80,11 +85,7 @@ class Events
      */
     private static function addStaticContents(): void
     {
-        /** @var StaticContent $service */
-        $service = ContainerFactory::getInstance()
-            ->getContainer()
-            ->get(StaticContent::class);
-
+        $service = self::getStaticContentService();
         $service->ensureStaticContents();
         $service->ensurePayPalPaymentMethods();
     }
@@ -94,10 +95,64 @@ class Events
      */
     private static function addRequireSession(): void
     {
-        /** @var ModuleSettings $moduleSettings */
-        $moduleSettings = ContainerFactory::getInstance()
+        $service = self::getModuleSettingsService();
+        $service->addRequireSession();
+    }
+
+    /**
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
+     */
+    private static function getStaticContentService(): StaticContent
+    {
+        /*
+        Normally I would fetch the StaticContents service like this:
+
+        $service = ContainerFactory::getInstance()
+            ->getContainer()
+            ->get(StaticContent::class);
+
+        But the services are not ready when the onActivate method is triggered.
+        That's why I build the containers by hand as an exception.:
+        */
+
+        /** @var ContainerInterface $container */
+        $container = ContainerFactory::getInstance()
+            ->getContainer();
+        /** @var QueryBuilderFactoryInterface $queryBuilderFactory */
+        $queryBuilderFactory = $container->get(QueryBuilderFactoryInterface::class);
+        /** @var ContextInterface $context */
+        $context = $container->get(ContextInterface::class);
+
+        return new StaticContent(
+            $queryBuilderFactory
+        );
+    }
+
+    private static function getModuleSettingsService(): ModuleSettings
+    {
+        /*
+        Normally I would fetch the StaticContents service like this:
+
+        $service = ContainerFactory::getInstance()
             ->getContainer()
             ->get(ModuleSettings::class);
-        $moduleSettings->addRequireSession();
+
+        But the services are not ready when the onActivate method is triggered.
+        That's why I build the containers by hand as an exception.:
+        */
+
+        /** @var ContainerInterface $container */
+        $container = ContainerFactory::getInstance()
+            ->getContainer();
+        /** @var ModuleSettingBridgeInterface $moduleSettingsBridge */
+        $moduleSettingsBridge = $container->get(ModuleSettingBridgeInterface::class);
+        /** @var ContextInterface $context */
+        $context = $container->get(ContextInterface::class);
+
+        return new ModuleSettings(
+            $moduleSettingsBridge,
+            $context
+        );
     }
 }
