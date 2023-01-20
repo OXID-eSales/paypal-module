@@ -186,6 +186,8 @@ class Order extends Order_parent
         if ($isPayPalACDC) {
             //webhook should kick in and handle order state and we should not call the api too often
             Registry::getSession()->deleteVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
+            // remove PayPal order id from session
+            PayPalSession::unsetPayPalOrderId();
         } elseif (
             $isPayPalStandard &&
             $this->getServiceFromContainer(ModuleSettings::class)
