@@ -39,8 +39,6 @@ class PaymentGateway extends PaymentGateway_parent
 
         if (PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID == $sessionPaymentId) {
             $success = $this->doExecutePayPalExpressPayment($order);
-        } elseif (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID == $sessionPaymentId) {
-            $success = $this->doExecuteAcdcPayPalPayment($order);
         } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID == $sessionPaymentId) {
             $success = $this->doExecutePuiPayment($order);
         } else {
@@ -108,30 +106,6 @@ class PaymentGateway extends PaymentGateway_parent
         PayPalSession::unsetPayPalPuiCmId();
 
         $this->_sLastError = $paymentService->getPaymentExecutionError();
-
-        return $success;
-    }
-
-    protected function doExecuteAcdcPayPalPayment(EshopModelOrder $order): bool
-    {
-        /** @var PaymentService $paymentService */
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
-
-        $success = false;
-
-        if ($checkoutOrderId = PayPalSession::getCheckoutOrderId()) {
-            // Capture Order
-            try {
-                $paymentService->doCapturePayPalOrder($order, $checkoutOrderId, $sessionPaymentId);
-                $success = true;
-            } catch (Exception $exception) {
-                Registry::getLogger()->error("Error on acdc order capture call.", [$exception]);
-            }
-
-            // remove PayPal order id from session
-            PayPalSession::unsetPayPalOrderId();
-        }
 
         return $success;
     }
