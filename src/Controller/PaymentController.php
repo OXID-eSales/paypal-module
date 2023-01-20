@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -101,6 +102,30 @@ class PaymentController extends PaymentController_parent
         }
 
         return $paymentList;
+    }
+
+    /**
+     * @inheritDoc
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     * @return  mixed
+     * @throws PayPalException
+     */
+    public function validatePayment()
+    {
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $actualPaymentId = $paymentService->getSessionPaymentId();
+        $newPaymentId = Registry::getRequest()->getRequestParameter('paymentid');
+
+        // remove the possible exist paypal-payment, if we choose another
+        if (
+            $actualPaymentId &&
+            $actualPaymentId !== $newPaymentId &&
+            PayPalDefinitions::isPayPalPayment($actualPaymentId)
+        ) {
+            $paymentService->removeTemporaryOrder();
+        }
+
+        return parent::validatePayment();
     }
 
     /**
