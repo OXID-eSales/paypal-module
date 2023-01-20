@@ -425,6 +425,7 @@ class Payment
 
         return $sessionOrderId &&
             $payPalOrderId &&
+            $paymentId &&
             ((PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId) ||
                 PayPalDefinitions::isUAPMPayment($paymentId)
             );
