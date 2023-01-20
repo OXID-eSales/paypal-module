@@ -82,7 +82,7 @@ class PaymentGateway extends PaymentGateway_parent
             }
 
             // destroy PayPal-Session
-            PayPalSession::storePayPalOrderId('');
+            PayPalSession::unsetPayPalOrderId();
         }
 
         return $success;
@@ -100,10 +100,12 @@ class PaymentGateway extends PaymentGateway_parent
                 Registry::getSession()->getBasket(),
                 PayPalSession::getPayPalPuiCmId()
             );
+            PayPalSession::unsetPayPalPuiCmId();
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on execute pui payment call.", [$exception]);
         }
-        PayPalSession::unsetPayPalPuiCmId();
+        // destroy PayPal-Session
+        PayPalSession::unsetPayPalOrderId();
 
         $this->_sLastError = $paymentService->getPaymentExecutionError();
 
