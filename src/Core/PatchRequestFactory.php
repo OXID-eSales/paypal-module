@@ -29,7 +29,7 @@ use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
 class PatchRequestFactory
 {
     /**
-     * @var Array
+     * @var array
      */
     private $request = [];
 
@@ -149,10 +149,6 @@ class PatchRequestFactory
         //Item tax sum - we use 0% and calculate with brutto to avoid rounding errors
         $breakdown->tax_total = PriceToMoney::convert(0, $currency);
 
-        //Discount
-        if ($discount = $this->basket->getPayPalCheckoutDiscount()) {
-            $breakdown->discount = PriceToMoney::convert((float)$discount, $currency);
-        }
         $patch->value = $amount;
 
         $this->request[] = $patch;
