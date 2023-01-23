@@ -127,6 +127,32 @@ class Basket extends Basket_parent
     }
 
     /**
+     * Collects all basket discounts (basket, payment and vouchers)
+     * and returns sum of collected discounts.
+     *
+     * @return float
+     */
+    public function getPayPalCheckoutDiscount(): float
+    {
+        // collect discounts
+        $discount = 0.0;
+
+        $totalDiscount = $this->getTotalDiscount();
+
+        if ($totalDiscount) {
+            $discount += $totalDiscount->getBruttoPrice();
+        }
+
+        // vouchers..
+        $vouchers = (array) $this->getVouchers();
+        foreach ($vouchers as $voucher) {
+            $discount += round($voucher->dVoucherdiscount, 2);
+        }
+
+        return $discount;
+    }
+
+    /**
      * collect the netto-sum of all articles in Basket
      * and returns sum of all costs.
      *

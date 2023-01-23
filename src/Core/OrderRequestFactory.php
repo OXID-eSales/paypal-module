@@ -214,6 +214,11 @@ class OrderRequestFactory
         //Item tax sum - we use 0% and calculate with brutto to avoid rounding errors
         $breakdown->tax_total = PriceToMoney::convert(0, $currency);
 
+        //Discount
+        if ($discount = $basket->getPayPalCheckoutDiscount()) {
+            $breakdown->discount = PriceToMoney::convert((float)$discount, $currency);
+        }
+
         return $amount;
     }
 
