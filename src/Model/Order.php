@@ -349,7 +349,7 @@ class Order extends Order_parent
         $this->_updateOrderDate();
 
         // destroy PayPal-Session
-        PayPalSession::storePayPalOrderId('');
+        PayPalSession::unsetPayPalOrderId();
 
         return $success;
     }
