@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [2.2.3] - 2023-01-XX
 
 ### Fixed
+- [0007394](https://bugs.oxid-esales.com/view.php?id=7394) Price reduction by payment method blocks order
 - onBoarding-Process with fixed PopUps from PayPal
 - [0007389](https://bugs.oxid-esales.com/view.php?id=7389) reformat large refund amounts
 - [0007388](https://bugs.oxid-esales.com/view.php?id=7388) remove Fraudnet CmId for PUI in any case (success, error ...)
