@@ -143,11 +143,6 @@ class Basket extends Basket_parent
             $discount += $totalDiscount->getBruttoPrice();
         }
 
-        //if payment costs are negative, adding them to discount
-        if (($costs = $this->getPaymentCosts()) < 0) {
-            $discount += ($costs * -1);
-        }
-
         // vouchers..
         $vouchers = (array) $this->getVouchers();
         foreach ($vouchers as $voucher) {
