@@ -29,7 +29,7 @@ use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
 class PatchRequestFactory
 {
     /**
-     * @var Array
+     * @var array
      */
     private $request = [];
 
