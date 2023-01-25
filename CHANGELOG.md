@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [1.2.3] - 2023-01-XX
 
 ### Fixed
+- change Install-SQL for compatibility
 - [0007394](https://bugs.oxid-esales.com/view.php?id=7394) Price reduction by payment method blocks order
 - onBoarding-Process with fixed PopUps from PayPal
 - [0007389](https://bugs.oxid-esales.com/view.php?id=7389) reformat large refund amounts

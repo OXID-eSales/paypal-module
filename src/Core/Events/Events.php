@@ -58,104 +58,104 @@ class Events
     private static function executeModuleMigrations()
     {
         $sql = sprintf(
-            'CREATE TABLE IF NOT EXISTS %s (
+            "CREATE TABLE IF NOT EXISTS %s (
                         `OXID`
                             char(32)
                             character set latin1
                             collate latin1_general_ci
                             NOT NULL
-                            COMMENT \'Record id\',
+                            COMMENT 'Record id',
                         `OXSHOPID`
                              int(11)
                             DEFAULT 1
-                            COMMENT \'Shop ID (oxshops)\',
+                            COMMENT 'Shop ID (oxshops)',
                         `OXORDERID`
                             char(32)
                             character set latin1
                             collate latin1_general_ci
                             NOT NULL
-                            COMMENT \'OXID Parent Order id (oxorder)\',
+                            COMMENT 'OXID Parent Order id (oxorder)',
                         `OXPAYPALORDERID`
                             char(32)
                             character set latin1
                             collate latin1_general_ci
                             NOT NULL
-                            COMMENT \'PayPal Transaction ID\',
+                            COMMENT 'PayPal Transaction ID',
                         `OSCPAYPALSTATUS`
                             char(255)
                             character set latin1
                             collate latin1_general_ci
                             NOT NULL
-                            DEFAULT \'\'
-                            COMMENT \'PayPal Status\',
+                            DEFAULT ''
+                            COMMENT 'PayPal Status',
                         `OSCPAYMENTMETHODID`
                             char(32)
                             character set latin1
                             collate latin1_general_ci
                             NOT NULL
-                            COMMENT \'PayPal payment id\',
+                            COMMENT 'PayPal payment id',
                         `OSCPAYPALTRANSACTIONID`
                             char(32)
                             character set latin1
                             collate latin1_general_ci
                             NOT NULL
-                            DEFAULT \'\'
-                            COMMENT \'PayPal transaction id\',
+                            DEFAULT ''
+                            COMMENT 'PayPal transaction id',
                         `OSCPAYPALTRANSACTIONTYPE`
                             char(32)
                             character set latin1
                             collate latin1_general_ci
-                            DEFAULT \'capture\'
-                            COMMENT \'PayPal transaction type\',
+                            DEFAULT 'capture'
+                            COMMENT 'PayPal transaction type',
                         `OSCPAYPALTRACKINGID`
                             char(32)
                             character set latin1
                             collate latin1_general_ci
                             NOT NULL
-                            COMMENT \'PayPal tracking id\',
+                            COMMENT 'PayPal tracking id',
                         `OSCPAYPALTRACKINGTYPE`
                             char(32)
                             character set latin1
                             collate latin1_general_ci
                             NOT NULL
-                            COMMENT \'PayPal tracking type\',
+                            COMMENT 'PayPal tracking type',
                         `OSCPAYPALPUIPAYMENTREFERENCE`
                             char(32)
                             character set latin1
                             collate latin1_general_ci
                             NOT NULL
-                            COMMENT \'PayPal Pui Payment Reference\',
+                            COMMENT 'PayPal Pui Payment Reference',
                         `OSCPAYPALPUIBIC`
                             char(11)
                             character set latin1
                             collate latin1_general_ci
                             NOT NULL
-                            COMMENT \'PayPal Pui Bic\',
+                            COMMENT 'PayPal Pui Bic',
                         `OSCPAYPALPUIIBAN`
                             char(22)
                             character set latin1
                             collate latin1_general_ci
                             NOT NULL
-                            COMMENT \'PayPal Pui IBAN\',
+                            COMMENT 'PayPal Pui IBAN',
                         `OSCPAYPALPUIBANKNAME`
                              varchar(255)
                              NOT NULL
-                            COMMENT \'PayPal Pui Bankname\',
+                            COMMENT 'PayPal Pui Bankname',
                         `OSCPAYPALPUIACCOUNTHOLDERNAME`
                             varchar(255)
                              NOT NULL
-                            COMMENT \'PayPal Pui Account Holder Name\',
+                            COMMENT 'PayPal Pui Account Holder Name',
                        `OXTIMESTAMP`
                             timestamp
                             NOT NULL
                             default CURRENT_TIMESTAMP
                             on update CURRENT_TIMESTAMP
-                            COMMENT \'Timestamp\',
+                            COMMENT 'Timestamp',
                         PRIMARY KEY (`OXID`),
                         UNIQUE KEY `OXORDERID_OXPAYPALORDERID_OSCPAYPALTRANSACTIONID`
                             (`OXORDERID`,`OXPAYPALORDERID`, `OSCPAYPALTRANSACTIONID`))
                         ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
-                        COMMENT \'Paypal Checkout\'',
+                        COMMENT 'Paypal Checkout'",
             'oscpaypal_order'
         );
 
@@ -226,7 +226,7 @@ class Events
 
         if (!self::tableColumnExists('oscpaypal_order', 'OSCPAYPALTRANSACTIONTYPE')) {
             $sql = "ALTER TABLE `oscpaypal_order`
-                ADD `OSCPAYPALTRANSACTIONTYPE` char(32) collate latin1_general_ci DEFAULT \'capture\'";
+                ADD `OSCPAYPALTRANSACTIONTYPE` char(32) collate latin1_general_ci DEFAULT 'capture'";
             DatabaseProvider::getDb()->execute($sql);
         }
 
