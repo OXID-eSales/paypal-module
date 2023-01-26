@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.2.3] - 2023-01-XX
+## [2.2.3] - 2023-01-26
 
 ### Fixed
 - [0007394](https://bugs.oxid-esales.com/view.php?id=7394) Price reduction by payment method blocks order
