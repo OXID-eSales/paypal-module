@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 - [0007413](https://bugs.oxid-esales.com/view.php?id=7413) set PPExpress independently of ShippingSets (They will be set later)
+- [0007384](https://bugs.oxid-esales.com/view.php?id=7384) if order declined during 3ds then go back to payment
 
 ## [1.2.3] - 2023-01-26
 

@@ -400,7 +400,6 @@ class Payment
 
         if ($orderModel->hasOrderNumber()) {
             Registry::getLogger()->error('Cannot delete valid order with id ' . $sessionOrderId);
-            throw PayPalException::createPayPalOrderFail();
         }
 
         if ($orderModel->isLoaded()) {
