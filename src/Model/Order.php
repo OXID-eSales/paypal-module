@@ -214,6 +214,9 @@ class Order extends Order_parent
 
         //TODO: reduce calls to api, see above
         if (is_null($transactionId) && ($capture = $this->getOrderPaymentCapture($payPalOrderId))) {
+            if ($capture->status === 'DECLINED') {
+                throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
+            }
             $this->setTransId($capture->id);
         }
 
