@@ -282,6 +282,13 @@ class ModuleSettings
         return (bool) $this->getSettingValue('oscPayPalSandboxPuiEligibility');
     }
 
+    public function getActivePayments(): array
+    {
+        /** @var array|null $activePayments */
+        $activePayments = $this->getSettingValue('oscPayPalActivePayments');
+        return $activePayments ?: [];
+    }
+
     public function save(string $name, $value, string $type = '')
     {
         $this->config->setConfigParam($name, $value);
@@ -358,6 +365,11 @@ class ModuleSettings
         } else {
             $this->save('oscPayPalWebhookId', $webhookId, 'str');
         }
+    }
+
+    public function saveActivePayments(array $activePayments)
+    {
+        $this->save('oscPayPalActivePayments', $activePayments);
     }
 
     /**
