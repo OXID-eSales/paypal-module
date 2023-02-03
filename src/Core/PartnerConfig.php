@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
-use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
 class PartnerConfig
