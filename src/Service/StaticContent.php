@@ -25,10 +25,15 @@ class StaticContent
     /** @var QueryBuilderFactoryInterface */
     private $queryBuilderFactory;
 
+    /** @var ModuleSettings */
+    private $moduleSettings;
+
     public function __construct(
-        QueryBuilderFactoryInterface $queryBuilderFactory
+        QueryBuilderFactoryInterface $queryBuilderFactory,
+        ModuleSettings $moduleSettings
     ) {
         $this->queryBuilderFactory = $queryBuilderFactory;
+        $this->moduleSettings = $moduleSettings;
     }
 
     public function ensurePayPalPaymentMethods(): void
@@ -99,12 +104,13 @@ class StaticContent
         }
     }
 
-    /**
-     * @deprecated Method will be removed soon. It will be replaced by a solution in
-     * which only previously active payment methods are reactivated
-     */
     protected function reActivatePaymentMethod(string $paymentId): void
     {
+        $activePayments = $this->moduleSettings->getActivePayments();
+        if (!in_array($paymentId, $activePayments, true)) {
+            return;
+        }
+
         /** @var EshopModelPayment $paymentModel */
         $paymentModel = oxNew(EshopModelPayment::class);
         $paymentModel->load($paymentId);
