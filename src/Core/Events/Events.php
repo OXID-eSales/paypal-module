@@ -41,12 +41,19 @@ class Events
      */
     public static function onDeactivate()
     {
+        $activePayments = [];
         foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
             $paymentMethod = oxNew(EshopModelPayment::class);
-            if ($paymentMethod->load($paymentId)) {
+            if (
+                $paymentMethod->load($paymentId) &&
+                (bool)$paymentMethod->oxpayments__oxactive->value
+            ) {
+                $activePayments[] = $paymentId;
                 $paymentMethod->oxpayments__oxactive = new Field(false);
                 $paymentMethod->save();
             }
+            $service = self::getModuleSettingsService();
+            $service->saveActivePayments($activePayments);
         }
     }
 
@@ -308,7 +315,8 @@ class Events
     {
         $staticContent = new StaticContent(
             Registry::getConfig(),
-            DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)
+            DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC),
+            self::getModuleSettingsService()
         );
 
         $staticContent->ensureStaticContents();
@@ -320,10 +328,18 @@ class Events
      */
     private static function addRequireSession()
     {
-        $moduleSettings = new ModuleSettings(
+        $moduleSettings = self::getModuleSettingsService();
+        $moduleSettings->addRequireSession();
+    }
+
+    /**
+     * @return ModuleSettings
+     */
+    private static function getModuleSettingsService()
+    {
+        return new ModuleSettings(
             Registry::getConfig(),
             DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)
         );
-        $moduleSettings->addRequireSession();
     }
 }

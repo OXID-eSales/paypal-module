@@ -27,12 +27,17 @@ class StaticContent
     /** @var EshopCoreConfig */
     private $config;
 
+    /** @var ModuleSettings */
+    private $moduleSettings;
+
     public function __construct(
         EshopCoreConfig $config,
-        Database $db
+        Database $db,
+        ModuleSettings $moduleSettings
     ) {
         $this->config = $config;
         $this->db = $db;
+        $this->moduleSettings = $moduleSettings;
     }
 
     public function ensurePayPalPaymentMethods()
@@ -102,13 +107,13 @@ class StaticContent
             $paymentModel->save();
         }
     }
-
-    /**
-     * @deprecated Method will be removed soon.
-     * It will be replaced by a solution in which only previously active payment methods are reactivated
-     */
     protected function reActivatePaymentMethod(string $paymentId)
     {
+        $activePayments = $this->moduleSettings->getActivePayments();
+        if (!in_array($paymentId, $activePayments, true)) {
+            return;
+        }
+
         /** @var EshopModelPayment $paymentModel */
         $paymentModel = oxNew(EshopModelPayment::class);
         $paymentModel->load($paymentId);
