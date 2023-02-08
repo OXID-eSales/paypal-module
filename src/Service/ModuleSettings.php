@@ -369,7 +369,7 @@ class ModuleSettings
 
     public function saveActivePayments(array $activePayments)
     {
-        $this->save('oscPayPalActivePayments', $activePayments);
+        $this->save('oscPayPalActivePayments', $activePayments, 'arr');
     }
 
     /**
