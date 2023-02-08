@@ -51,13 +51,20 @@ class Events
      */
     public static function onDeactivate(): void
     {
+        $activePayments = [];
         foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
             $paymentMethod = oxNew(EshopModelPayment::class);
-            if ($paymentMethod->load($paymentId)) {
+            if (
+                $paymentMethod->load($paymentId) &&
+                (bool)$paymentMethod->oxpayments__oxactive->value
+            ) {
+                $activePayments[] = $paymentId;
                 $paymentMethod->oxpayments__oxactive = new Field(false);
                 $paymentMethod->save();
             }
         }
+        $service = self::getModuleSettingsService();
+        $service->saveActivePayments($activePayments);
     }
 
     /**
@@ -121,9 +128,11 @@ class Events
             ->getContainer();
         /** @var QueryBuilderFactoryInterface $queryBuilderFactory */
         $queryBuilderFactory = $container->get(QueryBuilderFactoryInterface::class);
+        $moduleSettings = self::getModuleSettingsService();
 
         return new StaticContent(
-            $queryBuilderFactory
+            $queryBuilderFactory,
+            $moduleSettings
         );
     }
 
