@@ -43,7 +43,7 @@
         "oxid-esales/oxideshop-ce": "^6.8"
     },
     "conflict": {
-        "oxid-esales/oxideshop-ce": "^<6.8 | ^7.0"
+        "oxid-esales/oxideshop-ce": "<6.8 | ^7.0"
     },
     "autoload": {
         "psr-4": {
