@@ -134,7 +134,7 @@ final class PayPalDefinitions
             ],
             'countries' => ['DE'],
             'currencies' => ['EUR'],
-            'constraints' => self::PAYMENT_CONSTRAINTS_PUI,
+            'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false
         ],
         self::ACDC_PAYPAL_PAYMENT_ID => [
