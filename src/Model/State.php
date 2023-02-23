@@ -23,16 +23,16 @@ class State extends State_parent
             ->get(QueryBuilderFactoryInterface::class);
 
         $queryBuilder = $this->queryBuilderFactory->create();
-        $queryBuilder->select('*')
+        $queryBuilder->select('oxid')
             ->from('oxstates')
             ->where('oxid = :oxid')
             ->andWhere('oxcountryid = :oxcountryid');
-        $state = $queryBuilder->setParameters($parameters)
+
+        $objOxId = $queryBuilder->setParameters($parameters)
+            ->setMaxResults(1)
             ->execute()
-            ->fetchAllAssociative();
-        if (!empty($state)) {
-            $this->assign(array_shift($state));
-        }
-        return $state;
+            ->fetch(PDO::FETCH_COLUMN);
+
+        return $this->load($objOxId);
     }
 }
