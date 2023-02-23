@@ -379,7 +379,10 @@ class OrderRequestFactory
         $user = $this->basket->getBasketUser();
 
         $state = oxNew(State::class);
-        $state->load($user->getFieldData('oxstateid'));
+        $state->loadByIdAndCountry(
+            $user->getFieldData('oxstateid'),
+            $user->getFieldData('oxcountryid')
+        );
 
         $country = oxNew(Country::class);
         $country->load($user->getFieldData('oxcountryid'));
@@ -414,7 +417,10 @@ class OrderRequestFactory
             $address = new AddressPortable3();
 
             $state = oxNew(State::class);
-            $state->load($deliveryAddress->getFieldData('oxstateid'));
+            $state->loadByIdAndCountry(
+                $deliveryAddress->getFieldData('oxstateid'),
+                $deliveryAddress->getFieldData('oxcountryid')
+            );
 
             $country = oxNew(Country::class);
             $country->load($deliveryAddress->getFieldData('oxcountryid'));

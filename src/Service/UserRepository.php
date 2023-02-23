@@ -68,7 +68,6 @@ class UserRepository
         return $userId ?: '';
     }
 
-
     public function getUserCountryIso(): string
     {
         $result = '';
@@ -84,9 +83,12 @@ class UserRepository
     {
         $result = '';
         if ($user = $this->session->getUser()) {
-            $country = oxNew(State::class);
-            $country->load($user->getFieldData('oxstateid'));
-            $result = (string) $country->getFieldData('oxisoalpha2');
+            $state = oxNew(State::class);
+            $state->loadByIdAndCountryId(
+                $user->getFieldData('oxstateid'),
+                $user->getFieldData('oxcountryid')
+            );
+            $result = (string) $state->getFieldData('oxisoalpha2');
         }
         return $result;
     }
