@@ -8,6 +8,8 @@
 namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -16,6 +18,27 @@ use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 class PaymentController extends PaymentController_parent
 {
     use ServiceContainer;
+
+    public function render()
+    {
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        if ($paymentService->isOrderExecutionInProgress()) {
+            //order execution is already in progress
+            Registry::getUtils()->redirect(
+                Registry::getConfig()->getShopSecureHomeURL() . 'cl=order',
+                true
+            );
+        }
+
+        if (
+            $paymentService->getSessionPaymentId() === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID ||
+            $paymentService->getSessionPaymentId() === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID
+        ) {
+            $paymentService->removeTemporaryOrder();
+        }
+
+        return parent::render();
+    }
 
     /**
      * Template variable getter. Returns paymentlist
@@ -30,40 +53,40 @@ class PaymentController extends PaymentController_parent
         $userRepository = $this->getServiceFromContainer(UserRepository::class);
         $userCountryIso = $userRepository->getUserCountryIso();
 
-        // check currency & netto-view-mode & invoice-country
         $paymentListRaw = $paymentList;
         $paymentList = [];
+        $payPalHealth = $this->getServiceFromContainer(ModuleSettings::class)->checkHealth();
+
+        /*
+         * check:
+         * - all none PP-Payments
+         * - payPalHealth
+         * - currency
+         * - country
+         * - netto-mode
+         */
 
         foreach ($paymentListRaw as $key => $payment) {
             if (
+                !isset($payPalDefinitions[$key]) ||
                 (
-                    empty($payPalDefinitions[$key]['currencies']) ||
-                    in_array($actShopCurrency->name, $payPalDefinitions[$key]['currencies'], true)
-                ) &&
-                (
-                    empty($payPalDefinitions[$key]['countries']) ||
-                    in_array($userCountryIso, $payPalDefinitions[$key]['countries'], true)
-                ) &&
-                (
-                    $payPalDefinitions[$key]['onlybrutto'] === false ||
+                    $payPalHealth &&
                     (
+                        empty($payPalDefinitions[$key]['currencies']) ||
+                        in_array($actShopCurrency->name, $payPalDefinitions[$key]['currencies'], true)
+                    ) &&
+                    (
+                        empty($payPalDefinitions[$key]['countries']) ||
+                        in_array($userCountryIso, $payPalDefinitions[$key]['countries'], true)
+                    ) &&
+                    (
+                        $payPalDefinitions[$key]['onlybrutto'] === false ||
+                        (
                         !$this->getServiceFromContainer(ModuleSettings::class)->isPriceViewModeNetto()
+                        )
                     )
                 )
             ) {
-                $paymentList[$key] = $payment;
-            }
-        }
-
-        // check if basic config exists
-        if (!$this->getServiceFromContainer(ModuleSettings::class)->checkHealth()) {
-            $paymentListRaw = $paymentList;
-            $paymentList = [];
-
-            foreach ($paymentListRaw as $key => $payment) {
-                if (strpos($key, 'oscpaypal') !== false) {
-                    continue;
-                }
                 $paymentList[$key] = $payment;
             }
         }
@@ -79,5 +102,43 @@ class PaymentController extends PaymentController_parent
         }
 
         return $paymentList;
+    }
+
+    /**
+     * @inheritDoc
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     * @return  mixed
+     * @throws PayPalException
+     */
+    public function validatePayment()
+    {
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $actualPaymentId = $paymentService->getSessionPaymentId();
+        $newPaymentId = Registry::getRequest()->getRequestParameter('paymentid');
+
+        // remove the possible exist paypal-payment, if we choose another
+        if (
+            $actualPaymentId &&
+            $actualPaymentId !== $newPaymentId &&
+            PayPalDefinitions::isPayPalPayment($actualPaymentId)
+        ) {
+            $paymentService->removeTemporaryOrder();
+        }
+
+        return parent::validatePayment();
+    }
+
+    /**
+     * Template variable getter. Returns error text of payments
+     *
+     * @return string|array
+     */
+    public function getPaymentErrorText()
+    {
+        return Registry::getLang()->translateString(
+            $this->_sPaymentErrorText,
+            (int)Registry::getLang()->getBaseLanguage(),
+            false
+        );
     }
 }

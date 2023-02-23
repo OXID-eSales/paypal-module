@@ -10,12 +10,8 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 
 use OxidEsales\Codeception\Module\Translation\Translator;
-use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\Page\PayPalAdmin;
-use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
-use Symfony\Component\Filesystem\Filesystem;
-use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Dao\ShopEnvironmentConfigurationDaoInterface;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\Page\PayPalLogin;
 
@@ -34,6 +30,8 @@ final class AdminOnboardingCest extends BaseCest
     public function _before(AcceptanceTester $I): void
     {
         parent::_before($I);
+
+        $I->markTestIncomplete('TODO: use sandbox business account with disposable webhook');
 
         $I->updateModuleConfiguration('oscPayPalSandboxClientId', '');
         $I->updateModuleConfiguration('oscPayPalSandboxMode', false);

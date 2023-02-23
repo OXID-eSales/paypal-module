@@ -36,6 +36,8 @@ class PayPalLogin extends Page
     public $gdprCookieBanner = "#gdprCookieBanner";
     public $acceptAllPaypalCookies = "#acceptAllButton";
 
+    public $payLaterBubble = "//button[contains(@class, 'ppvx_icon-button')]";
+
     public $loginSection = "#loginSection";
     public $oldLoginSection = "#passwordSection";
 
@@ -223,13 +225,41 @@ class PayPalLogin extends Page
      * @param string $userName
      * @param string $userPassword
      */
+    public function approveExpressPayPal(string $userName, string $userPassword): void
+    {
+        $I = $this->user;
+
+        $this->loginToPayPal($userName, $userPassword);
+
+        $this->removePayLaterBubble();
+
+        $I->seeElement('//button[@id="change-shipping"]');
+        $I->click('//button[@id="change-shipping"]');
+        $I->wait(2);
+        $I->seeElement('//select[@id="shippingDropdown"]');
+
+        $this->confirmPayPal();
+    }
+
+    /**
+     * @param string $userName
+     * @param string $userPassword
+     */
     public function approveStandardPayPal(string $userName, string $userPassword): void
     {
         $I = $this->user;
 
         $this->loginToPayPal($userName, $userPassword);
 
+        $this->removePayLaterBubble();
+
+        $I->seeElement('//button[@id="change-shipping"]');
+        $I->click('//button[@id="change-shipping"]');
+        $I->wait(1);
+        $I->dontSeeElement('//select[@id="shippingDropdown"]');
+
         $this->confirmPayPal();
+        $I->waitForPageLoad();
     }
 
     public function confirmPayPal()
@@ -331,6 +361,14 @@ class PayPalLogin extends Page
         }
         if ($I->seePageHasElement($this->gdprCookieBanner)) {
             $I->executeJS("document.getElementById('" . substr($this->gdprCookieBanner, 1) . "').remove();");
+        }
+    }
+
+    private function removePayLaterBubble()
+    {
+        $I = $this->user;
+        if ($I->seePageHasElement($this->payLaterBubble)) {
+            $I->click($this->payLaterBubble);
         }
     }
 }

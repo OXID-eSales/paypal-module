@@ -26,9 +26,14 @@ class PayPalException extends StandardException
         return new self('Session-Payment reponse contains no redirect link.');
     }
 
-    public static function sessionPaymentFail(): self
+    public static function sessionPaymentFail(string $details = ''): self
     {
-        return new self('Session-Payment something is wrong');
+        return new self(
+            sprintf(
+                'Session-Payment something is wrong: %s',
+                $details
+            )
+        );
     }
 
     public static function cannotFinalizeOrderAfterExternalPaymentSuccess(string $payPalOrderId): self
@@ -37,6 +42,18 @@ class PayPalException extends StandardException
             sprintf(
                 'uAPM-Payment error. We might have PayPal order %s with incomplete shop order',
                 $payPalOrderId
+            )
+        );
+    }
+
+    public static function cannotFinalizeOrderAfterExternalPayment(string $payPalOrderId, string $paymentId): self
+    {
+        return new self(
+            sprintf(
+                'Error during external payment order finalization. ' .
+                       'We might have PayPal order %s with incomplete shop order and non PayPal payment method %s',
+                $payPalOrderId,
+                $paymentId
             )
         );
     }

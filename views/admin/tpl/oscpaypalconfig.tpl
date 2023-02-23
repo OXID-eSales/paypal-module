@@ -3,11 +3,11 @@
 [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
 [{capture assign="sPayPalJS"}]
     [{strip}]
-        window.isSandBox = '[{$isSandBox}]';
-        window.selfLink = '[{$sSelfLink}]';
-        window.selfControl = window.selfLink + 'cl=oscpaypalconfig';
+    window.isSandBox = '[{$isSandBox}]';
+    window.selfLink = '[{$sSelfLink}]';
+    window.selfControl = window.selfLink + 'cl=oscpaypalconfig';
     [{/strip}]
-[{/capture}]
+    [{/capture}]
 
 [{oxscript add=$sPayPalJS}]
 
@@ -15,9 +15,9 @@
     <h1>[{oxmultilang ident="paypal"}] [{oxmultilang ident="OSC_PAYPAL_CONFIG"}]</h1>
     <div class="alert alert-[{if $Errors.paypal_error}]danger[{else}]success[{/if}]" role="alert">
         [{if $Errors.paypal_error}]
-            [{oxmultilang ident="OSC_PAYPAL_ERR_CONF_INVALID"}]
+        [{oxmultilang ident="OSC_PAYPAL_ERR_CONF_INVALID"}]
         [{else}]
-            [{oxmultilang ident="OSC_PAYPAL_CONF_VALID"}]
+        [{oxmultilang ident="OSC_PAYPAL_CONF_VALID"}]
         [{/if}]
     </div>
     <div id="overlay"><div class="loader"></div></div>
@@ -51,26 +51,19 @@
 
                         <label>[{oxmultilang ident="OSC_PAYPAL_CREDENTIALS"}]</label>
 
-                        <p class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_CREDENTIALS"}]</p>
+                        <p class="help-block text-danger">[{oxmultilang ident="HELP_OSC_PAYPAL_CREDENTIALS_PART1"}]</p>
 
                         [{if !$config->getLiveClientId() && !$config->getLiveClientSecret() && !$config->getLiveWebhookId()}]
-[{*
-                            <p class="live"><a target="_blank"
-                                  class="popuplink2"
-                                  href="[{$oView->getLiveSignUpMerchantIntegrationLink()}]"
-                                  id="paypalonboardinglive"
-                                  data-paypal-onboard-complete="onboardedCallbackLive"
-                                  data-paypal-button="PPLtBlue">
-                                    [{oxmultilang ident="OSC_PAYPAL_LIVE_BUTTON_CREDENTIALS"}]
-                               </a>
-                            </p>
-*}]
-                            <p class="live"><a href="[{$sSelfLink|cat:"cl=oscpaypalconfig&aoc=live"}]" target="_blank"
-                                class="popuplink paypal-button-PPLtBlue"
-                                id="paypalonboardingpopuplive">
-                                    [{oxmultilang ident="OSC_PAYPAL_LIVE_BUTTON_CREDENTIALS_INIT"}]
-                               </a>
-                            </p>
+                        <p class="live help-block text-danger">[{oxmultilang ident="HELP_OSC_PAYPAL_CREDENTIALS_PART2"}]</p>
+                        <p class="live"><a target="_blank"
+                                           class="popuplink2"
+                                           href="[{$oView->getLiveSignUpMerchantIntegrationLink()}]"
+                                           id="paypalonboardinglive"
+                                           data-paypal-onboard-complete="onboardedCallbackLive"
+                                           data-paypal-button="PPLtBlue">
+                                [{oxmultilang ident="OSC_PAYPAL_LIVE_BUTTON_CREDENTIALS"}]
+                            </a>
+                        </p>
                         [{/if}]
 
                         <h3 class="live">[{oxmultilang ident="OSC_PAYPAL_LIVE_CREDENTIALS"}]</h3>
@@ -108,23 +101,16 @@
                         </div>
 
                         [{if !$config->getSandboxClientId() && !$config->getSandboxClientSecret() && !$config->getSandboxWebhookId()}]
-[{*
-                            <p class="sandbox"><a target="_blank"
-                                  class="popuplink"
-                                  href="[{$oView->getSandboxSignUpMerchantIntegrationLink()}]"
-                                  id="paypalonboardingsandbox"
-                                  data-paypal-onboard-complete="onboardedCallbackSandbox"
-                                  data-paypal-button="PPLtBlue">
-                                    [{oxmultilang ident="OSC_PAYPAL_SANDBOX_BUTTON_CREDENTIALS"}]
-                                </a>
-                            </p>
-*}]
-                            <p class="sandbox"><a href="[{$sSelfLink|cat:"cl=oscpaypalconfig&aoc=sandbox"}]" target="_blank"
-                                class="popuplink paypal-button-PPLtBlue"
-                                id="paypalonboardingpopupsandbox">
-                                    [{oxmultilang ident="OSC_PAYPAL_SANDBOX_BUTTON_CREDENTIALS_INIT"}]
-                               </a>
-                            </p>
+                        <p class="sandbox help-block text-danger">[{oxmultilang ident="HELP_OSC_PAYPAL_CREDENTIALS_PART2"}]</p>
+                        <p class="sandbox"><a target="_blank"
+                                              class="popuplink"
+                                              href="[{$oView->getSandboxSignUpMerchantIntegrationLink()}]"
+                                              id="paypalonboardingsandbox"
+                                              data-paypal-onboard-complete="onboardedCallbackSandbox"
+                                              data-paypal-button="PPLtBlue">
+                                [{oxmultilang ident="OSC_PAYPAL_SANDBOX_BUTTON_CREDENTIALS"}]
+                            </a>
+                        </p>
                         [{/if}]
 
                         <h3 class="sandbox">[{oxmultilang ident="OSC_PAYPAL_SANDBOX_CREDENTIALS"}]</h3>
@@ -271,13 +257,43 @@
             <div class="card">
                 <div class="card-header" id="heading5">
                     <h4 class="collapsed" data-toggle="collapse" data-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
+                        [{oxmultilang ident="OSC_PAYPAL_SCA_CONTINGENCY"}]
+                    </h4>
+                </div>
+
+                <div id="collapse5" class="collapse" aria-labelledby="heading5" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="sca-config">[{oxmultilang ident="OSC_PAYPAL_SCA_CONTINGENCY_LABEL"}]</label>
+                            <div class="controls">
+                                <select name="conf[oscPayPalSCAContingency]" id="sca-config" class="form-control">
+                                    <option value="SCA_ALWAYS" [{if $config->getPayPalSCAContingency() == 'SCA_ALWAYS'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_SCA_ALWAYS"}]
+                                    </option>
+                                    <option value="SCA_WHEN_REQUIRED" [{if $config->getPayPalSCAContingency() == 'SCA_WHEN_REQUIRED'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_SCA_WHEN_REQUIRED"}]
+                                    </option>
+                                    <option value="SCA_DISABLED" [{if $config->alwaysIgnoreSCAResult()}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_SCA_DISABLED"}]
+                                    </option>
+                                </select>
+                            </div>
+                            <span class="help-block">[{oxmultilang ident="OSC_PAYPAL_SCA_CONTINGENCY_HELP"}]</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header" id="heading6">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse6" aria-expanded="false" aria-controls="collapse6">
                         [{oxmultilang ident="OSC_PAYPAL_BANNER_CREDENTIALS"}]
                     </h4>
                 </div>
-                <div id="collapse5" class="collapse" aria-labelledby="heading5" data-parent="#accordion">
+                <div id="collapse6" class="collapse" aria-labelledby="heading5" data-parent="#accordion">
                     <div class="card-body">
                         [{if $oView->showTransferLegacySettingsButton()}]
-                            <a class="btn btn-primary bottom-space" href="[{$sSelfLink|cat:"cl=oscpaypalconfig&fnc=transferBannerSettings"}]">[{oxmultilang ident='OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'}]</a>
+                        <a class="btn btn-primary bottom-space" href="[{$sSelfLink|cat:"cl=oscpaypalconfig&fnc=transferBannerSettings"}]">[{oxmultilang ident='OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'}]</a>
                         [{/if}]
                         <p>[{oxmultilang ident="OSC_PAYPAL_BANNER_INFOTEXT"}]</p>
                         <div class="form-group">
@@ -400,6 +416,4 @@
 </div>
 [{include file="bottomitem.tpl"}]
 
-[{*
 <script id="paypal-js" src="https://www.sandbox.paypal.com/webapps/merchantboarding/js/lib/lightbox/partner.js"></script>
-*}]

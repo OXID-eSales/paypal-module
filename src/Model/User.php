@@ -6,7 +6,6 @@
  */
 
 namespace OxidSolutionCatalysts\PayPal\Model;
-namespace OxidSolutionCatalysts\PayPal\Model;
 
 use DateTimeImmutable;
 use libphonenumber\NumberParseException;
@@ -15,6 +14,7 @@ use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Application\Model\RequiredAddressFields;
 use OxidEsales\Eshop\Application\Model\Country as EshopModelCountry;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Exception\UserPhone;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
@@ -26,6 +26,30 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
  */
 class User extends User_parent
 {
+    /**
+     * @inheritDoc
+     */
+    public function onOrderExecute($basket, $success): void
+    {
+        // we manipulate the $success only for this parent onOrderExecute
+        // to add the customers to the correct usergroup
+
+        if (
+            in_array($success, [
+                Order::ORDER_STATE_ACDCINPROGRESS,
+                Order::ORDER_STATE_ACDCCOMPLETED,
+                Order::ORDER_STATE_NEED_CALL_ACDC_FINALIZE,
+                Order::ORDER_STATE_SESSIONPAYMENT_INPROGRESS,
+                Order::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS,
+                Order::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS
+            ], true) &&
+            PayPalDefinitions::isPayPalPayment($basket->getPaymentId())
+        ) {
+            $success = 1;
+        }
+        parent::onOrderExecute($basket, $success);
+    }
+
     public function getBirthDateForPuiRequest(): ?string
     {
         $required = EshopRegistry::getRequest()->getRequestParameter('pui_required');
@@ -66,7 +90,6 @@ class User extends User_parent
         return $result;
     }
 
-
     /**
      * get the InvoiceAddress from user with all required fields
      * @return array
@@ -81,7 +104,6 @@ class User extends User_parent
 
         return $result;
     }
-
 
     /**
      * @param string $userName
@@ -115,5 +137,19 @@ class User extends User_parent
         } else {
             parent::onLogin($userName, $password);
         }
+    }
+
+    /**
+     * Updates query for selecting orders.
+     *
+     * @param string $query
+     *
+     * @return string
+     */
+    protected function updateGetOrdersQuery($query)
+    {
+        $query = parent::updateGetOrdersQuery($query) . ' and oxordernr > 0 ';
+
+        return $query;
     }
 }

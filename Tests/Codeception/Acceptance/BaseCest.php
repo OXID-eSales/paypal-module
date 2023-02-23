@@ -12,6 +12,8 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 use OxidEsales\Facts\Facts;
 use Codeception\Util\Fixtures;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Setup\Exception\ModuleSetupException;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\Page\PayPalLogin;
 use OxidEsales\Codeception\Module\Translation\Translator;
@@ -23,9 +25,16 @@ use OxidEsales\Codeception\Page\Checkout\Basket as BasketCheckout;
 
 abstract class BaseCest
 {
+    public const DELIVERY_COMPANY = 'VIP Company';
+    public const DELIVERY_POSTALCODE = '22547';
+    public const DELIVERY_FIRSTNAME = 'Paypaltester';
+    public const DELIVERY_LASTNAME = 'Shoppingisfun';
+    public const DELIVERY_OXADDINFO = 'some additional delivery info';
+
     public function _before(AcceptanceTester $I): void
     {
         $this->activateModules();
+        $this->ensurePaymentMethods($I);
 
         $I->clearShopCache();
         $I->setPayPalBannersVisibility(false);
@@ -37,7 +46,13 @@ abstract class BaseCest
         $I->updateModuleConfiguration('oscPayPalSandboxClientId', $_ENV['oscPayPalSandboxClientId']);
         $I->updateModuleConfiguration('oscPayPalSandboxMode', true);
         $I->updateModuleConfiguration('oscPayPalSandboxClientSecret', $_ENV['oscPayPalSandboxClientSecret']);
-        $I->updateModuleConfiguration('oscPayPalSandboxWebhookId', 'dummy_webhook_id');
+        $I->updateModuleConfiguration('oscPayPalSandboxWebhookId', $_ENV['oscPayPalSandboxWebhookId']);
+
+        $I->updateModuleConfiguration('oscPayPalSandboxAcdcEligibility', true);
+        $I->updateModuleConfiguration('oscPayPalSandboxPuiEligibility', true);
+
+        $I->updateConfigInDatabase('blUseStock', true);
+        $this->setProductAvailability($I, 1, 15);
 
         $this->ensureShopUserData($I);
         $this->enableExpressButtons($I);
@@ -51,7 +66,9 @@ abstract class BaseCest
         $I->updateConfigInDatabase('blShowNetPrice', false, 'bool');
         $I->updateModuleConfiguration('oscPayPalLoginWithPayPalEMail', false);
 
+        $I->deleteFromDatabase('oxaddress', ['OXFNAME' => $_ENV['sBuyerFirstName']]);
         $I->deleteFromDatabase('oxorder', ['OXORDERNR >=' => '2']);
+        $I->deleteFromDatabase('oxorder', ['OXORDERNR <' => '1']);
         $I->deleteFromDatabase('oxuserbaskets', ['OXTITLE >=' => 'savedbasket']);
         $I->deleteFromDatabase('oscpaypal_order', ['OXSHOPID >' => '0']);
         $I->resetCookie('sid');
@@ -179,12 +196,8 @@ abstract class BaseCest
 
     protected function proceedToPaymentStep(
         AcceptanceTester $I,
-        string $userName = null,
-        bool $ensureCheckoutButton = true
+        string $userName = null
     ): void {
-        if ($ensureCheckoutButton) {
-            $I->updateModuleConfiguration('oscPayPalShowCheckoutButton', true);
-        }
 
         $userName = $userName ?: Fixtures::get('userName');
 
@@ -195,10 +208,6 @@ abstract class BaseCest
         //add product to basket and start checkout
         $this->fillBasket($I);
         $this->fromBasketToPayment($I);
-
-        if ($ensureCheckoutButton) {
-            $I->seeElement("#PayPalButtonPaymentPage");
-        }
     }
 
     protected function fromBasketToPayment(AcceptanceTester $I): void
@@ -208,13 +217,13 @@ abstract class BaseCest
         $basketPage->goToNextStep()
             ->goToNextStep();
 
-        $I->see(Translator::translate('PAYMENT_METHOD'));
+        if (!$I->seePageHasElement("//a[contains(@href, 'fnc=cancelPayPalPayment')]")) {
+            $I->see(Translator::translate('PAYMENT_METHOD'));
+        }
     }
 
     protected function proceedToBasketStep(AcceptanceTester $I, string $userName = null, bool $logMeIn = true): void
     {
-        $I->updateModuleConfiguration('oscPayPalShowCheckoutButton', true);
-
         $userName = $userName ?: Fixtures::get('userName');
 
         $home = $I->openShop();
@@ -233,8 +242,14 @@ abstract class BaseCest
         //add product to basket and start checkout
         $product = Fixtures::get('product');
         $basket = new Basket($I);
-        $basket->addProductToBasketAndOpenBasket($product['oxid'], $product['amount'], 'basket');
+
+        /** @var BasketCheckout $basketPage */
+        $basketPage = $basket->addProductToBasketAndOpenBasket($product['oxid'], $product['amount'], 'basket');
         $I->see(Translator::translate('CONTINUE_TO_NEXT_STEP'));
+
+        $I->seeElement($basketPage->basketUpdateButton);
+        $I->click($basketPage->basketUpdateButton);
+        $I->waitForPageLoad();
     }
 
     protected function finalizeOrder(AcceptanceTester $I): string
@@ -242,6 +257,9 @@ abstract class BaseCest
         $paymentPage = new PaymentCheckout($I);
         $paymentPage->goToNextStep()
             ->submitOrder();
+
+        $payPalPage = new PayPalLogin($I);
+        $payPalPage->confirmPayPal();
 
         $thankYouPage = new ThankYou($I);
 
@@ -256,6 +274,17 @@ abstract class BaseCest
         $thankYouPage = new ThankYou($I);
 
         return  $thankYouPage->grabOrderNumber();
+    }
+
+    protected function approveExpressPayPalTransaction(AcceptanceTester $I, string $addParams = ''): string
+    {
+        //workaround to approve the transaction on PayPal side
+        $loginPage = new PayPalLogin($I);
+        $loginPage->openPayPalApprovalPage($I, $addParams);
+        $token = $loginPage->getToken();
+        $loginPage->approveExpressPayPal($_ENV['sBuyerLogin'], $_ENV['sBuyerPassword']);
+
+        return $token;
     }
 
     protected function approvePayPalTransaction(AcceptanceTester $I, string $addParams = ''): string
@@ -275,7 +304,7 @@ abstract class BaseCest
         $loginPage = new PayPalLogin($I);
         $loginPage->openPayPalApprovalPageAsAnonymousUser($I, $addParams);
         $token = $loginPage->getToken();
-        $loginPage->approveStandardPayPal($_ENV['sBuyerLogin'], $_ENV['sBuyerPassword']);
+        $loginPage->approveExpressPayPal($_ENV['sBuyerLogin'], $_ENV['sBuyerPassword']);
 
         return $token;
     }
@@ -296,7 +325,6 @@ abstract class BaseCest
     {
         $I->updateModuleConfiguration('oscPayPalShowProductDetailsButton', $flag);
         $I->updateModuleConfiguration('oscPayPalShowBasketButton', $flag);
-        $I->updateModuleConfiguration('oscPayPalShowCheckoutButton', $flag);
     }
 
     protected function checkWeAreStillInAdminPanel(AcceptanceTester $I): void
@@ -314,5 +342,104 @@ abstract class BaseCest
         $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oscpaypal_sofort']);
         $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oscpaypal_acdc']);
         $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oscpaypal']);
+    }
+
+    protected function setProductAvailability(AcceptanceTester $I, int $stockflag, int $stock): void
+    {
+        $I->updateInDatabase(
+            'oxarticles',
+            [
+                'oxstockflag' => $stockflag,
+                'oxstock' => $stock
+            ],
+            [
+                'oxid' => Fixtures::get('product')['oxid']
+            ]
+        );
+    }
+
+    protected function assertOrderPaidAndFinished(AcceptanceTester $I): string
+    {
+        $I->seeNumRecords(0, 'oxorder', ['oxordernr' => 0]);
+
+        $orderId = $I->grabFromDatabase('oscpaypal_order', 'oxorderid');
+        $transactionId = $I->grabFromDatabase(
+            'oscpaypal_order',
+            'oscpaypaltransactionid',
+            ['oscpaypaltransactiontype' => Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE]
+        );
+
+        $oxPaid = $I->grabFromDatabase('oxorder', 'oxpaid', ['OXID' => $orderId]);
+        $I->assertStringStartsWith(date('Y-m-d'), $oxPaid);
+
+        $transStatus = $I->grabFromDatabase('oxorder', 'oxtransstatus', ['OXID' => $orderId]);
+        $I->assertStringStartsWith('OK', $transStatus);
+
+        $transId = $I->grabFromDatabase('oxorder', 'oxtransid', ['OXID' => $orderId]);
+        $I->assertEquals($transactionId, $transId);
+
+        $I->seeNumRecords(1, 'oscpaypal_order');
+        $I->seeNumRecords(
+            1,
+            'oscpaypal_order',
+            [
+                              'oscpaypalstatus' => 'COMPLETED',
+                              'oscpaypaltransactiontype' => Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
+                          ]
+        );
+
+        return $orderId;
+    }
+
+    protected function submitOrderWithUpdatedDeliveryAddress(AcceptanceTester $I): void
+    {
+        /** @var UserCheckout $userCheckout */
+        $userCheckout = (new OrderCheckout($I))->editUserAddress()
+            ->openShippingAddressForm();
+        $I->executeJS('document.getElementById("shippingAddressForm").style=""');
+        $I->fillField('deladr[oxaddress__oxfname]', self::DELIVERY_FIRSTNAME);
+        $I->fillField('deladr[oxaddress__oxlname]', self::DELIVERY_LASTNAME);
+        $I->fillField("deladr[oxaddress__oxcompany]", self::DELIVERY_COMPANY);
+        $I->fillField("deladr[oxaddress__oxaddinfo]", self::DELIVERY_OXADDINFO);
+        $I->fillField("deladr[oxaddress__oxstreet]", "Meinestrasse");
+        $I->fillField("deladr[oxaddress__oxstreetnr]", "10");
+        $I->fillField("deladr[oxaddress__oxzip]", self::DELIVERY_POSTALCODE);
+        $I->fillField("deladr[oxaddress__oxcity]", "Hamburg");
+        $I->executeJS('document.getElementById("delCountrySelect").options[3].selected = true;');
+
+        $userCheckout->goToNextStep()
+            ->goToNextStep()
+            ->submitOrder();
+    }
+
+    protected function providerStock(): array
+    {
+        return [
+            'outofstock_none' => [
+                'stockflag' => 1
+            ],
+            'outofstock_offline' => [
+                'stockflag' => 2
+            ],
+            'outofstock_notbuyable' => [
+                'stockflag' => 3
+            ],
+        ];
+    }
+
+    protected function ensurePaymentMethods(AcceptanceTester $I): void
+    {
+        $paymentIds = array_keys(PayPalDefinitions::getPayPalDefinitions());
+        foreach ($paymentIds as $paymentId) {
+            $I->updateInDatabase(
+                'oxpayments',
+                [
+                    'oxactive' => 1
+                ],
+                [
+                    'oxid' => $paymentId
+                ]
+            );
+        }
     }
 }

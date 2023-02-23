@@ -9,8 +9,6 @@ namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use Exception;
 use OxidEsales\Eshop\Application\Model\Address;
-use OxidEsales\Eshop\Application\Model\Order;
-use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Application\Model\PaymentList;
 use OxidEsales\Eshop\Application\Model\DeliverySetList;
 use OxidEsales\Eshop\Application\Controller\FrontendController;
@@ -18,7 +16,6 @@ use OxidEsales\Eshop\Application\Component\UserComponent;
 use OxidEsales\Eshop\Core\Exception\ArticleInputException;
 use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
-use OxidEsales\Eshop\Core\Email;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -49,9 +46,14 @@ class ProxyController extends FrontendController
 
         $this->addToBasket();
         $this->setPayPalPaymentMethod();
+        $basket = Registry::getSession()->getBasket();
+
+        if ($basket->getItemsCount() === 0) {
+            $this->outputJson(['ERROR' => 'No Article in the Basket']);
+        }
 
         $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
-            Registry::getSession()->getBasket(),
+            $basket,
             OrderRequest::INTENT_CAPTURE,
             OrderRequestFactory::USER_ACTION_CONTINUE,
             null,
@@ -61,6 +63,7 @@ class ProxyController extends FrontendController
             $this->getPayPalPartnerAttributionId(),
             null,
             null,
+            false,
             false
         );
 
@@ -95,9 +98,11 @@ class ProxyController extends FrontendController
             $userRepository = $this->getServiceFromContainer(UserRepository::class);
             $paypalEmail = (string) $response->payer->email_address;
 
+            $nonGuestAccountDetected = false;
             if ($userRepository->userAccountExists($paypalEmail)) {
                 //got a non-guest account, so either we log in or redirect customer to login step
-                $this->handleUserLogin($response);
+                $isLoggedIn = $this->handleUserLogin($response);
+                $nonGuestAccountDetected = true;
             } else {
                 //we need to use a guest account
                 $userComponent = oxNew(UserComponent::class);
@@ -122,7 +127,10 @@ class ProxyController extends FrontendController
             Registry::getSession()->setVariable('blshowshipaddress', false);
 
             $this->setPayPalPaymentMethod();
+        } elseif ($nonGuestAccountDetected && !$isLoggedIn) {
+            $this->setPayPalPaymentMethod();
         } else {
+            //TODO: we might end up in order step redirecting to start page without showing a message
             // if we have no user, we stop the process
             $response->status = 'ERROR';
             PayPalSession::unsetPayPalOrderId();
@@ -170,12 +178,10 @@ class ProxyController extends FrontendController
             $basket->calculateBasket(false);
         }
     }
-
     public function setPayPalPaymentMethod(): void
     {
         $session = Registry::getSession();
         $basket = $session->getBasket();
-        $countryId = $this->getDeliveryCountryId();
         $user = null;
 
         if ($activeUser = $this->getUser()) {
@@ -183,27 +189,14 @@ class ProxyController extends FrontendController
         }
 
         if ($session->getVariable('paymentid') !== PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID) {
-            $possibleDeliverySets = [];
+            $basket->setPayment(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
 
-            $deliverySetList = Registry::get(DeliverySetList::class)
-            ->getDeliverySetList(
-                $user,
-                $countryId
-            );
-            foreach ($deliverySetList as $deliverySet) {
-                $paymentList = Registry::get(PaymentList::class)->getPaymentList(
-                    $deliverySet->getId(),
-                    $basket->getPrice()->getBruttoPrice(),
-                    $user
-                );
-                if (array_key_exists(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID, $paymentList)) {
-                    $possibleDeliverySets[] = $deliverySet->getId();
-                }
-            }
+            // get the active shippingSetId
+            /** @psalm-suppress InvalidArgument */
+            list(, $shippingSetId,) =
+                Registry::get(DeliverySetList::class)->getDeliverySetData('', $user, $basket);
 
-            if (count($possibleDeliverySets)) {
-                $basket->setPayment(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
-                $shippingSetId = reset($possibleDeliverySets);
+            if ($shippingSetId) {
                 $basket->setShipping($shippingSetId);
                 $session->setVariable('sShipSet', $shippingSetId);
                 $session->setVariable('paymentid', PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
@@ -243,18 +236,23 @@ class ProxyController extends FrontendController
         return $countryId;
     }
 
-    protected function handleUserLogin(PayPalApiOrder $apiOrder): void
+    protected function handleUserLogin(PayPalApiOrder $apiOrder): bool
     {
         $paypalConfig = oxNew(Config::class);
         $userComponent = oxNew(UserComponent::class);
+        $isLoggedIn = false;
 
         if ($paypalConfig->loginWithPayPalEMail()) {
             $userComponent->loginPayPalCustomer($apiOrder);
+            $isLoggedIn = true;
         } else {
-            //TODO: we should redirect to user step/login page via exception/ShopControl
+            //NOTE: ProxyController must not redirect from create Order/approvaOrder methods,
+            //      it has to show a json response in all cases.
             //tell order controller to redirect to checkout login
             Registry::getSession()->setVariable('oscpaypal_payment_redirect', true);
         }
+
+        return $isLoggedIn;
     }
 
     protected function getPayPalPartnerAttributionId(): string

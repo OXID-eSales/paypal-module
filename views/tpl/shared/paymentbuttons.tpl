@@ -5,13 +5,9 @@
             [{assign var="aid" value=""}]
         [{/if}]
         [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
-        [{assign var="sCountryRestriction" value=$oViewConf->getCountryRestrictionForPayPalExpress()}]
         [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
-        [{if $sCountryRestriction}]
-        const countryRestriction = [[{$sCountryRestriction}]];
-        [{/if}]
         paypal.Buttons({
-            [{if $sCountryRestriction}]
+            [{if $oViewConf->getCountryRestrictionForPayPalExpress()}]
             onShippingChange: function(data, actions) {
                 if (!countryRestriction.includes(data.shipping_address.country_code)) {
                     return actions.reject();

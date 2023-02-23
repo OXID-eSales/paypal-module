@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration;
 
+use Codeception\Util\Fixtures;
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -23,7 +24,7 @@ abstract class BaseTestCase extends UnitTestCase
         parent::setUp();
 
         $dotenv = new \Symfony\Component\Dotenv\Dotenv();
-        $dotenv->load(__DIR__ . '/../../.env');
+        $dotenv->load(__DIR__ . '/../../Tests/.env');
 
         $this->updateModuleConfiguration('oscPayPalSandboxClientId', $_ENV['oscPayPalSandboxClientId']);
         $this->updateModuleConfiguration('oscPayPalSandboxMode', true);

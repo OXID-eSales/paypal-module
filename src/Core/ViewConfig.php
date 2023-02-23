@@ -42,6 +42,29 @@ class ViewConfig extends ViewConfig_parent
     /**
      * @return bool
      */
+    public function isPayPalBannerActive(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showAllPayPalBanners();
+    }
+
+    public function showPayPalBasketButton(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalBasketButton();
+    }
+
+    public function showPayPalMiniBasketButton(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalMiniBasketButton();
+    }
+
+    public function showPayPalProductDetailsButton(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalProductDetailsButton();
+    }
+
+    /**
+     * @return bool
+     */
     public function isPayPalSandbox(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isSandbox();
@@ -130,10 +153,10 @@ class ViewConfig extends ViewConfig_parent
     public function getPayPalJsSdkUrl(): string
     {
         $config = Registry::getConfig();
-
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $params = [];
 
-        $params['client-id'] = $this->getServiceFromContainer(ModuleSettings::class)->getClientId();
+        $params['client-id'] = $moduleSettings->getClientId();
         $params['integration-date'] = Constants::PAYPAL_INTEGRATION_DATE;
         $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
         $params['commit'] = 'false';
@@ -142,9 +165,10 @@ class ViewConfig extends ViewConfig_parent
             $params['currency'] = strtoupper($currency->name);
         }
 
+        $params['components'] = 'buttons';
         // Available components: enable messages+buttons for PDP
-        if ($this->getActiveClassName() === 'details') {
-            $params['components'] = 'messages,buttons';
+        if ($moduleSettings->showAllPayPalBanners()) {
+            $params['components'] .= ',messages';
         }
 
         if ($this->getServiceFromContainer(ModuleSettings::class)->showPayPalPayLaterButton()) {
@@ -223,13 +247,7 @@ class ViewConfig extends ViewConfig_parent
     {
         $params['client-id'] = $this->getPayPalClientId();
 
-        $components = 'messages';
-        // enable buttons for PDP
-        if ($this->getActiveClassName() === 'details') {
-            $components .= ',buttons';
-        }
-
-        $params['components'] = $components;
+        $params['components'] = 'messages';
 
         return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
     }
@@ -446,5 +464,11 @@ class ViewConfig extends ViewConfig_parent
             }
         }
         return $result;
+    }
+
+    //TODO: remove duplicated config getters
+    public function getPayPalSCAContingency(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalSCAContingency();
     }
 }

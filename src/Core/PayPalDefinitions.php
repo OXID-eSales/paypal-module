@@ -17,6 +17,9 @@ final class PayPalDefinitions
     public const ACDC_PAYPAL_PAYMENT_ID = 'oscpaypal_acdc';
     public const PUI_PAYPAL_PAYMENT_ID = 'oscpaypal_pui';
     public const PUI_REQUEST_PAYMENT_SOURCE_NAME = 'pay_upon_invoice';
+    public const GIROPAY_PAYPAL_PAYMENT_ID = 'oscpaypal_giropay';
+    public const SOFORT_PAYPAL_PAYMENT_ID = 'oscpaypal_sofort';
+
 
     private const PAYMENT_CONSTRAINTS_PAYPAL = [
         'oxfromamount' => 0.01,
@@ -70,7 +73,7 @@ final class PayPalDefinitions
                     'longdesc_beta' => 'Buy now and pay later with PayPal.'
                 ]
             ],
-            'countries' => ['DE', 'ES', 'FR', 'UK', 'IT', 'US', 'AU'],
+            'countries' => ['DE', 'ES', 'FR', 'GB', 'IT', 'US', 'AU'],
             'currencies' => ['AUD', 'EUR', 'GBP', 'USD'],
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false
@@ -230,7 +233,7 @@ final class PayPalDefinitions
             'onlybrutto' => false
         ],
         // uAPM GiroPay
-        'oscpaypal_giropay' => [
+        self::GIROPAY_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
                     'desc' => 'GiroPay',
@@ -349,7 +352,7 @@ final class PayPalDefinitions
             'onlybrutto' => false
         ],
         // uAPM Sofort
-        'oscpaypal_sofort' => [
+        self::SOFORT_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
                     'desc' => 'Sofort',
@@ -375,7 +378,7 @@ final class PayPalDefinitions
                         code is used by the consumer to authorize payment.'
                 ]
             ],
-            'countries' => ['DE', 'AT', 'BE', 'IT', 'NL', 'UK', 'ES'],
+            'countries' => ['DE', 'AT', 'BE', 'IT', 'NL', 'GB', 'ES'],
             'currencies' => ['EUR', 'GBP'],
             'uapmpaymentsource' => 'sofort',
             'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,
@@ -428,5 +431,10 @@ final class PayPalDefinitions
         return self::isUAPMPayment($oxid) ?
             self::PAYPAL_DEFINTIONS[$oxid]['uapmpaymentsource'] :
             '';
+    }
+
+    public static function isPayPalPayment(string $paymentId): bool
+    {
+        return (isset(self::PAYPAL_DEFINTIONS[$paymentId]));
     }
 }

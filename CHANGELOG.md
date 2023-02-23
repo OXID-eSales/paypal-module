@@ -4,6 +4,95 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.2.4] - 2023-02-XX
+
+### NEW
+- active payment methods are recognized after deactivating and activating the module and activated again correctly
+
+### Fixed
+- [0007413](https://bugs.oxid-esales.com/view.php?id=7413) set PPExpress independently of ShippingSets (They will be set later)
+- [0007384](https://bugs.oxid-esales.com/view.php?id=7384) if order declined during 3ds then go back to payment
+
+## [2.2.3] - 2023-01-26
+
+### Fixed
+- [0007394](https://bugs.oxid-esales.com/view.php?id=7394) Price reduction by payment method blocks order
+- onBoarding-Process with fixed PopUps from PayPal
+- [0007389](https://bugs.oxid-esales.com/view.php?id=7389) reformat large refund amounts
+- [0007388](https://bugs.oxid-esales.com/view.php?id=7388) remove Fraudnet CmId for PUI in any case (success, error ...)
+- [0007387](https://bugs.oxid-esales.com/view.php?id=7387) check basketcount to avoid createOrder with zero articles
+- [0007382](https://bugs.oxid-esales.com/view.php?id=7382) add the customers to the correct usergroup during PP-checkout
+- [0007380](https://bugs.oxid-esales.com/view.php?id=7380) patch the order only if paypalOrderId exists
+- [0007377](https://bugs.oxid-esales.com/view.php?id=7377) fix wrong deliveryset during pp-express
+- [0007385](https://bugs.oxid-esales.com/view.php?id=7385) Handle PayLater-Failed-Orders as same as PayPal-Standard-Orders
+- [0007374](https://bugs.oxid-esales.com/view.php?id=7374) Fixed maintenance during manual saving of configuration
+- [0007376](https://bugs.oxid-esales.com/view.php?id=7376) use same declaration as in Core (_executePayment)
+
+## [2.2.2] - 2022-10-18
+
+### Fixed
+- [0007366](https://bugs.oxid-esales.com/view.php?id=7366) Not only cancel unsuccessful orders, but also delete them
+
+## [2.2.1] - 2022-10-14
+
+### Fixed
+- [0007363](https://bugs.oxid-esales.com/view.php?id=7363) Updated PaymentController to correctly display other non-Paypal payments when net mode is enabled
+
+## [2.2.0] - 2022-10-05
+
+### Added
+- Column `oscpaypal_order.oscpaypaltransactiontype` to distinguish capture, authorization, refund transactions when tracking.
+- Default values for `oscpaypal_order.oscpaypaltransactionid` and `oscpaypal_order.oscpaypalstatus`.
+- Webhook handler `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureRefundedHandler` for `PAYMENT.CAPTURE.REFUNDED`.
+- Exception class `OxidEsales\Eshop\Core\Exception\StandardException\CardValidation`.
+- Class `OxidSolutionCatalysts\PayPal\Service\SCAValidator` and interface `OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface`
+- Public methods
+  - `OxidSolutionCatalysts\PayPal\Core\Config::getPayPalSCAContingency()`
+  - `OxidSolutionCatalysts\PayPal\Core\Config::alwaysIgnoreSCAResult()`
+  - `OxidSolutionCatalysts\PayPal\Core\PayPalSession::unsetPayPalSession()`
+  - `OxidSolutionCatalysts\PayPal\Core\ViewConfig::isPayPalBannerActive()`
+  - `OxidSolutionCatalysts\PayPal\Core\ViewConfig::showPayPalBasketButton()`
+  - `OxidSolutionCatalysts\PayPal\Core\ViewConfig::showPayPalMiniBasketButton()`
+  - `OxidSolutionCatalysts\PayPal\Core\ViewConfig::showPayPalProductDetailsButton()`
+  - `OxidSolutionCatalysts\PayPal\Core\ViewConfig::getPayPalSCAContingency()`
+  - `OxidSolutionCatalysts\PayPal\Exception\PayPalException::cannotFinalizeOrderAfterExternalPayment()`
+  - `OxidSolutionCatalysts\PayPal\Model\Order::setOrderNumber()`
+  - `OxidSolutionCatalysts\PayPal\Model\Order::isOrderFinished()`
+  - `OxidSolutionCatalysts\PayPal\Model\Order::isOrderPaid()`
+  - `OxidSolutionCatalysts\PayPal\Model\Order::isWaitForWebhookTimeoutReached()`
+  - `OxidSolutionCatalysts\PayPal\Model\Order::hasOrderNumber()`
+  - `OxidSolutionCatalysts\PayPal\Model\Order::isPayPalOrderCompleted()`
+  - `OxidSolutionCatalysts\PayPal\Service\ModuleSettings::getPayPalSCAContingency()`
+  - `OxidSolutionCatalysts\PayPal\Service\ModuleSettings::alwaysIgnoreSCAResult()`
+  - `OxidSolutionCatalysts\PayPal\Service\OrderRepository::getPayPalOrderIdByShopOrderId()`
+  - `OxidSolutionCatalysts\PayPal\Service\Payment::isOrderExecutionInProgress()`
+  - `OxidSolutionCatalysts\PayPal\Service\Payment::setPaymentExecutionError()`
+  - `OxidSolutionCatalysts\PayPal\Service\Payment::getPaymentExecutionError()`
+  - `OxidSolutionCatalysts\PayPal\Service\Payment::verify3D()`
+  - `OxidSolutionCatalysts\PayPal\Service\Payment::getPaymentExecutionError()`
+
+### Changed
+- Method `OxidSolutionCatalysts\PayPal\Controller\OrderController::renderAcdcRetry()` converted to `OxidSolutionCatalysts\PayPal\Controller\OrderController::renderRetryOrderExecution()`.
+- New Class `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\WebhookHandlerBase` as base class for all webhook handlers.
+- Refactored Webhook Handlers to extend from `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\WebhookHandlerBase`.
+- Use addresses from PayPal only for anonymus PP-Express.
+- During module ativation check necessity before running module migrations.
+- Do not show orders with `oxorder.oxordernr` equal to zero to customers. Those can be caused by uAPM dropoff scenarios.
+- Preparation for: Do not activate Payments during installation
+
+### Removed
+- Trait `OxidSolutionCatalysts\PayPal\Traits\WebhookHandlerTrait`
+- Interface `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\WebhookHandlerInterface`, extend Handlers from `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\WebhookHandlerBase` instead.
+
+### Fixed
+- [0007346](https://bugs.oxid-esales.com/view.php?id=7346) Update configuration to be able to force 3DSecure check for ACDC payments. Ensure 3D check result is validated depending on configuration.
+- PUI order in case of invalid phone number will now stay on order page and user can retry.
+- Fixed missing installment banners and shop start page, search etc.
+- [0007357](https://bugs.oxid-esales.com/view.php?id=7357) Product "If out of stock, offline" then the order confirmation mail is missing that item.
+- If in progress order with PayPal payment is detected in last order step do not start another payment process, show message instead.
+- PayPalExpress detecting non guest shop user account no longer loses PayPal session after login.
+- fix CountryCode for United Kindom -> GB
+
 ## [2.1.6] - 2022-08-05
 
 - Set ACDC-Orders first in PayPal-Status "CREATED" / OXID-Order-Status "NOT_FINISHED" and later via Webhook into the right status

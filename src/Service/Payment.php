@@ -12,13 +12,17 @@ use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
+use OxidSolutionCatalysts\PayPal\Exception\UserPhone as UserPhoneException;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
+use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthorizationWithAdditionalData;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderAuthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Payments\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\CaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\ReauthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
@@ -31,9 +35,22 @@ use OxidSolutionCatalysts\PayPalApi\Service\Payments as ApiPaymentService;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings as ModuleSettingsService;
 
 class Payment
 {
+    public const PAYMENT_ERROR_NONE = 'PAYPAL_PAYMENT_ERROR_NONE';
+    public const PAYMENT_ERROR_GENERIC = 'PAYPAL_PAYMENT_ERROR_GENERIC';
+    public const PAYMENT_ERROR_PUI_PHONE = 'PAYPAL_PAYMENT_ERROR_PUI_PHONE';
+    public const PAYMENT_ERROR_PUI_GENERIC = 'PAYPAL_PAYMENT_ERROR_PUI_GENRIC';
+    public const PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED = 'PUI_PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED';
+    public const PAYMENT_SOURCE_DECLINED_BY_PROCESSOR = 'PUI_PAYMENT_SOURCE_DECLINED_BY_PROCESSOR';
+
+    /**
+     * @var string
+     */
+    private $paymentExecutionError = self::PAYMENT_ERROR_NONE;
+
     /**
      * @var EshopSession
      */
@@ -56,9 +73,17 @@ class Payment
     /** @var ConfirmOrderRequestFactory */
     private $confirmOrderRequestFactory;
 
+    /** @var SCAValidatorInterface */
+    private $scaValidator;
+
+    /** @var ModuleSettingsService */
+    private $moduleSettingsService;
+
     public function __construct(
         EshopSession $eshopSession,
         OrderRepository $orderRepository,
+        SCAValidatorInterface $scaValidator,
+        ModuleSettingsService $moduleSettingsService,
         ServiceFactory $serviceFactory = null,
         PatchRequestFactory $patchRequestFactory = null,
         OrderRequestFactory $orderRequestFactory = null,
@@ -66,6 +91,8 @@ class Payment
     ) {
         $this->eshopSession = $eshopSession;
         $this->orderRepository = $orderRepository;
+        $this->scaValidator = $scaValidator;
+        $this->moduleSettingsService = $moduleSettingsService;
         $this->serviceFactory = $serviceFactory ?: Registry::get(ServiceFactory::class);
         $this->patchRequestFactory = $patchRequestFactory ?: Registry::get(PatchRequestFactory::class);
         $this->orderRequestFactory = $orderRequestFactory ?: Registry::get(OrderRequestFactory::class);
@@ -84,9 +111,13 @@ class Payment
         string $payPalPartnerAttributionId = '',
         string $returnUrl = null,
         string $cancelUrl = null,
-        bool $withArticles = true
+        bool $withArticles = true,
+        bool $setProvidedAddress = true
         #): ?ApiModelOrder
     ) { //TODO return value
+
+        $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
+
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
 
@@ -100,7 +131,8 @@ class Payment
             null,
             $returnUrl,
             $cancelUrl,
-            $withArticles
+            $withArticles,
+            $setProvidedAddress
         );
 
         $response = [];
@@ -113,8 +145,13 @@ class Payment
                 'return=minimal',
                 $payPalRequestId
             );
+        } catch (ApiException $exception) {
+            Registry::getLogger()->error("Api error on order create call. " .
+                                         $exception->getErrorIssue(), [$exception]);
+            $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on order create call.", [$exception]);
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
         }
 
         return $response;
@@ -143,10 +180,13 @@ class Payment
         $paypalOrderId = $response->id ?: '';
         $status = $response->status ?: '';
 
-        $this->doPatchPayPalOrder(
-            $basket,
-            $paypalOrderId
-        );
+        // patch the order only if paypalOrderId exists
+        if ($paypalOrderId) {
+            $this->doPatchPayPalOrder(
+                $basket,
+                $paypalOrderId
+            );
+        }
 
         $return = [
             'id' => $paypalOrderId,
@@ -159,14 +199,13 @@ class Payment
     public function doPatchPayPalOrder(
         EshopModelBasket $basket,
         string $checkoutOrderId,
-        string $paymentSource = '',
         string $shopOrderId = ''
     ): void {
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
 
         $request = $this->patchRequestFactory
-            ->getRequest($basket, $shopOrderId, $paymentSource);
+            ->getRequest($basket, $shopOrderId);
 
         // Update Order
         try {
@@ -180,9 +219,19 @@ class Payment
     public function doCapturePayPalOrder(
         EshopModelOrder $order,
         string $checkoutOrderId,
-        string $paymentId
+        string $paymentId,
+        ApiOrderModel $payPalOrder = null
     ): ApiOrderModel {
-        $payPalOrder = $this->fetchOrderFields($checkoutOrderId);
+
+        /** @var ApiOrderModel $payPalOrder */
+        $payPalOrder = is_null($payPalOrder) || !isset($payPalOrder->payment_source) ?
+            $this->fetchOrderFields($checkoutOrderId, 'payment_source') :
+            $payPalOrder;
+
+        //Verify 3D result if acdc payment
+        if (!$this->verify3D($paymentId, $payPalOrder)) {
+            throw oxNew(StandardException::class, 'OSC_PAYPAL_3DSECURITY_ERROR');
+        }
 
         /** @var ApiPaymentService $paymentService */
         $paymentService = Registry::get(ServiceFactory::class)->getPaymentService();
@@ -191,6 +240,7 @@ class Payment
 
         // Capture Order
         try {
+            //TODO: split into multiple methods
             if ($payPalOrder->intent === Constants::PAYPAL_ORDER_INTENT_AUTHORIZE) {
                 // if order approved then authorize
                 if ($payPalOrder->status === ApiOrderModel::STATUS_APPROVED) {
@@ -198,7 +248,9 @@ class Payment
                     $payPalOrder = $orderService->authorizePaymentForOrder('', $checkoutOrderId, $request, '');
                 }
 
-                $authorizationId = $payPalOrder->purchase_units[0]->payments->authorizations[0]->id;
+                /** @var AuthorizationWithAdditionalData $authorization */
+                $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
+                $authorizationId = $authorization->id;
 
                 // check if we need a reauthorization
                 $timeAuthorizationValidity = time()
@@ -209,29 +261,50 @@ class Payment
                     $paymentService->reauthorizeAuthorizedPayment($authorizationId, $reAuthorizeRequest);
                 }
 
+                //track authorization
+                $this->trackPayPalOrder(
+                    $order->getId(),
+                    $checkoutOrderId,
+                    (string) $order->getFieldData('oxpaymenttype'),
+                    $authorization->status,
+                    $authorizationId,
+                    Constants::PAYPAL_TRANSACTION_TYPE_AUTH
+                );
+
                 // capture
                 $request = new CaptureRequest();
-                $paymentService->captureAuthorizedPayment($authorizationId, $request, '');
+                /** @var Capture $capture */
+                $capture = $paymentService->captureAuthorizedPayment($authorizationId, $request, '');
                 $result = $this->fetchOrderFields($checkoutOrderId);
-                $payPalTransactionId = $result->purchase_units[0]->payments->captures[0]->id;
             } else {
                 $request = new OrderCaptureRequest();
                 /** @var ApiOrderModel */
                 $result = $orderService->capturePaymentForOrder('', $checkoutOrderId, $request, '');
-                $payPalTransactionId = $result->purchase_units[0]->payments->captures[0]->id;
             }
+
+            $payPalTransactionId = $result && isset($result->purchase_units[0]->payments->captures[0]->id) ?
+                        $result->purchase_units[0]->payments->captures[0]->id : '';
+
+            $status = $result && $result->purchase_units[0]->payments->captures[0]->status ?
+                $result->purchase_units[0]->payments->captures[0]->status : ApiOrderModel::STATUS_SAVED;
 
             /** @var PayPalOrderModel $paypalOrder */
             $this->trackPayPalOrder(
                 $order->getId(),
                 $checkoutOrderId,
                 $paymentId,
-                ApiOrderModel::STATUS_SAVED,
-                $payPalTransactionId
+                $status,
+                (string) $payPalTransactionId
             );
+
+            if ($order->isPayPalOrderCompleted($result)) {
+                $order->setOrderNumber();
+                $order->setTransId((string) $payPalTransactionId);
+            }
         } catch (Exception $exception) {
-            Registry::getLogger()->error("Error on order capture call.", [$exception]);
-            throw oxNew(StandardException::class, 'OXPS_PAYPAL_ORDEREXECUTION_ERROR');
+            //Webhook might try to capture already captured order
+            Registry::getLogger()->debug("Error on order capture call.", [$exception]);
+            throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
         }
 
         return $result;
@@ -300,11 +373,11 @@ class Payment
     }
 
     /**
-     * Return the PaymentId from session basket
+     * Does the given payment id belong to PayPal
      */
-    public function isPayPalPayment(): bool
+    public function isPayPalPayment(string $paymentId = ''): bool
     {
-        $sessionPaymentId = $this->getSessionPaymentId();
+        $sessionPaymentId = $paymentId ?: (string) $this->getSessionPaymentId();
         return in_array($sessionPaymentId, [
             PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID,
             PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
@@ -322,7 +395,13 @@ class Payment
         }
 
         $orderModel = oxNew(EshopModelOrder::class);
-        if ($orderModel->load($sessionOrderId)) {
+        $orderModel->load($sessionOrderId);
+
+        if ($orderModel->hasOrderNumber()) {
+            Registry::getLogger()->error('Cannot delete valid order with id ' . $sessionOrderId);
+        }
+
+        if ($orderModel->isLoaded()) {
             $orderModel->delete();
         }
 
@@ -335,16 +414,35 @@ class Payment
         $this->eshopSession->deleteVariable('sess_challenge');
     }
 
+    //TODO: payment service is intended to trigger payments with API
+    //      all methods for order handling need to go to separate service
+    public function isOrderExecutionInProgress(): bool
+    {
+        $sessionOrderId = $this->eshopSession->getVariable('sess_challenge');
+        $payPalOrderId = PayPalSession::getCheckoutOrderId();
+        $paymentId = $this->getSessionPaymentId();
+
+        return $sessionOrderId &&
+            $payPalOrderId &&
+            $paymentId &&
+            ((PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId) ||
+                PayPalDefinitions::isUAPMPayment($paymentId)
+            );
+    }
+
     /**
      * @throws PayPalException
      */
     public function doExecuteUAPMPayment(EshopModelOrder $order, EshopModelBasket $basket): string
     {
+        $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
+
         //For UAPM payment we should not yet have a paypal order in session.
         //We create a fresh paypal order at this point
 
         $uapmOrderId = $this->doCreateUAPMOrder($basket);
         if (!$uapmOrderId) {
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
             throw PayPalException::createPayPalOrderFail();
         }
 
@@ -377,6 +475,9 @@ class Payment
         EshopModelBasket $basket,
         $intent = Constants::PAYPAL_ORDER_INTENT_CAPTURE
     ): string {
+
+        $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
+
         //For Standard payment we should not yet have a paypal order in session.
         //We create a fresh paypal order at this point
         $config = Registry::getConfig();
@@ -400,6 +501,7 @@ class Payment
         $orderId = $response->id ?: '';
 
         if (!$orderId) {
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
             throw PayPalException::createPayPalOrderFail();
         }
 
@@ -415,7 +517,7 @@ class Payment
             }
         }
         if (!$redirectLink) {
-            PayPalSession::unsetPayPalOrderId();
+            PayPalSession::unsetPayPalSession();
             $this->removeTemporaryOrder();
             throw PayPalException::sessionPaymentMissingRedirectLink();
         }
@@ -448,6 +550,7 @@ class Payment
         EshopModelBasket $basket,
         string $payPalClientMetadataId = ''
     ): bool {
+        $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
         try {
             $result = $this->doCreatePayPalOrder(
                 $basket,
@@ -460,7 +563,11 @@ class Payment
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
             $payPalOrderId = $result->id;
+        } catch (UserPhoneException $e) {
+            //mistyped phone in last order step
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_PHONE);
         } catch (Exception $exception) {
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_GENERIC);
             Registry::getLogger()->error("Error on pui order creation call.", [$exception]);
         }
 
@@ -484,12 +591,23 @@ class Payment
         return (bool) $payPalOrderId;
     }
 
+    public function setPaymentExecutionError(string $text): void
+    {
+        $this->paymentExecutionError = $text;
+    }
+
+    public function getPaymentExecutionError(): string
+    {
+        return $this->paymentExecutionError;
+    }
+
     public function trackPayPalOrder(
         string $shopOrderId,
         string $payPalOrderId,
         string $paymentMethodId,
         string $status,
-        string $payPalTransactionId = ''
+        string $payPalTransactionId = '',
+        string $transactionType = Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
     ): PayPalOrderModel {
         /** @var PayPalOrderModel $payPalOrder */
         $payPalOrder = $this->getPayPalCheckoutOrder($shopOrderId, $payPalOrderId, $payPalTransactionId);
@@ -497,6 +615,7 @@ class Payment
         $payPalOrder->setPaymentMethodId($paymentMethodId);
         $payPalOrder->setStatus($status);
         $payPalOrder->setTransactionId($payPalTransactionId);
+        $payPalOrder->setTransactionType($transactionType);
         $payPalOrder->save();
 
         return $payPalOrder;
@@ -520,5 +639,46 @@ class Payment
         return $this->serviceFactory
             ->getOrderService()
             ->showOrderDetails($paypalOrderId, $fields);
+    }
+
+    /**
+     * @throws StandardException
+     */
+    public function verify3D(string $paymentId, ApiOrderModel $payPalOrder): bool
+    {
+        //no ACDC payment
+        if ($paymentId != PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) {
+            return true;
+        }
+        //case no check is needed
+        if ($this->moduleSettingsService->alwaysIgnoreSCAResult()) {
+            return true;
+        }
+        //case check is to be done automatic but we have no result to check
+        if (
+            (Constants::PAYPAL_SCA_WHEN_REQUIRED === $this->moduleSettingsService->getPayPalSCAContingency()) &&
+            is_null($this->scaValidator->getCardAuthenticationResult($payPalOrder))
+        ) {
+            return true;
+        }
+        //Verify 3D result if acdc payment
+        if ($this->scaValidator->isCardUsableForPayment($payPalOrder)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function handlePayPalApiError(ApiException $exception): void
+    {
+        if (self::PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED == 'PUI_' . $exception->getErrorIssue()) {
+            $this->setPaymentExecutionError(self::PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED);
+        } elseif (self::PAYMENT_SOURCE_DECLINED_BY_PROCESSOR == 'PUI_' . $exception->getErrorIssue()) {
+            $this->setPaymentExecutionError(self::PAYMENT_SOURCE_DECLINED_BY_PROCESSOR);
+        } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID == $this->getSessionPaymentId()) {
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_GENERIC);
+        } else {
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
+        }
     }
 }

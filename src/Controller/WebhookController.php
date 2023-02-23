@@ -33,7 +33,7 @@ class WebhookController extends WidgetController
             $dispatcher = Registry::get(EventDispatcher::class);
 
             Registry::getLogger()->debug('PayPal Webhook request ' . $requestReader->getRawPost());
-            Registry::getLogger()->debug('PayPal Webhook headers' . serialize($requestReader->getHeaders()));
+            Registry::getLogger()->debug('PayPal Webhook headers ' . serialize($requestReader->getHeaders()));
 
             $webhookRequestHandler = new WebhookRequestHandler($requestReader, $verificationService, $dispatcher);
             $success = $webhookRequestHandler->process();

@@ -29,37 +29,37 @@ class PayPalOrder extends BaseModel
 
     public function getPayPalOrderId(): string
     {
-        return $this->getFieldData('oxpaypalorderid');
+        return (string) $this->getFieldData('oxpaypalorderid');
     }
 
     public function getTransactionId(): string
     {
-        return $this->getFieldData('oscpaypaltransactionid');
+        return (string) $this->getFieldData('oscpaypaltransactionid');
     }
 
     public function getTrackingId(): string
     {
-        return $this->getFieldData('oscpaypaltrackingid');
+        return (string) $this->getFieldData('oscpaypaltrackingid');
     }
 
     public function getTrackingType(): string
     {
-        return $this->getFieldData('oscpaypaltrackingtype');
+        return (string) $this->getFieldData('oscpaypaltrackingtype');
     }
 
     public function getShopOrderId(): string
     {
-        return $this->getFieldData('oxorderid');
+        return (string) $this->getFieldData('oxorderid');
     }
 
     public function getStatus(): string
     {
-        return $this->getFieldData('oscpaypalstatus');
+        return (string) $this->getFieldData('oscpaypalstatus');
     }
 
     public function getPaymentMethodId(): string
     {
-        return $this->getFieldData('oscpaymentmethodid');
+        return (string) $this->getFieldData('oscpaymentmethodid');
     }
 
     public function setStatus(string $status): void
@@ -148,6 +148,15 @@ class PayPalOrder extends BaseModel
         $this->assign(
             [
                 'oscpaypalpuiaccountholdername' => $puiAccountHolderName
+            ]
+        );
+    }
+
+    public function setTransactionType(string $type): void
+    {
+        $this->assign(
+            [
+                'oscpaypaltransactiontype' => $type
             ]
         );
     }

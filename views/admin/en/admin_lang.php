@@ -48,10 +48,10 @@ $aLang = [
         it is possible to be autonmatically be logged in to shop when logging in to PayPal. This behavior may not be in the
         security interests of your customers',
 
-    'HELP_OSC_PAYPAL_CREDENTIALS'                 =>
-        'If you already have the API credentials, you can enter them directly.<br>
-        If you do not yet have any API data and the input fields are still empty, you can also use the
-        displayed button for a convenient link.',
+    'HELP_OSC_PAYPAL_CREDENTIALS_PART1'           => 'Enter the API login information (client ID, client password, Webhook ID)
+         only if you do not need the "credit card" and "Pay upon Invoice" payment methods and are able to set up a webhook in the PayPal backend by yourself.',
+    'HELP_OSC_PAYPAL_CREDENTIALS_PART2'           => 'Please use the "PayPal integration"-button that appears to register. During the integration, PayPal will activate the "credit card"
+         and "Pay upon Invoice" payment methods and the webhook is automatically registered.',
     'HELP_OSC_PAYPAL_CLIENT_ID'                   => 'Client ID for live mode.',
     'HELP_OSC_PAYPAL_CLIENT_SECRET'               => 'Secret for live mode.',
     'HELP_OSC_PAYPAL_SANDBOX_CLIENT_ID'           => 'Client ID for sandbox mode.',
@@ -232,4 +232,18 @@ $aLang = [
     'OSC_PAYPAL_ERROR_INVALID_RESOURCE_ID'          => 'The PayPal-Checkout-Order has an invalid resource-ID',
     'OSC_PAYPAL_PAYPALPLUS_TABLE_DOES_NOT_EXISTS'   => 'Order was paid with the PayPal Plus module, but the databases no longer exist',
     'OSC_PAYPAL_PAYPALSOAP_TABLE_DOES_NOT_EXISTS'   => 'Order was paid with the PayPal Soap module, but the databases no longer exist',
+
+    'OSC_PAYPAL_SCA_CONTINGENCY'                    => '3D Secure for advanced credit and debit cards',
+    'OSC_PAYPAL_SCA_ALWAYS'                         => '3D Secure for each ACDC transaction',
+    'OSC_PAYPAL_SCA_WHEN_REQUIRED'                  => 'SCA when required by regional mandate, decision by PayPal system',
+    'OSC_PAYPAL_SCA_DISABLED'                       => 'Disable 3D Secure result evaluation',
+    'OSC_PAYPAL_SCA_CONTINGENCY_LABEL'              => 'Creditcard security',
+    'OSC_PAYPAL_SCA_CONTINGENCY_HELP'               => 'Use 3D Secure to authenticate card holders through card issuers. It reduces the likelihood of fraud when you use supported cards and improves transaction performance.
+                                                        A successful 3D Secure authentication can shift liability for fraudulent chargebacks from you to the card issuer. <br>
+                                                        3D Secure authentication is performed only if the card is enrolled for the service. <br> When your customer submits their card details on your website for processing,
+                                                        you have the option of triggering 3D Secure. When triggered, customers are prompted by their card issuing bank to complete an additional verification step 
+                                                        to enter a one-time or static password, depending on the implementation.<br>
+                                                        Chose "SCA when required by regional mandate, decision by PayPal system" to let PayPal system decide whether 3D check is necessary. 
+                                                         With setting "3D Secure for each ACDC transaction" 3D check will be enforced for each transaction.',
+
 ];

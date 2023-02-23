@@ -9,13 +9,14 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
+use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher as PayPalWebhookActions;
 
-final class WebhookActionTest extends UnitTestCase
+final class WebhookActionTest extends WebhookHandlerBaseTestCase
 {
     public function testWebhookEvent(): void
     {
@@ -46,8 +47,14 @@ final class WebhookActionTest extends UnitTestCase
 
         $handler = oxNew(PayPalWebhookActions::class);
 
-        $this->expectException(WebhookEventException::class);
-        $this->expectExceptionMessage(WebhookEventException::mandatoryDataNotFound()->getMessage());
+        $loggerMock = $this->getPsrLoggerMock();
+        $loggerMock->expects($this->once())
+            ->method('debug')
+            ->with(
+                "Not enough information to handle CHECKOUT.ORDER.COMPLETED with PayPal order_id '' and " .
+                "PayPal transaction id ''"
+            );
+        EshopRegistry::set('logger', $loggerMock);
 
         $handler->dispatch($webhookEvent);
     }

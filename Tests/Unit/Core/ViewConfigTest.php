@@ -38,9 +38,9 @@ final class ViewConfigTest extends UnitTestCase
      */
     public function testShowPayPalBannerOnStartPage(): void
     {
-        $this->updateModuleSetting('oscPayPalBannersShowAll', false);
+        $view = oxNew(ViewConfig::class);
 
-        $view = oxNew(\OxidEsales\Eshop\Core\ViewConfig::class);
+        $this->updateModuleSetting('oscPayPalBannersShowAll', false);
         $this->assertFalse($view->enablePayPalBanners());
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', true);
@@ -61,14 +61,14 @@ final class ViewConfigTest extends UnitTestCase
      */
     public function testShowBannersStartPage(): void
     {
-        $view = oxNew(\OxidEsales\Eshop\Core\ViewConfig::class);
+        $view = oxNew(ViewConfig::class);
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', true);
         $this->updateModuleSetting('oscPayPalBannersStartPage', true);
-        $this->assertTrue($view->showPayPalBannerOnStartPage());
+        $this->assertTrue($view->showPayPalCheckoutBannerOnStartPage());
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', false);
-        $this->assertFalse($view->showPayPalBannerOnStartPage());
+        $this->assertFalse($view->showPayPalCheckoutBannerOnStartPage());
     }
 
     /**
@@ -76,14 +76,14 @@ final class ViewConfigTest extends UnitTestCase
      */
     public function testShowPayPalBannerOnCategoryPage(): void
     {
-        $view = oxNew(\OxidEsales\Eshop\Core\ViewConfig::class);
+        $view = oxNew(ViewConfig::class);
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', true);
         $this->updateModuleSetting('oscPayPalBannersCategoryPage', true);
-        $this->assertTrue($view->showPayPalBannerOnCategoryPage());
+        $this->assertTrue($view->showPayPalCheckoutBannerOnCategoryPage());
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', false);
-        $this->assertFalse($view->showPayPalBannerOnCategoryPage());
+        $this->assertFalse($view->showPayPalCheckoutBannerOnCategoryPage());
     }
 
     /**
@@ -91,14 +91,14 @@ final class ViewConfigTest extends UnitTestCase
      */
     public function testShowPayPalBannerOnSearchResultsPage(): void
     {
-        $view = oxNew(\OxidEsales\Eshop\Core\ViewConfig::class);
+        $view = oxNew(ViewConfig::class);
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', true);
         $this->updateModuleSetting('oscPayPalBannersSearchResultsPage', true);
-        $this->assertTrue($view->showPayPalBannerOnSearchResultsPage());
+        $this->assertTrue($view->showPayPalCheckoutBannerOnSearchResultsPage());
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', false);
-        $this->assertFalse($view->showPayPalBannerOnSearchResultsPage());
+        $this->assertFalse($view->showPayPalCheckoutBannerOnSearchResultsPage());
     }
 
     /**
@@ -106,14 +106,14 @@ final class ViewConfigTest extends UnitTestCase
      */
     public function testShowPayPalBannerOnProductDetailsPage(): void
     {
-        $view = oxNew(\OxidEsales\Eshop\Core\ViewConfig::class);
+        $view = oxNew(ViewConfig::class);
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', true);
         $this->updateModuleSetting('oscPayPalBannersProductDetailsPage', true);
-        $this->assertTrue($view->showPayPalBannerOnProductDetailsPage());
+        $this->assertTrue($view->showPayPalCheckoutBannerOnProductDetailsPage());
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', false);
-        $this->assertFalse($view->showPayPalBannerOnProductDetailsPage());
+        $this->assertFalse($view->showPayPalCheckoutBannerOnProductDetailsPage());
     }
 
     /**
@@ -134,14 +134,14 @@ final class ViewConfigTest extends UnitTestCase
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', true);
         $this->updateModuleSetting('oscPayPalBannersCheckoutPage', true);
-        $this->assertTrue($viewMock->showPayPalBannerOnCheckoutPage());
+        $this->assertTrue($viewMock->showPayPalCheckoutBannerOnCheckoutPage());
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', false);
-        $this->assertFalse($viewMock->showPayPalBannerOnCheckoutPage());
+        $this->assertFalse($viewMock->showPayPalCheckoutBannerOnCheckoutPage());
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', true);
         $this->updateModuleSetting($selectorSetting, '');
-        $this->assertFalse($viewMock->showPayPalBannerOnCheckoutPage());
+        $this->assertFalse($viewMock->showPayPalCheckoutBannerOnCheckoutPage());
     }
 
     public function providerBannerCheckoutPage(): array
@@ -162,7 +162,7 @@ final class ViewConfigTest extends UnitTestCase
         $view = oxNew(\OxidEsales\Eshop\Core\ViewConfig::class);
 
         $this->updateModuleSetting('oscPayPalBannersColorScheme', $colorScheme);
-        $this->assertEquals($colorScheme, $view->getPayPalBannersColorScheme());
+        $this->assertEquals($colorScheme, $view->getPayPalCheckoutBannersColorScheme());
     }
 
     public function providerGetPayPalColorScheme(): array

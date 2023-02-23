@@ -18,7 +18,7 @@ use OxidEsales\Codeception\Page\Home;
 
 /**
  * @group osc_paypal
- * @group osc_paypal_checkout
+ * @group osc_paypal_checkout_express
  * @group osc_paypal_checkout_paypallogin
  * @group osc_paypal_remote_login
  */
@@ -34,8 +34,12 @@ final class PayPalCheckoutLoginCest extends BaseCest
 
         $this->setUserDataSameAsPayPal($I);
         $this->proceedToBasketStep($I, $_ENV['sBuyerLogin'], false);
-        $token = $this->approvePayPalTransaction($I);
-        $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
+
+        $stoken = $I->grabValueFrom('//input[@name="stoken"]');
+        $token = $this->approveExpressPayPalTransaction($I);
+        $I->amOnUrl($this->getShopUrl() .
+                    '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token .
+                    '&stoken=' . $stoken);
 
         //PayPal logs us in and we skipped the address and payment step
         //pretend we are back in shop after clicking PayPal button and approving order
@@ -77,6 +81,7 @@ final class PayPalCheckoutLoginCest extends BaseCest
         //finalize order with logging in same user as paypal email
         $home = new Home($I);
         $home->loginUser($_ENV['sBuyerLogin'], Fixtures::get('userPassword'));
+        $I->dontSee(Translator::translate('OSC_PAYPAL_LOG_IN_TO_CONTINUE'));
 
         $page = new UserCheckout($I);
         $page->goToNextStep();
@@ -115,6 +120,7 @@ final class PayPalCheckoutLoginCest extends BaseCest
         //finalize order with logging in different user than paypal email
         $home = new Home($I);
         $home->loginUser(Fixtures::get('defaultUserName'), Fixtures::get('userPassword'));
+        $I->dontSee(Translator::translate('OSC_PAYPAL_LOG_IN_TO_CONTINUE'));
 
         $page = new UserCheckout($I);
         $page->goToNextStep();
@@ -158,8 +164,12 @@ final class PayPalCheckoutLoginCest extends BaseCest
         $I->seeInDatabase('oxuser', ['oxusername' => Fixtures::get('userName')]);
         $I->dontSeeInDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin']]);
         $this->proceedToBasketStep($I, $_ENV['sBuyerLogin'], false);
-        $token = $this->approvePayPalTransaction($I);
-        $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
+
+        $stoken = $I->grabValueFrom('//input[@name="stoken"]');
+        $token = $this->approveExpressPayPalTransaction($I);
+        $I->amOnUrl($this->getShopUrl() .
+                    '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token .
+                    '&stoken=' . $stoken);
 
         //new user without password was created
         $I->seeInDatabase('oxuser', ['oxusername' => Fixtures::get('userName')]);
@@ -214,8 +224,12 @@ final class PayPalCheckoutLoginCest extends BaseCest
         $I->seeInDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin'], 'oxpassword' => '']);
 
         $this->proceedToBasketStep($I, $_ENV['sBuyerLogin'], false);
-        $token = $this->approvePayPalTransaction($I);
-        $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
+
+        $stoken = $I->grabValueFrom('//input[@name="stoken"]');
+        $token = $this->approveExpressPayPalTransaction($I);
+        $I->amOnUrl($this->getShopUrl() .
+                    '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token .
+                    '&stoken=' . $stoken);
 
         //PayPal logs us in and we skipped the address and payment step
         //pretend we are back in shop after clicking PayPal button and approving order
@@ -273,8 +287,12 @@ final class PayPalCheckoutLoginCest extends BaseCest
         );
 
         $this->proceedToBasketStep($I, $_ENV['sBuyerLogin'], false);
-        $token = $this->approvePayPalTransaction($I);
-        $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
+
+        $stoken = $I->grabValueFrom('//input[@name="stoken"]');
+        $token = $this->approveExpressPayPalTransaction($I);
+        $I->amOnUrl($this->getShopUrl() .
+                    '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token .
+                    '&stoken=' . $stoken);
 
         //PayPal logs us in and we skipped the address and payment step
         //pretend we are back in shop after clicking PayPal button and approving order
@@ -329,8 +347,11 @@ final class PayPalCheckoutLoginCest extends BaseCest
         $I->seeInDatabase('oxuser', ['oxusername' => Fixtures::get('userName')]);
         $I->dontseeInDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin']]);
 
-        $token = $this->approvePayPalTransaction($I);
-        $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
+        $stoken = $I->grabValueFrom('//input[@name="stoken"]');
+        $token = $this->approveExpressPayPalTransaction($I);
+        $I->amOnUrl($this->getShopUrl() .
+                    '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token .
+                    '&stoken=' . $stoken);
 
         //We are already logged in and we skipped the address and payment step
         //pretend we are back in shop after clicking PayPal button and approving order
@@ -357,7 +378,7 @@ final class PayPalCheckoutLoginCest extends BaseCest
                 'OXID' => $orderId,
                 'OXTOTALORDERSUM' => '119.6',
                 'OXBILLFNAME' => Fixtures::get('details')['firstname'],
-                'OXDELFNAME' => $_ENV['sBuyerFirstName']
+                'OXDELFNAME' => Fixtures::get('details')['firstname']
             ]
         );
 
@@ -379,15 +400,21 @@ final class PayPalCheckoutLoginCest extends BaseCest
         ];
     }
 
-    protected function startExpressCheckoutAsNotLoggedInExistingUser(AcceptanceTester $I): string
-    {
-        $this->setUserDataSameAsPayPal($I);
+    protected function startExpressCheckoutAsNotLoggedInExistingUser(
+        AcceptanceTester $I,
+        bool $removePassword = false
+    ): string {
+        $this->setUserDataSameAsPayPal($I, $removePassword);
         $I->seeInDatabase('oxuser', ['oxusername' => $_ENV['sBuyerLogin']]);
         $I->dontSeeInDatabase('oxuser', ['oxusername' => Fixtures::get('userName')]);
 
         $this->proceedToBasketStep($I, $_ENV['sBuyerLogin'], false);
-        $token = $this->approvePayPalTransaction($I);
-        $I->amOnUrl($this->getShopUrl() . '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token);
+
+        $stoken = $I->grabValueFrom('//input[@name="stoken"]');
+        $token = $this->approveExpressPayPalTransaction($I);
+        $I->amOnUrl($this->getShopUrl() .
+                    '?cl=oscpaypalproxy&fnc=approveOrder&orderID=' . $token .
+                    '&stoken=' . $stoken);
 
         //PayPal logs us in and we skipped the address and payment step
         //pretend we are back in shop after clicking PayPal button and approving order
@@ -395,6 +422,7 @@ final class PayPalCheckoutLoginCest extends BaseCest
         $I->waitForPageLoad();
 
         //we already have an account with password, we are just not logged in
+        $I->see(Translator::translate('OSC_PAYPAL_LOG_IN_TO_CONTINUE'));
         $I->dontSee(sprintf(Translator::translate('ERROR_MESSAGE_USER_USEREXISTS'), $_ENV['sBuyerLogin']));
         $I->dontSee(Translator::translate('MY_ACCOUNT'));
         $I->see(Translator::translate('LOGIN'));

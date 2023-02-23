@@ -18,7 +18,6 @@ use OxidEsales\Eshop\Application\Model\Content as EshopModelContent;
 use OxidEsales\Eshop\Application\Model\Payment as EshopModelPayment;
 use OxidEsales\Eshop\Core\Model\BaseModel as EshopBaseModel;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
-use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 
 //NOTE: later we will do this on module installation, for now on first activation
 class StaticContent
@@ -26,15 +25,15 @@ class StaticContent
     /** @var QueryBuilderFactoryInterface */
     private $queryBuilderFactory;
 
-    /** @var ContextInterface */
-    private $context;
+    /** @var ModuleSettings */
+    private $moduleSettings;
 
     public function __construct(
         QueryBuilderFactoryInterface $queryBuilderFactory,
-        ContextInterface $context
+        ModuleSettings $moduleSettings
     ) {
         $this->queryBuilderFactory = $queryBuilderFactory;
-        $this->context = $context;
+        $this->moduleSettings = $moduleSettings;
     }
 
     public function ensurePayPalPaymentMethods(): void
@@ -82,7 +81,7 @@ class StaticContent
 
         $paymentModel->assign(
             [
-               'oxactive' => true,
+               'oxactive' => false,
                'oxfromamount' => (int) $definitions['constraints']['oxfromamount'],
                'oxtoamount' => (int) $definitions['constraints']['oxtoamount'],
                'oxaddsumtype' => (string) $definitions['constraints']['oxaddsumtype']
@@ -107,22 +106,16 @@ class StaticContent
 
     protected function reActivatePaymentMethod(string $paymentId): void
     {
+        $activePayments = $this->moduleSettings->getActivePayments();
+        if (!in_array($paymentId, $activePayments, true)) {
+            return;
+        }
+
         /** @var EshopModelPayment $paymentModel */
         $paymentModel = oxNew(EshopModelPayment::class);
         $paymentModel->load($paymentId);
 
         $paymentModel->oxpayments__oxactive = new Field(true);
-
-        $paymentModel->save();
-    }
-
-    protected function deActivatePaymentMethod(string $paymentId): void
-    {
-        /** @var EshopModelPayment $paymentModel */
-        $paymentModel = oxNew(EshopModelPayment::class);
-        $paymentModel->load($paymentId);
-
-        $paymentModel->oxpayments__oxactive = new Field(false);
 
         $paymentModel->save();
     }

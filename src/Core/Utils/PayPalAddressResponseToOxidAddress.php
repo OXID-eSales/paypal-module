@@ -89,6 +89,7 @@ class PayPalAddressResponseToOxidAddress
             $DBTablePrefix . 'lname' => self::getLastName($shippingFullName),
             $DBTablePrefix . 'street' => $street,
             $DBTablePrefix . 'streetnr' => $streetNo,
+            $DBTablePrefix . 'addinfo' => $shippingAddress->address_line_2,
             $DBTablePrefix . 'city' => $shippingAddress->admin_area_2,
             $DBTablePrefix . 'countryid' => $countryId,
             $DBTablePrefix . 'country' => $countryName,
@@ -98,11 +99,11 @@ class PayPalAddressResponseToOxidAddress
 
     protected static function getFirstName($name)
     {
-        return implode(' ', array_slice(explode(' ', $name), 0, -1));
+        return implode(' ', array_slice(explode(' ', (string) $name), 0, -1));
     }
 
     protected static function getLastName($name)
     {
-        return array_slice(explode(' ', $name), -1)[0];
+        return array_slice(explode(' ', (string) $name), -1)[0];
     }
 }

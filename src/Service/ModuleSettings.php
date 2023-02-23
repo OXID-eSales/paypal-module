@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\EshopCommunity\Core\Registry;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Module;
 use OxidEsales\Eshop\Application\Model\Payment;
@@ -287,6 +288,13 @@ class ModuleSettings
         return (bool) $this->getSettingValue('oscPayPalSandboxPuiEligibility');
     }
 
+    public function getActivePayments(): array
+    {
+        /** @var array|null $activePayments */
+        $activePayments = $this->getSettingValue('oscPayPalActivePayments');
+        return $activePayments ?: [];
+    }
+
     public function save(string $name, $value): void
     {
         $this->moduleSettingBridge->save($name, $value, Module::MODULE_ID);
@@ -340,6 +348,11 @@ class ModuleSettings
         } else {
             $this->save('oscPayPalWebhookId', $webhookId);
         }
+    }
+
+    public function saveActivePayments(array $activePayments): void
+    {
+        $this->save('oscPayPalActivePayments', $activePayments);
     }
 
     /**
@@ -425,6 +438,18 @@ class ModuleSettings
             }
         }
         return $this->countryRestrictionForPayPalExpress;
+    }
+
+    public function getPayPalSCAContingency(): string
+    {
+        $value = (string) $this->getSettingValue('oscPayPalSCAContingency');
+        return $value === Constants::PAYPAL_SCA_ALWAYS ? $value : Constants::PAYPAL_SCA_WHEN_REQUIRED;
+    }
+
+    public function alwaysIgnoreSCAResult(): bool
+    {
+        $value = (string) $this->getSettingValue('oscPayPalSCAContingency');
+        return $value === Constants::PAYPAL_SCA_DISABLED;
     }
 
     /**

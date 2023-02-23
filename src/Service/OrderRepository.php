@@ -45,8 +45,15 @@ class OrderRepository
         string $paypalOrderId = '',
         string $payPalTransactionId = ''
     ): PayPalOrderModel {
+
+        $oxid = $this->getId($shopOrderId, $paypalOrderId, $payPalTransactionId);
+        //We might have a transactionid that is not yet saved to database, in that case we need
+        //to search for empty transactionid
+        $oxid = $oxid ?:
+            (empty($payPalTransactionId) ? '' : $this->getId($shopOrderId, $paypalOrderId, ''));
+
         $order = oxNew(PayPalOrderModel::class);
-        $order->load($this->getId($shopOrderId, $paypalOrderId, $payPalTransactionId));
+        $order->load($oxid);
 
         if (!$order->isLoaded()) {
             $order->assign(
@@ -99,6 +106,27 @@ class OrderRepository
         return $order;
     }
 
+    public function getPayPalOrderIdByShopOrderId(string $shopOrderId): string
+    {
+        /** @var QueryBuilder $queryBuilder */
+        $queryBuilder = $this->queryBuilderFactory->create();
+
+        $parameters = [
+            'oxorderid' => $shopOrderId
+        ];
+
+        $queryBuilder->select('oxpaypalorderid')
+            ->from('oscpaypal_order')
+            ->where('oxorderid = :oxorderid');
+
+        $id = $queryBuilder->setParameters($parameters)
+            ->setMaxResults(1)
+            ->execute()
+            ->fetch(PDO::FETCH_COLUMN);
+
+        return (string) $id;
+    }
+
     public function cleanUpNotFinishedOrders(): void
     {
         /** @var QueryBuilder $queryBuilder */
@@ -115,7 +143,10 @@ class OrderRepository
             ->from('oxorder')
             ->where('oxordernr = :oxordernr')
             ->andWhere('oxtransstatus = :oxtransstatus')
-            ->andWhere('oxpaymenttype LIKE :oxpaymenttype')
+            ->andWhere($queryBuilder->expr()->like(
+                'oxpaymenttype',
+                $queryBuilder->expr()->literal('%' . $parameters['oxpaymenttype'] . '%')
+            ))
             ->andWhere('oxorderdate < now() - interval :sessiontime SECOND');
 
         $ids = $queryBuilder->setParameters($parameters)
@@ -125,7 +156,10 @@ class OrderRepository
         foreach ($ids as $id) {
             $order = oxNew(EshopModelOrder::class);
             if ($order->load($id)) {
+                // storno
                 $order->cancelOrder();
+                // delete
+                $order->delete();
             }
         }
     }
@@ -136,15 +170,13 @@ class OrderRepository
         $queryBuilder = $this->queryBuilderFactory->create();
 
         $parameters = [
-            'oxorderid' => $shopOrderId
+            'oxorderid' => $shopOrderId,
+            'oscpaypaltransactionid' => $payPalTransactionId,
+            'oscpaypaltransactiontype' => Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
         ];
 
         if ($paypalOrderId) {
             $parameters['oxpaypalorderid'] = $paypalOrderId;
-        }
-
-        if ($payPalTransactionId) {
-            $parameters['oscpaypaltransactionid'] = $payPalTransactionId;
         }
 
         $queryBuilder->select('oxid')
@@ -155,9 +187,8 @@ class OrderRepository
             $queryBuilder->andWhere('oxpaypalorderid = :oxpaypalorderid');
         }
 
-        if ($payPalTransactionId) {
-            $queryBuilder->andWhere('oscpaypaltransactionid = :oscpaypaltransactionid');
-        }
+        $queryBuilder->andWhere('oscpaypaltransactionid = :oscpaypaltransactionid');
+        $queryBuilder->andWhere('oscpaypaltransactiontype = :oscpaypaltransactiontype');
 
         $id = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)

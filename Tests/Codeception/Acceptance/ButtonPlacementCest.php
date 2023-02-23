@@ -9,12 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Codeception\Acceptance;
 
-use OxidEsales\Codeception\Page\Checkout\Basket as BasketPage;
 use OxidSolutionCatalysts\PayPal\Tests\Codeception\AcceptanceTester;
 use Codeception\Util\Fixtures;
-use OxidEsales\Codeception\Page\Checkout\ThankYou;
-use OxidEsales\Codeception\Step\Basket;
-use OxidEsales\Codeception\Page\Checkout\PaymentCheckout;
 use OxidEsales\Codeception\Module\Translation\Translator;
 use OxidEsales\Codeception\Step\ProductNavigation;
 
@@ -67,19 +63,13 @@ final class ButtonPlacementCest extends BaseCest
         $I->seeElement("#PayPalPayButtonNextCart2");
     }
 
-    public function testCheckoutButtonPlacement(AcceptanceTester $I): void
+    public function testThereIsNoCheckoutButtonInPaymentPage(AcceptanceTester $I): void
     {
         $I->wantToTest('payment page express button placement. Needs a logged in user.');
 
         //all buttons disabled
         $this->enableExpressButtons($I, false);
-        $this->proceedToPaymentStep($I, Fixtures::get('userName'), false);
-        $I->dontSeeElement("#PayPalButtonPaymentPage");
-
-        //switch it on
-        $I->updateModuleConfiguration('oscPayPalShowCheckoutButton', true);
-        $I->clearShopCache();
-        $this->proceedToPaymentStep($I, Fixtures::get('userName'), false);
-        $I->seeElement("#PayPalButtonPaymentPage");
+        $this->proceedToPaymentStep($I, Fixtures::get('userName'));
+        $I->see(Translator::translate("PAYMENT_METHOD"));
     }
 }

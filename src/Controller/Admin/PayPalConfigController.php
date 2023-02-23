@@ -7,12 +7,17 @@
 
 namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
 
+use GuzzleHttp\Exception\ClientException;
 use OxidEsales\Eshop\Application\Controller\Admin\AdminController;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Config;
+use OxidSolutionCatalysts\PayPal\Core\Onboarding\Webhook;
 use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
+use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Core\RequestReader;
+use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Core\Onboarding\Onboarding;
@@ -38,14 +43,6 @@ class PayPalConfigController extends AdminController
         $thisTemplate = parent::render();
         $config = new Config();
         $this->addTplParam('config', $config);
-
-        // popUp Rendering onboarding
-        if ($aoc = Registry::getConfig()->getRequestParameter("aoc")) {
-            $this->_aViewData['isSandBox'] = ($aoc == 'live') ? false : true;
-            $this->_aViewData['ready'] = ($aoc == 'ready') ? true : false;
-            $this->_aViewData['bottom_buttons'] = '';
-            return 'oscpaypalconfig_popup.tpl';
-        }
 
         try {
             $config->checkHealth();
@@ -107,7 +104,7 @@ class PayPalConfigController extends AdminController
         $localeCode = $lang->getLanguageAbbr() . '-' . $countryCode;
 
         $partnerLogoUrl = Registry::getConfig()->getOutUrl(null, true) . 'admin/img/loginlogo.png';
-        $returnToPartnerUrl = $config->getAdminUrlForJSCalls() . 'cl=oscpaypalonboarding&fnc=returnFromSignup';
+        $returnToPartnerUrl = $config->getAdminUrlForJSCalls() . 'cl=oscpaypalconfig&fnc=returnFromSignup';
 
         $params = [
             'partnerClientId' => $partnerClientId,
@@ -160,9 +157,8 @@ class PayPalConfigController extends AdminController
         $shopId = Registry::getConfig()->getShopId();
 
         $confArr = $this->handleSpecialFields($confArr);
-        $this->checkEligibility($confArr);
         $this->saveConfig($confArr, $shopId);
-
+        $this->checkEligibility();
         parent::save();
     }
 
@@ -186,34 +182,16 @@ class PayPalConfigController extends AdminController
      * @param array $confArr
 
      */
-    protected function checkEligibility($confArr): void
+    protected function checkEligibility(): void
     {
         $config = new Config();
-
-        if (
-            ($config->isSandbox() && (
-                $confArr['oscPayPalSandboxClientId'] !== $config->getSandboxClientId() ||
-                $confArr['oscPayPalSandboxClientSecret'] !== $config->getSandboxClientSecret() ||
-                $confArr['oscPayPalSandboxWebhookId'] !== $config->getSandboxWebhookId()
-            ) &&
-                $confArr['oscPayPalSandboxClientId'] &&
-                $confArr['oscPayPalSandboxClientSecret'] &&
-                $confArr['oscPayPalSandboxWebhookId']
-            ) ||
-            (!$config->isSandbox() && (
-                $confArr['oscPayPalClientId'] !== $config->getClientId() ||
-                $confArr['oscPayPalClientSecret'] !== $config->getClientSecret() ||
-                $confArr['oscPayPalWebhookId'] !== $config->getWebhookId()
-            ) &&
-                $confArr['oscPayPalClientId'] &&
-                $confArr['oscPayPalClientSecret'] &&
-                $confArr['oscPayPalWebhookId']
-            )
-        ) {
+        try {
             $handler = oxNew(Onboarding::class);
             $onBoardingClient = $handler->getOnboardingClient($config->isSandbox(), true);
             $merchantInformations = $onBoardingClient->getMerchantInformations();
             $handler->saveEligibility($merchantInformations);
+        } catch (ClientException $exception) {
+            Registry::getLogger()->error("Error on checkEligibility", [$exception]);
         }
     }
 
@@ -338,5 +316,77 @@ class PayPalConfigController extends AdminController
             false,
             true
         );
+    }
+
+    /**
+     * Get ClientID, ClientSecret, WebhookID
+     */
+    public function autoConfigurationFromCallback()
+    {
+        try {
+            $requestReader = oxNew(RequestReader::class);
+            PayPalSession::storeOnboardingPayload($requestReader->getRawPost());
+        } catch (\Exception $exception) {
+            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+        }
+
+        $result = [];
+        header('Content-Type: application/json; charset=UTF-8');
+        Registry::getUtils()->showMessageAndExit(json_encode($result));
+    }
+
+    public function returnFromSignup()
+    {
+        $config = new Config();
+        if (
+            ('true' === (string) Registry::getRequest()->getRequestParameter('permissionsGranted')) &&
+            ('true' === (string) Registry::getRequest()->getRequestParameter('consentStatus'))
+        ) {
+            PayPalSession::storeMerchantIdInPayPal(Registry::getRequest()->getRequestParameter('merchantIdInPayPal'));
+        }
+
+        $this->autoConfiguration();
+        $this->registerWebhooks();
+
+        $url = $config->getAdminUrlForJSCalls() . 'cl=oscpaypalconfig&aoc=ready';
+
+        Registry::getUtils()->redirect($url, false, 302);
+    }
+
+    /**
+     * Get ClientID, ClientSecret
+     */
+    protected function autoConfiguration(): array
+    {
+        $credentials = [];
+
+        try {
+            /** @var Onboarding $handler */
+            $handler = oxNew(Onboarding::class);
+            $credentials = $handler->autoConfigurationFromCallback();
+        } catch (\Exception $exception) {
+            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+        }
+        return $credentials;
+    }
+
+    /**
+     * webhook registration
+     */
+    protected function registerWebhooks(): string
+    {
+        $webhookId = '';
+
+        try {
+            /** @var Webhook $handler */
+            $handler = oxNew(Webhook::class);
+            $webhookId = $handler->ensureWebhook();
+        } catch (OnboardingException $exception) {
+            Registry::getUtilsView()->addErrorToDisplay($exception->getMessage());
+        } catch (\Exception $exception) {
+            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+        }
+
+        return $webhookId;
     }
 }

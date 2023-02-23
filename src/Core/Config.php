@@ -237,6 +237,16 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalStandardCaptureStrategy();
     }
 
+    public function getPayPalSCAContingency(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalSCAContingency();
+    }
+
+    public function alwaysIgnoreSCAResult(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->alwaysIgnoreSCAResult();
+    }
+
     public function tableExists(string $tableName = ''): bool
     {
         $exists = false;
@@ -257,6 +267,18 @@ class Config
             );
         }
         return (bool)$exists;
+    }
+
+    /**
+     * get the full File Name of the Token Cache
+     *
+     * @return string
+     */
+    public function getTokenCacheFileName(): string
+    {
+        $config = Registry::getConfig();
+        $shopId = $config->getActiveShop()->getId();
+        return $config->getConfigParam('sCompileDir') . 'paypaltoken_' . $shopId . '.txt';
     }
 
     /**

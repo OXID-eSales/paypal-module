@@ -24,8 +24,10 @@ final class OnboardingTest extends BaseTestCase
     {
         $response = '{"authCode":"C21AAJlAxXbg1yhcvDvsQBkCkGBWcbdrFGDFA2vm4rjeXEpE-HsiV7ONaEPCyi-A3ebfRyK-hqbqld7ZBPAqwm8-MqiL1pCyw",' .
             '"sharedId":"AXOTtYBILwghOuYdORqSJACgbInEh2Kb4z9MDcU07vJtCxMWhESD0Ck1z59lRK9D-5vmI6AuHKd_ztM5","isSandBox":true}';
+        $responseMerchant = '{"mechantId":"1A2B3C4D5E6F7","products":[{"name":"productOne"}]}';
 
         $expected = json_decode($response, true);
+        $expectedMaerchant = json_decode($responseMerchant, true);
 
         PayPalSession::storeOnboardingPayload($response);
 
@@ -35,6 +37,9 @@ final class OnboardingTest extends BaseTestCase
         $apiClient->expects($this->once())
             ->method('authAfterWebLogin')
             ->with($expected['authCode'], $expected['sharedId']);
+        $apiClient->expects($this->once())
+            ->method("getMerchantInformations")
+            ->willReturn($expectedMaerchant);
 
         $credentials = [
             'client_id' => 'client_id',
@@ -47,7 +52,7 @@ final class OnboardingTest extends BaseTestCase
         $service = $this->getMockBuilder(Onboarding::class)
             ->setMethods(['saveCredentials', 'getOnboardingClient'])
             ->getMock();
-        $service->expects($this->once())
+        $service->expects($this->any())
             ->method('getOnboardingClient')
             ->willReturn($apiClient);
         $service->expects($this->once())
