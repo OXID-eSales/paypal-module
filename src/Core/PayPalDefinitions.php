@@ -19,7 +19,7 @@ final class PayPalDefinitions
     public const PUI_REQUEST_PAYMENT_SOURCE_NAME = 'pay_upon_invoice';
     public const GIROPAY_PAYPAL_PAYMENT_ID = 'oscpaypal_giropay';
     public const SOFORT_PAYPAL_PAYMENT_ID = 'oscpaypal_sofort';
-
+    public const SEPA_PAYPAL_PAYMENT_ID = 'oscpaypal_sepa';
 
     private const PAYMENT_CONSTRAINTS_PAYPAL = [
         'oxfromamount' => 0.01,
@@ -116,6 +116,26 @@ final class PayPalDefinitions
             'currencies' => ['EUR'],
             'constraints' => self::PAYMENT_CONSTRAINTS_PUI,
             'onlybrutto' => true
+        ],
+        self::SEPA_PAYPAL_PAYMENT_ID => [
+            'descriptions' => [
+                'de' => [
+                    'desc' => 'SEPA Bankeinzug',
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="" title="SEPA Bankeinzug" style="float: left;margin-right: 10px;" />
+                        Bezahlen Sie bequem mit SEPA Bankeinzug'
+                ],
+                'en' => [
+                    'desc' => 'SEPA direct debit',
+                    'longdesc' => '',
+                    'longdesc_beta' => '<img src="" title="SEPA direct debit" style="float: left;margin-right: 10px;" />
+                        Pay conveniently with SEPA direct debit'
+                ]
+            ],
+            'countries' => ['DE'],
+            'currencies' => ['EUR'],
+            'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
+            'onlybrutto' => false
         ],
         self::ACDC_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
