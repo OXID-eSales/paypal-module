@@ -27,6 +27,10 @@ class InputValidator_parent extends \OxidEsales\Eshop\Core\InputValidator
 
 namespace OxidSolutionCatalysts\PayPal\Model;
 
+class State_parent extends \OxidEsales\Eshop\Application\Model\State
+{
+}
+
 class PaymentGateway_parent extends \OxidEsales\Eshop\Application\Model\PaymentGateway
 {
 }
@@ -62,6 +66,8 @@ class OrderController_parent extends \OxidEsales\Eshop\Application\Controller\Or
 }
 
 namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
+
+
 
 class OrderMain_parent extends \OxidEsales\Eshop\Application\Controller\Admin\OrderMain
 {
