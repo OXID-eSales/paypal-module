@@ -111,7 +111,7 @@ class UserRepository
             $state = oxNew(State::class);
             $state->loadByIdAndCountryId(
                 $user->getFieldData('oxstateid'),
-                $user->getFieldData('oxstateid')
+                $user->getFieldData('oxcountryid')
             );
             $result = (string) $state->getFieldData('oxisoalpha2');
         }
