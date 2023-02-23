@@ -105,7 +105,6 @@ $aModule = [
         // PAYPAL-486 Register templates for overloading here;
         // use theme name in key when theme-specific. Shared templates don't receive a theme-specific key.
         'modules/osc/paypal/acdc.tpl' => 'osc/paypal/views/tpl/shared/page/checkout/acdc.tpl',
-        'modules/osc/paypal/sepa.tpl' => 'osc/paypal/views/tpl/shared/page/checkout/sepa.tpl',
         'modules/osc/paypal/base_js.tpl' => 'osc/paypal/views/tpl/shared/layout/base_js.tpl',
         'modules/osc/paypal/base_style.tpl' => 'osc/paypal/views/tpl/shared/layout/base_style.tpl',
         'modules/osc/paypal/basket_btn_next_bottom.tpl' =>
