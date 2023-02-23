@@ -5,6 +5,7 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 use Doctrine\DBAL\Query\QueryBuilder;
 use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
+use PDO;
 
 class State extends State_parent
 {
