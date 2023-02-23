@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Application\Controller\Admin\OrderOverview;
 use OxidEsales\Eshop\Application\Model\Article;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\Order;
+use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Application\Model\Payment;
 use OxidEsales\Eshop\Application\Model\PaymentGateway;
@@ -34,6 +35,7 @@ use OxidSolutionCatalysts\PayPal\Core\ViewConfig as PayPalViewConfig;
 use OxidSolutionCatalysts\PayPal\Model\Article as PayPalArticle;
 use OxidSolutionCatalysts\PayPal\Model\Basket as PayPalBasket;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrder;
+use OxidSolutionCatalysts\PayPal\Model\State as PayPalState;
 use OxidSolutionCatalysts\PayPal\Model\User as PayPalUser;
 use OxidSolutionCatalysts\PayPal\Model\Payment as PayPalPayment;
 use OxidSolutionCatalysts\PayPal\Model\PaymentGateway as PayPalPaymentGateway;
@@ -72,7 +74,8 @@ $aModule = [
         PaymentController::class => PayPalPaymentController::class,
         UserComponent::class => PayPalUserComponent::class,
         OrderMain::class => PayPalOrderMainController::class,
-        OrderOverview::class => PayPalOrderOverviewController::class
+        OrderOverview::class => PayPalOrderOverviewController::class,
+        State::class => PaypalState::class
     ],
     'controllers' => [
         'oscpaypalconfig' => PayPalConfigController::class,
