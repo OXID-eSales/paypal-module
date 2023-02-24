@@ -6,11 +6,11 @@ use OxidEsales\Eshop\Core\DatabaseProvider;
 
 class State extends State_parent
 {
-    public function loadByIdAndCountry($oxid, $countryID)
+    public function loadByIdAndCountry($oxIsoAlpha2, $countryID)
     {
         // must mimic the original "load" functionality
         $query = $this->buildSelectString([
-            $this->getViewName() . '.oxid' => $oxid,
+            $this->getViewName() . '.oxisoalpha2' => $oxIsoAlpha2,
             $this->getViewName() . '.oxcountryid' => $countryID
         ]);
         $this->_isLoaded = $this->assignRecord($query);
