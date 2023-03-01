@@ -19,6 +19,7 @@ use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Model\Article;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
@@ -233,6 +234,7 @@ class OrderRequestFactory
     public function getItems(): array
     {
         $basket = $this->basket;
+        $itemCategory = $this->getItemCategoryByBasketContent();
         $currency = $basket->getBasketCurrency();
         $language = Registry::getLang();
         $items = [];
@@ -243,6 +245,12 @@ class OrderRequestFactory
             $item->name = substr($basketItem->getTitle(), 0, 120);
             $itemUnitPrice = $basketItem->getUnitPrice();
 
+            /** @var Article $basketArticle */
+            $basketArticle = $basketItem->getArticle();
+            $articleCategory = ($basketArticle->isVirtualPayPalArticle())
+                ? Item::CATEGORY_DIGITAL_GOODS
+                : Item::CATEGORY_PHYSICAL_GOODS;
+
             // no zero price articles in the list
             if ((float)$itemUnitPrice->getBruttoPrice() > 0) {
                 $item->unit_amount = PriceToMoney::convert((float)$itemUnitPrice->getBruttoPrice(), $currency);
@@ -251,7 +259,7 @@ class OrderRequestFactory
                 $item->tax_rate = '0';
                 // TODO: There are usually still categories for digital products.
                 // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
-                $item->category = 'PHYSICAL_GOODS';
+                $item->category = $articleCategory;
 
                 $item->quantity = (string)$basketItem->getAmount();
                 $items[] = $item;
@@ -268,7 +276,7 @@ class OrderRequestFactory
             $item->tax_rate = '0';
             // TODO: There are usually still categories for digital products.
             // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
-            $item->category = 'PHYSICAL_GOODS';
+            $item->category = $itemCategory;
 
             $item->quantity = '1';
             $items[] = $item;
@@ -284,7 +292,7 @@ class OrderRequestFactory
             $item->tax_rate = '0';
             // TODO: There are usually still categories for digital products.
             // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
-            $item->category = 'PHYSICAL_GOODS';
+            $item->category = $itemCategory;
 
             $item->quantity = '1';
             $items[] = $item;
@@ -300,7 +308,7 @@ class OrderRequestFactory
             $item->tax_rate = '0';
             // TODO: There are usually still categories for digital products.
             // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
-            $item->category = 'PHYSICAL_GOODS';
+            $item->category = $itemCategory;
 
             $item->quantity = '1';
             $items[] = $item;
@@ -317,7 +325,7 @@ class OrderRequestFactory
             $item->tax_rate = '0';
             // TODO: There are usually still categories for digital products.
             // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
-            $item->category = 'PHYSICAL_GOODS';
+            $item->category = $itemCategory;
 
             $item->quantity = '1';
             $items[] = $item;
@@ -335,13 +343,30 @@ class OrderRequestFactory
 
             // TODO: There are usually still categories for digital products.
             // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
-            $item->category = 'PHYSICAL_GOODS';
+            $item->category = $itemCategory;
 
             $item->quantity = '1';
             $items[] = $item;
         }
 
         return $items;
+    }
+
+    /**
+     * Determine the item category based on the entire basket contents. If all items in the basket are virtual
+     * the category "DIGITAL_GOODS" is used, in any other case it'll be "PHYSICAL_GOODS".
+     * @return string
+     */
+    public function getItemCategoryByBasketContent(): string
+    {
+        /** @var $basket \OxidSolutionCatalysts\PayPal\Model\Basket */
+        $basket = $this->basket;
+
+        return (
+            $basket->isEntirelyVirtualPayPalBasket()
+                ? Item::CATEGORY_DIGITAL_GOODS
+                : Item::CATEGORY_PHYSICAL_GOODS
+        );
     }
 
     /**
