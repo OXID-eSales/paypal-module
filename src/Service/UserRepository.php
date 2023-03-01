@@ -84,7 +84,7 @@ class UserRepository
         $result = '';
         if ($user = $this->session->getUser()) {
             $state = oxNew(State::class);
-            $state->loadByIdAndCountryId(
+            $state->loadByIdAndCountry(
                 $user->getFieldData('oxstateid'),
                 $user->getFieldData('oxcountryid')
             );
