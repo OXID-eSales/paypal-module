@@ -55,4 +55,16 @@ class Article extends Article_parent
         }
         return parent::isVisible();
     }
+
+    /**
+     * Checks if article is virtual (either "downloadable" or "nonmaterial")
+     *
+     * @return bool
+     */
+    public function isVirtualPayPalArticle()
+    {
+        return ($this->oxarticles__oxisdownloadable != 0 || $this->oxarticles__oxnonmaterial->value != 0);
+    }
+
+
 }
