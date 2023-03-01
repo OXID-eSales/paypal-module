@@ -191,13 +191,29 @@ class ViewConfig extends ViewConfig_parent
     }
 
     /**
-     * Gets PayPal JS SDK url
+     * Gets PayPal JS SDK url for ACDC
      *
      * @return string
      */
     public function getPayPalJsSdkUrlForACDC(): string
     {
+        return $this->getBasePayPalJsSdkUrl('hosted-fields');
+    }
+
+    /**
+     * Gets PayPal JS SDK url for ACDC
+     *
+     * @return string
+     */
+    public function getPayPalJsSdkUrlForSEPA(): string
+    {
+        return $this->getBasePayPalJsSdkUrl('funding-eligibility');
+    }
+
+    protected function getBasePayPalJsSdkUrl($type = ''): string
+    {
         $config = Registry::getConfig();
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
 
         $params = [];
         $params['client-id'] = $this->getServiceFromContainer(ModuleSettings::class)->getClientId();
@@ -207,7 +223,11 @@ class ViewConfig extends ViewConfig_parent
             $params['currency'] = strtoupper($currency->name);
         }
 
-        $params['components'] = 'buttons,hosted-fields';
+        $params['components'] = 'buttons,' . $type;
+
+        if ($moduleSettings->showAllPayPalBanners()) {
+            $params['components'] .= ',messages';
+        }
 
         return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
     }

@@ -1,8 +1,7 @@
-
 [{if $oViewConf->isPayPalCheckoutActive()}]
     [{assign var="className" value=$oViewConf->getTopActiveClassName()}]
     [{if $oViewConf->isPayPalExpressPaymentEnabled() &&
-        (($className == 'order' && !$oViewConf->isPayPalACDCSessionActive()) || $className !== 'order') &&
+        (($className == 'order' && !$oViewConf->isPayPalACDCSessionActive()) || ($className !== 'order' && $className !== 'payment')) &&
         (
             ($oxcmp_basket->getProductsCount() && $oViewConf->showPayPalMiniBasketButton()) ||
             ($className == 'details' && $oViewConf->showPayPalProductDetailsButton()) ||
@@ -18,7 +17,9 @@
         [{/if}]
     [{elseif $className == 'order' && $oViewConf->isPayPalACDCSessionActive()}]
         <script src="[{$oViewConf->getPayPalJsSdkUrlForACDC()}]" data-client-token="[{$oViewConf->getDataClientToken()}]"></script>
-    [{elseif $oViewConf->isPayPalBannerActive() && (($className == 'start') || ($className == 'search') || ($className == 'details') || ($className == 'alist') || ($className == 'basket') || ($className == 'payment'))}]
+    [{elseif $className == 'payment'}]
+        <script src="[{$oViewConf->getPayPalJsSdkUrlForSEPA()}]" data-partner-attribution-id="[{$oViewConf->getPayPalPartnerAttributionIdForBanner()}]}]"></script>
+    [{elseif $oViewConf->isPayPalBannerActive() && ($className == 'start' || $className == 'search' || $className == 'details' || $className == 'alist' || $className == 'basket')}]
         <script src="[{$oViewConf->getPayPalApiBannerUrl()}]" data-partner-attribution-id="[{$oViewConf->getPayPalPartnerAttributionIdForBanner()}]"></script>
     [{/if}]
     [{if $submitCart}]
