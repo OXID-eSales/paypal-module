@@ -19,6 +19,7 @@ use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Model\Article;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
@@ -239,6 +240,12 @@ class OrderRequestFactory
             $item->name = substr($basketItem->getTitle(), 0, 120);
             $itemUnitPrice = $basketItem->getUnitPrice();
 
+            /** @var Article $basketArticle */
+            $basketArticle = $basketItem->getArticle();
+            $articleCategory = ($basketArticle->isVirtualPayPalArticle())
+                ? Item::CATEGORY_DIGITAL_GOODS
+                : Item::CATEGORY_PHYSICAL_GOODS;
+
             // no zero price articles in the list
             if ((float)$itemUnitPrice->getBruttoPrice() > 0) {
                 $item->unit_amount = PriceToMoney::convert((float)$itemUnitPrice->getBruttoPrice(), $currency);
@@ -247,7 +254,7 @@ class OrderRequestFactory
                 $item->tax_rate = '0';
                 // TODO: There are usually still categories for digital products.
                 // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
-                $item->category = $itemCategory;
+                $item->category = $articleCategory;
 
                 $item->quantity = (string)$basketItem->getAmount();
                 $items[] = $item;
