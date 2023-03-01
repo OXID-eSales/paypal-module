@@ -18,7 +18,7 @@ use OxidEsales\Eshop\Core\Registry;
 class Basket extends Basket_parent
 {
     /**
-     * Checks if products in basket ar virtual and does not require real delivery.
+     * Checks if any product in basket is virtual and does not require real delivery.
      * Returns TRUE if virtual
      *
      * @return bool
@@ -36,6 +36,27 @@ class Basket extends Basket_parent
         }
 
         return $isVirtual;
+    }
+
+    /**
+     * Checks if all products in basket are virtual and do not require delivery.
+     * Returns TRUE if each product is virtual, FALSE if at least one phyical item is contained.
+     *
+     * @return bool
+     */
+    public function isEntirelyVirtualPayPalBasket()
+    {
+        $countVirtualProducts = $countTotalProducts = 0;
+
+        $products = $this->getBasketArticles();
+        foreach ($products as $product) {
+            $countTotalProducts++;
+            if ($product->isVirtualPayPalArticle()) {
+                $countVirtualProducts++;
+            }
+        }
+
+        return ($countTotalProducts === $countVirtualProducts);
     }
 
     /**
