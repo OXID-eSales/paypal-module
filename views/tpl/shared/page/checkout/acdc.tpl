@@ -49,7 +49,11 @@
                     //prevent additional submits
                     document.getElementById("orderConfirmAgbBottom").getElementsByTagName('button')[0].disabled = 'disabled';
 
-                    return fetch('[{$sSelfLink|cat:"cl=order&fnc=createAcdcOrder&ord_agb=1&stoken="}]' + '[{$oViewConf->getSessionChallengeToken()}]' + '&sDeliveryAddressMD5=' + '[{$oView->getDeliveryAddressMD5()}]', {
+                    let ordAgb = (document.getElementById('checkAgbTop') && document.getElementById('checkAgbTop').checked) ? 1 : 0;
+                    let downloadableProductAgreement = (document.getElementById('oxdownloadableproductsagreement') && document.getElementById('oxdownloadableproductsagreement').checked) ? 1 : 0;
+                    let serviceProductAgreement = (document.getElementById('oxserviceproductsagreement') && document.getElementById('oxserviceproductsagreement').checked) ? 1 : 0;
+                    let url = '[{$sSelfLink}]' + "cl=order&fnc=createAcdcOrder&ord_agb="+ordAgb+"&oxdownloadableproductsagreement="+downloadableProductAgreement+"&oxserviceproductsagreement="+serviceProductAgreement+"&stoken=" + '[{$oViewConf->getSessionChallengeToken()}]' + '&sDeliveryAddressMD5=' + '[{$oView->getDeliveryAddressMD5()}]';
+                    return fetch(url, {
                         method: 'post',
                         headers: {
                             'content-type': 'application/json'
