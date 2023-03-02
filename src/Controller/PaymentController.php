@@ -91,15 +91,6 @@ class PaymentController extends PaymentController_parent
             }
         }
 
-        // dont offer PUI if all items are non-material (PSPAYPAL-632)
-        if (isset($paymentList[PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID])) {
-            /* @var $basket  \OxidSolutionCatalysts\PayPal\Model\Basket */
-            $basket = Registry::getSession()->getBasket();
-            if ($basket && $basket->isEntirelyVirtualPayPalBasket()) {
-                unset($paymentList[PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID]);
-            }
-        }
-
         // check ACDC Eligibility
         if (!$this->getServiceFromContainer(ModuleSettings::class)->isAcdcEligibility()) {
             unset($paymentList[PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID]);
