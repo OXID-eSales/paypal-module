@@ -201,16 +201,16 @@ class ViewConfig extends ViewConfig_parent
     }
 
     /**
-     * Gets PayPal JS SDK url for ACDC
+     * Gets PayPal JS SDK url for Button Payments like SEPA and CreditCardFallback
      *
      * @return string
      */
-    public function getPayPalJsSdkUrlForSEPA(): string
+    public function getPayPalJsSdkUrlForButtonPayments(): string
     {
-        return $this->getBasePayPalJsSdkUrl('funding-eligibility');
+        return $this->getBasePayPalJsSdkUrl('funding-eligibility', true);
     }
 
-    protected function getBasePayPalJsSdkUrl($type = ''): string
+    protected function getBasePayPalJsSdkUrl($type = '', $continueFlow = false): string
     {
         $config = Registry::getConfig();
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
@@ -221,6 +221,11 @@ class ViewConfig extends ViewConfig_parent
 
         if ($currency = $config->getActShopCurrencyObject()) {
             $params['currency'] = strtoupper($currency->name);
+        }
+
+        if ($continueFlow) {
+            $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
+            $params['commit'] = 'false';
         }
 
         $params['components'] = 'buttons,' . $type;
