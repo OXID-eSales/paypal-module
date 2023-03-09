@@ -7,9 +7,9 @@
         [{/if}]
         [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
         [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
-        [{if $buttonId == "oscpaypal_sepa" || $buttonId == "oscpaypal_cc_fallback"}]
+        [{if $buttonId == "oscpaypal_sepa" || $buttonId == "oscpaypal_cc_alternative"}]
             FUNDING_SOURCES = [
-                paypal.FUNDING.[{if $buttonId == "oscpaypal_sepa"}]SEPA[{elseif $buttonId == "oscpaypal_cc_fallback"}]CARD[{/if}]
+                paypal.FUNDING.[{if $buttonId == "oscpaypal_sepa"}]SEPA[{elseif $buttonId == "oscpaypal_cc_alternative"}]CARD[{/if}]
             ];
             // Loop over each funding source/payment method
             FUNDING_SOURCES.forEach(function (fundingSource) {
@@ -17,7 +17,7 @@
                 let button = paypal.Buttons({
                     fundingSource: fundingSource,
                     createOrder: function (data, actions) {
-                        return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue"|cat:"&stoken="|cat:$sToken}]', {
+                        return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&paymentid="|cat:$buttonId|cat:"&context=continue&stoken="|cat:$sToken}]', {
                             method: 'post',
                             headers: {
                                 'content-type': 'application/json'
@@ -31,7 +31,7 @@
                     onApprove: function (data, actions) {
                         captureData = new FormData();
                         captureData.append('orderID', data.orderID);
-                        return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue"|cat:"&stoken="|cat:$sToken}]', {
+                        return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&paymentid="|cat:$buttonId|cat:"&context=continue&stoken="|cat:$sToken}]', {
                             method: 'post',
                             body: captureData
                         }).then(function (res) {
@@ -68,7 +68,7 @@
                 },
                 [{/if}]
                 createOrder: function (data, actions) {
-                    return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue"|cat:"&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
+                    return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
                         method: 'post',
                         headers: {
                             'content-type': 'application/json'
@@ -82,7 +82,7 @@
                 onApprove: function (data, actions) {
                     captureData = new FormData();
                     captureData.append('orderID', data.orderID);
-                    return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue"|cat:"&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
+                    return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
                         method: 'post',
                         body: captureData
                     }).then(function (res) {

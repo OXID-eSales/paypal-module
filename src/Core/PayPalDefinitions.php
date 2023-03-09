@@ -20,7 +20,7 @@ final class PayPalDefinitions
     public const GIROPAY_PAYPAL_PAYMENT_ID = 'oscpaypal_giropay';
     public const SOFORT_PAYPAL_PAYMENT_ID = 'oscpaypal_sofort';
     public const SEPA_PAYPAL_PAYMENT_ID = 'oscpaypal_sepa';
-    public const CCFALLBACK_PAYPAL_PAYMENT_ID = 'oscpaypal_cc_fallback';
+    public const CCALTERNATIVE_PAYPAL_PAYMENT_ID = 'oscpaypal_cc_alternative';
 
     private const PAYMENT_CONSTRAINTS_PAYPAL = [
         'oxfromamount' => 0.01,
@@ -143,7 +143,7 @@ final class PayPalDefinitions
             'onlybrutto' => false,
             'buttonpayment' => true
         ],
-        self::CCFALLBACK_PAYPAL_PAYMENT_ID => [
+        self::CCALTERNATIVE_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
                     'desc' => 'PayPal Kreditkarte Fallback',
