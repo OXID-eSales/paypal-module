@@ -246,4 +246,10 @@ $aLang = [
                                                         Chose "SCA when required by regional mandate, decision by PayPal system" to let PayPal system decide whether 3D check is necessary. 
                                                          With setting "3D Secure for each ACDC transaction" 3D check will be enforced for each transaction.',
 
+    'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS_TITLE' => 'Handling not finished orders',
+    'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'       => 'Automatically delete not finished orders?',
+    'HELP_OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'  => 'For some PayPal payment methods, an order must be created in advance so that it can be used with PayPal.
+                                                        It can happen that customers cancel the process during the payment process and do not return to the shop. In that case stay
+                                                        unfinished orders left that can be automatically deleted. Alternatively, you are welcome to check these orders yourself
+                                                        delete manually.',
 ];

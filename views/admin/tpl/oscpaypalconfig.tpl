@@ -287,10 +287,36 @@
             <div class="card">
                 <div class="card-header" id="heading6">
                     <h4 class="collapsed" data-toggle="collapse" data-target="#collapse6" aria-expanded="false" aria-controls="collapse6">
+                        [{oxmultilang ident="OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS_TITLE"}]
+                    </h4>
+                </div>
+
+                <div id="collapse6" class="collapse" aria-labelledby="heading6" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="controls">
+                                <div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="conf[oscPayPalCleanUpNotFinishedOrdersAutmaticlly]" [{if $config->cleanUpNotFinishedOrdersAutmaticlly()}]checked[{/if}] value="1">
+                                            [{oxmultilang ident="OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS"}]
+                                        </label>
+                                    </div>cleanUpNotFinishedOrders
+                                </div>
+                                <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS"}]</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header" id="heading7">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse7" aria-expanded="false" aria-controls="collapse7">
                         [{oxmultilang ident="OSC_PAYPAL_BANNER_CREDENTIALS"}]
                     </h4>
                 </div>
-                <div id="collapse6" class="collapse" aria-labelledby="heading5" data-parent="#accordion">
+                <div id="collapse7" class="collapse" aria-labelledby="heading7" data-parent="#accordion">
                     <div class="card-body">
                         [{if $oView->showTransferLegacySettingsButton()}]
                         <a class="btn btn-primary bottom-space" href="[{$sSelfLink|cat:"cl=oscpaypalconfig&fnc=transferBannerSettings"}]">[{oxmultilang ident='OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'}]</a>

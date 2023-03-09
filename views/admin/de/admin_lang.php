@@ -245,4 +245,12 @@ $aLang = [
                                                         und dem Kreditkarteninhaber verantwortlich. <br> Mit der Einstellung "3D Secure Abfrage automatisch" wird PayPal wird 3D Secure einführen, 
                                                         sobald die entsprechenden Vorschriften wirksam werden.  
                                                         Die Einstellung "3D Secure Abfrage für jede ACDC Transaktion" erzwingt die 3D Prüfung für jede ACDC Transaktion.',
+
+    'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS_TITLE' => 'Behandlung nicht beendeter Bestellungen',
+    'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'       => 'Nicht beendete Bestellungen automatisch löschen?',
+    'HELP_OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'  => 'Bei einigen PayPal-Zahlungsarten muss frühzeitig eine Bestellung angelegt werden, damit sie mit PayPal verwendet werden kann.
+                                                        Es kann passieren, das Kunden während des Bezahlvorgangs den Prozess abbrechen und nicht wieder in den Shop zurück kehren. In dem Fall bleiben
+                                                        nicht beendete Bestellungen übrig, die automatisch gelöscht werden können. Sie können alternaitv diese Bestellungen gern selbst kontrollieren und
+                                                        händisch löschen.',
+
 ];

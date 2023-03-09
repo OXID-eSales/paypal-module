@@ -436,10 +436,16 @@ $aModule = [
             'group' => null
         ],
         [
-            'group' => null,
+            'name' => 'oscPayPalCleanUpNotFinishedOrdersAutmaticlly',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
             'name' => 'oscPayPalActivePayments',
             'type' => 'arr',
-            'value' => []
+            'value' => [],
+            'group' => null
         ]
     ]
 ];
