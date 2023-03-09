@@ -305,6 +305,11 @@
                                 </div>
                                 <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS"}]</span>
                             </div>
+                            <label for="starttime-cleanup">[{oxmultilang ident="OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS"}]</label>
+                            <div class="controls">
+                                <input type="text" class="form-control" id="starttime-cleanup" name="conf[oscPayPalStartTimeCleanUpOrders]" value="[{$config->getStartTimeCleanUpOrders()}]">
+                            </div>
+                            <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS"}]</span>
                         </div>
                     </div>
                 </div>

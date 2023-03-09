@@ -442,6 +442,12 @@ $aModule = [
             'group' => null
         ],
         [
+            'name' => 'oscPayPalStartTimeCleanUpOrders',
+            'type' => 'num',
+            'value' => 60,
+            'group' => null
+        ],
+        [
             'name' => 'oscPayPalActivePayments',
             'type' => 'arr',
             'value' => [],

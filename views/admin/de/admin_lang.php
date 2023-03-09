@@ -252,5 +252,7 @@ $aLang = [
                                                         Es kann passieren, das Kunden während des Bezahlvorgangs den Prozess abbrechen und nicht wieder in den Shop zurück kehren. In dem Fall bleiben
                                                         nicht beendete Bestellungen übrig, die automatisch gelöscht werden können. Sie können alternaitv diese Bestellungen gern selbst kontrollieren und
                                                         händisch löschen.',
+    'OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'           => 'Startzeit für automatisches Löschen',
+    'HELP_OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'      => 'Wie alt müssen nicht beendete Bestellungen sein, damit sie frühestens automatisch gelöscht werden (in Minuten)?',
 
 ];

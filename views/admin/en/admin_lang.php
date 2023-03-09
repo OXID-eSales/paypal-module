@@ -252,4 +252,6 @@ $aLang = [
                                                         It can happen that customers cancel the process during the payment process and do not return to the shop. In that case stay
                                                         unfinished orders left that can be automatically deleted. Alternatively, you are welcome to check these orders yourself
                                                         delete manually.',
+    'OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'           => 'Start time for automatic deletion',
+    'HELP_OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'      => 'How old do not finished orders have to be before they are automatically deleted (in minutes)?',
 ];
