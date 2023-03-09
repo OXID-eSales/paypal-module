@@ -212,7 +212,8 @@ class OrderController extends OrderController_parent
             $order->setId($sessionOrderId);
             $order->load($sessionOrderId);
 
-            //TODO: if capture fails, do we still end up with an order?
+            // At this point we only trigger the capture. We find out that order was really captured via the
+            // CHECKOUT.ORDER.COMPLETED webhook, where we mark the order as paid
             $response = $this->getServiceFromContainer(PaymentService::class)->doCapturePayPalOrder(
                 $order,
                 $sessionAcdcOrderId,
