@@ -75,7 +75,7 @@ $aModule = [
         UserComponent::class => PayPalUserComponent::class,
         OrderMain::class => PayPalOrderMainController::class,
         OrderOverview::class => PayPalOrderOverviewController::class,
-        State::class => PaypalState::class
+        State::class => PayPalState::class
     ],
     'controllers' => [
         'oscpaypalconfig' => PayPalConfigController::class,
