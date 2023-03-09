@@ -268,9 +268,9 @@ class ModuleSettings
         return (bool) $this->getSettingValue('oscPayPalLoginWithPayPalEMail');
     }
 
-    public function cleanUpNotFinishedOrdersAutmaticlly(): bool
+    public function cleanUpNotFinishedOrdersAutomaticlly(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalCleanUpNotFinishedOrdersAutmaticlly');
+        return (bool) $this->getSettingValue('oscPayPalCleanUpNotFinishedOrdersAutomaticlly');
     }
 
     public function isLiveAcdcEligibility(): bool

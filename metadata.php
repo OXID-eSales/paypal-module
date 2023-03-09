@@ -436,7 +436,7 @@ $aModule = [
             'group' => null
         ],
         [
-            'name' => 'oscPayPalCleanUpNotFinishedOrdersAutmaticlly',
+            'name' => 'oscPayPalCleanUpNotFinishedOrdersAutomaticlly',
             'type' => 'bool',
             'value' => false,
             'group' => null

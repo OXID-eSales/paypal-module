@@ -298,10 +298,10 @@
                                 <div>
                                     <div class="checkbox">
                                         <label>
-                                            <input type="checkbox" name="conf[oscPayPalCleanUpNotFinishedOrdersAutmaticlly]" [{if $config->cleanUpNotFinishedOrdersAutmaticlly()}]checked[{/if}] value="1">
+                                            <input type="checkbox" name="conf[oscPayPalCleanUpNotFinishedOrdersAutomaticlly]" [{if $config->cleanUpNotFinishedOrdersAutomaticlly()}]checked[{/if}] value="1">
                                             [{oxmultilang ident="OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS"}]
                                         </label>
-                                    </div>cleanUpNotFinishedOrders
+                                    </div>
                                 </div>
                                 <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS"}]</span>
                             </div>
