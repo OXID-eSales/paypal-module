@@ -8,8 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### NEW
 - active payment methods are recognized after deactivating and activating the module and activated again correctly
+- in the backend there are new options for control the deleting of unfinished orders
 
 ### Fixed
+- [0007440]: Pending orders with oxordernr 0 are deleted before the payment process can be completed
 - [0007417](https://bugs.oxid-esales.com/view.php?id=7417) Orders with digital goods could not be purchased with creditcard
 - [0007422](https://bugs.oxid-esales.com/view.php?id=7422) Same state/county IDs may lead to wrong display on PayPal page
 - [0007413](https://bugs.oxid-esales.com/view.php?id=7413) set PPExpress independently of ShippingSets (They will be set later)
