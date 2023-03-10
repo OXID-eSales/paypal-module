@@ -58,7 +58,6 @@ abstract class WebhookHandlerBase
                 $eventPayload,
                 $order
             );
-
         } else {
             Registry::getLogger()->debug(
                 "Not enough information to handle " . static::WEBHOOK_EVENT_NAME .
@@ -78,8 +77,7 @@ abstract class WebhookHandlerBase
         string $payPalOrderId,
         array $eventPayload,
         EshopModelOrder $order
-    ): void
-    {
+    ): void {
         $paypalOrderModel->setTransactionId($payPalTransactionId);
 
         /** @var ?PayPalApiModelOrder $orderDetail */
