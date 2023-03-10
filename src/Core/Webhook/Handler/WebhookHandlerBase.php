@@ -50,18 +50,15 @@ abstract class WebhookHandlerBase
                 $payPalOrderId,
                 $payPalTransactionId
             );
-            $paypalOrderModel->setTransactionId($payPalTransactionId);
 
-            /** @var ?PayPalApiModelOrder $orderDetail */
-            $orderDetail = $this->getPayPalOrderDetails($payPalOrderId);
-
-            $this->updateStatus(
-                $this->getStatusFromResource($eventPayload),
+            $this->handleWebhookTasks(
                 $paypalOrderModel,
-                $orderDetail
+                $payPalTransactionId,
+                $payPalOrderId,
+                $eventPayload,
+                $order
             );
 
-            $this->markShopOrderPaymentStatus($order, $payPalTransactionId);
         } else {
             Registry::getLogger()->debug(
                 "Not enough information to handle " . static::WEBHOOK_EVENT_NAME .
@@ -73,6 +70,28 @@ abstract class WebhookHandlerBase
         //Webhook is used to trigger unfinished order cleanup at the end of each webhook handle.
         //TODO: check if webhook handler really is the place place for this
         $this->cleanUpNotFinishedOrders();
+    }
+
+    public function handleWebhookTasks(
+        PayPalModelOrder $paypalOrderModel,
+        string $payPalTransactionId,
+        string $payPalOrderId,
+        array $eventPayload,
+        EshopModelOrder $order
+    ): void
+    {
+        $paypalOrderModel->setTransactionId($payPalTransactionId);
+
+        /** @var ?PayPalApiModelOrder $orderDetail */
+        $orderDetail = $this->getPayPalOrderDetails($payPalOrderId);
+
+        $this->updateStatus(
+            $this->getStatusFromResource($eventPayload),
+            $paypalOrderModel,
+            $orderDetail
+        );
+
+        $this->markShopOrderPaymentStatus($order, $payPalTransactionId);
     }
 
     public function cleanUpNotFinishedOrders(): void
