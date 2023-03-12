@@ -247,6 +247,16 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->alwaysIgnoreSCAResult();
     }
 
+    public function cleanUpNotFinishedOrdersAutomaticlly(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->cleanUpNotFinishedOrdersAutomaticlly();
+    }
+
+    public function getStartTimeCleanUpOrders(): int
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getStartTimeCleanUpOrders();
+    }
+
     public function tableExists(string $tableName = ''): bool
     {
         $exists = false;

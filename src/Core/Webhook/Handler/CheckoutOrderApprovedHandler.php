@@ -16,32 +16,18 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as OrderResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 
 class CheckoutOrderApprovedHandler extends WebhookHandlerBase
 {
     const WEBHOOK_EVENT_NAME = 'CHECKOUT.ORDER.APPROVED';
 
-    /**
-     * @inheritDoc
-     * @throws ApiException
-     */
-    public function handle(Event $event)
-    {
-        $eventPayload = $this->getEventPayload($event);
-
-        $payPalOrderId = $this->getPayPalOrderIdFromResource($eventPayload);
-
-        /** @var EshopModelOrder $order */
-        $order = $this->getOrderByPayPalOrderId($payPalOrderId);
-
-        /** @var PayPalModelOrder $paypalOrderModel */
-        $paypalOrderModel = $this->getPayPalModelOrder(
-            (string) $order->getId(),
-            $payPalOrderId,
-            ''
-        );
-
+    public function handleWebhookTasks(
+        PayPalModelOrder $paypalOrderModel,
+        string $payPalTransactionId,
+        string $payPalOrderId,
+        array $eventPayload,
+        EshopModelOrder $order
+    ) {
         if ($this->needsCapture($eventPayload)) {
             try {
                 //NOTE: capture will trigger CHECKOUT.ORDER.COMPLETED event which will mark order paid

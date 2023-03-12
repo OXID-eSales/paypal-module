@@ -37,8 +37,15 @@ class OrderRepository
         string $paypalOrderId = '',
         string $payPalTransactionId = ''
     ): PayPalOrderModel {
+
+        $oxid = $this->getId($shopOrderId, $paypalOrderId, $payPalTransactionId);
+        //We might have a transactionid that is not yet saved to database, in that case we need
+        //to search for empty transactionid
+        $oxid = $oxid ?:
+            (empty($payPalTransactionId) ? '' : $this->getId($shopOrderId, $paypalOrderId, ''));
+
         $order = oxNew(PayPalOrderModel::class);
-        $order->load($this->getId($shopOrderId, $paypalOrderId, $payPalTransactionId));
+        $order->load($oxid);
 
         if (!$order->isLoaded()) {
             $order->assign(
@@ -104,16 +111,25 @@ class OrderRepository
 
     public function cleanUpNotFinishedOrders()
     {
+        if (!$this->config->getConfigParam('oscPayPalCleanUpNotFinishedOrdersAutomaticlly')) {
+            return;
+        }
+
+        $sessiontime = (int)$this->config->getConfigParam('oscPayPalStartTimeCleanUpOrders');
+        $shopId = $this->config->getShopId();
+
         $query = "select oxid from oxorder where oxordernr = :oxordernr
             and oxtransstatus = :oxtransstatus
             and oxpaymenttype LIKE :oxpaymenttype
-            and oxorderdate < now() - interval :sessiontime SECOND";
+            and oxshopid = :oxshopid
+            and oxorderdate < now() - interval :sessiontime MINUTE";
         /** @var \OxidEsales\Eshop\Core\Database\Adapter\Doctrine\ResultSet $result */
         $result = $this->db->select($query, [
             ':oxordernr' => '0',
             ':oxtransstatus' => 'NOT_FINISHED',
             ':oxpaymenttype' => '%oscpaypal%',
-            ':sessiontime' => Constants::PAYPAL_SESSION_TIMEOUT_IN_SEC
+            ':oxshopid' => $shopId,
+            ':sessiontime' => $sessiontime
         ]);
         if ($result != false && $result->count() > 0) {
             while (!$result->EOF) {
