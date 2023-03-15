@@ -32,8 +32,6 @@ class Constants
     const PAYPAL_PUI_FNPARAMS = 'fnparams-dede7cc5-15fd-4c75-a9f4-36c430ee3a99';
     const PAYPAL_PUI_FLOWID = 'Oxid_PayPal_PUI_Checkout';
 
-    const PAYPAL_SESSION_TIMEOUT_IN_SEC = 600;
-
     const PAYPAL_WAIT_FOR_WEBOOK_TIMEOUT_IN_SEC = 60;
 
     const PAYPAL_TRANSACTION_TYPE_CAPTURE = 'capture';

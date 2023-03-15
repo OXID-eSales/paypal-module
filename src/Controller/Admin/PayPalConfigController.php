@@ -243,6 +243,9 @@ class PayPalConfigController extends AdminController
         if (!isset($conf['oscPayPalLoginWithPayPalEMail'])) {
             $conf['oscPayPalLoginWithPayPalEMail'] = 0;
         }
+        if (!isset($conf['oscPayPalCleanUpNotFinishedOrdersAutomaticlly'])) {
+            $conf['oscPayPalCleanUpNotFinishedOrdersAutomaticlly'] = 0;
+        }
 
         return $conf;
     }
@@ -286,7 +289,7 @@ class PayPalConfigController extends AdminController
         $LegacyOeppModuleDetails = Registry::get(LegacyOeppModuleDetails::class);
         $transferrableSettings = $LegacyOeppModuleDetails->getTransferrableSettings();
         $oldConfigKeys = array_keys($transferrableSettings);
-        $currentShopId = Registry::getConfig()->getShopId();
+        $currentShopId = Registry::getConfig()->getActiveShop()->getId();
 
         foreach ($oldConfigKeys as $configKeyName) {
             // Read old values
