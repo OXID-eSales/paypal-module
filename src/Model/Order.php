@@ -341,15 +341,15 @@ class Order extends Order_parent
 
         // Capture Order
         try {
+            // At this point we only trigger the capture. We find out that order was really captured via the
+            // CHECKOUT.ORDER.COMPLETED webhook, where we mark the order as paid
+            /** @var PayPalOrder $order */
             $order = $paymentService->doCapturePayPalOrder($this, $payPalOrderId, $sessionPaymentId);
-            $success = true; //TODO: why do we assume success in all cases?
+            // success means at this point, that we triggered the capture without errors
+            $success = true;
         } catch (\Exception $exception) {
             Registry::getLogger()->error("Error on order capture call.", [$exception]);
         }
-
-        //TODO: only mark order paid id in success case
-        $this->markOrderPaid();
-        $this->_updateOrderDate();
 
         // destroy PayPal-Session
         PayPalSession::unsetPayPalOrderId();
