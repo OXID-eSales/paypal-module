@@ -28,7 +28,7 @@ final class Version20230316122302 extends AbstractMigration
     public function up(Schema $schema): void
     {
         $this->createPayPalTrackingCarrierTable($schema);
-        $this->insertPayPalTrackingCarrierData($schema);
+        //$this->insertPayPalTrackingCarrierData();
     }
 
     public function down(Schema $schema): void
@@ -78,7 +78,7 @@ final class Version20230316122302 extends AbstractMigration
                 'OXKEY',
                 Types::STRING,
                 [
-                    'columnDefinition' => 'char(32)',
+                    'columnDefinition' => 'char(25)',
                     'comment' => 'Key of Tracking Carrier'
                 ]
             );
@@ -99,9 +99,5 @@ final class Version20230316122302 extends AbstractMigration
         if (!$carrierTable->hasIndex('OXCOUNTRYCODE')) {
             $carrierTable->addIndex(['OXCOUNTRYCODE'], 'OXCOUNTRYCODE');
         }
-    }
-    protected function insertPayPalTrackingCarrierData(Schema $schema): void
-    {
-        $this->addSql(file_get_contents(__DIR__ . '/Version20230316122302.sql'));
     }
 }
