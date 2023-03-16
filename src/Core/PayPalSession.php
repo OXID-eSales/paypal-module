@@ -46,8 +46,11 @@ class PayPalSession
             $basket->setPayment();
             $basket->setShipping();
         }
-        $session->deleteVariable('sShipSet');
-        $session->deleteVariable('paymentid');
+
+        if ($session != null) {
+            $session->deleteVariable('sShipSet');
+            $session->deleteVariable('paymentid');
+        }
     }
 
     /**
