@@ -243,6 +243,9 @@ class PayPalConfigController extends AdminController
         if (!isset($conf['oscPayPalLoginWithPayPalEMail'])) {
             $conf['oscPayPalLoginWithPayPalEMail'] = 0;
         }
+        if (!isset($conf['oscPayPalCleanUpNotFinishedOrdersAutomaticlly'])) {
+            $conf['oscPayPalCleanUpNotFinishedOrdersAutomaticlly'] = 0;
+        }
 
         return $conf;
     }

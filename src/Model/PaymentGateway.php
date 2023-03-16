@@ -74,7 +74,10 @@ class PaymentGateway extends PaymentGateway_parent
 
             // Capture Order
             try {
+                // At this point we only trigger the capture. We find out that order was really captured via the
+                // CHECKOUT.ORDER.COMPLETED webhook, where we mark the order as paid
                 $paymentService->doCapturePayPalOrder($order, $checkoutOrderId, $sessionPaymentId);
+                // success means at this point, that we triggered the capture without errors
                 $success = true;
             } catch (Exception $exception) {
                 Registry::getLogger()->error("Error on order capture call.", [$exception]);

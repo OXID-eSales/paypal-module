@@ -129,6 +129,13 @@ class OrderRepository
 
     public function cleanUpNotFinishedOrders(): void
     {
+        if (!$this->config->getConfigParam('oscPayPalCleanUpNotFinishedOrdersAutomaticlly')) {
+            return;
+        }
+
+        $sessiontime = (int)$this->config->getConfigParam('oscPayPalStartTimeCleanUpOrders');
+        $shopId = $this->config->getShopId();
+
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->queryBuilderFactory->create();
 
@@ -136,18 +143,20 @@ class OrderRepository
             'oxordernr' => '0',
             'oxtransstatus' => 'NOT_FINISHED',
             'oxpaymenttype' => 'oscpaypal',
-            'sessiontime' => Constants::PAYPAL_SESSION_TIMEOUT_IN_SEC
+            'sessiontime' => $sessiontime,
+            'oxshopid' => $shopId
         ];
 
         $queryBuilder->select('oxid')
             ->from('oxorder')
             ->where('oxordernr = :oxordernr')
             ->andWhere('oxtransstatus = :oxtransstatus')
+            ->andWhere('oxshopid = :oxshopid')
             ->andWhere($queryBuilder->expr()->like(
                 'oxpaymenttype',
                 $queryBuilder->expr()->literal('%' . $parameters['oxpaymenttype'] . '%')
             ))
-            ->andWhere('oxorderdate < now() - interval :sessiontime SECOND');
+            ->andWhere('oxorderdate < now() - interval :sessiontime MINUTE');
 
         $ids = $queryBuilder->setParameters($parameters)
             ->execute()

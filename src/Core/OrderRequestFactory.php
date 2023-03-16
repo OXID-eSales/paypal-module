@@ -225,6 +225,7 @@ class OrderRequestFactory
 
     /**
      * @return array
+     * @psalm-suppress UndefinedDocblockClass
      */
     public function getItems(): array
     {
@@ -240,7 +241,6 @@ class OrderRequestFactory
             $item->name = substr($basketItem->getTitle(), 0, 120);
             $itemUnitPrice = $basketItem->getUnitPrice();
 
-            /** @var Article $basketArticle */
             $basketArticle = $basketItem->getArticle();
             $articleCategory = ($basketArticle->isVirtualPayPalArticle())
                 ? Item::CATEGORY_DIGITAL_GOODS
@@ -354,11 +354,8 @@ class OrderRequestFactory
      */
     public function getItemCategoryByBasketContent(): string
     {
-        /** @var $basket \OxidSolutionCatalysts\PayPal\Model\Basket */
-        $basket = $this->basket;
-
         return (
-            $basket->isEntirelyVirtualPayPalBasket()
+            $this->basket->isEntirelyVirtualPayPalBasket()
                 ? Item::CATEGORY_DIGITAL_GOODS
                 : Item::CATEGORY_PHYSICAL_GOODS
         );
