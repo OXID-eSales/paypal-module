@@ -379,13 +379,7 @@ class Payment
     public function isPayPalPayment(string $paymentId = ''): bool
     {
         $sessionPaymentId = $paymentId ?: (string) $this->getSessionPaymentId();
-        return in_array($sessionPaymentId, [
-            PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID,
-            PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-            PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID,
-            PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID,
-            PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID
-        ], true) || PayPalDefinitions::isUAPMPayment($sessionPaymentId);
+        return PayPalDefinitions::isPayPalPayment($sessionPaymentId);
     }
 
     public function removeTemporaryOrder()
