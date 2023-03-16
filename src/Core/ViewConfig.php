@@ -156,7 +156,7 @@ class ViewConfig extends ViewConfig_parent
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $params = [];
 
-        $params['client-id'] = $moduleSettings->getClientId();
+        $params['client-id'] = $this->getPayPalClientId();
         $params['integration-date'] = Constants::PAYPAL_INTEGRATION_DATE;
         $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
         $params['commit'] = 'false';
@@ -167,17 +167,17 @@ class ViewConfig extends ViewConfig_parent
 
         $params['components'] = 'buttons';
         // Available components: enable messages+buttons for PDP
-        if ($moduleSettings->showAllPayPalBanners()) {
+        if ($this->isPayPalBannerActive()) {
             $params['components'] .= ',messages';
         }
 
-        if ($this->getServiceFromContainer(ModuleSettings::class)->showPayPalPayLaterButton()) {
+        if ($moduleSettings->showPayPalPayLaterButton()) {
             $params['enable-funding'] = 'paylater';
         }
 
         $params['disable-funding'] = 'sepa,bancontact,blik,eps,giropay,ideal,mercadopago,mybank,p24,sofort,venmo';
 
-        if ($this->getServiceFromContainer(ModuleSettings::class)->isAcdcEligibility()) {
+        if ($moduleSettings->isAcdcEligibility()) {
             $params['disable-funding'] .= ',card';
         } else {
             if (isset($params['enable-funding'])) {
@@ -213,10 +213,9 @@ class ViewConfig extends ViewConfig_parent
     protected function getBasePayPalJsSdkUrl($type = '', $continueFlow = false): string
     {
         $config = Registry::getConfig();
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
 
         $params = [];
-        $params['client-id'] = $this->getServiceFromContainer(ModuleSettings::class)->getClientId();
+        $params['client-id'] = $this->getPayPalClientId();
         $params['integration-date'] = Constants::PAYPAL_INTEGRATION_DATE;
 
         if ($currency = $config->getActShopCurrencyObject()) {
@@ -230,7 +229,7 @@ class ViewConfig extends ViewConfig_parent
 
         $params['components'] = 'buttons,' . $type;
 
-        if ($moduleSettings->showAllPayPalBanners()) {
+        if ($this->isPayPalBannerActive()) {
             $params['components'] .= ',messages';
         }
 
