@@ -28,7 +28,6 @@ final class Version20230316122302 extends AbstractMigration
     public function up(Schema $schema): void
     {
         $this->createPayPalTrackingCarrierTable($schema);
-        //$this->insertPayPalTrackingCarrierData();
     }
 
     public function down(Schema $schema): void
