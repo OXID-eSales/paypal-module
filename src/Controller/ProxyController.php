@@ -178,6 +178,7 @@ class ProxyController extends FrontendController
             $basket->calculateBasket(false);
         }
     }
+
     public function setPayPalPaymentMethod(): void
     {
         $session = Registry::getSession();
@@ -188,8 +189,9 @@ class ProxyController extends FrontendController
             $user = $activeUser;
         }
 
-        if ($session->getVariable('paymentid') !== PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID) {
-            $basket->setPayment(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
+        $requestedPayPalPaymentId = $this->getRequestedPayPalPaymentId();
+        if ($session->getVariable('paymentid') !== $requestedPayPalPaymentId) {
+            $basket->setPayment($requestedPayPalPaymentId);
 
             // get the active shippingSetId
             /** @psalm-suppress InvalidArgument */
@@ -199,7 +201,7 @@ class ProxyController extends FrontendController
             if ($shippingSetId) {
                 $basket->setShipping($shippingSetId);
                 $session->setVariable('sShipSet', $shippingSetId);
-                $session->setVariable('paymentid', PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
+                $session->setVariable('paymentid', $requestedPayPalPaymentId);
             }
         }
     }
@@ -258,5 +260,11 @@ class ProxyController extends FrontendController
     protected function getPayPalPartnerAttributionId(): string
     {
         return Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_EXPRESS;
+    }
+
+    protected function getRequestedPayPalPaymentId(): string
+    {
+        $paymentId =(string) Registry::getRequest()->getRequestEscapedParameter('paymentid');
+        return PayPalDefinitions::isPayPalPayment($paymentId) ? $paymentId : PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID;
     }
 }
