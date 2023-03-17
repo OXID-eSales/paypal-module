@@ -161,7 +161,7 @@ class Events
                         PRIMARY KEY (`OXID`),
                         UNIQUE KEY `OXORDERID_OXPAYPALORDERID_OSCPAYPALTRANSACTIONID`
                             (`OXORDERID`,`OXPAYPALORDERID`, `OSCPAYPALTRANSACTIONID`))
-                        ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci
+                        ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
                         COMMENT 'Paypal Checkout'",
             'oscpaypal_order'
         );
@@ -250,6 +250,43 @@ class Events
                 COLLATE 'latin1_general_ci' NOT NULL DEFAULT '' COMMENT 'PayPal Status'";
             DatabaseProvider::getDb()->execute($sql);
         }
+
+        // additional Module-Update v1.3.0
+        $sql = sprintf(
+            "CREATE TABLE IF NOT EXISTS %s (
+                        `OXID`
+                            char(32)
+                            character set latin1
+                            collate latin1_general_ci
+                            NOT NULL
+                            COMMENT 'Record id',
+                        `OXCOUNTRYCODE`
+                            char(6)
+                            COMMENT 'OXID ISO-Code Countrycodes',
+                        `OXTITLE`
+                            varchar(255)
+                            NOT NULL
+                            COMMENT 'Title of Tracking Carrier',
+                        `OXKEY`
+                            char(25)
+                            COMMENT 'Key of Tracking Carrier',
+                       `OXTIMESTAMP`
+                            timestamp
+                            NOT NULL
+                            default CURRENT_TIMESTAMP
+                            on update CURRENT_TIMESTAMP
+                            COMMENT 'Timestamp',
+                        PRIMARY KEY (`OXID`),
+                        UNIQUE KEY `OXKEY` (`OXKEY`),
+                        KEY `OXCOUNTRYCODE` (`OXCOUNTRYCODE`),
+                        ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
+                        COMMENT 'Paypal Tracking Carrier'",
+            'oscpaypal_trackingcarrier'
+        );
+
+        DatabaseProvider::getDb()->execute($sql);
+
+        DatabaseProvider::getDb()->execute(file_get_contents(__DIR__ . '/tracking_carrier_dump.sql.sql'));
     }
 
     /**
