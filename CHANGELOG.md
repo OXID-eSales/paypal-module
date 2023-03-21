@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### NEW
 - active payment methods are recognized after deactivating and activating the module and activated again correctly
 - in the backend there are new options for control the deleting of unfinished orders
+- New Payment "SEPA" and an alternative CreditCard-Payment as fallback if CreditCard via ACDC is not possible
 
 ### Fixed
 - [0007440](https://bugs.oxid-esales.com/view.php?id=7440) Pending orders with oxordernr 0 are deleted before the payment process can be completed

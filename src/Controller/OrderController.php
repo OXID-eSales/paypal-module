@@ -67,6 +67,8 @@ class OrderController extends OrderController_parent
         }
 
         if (
+            $paymentService->getSessionPaymentId() === PayPalDefinitions::SEPA_PAYPAL_PAYMENT_ID ||
+            $paymentService->getSessionPaymentId() === PayPalDefinitions::CCALTERNATIVE_PAYPAL_PAYMENT_ID ||
             $paymentService->getSessionPaymentId() === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID ||
             $paymentService->getSessionPaymentId() === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID
         ) {
@@ -259,8 +261,8 @@ class OrderController extends OrderController_parent
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
             $paymentsId = $order->getFieldData('oxpaymenttype');
-            $isPayPalExpress = $paymentsId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID;
-            if ($isPayPalExpress) {
+            $isButtonPayment = PayPalDefinitions::isButtonPayment($paymentsId);
+            if ($isButtonPayment) {
                 $order->assign($deliveryAddress);
             }
             $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);

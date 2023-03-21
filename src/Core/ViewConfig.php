@@ -156,7 +156,7 @@ class ViewConfig extends ViewConfig_parent
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $params = [];
 
-        $params['client-id'] = $moduleSettings->getClientId();
+        $params['client-id'] = $this->getPayPalClientId();
         $params['integration-date'] = Constants::PAYPAL_INTEGRATION_DATE;
         $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
         $params['commit'] = 'false';
@@ -167,17 +167,17 @@ class ViewConfig extends ViewConfig_parent
 
         $params['components'] = 'buttons';
         // Available components: enable messages+buttons for PDP
-        if ($moduleSettings->showAllPayPalBanners()) {
+        if ($this->isPayPalBannerActive()) {
             $params['components'] .= ',messages';
         }
 
-        if ($this->getServiceFromContainer(ModuleSettings::class)->showPayPalPayLaterButton()) {
+        if ($moduleSettings->showPayPalPayLaterButton()) {
             $params['enable-funding'] = 'paylater';
         }
 
         $params['disable-funding'] = 'sepa,bancontact,blik,eps,giropay,ideal,mercadopago,mybank,p24,sofort,venmo';
 
-        if ($this->getServiceFromContainer(ModuleSettings::class)->isAcdcEligibility()) {
+        if ($moduleSettings->isAcdcEligibility()) {
             $params['disable-funding'] .= ',card';
         } else {
             if (isset($params['enable-funding'])) {
@@ -191,23 +191,47 @@ class ViewConfig extends ViewConfig_parent
     }
 
     /**
-     * Gets PayPal JS SDK url
+     * Gets PayPal JS SDK url for ACDC
      *
      * @return string
      */
     public function getPayPalJsSdkUrlForACDC(): string
     {
+        return $this->getBasePayPalJsSdkUrl('hosted-fields');
+    }
+
+    /**
+     * Gets PayPal JS SDK url for Button Payments like SEPA and CreditCardFallback
+     *
+     * @return string
+     */
+    public function getPayPalJsSdkUrlForButtonPayments(): string
+    {
+        return $this->getBasePayPalJsSdkUrl('funding-eligibility', true);
+    }
+
+    protected function getBasePayPalJsSdkUrl($type = '', $continueFlow = false): string
+    {
         $config = Registry::getConfig();
 
         $params = [];
-        $params['client-id'] = $this->getServiceFromContainer(ModuleSettings::class)->getClientId();
+        $params['client-id'] = $this->getPayPalClientId();
         $params['integration-date'] = Constants::PAYPAL_INTEGRATION_DATE;
 
         if ($currency = $config->getActShopCurrencyObject()) {
             $params['currency'] = strtoupper($currency->name);
         }
 
-        $params['components'] = 'buttons,hosted-fields';
+        if ($continueFlow) {
+            $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
+            $params['commit'] = 'false';
+        }
+
+        $params['components'] = 'buttons,' . $type;
+
+        if ($this->isPayPalBannerActive()) {
+            $params['components'] .= ',messages';
+        }
 
         return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
     }
