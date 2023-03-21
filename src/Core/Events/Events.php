@@ -278,7 +278,7 @@ class Events
                             COMMENT 'Timestamp',
                         PRIMARY KEY (`OXID`),
                         UNIQUE KEY `OXKEY` (`OXKEY`),
-                        KEY `OXCOUNTRYCODE` (`OXCOUNTRYCODE`),
+                        KEY `OXCOUNTRYCODE` (`OXCOUNTRYCODE`))
                         ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci
                         COMMENT 'Paypal Tracking Carrier'",
             'oscpaypal_trackingcarrier'
@@ -286,7 +286,7 @@ class Events
 
         DatabaseProvider::getDb()->execute($sql);
 
-        DatabaseProvider::getDb()->execute(file_get_contents(__DIR__ . '/tracking_carrier_dump.sql.sql'));
+        DatabaseProvider::getDb()->execute(file_get_contents(__DIR__ . '/tracking_carrier_dump.sql'));
     }
 
     /**
