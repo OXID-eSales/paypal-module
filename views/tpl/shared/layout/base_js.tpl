@@ -18,7 +18,7 @@
     [{elseif $className == 'order' && $oViewConf->isPayPalACDCSessionActive()}]
         <script src="[{$oViewConf->getPayPalJsSdkUrlForACDC()}]" data-client-token="[{$oViewConf->getDataClientToken()}]"></script>
     [{elseif $className == 'payment'}]
-        <script src="[{$oViewConf->getPayPalJsSdkUrlForSEPA()}]" data-partner-attribution-id="[{$oViewConf->getPayPalPartnerAttributionIdForBanner()}]}]"></script>
+        <script src="[{$oViewConf->getPayPalJsSdkUrlForButtonPayments()}]" data-partner-attribution-id="[{$oViewConf->getPayPalPartnerAttributionIdForBanner()}]}]"></script>
     [{elseif $oViewConf->isPayPalBannerActive() && ($className == 'start' || $className == 'search' || $className == 'details' || $className == 'alist' || $className == 'basket')}]
         <script src="[{$oViewConf->getPayPalApiBannerUrl()}]" data-partner-attribution-id="[{$oViewConf->getPayPalPartnerAttributionIdForBanner()}]"></script>
     [{/if}]

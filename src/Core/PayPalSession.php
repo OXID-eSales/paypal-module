@@ -46,8 +46,11 @@ class PayPalSession
             $basket->setPayment();
             $basket->setShipping();
         }
-        $session->deleteVariable('sShipSet');
-        $session->deleteVariable('paymentid');
+
+        if ($session != null) {
+            $session->deleteVariable('sShipSet');
+            $session->deleteVariable('paymentid');
+        }
     }
 
     /**
@@ -92,11 +95,7 @@ class PayPalSession
         }
 
         $paymentId = Registry::getSession()->getBasket()->getPaymentId();
-        if (PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID !== $paymentId) {
-            return false;
-        }
-
-        return true;
+        return PayPalDefinitions::isPayPalPayment($paymentId);
     }
 
     /**

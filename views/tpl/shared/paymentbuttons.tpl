@@ -7,15 +7,49 @@
         [{/if}]
         [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
         [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
-        [{if $buttonId == 'PayPalButtonSepa'}]
-            var FUNDING_SOURCES = [
-                paypal.FUNDING.SEPA
+        [{if $buttonId == "oscpaypal_sepa" || $buttonId == "oscpaypal_cc_alternative"}]
+            FUNDING_SOURCES = [
+                paypal.FUNDING.[{if $buttonId == "oscpaypal_sepa"}]SEPA[{elseif $buttonId == "oscpaypal_cc_alternative"}]CARD[{/if}]
             ];
             // Loop over each funding source/payment method
             FUNDING_SOURCES.forEach(function (fundingSource) {
                 // Initialize the buttons
-                var button = paypal.Buttons({
+                let button = paypal.Buttons({
                     fundingSource: fundingSource,
+                    createOrder: function (data, actions) {
+                        return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&paymentid="|cat:$buttonId|cat:"&context=continue&stoken="|cat:$sToken}]', {
+                            method: 'post',
+                            headers: {
+                                'content-type': 'application/json'
+                            }
+                        }).then(function (res) {
+                            return res.json();
+                        }).then(function (data) {
+                            return data.id;
+                        })
+                    },
+                    onApprove: function (data, actions) {
+                        captureData = new FormData();
+                        captureData.append('orderID', data.orderID);
+                        return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&paymentid="|cat:$buttonId|cat:"&context=continue&stoken="|cat:$sToken}]', {
+                            method: 'post',
+                            body: captureData
+                        }).then(function (res) {
+                            return res.json();
+                        }).then(function (data) {
+                            if (data.status == "ERROR") {
+                                location.reload();
+                            } else if (data.id && data.status == "APPROVED") {
+                                location.replace('[{$sSelfLink|cat:"cl=order"}]');
+                            }
+                        })
+                    },
+                    onCancel: function (data, actions) {
+                        fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
+                    },
+                    onError: function (data) {
+                        fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
+                    }
                 })
                 // Check if the button is eligible
                 if (button.isEligible()) {
@@ -34,7 +68,7 @@
                 },
                 [{/if}]
                 createOrder: function (data, actions) {
-                    return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue"|cat:"&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
+                    return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
                         method: 'post',
                         headers: {
                             'content-type': 'application/json'
@@ -48,7 +82,7 @@
                 onApprove: function (data, actions) {
                     captureData = new FormData();
                     captureData.append('orderID', data.orderID);
-                    return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue"|cat:"&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
+                    return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
                         method: 'post',
                         body: captureData
                     }).then(function (res) {
