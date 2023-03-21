@@ -37,7 +37,7 @@ class PaymentGateway extends PaymentGateway_parent
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $sessionPaymentId = $paymentService->getSessionPaymentId();
 
-        if (PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID == $sessionPaymentId) {
+        if (PayPalDefinitions::isButtonPayment($sessionPaymentId)) {
             $success = $this->doExecutePayPalExpressPayment($order);
         } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID == $sessionPaymentId) {
             $success = $this->doExecutePuiPayment($order);
@@ -107,7 +107,6 @@ class PaymentGateway extends PaymentGateway_parent
         } catch (Exception $exception) {
             Registry::getLogger()->error("Error on execute pui payment call.", [$exception]);
         }
-
         // destroy PayPal-Session
         PayPalSession::unsetPayPalOrderId();
 

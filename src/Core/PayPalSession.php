@@ -95,11 +95,7 @@ class PayPalSession
         }
 
         $paymentId = Registry::getSession()->getBasket()->getPaymentId();
-        if (PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID !== $paymentId) {
-            return false;
-        }
-
-        return true;
+        return PayPalDefinitions::isPayPalPayment($paymentId);
     }
 
     /**
