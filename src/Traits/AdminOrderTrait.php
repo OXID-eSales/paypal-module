@@ -25,30 +25,26 @@ trait AdminOrderTrait
 {
     use ServiceContainer;
 
-    /**
-     * @var Order
-     */
-    protected $order = null;
+    protected ?Order $order = null;
 
-    /**
-     * @var bool
-     */
-    protected $isPayPalStandardManuallyCapture = null;
+    protected ?bool $isPayPalStandardManuallyCapture = null;
 
-    /**
-     * @var bool
-     */
-    protected $isPayPalStandardOnDeliveryCapture = null;
+    protected ?bool $isPayPalStandardOnDeliveryCapture = null;
 
-    /**
-     * @var bool
-     */
-    protected $isPayPalStandardOrder = null;
+    protected ?bool $isPayPalStandardOrder = null;
 
-    /**
-     * @var bool
-     */
-    protected $isAuthorizedPayPalStandardOrder = null;
+    protected ?bool $isAuthorizedPayPalStandardOrder = null;
+
+    protected ?bool $paidWithPayPal = null;
+
+    public function paidWithPayPal()
+    {
+        if (is_null($this->paidWithPayPal)) {
+            $order = $this->getOrder();
+            $this->paidWithPayPal = ($order && $order->paidWithPayPal());
+        }
+        return $this->paidWithPayPal;
+    }
 
     /**
      * Capture payment action
