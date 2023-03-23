@@ -8,12 +8,12 @@
 namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
 
 use OxidEsales\Eshop\Application\Model\Country;
-use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Model\PayPalTrackingCarrierList;
 use OxidSolutionCatalysts\PayPal\Traits\AdminOrderTrait;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
+use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 
 /**
 * OrderMain class
@@ -27,23 +27,20 @@ class OrderMain extends OrderMain_parent
 
     protected ?array $trackingCarrierCountries = null;
 
+    /**
+     * @throws ApiException
+     * @throws StandardException
+     */
     protected function onOrderSend()
     {
         parent::onOrderSend();
         if ($this->isPayPalStandardOnDeliveryCapture()) {
             $this->capturePayPalStandard();
         }
-    }
-
-
-
-    public function sendOrder()
-    {
-        // save the order before sending it...
         if ($this->paidWithPayPal()) {
-
+            $order = $this->getOrder();
+            $order->doProvidePayPalTrackingCarrier();
         }
-        parent::sendOrder();
     }
 
     public function save()

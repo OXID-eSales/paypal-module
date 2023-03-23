@@ -357,6 +357,13 @@ class Order extends Order_parent
         return $success;
     }
 
+    public function doProvidePayPalTrackingCarrier(): bool
+    {
+        $trackCode = $this->getTrackCode(),
+        $trackCarrier =  $this->getPayPalTrackingCarrier();
+        return true;
+    }
+
     /**
      * Update order oxpaid to current time.
      */
