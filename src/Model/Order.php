@@ -619,4 +619,30 @@ class Order extends Order_parent
     {
         return (string) $apiOrder->purchase_units[0]->payments->captures[0]->id;
     }
+
+    /**
+     * The getter for this setter ist getTrackCode from Core-Model
+     */
+    public function setPayPalTrackCode(string $payPalTrackingCode): void
+    {
+        $this->assign(
+            [
+                'oxtrackcode' => $payPalTrackingCode
+            ]
+        );
+    }
+
+    public function setPayPalTrackingCarrier(string $payPalTrackingCarrier): void
+    {
+        $this->assign(
+            [
+                'oscpaypaltrackingcarrier' => $payPalTrackingCarrier
+            ]
+        );
+    }
+
+    public function getPayPalTrackingCarrier(): string
+    {
+        return (string) $this->getFieldData('oscpaypaltrackingcarrier');
+    }
 }
