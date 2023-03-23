@@ -148,6 +148,16 @@ $aModule = [
             'file' => 'views/blocks/admin/admin_headitem_incjs.tpl'
         ],
         [
+            'template' => 'order_main.tpl',
+            'block' => 'admin_order_main_form_shipping',
+            'file' => 'views/blocks/admin/admin_order_main_form_shipping.tpl'
+        ],
+        [
+            'template' => 'order_main.tpl',
+            'block' => 'admin_order_main_send_order',
+            'file' => 'views/blocks/admin/admin_order_main_send_order.tpl'
+        ],
+        [
             'template' => 'layout/base.tpl',
             'block' => 'base_js',
             'file' => 'views/blocks/layout/base_js.tpl'

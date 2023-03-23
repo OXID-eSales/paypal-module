@@ -255,4 +255,7 @@ $aLang = [
     'OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'           => 'Startzeit für automatisches Löschen',
     'HELP_OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'      => 'Wie alt müssen nicht beendete Bestellungen sein, damit sie frühestens automatisch gelöscht werden (in Minuten)?',
 
+    'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_COUNTRY'    => 'Versanddienstleister (Land)',
+    'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_PROVIDER'   => 'Versanddienstleister (Anbieter)',
+    'OSC_PAYPAL_TRACKCARRIER_GLOBAL'                => 'weltweit',
 ];

@@ -254,4 +254,8 @@ $aLang = [
                                                         delete manually.',
     'OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'           => 'Start time for automatic deletion',
     'HELP_OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'      => 'How old do not finished orders have to be before they are automatically deleted (in minutes)?',
+
+    'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_COUNTRY'    => 'Tracking Carrier (Country)',
+    'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_PROVIDER'   => 'Tracking Carrier (Provider)',
+    'OSC_PAYPAL_TRACKCARRIER_GLOBAL'                 => 'global',
 ];
