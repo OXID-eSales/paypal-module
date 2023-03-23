@@ -28,6 +28,7 @@ final class Version20230316122302 extends AbstractMigration
     public function up(Schema $schema): void
     {
         $this->createPayPalTrackingCarrierTable($schema);
+        $this->updateOrderTable($schema);
     }
 
     public function down(Schema $schema): void
@@ -97,6 +98,24 @@ final class Version20230316122302 extends AbstractMigration
         }
         if (!$carrierTable->hasIndex('OXCOUNTRYCODE')) {
             $carrierTable->addIndex(['OXCOUNTRYCODE'], 'OXCOUNTRYCODE');
+        }
+    }
+
+    /**
+     * update paypal order table
+     */
+    protected function updateOrderTable(Schema $schema): void
+    {
+        $order = $schema->getTable('oxorder');
+        if (!$order->hasColumn('OSCPAYPALTRACKINGCARRIER')) {
+            $order->addColumn(
+                'OSCPAYPALTRACKINGCARRIER',
+                Types::STRING,
+                [
+                    'columnDefinition' => 'char(25)',
+                    'comment' => 'PayPal: Key of Tracking Carrier'
+                ]
+            );
         }
     }
 }

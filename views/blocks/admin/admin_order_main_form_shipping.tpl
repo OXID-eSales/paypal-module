@@ -41,7 +41,7 @@
             [{oxmultilang ident="OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_PROVIDER"}]&nbsp;&nbsp;
         </td>
         <td class="edittext">
-            <select id="paypaltrackingcarrierprovider" name="paypaltrackingcarrierprovider" class="editinput" style="width: 135px;" [{$readonly}]>
+            <select id="paypaltrackingcarrierprovider" name="editval[oxorder__oscpaypaltrackingcarrier]" class="editinput" style="width: 135px;" [{$readonly}]>
                 [{foreach from=$oView->getPayPalTrackingCarrierProvider() item=aProvider}]
                     <option value="[{$aProvider.id}]" [{if $aProvider.selected}]SELECTED[{/if}]>[{$aProvider.title}]</option>
                 [{/foreach}]

@@ -9,6 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
 
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\Order;
+use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Model\PayPalTrackingCarrierList;
 use OxidSolutionCatalysts\PayPal\Traits\AdminOrderTrait;
@@ -24,8 +25,6 @@ class OrderMain extends OrderMain_parent
     use AdminOrderTrait;
     use JsonTrait;
 
-    protected ?bool $paidWithPayPal = null;
-
     protected ?array $trackingCarrierCountries = null;
 
     protected function onOrderSend()
@@ -36,15 +35,7 @@ class OrderMain extends OrderMain_parent
         }
     }
 
-    public function paidWithPayPal()
-    {
-        if (is_null($this->paidWithPayPal)) {
-            $oxId = $this->getEditObjectId();
-            $order = oxNew(Order::class);
-            $this->paidWithPayPal= ($order->load($oxId) && $order->paidWithPayPal());
-        }
-        return $this->paidWithPayPal;
-    }
+
 
     public function sendOrder()
     {
@@ -91,6 +82,10 @@ class OrderMain extends OrderMain_parent
     public function getPayPalTrackingCarrierProvider($countryCode = ''): array
     {
         $provider = $this->getPayPalDefaultCarrierSelection();
+        $savedTrackingCarrierId = '';
+        if ($order = $this->getOrder()) {
+            $savedTrackingCarrierId = $order->getPayPalTrackingCarrier();
+        }
 
         $countryCode = $countryCode ?: $this->getPayPalOrderCountryCode();
 
@@ -99,10 +94,11 @@ class OrderMain extends OrderMain_parent
             $trackingCarrierList->loadTrackingCarriers($countryCode);
             if ($trackingCarrierList->count()) {
                 foreach ($trackingCarrierList as $trackingCarrier) {
+                    $trackingCarrierId = $trackingCarrier->getFieldData('oxkey');
                     $provider[$trackingCarrier->getId()] = [
                         'id'       => $trackingCarrier->getFieldData('oxkey'),
                         'title'    => $trackingCarrier->getFieldData('oxtitle'),
-                        'selected' => false
+                        'selected' => $savedTrackingCarrierId === $trackingCarrierId
                     ];
                 }
             }
@@ -125,12 +121,15 @@ class OrderMain extends OrderMain_parent
             'selected' => false
         ]];
     }
+
+    /**
+     * @throws StandardException
+     */
     public function getPayPalOrderCountryCode(): string
     {
         $countryCode = '';
-        $oxId = $this->getEditObjectId();
-        $order = oxNew(Order::class);
-        if ($order->load($oxId)) {
+        $order = $this->getOrder();
+        if ($order) {
             $countryId = $order->getFieldData('oxdelcountryid') ?: $order->getFieldData('oxbillcountryid');
             $country = oxNew(Country::class);
             if ($country->load($countryId)) {
