@@ -7,9 +7,9 @@
 
 namespace OxidSolutionCatalysts\PayPal\Model;
 
-use OxidEsales\Eshop\Core\Model\ListModel;
+use OxidEsales\Eshop\Core\Model\BaseModel;
 
-class PayPalTrackingCarrier extends ListModel
+class PayPalTrackingCarrier extends BaseModel
 {
     /**
      * Coretable name
