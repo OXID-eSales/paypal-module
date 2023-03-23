@@ -43,12 +43,30 @@ class OrderMain extends OrderMain_parent
         }
     }
 
+    /**
+     * @throws StandardException
+     */
     public function save()
     {
-        if (Registry::getConfig()->getRequestParameter("sendorder")) {
+        $config = Registry::getConfig();
+        if ($config->getRequestParameter("sendorder")) {
             $this->sendOrder();
         }
+        $trackingCarrier = $config->getRequestParameter("paypaltrackingcarrier");
+        $trackingCode = $config->getRequestParameter("paypaltrackingcode");
+        if ($trackingCarrier && $trackingCode) {
+            $this->getOrder()->setPayPalTracking(
+                $trackingCarrier,
+                $trackingCode
+            );
+        }
+
         parent::save();
+    }
+
+    public function getPayPalTrackingCode(): string
+    {
+        return $this->getOrder()->getPayPalTrackingCode();
     }
 
     public function getPayPalTrackingCarrierCountries(): array

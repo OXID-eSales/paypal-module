@@ -18,9 +18,10 @@ use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Model\BaseModel;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
+use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalOrder;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -91,45 +92,28 @@ class Order extends Order_parent
 
     /**
      * PayPal order information
-     *
-     * @var PayPalOrder
      */
-    protected $payPalOrder;
+    protected ?PayPalApiOrder $payPalApiOrder = null;
 
     /**
      * PayPal order Id
-     *
-     * @var string
      */
-    protected $payPalOrderId;
+    protected string $payPalOrderId;
+
+    /**
+     * PayPal order Repo
+     */
+    protected ?PayPalOrder $payPalOrder = null;
 
     /**
      * PayPalPlus order Id
-     *
-     * @var string
      */
-    protected $payPalPlusOrderId;
+    protected string $payPalPlusOrderId;
 
     /**
      * PayPalPlus order Id
-     *
-     * @var string
      */
-    protected $payPalSoapOrderId;
-
-    /**
-     * PayPal Billing Agreement Id;
-     *
-     * @var string
-     */
-    protected $payPalBillingAgreementId;
-
-    /**
-     * PayPal Product Id
-     *
-     * @var string
-     */
-    protected $payPalProductId;
+    protected string$payPalSoapOrderId;
 
     public function savePuiInvoiceNr(string $invoiceNr): void
     {
@@ -161,18 +145,18 @@ class Order extends Order_parent
         $transactionId = null;
 
         if ($isPayPalACDC && $forceFetchDetails) {
-            /** @var PayPalOrder $payPalOrder */
-            $payPalOrder = $paymentService->fetchOrderFields($payPalOrderId);
+            /** @var PayPalApiOrder $payPalApiOrder */
+            $payPalApiOrder = $paymentService->fetchOrderFields($payPalOrderId);
             $transactionId = '';
-            if ($this->isPayPalOrderCompleted($payPalOrder)) {
+            if ($this->isPayPalOrderCompleted($payPalApiOrder)) {
                 $this->markOrderPaid();
-                $transactionId = $this->extractTransactionId($payPalOrder);
+                $transactionId = $this->extractTransactionId($payPalAPiOrder);
                 $this->setTransId($transactionId);
                 $paymentService->trackPayPalOrder(
                     $this->getId(),
                     $payPalOrderId,
                     $paymentsId,
-                    PayPalOrder::STATUS_COMPLETED,
+                    PayPalApiOrder::STATUS_COMPLETED,
                     $transactionId
                 );
             } else {
@@ -202,7 +186,7 @@ class Order extends Order_parent
                 $this->getId(),
                 $payPalOrderId,
                 $paymentsId,
-                PayPalOrder::STATUS_APPROVED,
+                PayPalApiOrder::STATUS_APPROVED,
                 '',
                 Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
             );
@@ -318,19 +302,19 @@ class Order extends Order_parent
      * Get PayPal order object for the current active order object
      * Result is cached and returned on subsequent calls
      *
-     * @return PayPalOrder
+     * @return PayPalApiOrder
      * @throws ApiException
      */
-    public function getPayPalCheckoutOrder($payPalOrderId = ''): PayPalOrder
+    public function getPayPalCheckoutOrder($payPalOrderId = ''): PayPalApiOrder
     {
         $payPalOrderId = $payPalOrderId ?: $this->getPayPalOrderIdForOxOrderId();
-        if (!$this->payPalOrder) {
+        if (!$this->payPalApiOrder) {
             /** @var Orders $orderService */
             $orderService = Registry::get(ServiceFactory::class)->getOrderService();
-            $this->payPalOrder = $orderService->showOrderDetails($payPalOrderId, '');
+            $this->payPalApiOrder = $orderService->showOrderDetails($payPalOrderId, '');
         }
 
-        return $this->payPalOrder;
+        return $this->payPalApiOrder;
     }
 
     protected function doExecutePayPalPayment($payPalOrderId): bool
@@ -359,8 +343,9 @@ class Order extends Order_parent
 
     public function doProvidePayPalTrackingCarrier(): bool
     {
-        $trackCode = $this->getTrackCode(),
+        $trackCode = $this->getPayPalTrackingCode();
         $trackCarrier =  $this->getPayPalTrackingCarrier();
+
         return true;
     }
 
@@ -612,44 +597,54 @@ class Order extends Order_parent
         return parent::finalizeOrder($basket, $user, $recalculatingOrder);
     }
 
-    public function isPayPalOrderCompleted(PayPalOrder $apiOrder): bool
+    public function isPayPalOrderCompleted(PayPalApiOrder $apiOrder): bool
     {
         return (
             isset($apiOrder->status) &&
             isset($apiOrder->purchase_units[0]->payments->captures[0]->status) &&
-            $apiOrder->status == PayPalOrder::STATUS_COMPLETED &&
+            $apiOrder->status == PayPalApiOrder::STATUS_COMPLETED &&
             $apiOrder->purchase_units[0]->payments->captures[0]->status == Capture::STATUS_COMPLETED
         );
     }
 
-    protected function extractTransactionId(PayPalOrder $apiOrder): string
+    protected function extractTransactionId(PayPalApiOrder $apiOrder): string
     {
         return (string) $apiOrder->purchase_units[0]->payments->captures[0]->id;
     }
 
-    /**
-     * The getter for this setter ist getTrackCode from Core-Model
-     */
-    public function setPayPalTrackCode(string $payPalTrackingCode): void
+    public function setPayPalTracking(string $trackingCarrier, string $trackingCode): void
     {
+        // for backwardscompatibility
         $this->assign(
             [
-                'oxtrackcode' => $payPalTrackingCode
+                'oxtrackcode' => $trackingCode
             ]
         );
-    }
-
-    public function setPayPalTrackingCarrier(string $payPalTrackingCarrier): void
-    {
-        $this->assign(
-            [
-                'oscpaypaltrackingcarrier' => $payPalTrackingCarrier
-            ]
-        );
+        $payPalOrder = $this->getPayPalOrder();
+        $payPalOrder->setTrackingCode($trackingCode);
+        $payPalOrder->setTrackingCarrier($trackingCarrier);
+        $payPalOrder->save();
     }
 
     public function getPayPalTrackingCarrier(): string
     {
-        return (string) $this->getFieldData('oscpaypaltrackingcarrier');
+        return $this->getPayPalOrder()->getTrackingCarrier();
+    }
+
+    public function getPayPalTrackingCode(): string
+    {
+        return $this->getPayPalOrder()->getTrackingCode();
+    }
+
+    protected function getPayPalOrder(): PayPalOrder
+    {
+        if (is_null($this->payPalOrder)) {
+            /** @var OrderRepository $payPalOrderRepository */
+            $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
+            $this->payPalOrder = $payPalOrderRepository->paypalOrderByOrderIdAndPayPalId(
+                $this->getId()
+            );
+        }
+        return $this->payPalOrder;
     }
 }

@@ -37,12 +37,12 @@ class PayPalOrder extends BaseModel
         return (string) $this->getFieldData('oscpaypaltransactionid');
     }
 
-    public function getTrackingId(): string
+    public function getTrackingCode(): string
     {
         return (string) $this->getFieldData('oscpaypaltrackingid');
     }
 
-    public function getTrackingType(): string
+    public function getTrackingCarrier(): string
     {
         return (string) $this->getFieldData('oscpaypaltrackingtype');
     }
@@ -80,7 +80,7 @@ class PayPalOrder extends BaseModel
         );
     }
 
-    public function setTrackingId(string $id): void
+    public function setTrackingCode(string $id): void
     {
         $this->assign(
             [
@@ -89,7 +89,7 @@ class PayPalOrder extends BaseModel
         );
     }
 
-    public function setTrackingType(string $type): void
+    public function setTrackingCarrier(string $type): void
     {
         $this->assign(
             [
