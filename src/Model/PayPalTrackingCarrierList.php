@@ -7,7 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Model;
 
-use Doctrine\DBAL\Driver\ResultStatement;
+use Doctrine\DBAL\Driver\Result;
 use Doctrine\DBAL\Query\QueryBuilder;
 use OxidEsales\Eshop\Core\Model\ListModel;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
@@ -64,7 +64,7 @@ class PayPalTrackingCarrierList extends ListModel
         $notInQueryBuilder->select('oxisoalpha2')
             ->from('oxcountry');
 
-        /** @var ResultStatement $resultDB */
+        /** @var Result $resultDB */
         $resultDB = $queryBuilder->select('count(oxid), oxcountrycode')
             ->from('oscpaypal_trackingcarrier')
             ->where($queryBuilder->expr()->in('oxcountrycode', $inQueryBuilder->getSQL()))
@@ -72,7 +72,7 @@ class PayPalTrackingCarrierList extends ListModel
             ->groupBy('oxcountrycode')
             ->execute();
 
-        if (is_a($resultDB, ResultStatement::class)) {
+        if (is_a($resultDB, Result::class)) {
             $fromDB = $resultDB->fetchAllAssociative();
             foreach ($fromDB as $row) {
                 $result[] = $row['oxcountrycode'];

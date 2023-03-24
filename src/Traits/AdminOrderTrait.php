@@ -35,15 +35,12 @@ trait AdminOrderTrait
 
     protected ?bool $isAuthorizedPayPalStandardOrder = null;
 
-    protected ?bool $paidWithPayPal = null;
-
-    public function paidWithPayPal()
+    /**
+     * @throws StandardException
+     */
+    public function paidWithPayPal(): bool
     {
-        if (is_null($this->paidWithPayPal)) {
-            $order = $this->getOrder();
-            $this->paidWithPayPal = ($order && $order->paidWithPayPal());
-        }
-        return $this->paidWithPayPal;
+        return (bool)$this->getOrder()->paidWithPayPal();
     }
 
     /**

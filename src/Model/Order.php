@@ -103,7 +103,7 @@ class Order extends Order_parent
     /**
      * PayPal order Repo
      */
-    protected ?PayPalOrder $payPalOrder = null;
+    protected PayPalOrder $payPalOrder;
 
     /**
      * PayPalPlus order Id
@@ -150,7 +150,7 @@ class Order extends Order_parent
             $transactionId = '';
             if ($this->isPayPalOrderCompleted($payPalApiOrder)) {
                 $this->markOrderPaid();
-                $transactionId = $this->extractTransactionId($payPalAPiOrder);
+                $transactionId = $this->extractTransactionId($payPalApiOrder);
                 $this->setTransId($transactionId);
                 $paymentService->trackPayPalOrder(
                     $this->getId(),
@@ -344,7 +344,7 @@ class Order extends Order_parent
     public function doProvidePayPalTrackingCarrier(): bool
     {
         $trackCode = $this->getPayPalTrackingCode();
-        $trackCarrier =  $this->getPayPalTrackingCarrier();
+        $trackCarrier = $this->getPayPalTrackingCarrier();
 
         return true;
     }
@@ -638,7 +638,8 @@ class Order extends Order_parent
 
     protected function getPayPalOrder(): PayPalOrder
     {
-        if (is_null($this->payPalOrder)) {
+        if (!$this->payPalOrder->isLoaded()) {
+            $this->payPalOrder = oxNew(PayPalOrder::class);
             /** @var OrderRepository $payPalOrderRepository */
             $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
             $this->payPalOrder = $payPalOrderRepository->paypalOrderByOrderId(

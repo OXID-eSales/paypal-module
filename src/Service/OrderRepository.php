@@ -71,17 +71,13 @@ class OrderRepository
 
     public function paypalOrderByOrderId(
         string $shopOrderId
-    )
-    : ?PayPalOrderModel {
+    ): PayPalOrderModel {
         $result = null;
 
         $oxid = $this->getId($shopOrderId);
         $order = oxNew(PayPalOrderModel::class);
         $order->load($oxid);
-        if ($order->isLoaded()) {
-            $result = $order;
-        }
-        return $result;
+        return $order;
     }
 
     /**
@@ -189,8 +185,12 @@ class OrderRepository
         }
     }
 
-    private function getId(string $shopOrderId, string $paypalOrderId = '', $payPalTransactionId = '', $payPalTransactionType = ''): string
-    {
+    private function getId(
+        string $shopOrderId,
+        string $paypalOrderId = '',
+        string $payPalTransactionId = '',
+        string $payPalTransactionType = ''
+    ): string {
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->queryBuilderFactory->create();
 

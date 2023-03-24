@@ -89,7 +89,6 @@ class OrderMain extends OrderMain_parent
                     'selected' => ($this->getPayPalOrderCountryCode() === $allowedCountry)
                 ];
             }
-
         }
         return $this->trackingCarrierCountries;
     }
@@ -97,10 +96,8 @@ class OrderMain extends OrderMain_parent
     public function getPayPalTrackingCarrierProvider($countryCode = ''): array
     {
         $provider = $this->getPayPalDefaultCarrierSelection();
-        $savedTrackingCarrierId = '';
-        if ($order = $this->getOrder()) {
-            $savedTrackingCarrierId = $order->getPayPalTrackingCarrier();
-        }
+        $order = $this->getOrder();
+        $savedTrackingCarrierId = $order->getPayPalTrackingCarrier();
 
         $countryCode = $countryCode ?: $this->getPayPalOrderCountryCode();
 
@@ -129,7 +126,8 @@ class OrderMain extends OrderMain_parent
         $this->outputJson($provider);
     }
 
-    protected function getPayPalDefaultCarrierSelection() {
+    protected function getPayPalDefaultCarrierSelection()
+    {
         return [[
             'id'       => '',
             'title'    => '----',
@@ -144,13 +142,13 @@ class OrderMain extends OrderMain_parent
     {
         $countryCode = '';
         $order = $this->getOrder();
-        if ($order) {
-            $countryId = $order->getFieldData('oxdelcountryid') ?: $order->getFieldData('oxbillcountryid');
-            $country = oxNew(Country::class);
-            if ($country->load($countryId)) {
-                $countryCode = $country->getFieldData('oxisoalpha2');
-            }
+
+        $countryId = $order->getFieldData('oxdelcountryid') ?: $order->getFieldData('oxbillcountryid');
+        $country = oxNew(Country::class);
+        if ($country->load($countryId)) {
+            $countryCode = $country->getFieldData('oxisoalpha2');
         }
+
         return $countryCode;
     }
 }
