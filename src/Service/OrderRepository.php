@@ -46,11 +46,12 @@ class OrderRepository
         string $payPalTransactionId = ''
     ): PayPalOrderModel {
 
-        $oxid = $this->getId($shopOrderId, $paypalOrderId, $payPalTransactionId);
-        //We might have a transactionid that is not yet saved to database, in that case we need
-        //to search for empty transactionid
-        $oxid = $oxid ?:
-            (empty($payPalTransactionId) ? '' : $this->getId($shopOrderId, $paypalOrderId, ''));
+        $oxid = $this->getId(
+            $shopOrderId,
+            $paypalOrderId,
+            $payPalTransactionId,
+            Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
+        );
 
         $order = oxNew(PayPalOrderModel::class);
         $order->load($oxid);
@@ -66,6 +67,21 @@ class OrderRepository
         }
 
         return $order;
+    }
+
+    public function paypalOrderByOrderId(
+        string $shopOrderId
+    )
+    : ?PayPalOrderModel {
+        $result = null;
+
+        $oxid = $this->getId($shopOrderId);
+        $order = oxNew(PayPalOrderModel::class);
+        $order->load($oxid);
+        if ($order->isLoaded()) {
+            $result = $order;
+        }
+        return $result;
     }
 
     /**
@@ -173,19 +189,23 @@ class OrderRepository
         }
     }
 
-    private function getId(string $shopOrderId, string $paypalOrderId = '', $payPalTransactionId = ''): string
+    private function getId(string $shopOrderId, string $paypalOrderId = '', $payPalTransactionId = '', $payPalTransactionType = ''): string
     {
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->queryBuilderFactory->create();
 
         $parameters = [
             'oxorderid' => $shopOrderId,
-            'oscpaypaltransactionid' => $payPalTransactionId,
-            'oscpaypaltransactiontype' => Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
         ];
 
         if ($paypalOrderId) {
             $parameters['oxpaypalorderid'] = $paypalOrderId;
+        }
+        if ($payPalTransactionId) {
+            $parameters['oscpaypaltransactionid'] = $payPalTransactionId;
+        }
+        if ($payPalTransactionType) {
+            $parameters['oscpaypaltransactiontype'] = $payPalTransactionType;
         }
 
         $queryBuilder->select('oxid')
@@ -196,8 +216,13 @@ class OrderRepository
             $queryBuilder->andWhere('oxpaypalorderid = :oxpaypalorderid');
         }
 
-        $queryBuilder->andWhere('oscpaypaltransactionid = :oscpaypaltransactionid');
-        $queryBuilder->andWhere('oscpaypaltransactiontype = :oscpaypaltransactiontype');
+        if ($payPalTransactionId) {
+            $queryBuilder->andWhere('oscpaypaltransactionid = :oscpaypaltransactionid');
+        }
+
+        if ($payPalTransactionType) {
+            $queryBuilder->andWhere('oscpaypaltransactiontype = :oscpaypaltransactiontype');
+        }
 
         $id = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)

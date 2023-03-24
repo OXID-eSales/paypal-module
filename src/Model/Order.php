@@ -98,7 +98,7 @@ class Order extends Order_parent
     /**
      * PayPal order Id
      */
-    protected string $payPalOrderId;
+    protected ?string $payPalOrderId = null;
 
     /**
      * PayPal order Repo
@@ -108,12 +108,12 @@ class Order extends Order_parent
     /**
      * PayPalPlus order Id
      */
-    protected string $payPalPlusOrderId;
+    protected ?string $payPalPlusOrderId = null;
 
     /**
      * PayPalPlus order Id
      */
-    protected string$payPalSoapOrderId;
+    protected ?string $payPalSoapOrderId = null;
 
     public function savePuiInvoiceNr(string $invoiceNr): void
     {
@@ -641,7 +641,7 @@ class Order extends Order_parent
         if (is_null($this->payPalOrder)) {
             /** @var OrderRepository $payPalOrderRepository */
             $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
-            $this->payPalOrder = $payPalOrderRepository->paypalOrderByOrderIdAndPayPalId(
+            $this->payPalOrder = $payPalOrderRepository->paypalOrderByOrderId(
                 $this->getId()
             );
         }
