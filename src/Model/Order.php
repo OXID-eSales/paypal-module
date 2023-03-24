@@ -17,6 +17,7 @@ use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Model\BaseModel;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Tracker\Tracker;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
@@ -341,12 +342,21 @@ class Order extends Order_parent
         return $success;
     }
 
-    public function doProvidePayPalTrackingCarrier(): bool
+    public function doProvidePayPalTrackingCarrier(string $transactionId = '', string $trackCarrier = '', string $trackCode = '', string $status = ''): bool
     {
-        $trackCode = $this->getPayPalTrackingCode();
-        $trackCarrier = $this->getPayPalTrackingCarrier();
+        $trackCode = $trackCode ?: $this->getPayPalTrackingCode();
+        $trackCarrier = $trackCarrier ?: $this->getPayPalTrackingCarrier();
+        $transactionId = $transactionId ?: $this->getPayPalTransactionId();
 
-        return true;
+        if (!$trackCode || !$trackCarrier || !$transactionId) {
+            return false;
+        }
+        return oxNew(Tracker::class)->sendtracking(
+            $transactionId,
+            $trackCode,
+            $trackCarrier,
+            $status
+        );
     }
 
     /**
@@ -636,16 +646,18 @@ class Order extends Order_parent
         return $this->getPayPalOrder()->getTrackingCode();
     }
 
+    public function getPayPalTransactionId(): string
+    {
+        return $this->getPayPalOrder()->getTransactionId();
+    }
+
     protected function getPayPalOrder(): PayPalOrder
     {
-        if (!$this->payPalOrder->isLoaded()) {
-            $this->payPalOrder = oxNew(PayPalOrder::class);
-            /** @var OrderRepository $payPalOrderRepository */
-            $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
-            $this->payPalOrder = $payPalOrderRepository->paypalOrderByOrderId(
-                $this->getId()
-            );
-        }
+        /** @var OrderRepository $payPalOrderRepository */
+        $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
+        $this->payPalOrder = $payPalOrderRepository->paypalOrderByOrderId(
+            $this->getId()
+        );
         return $this->payPalOrder;
     }
 }
