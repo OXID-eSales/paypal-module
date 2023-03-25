@@ -72,6 +72,18 @@ class ServiceFactory
     }
 
     /**
+     * @return GenericService
+     */
+    public function getTrackerService(): GenericService
+    {
+        return oxNew(
+            GenericService::class,
+            $this->getClient(),
+            '/v1/shipping/trackers-batch'
+        );
+    }
+
+    /**
      * @return Partner
      */
     public function getPartnerService(): Partner
@@ -116,8 +128,6 @@ class ServiceFactory
                 '',
                 false
             );
-            //fixme: auth needs to be injected to avoid slow authentification
-            //the token value should be stored in the db/oxconfig and it is valid for 8 hours
 
             $this->client = $client;
         }

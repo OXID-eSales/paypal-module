@@ -7,14 +7,10 @@
 
 namespace OxidSolutionCatalysts\PayPal\Model;
 
-use Doctrine\DBAL\Driver\ResultStatement;
-use Doctrine\DBAL\Query\QueryBuilder;
-use OxidEsales\Eshop\Core\DatabaseProvider;
-use OxidEsales\Eshop\Core\Model\BaseModel;
-use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
+use OxidEsales\Eshop\Core\Model\ListModel;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
-class PayPalTrackingCarrierList extends BaseModel
+class PayPalTrackingCarrierList extends ListModel
 {
     use ServiceContainer;
 

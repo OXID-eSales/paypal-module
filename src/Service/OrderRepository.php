@@ -38,11 +38,12 @@ class OrderRepository
         string $payPalTransactionId = ''
     ): PayPalOrderModel {
 
-        $oxid = $this->getId($shopOrderId, $paypalOrderId, $payPalTransactionId);
-        //We might have a transactionid that is not yet saved to database, in that case we need
-        //to search for empty transactionid
-        $oxid = $oxid ?:
-            (empty($payPalTransactionId) ? '' : $this->getId($shopOrderId, $paypalOrderId, ''));
+        $oxid = $this->getId(
+            $shopOrderId,
+            $paypalOrderId,
+            $payPalTransactionId,
+            Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
+        );
 
         $order = oxNew(PayPalOrderModel::class);
         $order->load($oxid);
@@ -57,6 +58,17 @@ class OrderRepository
             $order->setTransactionId($payPalTransactionId);
         }
 
+        return $order;
+    }
+
+    public function paypalOrderByOrderId(
+        string $shopOrderId
+    ): PayPalOrderModel {
+        $result = null;
+
+        $oxid = $this->getId($shopOrderId);
+        $order = oxNew(PayPalOrderModel::class);
+        $order->load($oxid);
         return $order;
     }
 
@@ -146,8 +158,12 @@ class OrderRepository
         }
     }
 
-    private function getId(string $shopOrderId, string $paypalOrderId = '', $payPalTransactionId = ''): string
-    {
+    private function getId(
+        string $shopOrderId,
+        string $paypalOrderId = '',
+        string $payPalTransactionId = '',
+        string $payPalTransactionType = ''
+    ): string {
         $parameters = [
             ':oxorderid' => $shopOrderId
         ];
@@ -155,9 +171,11 @@ class OrderRepository
         if ($paypalOrderId) {
             $parameters[':oxpaypalorderid'] = $paypalOrderId;
         }
-
         if ($payPalTransactionId) {
             $parameters[':oscpaypaltransactionid'] = $payPalTransactionId;
+        }
+        if ($payPalTransactionType) {
+            $parameters[':oscpaypaltransactiontype'] = $payPalTransactionType;
         }
 
         $query = "select oxid from oscpaypal_order where oxorderid = :oxorderid";
@@ -165,9 +183,11 @@ class OrderRepository
         if ($paypalOrderId) {
             $query .= " and oxpaypalorderid = :oxpaypalorderid";
         }
-
         if ($payPalTransactionId) {
             $query .= " and oscpaypaltransactionid = :oscpaypaltransactionid";
+        }
+        if ($payPalTransactionType) {
+            $query .= " and oscpaypaltransactiontype = :oscpaypaltransactiontype";
         }
 
         $id = $this->db->getOne($query, $parameters);
