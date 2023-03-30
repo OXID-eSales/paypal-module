@@ -25,7 +25,8 @@ class OrderMain extends OrderMain_parent
     use AdminOrderTrait;
     use JsonTrait;
 
-    protected ?array $trackingCarrierCountries = null;
+    /** @var array|null  */
+    protected $trackingCarrierCountries = null;
 
     /**
      * @throws ApiException

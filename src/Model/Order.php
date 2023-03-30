@@ -94,27 +94,32 @@ class Order extends Order_parent
     /**
      * PayPal order information
      */
-    protected ?PayPalApiOrder $payPalApiOrder = null;
+    /** @var PayPalApiOrder|null  */
+    protected $payPalApiOrder = null;
 
     /**
      * PayPal order Id
      */
-    protected ?string $payPalOrderId = null;
+    /** @var string|null  */
+    protected $payPalOrderId = null;
 
     /**
      * PayPal order Repo
      */
-    protected PayPalOrder $payPalOrder;
+    /** @var PayPalOrder  */
+    protected $payPalOrder;
 
     /**
      * PayPalPlus order Id
      */
-    protected ?string $payPalPlusOrderId = null;
+    /** @var string|null  */
+    protected $payPalPlusOrderId = null;
 
     /**
      * PayPalPlus order Id
      */
-    protected ?string $payPalSoapOrderId = null;
+    /** @var string|null  */
+    protected $payPalSoapOrderId = null;
 
     public function savePuiInvoiceNr(string $invoiceNr): void
     {

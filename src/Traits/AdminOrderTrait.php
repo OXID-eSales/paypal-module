@@ -25,15 +25,20 @@ trait AdminOrderTrait
 {
     use ServiceContainer;
 
-    protected ?Order $order = null;
+    /** @var Order|null */
+    protected $order = null;
 
-    protected ?bool $isPayPalStandardManuallyCapture = null;
+    /** @var bool|null  */
+    protected $isPayPalStandardManuallyCapture = null;
 
-    protected ?bool $isPayPalStandardOnDeliveryCapture = null;
+    /** @var bool|null  */
+    protected $isPayPalStandardOnDeliveryCapture = null;
 
-    protected ?bool $isPayPalStandardOrder = null;
+    /** @var bool|null  */
+    protected $isPayPalStandardOrder = null;
 
-    protected ?bool $isAuthorizedPayPalStandardOrder = null;
+    /** @var bool|null  */
+    protected $isAuthorizedPayPalStandardOrder = null;
 
     /**
      * @throws StandardException
