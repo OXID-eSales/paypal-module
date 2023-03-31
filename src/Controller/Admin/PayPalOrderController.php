@@ -300,7 +300,7 @@ class PayPalOrderController extends AdminDetailsController
         $captures = (array) $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures;
 
         foreach ($captures as $capture) {
-            $captureAmount += (int)$capture->amount->value;
+            $captureAmount += (float)$capture->amount->value;
         }
         return $captureAmount;
     }
@@ -314,7 +314,7 @@ class PayPalOrderController extends AdminDetailsController
         $authorizations = (array) $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->authorizations;
 
         foreach ($authorizations as $authorization) {
-            $authorizationAmount += (int)$authorization->amount->value;
+            $authorizationAmount += (float)$authorization->amount->value;
         }
         return $authorizationAmount;
     }
@@ -328,7 +328,7 @@ class PayPalOrderController extends AdminDetailsController
         $refunds = (array) $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->refunds;
 
         foreach ($refunds as $refund) {
-            $refundAmount += (int)$refund->amount->value;
+            $refundAmount += (float)$refund->amount->value;
         }
         return $refundAmount;
     }
