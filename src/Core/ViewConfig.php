@@ -153,6 +153,11 @@ class ViewConfig extends ViewConfig_parent
     public function getPayPalJsSdkUrl(): string
     {
         $config = Registry::getConfig();
+        $lang = Registry::getLang();
+
+        $countryCode = strtoupper($lang->getLanguageAbbr());
+        $localeCode = $lang->getLanguageAbbr() . '_' . $countryCode;
+
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $params = [];
 
@@ -186,6 +191,7 @@ class ViewConfig extends ViewConfig_parent
                 $params['enable-funding'] = 'card';
             }
         }
+        $params['locale'] = $localeCode;
 
         return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
     }
@@ -213,8 +219,13 @@ class ViewConfig extends ViewConfig_parent
     protected function getBasePayPalJsSdkUrl($type = '', $continueFlow = false): string
     {
         $config = Registry::getConfig();
+        $lang = Registry::getLang();
+
+        $countryCode = strtoupper($lang->getLanguageAbbr());
+        $localeCode = $lang->getLanguageAbbr() . '_' . $countryCode;
 
         $params = [];
+
         $params['client-id'] = $this->getPayPalClientId();
         $params['integration-date'] = Constants::PAYPAL_INTEGRATION_DATE;
 
@@ -232,6 +243,7 @@ class ViewConfig extends ViewConfig_parent
         if ($this->isPayPalBannerActive()) {
             $params['components'] .= ',messages';
         }
+        $params['locale'] = $localeCode;
 
         return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
     }
