@@ -97,7 +97,6 @@ class PayPalConfigController extends AdminController
     private function buildSignUpLink(string $partnerClientId, string $partnerId, string $url): string
     {
         $lang = Registry::getLang();
-        $session = Registry::getSession();
         $config = new Config();
 
         $countryCode = strtoupper($lang->getLanguageAbbr());
