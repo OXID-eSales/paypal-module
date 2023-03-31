@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007422](https://bugs.oxid-esales.com/view.php?id=7422) Same state/county IDs may lead to wrong display on PayPal page
 - [0007413](https://bugs.oxid-esales.com/view.php?id=7413) set PPExpress independently of ShippingSets (They will be set later)
 - [0007384](https://bugs.oxid-esales.com/view.php?id=7384) if order declined during 3ds then go back to payment
+- [0007450](https://bugs.oxid-esales.com/view.php?id=7450) Mandantory fields are not ignored with creditcard
 
 ## [1.2.3] - 2023-01-26
 
