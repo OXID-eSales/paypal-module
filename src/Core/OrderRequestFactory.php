@@ -196,29 +196,37 @@ class OrderRequestFactory
      */
     protected function getAmount(): AmountWithBreakdown
     {
-        $amount = new AmountWithBreakdown();
         $basket = $this->basket;
-        $currency = $this->basket->getBasketCurrency();
+        $currency = $basket->getBasketCurrency();
 
-        $total = PriceToMoney::convert($this->basket->getPrice()->getBruttoPrice(), $currency);
+        $total = PriceToMoney::convert($basket->getPriceForPayment(), $currency);
 
         //Total amount
+        $amount = new AmountWithBreakdown();
         $amount->value = $total->value;
         $amount->currency_code = $total->currency_code;
 
         //Cost breakdown
         $breakdown = $amount->breakdown = new AmountBreakdown();
 
+        //Discount
+        $discount = $basket->getPayPalCheckoutDiscount();
         //Item total cost
-        $itemTotal = (float)$basket->getPayPalCheckoutItems();
+        $itemTotal = $basket->getPayPalCheckoutItems();
+
+        // possible price surcharge
+        if ($discount < 0) {
+            $itemTotal -= $discount;
+            $discount = 0;
+        }
+
+        if ($discount) {
+            $breakdown->discount = PriceToMoney::convert($discount, $currency);
+        }
+
         $breakdown->item_total = PriceToMoney::convert($itemTotal, $currency);
         //Item tax sum - we use 0% and calculate with brutto to avoid rounding errors
         $breakdown->tax_total = PriceToMoney::convert(0, $currency);
-
-        //Discount
-        if ($discount = $basket->getPayPalCheckoutDiscount()) {
-            $breakdown->discount = PriceToMoney::convert((float)$discount, $currency);
-        }
 
         return $amount;
     }
@@ -315,6 +323,25 @@ class OrderRequestFactory
             $item->name = $language->translateString('SHIPPING_COST');
 
             $item->unit_amount = PriceToMoney::convert((float)$delivery, $currency);
+            // tax - we use 0% and calculate with brutto to avoid rounding errors
+            $item->tax = PriceToMoney::convert(0, $currency);
+            $item->tax_rate = '0';
+            // TODO: There are usually still categories for digital products.
+            // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
+            $item->category = $itemCategory;
+
+            $item->quantity = '1';
+            $items[] = $item;
+        }
+
+        $discount = $basket->getPayPalCheckoutDiscount();
+        // possible price surcharge
+        if ($discount < 0) {
+            $discount *= -1;
+            $item = new Item();
+            $item->name = $language->translateString('SURCHARGE');
+
+            $item->unit_amount = PriceToMoney::convert($discount, $currency);
             // tax - we use 0% and calculate with brutto to avoid rounding errors
             $item->tax = PriceToMoney::convert(0, $currency);
             $item->tax_rate = '0';
