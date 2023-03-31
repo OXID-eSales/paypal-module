@@ -185,7 +185,7 @@ class Basket extends Basket_parent
      *
      * @return double
      */
-    public function getPayPalCheckoutItems($isOxidSum = true)
+    public function getPayPalCheckoutItems($isOxidSum = true): float
     {
         $result = 0;
         if ($isOxidSum) {
