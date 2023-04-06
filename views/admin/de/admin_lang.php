@@ -20,6 +20,7 @@ $aLang = [
     'OSC_PAYPAL_OPMODE_SANDBOX'                   => 'Sandbox',
     'OSC_PAYPAL_CLIENT_ID'                        => 'Client-ID',
     'OSC_PAYPAL_CLIENT_SECRET'                    => 'Passwort',
+    'OSC_PAYPAL_MERCHANT_ID'                      => 'Merchant-ID',
     'OSC_PAYPAL_CREDENTIALS'                      => 'API-Anmeldeinformationen',
     'OSC_PAYPAL_LIVE_CREDENTIALS'                 => 'API-Anmeldeinformationen (Live)',
     'OSC_PAYPAL_SANDBOX_CREDENTIALS'              => 'API-Anmeldeinformationen (Sandbox)',
@@ -54,9 +55,11 @@ $aLang = [
     'HELP_OSC_PAYPAL_CREDENTIALS_PART2'           => 'Bitte nutzen Sie für die Anmeldung den eingeblendeten "PayPal Integration"-Button. Während der Integration werden durch PayPal die Zahlarten "Kreditkarte"
          und "Kauf auf Rechnung" freigeschaltet, sowie der Webhook automatisch registriert.',
     'HELP_OSC_PAYPAL_CLIENT_ID'                   => 'Client-ID des Live-Account für Live-Modus',
-    'HELP_OSC_PAYPAL_CLIENT_SECRET'               => 'Secret des Live-Account für Live-Modus',
+    'HELP_OSC_PAYPAL_CLIENT_SECRET'               => 'Passwort des Live-Account für Live-Modus. Bitte geben Sie das Passwort zweimal ein.',
+    'HELP_OSC_PAYPAL_MERCHANT_ID'                 => 'Merchant-ID des Live-Account für Live-Modus',
     'HELP_OSC_PAYPAL_SANDBOX_CLIENT_ID'           => 'Client-ID des Sandbox-Account für Sandbox-Modus',
-    'HELP_OSC_PAYPAL_SANDBOX_CLIENT_SECRET'       => 'Secret des Sandbox-Account für Sandbox-Modus. Bitte geben Sie das Passwort zweimal ein.',
+    'HELP_OSC_PAYPAL_SANDBOX_CLIENT_SECRET'       => 'Passwort des Sandbox-Account für Sandbox-Modus. Bitte geben Sie das Passwort zweimal ein.',
+    'HELP_OSC_PAYPAL_SANDBOX_MERCHANT_ID'         => 'Merchant-ID des Sandbox-Account für Sandbox-Modus',
     'HELP_OSC_PAYPAL_SANDBOX_WEBHOOK_ID'          =>
         'Die ID des Sandbox-Webhooks, wie in Ihrem Developer Portal-Konto konfiguriert',
     'HELP_OSC_PAYPAL_OPMODE'                      =>

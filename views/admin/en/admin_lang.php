@@ -20,6 +20,7 @@ $aLang = [
     'OSC_PAYPAL_OPMODE_SANDBOX'                   => 'Sandbox',
     'OSC_PAYPAL_CLIENT_ID'                        => 'Client ID',
     'OSC_PAYPAL_CLIENT_SECRET'                    => 'Secret',
+    'OSC_PAYPAL_MERCHANT_ID'                      => 'Merchant ID',
     'OSC_PAYPAL_CREDENTIALS'                      => 'API credentials',
     'OSC_PAYPAL_LIVE_CREDENTIALS'                 => 'Live API credentials',
     'OSC_PAYPAL_SANDBOX_CREDENTIALS'              => 'Sandbox API credentials',
@@ -53,9 +54,11 @@ $aLang = [
     'HELP_OSC_PAYPAL_CREDENTIALS_PART2'           => 'Please use the "PayPal integration"-button that appears to register. During the integration, PayPal will activate the "credit card"
          and "Pay upon Invoice" payment methods and the webhook is automatically registered.',
     'HELP_OSC_PAYPAL_CLIENT_ID'                   => 'Client ID for live mode.',
-    'HELP_OSC_PAYPAL_CLIENT_SECRET'               => 'Secret for live mode.',
+    'HELP_OSC_PAYPAL_CLIENT_SECRET'               => 'Secret for live mode. Please enter the password twice.',
+    'HELP_OSC_PAYPAL_MERCHANT_ID'                 => 'Merchant ID for live mode.',
     'HELP_OSC_PAYPAL_SANDBOX_CLIENT_ID'           => 'Client ID for sandbox mode.',
     'HELP_OSC_PAYPAL_SANDBOX_CLIENT_SECRET'       => 'Secret for sandbox mode. Please enter the password twice.',
+    'HELP_OSC_PAYPAL_SANDBOX_MERCHANT_ID'         => 'Merchant ID for sandbox mode.',
     'HELP_OSC_PAYPAL_SANDBOX_WEBHOOK_ID'          =>
         'The ID of the sandbox-webhook as configured in your Developer Portal account',
     'HELP_OSC_PAYPAL_OPMODE'                      =>

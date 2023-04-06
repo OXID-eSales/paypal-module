@@ -85,6 +85,14 @@
                         </div>
 
                         <div class="form-group live">
+                            <label for="merchant-id">[{oxmultilang ident="OSC_PAYPAL_MERCHANT_ID"}]</label>
+                            <div class="controls">
+                                <input type="text" class="form-control" id="merchant-id" name="conf[oscPayPalClientMerchantId]" value="[{$config->getLiveMerchantId()}]" />
+                                <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_MERCHANT_ID"}]</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group live">
                             <label for="webhook-id">[{oxmultilang ident="OSC_PAYPAL_WEBHOOK_ID"}]</label>
                             <div class="controls">
                                 <input type="text" class="form-control" id="webhook-id" name="conf[oscPayPalWebhookId]" value="[{$config->getLiveWebhookId()}]" />
@@ -128,6 +136,14 @@
                             <div class="controls">
                                 <input class="password_input form-control" type="password" name="conf[oscPayPalSandboxClientSecret]" data-empty="[{if $config->getSandboxClientSecret()}]false[{else}]true[{/if}]" data-errorMessage="[{oxmultilang ident="MODULE_PASSWORDS_DO_NOT_MATCH"}]" [{$readonly}] title="[{oxmultilang ident="MODULE_REPEAT_PASSWORD"}]" />
                                 <span id="client-sandbox-secret" class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_SANDBOX_CLIENT_SECRET"}]</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group sandbox">
+                            <label for="merchant-sandbox-id">[{oxmultilang ident="OSC_PAYPAL_MERCHANT_ID"}]</label>
+                            <div class="controls">
+                                <input type="text" class="form-control" id="merchant-sandbox-id" name="conf[oscPayPalSandboxClientMerchantId]" value="[{$config->getSandboxClientMerchantId()}]" />
+                                <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_SANDBOX_MERCHANT_ID"}]</span>
                             </div>
                         </div>
 
