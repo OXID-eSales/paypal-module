@@ -16,17 +16,17 @@ class Tracker
 {
     use ServiceContainer;
 
-    public const STATUS_SHIPPED = 'SHIPPED';
-    public const STATUS_ON_HOLD = 'ON_HOLD';
-    public const STATUS_DELIVERED = 'DELIVERED';
-    public const STATUS_CANCELLED = 'CANCELLED';
+    const STATUS_SHIPPED = 'SHIPPED';
+    const STATUS_ON_HOLD = 'ON_HOLD';
+    const STATUS_DELIVERED = 'DELIVERED';
+    const STATUS_CANCELLED = 'CANCELLED';
 
-    protected array $possibleStatus = [
+    protected $possibleStatus = [
         self::STATUS_CANCELLED, self::STATUS_ON_HOLD,
         self::STATUS_DELIVERED, self::STATUS_CANCELLED
     ];
 
-    protected string $defaultStatus = self::STATUS_SHIPPED;
+    protected $defaultStatus = self::STATUS_SHIPPED;
     public function sendtracking(
         string $transactionId,
         string $trackingNumber,
