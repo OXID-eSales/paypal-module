@@ -4,12 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.2.4] - 2023-02-XX
+## [2.3.0] - 2023-04-XX
 
 ### NEW
 - active payment methods are recognized after deactivating and activating the module and activated again correctly
 - in the backend there are new options for control the deleting of unfinished orders
 - New Payment "SEPA" and an alternative CreditCard-Payment as fallback if CreditCard via ACDC is not possible
+- Send Tracking-Information to PayPal
 
 ### Fixed
 - [0007440](https://bugs.oxid-esales.com/view.php?id=7440) Pending orders with oxordernr 0 are deleted before the payment process can be completed

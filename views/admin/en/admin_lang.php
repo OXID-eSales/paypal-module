@@ -241,9 +241,9 @@ $aLang = [
     'OSC_PAYPAL_SCA_CONTINGENCY_HELP'               => 'Use 3D Secure to authenticate card holders through card issuers. It reduces the likelihood of fraud when you use supported cards and improves transaction performance.
                                                         A successful 3D Secure authentication can shift liability for fraudulent chargebacks from you to the card issuer. <br>
                                                         3D Secure authentication is performed only if the card is enrolled for the service. <br> When your customer submits their card details on your website for processing,
-                                                        you have the option of triggering 3D Secure. When triggered, customers are prompted by their card issuing bank to complete an additional verification step 
+                                                        you have the option of triggering 3D Secure. When triggered, customers are prompted by their card issuing bank to complete an additional verification step
                                                         to enter a one-time or static password, depending on the implementation.<br>
-                                                        Chose "SCA when required by regional mandate, decision by PayPal system" to let PayPal system decide whether 3D check is necessary. 
+                                                        Chose "SCA when required by regional mandate, decision by PayPal system" to let PayPal system decide whether 3D check is necessary.
                                                          With setting "3D Secure for each ACDC transaction" 3D check will be enforced for each transaction.',
 
     'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS_TITLE' => 'Handling not finished orders',
@@ -254,4 +254,8 @@ $aLang = [
                                                         delete manually.',
     'OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'           => 'Start time for automatic deletion',
     'HELP_OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'      => 'How old do not finished orders have to be before they are automatically deleted (in minutes)?',
+
+    'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_COUNTRY'    => 'Tracking Carrier (Country)',
+    'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_PROVIDER'   => 'Tracking Carrier (Provider)',
+    'OSC_PAYPAL_TRACKCARRIER_GLOBAL'                => 'global',
 ];
