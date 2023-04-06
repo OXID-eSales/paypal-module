@@ -56,7 +56,7 @@ $aModule = [
         'en' => 'Use of the online payment service from PayPal. Documentation: <a href="https://docs.oxid-esales.com/modules/paypal-checkout/en/latest/" target="_blank">PayPal Checkout</a>'
     ],
     'thumbnail' => 'out/img/paypal.png',
-    'version' => '1.2.4',
+    'version' => '1.3.0',
     'author' => 'OXID eSales AG',
     'url' => 'https://www.oxid-esales.com',
     'email' => 'info@oxid-esales.com',
@@ -146,6 +146,16 @@ $aModule = [
             'template' => 'headitem.tpl',
             'block' => 'admin_headitem_incjs',
             'file' => 'views/blocks/admin/admin_headitem_incjs.tpl'
+        ],
+        [
+            'template' => 'order_main.tpl',
+            'block' => 'admin_order_main_form_shipping',
+            'file' => 'views/blocks/admin/admin_order_main_form_shipping.tpl'
+        ],
+        [
+            'template' => 'order_main.tpl',
+            'block' => 'admin_order_main_send_order',
+            'file' => 'views/blocks/admin/admin_order_main_send_order.tpl'
         ],
         [
             'template' => 'layout/base.tpl',

@@ -14,6 +14,7 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Exception\RedirectWithMessage;
+use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Exception\Redirect;
@@ -32,6 +33,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 class OrderController extends OrderController_parent
 {
     use ServiceContainer;
+    use JsonTrait;
 
     const RETRY_OSC_PAYMENT_REQUEST_PARAM = 'retryoscpp';
 
@@ -331,19 +333,6 @@ class OrderController extends OrderController_parent
             PayPalSession::storePayPalPuiCmId($cmId);
         }
         return $cmId;
-    }
-
-    /**
-     * Encodes and sends response as json
-     *
-     * @param $response
-     */
-    protected function outputJson($response)
-    {
-        $utils = Registry::getUtils();
-        $utils->setHeader('Content-Type: application/json');
-
-        $utils->showMessageAndExit(json_encode($response));
     }
 
     protected function _getNextStep($success) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
