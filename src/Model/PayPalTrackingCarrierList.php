@@ -67,8 +67,8 @@ class PayPalTrackingCarrierList extends ListModel
         /** @var Result $resultDB */
         $resultDB = $queryBuilder->select('count(oxid), oxcountrycode')
             ->from('oscpaypal_trackingcarrier')
-            ->where($queryBuilder->expr()->in('oxcountrycode', $inQueryBuilder->getSQL()))
-            ->orWhere($queryBuilder->expr()->notIn('oxcountrycode', $notInQueryBuilder->getSQL()))
+            ->where($queryBuilder->expr()->in('CONVERT(oxcountrycode USING utf8)', $inQueryBuilder->getSQL()))
+            ->orWhere($queryBuilder->expr()->notIn('CONVERT(oxcountrycode USING utf8)', $notInQueryBuilder->getSQL()))
             ->groupBy('oxcountrycode')
             ->execute();
 
