@@ -131,28 +131,38 @@ class PatchRequestFactory
         $patch = new Patch();
         $patch->op = Patch::OP_REPLACE;
         $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/amount";
-
-        $amount = new AmountWithBreakdown();
+        $basket = $this->basket;
         $currency = $this->basket->getBasketCurrency();
 
-        $total = PriceToMoney::convert($this->basket->getPrice()->getBruttoPrice(), $currency);
+        $total = PriceToMoney::convert($this->basket->getPriceForPayment(), $currency);
 
         //Total amount
+        $amount = new AmountWithBreakdown();
         $amount->value = $total->value;
         $amount->currency_code = $total->currency_code;
+
         //Cost breakdown
         $breakdown = $amount->breakdown = new AmountBreakdown();
 
+        //Discount
+        $discount = $basket->getPayPalCheckoutDiscount();
         //Item total cost
-        $itemTotal = (float)$this->basket->getPayPalCheckoutItems();
+        $itemTotal = $basket->getPayPalCheckoutItems();
+
+        // possible price surcharge
+        if ($discount < 0) {
+            $itemTotal -= $discount;
+            $discount = 0;
+        }
+
+        if ($discount) {
+            $breakdown->discount = PriceToMoney::convert($discount, $currency);
+        }
+
         $breakdown->item_total = PriceToMoney::convert($itemTotal, $currency);
         //Item tax sum - we use 0% and calculate with brutto to avoid rounding errors
         $breakdown->tax_total = PriceToMoney::convert(0, $currency);
 
-        //Discount
-        if ($discount = $this->basket->getPayPalCheckoutDiscount()) {
-            $breakdown->discount = PriceToMoney::convert((float)$discount, $currency);
-        }
         $patch->value = $amount;
 
         $this->request[] = $patch;
