@@ -95,6 +95,13 @@ class ModuleSettings
             $this->getLiveClientSecret();
     }
 
+    public function getMerchantId(): string
+    {
+        return $this->isSandbox() ?
+            $this->getSandboxMerchantId() :
+            $this->getLiveMerchantId();
+    }
+
     public function getWebhookId(): string
     {
         return $this->isSandbox() ?
@@ -127,6 +134,11 @@ class ModuleSettings
         return (string) $this->getSettingValue('oscPayPalClientSecret');
     }
 
+    public function getLiveMerchantId(): string
+    {
+        return (string) $this->getSettingValue('oscPayPalClientMerchantId');
+    }
+
     public function getLiveWebhookId(): string
     {
         return (string) $this->getSettingValue('oscPayPalWebhookId');
@@ -140,6 +152,11 @@ class ModuleSettings
     public function getSandboxClientSecret(): string
     {
         return (string) $this->getSettingValue('oscPayPalSandboxClientSecret');
+    }
+
+    public function getSandboxMerchantId(): string
+    {
+        return (string) $this->getSettingValue('oscPayPalSandboxClientMerchantId');
     }
 
     public function getSandboxWebhookId(): string

@@ -42,15 +42,13 @@ class PayPalSession
 
         $session = Registry::getSession();
         $basket = $session->getBasket();
-        if ($basket != null) {
+        if ($basket !== null) {
             $basket->setPayment();
             $basket->setShipping();
         }
 
-        if ($session != null) {
-            $session->deleteVariable('sShipSet');
-            $session->deleteVariable('paymentid');
-        }
+        $session->deleteVariable('sShipSet');
+        $session->deleteVariable('paymentid');
     }
 
     /**
@@ -144,25 +142,7 @@ class PayPalSession
         );
     }
 
-    public static function storeMerchantIdInPayPal(string $merchantId)
-    {
-        Registry::getSession()->setVariable(
-            Constants::SESSION_ONBOARDING_MERCHANTID,
-            $merchantId
-        );
-    }
-
-    /**
-     * @return null|string
-     */
-    public static function getMerchantIdInPayPal()
-    {
-        return Registry::getSession()->getVariable(
-            Constants::SESSION_ONBOARDING_MERCHANTID
-        );
-    }
-
-    public static function storeOnboardingPayload(string $payload)
+    public static function storeOnboardingPayload(string $payload): void
     {
         Registry::getSession()->setVariable(
             Constants::SESSION_ONBOARDING_PAYLOAD,
@@ -182,9 +162,6 @@ class PayPalSession
 
     public static function unsetOnboardingSession()
     {
-        Registry::getSession()->deleteVariable(
-            Constants::SESSION_ONBOARDING_MERCHANTID
-        );
         Registry::getSession()->deleteVariable(
             Constants::SESSION_ONBOARDING_PAYLOAD
         );

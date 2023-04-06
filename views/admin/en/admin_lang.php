@@ -20,6 +20,7 @@ $aLang = [
     'OSC_PAYPAL_OPMODE_SANDBOX'                   => 'Sandbox',
     'OSC_PAYPAL_CLIENT_ID'                        => 'Client ID',
     'OSC_PAYPAL_CLIENT_SECRET'                    => 'Secret',
+    'OSC_PAYPAL_MERCHANT_ID'                      => 'Merchant ID',
     'OSC_PAYPAL_CREDENTIALS'                      => 'API credentials',
     'OSC_PAYPAL_LIVE_CREDENTIALS'                 => 'Live API credentials',
     'OSC_PAYPAL_SANDBOX_CREDENTIALS'              => 'Sandbox API credentials',
@@ -53,9 +54,11 @@ $aLang = [
     'HELP_OSC_PAYPAL_CREDENTIALS_PART2'           => 'Please use the "PayPal integration"-button that appears to register. During the integration, PayPal will activate the "credit card"
          and "Pay upon Invoice" payment methods and the webhook is automatically registered.',
     'HELP_OSC_PAYPAL_CLIENT_ID'                   => 'Client ID for live mode.',
-    'HELP_OSC_PAYPAL_CLIENT_SECRET'               => 'Secret for live mode.',
+    'HELP_OSC_PAYPAL_CLIENT_SECRET'               => 'Secret for live mode. Please enter the password twice.',
+    'HELP_OSC_PAYPAL_MERCHANT_ID'                 => 'Merchant ID for live mode.',
     'HELP_OSC_PAYPAL_SANDBOX_CLIENT_ID'           => 'Client ID for sandbox mode.',
     'HELP_OSC_PAYPAL_SANDBOX_CLIENT_SECRET'       => 'Secret for sandbox mode. Please enter the password twice.',
+    'HELP_OSC_PAYPAL_SANDBOX_MERCHANT_ID'         => 'Merchant ID for sandbox mode.',
     'HELP_OSC_PAYPAL_SANDBOX_WEBHOOK_ID'          =>
         'The ID of the sandbox-webhook as configured in your Developer Portal account',
     'HELP_OSC_PAYPAL_OPMODE'                      =>
@@ -245,6 +248,7 @@ $aLang = [
                                                         to enter a one-time or static password, depending on the implementation.<br>
                                                         Chose "SCA when required by regional mandate, decision by PayPal system" to let PayPal system decide whether 3D check is necessary. 
                                                          With setting "3D Secure for each ACDC transaction" 3D check will be enforced for each transaction.',
+
     'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS_TITLE' => 'Handling not finished orders',
     'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'       => 'Automatically delete not finished orders?',
     'HELP_OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'  => 'For some PayPal payment methods, an order must be created in advance so that it can be used with PayPal.

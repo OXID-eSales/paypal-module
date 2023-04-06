@@ -340,11 +340,14 @@ class PayPalConfigController extends AdminController
     public function returnFromSignup()
     {
         $config = new Config();
+        $request = Registry::getRequest();
         if (
-            ('true' === (string) Registry::getRequest()->getRequestParameter('permissionsGranted')) &&
-            ('true' === (string) Registry::getRequest()->getRequestParameter('consentStatus'))
+            ('true' === (string) $request->getRequestParameter('permissionsGranted')) &&
+            ('true' === (string) $request->getRequestParameter('consentStatus'))
         ) {
-            PayPalSession::storeMerchantIdInPayPal(Registry::getRequest()->getRequestParameter('merchantIdInPayPal'));
+            /** @var ModuleSettings $moduleSettings */
+            $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+            $moduleSettings->saveMerchantId($request->getRequestParameter('merchantIdInPayPal'));
         }
 
         $this->autoConfiguration();

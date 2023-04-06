@@ -80,6 +80,16 @@ class Config
     }
 
     /**
+     * Get merchantId based on active mode
+     *
+     * @return string
+     */
+    public function getMerchantId(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getMerchantId();
+    }
+
+    /**
      * @return string
      */
     public function getWebhookId()
