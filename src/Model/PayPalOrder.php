@@ -80,7 +80,7 @@ class PayPalOrder extends BaseModel
         );
     }
 
-    public function setTrackingId(string $id)
+    public function setTrackingCode(string $id)
     {
         $this->assign(
             [
@@ -89,7 +89,7 @@ class PayPalOrder extends BaseModel
         );
     }
 
-    public function setTrackingType(string $type)
+    public function setTrackingCarrier(string $type)
     {
         $this->assign(
             [

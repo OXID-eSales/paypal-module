@@ -7,6 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Model;
 
+use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Model\ListModel;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
@@ -47,26 +48,24 @@ class PayPalTrackingCarrierList extends ListModel
     public function getAllowedTrackingCarrierCountryCodes(): array
     {
         $result = [];
-        $db = DatabaseProvider::getDb();
+        $db = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC);
         $baseObject = $this->getBaseObject();
         $viewName = $baseObject->getViewName();
-        $viewNameCountry = $this->getViewName('oxcountry');
+        $viewNameCountry = getViewName('oxcountry');
 
         $select = "select count({$viewName}.oxid), {$viewName}.oxcountrycode
             from {$viewName}
             where {$viewName}.oxcountrycode in (select {$viewNameCountry}.oxisoalpha2 from {$viewNameCountry} where {$viewNameCountry}.oxactive = 1)
             or {$viewName}.oxcountrycode not in (select {$viewNameCountry}.oxisoalpha2 from {$viewNameCountry})
             group by {$viewName}.oxcountrycode";
-
-
         /** @var \OxidEsales\Eshop\Core\Database\Adapter\Doctrine\ResultSet $resultDB */
         $resultDB = $db->select($select);
-        if ($resultDB != false && $resultDB->count() > 0) {
+        if ($resultDB && $resultDB->count() > 0) {
             while (!$resultDB->EOF) {
                 $result[] = $resultDB->fields['oxcountrycode'];
+                $resultDB->fetchRow();
             }
         }
-
         return $result;
     }
 }
