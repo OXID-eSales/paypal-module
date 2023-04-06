@@ -51,6 +51,14 @@ trait AdminOrderTrait
     protected $isAuthorizedPayPalStandardOrder = null;
 
     /**
+     * @throws StandardException
+     */
+    public function paidWithPayPal(): bool
+    {
+        return (bool)$this->getOrder()->paidWithPayPal();
+    }
+
+    /**
      * Capture payment action
      *
      * @throws ApiException
