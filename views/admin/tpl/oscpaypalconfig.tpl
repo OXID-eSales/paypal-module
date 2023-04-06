@@ -142,7 +142,7 @@
                         <div class="form-group sandbox">
                             <label for="merchant-sandbox-id">[{oxmultilang ident="OSC_PAYPAL_MERCHANT_ID"}]</label>
                             <div class="controls">
-                                <input type="text" class="form-control" id="merchant-sandbox-id" name="conf[oscPayPalSandboxClientMerchantId]" value="[{$config->getSandboxClientMerchantId()}]" />
+                                <input type="text" class="form-control" id="merchant-sandbox-id" name="conf[oscPayPalSandboxClientMerchantId]" value="[{$config->getSandboxMerchantId()}]" />
                                 <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_SANDBOX_MERCHANT_ID"}]</span>
                             </div>
                         </div>
