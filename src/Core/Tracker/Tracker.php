@@ -21,12 +21,12 @@ class Tracker
     public const STATUS_DELIVERED = 'DELIVERED';
     public const STATUS_CANCELLED = 'CANCELLED';
 
-    protected array $possibleStatus = [
+    protected $possibleStatus = [
         self::STATUS_CANCELLED, self::STATUS_ON_HOLD,
         self::STATUS_DELIVERED, self::STATUS_CANCELLED
     ];
 
-    protected string $defaultStatus = self::STATUS_SHIPPED;
+    protected $defaultStatus = self::STATUS_SHIPPED;
     public function sendtracking(
         string $transactionId,
         string $trackingNumber,
