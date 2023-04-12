@@ -368,6 +368,15 @@ class ModuleSettings
         }
     }
 
+    public function saveMerchantId(string $merchantId)
+    {
+        if ($this->isSandbox()) {
+            $this->save('oscPayPalSandboxClientMerchantId', $merchantId);
+        } else {
+            $this->save('oscPayPalClientMerchantId', $merchantId);
+        }
+    }
+
     public function saveAcdcEligibility(bool $eligibility)
     {
         if ($this->isSandbox()) {

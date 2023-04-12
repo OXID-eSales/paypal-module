@@ -142,7 +142,7 @@ class PayPalSession
         );
     }
 
-    public static function storeOnboardingPayload(string $payload): void
+    public static function storeOnboardingPayload(string $payload)
     {
         Registry::getSession()->setVariable(
             Constants::SESSION_ONBOARDING_PAYLOAD,
