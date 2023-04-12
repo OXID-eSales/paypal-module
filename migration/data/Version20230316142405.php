@@ -16,7 +16,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20220921115200 extends AbstractMigration
+final class Version20230316142405 extends AbstractMigration
 {
     public function __construct($version)
     {
@@ -27,25 +27,15 @@ final class Version20220921115200 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        $this->updatePayPalOrderTable($schema);
+        $this->insertPayPalTrackingCarrierData();
     }
 
     public function down(Schema $schema): void
     {
     }
 
-    /**
-     * update paypal order table
-     */
-    protected function updatePayPalOrderTable(Schema $schema): void
+    protected function insertPayPalTrackingCarrierData(): void
     {
-        $order = $schema->getTable('oscpaypal_order');
-        if (!$order->hasColumn('OSCPAYPALTRANSACTIONTYPE')) {
-            $order->addColumn(
-                'OSCPAYPALTRANSACTIONTYPE',
-                Types::STRING,
-                ['columnDefinition' => 'char(32) collate latin1_general_ci NOT null default "capture"']
-            );
-        }
+        $this->addSql(file_get_contents(__DIR__ . '/Version20230316142405.sql'));
     }
 }
