@@ -484,7 +484,9 @@ final class PayPalDefinitions
 
     public static function isButtonPayment(string $oxid): bool
     {
-        return self::PAYPAL_DEFINTIONS[$oxid]['buttonpayment'];
+        return (isset(self::PAYPAL_DEFINTIONS[$oxid])) ?
+            self::PAYPAL_DEFINTIONS[$oxid]['buttonpayment'] :
+            false;
     }
 
     public static function getPaymentSourceRequestName(string $oxid): string
