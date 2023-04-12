@@ -352,8 +352,7 @@ class Order extends Order_parent
         string $trackCarrier = '',
         string $trackCode = '',
         string $status = ''
-    ): bool
-    {
+    ): bool {
         $trackCode = $trackCode ?: $this->getPayPalTrackingCode();
         $trackCarrier = $trackCarrier ?: $this->getPayPalTrackingCarrier();
         $transactionId = $transactionId ?: $this->getPayPalTransactionId();
