@@ -1,4 +1,4 @@
-INSERT INTO `oscpaypal_trackingcarrier` (`OXID`, `OXCOUNTRYCODE`, `OXTITLE`, `OXKEY`, `OXTIMESTAMP`) VALUES
+REPLACE INTO `oscpaypal_trackingcarrier` (`OXID`, `OXCOUNTRYCODE`, `OXTITLE`, `OXKEY`, `OXTIMESTAMP`) VALUES
 ('0d2e5fdc1cfe93acb1c31ff0346e5cc8', 'AE', 'AXL Express & Logistics', 'AXL', '0000-00-00 00:00:00'),
 ('6da7303be1f764b9ee9509a3b515dd63', 'AE', 'Continental', 'CONTINENTAL', '0000-00-00 00:00:00'),
 ('31955e77f435c85b5e5b8ac6812f7fc5', 'AE', 'Skynet Worldwide Express UAE', 'SKYNET_UAE', '0000-00-00 00:00:00'),
