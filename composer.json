@@ -16,7 +16,7 @@
             "target-directory": "osc/paypal",
             "blacklist-filter": [
                 "resources/**/*",
-                "Tests/**/*"
+                "tests/**/*"
             ]
         }
     },
@@ -48,22 +48,22 @@
     "autoload": {
         "psr-4": {
             "OxidSolutionCatalysts\\PayPal\\": "src\\",
-            "OxidSolutionCatalysts\\PayPal\\Tests\\": "Tests\\"
+            "OxidSolutionCatalysts\\PayPal\\tests\\": "tests"
         }
     },
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
-        "phpcs": "phpcs --standard=Tests/phpcs.xml",
-        "phpcbf": "phpcbf --standard=Tests/phpcs.xml",
+        "phpcs": "phpcs --standard=tests/phpcs.xml",
+        "phpcbf": "phpcbf --standard=tests/phpcs.xml",
 
-        "phpstan": "phpstan -cTests/PhpStan/phpstan.neon analyse src/",
-        "phpstan-generate-baseline": "phpstan -cTests/PhpStan/phpstan.neon analyse src/ --generate-baseline Tests/PhpStan/phpstan-baseline.neon",
-        "phpstan-report": "phpstan -cTests/PhpStan/phpstan.neon analyse src/ --error-format=json > Tests/reports/phpstan.report.json",
+        "phpstan": "phpstan -ctests/PhpStan/phpstan.neon analyse src/",
+        "phpstan-generate-baseline": "phpstan -ctests/PhpStan/phpstan.neon analyse src/ --generate-baseline tests/PhpStan/phpstan-baseline.neon",
+        "phpstan-report": "phpstan -ctests/PhpStan/phpstan.neon analyse src/ --error-format=json > tests/reports/phpstan.report.json",
 
-        "phpmd": "phpmd src ansi Tests/PhpMd/standard.xml --baseline Tests/PhpMd/phpmd.baseline.xml",
-        "phpmd-generate-baseline": "phpmd src ansi Tests/PhpMd/standard.xml --generate-baseline",
-        "phpmd-report": "phpmd src json Tests/PhpMd/standard.xml --reportfile Tests/reports/phpmd.report.json --baseline Tests/PhpMd/phpmd.baseline.xml",
+        "phpmd": "phpmd src ansi tests/PhpMd/standard.xml --baseline tests/PhpMd/phpmd.baseline.xml",
+        "phpmd-generate-baseline": "phpmd src ansi tests/PhpMd/standard.xml --generate-baseline",
+        "phpmd-report": "phpmd src json tests/PhpMd/standard.xml --reportfile tests/reports/phpmd.report.json --baseline tests/PhpMd/phpmd.baseline.xml",
 
         "static": [
             "@phpcs",
