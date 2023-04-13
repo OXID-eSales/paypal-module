@@ -10,3 +10,4 @@ php-cs-fixer.phar
 /Tests/Codeception/_support/_generated/
 /Tests/.env
 /resources/node_modules/
+./Tests/reports

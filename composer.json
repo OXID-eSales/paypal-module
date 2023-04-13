@@ -38,9 +38,9 @@
         "codeception/module-db": "^1.1.0",
         "squizlabs/php_codesniffer": "3.*",
         "phpmd/phpmd": "^2.11",
-        "vimeo/psalm": "^4.13",
         "symfony/dotenv": "^5.1",
-        "oxid-esales/oxideshop-ce": "^6.8"
+        "oxid-esales/oxideshop-ce": "^6.8",
+        "phpstan/phpstan": "^1.10"
     },
     "conflict": {
         "oxid-esales/oxideshop-ce": "<6.8 | ^7.0"
@@ -57,22 +57,26 @@
         "phpcs": "phpcs --standard=Tests/phpcs.xml",
         "phpcbf": "phpcbf --standard=Tests/phpcs.xml",
 
-        "psalm": "psalm --show-info=true --no-cache",
-        "psalm-report": "psalm --show-info=true --no-cache --report=psalm.sonarqube.json",
-        "psalm-errors": "psalm --no-cache",
-        "psalm-automatic": "psalm --alter --issues=MissingReturnType,MissingParamType",
-
         "phpstan": "phpstan -cTests/PhpStan/phpstan.neon analyse src/",
-        "phpstan-report": "phpstan -cTests/PhpStan/phpstan.neon analyse src/ --error-format=json > phpstan.report.json",
+        "phpstan-generate-baseline": "phpstan -cTests/PhpStan/phpstan.neon analyse src/ --generate-baseline Tests/PhpStan/phpstan-baseline.neon",
+        "phpstan-report": "phpstan -cTests/PhpStan/phpstan.neon analyse src/ --error-format=json > Tests/reports/phpstan.report.json",
 
-        "phpmd": "phpmd src text cleancode,codesize,design,naming,unusedcode",
-        "phpmd-report": "phpmd src json cleancode,codesize,design,naming,unusedcode --reportfile phpmd.report.json",
+        "phpmd": "phpmd src ansi Tests/PhpMd/standard.xml --baseline Tests/PhpMd/phpmd.baseline.xml",
+        "phpmd-generate-baseline": "phpmd src ansi Tests/PhpMd/standard.xml --generate-baseline",
+        "phpmd-report": "phpmd src json Tests/PhpMd/standard.xml --reportfile Tests/reports/phpmd.report.json --baseline Tests/PhpMd/phpmd.baseline.xml",
 
         "static": [
             "@phpcs",
             "@phpstan",
-            "@psalm-errors",
             "@phpmd"
+        ],
+        "generate-reports": [
+            "@phpstan-report",
+            "@phpmd-report"
+        ],
+        "generate-baselines": [
+            "@phpstan-generate-baseline",
+            "@phpmd-generate-baseline"
         ]
     },
     "config": {

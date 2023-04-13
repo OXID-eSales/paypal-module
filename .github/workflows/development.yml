@@ -135,22 +135,18 @@ jobs:
         working-directory: source/test-module
         run: composer phpcs
 
-      - name: Run psalm
-        id: psalm
+
+      - name: Run phpstan
+        id: phpstan
+        if: always()
         working-directory: source/test-module
-        run: composer psalm-report
+        run: composer phpstan-report || composer phpstan
 
-#      - name: Run phpstan
-#        id: phpstan
-#        if: always()
-#        working-directory: source/test-module
-#        run: composer phpstan-report || composer phpstan
-
-#      - name: Run phpmd
-#        id: phpmd
-#        if: always()
-#        working-directory: source/test-module
-#        run: composer phpmd-report || composer phpmd
+      - name: Run phpmd
+        id: phpmd
+        if: always()
+        working-directory: source/test-module
+        run: composer phpmd-report || composer phpmd
 
       - name: Upload log artifact
         if: always()
@@ -158,9 +154,8 @@ jobs:
         with:
           name: StylesLog-${{ matrix.php }}
           path: |
-            source/test-module/psalm.sonarqube.json
-#            source/test-module/phpstan.report.json
-#            source/test-module/phpmd.report.json
+            source/test-module/Tests/reports/phpstan.report.json
+            source/test-module/Tests/reports/phpmd.report.json
 
   unit_tests:
     strategy:
@@ -309,5 +304,6 @@ jobs:
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.php.coverage.reportPaths=tests/coverage.xml
             -Dsonar.php.phpstan.reportPaths=styles/phpstan.report.json
+            -Dsonar.php.phpmd.reportPaths=styles/phpmd.report.json
             -Dsonar.cpd.php.minimumTokens=25
             -Dsonar.cpd.php.minimumLines=5
