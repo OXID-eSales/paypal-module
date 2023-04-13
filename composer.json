@@ -47,8 +47,8 @@
     },
     "autoload": {
         "psr-4": {
-            "OxidSolutionCatalysts\\PayPal\\": "src\\",
-            "OxidSolutionCatalysts\\PayPal\\tests\\": "tests"
+            "OxidSolutionCatalysts\\PayPal\\": "src/",
+            "OxidSolutionCatalysts\\PayPal\\Tests\\": "tests/"
         }
     },
     "minimum-stability": "dev",
