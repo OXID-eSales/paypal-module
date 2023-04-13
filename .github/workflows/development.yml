@@ -98,7 +98,7 @@ jobs:
         run: |
           mkdir -p source/var/configuration/environment/
           echo "${{ secrets.MODULE_SETTINGS }}" > source/var/configuration/environment/1.yaml
-          echo "${{ secrets.MODULE_ENV }}" > source/vendor/${{ env.PACKAGE_NAME }}/Tests/.env
+          echo "${{ secrets.MODULE_ENV }}" > source/vendor/${{ env.PACKAGE_NAME }}/tests/.env
           docker-compose exec -T php php bin/oe-console oe:module:apply-configuration
 
       - name: Stop containers
@@ -154,8 +154,8 @@ jobs:
         with:
           name: StylesLog-${{ matrix.php }}
           path: |
-            source/test-module/Tests/reports/phpstan.report.json
-            source/test-module/Tests/reports/phpmd.report.json
+            source/test-module/tests/reports/phpstan.report.json
+            source/test-module/tests/reports/phpmd.report.json
 
   unit_tests:
     strategy:
@@ -187,7 +187,7 @@ jobs:
             -e RUN_TESTS_FOR_SHOP=0 \
             -e RUN_TESTS_FOR_MODULES=0 \
             -e XDEBUG_MODE=coverage \
-            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.PACKAGE_NAME }}/Tests' \
+            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.PACKAGE_NAME }}/tests' \
             php php vendor/bin/runtests \
               --coverage-clover=/var/www/coverage.xml \
               --coverage-text \
@@ -240,7 +240,7 @@ jobs:
             -e ACTIVATE_ALL_MODULES=1 \
             -e RUN_TESTS_FOR_SHOP=0 \
             -e RUN_TESTS_FOR_MODULES=0 \
-            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.PACKAGE_NAME }}/Tests' \
+            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.PACKAGE_NAME }}/tests' \
             php php vendor/bin/runtests-codeception
 
       - name: Stop containers
@@ -254,7 +254,7 @@ jobs:
         with:
           name: CodeceptionTestsLog-${{ matrix.php }}
           path: |
-            source/vendor/${{ env.PACKAGE_NAME }}/Tests/Codeception/_output/
+            source/vendor/${{ env.PACKAGE_NAME }}/tests/Codeception/_output/
             source/source/log/oxideshop.log
             source/data/php/logs/error_log.txt
 
