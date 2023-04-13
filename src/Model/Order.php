@@ -347,8 +347,12 @@ class Order extends Order_parent
         return $success;
     }
 
-    public function doProvidePayPalTrackingCarrier(string $transactionId = '', string $trackCarrier = '', string $trackCode = '', string $status = ''): bool
-    {
+    public function doProvidePayPalTrackingCarrier(
+        string $transactionId = '',
+        string $trackCarrier = '',
+        string $trackCode = '',
+        string $status = ''
+    ): bool {
         $trackCode = $trackCode ?: $this->getPayPalTrackingCode();
         $trackCarrier = $trackCarrier ?: $this->getPayPalTrackingCarrier();
         $transactionId = $transactionId ?: $this->getPayPalTransactionId();

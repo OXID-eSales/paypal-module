@@ -110,6 +110,7 @@ class Onboarding
 
         $clientId = $withCredentials ? $paypalConfig->getClientId() : '';
         $clientSecret = $withCredentials ? $paypalConfig->getClientSecret() : '';
+        $merchantId = $withCredentials ? $paypalConfig->getMerchantId() : '';
 
         return new ApiOnboardingClient(
             Registry::getLogger(),
@@ -117,7 +118,7 @@ class Onboarding
             $clientId,
             $clientSecret,
             $partnerConfig->getTechnicalPartnerId($isSandbox),
-            PayPalSession::getMerchantIdInPayPal(),
+            $merchantId,
             $paypalConfig->getTokenCacheFileName()
         );
     }

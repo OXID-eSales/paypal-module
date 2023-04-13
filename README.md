@@ -9,7 +9,7 @@ PayPal checkout integration for OXID eShop 6.1 and above.
 
 ## Branch Compatibility
 
-* b-6.5.x module branch is compatible with OXID eShop compilation 6.3, 6.4, 6.5
+* b-6.3.x module branch is compatible with OXID eShop compilation 6.3, 6.4, 6.5
 * b-6.1.x module branch is compatible with OXID eShop compilation 6.1, 6.2
 
 ## Install for OXID
@@ -31,10 +31,10 @@ Warning: Running tests will reset the shop.
 
 #### Requirements
 * Ensure test_config.yml is configured:
-    * ```
+    ```
     partial_module_paths: osc/paypal
     ```
-    * ```
+    ```
     activate_all_modules: true
     run_tests_for_shop: false
     run_tests_for_modules: true
