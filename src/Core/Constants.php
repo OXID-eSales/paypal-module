@@ -19,7 +19,6 @@ class Constants
     const SESSION_REDIRECTLINK = 'paypal-session-checkout-redirect';
 
     const SESSION_ONBOARDING_PAYLOAD = 'paypal-onboarding-payload';
-    const SESSION_ONBOARDING_MERCHANTID = 'paypal-onboarding-merchantid';
     const SESSION_PUI_CMID = 'paypal-pui-cmid';
     const SESSION_ACDC_PAYPALORDER_STATUS = 'oscpaypal-acdcorder-status';
 

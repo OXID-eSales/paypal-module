@@ -80,6 +80,16 @@ class Config
     }
 
     /**
+     * Get merchantId based on active mode
+     *
+     * @return string
+     */
+    public function getMerchantId(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getMerchantId();
+    }
+
+    /**
      * @return string
      */
     public function getWebhookId()
@@ -107,6 +117,11 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->getLiveClientSecret();
     }
 
+    public function getLiveMerchantId(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getLiveMerchantId();
+    }
+
     public function getLiveWebhookId(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getLiveWebhookId();
@@ -120,6 +135,11 @@ class Config
     public function getSandboxClientSecret(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxClientSecret();
+    }
+
+    public function getSandboxMerchantId(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxMerchantId();
     }
 
     public function getSandboxWebhookId(): string

@@ -252,7 +252,7 @@ $aModule = [
             'group' => null
         ],
         [
-            'name' => 'oscPayPalSandboxClientId',
+            'name' => 'oscPayPalClientMerchantId',
             'type' => 'str',
             'value' => '',
             'group' => null
@@ -264,13 +264,25 @@ $aModule = [
             'group' => null
         ],
         [
-            'name' => 'oscPayPalSandboxWebhookId',
+            'name' => 'oscPayPalSandboxClientId',
             'type' => 'str',
             'value' => '',
             'group' => null
         ],
         [
             'name' => 'oscPayPalSandboxClientSecret',
+            'type' => 'str',
+            'value' => '',
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalSandboxClientMerchantId',
+            'type' => 'str',
+            'value' => '',
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalSandboxWebhookId',
             'type' => 'str',
             'value' => '',
             'group' => null
