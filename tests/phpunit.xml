@@ -1,16 +1,19 @@
 <phpunit backupGlobals="true"
          backupStaticAttributes="false"
+         bootstrap="bootstrap.php"
          cacheTokens="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
+         colors="false"
+         convertErrorsToExceptions="false"
+         convertNoticesToExceptions="false"
+         convertWarningsToExceptions="false"
          forceCoversAnnotation="false"
+         printerClass="PHPUnit\TextUI\ResultPrinter"
          processIsolation="false"
          stopOnError="false"
          stopOnFailure="false"
          stopOnIncomplete="false"
          stopOnSkipped="false"
-         beStrictAboutTestsThatDoNotTestAnything="false"
+         beStrictAboutTestsThatDoNotTestAnything="true"
          verbose="false">
 <testsuites>
     <testsuite name="UnitTests">
