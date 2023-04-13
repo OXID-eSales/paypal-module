@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<ruleset name="Oxid Coding Standard">
+    <description>Oxid Coding Standard</description>
+
+    <!-- Paths to check -->
+    <file>../src/</file>
+    <file>./</file>
+    <file>../translations</file>
+    <file>../migration</file>
+
+    <exclude-pattern>\.env\.dist</exclude-pattern>
+    <!-- display progress -->
+    <arg value="p"/>
+    <arg name="colors"/>
+    <arg name="extensions" value="php,dist,phtml"/>
+
+    <!-- inherit rules from: -->
+    <rule ref="PSR12"/>
+
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+    <rule ref="Squiz.WhiteSpace.OperatorSpacing">
+        <properties>
+            <property name="ignoreNewlines" value="true"/>
+        </properties>
+    </rule>
+
+    <!-- some of the files can have longer lines, at least temporary -->
+    <rule ref="Generic.Files.LineLength">
+        <exclude-pattern>../translations</exclude-pattern>
+        <exclude-pattern>../migration</exclude-pattern>
+        <exclude-pattern>../src/Core/PayPalDefinitions.php</exclude-pattern>
+        <exclude-pattern>Integration/Onboarding/OnboardingTest.php</exclude-pattern>
+        <exclude-pattern>Unit/Service/CardValidationTest.php</exclude-pattern>
+    </rule>
+
+    <!-- code coverage ignore comment breaks the rule -->
+    <rule ref="PSR12.Classes.ClosingBrace">
+        <exclude-pattern>src/Core/ShopControl.php</exclude-pattern>
+    </rule>
+
+    <!-- code coverage ignore multiple classes in file -->
+    <rule ref="PSR1.Classes.ClassDeclaration.MultipleClasses">
+        <exclude-pattern>Tests/Codeception/Acceptance/WebhookCest.php</exclude-pattern>
+    </rule>
+
+    <!-- ignore method declaration rules for tests -->
+    <rule ref="PSR2.Methods.MethodDeclaration">
+        <exclude-pattern>./</exclude-pattern>
+    </rule>
+</ruleset>

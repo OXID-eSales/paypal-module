@@ -1,0 +1,29 @@
+<phpunit backupGlobals="true"
+         backupStaticAttributes="false"
+         bootstrap="bootstrap.php"
+         cacheTokens="true"
+         colors="false"
+         convertErrorsToExceptions="false"
+         convertNoticesToExceptions="false"
+         convertWarningsToExceptions="false"
+         forceCoversAnnotation="false"
+         printerClass="PHPUnit\TextUI\ResultPrinter"
+         processIsolation="false"
+         stopOnError="false"
+         stopOnFailure="false"
+         stopOnIncomplete="false"
+         stopOnSkipped="false"
+         beStrictAboutTestsThatDoNotTestAnything="true"
+         verbose="false">
+<testsuites>
+    <testsuite name="UnitTests">
+        <directory>Unit/</directory>
+        <directory>Integration/</directory>
+    </testsuite>
+</testsuites>
+<filter>
+    <whitelist addUncoveredFilesFromWhitelist="true">
+        <directory suffix=".php">../src</directory>
+    </whitelist>
+</filter>
+</phpunit>
