@@ -8,14 +8,14 @@
 namespace OxidSolutionCatalysts\PayPal\Core\Onboarding;
 
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPalApi\Onboarding as ApiOnboardingClient;
 use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
 use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
-use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
+use OxidSolutionCatalysts\PayPalApi\Onboarding as ApiOnboardingClient;
 
 class Onboarding
 {
@@ -108,9 +108,14 @@ class Onboarding
         $paypalConfig = oxNew(PayPalConfig::class);
         $partnerConfig = oxNew(PartnerConfig::class);
 
-        $clientId = $withCredentials ? $paypalConfig->getClientId() : '';
-        $clientSecret = $withCredentials ? $paypalConfig->getClientSecret() : '';
-        $merchantId = $withCredentials ? $paypalConfig->getMerchantId() : '';
+        $clientId = '';
+        $clientSecret = '';
+        $merchantId = '';
+        if ($withCredentials) {
+            $clientId = $paypalConfig->getClientId();
+            $clientSecret = $paypalConfig->getClientSecret();
+            $merchantId = $paypalConfig->getMerchantId();
+        }
 
         return new ApiOnboardingClient(
             Registry::getLogger(),
@@ -138,9 +143,7 @@ class Onboarding
 
     public function saveEligibility(array $merchantInformations): array
     {
-        if (
-            !isset($merchantInformations['products'])
-        ) {
+        if (!isset($merchantInformations['products'])) {
             throw OnboardingException::merchantInformationsNotFound();
         }
 

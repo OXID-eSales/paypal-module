@@ -9,15 +9,15 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
-use OxidSolutionCatalysts\PayPal\Core\Constants;
-use PDO;
 use Doctrine\DBAL\Query\QueryBuilder;
-use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
-use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
-use OxidSolutionCatalysts\PayPal\Exception\NotFound;
+use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Exception\NotFound;
+use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
+use PDO;
 
 class OrderRepository
 {
@@ -32,9 +32,10 @@ class OrderRepository
 
     public function __construct(
         QueryBuilderFactoryInterface $queryBuilderFactory,
-        ContextInterface $context,
-        EshopCoreConfig $config
-    ) {
+        ContextInterface             $context,
+        EshopCoreConfig              $config
+    )
+    {
         $this->queryBuilderFactory = $queryBuilderFactory;
         $this->context = $context;
         $this->config = $config;
@@ -44,7 +45,8 @@ class OrderRepository
         string $shopOrderId,
         string $paypalOrderId = '',
         string $payPalTransactionId = ''
-    ): PayPalOrderModel {
+    ): PayPalOrderModel
+    {
 
         $oxid = $this->getId(
             $shopOrderId,
@@ -53,25 +55,103 @@ class OrderRepository
             Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
         );
 
-        $order = oxNew(PayPalOrderModel::class);
-        $order->load($oxid);
 
-        if (!$order->isLoaded()) {
-            $order->assign(
-                [
-                    'oxorderid' => $shopOrderId,
-                    'oxpaypalorderid' => $paypalOrderId
-                ]
-            );
-            $order->setTransactionId($payPalTransactionId);
+        #$oxid = empty($oxid) && empty($payPalTransactionId) ? $this->getId($shopOrderId, $paypalOrderId, '') : '';
+        #$oxid = empty($oxid) && !empty($payPalTransactionId) ? $this->getId($shopOrderId, $paypalOrderId, '') : '';
+
+        #$oxid = $oxid ?:
+        #    (empty($payPalTransactionId) ? '' : $this->getId($shopOrderId, $paypalOrderId));
+
+        /**
+         * TODO:
+         *
+         * 1) Datensatz mit orderid und paypalid vorhanden, keine transid -> transid speichern - abgeschlossen?
+         * 2) Datensatz mit orderid und paypalid vorhanden, andere transid -> neue datensatz speichern
+         * 3) Datensatz mit orderid und paypalid vorhanden, genaue transid -> einfach laden
+         */
+
+        $order = oxNew(PayPalOrderModel::class);
+        $order1 = null;
+        if ($oxid === '') {
+            // Fall 1)
+            $oxid = $this->getId($shopOrderId, $paypalOrderId, '');
+            $order->load($oxid);
+            $isOrderLoaded = $order->isLoaded();
+            if (!empty($payPalTransactionId) && $isOrderLoaded) {
+                $order->setTransactionId($payPalTransactionId);
+                $order->save();
+            }
+
+            // Fall 2
+            $oxid = $this->getId($shopOrderId, $paypalOrderId);
+            $order->load($oxid);
+            $isOrderLoaded = $order->isLoaded();
+            if (!empty($payPalTransactionId) && !$isOrderLoaded) {
+                $order1 = oxNew(PayPalOrderModel::class);
+                $order1->assign(
+                    [
+                        'oxorderid' => $shopOrderId,
+                        'oxpaypalorderid' => $paypalOrderId
+                    ]
+                );
+                $order1->setTransactionId($payPalTransactionId);
+                $order1->save();
+            }
+
+            // Fall 3
+            if (!$isOrderLoaded) {
+                $order = oxNew(PayPalOrderModel::class);
+                $order->load($oxid);
+
+                if (!$order->isLoaded()) {
+                    $order->assign(
+                        [
+                            'oxorderid' => $shopOrderId,
+                            'oxpaypalorderid' => $paypalOrderId
+                        ]
+                    );
+                    $order->setTransactionId($payPalTransactionId);
+                }
+            }
+
+
+            /*
+                    if ($order->getTransactionId() !== '') {
+                        $order1 = oxNew(PayPalOrderModel::class);
+                        $order1->assign(
+                            [
+                                'oxorderid' => $shopOrderId,
+                                'oxpaypalorderid' => $paypalOrderId
+                            ]
+                        );
+                        $order1->setTransactionId($payPalTransactionId);
+                        $order1->save();
+                    }
+                } else {
+                    $order1 = oxNew(PayPalOrderModel::class);
+                    $order1->assign(
+                        [
+                            'oxorderid' => $shopOrderId,
+                            'oxpaypalorderid' => $paypalOrderId
+                        ]
+                    );
+                    $order1->setTransactionId($payPalTransactionId);
+                    $order1->save();
+                }
+            } else {
+                $oxid = $this->getId($shopOrderId, $paypalOrderId);
+            }
+            */
         }
 
-        return $order;
+
+        return $order1 ?: $order;
     }
 
     public function paypalOrderByOrderId(
         string $shopOrderId
-    ): PayPalOrderModel {
+    ): PayPalOrderModel
+    {
         $result = null;
 
         $oxid = $this->getId($shopOrderId);
@@ -136,7 +216,7 @@ class OrderRepository
             ->execute()
             ->fetch(PDO::FETCH_COLUMN);
 
-        return (string) $id;
+        return (string)$id;
     }
 
     public function cleanUpNotFinishedOrders(): void
@@ -186,11 +266,12 @@ class OrderRepository
     }
 
     private function getId(
-        string $shopOrderId,
-        string $paypalOrderId = '',
-        string $payPalTransactionId = '',
-        string $payPalTransactionType = ''
-    ): string {
+        string  $shopOrderId,
+        ?string $paypalOrderId = null,
+        ?string $payPalTransactionId = null,
+        ?string $payPalTransactionType = null
+    ): string
+    {
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->queryBuilderFactory->create();
 
@@ -198,38 +279,33 @@ class OrderRepository
             'oxorderid' => $shopOrderId,
         ];
 
-        if ($paypalOrderId) {
-            $parameters['oxpaypalorderid'] = $paypalOrderId;
-        }
-        if ($payPalTransactionId) {
-            $parameters['oscpaypaltransactionid'] = $payPalTransactionId;
-        }
-        if ($payPalTransactionType) {
-            $parameters['oscpaypaltransactiontype'] = $payPalTransactionType;
-        }
-
         $queryBuilder->select('oxid')
             ->from('oscpaypal_order')
             ->where('oxorderid = :oxorderid');
 
-        if ($paypalOrderId) {
+        if (!is_null($paypalOrderId)) {
+            $parameters['oxpaypalorderid'] = $paypalOrderId;
             $queryBuilder->andWhere('oxpaypalorderid = :oxpaypalorderid');
         }
-
-        if ($payPalTransactionId) {
+        if (!is_null($payPalTransactionId)) {
+            $parameters['oscpaypaltransactionid'] = $payPalTransactionId;
             $queryBuilder->andWhere('oscpaypaltransactionid = :oscpaypaltransactionid');
         }
-
-        if ($payPalTransactionType) {
+        if (!is_null($payPalTransactionType)) {
+            $parameters['oscpaypaltransactiontype'] = $payPalTransactionType;
             $queryBuilder->andWhere('oscpaypaltransactiontype = :oscpaypaltransactiontype');
         }
+
+        $sql = $queryBuilder->setParameters($parameters)->getSQL();
+        fwrite(STDERR, "SQL: " . var_export($sql, true) . "\n");
+        fwrite(STDERR, "params: " . var_export($queryBuilder->getParameters(), true) . "\n");
 
         $id = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
             ->execute()
             ->fetch(PDO::FETCH_COLUMN);
 
-        return (string) $id;
+        return (string)$id;
     }
 
     private function getShopOrderIdByPaypalOrderId(string $paypalOrderId): string
@@ -251,7 +327,7 @@ class OrderRepository
             ->execute()
             ->fetch(PDO::FETCH_COLUMN);
 
-        return (string) $id;
+        return (string)$id;
     }
 
     private function getShopOrderIdByPaypalTransactionId(string $paypalTransactionId): string
@@ -273,6 +349,6 @@ class OrderRepository
             ->execute()
             ->fetch(PDO::FETCH_COLUMN);
 
-        return (string) $id;
+        return (string)$id;
     }
 }

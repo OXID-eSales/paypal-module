@@ -12,16 +12,16 @@ use OxidEsales\Eshop\Application\Controller\Admin\AdminController;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Config;
+use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
+use OxidSolutionCatalysts\PayPal\Core\LegacyOeppModuleDetails;
+use OxidSolutionCatalysts\PayPal\Core\Onboarding\Onboarding;
 use OxidSolutionCatalysts\PayPal\Core\Onboarding\Webhook;
 use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
-use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
-use OxidSolutionCatalysts\PayPal\Core\Onboarding\Onboarding;
-use OxidSolutionCatalysts\PayPal\Core\LegacyOeppModuleDetails;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
 /**
  * Controller for admin > PayPal/Configuration page
@@ -66,7 +66,8 @@ class PayPalConfigController extends AdminController
         return $this->buildSignUpLink(
             $partnerConfig->getTechnicalClientId(),
             $partnerConfig->getTechnicalPartnerId(),
-            PayPalConstants::PAYPAL_ONBOARDING_LIVE_URL
+            PayPalConstants::PAYPAL_ONBOARDING_LIVE_URL,
+            false
         );
     }
 
@@ -83,7 +84,8 @@ class PayPalConfigController extends AdminController
         return $this->buildSignUpLink(
             $partnerConfig->getTechnicalClientId(true),
             $partnerConfig->getTechnicalPartnerId(true),
-            PayPalConstants::PAYPAL_ONBOARDING_SANDBOX_URL
+            PayPalConstants::PAYPAL_ONBOARDING_SANDBOX_URL,
+            true
         );
     }
 
@@ -94,7 +96,7 @@ class PayPalConfigController extends AdminController
      *
      * @return string
      */
-    private function buildSignUpLink(string $partnerClientId, string $partnerId, string $url): string
+    private function buildSignUpLink(string $partnerClientId, string $partnerId, string $url, bool $isSandbox = false): string
     {
         $lang = Registry::getLang();
         $config = new Config();
@@ -103,7 +105,10 @@ class PayPalConfigController extends AdminController
         $localeCode = $lang->getLanguageAbbr() . '-' . $countryCode;
 
         $partnerLogoUrl = Registry::getConfig()->getOutUrl(null, true) . 'admin/img/loginlogo.png';
-        $returnToPartnerUrl = $config->getAdminUrlForJSCalls() . 'cl=oscpaypalconfig&fnc=returnFromSignup';
+        $returnToPartnerUrl = $config->getAdminUrlForJSCalls() .
+            'cl=oscpaypalconfig&fnc=returnFromSignup'.
+            '&isSandbox=' . ($isSandbox ? '1' : '0')
+        ;
 
         $params = [
             'partnerClientId' => $partnerClientId,
@@ -165,7 +170,7 @@ class PayPalConfigController extends AdminController
      * Saves configuration values
      *
      * @param array $conf
-     * @param int   $shopId
+     * @param int $shopId
      */
     protected function saveConfig(array $conf, int $shopId): void
     {
@@ -179,11 +184,19 @@ class PayPalConfigController extends AdminController
      * check Eligibility if config would be changed
      *
      * @param array $confArr
-
      */
     protected function checkEligibility(): void
     {
         $config = new Config();
+        /** skip check if no client ID provided */
+        if (
+            $config->getClientId() === '' ||
+            $config->getMerchantId() === '' ||
+            $config->getWebhookId() === ''
+        ) {
+            return;
+        }
+
         try {
             $handler = oxNew(Onboarding::class);
             $onBoardingClient = $handler->getOnboardingClient($config->isSandbox(), true);
@@ -342,18 +355,20 @@ class PayPalConfigController extends AdminController
         $config = new Config();
         $request = Registry::getRequest();
         if (
-            ('true' === (string) $request->getRequestParameter('permissionsGranted')) &&
-            ('true' === (string) $request->getRequestParameter('consentStatus'))
+            ('true' === (string)$request->getRequestParameter('permissionsGranted')) &&
+            ('true' === (string)$request->getRequestParameter('consentStatus'))
         ) {
             /** @var ModuleSettings $moduleSettings */
             $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-            $moduleSettings->saveMerchantId($request->getRequestParameter('merchantIdInPayPal'));
+            $isSandbox = (string)$request->getRequestParameter('isSandbox');
+            $isSandbox = $isSandbox === '1';
+            $moduleSettings->saveMerchantId($request->getRequestParameter('merchantIdInPayPal'), $isSandbox);
         }
 
         $this->autoConfiguration();
         $this->registerWebhooks();
 
-        $url = $config->getAdminUrlForJSCalls() . 'cl=oscpaypalconfig&aoc=ready';
+        $url = $config->getAdminUrlForJSCalls() . 'cl=oscpaypalconfig';
 
         Registry::getUtils()->redirect($url, false, 302);
     }
