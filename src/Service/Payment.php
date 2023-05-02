@@ -282,22 +282,12 @@ class Payment
                     $capture = $paymentService->captureAuthorizedPayment($authorizationId, $request, '');
                 } catch (ApiException $exception) {
                     $this->handlePayPalApiError($exception);
-                    $issue = $exception->getErrorIssue();
 
-                    /*if (!empty($issue)) {
-                        $this->setPaymentExecutionError();
-                        if ($issue === 'INSTRUMENT_DECLINED') {
-                            $utilsView = Registry::getUtilsView();
-                            Registry::getUtilsView()->addErrorToDisplay(
-                                'Darfst du nicht',
-                                false,
-                                true,
-                                'paypal_error'
-                            );
-                            $this->setPaymentExecutionError();
-                        }
-                    }*/
+                    $issue = $exception->getErrorIssue();
+                    $this->displayErrorIfInstrumentDeclined($issue);
+
                     Registry::getLogger()->error($exception->getMessage(), [$exception]);
+
                     throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
                 }
 
@@ -309,19 +299,10 @@ class Payment
                     $result = $orderService->capturePaymentForOrder('', $checkoutOrderId, $request, '');
                 } catch (ApiException $exception) {
                     $this->handlePayPalApiError($exception);
-/*                    $issue = $exception->getErrorIssue();
-                    if (!empty($issue)) {
-                        if ($issue === 'INSTRUMENT_DECLINED') {
-                            $utilsView = Registry::getUtilsView();
 
-                            Registry::getUtilsView()->addErrorToDisplay(
-                                'Darfst du nicht',
-                                false,
-                                true,
-                                'paypal_error'
-                            );
-                        }
-                    }*/
+                    $issue = $exception->getErrorIssue();
+                    $this->displayErrorIfInstrumentDeclined($issue);
+
                     Registry::getLogger()->error($exception->getMessage(), [$exception]);
                     throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
                 }
@@ -722,6 +703,24 @@ class Payment
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_INSTRUMENT_DECLINED);
         } else {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
+        }
+    }
+
+    private function displayErrorIfInstrumentDeclined(?string $issue): void
+    {
+        if ($issue === 'INSTRUMENT_DECLINED') {
+            $languageObject = Registry::getLang();
+            $translatedErrorMessage = $languageObject->translateString(
+                self::PAYMENT_ERROR_INSTRUMENT_DECLINED,
+                (int)$languageObject->getBaseLanguage(),
+                false
+            );
+            Registry::getUtilsView()->addErrorToDisplay(
+                $translatedErrorMessage,
+                false,
+                true,
+                'paypal_error'
+            );
         }
     }
 }
