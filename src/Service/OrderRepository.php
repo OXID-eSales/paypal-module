@@ -17,26 +17,20 @@ use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
-use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 
 class OrderRepository
 {
     /** @var QueryBuilderFactoryInterface */
     private $queryBuilderFactory;
 
-    /** @var ContextInterface */
-    private $context;
-
     /** @var EshopCoreConfig */
     private $config;
 
     public function __construct(
         QueryBuilderFactoryInterface $queryBuilderFactory,
-        ContextInterface $context,
         EshopCoreConfig $config
     ) {
         $this->queryBuilderFactory = $queryBuilderFactory;
-        $this->context = $context;
         $this->config = $config;
     }
 
