@@ -73,9 +73,6 @@ class Payment
     /** OrderRequestFactory */
     private $orderRequestFactory;
 
-    /** @var ConfirmOrderRequestFactory */
-    private $confirmOrderRequestFactory;
-
     /** @var SCAValidatorInterface */
     private $scaValidator;
 
@@ -89,8 +86,7 @@ class Payment
         ModuleSettingsService $moduleSettingsService,
         ServiceFactory $serviceFactory = null,
         PatchRequestFactory $patchRequestFactory = null,
-        OrderRequestFactory $orderRequestFactory = null,
-        ConfirmOrderRequestFactory $confirmOrderRequestFactory = null
+        OrderRequestFactory $orderRequestFactory = null
     ) {
         $this->eshopSession = $eshopSession;
         $this->orderRepository = $orderRepository;
@@ -99,8 +95,6 @@ class Payment
         $this->serviceFactory = $serviceFactory ?: Registry::get(ServiceFactory::class);
         $this->patchRequestFactory = $patchRequestFactory ?: Registry::get(PatchRequestFactory::class);
         $this->orderRequestFactory = $orderRequestFactory ?: Registry::get(OrderRequestFactory::class);
-        $this->confirmOrderRequestFactory = $confirmOrderRequestFactory ?:
-            Registry::get(ConfirmOrderRequestFactory::class);
     }
 
     public function doCreatePayPalOrder(
