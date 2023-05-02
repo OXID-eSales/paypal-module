@@ -96,8 +96,7 @@ abstract class WebhookHandlerBase
     {
         // check for not finished orders and reset
         /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
-        $this->getOrderRepository()
-            ->cleanUpNotFinishedOrders();
+        $this->getOrderRepository()->cleanUpNotFinishedOrders();
     }
 
     public function getOrderRepository(): OrderRepository

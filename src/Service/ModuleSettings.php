@@ -10,14 +10,14 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Service;
 
 use OxidEsales\Eshop\Application\Model\Country;
+use OxidEsales\Eshop\Application\Model\Payment;
+use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\EshopCommunity\Core\Registry;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Module;
-use OxidEsales\Eshop\Application\Model\Payment;
-use OxidEsales\Eshop\Application\Model\User;
 
 class ModuleSettings
 {
@@ -67,12 +67,12 @@ class ModuleSettings
 
     public function showAllPayPalBanners(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalBannersShowAll');
+        return (bool)$this->getSettingValue('oscPayPalBannersShowAll');
     }
 
     public function isSandbox(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalSandboxMode');
+        return (bool)$this->getSettingValue('oscPayPalSandboxMode');
     }
 
     /**
@@ -132,75 +132,77 @@ class ModuleSettings
 
     public function getLiveClientId(): string
     {
-        return (string) $this->getSettingValue('oscPayPalClientId');
+        return (string)$this->getSettingValue('oscPayPalClientId');
     }
 
     public function getLiveClientSecret(): string
     {
-        return (string) $this->getSettingValue('oscPayPalClientSecret');
+        return (string)$this->getSettingValue('oscPayPalClientSecret');
     }
 
     public function getLiveMerchantId(): string
     {
-        return (string) $this->getSettingValue('oscPayPalClientMerchantId');
+        return (string)$this->getSettingValue('oscPayPalClientMerchantId');
     }
 
     public function getLiveWebhookId(): string
     {
-        return (string) $this->getSettingValue('oscPayPalWebhookId');
+        return (string)$this->getSettingValue('oscPayPalWebhookId');
     }
 
     public function getSandboxClientId(): string
     {
-        return (string) $this->getSettingValue('oscPayPalSandboxClientId');
+        return (string)$this->getSettingValue('oscPayPalSandboxClientId');
     }
 
     public function getSandboxClientSecret(): string
     {
-        return (string) $this->getSettingValue('oscPayPalSandboxClientSecret');
+        return (string)$this->getSettingValue('oscPayPalSandboxClientSecret');
     }
 
     public function getSandboxMerchantId(): string
     {
-        return (string) $this->getSettingValue('oscPayPalSandboxClientMerchantId');
+        return (string)$this->getSettingValue('oscPayPalSandboxClientMerchantId');
     }
 
     public function getSandboxWebhookId(): string
     {
-        return (string) $this->getSettingValue('oscPayPalSandboxWebhookId');
+        return (string)$this->getSettingValue('oscPayPalSandboxWebhookId');
     }
 
     public function showPayPalBasketButton(): bool
     {
-        return ($this->getSettingValue('oscPayPalShowBasketButton') &&
-            $this->isPayPalCheckoutExpressPaymentEnabled());
+        return $this->getSettingValue('oscPayPalShowBasketButton') &&
+            ($this->isPayPalCheckoutExpressPaymentEnabled() || $this->isAdmin());
     }
 
     public function showPayPalMiniBasketButton(): bool
     {
-        return ($this->getSettingValue('oscPayPalShowMiniBasketButton') &&
-            $this->isPayPalCheckoutExpressPaymentEnabled());
+
+        return
+            $this->getSettingValue('oscPayPalShowMiniBasketButton') &&
+            ($this->isPayPalCheckoutExpressPaymentEnabled() || $this->isAdmin());
     }
 
     public function showPayPalPayLaterButton(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalShowPayLaterButton');
+        return (bool)$this->getSettingValue('oscPayPalShowPayLaterButton');
     }
 
     public function showPayPalProductDetailsButton(): bool
     {
-        return ($this->getSettingValue('oscPayPalShowProductDetailsButton') &&
-            $this->isPayPalCheckoutExpressPaymentEnabled());
+        return $this->getSettingValue('oscPayPalShowProductDetailsButton') &&
+            ($this->isPayPalCheckoutExpressPaymentEnabled() || $this->isAdmin());
     }
 
     public function getAutoBillOutstanding(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalAutoBillOutstanding');
+        return (bool)$this->getSettingValue('oscPayPalAutoBillOutstanding');
     }
 
     public function getSetupFeeFailureAction(): string
     {
-        $value = (string) $this->getSettingValue('oscPayPalSetupFeeFailureAction');
+        $value = (string)$this->getSettingValue('oscPayPalSetupFeeFailureAction');
         return !empty($value) ? $value : 'CONTINUE';
     }
 
@@ -212,108 +214,108 @@ class ModuleSettings
 
     public function showBannersOnStartPage(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalBannersStartPage');
+        return (bool)$this->getSettingValue('oscPayPalBannersStartPage');
     }
 
     public function getStartPageBannerSelector(): string
     {
-        return (string) $this->getSettingValue('oscPayPalBannersStartPageSelector');
+        return (string)$this->getSettingValue('oscPayPalBannersStartPageSelector');
     }
 
     public function showBannersOnCategoryPage(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalBannersCategoryPage');
+        return (bool)$this->getSettingValue('oscPayPalBannersCategoryPage');
     }
 
     public function getCategoryPageBannerSelector(): string
     {
-        return (string) $this->getSettingValue('oscPayPalBannersCategoryPageSelector');
+        return (string)$this->getSettingValue('oscPayPalBannersCategoryPageSelector');
     }
 
     public function showBannersOnSearchPage(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalBannersSearchResultsPage');
+        return (bool)$this->getSettingValue('oscPayPalBannersSearchResultsPage');
     }
 
     public function getSearchPageBannerSelector(): string
     {
-        return (string) $this->getSettingValue('oscPayPalBannersSearchResultsPageSelector');
+        return (string)$this->getSettingValue('oscPayPalBannersSearchResultsPageSelector');
     }
 
     public function showBannersOnProductDetailsPage(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalBannersProductDetailsPage');
+        return (bool)$this->getSettingValue('oscPayPalBannersProductDetailsPage');
     }
 
     public function getProductDetailsPageBannerSelector(): string
     {
-        return (string) $this->getSettingValue('oscPayPalBannersProductDetailsPageSelector');
+        return (string)$this->getSettingValue('oscPayPalBannersProductDetailsPageSelector');
     }
 
     public function showBannersOnCheckoutPage(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalBannersCheckoutPage');
+        return (bool)$this->getSettingValue('oscPayPalBannersCheckoutPage');
     }
 
     public function getPayPalCheckoutBannerCartPageSelector(): string
     {
-        return (string) $this->getSettingValue('oscPayPalBannersCartPageSelector');
+        return (string)$this->getSettingValue('oscPayPalBannersCartPageSelector');
     }
 
     public function getPayPalCheckoutBannerPaymentPageSelector(): string
     {
-        return (string) $this->getSettingValue('oscPayPalBannersPaymentPageSelector');
+        return (string)$this->getSettingValue('oscPayPalBannersPaymentPageSelector');
     }
 
     public function getPayPalCheckoutBannerColorScheme(): string
     {
-        return (string) $this->getSettingValue('oscPayPalBannersColorScheme');
+        return (string)$this->getSettingValue('oscPayPalBannersColorScheme');
     }
 
     public function getPayPalStandardCaptureStrategy(): string
     {
-        return (string) $this->getSettingValue('oscPayPalStandardCaptureStrategy');
+        return (string)$this->getSettingValue('oscPayPalStandardCaptureStrategy');
     }
 
     public function getPayPalCheckoutBannersColorScheme(): string
     {
-        return (string) $this->getSettingValue('oscPayPalBannersColorScheme');
+        return (string)$this->getSettingValue('oscPayPalBannersColorScheme');
     }
 
     public function loginWithPayPalEMail(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalLoginWithPayPalEMail');
+        return (bool)$this->getSettingValue('oscPayPalLoginWithPayPalEMail');
     }
 
     public function cleanUpNotFinishedOrdersAutomaticlly(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalCleanUpNotFinishedOrdersAutomaticlly');
+        return (bool)$this->getSettingValue('oscPayPalCleanUpNotFinishedOrdersAutomaticlly');
     }
 
     public function getStartTimeCleanUpOrders(): int
     {
-        return (int) $this->getSettingValue('oscPayPalStartTimeCleanUpOrders');
+        return (int)$this->getSettingValue('oscPayPalStartTimeCleanUpOrders');
     }
 
 
     public function isLiveAcdcEligibility(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalAcdcEligibility');
+        return (bool)$this->getSettingValue('oscPayPalAcdcEligibility');
     }
 
     public function isLivePuiEligibility(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalPuiEligibility');
+        return (bool)$this->getSettingValue('oscPayPalPuiEligibility');
     }
 
     public function isSandboxAcdcEligibility(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalSandboxAcdcEligibility');
+        return (bool)$this->getSettingValue('oscPayPalSandboxAcdcEligibility');
     }
 
     public function isSandboxPuiEligibility(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalSandboxPuiEligibility');
+        return (bool)$this->getSettingValue('oscPayPalSandboxPuiEligibility');
     }
 
     public function getActivePayments(): array
@@ -351,12 +353,17 @@ class ModuleSettings
         }
     }
 
-    public function saveMerchantId(string $merchantId): void
+    public function saveMerchantId(string $merchantId , ?bool $isSandbox = null): void
     {
-        if ($this->isSandbox()) {
+        $isSandbox = !is_null($isSandbox) ? $isSandbox : $this->isSandbox();
+        if ($isSandbox) {
             $this->save('oscPayPalSandboxClientMerchantId', $merchantId);
-        } else {
+            Registry::getLogger()->error('Sandbox  Merchant ID: ' . $merchantId, [print_r(debug_backtrace,true)]);
+        }
+
+        if (!$isSandbox) {
             $this->save('oscPayPalClientMerchantId', $merchantId);
+            Registry::getLogger()->error('Live  Merchant ID: ' . $merchantId, [print_r(debug_backtrace,true)]);
         }
     }
 
@@ -410,7 +417,7 @@ class ModuleSettings
      */
     public function getLegacySettingsTransferStatus(): bool
     {
-        return (bool) $this->getSettingValue('oscPayPalLegacySettingsTransferred');
+        return (bool)$this->getSettingValue('oscPayPalLegacySettingsTransferred');
     }
 
     /**
@@ -443,7 +450,7 @@ class ModuleSettings
      */
     public function isPriceViewModeNetto(): bool
     {
-        $result = (bool) Registry::getConfig()->getConfigParam('blShowNetPrice');
+        $result = (bool)Registry::getConfig()->getConfigParam('blShowNetPrice');
         $user = oxNew(User::class);
         if ($user->loadActiveUser()) {
             $result = $user->isPriceViewModeNetto();
@@ -479,13 +486,13 @@ class ModuleSettings
 
     public function getPayPalSCAContingency(): string
     {
-        $value = (string) $this->getSettingValue('oscPayPalSCAContingency');
+        $value = (string)$this->getSettingValue('oscPayPalSCAContingency');
         return $value === Constants::PAYPAL_SCA_ALWAYS ? $value : Constants::PAYPAL_SCA_WHEN_REQUIRED;
     }
 
     public function alwaysIgnoreSCAResult(): bool
     {
-        $value = (string) $this->getSettingValue('oscPayPalSCAContingency');
+        $value = (string)$this->getSettingValue('oscPayPalSCAContingency');
         return $value === Constants::PAYPAL_SCA_DISABLED;
     }
 
@@ -495,5 +502,10 @@ class ModuleSettings
     private function getSettingValue(string $key)
     {
         return $this->moduleSettingBridge->get($key, Module::MODULE_ID);
+    }
+
+    private function isAdmin(): bool
+    {
+        return isAdmin();
     }
 }
