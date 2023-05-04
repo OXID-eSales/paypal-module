@@ -11,12 +11,12 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureDeniedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
+use PHPUnit\Framework\MockObject\MockObject;
 
 final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
 {
@@ -57,6 +57,7 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
         $loggerMock = $this->getPsrLoggerMock();
+        /** @var MockObject $loggerMock */
         $loggerMock->expects($this->once())
             ->method('debug')
             ->with(
@@ -91,17 +92,31 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
         $payPalOrderId = $data['resource']['supplementary_data']['related_ids']['order_id'];
         $transactionId = $data['resource']['id'];
 
+        // this state is when the order is created by oxid but PayPal not yet acknowledged completed order
         $this->prepareTestData($payPalOrderId);
 
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
+        // this state is when PayPal send the order completed webhook
         $handler = oxNew(static::HANDLER_CLASS);
         $handler->handle($event);
 
-        $this->assertPayPalOrderCount($payPalOrderId);
+        // we now have two PayPal order entries
+        $this->assertPayPalOrderCount($payPalOrderId, 2);
 
         $payPalOrder = oxNew(PayPalOrder::class);
         $payPalOrder->load(self::PAYPAL_OXID);
+
+        // after CheckoutOrderCompletedHandler::handle there's one paypal order entry with status null
+        // and one with status
+        /** @var OrderRepository $orderRepo */
+        $orderRepo = $this->get(OrderRepository::class);
+        $payPalOrder = $orderRepo->paypalOrderByOrderIdAndPayPalId(
+            self::SHOP_ORDER_ID,
+            $payPalOrderId,
+            $transactionId
+        );
+        // we assert that there is an entry with status completed
         $this->assertSame('DECLINED', $payPalOrder->getStatus());
         $this->assertSame($transactionId, $payPalOrder->getTransactionId());
 
