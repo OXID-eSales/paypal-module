@@ -15,6 +15,8 @@ use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureCompletedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
+use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
+use PHPUnit\Framework\MockObject\MockObject;
 
 final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCase
 {
@@ -53,6 +55,7 @@ final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCas
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
         $loggerMock = $this->getPsrLoggerMock();
+        /** @var MockObject $loggerMock */
         $loggerMock->expects($this->once())
             ->method('debug')
             ->with(
@@ -90,15 +93,29 @@ final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCas
 
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
+        // this state is when the order is created by oxid but PayPal not yet acknowledged completed order
         $this->prepareTestData($payPalOrderId);
 
+        // this state is when PayPal send the order completed webhook
         $handler = oxNew(PaymentCaptureCompletedHandler::class);
         $handler->handle($event);
 
-        $this->assertPayPalOrderCount($payPalOrderId);
+        // we now have two PayPal order entries
+        $this->assertPayPalOrderCount($payPalOrderId, 2);
 
         $payPalOrder = oxNew(PayPalOrder::class);
         $payPalOrder->load(self::PAYPAL_OXID);
+
+        // after CheckoutOrderCompletedHandler::handle there's one paypal order entry with status null
+        // and one with status completed
+        /** @var OrderRepository $orderRepo */
+        $orderRepo = $this->get(OrderRepository::class);
+        $payPalOrder = $orderRepo->paypalOrderByOrderIdAndPayPalId(
+            self::SHOP_ORDER_ID,
+            $payPalOrderId,
+            $transactionId
+        );
+        // we assert that there is an entry with status completed
         $this->assertSame('COMPLETED', $payPalOrder->getStatus());
         $this->assertSame($transactionId, $payPalOrder->getTransactionId());
 
