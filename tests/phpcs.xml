@@ -37,7 +37,7 @@
 
     <!-- code coverage ignore multiple classes in file -->
     <rule ref="PSR1.Classes.ClassDeclaration.MultipleClasses">
-        <exclude-pattern>Tests/Codeception/Acceptance/WebhookCest.php</exclude-pattern>
+        <exclude-pattern>tests/Codeception/Acceptance/WebhookCest.php</exclude-pattern>
     </rule>
 
     <!-- ignore method declaration rules for tests -->
