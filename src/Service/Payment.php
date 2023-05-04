@@ -46,6 +46,8 @@ class Payment
     const PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED = 'PUI_PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED';
     const PAYMENT_SOURCE_DECLINED_BY_PROCESSOR = 'PUI_PAYMENT_SOURCE_DECLINED_BY_PROCESSOR';
 
+    public const PAYMENT_ERROR_INSTRUMENT_DECLINED = 'PAYPAL_ERROR_INSTRUMENT_DECLINED';
+
     /**
      * @var string
      */
@@ -70,9 +72,6 @@ class Payment
     /** OrderRequestFactory */
     private $orderRequestFactory;
 
-    /** @var ConfirmOrderRequestFactory */
-    private $confirmOrderRequestFactory;
-
     /** @var SCAValidatorInterface */
     private $scaValidator;
 
@@ -86,8 +85,7 @@ class Payment
         ModuleSettingsService $moduleSettingsService,
         ServiceFactory $serviceFactory = null,
         PatchRequestFactory $patchRequestFactory = null,
-        OrderRequestFactory $orderRequestFactory = null,
-        ConfirmOrderRequestFactory $confirmOrderRequestFactory = null
+        OrderRequestFactory $orderRequestFactory = null
     ) {
         $this->eshopSession = $eshopSession;
         $this->orderRepository = $orderRepository;
@@ -96,8 +94,6 @@ class Payment
         $this->serviceFactory = $serviceFactory ?: Registry::get(ServiceFactory::class);
         $this->patchRequestFactory = $patchRequestFactory ?: Registry::get(PatchRequestFactory::class);
         $this->orderRequestFactory = $orderRequestFactory ?: Registry::get(OrderRequestFactory::class);
-        $this->confirmOrderRequestFactory = $confirmOrderRequestFactory ?:
-            Registry::get(ConfirmOrderRequestFactory::class);
     }
 
     public function doCreatePayPalOrder(
@@ -273,13 +269,35 @@ class Payment
 
                 // capture
                 $request = new CaptureRequest();
-                /** @var Capture $capture */
-                $capture = $paymentService->captureAuthorizedPayment($authorizationId, $request, '');
+                try {
+                    /** @var Capture $capture */
+                    $capture = $paymentService->captureAuthorizedPayment($authorizationId, $request, '');
+                } catch (ApiException $exception) {
+                    $this->handlePayPalApiError($exception);
+
+                    $issue = $exception->getErrorIssue();
+                    $this->displayErrorIfInstrumentDeclined($issue);
+
+                    Registry::getLogger()->error($exception->getMessage(), [$exception]);
+
+                    throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
+                }
+
                 $result = $this->fetchOrderFields($checkoutOrderId);
             } else {
                 $request = new OrderCaptureRequest();
-                /** @var ApiOrderModel */
-                $result = $orderService->capturePaymentForOrder('', $checkoutOrderId, $request, '');
+                try {
+                    /** @var ApiOrderModel */
+                    $result = $orderService->capturePaymentForOrder('', $checkoutOrderId, $request, '');
+                } catch (ApiException $exception) {
+                    $this->handlePayPalApiError($exception);
+
+                    $issue = $exception->getErrorIssue();
+                    $this->displayErrorIfInstrumentDeclined($issue);
+
+                    Registry::getLogger()->error($exception->getMessage(), [$exception]);
+                    throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
+                }
             }
 
             $payPalTransactionId = $result && isset($result->purchase_units[0]->payments->captures[0]->id) ?
@@ -297,7 +315,7 @@ class Payment
                 (string) $payPalTransactionId
             );
 
-            if ($order->isPayPalOrderCompleted($result)) {
+            if ($result instanceof Order && $order->isPayPalOrderCompleted($result)) {
                 $order->setOrderNumber();
                 $order->setTransId((string) $payPalTransactionId);
             }
@@ -666,14 +684,35 @@ class Payment
 
     private function handlePayPalApiError(ApiException $exception)
     {
-        if (self::PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED == 'PUI_' . $exception->getErrorIssue()) {
+        $issue = $exception->getErrorIssue();
+        if (self::PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED == 'PUI_' . $issue) {
             $this->setPaymentExecutionError(self::PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED);
-        } elseif (self::PAYMENT_SOURCE_DECLINED_BY_PROCESSOR == 'PUI_' . $exception->getErrorIssue()) {
+        } elseif (self::PAYMENT_SOURCE_DECLINED_BY_PROCESSOR == 'PUI_' . $issue) {
             $this->setPaymentExecutionError(self::PAYMENT_SOURCE_DECLINED_BY_PROCESSOR);
         } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID == $this->getSessionPaymentId()) {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_GENERIC);
+        } elseif (self::PAYMENT_ERROR_INSTRUMENT_DECLINED == 'PAYPAL_ERROR_' . $issue) {
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_INSTRUMENT_DECLINED);
         } else {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
+        }
+    }
+
+    private function displayErrorIfInstrumentDeclined(?string $issue): void
+    {
+        if ($issue === 'INSTRUMENT_DECLINED') {
+            $languageObject = Registry::getLang();
+            $translatedErrorMessage = $languageObject->translateString(
+                self::PAYMENT_ERROR_INSTRUMENT_DECLINED,
+                (int)$languageObject->getBaseLanguage(),
+                false
+            );
+            Registry::getUtilsView()->addErrorToDisplay(
+                $translatedErrorMessage,
+                false,
+                true,
+                'paypal_error'
+            );
         }
     }
 }

@@ -166,14 +166,16 @@ class ModuleSettings
 
     public function showPayPalBasketButton(): bool
     {
-        return ($this->getSettingValue('oscPayPalShowBasketButton') &&
-            $this->isPayPalCheckoutExpressPaymentEnabled());
+        return $this->getSettingValue('oscPayPalShowBasketButton') &&
+            ($this->isPayPalCheckoutExpressPaymentEnabled() || $this->isAdmin());
     }
 
     public function showPayPalMiniBasketButton(): bool
     {
-        return ($this->getSettingValue('oscPayPalShowMiniBasketButton') &&
-            $this->isPayPalCheckoutExpressPaymentEnabled());
+
+        return
+            $this->getSettingValue('oscPayPalShowMiniBasketButton') &&
+            ($this->isPayPalCheckoutExpressPaymentEnabled() || $this->isAdmin());
     }
 
     public function showPayPalPayLaterButton(): bool
@@ -183,8 +185,8 @@ class ModuleSettings
 
     public function showPayPalProductDetailsButton(): bool
     {
-        return ($this->getSettingValue('oscPayPalShowProductDetailsButton') &&
-            $this->isPayPalCheckoutExpressPaymentEnabled());
+        return $this->getSettingValue('oscPayPalShowProductDetailsButton') &&
+            ($this->isPayPalCheckoutExpressPaymentEnabled() || $this->isAdmin());
     }
 
     public function getAutoBillOutstanding(): bool
@@ -511,5 +513,10 @@ class ModuleSettings
     private function getSettingValue(string $key)
     {
         return $this->config->getConfigParam($key);
+    }
+
+    private function isAdmin(): bool
+    {
+        return isAdmin();
     }
 }
