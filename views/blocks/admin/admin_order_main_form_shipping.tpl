@@ -95,5 +95,5 @@
         </td>
     </tr>
 [{else}]
-    [{$marty.block.parent}]
+    [{$smarty.block.parent}]
 [{/if}]
