@@ -46,7 +46,7 @@ class Payment
     const PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED = 'PUI_PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED';
     const PAYMENT_SOURCE_DECLINED_BY_PROCESSOR = 'PUI_PAYMENT_SOURCE_DECLINED_BY_PROCESSOR';
 
-    public const PAYMENT_ERROR_INSTRUMENT_DECLINED = 'PAYPAL_ERROR_INSTRUMENT_DECLINED';
+    const PAYMENT_ERROR_INSTRUMENT_DECLINED = 'PAYPAL_ERROR_INSTRUMENT_DECLINED';
 
     /**
      * @var string
@@ -698,7 +698,7 @@ class Payment
         }
     }
 
-    private function displayErrorIfInstrumentDeclined(?string $issue): void
+    private function displayErrorIfInstrumentDeclined(string $issue)
     {
         if ($issue === 'INSTRUMENT_DECLINED') {
             $languageObject = Registry::getLang();
