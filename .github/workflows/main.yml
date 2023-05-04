@@ -205,7 +205,7 @@ jobs:
         run: |
           XDEBUG_MODE=coverage php vendor/bin/phpunit \
             --bootstrap vendor/oxid-esales/testing-library/bootstrap.php \
-            -c /build/oxid/vendor/oxid-solution-catalysts/paypal-module/Tests/phpunit.xml \
+            -c /build/oxid/vendor/oxid-solution-catalysts/paypal-module/tests/phpunit.xml \
             --coverage-clover=/build/oxid/logs/clover.xml \
             --coverage-text \
             --log-junit /build/oxid/logs/phpunit.xml

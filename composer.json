@@ -16,7 +16,7 @@
             "target-directory": "osc/paypal",
         "blacklist-filter": [
                 "resources/**/*",
-                "Tests/**/*"
+                "tests/**/*"
             ]
         }
     },
@@ -48,7 +48,7 @@
     "autoload": {
         "psr-4": {
             "OxidSolutionCatalysts\\PayPal\\": "src",
-            "OxidSolutionCatalysts\\PayPal\\Tests\\": "Tests"
+            "OxidSolutionCatalysts\\PayPal\\Tests\\": "tests"
         }
     },
     "scripts": {
@@ -56,8 +56,8 @@
         "psalm-report": "psalm --show-info=true --no-cache --report=logs/psalm.sonarqube.json --php-version=7.1",
         "psalm-errors": "psalm --no-cache --php-version=7.1",
         "psalm-automatic": "psalm --alter --issues=MissingReturnType,MissingParamType --php-version=7.1",
-        "phpcs": "phpcs --standard=Tests/phpcs.xml",
-        "phpcbf": "phpcbf --standard=Tests/phpcs.xml"
+        "phpcs": "phpcs --standard=tests/phpcs.xml",
+        "phpcbf": "phpcbf --standard=tests/phpcs.xml"
     },
     "config": {
         "allow-plugins": {

@@ -12,6 +12,6 @@
     </projectFiles>
 
     <stubs>
-        <file name="Tests/Psalm/Stubs.php" preloadClasses="true" />
+        <file name="tests/Psalm/Stubs.php" preloadClasses="true" />
     </stubs>
 </psalm>

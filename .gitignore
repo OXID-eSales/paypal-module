@@ -5,6 +5,6 @@ php-cs-fixer.phar
 /var/
 /vendor/
 /composer.lock
-/Tests/Codeception/_output/
+/tests/Codeception/_output/
 /resources/node_modules/
 .env
