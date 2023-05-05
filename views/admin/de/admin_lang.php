@@ -15,6 +15,7 @@ $aLang = [
     'OSC_PAYPAL_CONFIG'                           => 'Konfiguration',
     'OSC_PAYPAL_GENERAL'                          => 'Allgemein',
     'OSC_PAYPAL_WEBHOOK_ID'                       => 'Webhook-ID',
+    'OSC_PAYPAL_LOCALES'                          => 'Locales',
     'OSC_PAYPAL_OPMODE'                           => 'Betriebsmodus',
     'OSC_PAYPAL_OPMODE_LIVE'                      => 'Live',
     'OSC_PAYPAL_OPMODE_SANDBOX'                   => 'Sandbox',
@@ -71,6 +72,7 @@ $aLang = [
     'OSC_PAYPAL_SPECIAL_PAYMENTS_PUI'             => 'Rechnungskauf',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Kreditkarte',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '(Alternativ zur fehlenden Zahlart wird ein zusätzlicher Button "Kreditkarte" unter den Paypal-Buttons angezeigt.)',
+    'HELP_OSC_PAYPAL_LOCALES'                     => 'die unterstützen locales im JSON Format, der erste Eintrag ist der default Eintrag',
 
     // PayPal ORDER
     'OSC_PAYPAL_ACTIONS'                          => 'Aktionen',

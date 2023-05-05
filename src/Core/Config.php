@@ -127,6 +127,16 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->getLiveWebhookId();
     }
 
+    public function getSupportedLocales(): array
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getSupportedLocales();
+    }
+
+    public function getSupportedLocalesCommaSeparated(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getSupportedLocalesCommaSeparated();
+    }
+
     public function getSandboxClientId(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxClientId();

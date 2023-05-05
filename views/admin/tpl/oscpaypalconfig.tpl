@@ -208,6 +208,13 @@
                                         </label>
                                     </div>
                                 </div>
+                                <div class="form-group">
+                                    <label for="locales">[{oxmultilang ident="OSC_PAYPAL_LOCALES"}]</label>
+                                    <div class="controls">
+                                        <input type="text" class="form-control" id="locales" name="conf[oscPayPalLocales]" value="[{$config->getSupportedLocalesCommaSeparated()}]" />
+                                        <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_LOCALES"}]</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

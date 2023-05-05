@@ -15,6 +15,7 @@ $aLang = [
     'OSC_PAYPAL_CONFIG'                           => 'Configuration',
     'OSC_PAYPAL_GENERAL'                          => 'General',
     'OSC_PAYPAL_WEBHOOK_ID'                       => 'Webhook ID',
+    'OSC_PAYPAL_LOCALES'                          => 'Locales',
     'OSC_PAYPAL_OPMODE'                           => 'Operation mode',
     'OSC_PAYPAL_OPMODE_LIVE'                      => 'Live',
     'OSC_PAYPAL_OPMODE_SANDBOX'                   => 'Sandbox',
@@ -70,6 +71,7 @@ $aLang = [
     'OSC_PAYPAL_SPECIAL_PAYMENTS_PUI'             => 'Pay upon Invoice',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Creditcard',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '(As an alternative to the missing payment method, an additional "credit card" button is displayed under the Paypal buttons.)',
+    'HELP_OSC_PAYPAL_LOCALES'                     => 'the supported locales separated by comma, the first entry is the default one',
 
     // PayPal ORDER
     'OSC_PAYPAL_ACTIONS'                          => 'Actions',
