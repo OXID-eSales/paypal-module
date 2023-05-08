@@ -358,12 +358,12 @@ class ModuleSettings
         $isSandbox = !is_null($isSandbox) ? $isSandbox : $this->isSandbox();
         if ($isSandbox) {
             $this->save('oscPayPalSandboxClientMerchantId', $merchantId);
-            Registry::getLogger()->error('Sandbox  Merchant ID: ' . $merchantId, [print_r(debug_backtrace,true)]);
+            Registry::getLogger()->info(sprintf('Saving Sandbox Merchant ID %s from onboarding', $merchantId));
         }
 
         if (!$isSandbox) {
             $this->save('oscPayPalClientMerchantId', $merchantId);
-            Registry::getLogger()->error('Live  Merchant ID: ' . $merchantId, [print_r(debug_backtrace,true)]);
+            Registry::getLogger()->info(sprintf('Saving Live  Merchant ID %s from onboarding', $merchantId));
         }
     }
 
