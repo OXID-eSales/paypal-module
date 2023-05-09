@@ -370,12 +370,17 @@ class ModuleSettings
         }
     }
 
-    public function saveMerchantId(string $merchantId)
+    public function saveMerchantId($merchantId, $isSandbox = null)
     {
-        if ($this->isSandbox()) {
+        $isSandbox = !is_null($isSandbox) ? $isSandbox : $this->isSandbox();
+        if ($isSandbox) {
             $this->save('oscPayPalSandboxClientMerchantId', $merchantId);
-        } else {
+            Registry::getLogger()->info(sprintf('Saving Sandbox Merchant ID %s from onboarding', $merchantId));
+        }
+
+        if (!$isSandbox) {
             $this->save('oscPayPalClientMerchantId', $merchantId);
+            Registry::getLogger()->info(sprintf('Saving Live  Merchant ID %s from onboarding', $merchantId));
         }
     }
 
