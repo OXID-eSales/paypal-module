@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Model;
+namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Service;
 
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidSolutionCatalysts\PayPal\Service\SCAValidator;

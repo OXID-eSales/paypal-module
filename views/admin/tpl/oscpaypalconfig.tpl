@@ -208,6 +208,13 @@
                                         </label>
                                     </div>
                                 </div>
+                                <div class="form-group">
+                                    <label for="locales">[{oxmultilang ident="OSC_PAYPAL_LOCALES"}]</label>
+                                    <div class="controls">
+                                        <input type="text" class="form-control" id="locales" name="conf[oscPayPalLocales]" value="[{$config->getSupportedLocalesCommaSeparated()}]" />
+                                        <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_LOCALES"}]</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -457,6 +464,30 @@
                     </div>
                 </div>
             </div>
+            <div class="card">
+                <div class="card-header" id="heading8">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse8" aria-expanded="false" aria-controls="collapse8">
+                        [{oxmultilang ident="OSC_PAYPAL_LOCALISATIONS"}]
+                    </h4>
+                </div>
+
+                <div id="collapse8" class="collapse" aria-labelledby="heading8" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="controls">
+                                <div class="form-group">
+                                    <label for="locales">[{oxmultilang ident="OSC_PAYPAL_LOCALES"}]</label>
+                                    <div class="controls">
+                                        <input type="text" class="form-control" id="locales" name="conf[oscPayPalLocales]" value="[{$config->getSupportedLocalesCommaSeparated()}]" />
+                                        <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_LOCALES"}]</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
         <button type="submit" class="btn btn-primary bottom-space">[{oxmultilang ident="GENERAL_SAVE"}]</button>
     </form>

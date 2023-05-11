@@ -8,9 +8,9 @@
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Service\LanguageLocaleMapper;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 
 /**
  * @mixin \OxidEsales\Eshop\Core\ViewConfig
@@ -155,8 +155,8 @@ class ViewConfig extends ViewConfig_parent
         $config = Registry::getConfig();
         $lang = Registry::getLang();
 
-        $countryCode = strtoupper($lang->getLanguageAbbr());
-        $localeCode = $lang->getLanguageAbbr() . '_' . $countryCode;
+        $localeCode = $this->getServiceFromContainer(LanguageLocaleMapper::class)
+            ->mapLanguageToLocale($lang->getLanguageAbbr());
 
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $params = [];
@@ -221,8 +221,8 @@ class ViewConfig extends ViewConfig_parent
         $config = Registry::getConfig();
         $lang = Registry::getLang();
 
-        $countryCode = strtoupper($lang->getLanguageAbbr());
-        $localeCode = $lang->getLanguageAbbr() . '_' . $countryCode;
+        $localeCode = $this->getServiceFromContainer(LanguageLocaleMapper::class)
+            ->mapLanguageToLocale($lang->getLanguageAbbr());
 
         $params = [];
 
