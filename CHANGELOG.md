@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Send Tracking-Information to PayPal
 
 ### Fixed
+- [0007468](https://bugs.oxid-esales.com/view.php?id=7468) Javascript Error - in checkout step 3 for the English language
+- [0007470](https://bugs.oxid-esales.com/view.php?id=7470) PayPal Express buttons are missing in english language
+- [0007467](https://bugs.oxid-esales.com/view.php?id=7467) Javascript Error - not clickable payment button
+- [0007465](https://bugs.oxid-esales.com/view.php?id=7465) Creditcard input fields are not available in english language
 - [0007440](https://bugs.oxid-esales.com/view.php?id=7440) Pending orders with oxordernr 0 are deleted before the payment process can be completed
 - [0007417](https://bugs.oxid-esales.com/view.php?id=7417) Orders with digital goods could not be purchased with creditcard
 - [0007422](https://bugs.oxid-esales.com/view.php?id=7422) Same state/county IDs may lead to wrong display on PayPal page
