@@ -116,6 +116,17 @@ class ModuleSettings
             $this->isLiveAcdcEligibility();
     }
 
+    public function getSupportedLocales(): array
+    {
+        $commaSeparated = $this->getSupportedLocalesCommaSeparated();
+
+        return explode(',', $commaSeparated);
+    }
+
+    public function getSupportedLocalesCommaSeparated(): string
+    {
+        return $this->getSettingValue('oscPayPalLocales');
+    }
 
     public function isPuiEligibility(): bool
     {
