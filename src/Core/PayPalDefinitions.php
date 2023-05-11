@@ -152,7 +152,7 @@ final class PayPalDefinitions
                         Bezahlen Sie bequem mit PayPal Kreditkarte'
                 ],
                 'en' => [
-                    'desc' => 'SEPA direct debit',
+                    'desc' => 'PayPal Credit Card Fallback',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="" title="PayPal CreditCard" style="float: left;margin-right: 10px;" />
                         Pay conveniently with PayPal CreditCard'
