@@ -474,6 +474,12 @@ $aModule = [
             'type' => 'arr',
             'value' => [],
             'group' => null
-        ]
+        ],
+        [
+            'group' => null,
+            'name' => 'oscPayPalLocales',
+            'type' => 'str',
+            'value' => 'de_DE,en_US',
+        ],
     ]
 ];
