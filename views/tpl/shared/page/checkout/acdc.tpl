@@ -96,48 +96,105 @@
                     }
                 }
             }).then(function (cardFields) {
+                cardFields.on('blur', function (event) {
+                    var key = event.emittedBy;
+                    var field = event.fields[key];
+                    console.log(field);
+                    var selector = field.container.classList;
+                    if (field.isValid === true) {
+                        selector.add('alert-success');
+                        selector.remove('alert-danger');
+                        selector.remove('alert-warning');
+                    }
+                    else if (field.isEmpty === false) {
+                        selector.add('alert-warning');
+                        selector.remove('alert-danger');
+                        selector.remove('alert-success');
+                    }
+                    else {
+                        selector.add('alert-danger');
+                        selector.remove('alert-success');
+                        selector.remove('alert-warning');
+                    }
+                });
+                // special check for cardholder
+                document.getElementById("card-holder-name").addEventListener('blur', (event) => {
+                    console.log(event);
+                    var cardHolder = event.target;
+                    if (cardHolder.value === "") {
+                        cardHolder.classList.add('alert-danger');
+                        cardHolder.classList.remove('alert-success');
+                    }
+                    else {
+                        cardHolder.classList.add('alert-success');
+                        cardHolder.classList.remove('alert-danger');
+                    }
+                });
+
                 document.querySelector("#orderConfirmAgbBottom").addEventListener('submit', (event) => {
                     event.preventDefault();
 
-                    cardFields.submit( {
-
-                        // Trigger 3D Secure authentication
-                        contingencies: ['[{$oViewConf->getPayPalSCAContingency()}]'],
-
-                        // Cardholder's first and last name
-                        cardholderName: document.getElementById('card-holder-name').value,
-                        // Billing Address
-                        billingAddress: {
-                            // Street address, line 1
-                            streetAddress: document.getElementById('card-billing-address-street').value,
-                            // Street address, line 2 (Ex: Unit, Apartment, etc.)
-                            extendedAddress: document.getElementById('card-billing-address-unit').value,
-                            // State
-                            region: document.getElementById('card-billing-address-state').value,
-                            // City
-                            locality: document.getElementById('card-billing-address-city').value,
-                            // Postal Code
-                            postalCode: document.getElementById('card-billing-address-zip').value,
-                            // Country Code
-                            countryCodeAlpha2: document.getElementById('card-billing-address-country').value
+                    var state = cardFields.getState();
+                    var isValid = true;
+                    for (const [key,] of Object.entries(state.fields)) {
+                        var field = state.fields[key];
+                        var selector = field.container.classList;
+                        if (field.isEmpty === true) {
+                            isValid = false;
+                            selector.add('alert-danger');
+                            selector.remove('alert-success');
+                            selector.remove('alert-warning');
                         }
-                    }).then(function () {
-                        document.getElementById("orderConfirmAgbBottom").getElementsByTagName('button')[0].disabled = 'disabled';
+                    }
+                    // special check for cardholder
+                    var cardHolder = document.getElementById("card-holder-name");
+                    if (cardHolder.value === "") {
+                        isValid = false;
+                        cardHolder.classList.add('alert-danger');
+                        cardHolder.classList.remove('alert-success');
+                    }
 
-                        fetch('[{$sSelfLink|cat:"cl=order&fnc=captureAcdcOrder&acdcorderid="}]' + orderId, {
-                            method: 'post'
-                        }).then(function (res) {
-                            return res.json();
-                        }).then(function (orderData) {
-                            var errorDetail = Array.isArray(orderData.details) && orderData.details[0];
-                            var goNext = Array.isArray(orderData.location) && orderData.location[0];
+                    if (isValid) {
+                        cardFields.submit( {
 
-                            window.location.href = '[{$sSelfLink}]' + goNext;
+                            // Trigger 3D Secure authentication
+                            contingencies: ['[{$oViewConf->getPayPalSCAContingency()}]'],
+
+                            // Cardholder's first and last name
+                            cardholderName: document.getElementById('card-holder-name').value,
+                            // Billing Address
+                            billingAddress: {
+                                // Street address, line 1
+                                streetAddress: document.getElementById('card-billing-address-street').value,
+                                // Street address, line 2 (Ex: Unit, Apartment, etc.)
+                                extendedAddress: document.getElementById('card-billing-address-unit').value,
+                                // State
+                                region: document.getElementById('card-billing-address-state').value,
+                                // City
+                                locality: document.getElementById('card-billing-address-city').value,
+                                // Postal Code
+                                postalCode: document.getElementById('card-billing-address-zip').value,
+                                // Country Code
+                                countryCodeAlpha2: document.getElementById('card-billing-address-country').value
+                            }
+                        }).then(function () {
+                            document.getElementById("orderConfirmAgbBottom").getElementsByTagName('button')[0].disabled = 'disabled';
+
+                            fetch('[{$sSelfLink|cat:"cl=order&fnc=captureAcdcOrder&acdcorderid="}]' + orderId, {
+                                method: 'post'
+                            }).then(function (res) {
+                                return res.json();
+                            }).then(function (orderData) {
+                                var errorDetail = Array.isArray(orderData.details) && orderData.details[0];
+                                var goNext = Array.isArray(orderData.location) && orderData.location[0];
+
+                                window.location.href = '[{$sSelfLink}]' + goNext;
+                            })
+                        }).catch(function (err) {
+                            console.log('Payment could not be processed! ' + JSON.stringify(err))
+                            window.location.href = '[{$sSelfLink|cat:"cl=order&retryoscpp=acdcretry"}]'
                         })
-                    }).catch(function (err) {
-                        console.log('Payment could not be processed! ' + JSON.stringify(err))
-                        window.location.href = '[{$sSelfLink|cat:"cl=order&retryoscpp=acdcretry"}]'
-                    })
+                    }
                 })
             });
         } else {
