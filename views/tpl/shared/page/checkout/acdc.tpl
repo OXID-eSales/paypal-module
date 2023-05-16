@@ -99,7 +99,6 @@
                 cardFields.on('blur', function (event) {
                     var key = event.emittedBy;
                     var field = event.fields[key];
-                    console.log(field);
                     var selector = field.container.classList;
                     if (field.isValid === true) {
                         selector.add('alert-success');
@@ -119,7 +118,6 @@
                 });
                 // special check for cardholder
                 document.getElementById("card-holder-name").addEventListener('blur', (event) => {
-                    console.log(event);
                     var cardHolder = event.target;
                     if (cardHolder.value === "") {
                         cardHolder.classList.add('alert-danger');
