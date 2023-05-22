@@ -57,7 +57,9 @@
         "psalm-errors": "psalm --no-cache --php-version=7.1",
         "psalm-automatic": "psalm --alter --issues=MissingReturnType,MissingParamType --php-version=7.1",
         "phpcs": "phpcs --standard=tests/phpcs.xml",
-        "phpcbf": "phpcbf --standard=tests/phpcs.xml"
+        "phpcbf": "phpcbf --standard=tests/phpcs.xml",
+        "phpstan": "phpstan -ctests/PhpStan/phpstan.neon analyse src/",
+        "phpstan-report": "phpstan -ctests/PhpStan/phpstan.neon analyse src/ --error-format=json > phpstan.report.json"
     },
     "config": {
         "allow-plugins": {

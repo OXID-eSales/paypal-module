@@ -82,9 +82,15 @@ jobs:
           tar xzf oxid.tar.gz
         working-directory: /build/
 
-      - name: prepare autoload
+      - name: install composer dependencies and prepare autoloader
         run: composer update
         working-directory: /build/oxid/vendor/oxid-solution-catalysts/paypal-module/
+
+      - name: run phpstan
+        id: phpstan
+        if: always()
+        working-directory: /build/oxid/vendor/oxid-solution-catalysts/paypal-module/
+        run: composer phpstan-report
 
       - name: run psalm
         run: composer psalm-report
