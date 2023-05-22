@@ -6,13 +6,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [1.3.0] - 2023-04-XX
 
-### NEW
+### Added
 - active payment methods are recognized after deactivating and activating the module and activated again correctly
 - in the backend there are new options for control the deleting of unfinished orders
 - New Payment "SEPA" and an alternative CreditCard-Payment as fallback if CreditCard via ACDC is not possible
 - Send Tracking-Information to PayPal
 
 ### Fixed
+- [0007451](https://bugs.oxid-esales.com/view.php?id=7451)  Creditcard payment works without CVV and Name
 - [0007468](https://bugs.oxid-esales.com/view.php?id=7468) Javascript Error - in checkout step 3 for the English language
 - [0007470](https://bugs.oxid-esales.com/view.php?id=7470) PayPal Express buttons are missing in english language
 - [0007467](https://bugs.oxid-esales.com/view.php?id=7467) Javascript Error - not clickable payment button
