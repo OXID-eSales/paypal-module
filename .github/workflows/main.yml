@@ -10,8 +10,8 @@ jobs:
   install:
     strategy:
       matrix:
-        php: [ 7.4 ]
-        oxid: [ 6.3 ]
+        php: [ 7.0 ]
+        oxid: [ 6.1 ]
     runs-on: ubuntu-latest
     container:
       image: oxidprojects/oxid-apache-php:oxid${{ matrix.oxid }}-php${{ matrix.php }}
