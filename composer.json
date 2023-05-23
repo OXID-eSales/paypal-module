@@ -5,6 +5,7 @@
     "keywords": ["oxid", "modules", "eShop", "paypal", "payment"],
     "homepage": "https://www.oxid-esales.com",
     "license": ["GPL-3.0"],
+    "version": "1.0.0",
     "support": {
         "source": "https://github.com/OXID-eSales/paypal-module",
         "issues": "https://github.com/OXID-eSales/paypal-module/issues",
@@ -30,16 +31,16 @@
         "giggsey/libphonenumber-for-php": "^8.12",
         "viison/address-splitter": "^0.3.4",
         "webmozart/path-util": "^2.3.0",
-        "oxid-solution-catalysts/paypal-client": "v1.0.7"
+        "oxid-solution-catalysts/paypal-client": "dev-b-6.1.x"
     },
     "require-dev": {
         "oxid-esales/oxideshop-ce": "^v6.3.0",
         "codeception/module-rest": "^1.4.2",
         "codeception/module-phpbrowser": "^1.0.2",
         "codeception/module-db": "^1.1.0",
-        "phpstan/phpstan": "^0.12.26",
+        "phpstan/phpstan": "0.9.3",
         "squizlabs/php_codesniffer": "3.*",
-        "vimeo/psalm": "^4.13",
+        "vimeo/psalm": "1.1.9",
         "symfony/dotenv": "^3.4"
     },
     "conflict": {
@@ -52,13 +53,13 @@
         }
     },
     "scripts": {
-        "psalm": "psalm --show-info=true --no-cache --php-version=7.1",
-        "psalm-report": "psalm --show-info=true --no-cache --report=logs/psalm.sonarqube.json --php-version=7.1",
-        "psalm-errors": "psalm --no-cache --php-version=7.1",
-        "psalm-automatic": "psalm --alter --issues=MissingReturnType,MissingParamType --php-version=7.1",
+        "psalm": "psalm --show-info=true --no-cache --php-version=7.0",
+        "psalm-report": "psalm --show-info=true --no-cache --report=logs/psalm.sonarqube.json --php-version=7.0",
+        "psalm-errors": "psalm --no-cache --php-version=7.0",
+        "psalm-automatic": "psalm --alter --issues=MissingReturnType,MissingParamType --php-version=7.0",
         "phpcs": "phpcs --standard=tests/phpcs.xml",
         "phpcbf": "phpcbf --standard=tests/phpcs.xml",
-        "phpstan": "phpstan -ctests/PhpStan/phpstan.neon analyse src/",
+        "phpstan": "phpstan analyse -l 4 -c tests/PhpStan/phpstan.neon src tests",
         "phpstan-report": "phpstan -ctests/PhpStan/phpstan.neon analyse src/ --error-format=json > phpstan.report.json"
     },
     "config": {
