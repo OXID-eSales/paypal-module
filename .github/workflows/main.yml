@@ -22,7 +22,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: install
-        run: composer create-project oxid-professional-services/test-oxid /build/oxid dev-oxid${{matrix.oxid}} --no-interaction -s dev --repository="{\"url\":\"https://github.com/keywan-ghadami-oxid/test-oxid.git\", \"type\":\"vcs\"}" --remove-vcs
+        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-6.1.x --single-branch source
 
       - name: move artifacts to projects folder
         run: |
