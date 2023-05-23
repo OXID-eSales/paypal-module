@@ -10,7 +10,7 @@ jobs:
   install:
     strategy:
       matrix:
-        php: [ 7.1 ]
+        php: [ 7.2 ]
         oxid: [ 6.1 ]
     runs-on: ubuntu-latest
     container:
@@ -64,7 +64,7 @@ jobs:
   static_code_checks:
     strategy:
       matrix:
-        php: [ 7.1 ]
+        php: [ 7.2 ]
         oxid: [ 6.1 ]
     runs-on: ubuntu-latest
     needs: install
@@ -89,7 +89,7 @@ jobs:
   codestyle_checks:
     strategy:
       matrix:
-        php: [ 7.1 ]
+        php: [ 7.2 ]
         oxid: [ 6.1 ]
     runs-on: ubuntu-latest
     needs: install
@@ -117,7 +117,7 @@ jobs:
   oxid_unit_tests:
     strategy:
       matrix:
-        php: [ 7.1 ]
+        php: [ 7.2 ]
         oxid: [ 6.1 ]
     runs-on: ubuntu-latest
     needs: install
