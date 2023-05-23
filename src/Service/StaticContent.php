@@ -81,7 +81,7 @@ class StaticContent
 
         $paymentModel->assign(
             [
-               'oxactive' => false,
+               'oxactive' => (bool) $definitions['defaulton'],
                'oxfromamount' => (int) $definitions['constraints']['oxfromamount'],
                'oxtoamount' => (int) $definitions['constraints']['oxtoamount'],
                'oxaddsumtype' => (string) $definitions['constraints']['oxaddsumtype']
