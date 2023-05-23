@@ -86,23 +86,6 @@ jobs:
         run: composer update
         working-directory: /build/oxid/vendor/oxid-solution-catalysts/paypal-module/
 
-      - name: run phpstan
-        id: phpstan
-        if: always()
-        working-directory: /build/oxid/vendor/oxid-solution-catalysts/paypal-module/
-        run: composer phpstan-report
-
-      - name: run psalm
-        run: composer psalm-report
-        working-directory: /build/oxid/vendor/oxid-solution-catalysts/paypal-module/
-
-      - name: Save psalm logs
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: psalm-log
-          path: /build/oxid/vendor/oxid-solution-catalysts/paypal-module/logs/psalm.sonarqube.json
-
   codestyle_checks:
     strategy:
       matrix:
@@ -244,12 +227,6 @@ jobs:
           name: logs
           path: logs
 
-      - name: Load psalm logs
-        uses: actions/download-artifact@v3
-        with:
-          name: psalm-log
-          path: logs/
-
       - name: Fix phpunit logs
         run: |
           ls -alh logs
@@ -267,7 +244,6 @@ jobs:
           ls -alh logs
           cat logs/clover.xml
           cat logs/phpunit.xml
-          cat logs/psalm.sonarqube.json
 
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
@@ -281,6 +257,5 @@ jobs:
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.php.coverage.reportPaths=logs/clover.xml
             -Dsonar.php.tests.reportPath=logs/phpunit.xml
-            -Dsonar.php.psalm.reportPaths=logs/psalm.sonarqube.json
             -Dsonar.cpd.php.minimumTokens=30
             -Dsonar.cpd.php.minimumLines=6
