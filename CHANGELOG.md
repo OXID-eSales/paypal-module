@@ -4,28 +4,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.3.0] - 2023-04-XX
+## [2.3.0] - 2023-05-24
 
 ### Added
 - active payment methods are recognized after deactivating and activating the module and activated again correctly
 - in the backend there are new options for control the deleting of unfinished orders
 - New Payment "SEPA" and an alternative CreditCard-Payment as fallback if CreditCard via ACDC is not possible
 - Send Tracking-Information to PayPal
+- improved tests and static code analysis
 
-### Fixed
-- [0007451](https://bugs.oxid-esales.com/view.php?id=7451)  Creditcard payment works without CVV and Name
-- [0007468](https://bugs.oxid-esales.com/view.php?id=7468) Javascript Error - in checkout step 3 for the English language
-- [0007470](https://bugs.oxid-esales.com/view.php?id=7470) PayPal Express buttons are missing in english language
-- [0007467](https://bugs.oxid-esales.com/view.php?id=7467) Javascript Error - not clickable payment button
-- [0007465](https://bugs.oxid-esales.com/view.php?id=7465) Creditcard input fields are not available in english language
+# Fixed
+- [0007468](https://bugs.oxid-esales.com/view.php?id=7468): Javascript Error - in checkout step 3 for the English language
+- [0007465](https://bugs.oxid-esales.com/view.php?id=7465): Creditcard input fields are not available in english language
+- [0007470](https://bugs.oxid-esales.com/view.php?id=7470): PayPal Express buttons are missing in english language
+- [0007467](https://bugs.oxid-esales.com/view.php?id=7467): Javascript Error - not clickable payment button
+- [0007466](https://bugs.oxid-esales.com/view.php?id=7466): SEPA / CC Fallback - Same name for different payment methods
+- [0007384](https://bugs.oxid-esales.com/view.php?id=7384): Order and Mail for rejected credit card payment
+- [0007394](https://bugs.oxid-esales.com/view.php?id=7394): Price reduction by payment method blocks order
+- [0007422](https://bugs.oxid-esales.com/view.php?id=7422): Same state/county IDs may lead to wrong display on PayPal page
+- [0007448](https://bugs.oxid-esales.com/view.php?id=7448): In case of full refund the value will be refunded according to the full euro
+- [0007449](https://bugs.oxid-esales.com/view.php?id=7449): Surcharges with negative Discounts are not forseen
+- [0007450](https://bugs.oxid-esales.com/view.php?id=7450): Mandatory tac field is ignored
+- [0007451](https://bugs.oxid-esales.com/view.php?id=7451): Creditcard payment works without CVV and Name
+- [0007417](https://bugs.oxid-esales.com/view.php?id=7417): It is therefore not possible to order this intangible item
+- [0007464](https://bugs.oxid-esales.com/view.php?id=7464): Pending GiroPay payment leads to maintenance mode, after doing a log in
+- [0007470](https://bugs.oxid-esales.com/view.php?id=7470): PayPal Express buttons are missing in english language
+- [0007466](https://bugs.oxid-esales.com/view.php?id=7466): SEPA / CC Fallback - Same name for different payment methods
+- [0007390](https://bugs.oxid-esales.com/view.php?id=7390): New Installation - Save Configuration not possible
+- [0007465](https://bugs.oxid-esales.com/view.php?id=7465): Creditcard input fields are not available in english language
+- [0007465](https://bugs.oxid-esales.com/view.php?id=7465): Creditcard input fields are not available in english language
 - [0007440](https://bugs.oxid-esales.com/view.php?id=7440) Pending orders with oxordernr 0 are deleted before the payment process can be completed
-- [0007417](https://bugs.oxid-esales.com/view.php?id=7417) Orders with digital goods could not be purchased with creditcard
-- [0007422](https://bugs.oxid-esales.com/view.php?id=7422) Same state/county IDs may lead to wrong display on PayPal page
 - [0007413](https://bugs.oxid-esales.com/view.php?id=7413) set PPExpress independently of ShippingSets (They will be set later)
-- [0007384](https://bugs.oxid-esales.com/view.php?id=7384) if order declined during 3ds then go back to payment
-- [0007448](https://bugs.oxid-esales.com/view.php?id=7448) show complete value for refund in backend
-- [0007449](https://bugs.oxid-esales.com/view.php?id=7449) discount surcharge can not be < 0
-- [0007450](https://bugs.oxid-esales.com/view.php?id=7450) Mandantory fields are not ignored with creditcard
+- remove an issue with having installed unzer module in parallel
+
+
 
 ## [2.2.3] - 2023-01-26
 
