@@ -81,7 +81,8 @@ final class OrderRepositoryTest extends BaseTestCase
         );
         $this->assertSame(self::SHOP_ORDER_ID, $fromRepo->getShopOrderId());
         $this->assertSame(self::PAYPAL_ORDERID, $fromRepo->getPayPalOrderId());
-        $this->assertSame(self::PAYPAL_TRANSACTIONID, $fromRepo->getTransactionId()); //entry not found so trans id was not set
+        //entry not found so trans id was not set
+        $this->assertSame(self::PAYPAL_TRANSACTIONID, $fromRepo->getTransactionId());
 
         $fromRepo = $orderRepo->paypalOrderByOrderIdAndPayPalId(
             self::SHOP_ORDER_ID,
@@ -90,7 +91,8 @@ final class OrderRepositoryTest extends BaseTestCase
         );
         $this->assertSame(self::SHOP_ORDER_ID, $fromRepo->getShopOrderId());
         $this->assertSame(self::PAYPAL_ORDERID, $fromRepo->getPayPalOrderId());
-        $this->assertSame('some_different_trans_id', $fromRepo->getTransactionId()); //entry not found so trans id was not set
+        //entry not found so trans id was not set
+        $this->assertSame('some_different_trans_id', $fromRepo->getTransactionId());
     }
 
     public function testRetrievingPayPalOrderFromRepoForMultipleEntries(): void

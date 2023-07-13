@@ -415,8 +415,7 @@ class Payment
         if ($orderModel->isLoaded()) {
             if ($orderModel->hasOrderNumber()) {
                 Registry::getLogger()->info('Cannot delete valid order with id ' . $sessionOrderId);
-            }
-            else {
+            } else {
                 $orderModel->delete();
             }
         }
