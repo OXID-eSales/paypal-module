@@ -55,8 +55,14 @@ class PayPalTrackingCarrierList extends ListModel
 
         $select = "select count({$viewName}.oxid), {$viewName}.oxcountrycode
             from {$viewName}
-            where {$viewName}.oxcountrycode in (select {$viewNameCountry}.oxisoalpha2 from {$viewNameCountry} where {$viewNameCountry}.oxactive = 1)
-            or {$viewName}.oxcountrycode not in (select {$viewNameCountry}.oxisoalpha2 from {$viewNameCountry})
+            where {$viewName}.oxcountrycode in (
+                select {$viewNameCountry}.oxisoalpha2 
+                from {$viewNameCountry} 
+                where {$viewNameCountry}.oxactive = 1
+            ) or {$viewName}.oxcountrycode not in (
+                select {$viewNameCountry}.oxisoalpha2
+                from {$viewNameCountry}
+            )
             group by {$viewName}.oxcountrycode";
         /** @var \OxidEsales\Eshop\Core\Database\Adapter\Doctrine\ResultSet $resultDB */
         $resultDB = $db->select($select);

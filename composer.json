@@ -37,9 +37,8 @@
         "codeception/module-rest": "^1.4.2",
         "codeception/module-phpbrowser": "^1.0.2",
         "codeception/module-db": "^1.1.0",
-        "phpstan/phpstan": "^0.12.26",
         "squizlabs/php_codesniffer": "3.*",
-        "vimeo/psalm": "^4.13",
+        "vimeo/psalm": "^3.2",
         "symfony/dotenv": "^3.4"
     },
     "conflict": {
@@ -52,10 +51,10 @@
         }
     },
     "scripts": {
-        "psalm": "psalm --show-info=true --no-cache --php-version=7.1",
-        "psalm-report": "psalm --show-info=true --no-cache --report=logs/psalm.sonarqube.json --php-version=7.1",
-        "psalm-errors": "psalm --no-cache --php-version=7.1",
-        "psalm-automatic": "psalm --alter --issues=MissingReturnType,MissingParamType --php-version=7.1",
+        "psalm": "psalm --show-info=true --no-cache --php-version=7.0",
+        "psalm-report": "psalm --show-info=true --no-cache --report=logs/psalm.sonarqube.json --php-version=7.0",
+        "psalm-errors": "psalm --no-cache --php-version=7.0",
+        "psalm-automatic": "psalm --alter --issues=MissingReturnType,MissingParamType --php-version=7.0",
         "phpcs": "phpcs --standard=tests/phpcs.xml",
         "phpcbf": "phpcbf --standard=tests/phpcs.xml"
     },
