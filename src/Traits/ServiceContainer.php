@@ -37,59 +37,65 @@ trait ServiceContainer
 
         switch ($serviceName) {
             case 'OxidSolutionCatalysts\PayPal\Service\ModuleSettings':
-                $result = $this->services['OxidSolutionCatalysts\PayPal\Service\ModuleSettings'] = new ModuleSettings(
-                    Registry::getConfig(),
-                    $database
-                );
+                $result = $this->services['OxidSolutionCatalysts\PayPal\Service\ModuleSettings'] =
+                    new ModuleSettings(
+                        Registry::getConfig(),
+                        $database
+                    );
                 break;
             case 'OxidSolutionCatalysts\PayPal\Service\OrderRepository':
-                $result = $this->services['OxidSolutionCatalysts\PayPal\Service\OrderRepository'] = new OrderRepository(
-                    Registry::getConfig(),
-                    $database
-                );
-                break;
-            case 'OxidSolutionCatalysts\PayPal\Service\Payment':
-                $result = $this->services['OxidSolutionCatalysts\PayPal\Service\Payment'] = new Payment(
-                    Registry::getSession(),
+                $result = $this->services['OxidSolutionCatalysts\PayPal\Service\OrderRepository'] =
                     new OrderRepository(
                         Registry::getConfig(),
                         $database
-                    ),
-                    new SCAValidator(),
-                    new ModuleSettings(
-                        Registry::getConfig(),
-                        $database
-                    )
-                );
+                    );
+                break;
+            case 'OxidSolutionCatalysts\PayPal\Service\Payment':
+                $result = $this->services['OxidSolutionCatalysts\PayPal\Service\Payment'] =
+                    new Payment(
+                        Registry::getSession(),
+                        new OrderRepository(
+                            Registry::getConfig(),
+                            $database
+                        ),
+                        new SCAValidator(),
+                        new ModuleSettings(
+                            Registry::getConfig(),
+                            $database
+                        )
+                    );
                 break;
             case 'OxidSolutionCatalysts\PayPal\Service\StaticContent':
-                $result = $this->services['OxidSolutionCatalysts\PayPal\Service\StaticContent'] = new StaticContent(
-                    Registry::getConfig(),
-                    $database,
-                    new ModuleSettings(
+                $result = $this->services['OxidSolutionCatalysts\PayPal\Service\StaticContent'] =
+                    new StaticContent(
                         Registry::getConfig(),
-                        $database
-                    )
-                );
+                        $database,
+                        new ModuleSettings(
+                            Registry::getConfig(),
+                            $database
+                        )
+                    );
                 break;
             case 'OxidSolutionCatalysts\PayPal\Service\UserRepository':
-                $result = $this->services['OxidSolutionCatalysts\PayPal\Service\UserRepository'] = new UserRepository(
-                    Registry::getConfig(),
-                    $database,
-                    Registry::getSession()
-                );
+                $result = $this->services['OxidSolutionCatalysts\PayPal\Service\UserRepository'] =
+                    new UserRepository(
+                        Registry::getConfig(),
+                        $database,
+                        Registry::getSession()
+                    );
                 break;
             case 'OxidSolutionCatalysts\PayPal\Service\SCAValidator':
-                $result = $this->services['OxidSolutionCatalysts\PayPal\Service\SCAValidator'] = new SCAValidator(
-                );
+                $result = $this->services['OxidSolutionCatalysts\PayPal\Service\SCAValidator'] =
+                    new SCAValidator();
                 break;
             case 'OxidSolutionCatalysts\PayPal\Service\LanguageLocaleMapper':
-                $result = $this->services['OxidSolutionCatalysts\PayPal\Service\LanguageLocaleMapper'] = new LanguageLocaleMapper(
-                    new ModuleSettings(
-                        Registry::getConfig(),
-                        $database
-                    )
-                );
+                $result = $this->services['OxidSolutionCatalysts\PayPal\Service\LanguageLocaleMapper'] =
+                    new LanguageLocaleMapper(
+                        new ModuleSettings(
+                            Registry::getConfig(),
+                            $database
+                        )
+                    );
                 break;
         }
         return $result;

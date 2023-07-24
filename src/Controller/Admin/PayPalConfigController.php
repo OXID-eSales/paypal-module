@@ -96,8 +96,12 @@ class PayPalConfigController extends AdminController
      *
      * @return string
      */
-    private function buildSignUpLink(string $partnerClientId, string $partnerId, string $url, bool $isSandbox = false): string
-    {
+    private function buildSignUpLink(
+        string $partnerClientId,
+        string $partnerId,
+        string $url,
+        bool $isSandbox = false
+    ): string {
         $lang = Registry::getLang();
         $config = new Config();
 
@@ -106,7 +110,7 @@ class PayPalConfigController extends AdminController
 
         $partnerLogoUrl = Registry::getConfig()->getOutUrl(null, true) . 'admin/img/loginlogo.png';
         $returnToPartnerUrl = $config->getAdminUrlForJSCalls() .
-            'cl=oscpaypalconfig&fnc=returnFromSignup'.
+            'cl=oscpaypalconfig&fnc=returnFromSignup' .
             '&isSandbox=' . ($isSandbox ? '1' : '0')
         ;
 
