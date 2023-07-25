@@ -669,4 +669,28 @@ class Order extends Order_parent
         );
         return $this->payPalOrder;
     }
+
+    /**
+     * @inerhitDoc
+     *
+     * @param string $sOxId Ordering ID (default null)
+     *
+     * @return bool
+     */
+    public function delete($sOxId = null)
+    {
+        $sOxId = $sOxId ?? $this->getId();
+
+        // delete PayPalOrder too
+        /** @var OrderRepository $payPalOrderRepository */
+        $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
+        $payPalOrder = $payPalOrderRepository->paypalOrderByOrderId(
+            $sOxId
+        );
+        if ($payPalOrder->isLoaded()) {
+            $payPalOrder->delete();
+        }
+
+        return parent::delete($sOxId);
+    }
 }

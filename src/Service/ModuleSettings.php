@@ -365,7 +365,7 @@ class ModuleSettings
         }
     }
 
-    public function saveMerchantId(string $merchantId , ?bool $isSandbox = null): void
+    public function saveMerchantId(string $merchantId, ?bool $isSandbox = null): void
     {
         $isSandbox = !is_null($isSandbox) ? $isSandbox : $this->isSandbox();
         if ($isSandbox) {

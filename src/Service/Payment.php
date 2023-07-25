@@ -412,17 +412,12 @@ class Payment
         $orderModel = oxNew(EshopModelOrder::class);
         $orderModel->load($sessionOrderId);
 
-        if ($orderModel->hasOrderNumber()) {
-            Registry::getLogger()->error('Cannot delete valid order with id ' . $sessionOrderId);
-        }
-
         if ($orderModel->isLoaded()) {
-            $orderModel->delete();
-        }
-
-        if ($payPalOrderId = PayPalSession::getCheckoutOrderId()) {
-            $payPalOrder = $this->orderRepository->paypalOrderByOrderIdAndPayPalId($sessionOrderId, $payPalOrderId);
-            $payPalOrder->delete();
+            if ($orderModel->hasOrderNumber()) {
+                Registry::getLogger()->info('Cannot delete valid order with id ' . $sessionOrderId);
+            } else {
+                $orderModel->delete();
+            }
         }
 
         PayPalSession::unsetPayPalOrderId();
