@@ -7,7 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
-use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidEsales\Eshop\Core\Exception\UserException;
 use OxidEsales\Eshop\Core\Registry;
 
 /**
@@ -21,10 +21,10 @@ class InputValidator extends InputValidator_parent
     public function checkCountries($user, $invAddress, $deliveryAddress)
     {
         parent::checkCountries($user, $invAddress, $deliveryAddress);
-
-        if ($this->getFirstValidationError() && PayPalSession::getCheckoutOrderId()) {
+        $fieldValidationErrors = $this->getFieldValidationErrors();
+        if (isset($fieldValidationErrors['oxuser__oxcountryid']) && PayPalSession::getCheckoutOrderId()) {
             $this->_aInputValidationErrors = [];
-            $exception = oxNew(\OxidEsales\Eshop\Core\Exception\UserException::class);
+            $exception = oxNew(UserException::class);
             $exception->setMessage(
                 Registry::getLang()->translateString(
                     'OSC_PAYPAL_PAY_EXPRESS_ERROR_DELCOUNTRY'
