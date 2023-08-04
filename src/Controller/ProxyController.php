@@ -128,7 +128,8 @@ class ProxyController extends FrontendController
 
             $this->setPayPalPaymentMethod();
         } elseif ($nonGuestAccountDetected && !$isLoggedIn) {
-            $this->setPayPalPaymentMethod();
+            // PPExpress is actual no possible so we switch to PP-Standard
+            $this->setPayPalPaymentMethod(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
         } else {
             //TODO: we might end up in order step redirecting to start page without showing a message
             // if we have no user, we stop the process
@@ -178,7 +179,7 @@ class ProxyController extends FrontendController
             $basket->calculateBasket(false);
         }
     }
-    public function setPayPalPaymentMethod()
+    public function setPayPalPaymentMethod($defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID)
     {
         $session = Registry::getSession();
         $basket = $session->getBasket();
@@ -188,7 +189,7 @@ class ProxyController extends FrontendController
             $user = $activeUser;
         }
 
-        $requestedPayPalPaymentId = $this->getRequestedPayPalPaymentId();
+        $requestedPayPalPaymentId = $this->getRequestedPayPalPaymentId($defaultPayPalPaymentId);
         if ($session->getVariable('paymentid') !== $requestedPayPalPaymentId) {
             $basket->setPayment($requestedPayPalPaymentId);
 
@@ -261,11 +262,11 @@ class ProxyController extends FrontendController
         return Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_EXPRESS;
     }
 
-    protected function getRequestedPayPalPaymentId(): string
+    protected function getRequestedPayPalPaymentId($defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID): string
     {
         $paymentId = (string) Registry::getRequest()->getRequestEscapedParameter('paymentid');
         return PayPalDefinitions::isPayPalPayment($paymentId) ?
             $paymentId :
-            PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID;
+            $defaultPayPalPaymentId;
     }
 }
