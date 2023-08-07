@@ -315,8 +315,9 @@ class Payment
                 (string) $payPalTransactionId
             );
 
-            if ($result instanceof Order && $order->isPayPalOrderCompleted($result)) {
+            if ($result instanceof ApiOrderModel && $order->isPayPalOrderCompleted($result)) {
                 $order->setOrderNumber();
+                $order->markOrderPaid();
                 $order->setTransId((string) $payPalTransactionId);
             }
         } catch (Exception $exception) {
