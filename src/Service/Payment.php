@@ -319,6 +319,7 @@ class Payment
 
             if ($result instanceof Order && $order->isPayPalOrderCompleted($result)) {
                 $order->setOrderNumber();
+                $order->markOrderPaid();
                 $order->setTransId((string)$payPalTransactionId);
             }
         } catch (Exception $exception) {

@@ -68,11 +68,12 @@ class PayPalAddressResponseToOxidAddress
 
         $shippingAddress = $response->purchase_units[0]->shipping->address;
         $shippingFullName = $response->purchase_units[0]->shipping->name->full_name;
+        $payer = $response->payer;
 
         $countryId = $country->getIdByCode($shippingAddress->country_code);
         $country->load($countryId);
         $countryName = $country->oxcountry__oxtitle->value;
-        $street = '';
+
         $streetNo = '';
         try {
             $streetTmp = $shippingAddress->address_line_1;
@@ -84,6 +85,8 @@ class PayPalAddressResponseToOxidAddress
             $street = $streetTmp;
         }
 
+        $fon = $payer->phone->phone_number->national_number ?? null;
+
         return [
             $DBTablePrefix . 'fname' => self::getFirstName($shippingFullName),
             $DBTablePrefix . 'lname' => self::getLastName($shippingFullName),
@@ -94,6 +97,7 @@ class PayPalAddressResponseToOxidAddress
             $DBTablePrefix . 'countryid' => $countryId,
             $DBTablePrefix . 'country' => $countryName,
             $DBTablePrefix . 'zip' => $shippingAddress->postal_code,
+            $DBTablePrefix . 'fon' => $fon,
         ];
     }
 

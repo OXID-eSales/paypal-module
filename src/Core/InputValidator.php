@@ -7,7 +7,8 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
-use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidEsales\Eshop\Application\Model\User;
+use OxidEsales\Eshop\Core\Exception\UserException;
 use OxidEsales\Eshop\Core\Registry;
 
 /**
@@ -21,16 +22,41 @@ class InputValidator extends InputValidator_parent
     public function checkCountries($user, $invAddress, $deliveryAddress)
     {
         parent::checkCountries($user, $invAddress, $deliveryAddress);
-
-        if ($this->getFirstValidationError() && PayPalSession::getCheckoutOrderId()) {
+        $fieldValidationErrors = $this->getFieldValidationErrors();
+        if (isset($fieldValidationErrors['oxuser__oxcountryid']) && PayPalSession::getCheckoutOrderId()) {
             $this->_aInputValidationErrors = [];
-            $exception = oxNew(\OxidEsales\Eshop\Core\Exception\UserException::class);
+            $exception = oxNew(UserException::class);
             $exception->setMessage(
                 Registry::getLang()->translateString(
                     'OSC_PAYPAL_PAY_EXPRESS_ERROR_DELCOUNTRY'
                 )
             );
             $this->_addValidationError("oxuser__oxcountryid", $exception);
+        }
+    }
+
+    /**
+     * Checking if all required fields were filled. In case of error
+     * exception is thrown
+     *
+     * @param User  $user            Active user.
+     * @param array $billingAddress  Billing address.
+     * @param array $deliveryAddress Delivery address.
+     */
+    public function checkRequiredFields($user, $billingAddress, $deliveryAddress)
+    {
+        parent::checkRequiredFields($user, $billingAddress, $deliveryAddress);
+        $firstValidationError = $this->getFirstValidationError();
+        if ($firstValidationError && PayPalSession::getCheckoutOrderId()) {
+            $this->_aInputValidationErrors = [];
+            $firstValidationErrorKey = key($firstValidationError);
+            $exception = oxNew(UserException::class);
+            $exception->setMessage(
+                Registry::getLang()->translateString(
+                    'OSC_PAYPAL_PAY_EXPRESS_ERROR_INPUTVALIDATION'
+                )
+            );
+            $this->_addValidationError($firstValidationErrorKey, $exception);
         }
     }
 }
