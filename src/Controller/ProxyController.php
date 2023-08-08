@@ -9,13 +9,13 @@ namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use Exception;
 use OxidEsales\Eshop\Application\Model\Address;
-use OxidEsales\Eshop\Application\Model\PaymentList;
 use OxidEsales\Eshop\Application\Model\DeliverySetList;
 use OxidEsales\Eshop\Application\Controller\FrontendController;
 use OxidEsales\Eshop\Application\Component\UserComponent;
 use OxidEsales\Eshop\Core\Exception\ArticleInputException;
 use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
+use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -115,18 +115,25 @@ class ProxyController extends FrontendController
             $userInvoiceAddress = $user->getInvoiceAddress();
             // add PayPal-Address as Delivery-Address
             $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
-            $user->changeUserData(
-                $user->oxuser__oxusername->value,
-                '',
-                '',
-                $userInvoiceAddress,
-                $deliveryAddress
-            );
+            try {
+                $user->changeUserData(
+                    $user->oxuser__oxusername->value,
+                    '',
+                    '',
+                    $userInvoiceAddress,
+                    $deliveryAddress
+                );
 
-            // use a deliveryaddress in oxid-checkout
-            Registry::getSession()->setVariable('blshowshipaddress', false);
+                // use a deliveryaddress in oxid-checkout
+                Registry::getSession()->setVariable('blshowshipaddress', false);
 
-            $this->setPayPalPaymentMethod();
+                $this->setPayPalPaymentMethod();
+            } catch (StandardException $exception) {
+                Registry::getUtilsView()->addErrorToDisplay($exception);
+                $response->status = 'ERROR';
+                PayPalSession::unsetPayPalOrderId();
+                Registry::getSession()->getBasket()->setPayment(null);
+            }
         } elseif ($nonGuestAccountDetected && !$isLoggedIn) {
             // PPExpress is actual no possible so we switch to PP-Standard
             $this->setPayPalPaymentMethod(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
