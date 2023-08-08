@@ -8,7 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Application\Model\User;
-use OxidEsales\Eshop\Core\Exception\UserException;
+use OxidEsales\Eshop\Core\Exception\InputException;
 use OxidEsales\Eshop\Core\Registry;
 
 /**
@@ -25,7 +25,7 @@ class InputValidator extends InputValidator_parent
         $fieldValidationErrors = $this->getFieldValidationErrors();
         if (isset($fieldValidationErrors['oxuser__oxcountryid']) && PayPalSession::getCheckoutOrderId()) {
             $this->_aInputValidationErrors = [];
-            $exception = oxNew(UserException::class);
+            $exception = oxNew(InputException::class);
             $exception->setMessage(
                 Registry::getLang()->translateString(
                     'OSC_PAYPAL_PAY_EXPRESS_ERROR_DELCOUNTRY'
@@ -46,17 +46,17 @@ class InputValidator extends InputValidator_parent
     public function checkRequiredFields($user, $billingAddress, $deliveryAddress)
     {
         parent::checkRequiredFields($user, $billingAddress, $deliveryAddress);
-        $firstValidationError = $this->getFirstValidationError();
-        if ($firstValidationError && PayPalSession::getCheckoutOrderId()) {
+        $allValidationErrors = $this->getFieldValidationErrors();
+        if (count($allValidationErrors) && PayPalSession::getCheckoutOrderId()) {
             $this->_aInputValidationErrors = [];
-            $firstValidationErrorKey = key($firstValidationError);
-            $exception = oxNew(UserException::class);
+            $validationErrorKey = key($allValidationErrors);
+            $exception = oxNew(InputException::class);
             $exception->setMessage(
                 Registry::getLang()->translateString(
                     'OSC_PAYPAL_PAY_EXPRESS_ERROR_INPUTVALIDATION'
                 )
             );
-            $this->_addValidationError($firstValidationErrorKey, $exception);
+            $this->_addValidationError($validationErrorKey, $exception);
         }
     }
 }
