@@ -639,7 +639,7 @@ class Order extends Order_parent
                 'oxtrackcode' => $trackingCode
             ]
         );
-        $payPalOrder = $this->getPayPalOrder();
+        $payPalOrder = $this->getPayPalRepository();
         $payPalOrder->setTrackingCode($trackingCode);
         $payPalOrder->setTrackingCarrier($trackingCarrier);
         $payPalOrder->save();
@@ -647,20 +647,20 @@ class Order extends Order_parent
 
     public function getPayPalTrackingCarrier(): string
     {
-        return $this->getPayPalOrder()->getTrackingCarrier();
+        return $this->getPayPalRepository()->getTrackingCarrier();
     }
 
     public function getPayPalTrackingCode(): string
     {
-        return $this->getPayPalOrder()->getTrackingCode();
+        return $this->getPayPalRepository()->getTrackingCode();
     }
 
     public function getPayPalTransactionId(): string
     {
-        return $this->getPayPalOrder()->getTransactionId();
+        return $this->getPayPalRepository()->getTransactionId();
     }
 
-    protected function getPayPalOrder(): PayPalOrder
+    protected function getPayPalRepository(): PayPalOrder
     {
         /** @var OrderRepository $payPalOrderRepository */
         $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
