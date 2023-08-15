@@ -12,7 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
     [Merchant-Preferences Live](https://www.paypal.com/businessmanage/preferences/website)). This is a solution when phone numbers are mandatory fields in the store
 - [0007496](https://bugs.oxid-esales.com/view.php?id=7496): PPStandard is preselected if PPExpress was interrupted due to a required login
 - [0007497](https://bugs.oxid-esales.com/view.php?id=7497): OXTRANSSTATUS is changed to OK after successful PPStandard-Payment with direct-capture
-
+- Fix compatibility-Issue with parallel-operation between PPCheckout and Old PP-Module
 
 ## [1.3.0] - 2023-05-24
 
