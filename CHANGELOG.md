@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007496](https://bugs.oxid-esales.com/view.php?id=7496): PPStandard is preselected if PPExpress was interrupted due to a required login
 - [0007497](https://bugs.oxid-esales.com/view.php?id=7497): OXTRANSSTATUS is changed to OK after successful PPStandard-Payment with direct-capture
 - Fix compatibility-Issue with parallel-operation between PPCheckout and Old PP-Module
+- Costs or discounts for PayPal payment methods no longer block the checkout
 
 ## [1.3.0] - 2023-05-24
 
