@@ -199,16 +199,6 @@ class OrderRequestFactory
         $basket = $this->basket;
         $currency = $basket->getBasketCurrency();
 
-        $total = PriceToMoney::convert($basket->getPriceForPayment(), $currency);
-
-        //Total amount
-        $amount = new AmountWithBreakdown();
-        $amount->value = $total->value;
-        $amount->currency_code = $total->currency_code;
-
-        //Cost breakdown
-        $breakdown = $amount->breakdown = new AmountBreakdown();
-
         //Discount
         $discount = $basket->getPayPalCheckoutDiscount();
         //Item total cost
@@ -219,6 +209,16 @@ class OrderRequestFactory
             $itemTotal -= $discount;
             $discount = 0;
         }
+
+        $total = PriceToMoney::convert($itemTotal, $currency);
+
+        //Total amount
+        $amount = new AmountWithBreakdown();
+        $amount->value = $total->value;
+        $amount->currency_code = $total->currency_code;
+
+        //Cost breakdown
+        $breakdown = $amount->breakdown = new AmountBreakdown();
 
         if ($discount) {
             $breakdown->discount = PriceToMoney::convert($discount, $currency);
