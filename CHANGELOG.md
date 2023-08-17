@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.3.1] - 2023-XX-XX
+## [2.3.1] - 2023-08-17
 
 # Fixed
 - [0007493](https://bugs.oxid-esales.com/view.php?id=7468): Dont cleanup possible valid orders
