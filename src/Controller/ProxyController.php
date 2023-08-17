@@ -208,8 +208,8 @@ class ProxyController extends FrontendController
             if ($shippingSetId) {
                 $basket->setShipping($shippingSetId);
                 $session->setVariable('sShipSet', $shippingSetId);
-                $session->setVariable('paymentid', $requestedPayPalPaymentId);
             }
+            $session->setVariable('paymentid', $requestedPayPalPaymentId);
         }
     }
 
