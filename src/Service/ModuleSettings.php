@@ -349,6 +349,13 @@ class ModuleSettings
             ]);
         }
 
+        if ($type === 'str') {
+            $value = trim($value);
+        }
+        if ($type === 'bool') {
+            $value = (bool)$value;
+        }
+
         $this->config->saveShopConfVar(
             $type,
             $name,
