@@ -496,7 +496,7 @@ class Payment
         $response = $this->doCreatePayPalOrder(
             $basket,
             $intent,
-            null,
+            OrderRequestFactory::USER_ACTION_PAY_NOW,
             null,
             null,
             '',
