@@ -206,7 +206,7 @@ class OrderRequestFactory
 
         // possible price surcharge
         if ($discount < 0) {
-            $itemTotal -= $discount;
+            $itemTotal += $discount;
             $discount = 0;
         }
 
