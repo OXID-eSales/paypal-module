@@ -13,7 +13,10 @@ use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\Payment;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\EshopCommunity\Core\Registry;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleConfigurationDaoBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\DataObject\ModuleConfiguration;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Exception\ModuleSettingNotFountException;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -49,6 +52,12 @@ class ModuleSettings
     /** @var ModuleSettingBridgeInterface */
     private $moduleSettingBridge;
 
+    /** @var ModuleConfigurationDaoBridgeInterface */
+    private $moduleConfigurationDaoBridgeInterface;
+
+    /** @var ModuleConfiguration */
+    private $moduleConfiguration = null;
+
     /** @var ContextInterface */
     private $context;
 
@@ -59,10 +68,12 @@ class ModuleSettings
 
     public function __construct(
         ModuleSettingBridgeInterface $moduleSettingBridge,
-        ContextInterface $context
+        ContextInterface $context,
+        ModuleConfigurationDaoBridgeInterface $moduleConfigurationDaoBridgeInterface
     ) {
         $this->moduleSettingBridge = $moduleSettingBridge;
         $this->context = $context;
+        $this->moduleConfigurationDaoBridgeInterface = $moduleConfigurationDaoBridgeInterface;
     }
 
     public function showAllPayPalBanners(): bool
@@ -337,8 +348,23 @@ class ModuleSettings
         return $activePayments ?: [];
     }
 
+    /**
+     * @throws ModuleSettingNotFountException
+     */
     public function save(string $name, $value): void
     {
+        if (is_null($this->moduleConfiguration)) {
+            $this->moduleConfiguration = $this->moduleConfigurationDaoBridgeInterface->get(Module::MODULE_ID);
+        }
+        $moduleSetting = $this->moduleConfiguration->getModuleSetting($name);
+
+        if ($moduleSetting->getType() === 'str') {
+            $value = trim($value);
+        }
+        if ($moduleSetting->getType() === 'bool') {
+            $value = (bool)$value;
+        }
+
         $this->moduleSettingBridge->save($name, $value, Module::MODULE_ID);
     }
 
