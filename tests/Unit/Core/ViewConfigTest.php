@@ -171,7 +171,9 @@ final class ViewConfigTest extends UnitTestCase
             ['blue'],
             ['black'],
             ['white'],
-            ['white-no-border'],
+            ['gray'],
+            ['monochrome'],
+            ['grayscale'],
         ];
     }
     // <-- PSPAYPAL-491
