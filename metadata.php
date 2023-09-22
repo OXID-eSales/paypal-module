@@ -56,7 +56,7 @@ $aModule = [
         'en' => 'Use of the online payment service from PayPal. Documentation: <a href="https://docs.oxid-esales.com/modules/paypal-checkout/en/latest/" target="_blank">PayPal Checkout</a>'
     ],
     'thumbnail' => 'out/img/paypal.png',
-    'version' => '2.3.2-rc.1',
+    'version' => '2.3.2-rc.2',
     'author' => 'OXID eSales AG',
     'url' => 'https://www.oxid-esales.com',
     'email' => 'info@oxid-esales.com',
@@ -410,7 +410,7 @@ $aModule = [
         [
             'name' => 'oscPayPalBannersColorScheme',
             'type' => 'select',
-            'constraints' => 'blue|black|white|white-no-border',
+            'constraints' => 'blue|black|white|gray|monochrome|grayscale',
             'value' => 'blue',
             'group' => null
         ],
