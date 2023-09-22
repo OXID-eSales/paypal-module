@@ -16,6 +16,7 @@ use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalModelOrder;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidSolutionCatalysts\PayPal\Service\PayPalLogger;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -59,11 +60,17 @@ abstract class WebhookHandlerBase
                 $order
             );
         } else {
-            Registry::getLogger()->debug(
+            $logger = $this->getServiceFromContainer(PayPalLogger::class)->getLogger();
+            $logger->debug(
                 "Not enough information to handle " . static::WEBHOOK_EVENT_NAME .
                 " with PayPal order_id '" . $payPalOrderId . "' and PayPal transaction id '" .
                 $payPalTransactionId . "'"
             );
+            //Registry::getLogger()->debug(
+            //    "Not enough information to handle " . static::WEBHOOK_EVENT_NAME .
+            //    " with PayPal order_id '" . $payPalOrderId . "' and PayPal transaction id '" .
+            //    $payPalTransactionId . "'"
+            //);
         }
 
         //Webhook is used to trigger unfinished order cleanup at the end of each webhook handle.

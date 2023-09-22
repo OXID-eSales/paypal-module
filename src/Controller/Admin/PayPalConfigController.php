@@ -21,6 +21,7 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Service\PayPalLogger;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
 /**
@@ -204,7 +205,9 @@ class PayPalConfigController extends AdminController
             $merchantInformations = $onBoardingClient->getMerchantInformations();
             $handler->saveEligibility($merchantInformations);
         } catch (ClientException $exception) {
-            Registry::getLogger()->error("Error on checkEligibility", [$exception]);
+            $logger = $this->getServiceFromContainer(PayPalLogger::class)->getLogger();
+            $logger->error("Error on checkEligibility", [$exception]);
+            //Registry::getLogger()->error("Error on checkEligibility", [$exception]);
         }
     }
 
@@ -339,7 +342,9 @@ class PayPalConfigController extends AdminController
             $requestReader = oxNew(RequestReader::class);
             PayPalSession::storeOnboardingPayload($requestReader->getRawPost());
         } catch (\Exception $exception) {
-            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            $logger = $this->getServiceFromContainer(PayPalLogger::class)->getLogger();
+            $logger->error($exception->getMessage(), [$exception]);
+            //Registry::getLogger()->error($exception->getMessage(), [$exception]);
         }
 
         $result = [];
@@ -382,7 +387,9 @@ class PayPalConfigController extends AdminController
             $handler = oxNew(Onboarding::class);
             $credentials = $handler->autoConfigurationFromCallback();
         } catch (\Exception $exception) {
-            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            $logger = $this->getServiceFromContainer(PayPalLogger::class)->getLogger();
+            $logger->error($exception->getMessage(), [$exception]);
+            //Registry::getLogger()->error($exception->getMessage(), [$exception]);
         }
         return $credentials;
     }
@@ -401,7 +408,9 @@ class PayPalConfigController extends AdminController
         } catch (OnboardingException $exception) {
             Registry::getUtilsView()->addErrorToDisplay($exception->getMessage());
         } catch (\Exception $exception) {
-            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            $logger = $this->getServiceFromContainer(PayPalLogger::class)->getLogger();
+            $logger->error($exception->getMessage(), [$exception]);
+            //Registry::getLogger()->error($exception->getMessage(), [$exception]);
         }
 
         return $webhookId;

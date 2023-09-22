@@ -12,11 +12,11 @@ use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Service\PayPalLogger;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalOrder;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\Refund;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\RefundRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Payments;
@@ -94,7 +94,9 @@ class PayPalOrderController extends AdminDetailsController
             parent::executeFunction($functionName);
         } catch (ApiException $exception) {
             $this->addTplParam('error', $exception->getErrorDescription());
-            Registry::getLogger()->error($exception->getMessage());
+            $logger = $this->getServiceFromContainer(PayPalLogger::class)->getLogger();
+            $logger->error($exception->getMessage());
+            //Registry::getLogger()->error($exception->getMessage());
         }
     }
 
@@ -155,7 +157,9 @@ class PayPalOrderController extends AdminDetailsController
                 }
             } catch (ApiException $exception) {
                 $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()));
-                Registry::getLogger()->error($exception->getMessage());
+                $logger = $this->getServiceFromContainer(PayPalLogger::class)->getLogger();
+                $logger->error($exception->getMessage());
+                //Registry::getLogger()->error($exception->getMessage());
             }
         } elseif (
             $order->getFieldData('oxpaymenttype') == $this->payPalPlusPaymentType &&

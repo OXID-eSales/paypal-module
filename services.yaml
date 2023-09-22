@@ -22,11 +22,48 @@ services:
   OxidEsales\Eshop\Core\Request:
     factory: [ '@OxidEsales\Eshop\Core\Registry', 'getRequest' ]
 
+  OxidSolutionCatalysts\PayPal\Logger:
+    class: Monolog\Logger
+    factory: ['@OxidSolutionCatalysts\PayPal\Logger\Factory', 'create']
+    public: true
+
+  OxidSolutionCatalysts\PayPal\Logger\Factory:
+    class: OxidEsales\EshopCommunity\Internal\Framework\Logger\Factory\MonologLoggerFactory
+    public: true
+    arguments:
+      $configuration: '@OxidSolutionCatalysts\PayPal\Logger\Configuration'
+
+  OxidSolutionCatalysts\PayPal\Logger\Configuration:
+    class: OxidEsales\EshopCommunity\Internal\Framework\Logger\Configuration\MonologConfiguration
+    public: true
+    arguments:
+      $loggerName: 'PayPal Payment Logger'
+      $logFilePath: '@=service("OxidSolutionCatalysts\\PayPal\\Service\\PayPalLogger").getPayPalLogFilePath()'
+      $logLevel: !php/const Psr\Log\LogLevel::INFO
+
+  OxidSolutionCatalysts\PayPal\Service\PayPalLogger:
+    class: OxidSolutionCatalysts\PayPal\Service\PayPalLogger
+    public: true
+    arguments:
+      $moduleLogger: '@OxidSolutionCatalysts\PayPal\Logger'
+
+  OxidSolutionCatalysts\PayPal\Service\Payment:
+    class: OxidSolutionCatalysts\PayPal\Service\Payment
+    public: true
+    arguments:
+      $moduleLogger: '@OxidSolutionCatalysts\PayPal\Logger'
+
+  OxidSolutionCatalysts\PayPal\Service\ModuleSettings:
+    class: OxidSolutionCatalysts\PayPal\Service\ModuleSettings
+    public: true
+    arguments:
+      $moduleLogger: '@OxidSolutionCatalysts\PayPal\Logger'
+
   OxidSolutionCatalysts\PayPal\Service\:
     resource: 'src/Service/*'
+    exclude: ['src/Service/{PayPalLogger}','src/Service/{Payment}','src/Service/{ModuleSettings}']
     public: true
 
   OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface:
     class:  OxidSolutionCatalysts\PayPal\Service\SCAValidator
     public: true
-

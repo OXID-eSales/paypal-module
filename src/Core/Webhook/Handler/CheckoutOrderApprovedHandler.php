@@ -10,6 +10,7 @@ namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalModelOrder;
+use OxidSolutionCatalysts\PayPal\Service\PayPalLogger;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as OrderResponse;
@@ -39,11 +40,17 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
                     );
                 $order->setOrderNumber(); //ensure the order has a number
             } catch (\Exception $exception) {
-                Registry::getLogger()->debug(
+                $logger = $this->getServiceFromContainer(PayPalLogger::class)->getLogger();
+                $logger->debug(
                     "Error during " . self::WEBHOOK_EVENT_NAME . " for PayPal order_id '" .
                     $payPalOrderId . "'",
                     [$exception]
                 );
+                //Registry::getLogger()->debug(
+                //    "Error during " . self::WEBHOOK_EVENT_NAME . " for PayPal order_id '" .
+                //    $payPalOrderId . "'",
+                //    [$exception]
+                //);
             }
         }
     }
