@@ -19,7 +19,6 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
-use OxidSolutionCatalysts\PayPal\Service\PayPalLogger;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Core\Config;
@@ -30,6 +29,7 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use Psr\Log\LoggerInterface;
 
 /**
  * Server side interface for PayPal smart buttons.
@@ -92,9 +92,9 @@ class ProxyController extends FrontendController
         try {
             $response = $service->showOrderDetails($orderId, '');
         } catch (Exception $exception) {
-            $logger = $this->getServiceFromContainer(PayPalLogger::class)->getLogger();
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             $logger->error("Error on order capture call.", [$exception]);
-            //Registry::getLogger()->error("Error on order capture call.", [$exception]);
         }
 
         if (!$this->getUser()) {

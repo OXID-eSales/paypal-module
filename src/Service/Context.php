@@ -10,25 +10,10 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Service;
 
 use OxidEsales\Eshop\Core\Registry;
-use Psr\Log\LoggerInterface;
 use Webmozart\PathUtil\Path;
 
-class PayPalLogger
+class Context
 {
-    private LoggerInterface $moduleLogger;
-
-    public function __construct(
-        LoggerInterface $moduleLogger
-    )
-    {
-        $this->moduleLogger = $moduleLogger;
-    }
-
-    public function getLogger(): LoggerInterface
-    {
-        return $this->moduleLogger;
-    }
-
     /**
      * @SuppressWarnings(PHPMD.StaticAccess)
      */

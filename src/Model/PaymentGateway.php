@@ -11,10 +11,10 @@ use Exception;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
-use OxidSolutionCatalysts\PayPal\Service\PayPalLogger;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class PaymentGateway
@@ -65,14 +65,14 @@ class PaymentGateway extends PaymentGateway_parent
         $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
         $success = false;
 
-        $logger = $this->getServiceFromContainer(PayPalLogger::class)->getLogger();
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
         if ($checkoutOrderId = PayPalSession::getCheckoutOrderId()) {
             // Update Order
             try {
                 $paymentService->doPatchPayPalOrder(Registry::getSession()->getBasket(), $checkoutOrderId);
             } catch (Exception $exception) {
                 $logger->error("Error on order patch call.", [$exception]);
-                //Registry::getLogger()->error("Error on order patch call.", [$exception]);
             }
 
             // Capture Order
@@ -84,8 +84,6 @@ class PaymentGateway extends PaymentGateway_parent
                 $success = true;
             } catch (Exception $exception) {
                 $logger->error("Error on order capture call.", [$exception]);
-                //Registry::getLogger()->error("Error on order capture call.", [$exception]);
-                $success = false;
             }
 
             // destroy PayPal-Session
@@ -109,9 +107,9 @@ class PaymentGateway extends PaymentGateway_parent
             );
             PayPalSession::unsetPayPalPuiCmId();
         } catch (Exception $exception) {
-            $logger = $this->getServiceFromContainer(PayPalLogger::class)->getLogger();
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             $logger->error("Error on execute pui payment call.", [$exception]);
-            //Registry::getLogger()->error("Error on execute pui payment call.", [$exception]);
         }
         // destroy PayPal-Session
         PayPalSession::unsetPayPalOrderId();

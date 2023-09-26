@@ -11,13 +11,12 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
 use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
-use OxidSolutionCatalysts\PayPal\Service\PayPalLogger;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Onboarding as ApiOnboardingClient;
+use Psr\Log\LoggerInterface;
 
 class Onboarding
 {
@@ -58,9 +57,9 @@ class Onboarding
 
             $credentials = $apiClient->getCredentials();
         } catch (ApiException $exception) {
-            $logger = $this->getServiceFromContainer(PayPalLogger::class)->getLogger();
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             $logger->error($exception->getMessage(), [$exception]);
-            //Registry::getLogger()->error($exception->getMessage(), [$exception]);
         }
 
         return $credentials;
@@ -121,9 +120,11 @@ class Onboarding
             $merchantId = $paypalConfig->getMerchantId();
         }
 
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+
         return new ApiOnboardingClient(
-            //Registry::getLogger(),
-            $this->getServiceFromContainer(PayPalLogger::class)->getLogger(),
+            $logger,
             $isSandbox ? $paypalConfig->getClientSandboxUrl() : $paypalConfig->getClientLiveUrl(),
             $clientId,
             $clientSecret,
@@ -141,9 +142,9 @@ class Onboarding
             $apiClient = $this->getOnboardingClient($onboardingResponse['isSandBox'], true);
             $merchantInformations = $apiClient->getMerchantInformations();
         } catch (ApiException $exception) {
-            $logger = $this->getServiceFromContainer(PayPalLogger::class)->getLogger();
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             $logger->error($exception->getMessage(), [$exception]);
-            //Registry::getLogger()->error($exception->getMessage(), [$exception]);
         }
         return $merchantInformations;
     }

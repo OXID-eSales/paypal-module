@@ -7,12 +7,11 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
-use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\EshopCommunity\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
-use OxidSolutionCatalysts\PayPal\Service\PayPalLogger;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
+use Psr\Log\LoggerInterface;
 
 class PaymentCaptureCompletedHandler extends WebhookHandlerBase
 {
@@ -34,8 +33,7 @@ class PaymentCaptureCompletedHandler extends WebhookHandlerBase
     protected function getStatusFromResource(array $eventPayload): string
     {
         //API v1 response uses 'state', v2 uses 'status' and some webhook events don't come with a status
-        return isset($eventPayload['state']) ? $eventPayload['state'] :
-            (isset($eventPayload['status']) ? $eventPayload['status'] : '');
+        return $eventPayload['state'] ?? ($eventPayload['status'] ?? '');
     }
 
     protected function getPayPalOrderDetails(string $payPalOrderId): ?PayPalApiModelOrder
@@ -47,15 +45,12 @@ class PaymentCaptureCompletedHandler extends WebhookHandlerBase
                 ->getOrderService()
                 ->showOrderDetails($payPalOrderId, '');
         } catch (ApiException $exception) {
-            $logger = $this->getServiceFromContainer(PayPalLogger::class)->getLogger();
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             $logger->debug(
                 'Exception during PaymentCaptureCompletedHandler::getPayPalOrderDetails().',
                 [$exception]
             );
-            //Registry::getLogger()->debug(
-            //    'Exception during PaymentCaptureCompletedHandler::getPayPalOrderDetails().',
-            //    [$exception]
-            //);
         }
 
         return $apiOrder;

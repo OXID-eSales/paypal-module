@@ -13,8 +13,8 @@ use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\RequestHandler as WebhookRequestHandler;
-use OxidSolutionCatalysts\PayPal\Service\PayPalLogger;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class WebhookController
@@ -31,7 +31,8 @@ class WebhookController extends WidgetController
     {
         parent::init();
 
-        $logger = $this->getServiceFromContainer(PayPalLogger::class)->getLogger();
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
 
         try {
             $requestReader = new RequestReader();
@@ -39,15 +40,12 @@ class WebhookController extends WidgetController
             $dispatcher = Registry::get(EventDispatcher::class);
 
             $logger->debug('PayPal Webhook request ' . $requestReader->getRawPost());
-            //Registry::getLogger()->debug('PayPal Webhook request ' . $requestReader->getRawPost());
             $logger->debug('PayPal Webhook headers ' . serialize($requestReader->getHeaders()));
-            //Registry::getLogger()->debug('PayPal Webhook headers ' . serialize($requestReader->getHeaders()));
 
             $webhookRequestHandler = new WebhookRequestHandler($requestReader, $verificationService, $dispatcher);
-            $success = $webhookRequestHandler->process();
+            $webhookRequestHandler->process();
         } catch (\Exception $exception) {
             $logger->error($exception->getMessage(), [$exception]);
-            //Registry::getLogger()->error($exception->getMessage(), [$exception]);
             $this->sendErrorResponse();
         }
         //We need to return a 200 if the call could be processed successfully, the otherwise webhook event
