@@ -273,8 +273,9 @@ class ProxyController extends FrontendController
         return Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_EXPRESS;
     }
 
-    protected function getRequestedPayPalPaymentId($defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID): string
-    {
+    protected function getRequestedPayPalPaymentId(
+        $defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
+    ): string {
         $paymentId = (string) Registry::getRequest()->getRequestEscapedParameter('paymentid');
         return PayPalDefinitions::isPayPalPayment($paymentId) ?
             $paymentId :

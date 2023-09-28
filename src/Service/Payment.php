@@ -148,7 +148,6 @@ class Payment
                 $payPalRequestId
             );
         } catch (ApiException $exception) {
-
             $this->moduleLogger->error("Api error on order create call. " .
                 $exception->getErrorIssue(), [$exception]);
             $this->handlePayPalApiError($exception);
