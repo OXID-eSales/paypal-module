@@ -8,7 +8,6 @@
 namespace OxidSolutionCatalysts\PayPal\Service;
 
 use Exception;
-use Monolog\Logger;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Exception\StandardException;
@@ -38,6 +37,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Payments\CaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\ReauthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
 use OxidSolutionCatalysts\PayPalApi\Service\Payments as ApiPaymentService;
+use Psr\Log\LoggerInterface;
 
 class Payment
 {
@@ -80,14 +80,14 @@ class Payment
     /** @var ModuleSettingsService */
     private $moduleSettingsService;
 
-    private Logger $moduleLogger;
+    private LoggerInterface $moduleLogger;
 
     public function __construct(
         EshopSession $eshopSession,
         OrderRepository $orderRepository,
         SCAValidatorInterface $scaValidator,
         ModuleSettingsService $moduleSettingsService,
-        Logger $moduleLogger,
+        LoggerInterface $moduleLogger,
         ServiceFactory $serviceFactory = null,
         PatchRequestFactory $patchRequestFactory = null,
         OrderRequestFactory $orderRequestFactory = null
@@ -118,7 +118,6 @@ class Payment
         #): ?ApiModelOrder
     ) {
         //TODO return value
-
         $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
 
         /** @var ApiOrderService $orderService */

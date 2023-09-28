@@ -3,24 +3,16 @@ services:
   _defaults:
     public: false
     autowire: true
+    bind:
+      OxidEsales\Eshop\Core\Config: '@=service("OxidSolutionCatalysts\\PayPal\\Core\\Registry").getConfig()'
+      OxidEsales\Eshop\Core\Session: '@=service("OxidSolutionCatalysts\\PayPal\\Core\\Registry").getSession()'
+      OxidEsales\Eshop\Core\Language: '@=service("OxidSolutionCatalysts\\PayPal\\Core\\Registry").getLang()'
+      OxidEsales\Eshop\Core\UtilsDate: '@=service("OxidSolutionCatalysts\\PayPal\\Core\\Registry").getUtilsDate()'
+      OxidEsales\Eshop\Core\Request: '@=service("OxidSolutionCatalysts\\PayPal\\Core\\Registry").getRequest()'
 
-  OxidEsales\Eshop\Core\Registry:
+  OxidSolutionCatalysts\PayPal\Core\Registry:
     class: OxidEsales\Eshop\Core\Registry
-
-  OxidEsales\Eshop\Core\Config:
-    factory: [ '@OxidEsales\Eshop\Core\Registry', 'getConfig' ]
-
-  OxidEsales\Eshop\Core\Session:
-    factory: [ '@OxidEsales\Eshop\Core\Registry', 'getSession' ]
-
-  OxidEsales\Eshop\Core\Language:
-    factory: [ '@OxidEsales\Eshop\Core\Registry', 'getLang' ]
-
-  OxidEsales\Eshop\Core\UtilsDate:
-    factory: [ '@OxidEsales\Eshop\Core\Registry', 'getUtilsDate' ]
-
-  OxidEsales\Eshop\Core\Request:
-    factory: [ '@OxidEsales\Eshop\Core\Registry', 'getRequest' ]
+    public: true
 
   OxidSolutionCatalysts\PayPal\Logger:
     class: Monolog\Logger
@@ -41,22 +33,21 @@ services:
       $logFilePath: '@=service("OxidSolutionCatalysts\\PayPal\\Service\\Context").getPayPalLogFilePath()'
       $logLevel: !php/const Psr\Log\LogLevel::INFO
 
+  OxidSolutionCatalysts\PayPal\Service\:
+    resource: 'src/Service/*'
+    public: true
+
   OxidSolutionCatalysts\PayPal\Service\Payment:
     class: OxidSolutionCatalysts\PayPal\Service\Payment
     public: true
     arguments:
-      $moduleLogger: '@OxidSolutionCatalysts\PayPal\Logger'
+      Psr\Log\LoggerInterface: '@OxidSolutionCatalysts\PayPal\Logger'
 
   OxidSolutionCatalysts\PayPal\Service\ModuleSettings:
     class: OxidSolutionCatalysts\PayPal\Service\ModuleSettings
     public: true
     arguments:
-      $moduleLogger: '@OxidSolutionCatalysts\PayPal\Logger'
-
-  OxidSolutionCatalysts\PayPal\Service\:
-    resource: 'src/Service/*'
-    exclude: ['src/Service/{Payment}','src/Service/{ModuleSettings}']
-    public: true
+      Psr\Log\LoggerInterface: '@OxidSolutionCatalysts\PayPal\Logger'
 
   OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface:
     class:  OxidSolutionCatalysts\PayPal\Service\SCAValidator

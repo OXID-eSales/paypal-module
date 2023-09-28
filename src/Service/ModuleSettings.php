@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
-use Monolog\Logger;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\Payment;
 use OxidEsales\Eshop\Application\Model\User;
@@ -22,6 +21,7 @@ use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Module;
+use Psr\Log\LoggerInterface;
 
 class ModuleSettings
 {
@@ -62,7 +62,7 @@ class ModuleSettings
     /** @var ContextInterface */
     private $context;
 
-    private Logger $moduleLogger;
+    private LoggerInterface $moduleLogger;
 
     //TODO: we need service for fetching module settings from db (this one)
     //another class for moduleconfiguration (database values/edefaults)
@@ -73,7 +73,7 @@ class ModuleSettings
         ModuleSettingBridgeInterface $moduleSettingBridge,
         ContextInterface $context,
         ModuleConfigurationDaoBridgeInterface $moduleConfigurationDaoBridgeInterface,
-        Logger $moduleLogger
+        LoggerInterface $moduleLogger
     ) {
         $this->moduleSettingBridge = $moduleSettingBridge;
         $this->context = $context;
