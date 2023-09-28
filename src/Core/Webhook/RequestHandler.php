@@ -9,12 +9,11 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook;
 
-use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidSolutionCatalysts\PayPal\Core\RequestReader;
+use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalLogger;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier as VerificationService;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher as WebhookDispatcher;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
-use OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 
 final class RequestHandler
@@ -41,6 +40,7 @@ final class RequestHandler
     public function process(): bool
     {
         $result = false;
+        $logger = new PayPalLogger();
 
         try {
             $requestBody = $this->requestReader->getRawPost();
@@ -53,13 +53,10 @@ final class RequestHandler
             $result = true;
         } catch (WebhookEventException $exception) {
             //we could not handle the call and don't want to receive it again, log and be done
-            EshopRegistry::getLogger()->error($exception->getMessage(), [$exception]);
-        } catch (WebhookEventTypeException $exception) {
-            //we could not handle the call and don't want to receive it again, log and be done
-            EshopRegistry::getLogger()->error($exception->getMessage(), [$exception]);
+            $logger->error($exception->getMessage(), [$exception]);
         } catch (ApiException $exception) {
             //we could not handle the call but want to retry, so log and rethrow
-            EshopRegistry::getLogger()->error($exception->getMessage(), [$exception]);
+            $logger->error($exception->getMessage(), [$exception]);
             throw $exception;
         }
 

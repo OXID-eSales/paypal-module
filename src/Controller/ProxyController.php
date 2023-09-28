@@ -18,6 +18,7 @@ use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalLogger;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
@@ -91,7 +92,8 @@ class ProxyController extends FrontendController
         try {
             $response = $service->showOrderDetails($orderId, '');
         } catch (Exception $exception) {
-            Registry::getLogger()->error("Error on order capture call.", [$exception]);
+            $logger = new PayPalLogger();
+            $logger->error("Error on order capture call.", [$exception]);
         }
 
         if (!$this->getUser()) {

@@ -11,6 +11,7 @@ use Exception;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session as EshopSession;
+use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalLogger;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Exception\UserPhone as UserPhoneException;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
@@ -116,6 +117,7 @@ class Payment
 
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
+        $logger = new PayPalLogger();
 
         $request = $this->orderRequestFactory->getRequest(
             $basket,
@@ -142,11 +144,11 @@ class Payment
                 $payPalRequestId
             );
         } catch (ApiException $exception) {
-            Registry::getLogger()->error("Api error on order create call. " .
+            $logger->error("Api error on order create call. " .
                                          $exception->getErrorIssue(), [$exception]);
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
-            Registry::getLogger()->error("Error on order create call.", [$exception]);
+            $logger->error("Error on order create call.", [$exception]);
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
         }
 
@@ -207,7 +209,8 @@ class Payment
         try {
             $orderService->updateOrder($checkoutOrderId, $request);
         } catch (Exception $exception) {
-            Registry::getLogger()->error("Error on order patch call.", [$exception]);
+            $logger = new PayPalLogger();
+            $logger->error("Error on order patch call.", [$exception]);
             throw $exception;
         }
     }
@@ -233,6 +236,7 @@ class Payment
         $paymentService = Registry::get(ServiceFactory::class)->getPaymentService();
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
+        $logger = new PayPalLogger();
 
         // Capture Order
         try {
@@ -278,7 +282,7 @@ class Payment
                     $issue = $exception->getErrorIssue();
                     $this->displayErrorIfInstrumentDeclined($issue);
 
-                    Registry::getLogger()->error($exception->getMessage(), [$exception]);
+                    $logger->error($exception->getMessage(), [$exception]);
 
                     throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
                 }
@@ -295,7 +299,7 @@ class Payment
                     $issue = $exception->getErrorIssue();
                     $this->displayErrorIfInstrumentDeclined($issue);
 
-                    Registry::getLogger()->error($exception->getMessage(), [$exception]);
+                    $logger->error($exception->getMessage(), [$exception]);
                     throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
                 }
             }
@@ -322,7 +326,7 @@ class Payment
             }
         } catch (Exception $exception) {
             //Webhook might try to capture already captured order
-            Registry::getLogger()->debug("Error on order capture call.", [$exception]);
+            $logger->debug("Error on order capture call.", [$exception]);
             throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
         }
 
@@ -413,7 +417,8 @@ class Payment
 
         if ($orderModel->isLoaded()) {
             if ($orderModel->hasOrderNumber()) {
-                Registry::getLogger()->info('Cannot delete valid order with id ' . $sessionOrderId);
+                $logger = new PayPalLogger();
+                $logger->info('Cannot delete valid order with id ' . $sessionOrderId);
             } else {
                 $orderModel->delete();
             }
@@ -469,7 +474,8 @@ class Payment
             PayPalSession::unsetPayPalOrderId();
             $this->removeTemporaryOrder();
             //TODO: do we need to log this?
-            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            $logger = new PayPalLogger();
+            $logger->error($exception->getMessage(), [$exception]);
         }
 
         //NOTE: payment not fully executed, we need customer interaction first
@@ -577,12 +583,14 @@ class Payment
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_PHONE);
         } catch (Exception $exception) {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_GENERIC);
-            Registry::getLogger()->error("Error on pui order creation call.", [$exception]);
+            $logger = new PayPalLogger();
+            $logger->error("Error on pui order creation call.", [$exception]);
         }
 
        # TODO: check what we created, ensure it is a pui order
        # $paymentSource = $this->fetchOrderFields((string) $payPalOrderId, 'payment_source');
-       # Registry::getLogger()->error(serialize($paymentSource));
+       # $logger = new PayPalLogger();
+       # $logger->error(serialize($paymentSource));
 
         if (!$payPalOrderId) {
             return false;

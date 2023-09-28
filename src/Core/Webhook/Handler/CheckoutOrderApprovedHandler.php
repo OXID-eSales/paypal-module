@@ -9,6 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalLogger;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalModelOrder;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
@@ -39,7 +40,8 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
                     );
                 $order->setOrderNumber(); //ensure the order has a number
             } catch (\Exception $exception) {
-                Registry::getLogger()->debug(
+                $logger = new PayPalLogger();
+                $logger->debug(
                     "Error during " . self::WEBHOOK_EVENT_NAME . " for PayPal order_id '" .
                     $payPalOrderId . "'",
                     [$exception]
@@ -63,7 +65,7 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
 
     protected function getStatusFromResource(array $eventPayload): string
     {
-        return isset($eventPayload['status']) ? $eventPayload['status'] : '';
+        return $eventPayload['status'] ?? '';
     }
 
     /**
@@ -96,8 +98,8 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
         return (
             isset($eventPayload['status']) &&
             isset($eventPayload['purchase_units'][0]['payments']['captures'][0]['status']) &&
-            $this->getStatusFromResource($eventPayload) == OrderResponse::STATUS_COMPLETED &&
-            $eventPayload['purchase_units'][0]['payments']['captures'][0]['status'] == Capture::STATUS_COMPLETED
+            $this->getStatusFromResource($eventPayload) === OrderResponse::STATUS_COMPLETED &&
+            $eventPayload['purchase_units'][0]['payments']['captures'][0]['status'] === Capture::STATUS_COMPLETED
         );
     }
 }

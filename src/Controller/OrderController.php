@@ -13,6 +13,7 @@ use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalLogger;
 use OxidSolutionCatalysts\PayPal\Exception\RedirectWithMessage;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -144,7 +145,8 @@ class OrderController extends OrderController_parent
 
             $status = $this->execute();
         } catch (\Exception $exception) {
-            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            $logger = new PayPalLogger();
+            $logger->error($exception->getMessage(), [$exception]);
             $this->outputJson(['acdcerror' => 'failed to execute shop order']);
             return;
         }
@@ -183,7 +185,8 @@ class OrderController extends OrderController_parent
             $sessionOrderId &&
             $sessionAcdcOrderId
         ) {
-            Registry::getLogger()->debug(
+            $logger = new PayPalLogger();
+            $logger->debug(
                 'captureAcdcOrder already COMPLETED for PayPal Order id ' . $sessionAcdcOrderId
             );
 
@@ -231,7 +234,8 @@ class OrderController extends OrderController_parent
             //track status in session
             Registry::getSession()->setVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS, $response->status);
         } catch (\Exception $exception) {
-            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            $logger = new PayPalLogger();
+            $logger->error($exception->getMessage(), [$exception]);
             $this->getServiceFromContainer(PaymentService::class)->removeTemporaryOrder();
         }
 
@@ -270,7 +274,8 @@ class OrderController extends OrderController_parent
             $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);
             $order->save();
         } catch (PayPalException $exception) {
-            Registry::getLogger()->debug(
+            $logger = new PayPalLogger();
+            $logger->debug(
                 'PayPal Checkout error during order finalization ' . $exception->getMessage(),
                 [$exception]
             );
@@ -294,7 +299,8 @@ class OrderController extends OrderController_parent
             $order->finalizeOrderAfterExternalPayment($sessionAcdcOrderId, $forceFetchDetails);
             $goNext = 'thankyou';
         } catch (\Exception $exception) {
-            Registry::getLogger()->error('failure during finalizeOrderAfterExternalPayment', [$exception]);
+            $logger = new PayPalLogger();
+            $logger->error('failure during finalizeOrderAfterExternalPayment', [$exception]);
             $this->cancelpaypalsession('cannot finalize order');
             $goNext = 'payment?payerror=2';
         }
