@@ -3,16 +3,25 @@ services:
   _defaults:
     public: false
     autowire: true
-    bind:
-      OxidEsales\Eshop\Core\Config: '@=service("OxidSolutionCatalysts\\PayPal\\Core\\Registry").getConfig()'
-      OxidEsales\Eshop\Core\Session: '@=service("OxidSolutionCatalysts\\PayPal\\Core\\Registry").getSession()'
-      OxidEsales\Eshop\Core\Language: '@=service("OxidSolutionCatalysts\\PayPal\\Core\\Registry").getLang()'
-      OxidEsales\Eshop\Core\UtilsDate: '@=service("OxidSolutionCatalysts\\PayPal\\Core\\Registry").getUtilsDate()'
-      OxidEsales\Eshop\Core\Request: '@=service("OxidSolutionCatalysts\\PayPal\\Core\\Registry").getRequest()'
 
-  OxidSolutionCatalysts\PayPal\Core\Registry:
+  OxidEsales\Eshop\Core\Registry:
     class: OxidEsales\Eshop\Core\Registry
+
+  OxidEsales\Eshop\Core\Config:
+    factory: [ '@OxidEsales\Eshop\Core\Registry', 'getConfig' ]
     public: true
+
+  OxidEsales\Eshop\Core\Session:
+    factory: [ '@OxidEsales\Eshop\Core\Registry', 'getSession' ]
+
+  OxidEsales\Eshop\Core\Language:
+    factory: [ '@OxidEsales\Eshop\Core\Registry', 'getLang' ]
+
+  OxidEsales\Eshop\Core\UtilsDate:
+    factory: [ '@OxidEsales\Eshop\Core\Registry', 'getUtilsDate' ]
+
+  OxidEsales\Eshop\Core\Request:
+    factory: [ '@OxidEsales\Eshop\Core\Registry', 'getRequest' ]
 
   OxidSolutionCatalysts\PayPal\Logger:
     class: Monolog\Logger
