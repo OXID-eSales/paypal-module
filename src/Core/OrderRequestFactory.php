@@ -209,8 +209,9 @@ class OrderRequestFactory
             $itemTotal += $discount;
             $discount = 0;
         }
+        $total = $itemTotal - $discount;
 
-        $total = PriceToMoney::convert($itemTotal, $currency);
+        $total = PriceToMoney::convert($total, $currency);
 
         //Total amount
         $amount = new AmountWithBreakdown();
