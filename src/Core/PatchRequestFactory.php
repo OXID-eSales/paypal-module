@@ -134,16 +134,6 @@ class PatchRequestFactory
         $basket = $this->basket;
         $currency = $this->basket->getBasketCurrency();
 
-        $total = PriceToMoney::convert($this->basket->getPriceForPayment(), $currency);
-
-        //Total amount
-        $amount = new AmountWithBreakdown();
-        $amount->value = $total->value;
-        $amount->currency_code = $total->currency_code;
-
-        //Cost breakdown
-        $breakdown = $amount->breakdown = new AmountBreakdown();
-
         //Discount
         $discount = $basket->getPayPalCheckoutDiscount();
         //Item total cost
@@ -154,6 +144,17 @@ class PatchRequestFactory
             $itemTotal += $discount;
             $discount = 0;
         }
+        $total = $itemTotal - $discount;
+
+        $total = PriceToMoney::convert($total, $currency);
+
+        //Total amount
+        $amount = new AmountWithBreakdown();
+        $amount->value = $total->value;
+        $amount->currency_code = $total->currency_code;
+
+        //Cost breakdown
+        $breakdown = $amount->breakdown = new AmountBreakdown();
 
         if ($discount) {
             $breakdown->discount = PriceToMoney::convert($discount, $currency);
