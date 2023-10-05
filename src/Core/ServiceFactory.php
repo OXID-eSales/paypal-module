@@ -9,14 +9,14 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
-use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Client;
 use OxidSolutionCatalysts\PayPalApi\Service\Partner;
-use OxidSolutionCatalysts\PayPalApi\Service\Catalog;
 use OxidSolutionCatalysts\PayPalApi\Service\GenericService;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 use OxidSolutionCatalysts\PayPalApi\Service\Payments;
 use OxidSolutionCatalysts\PayPal\Core\Api\IdentityService;
+use Psr\Log\LoggerInterface;
 
 /**
  * Class ServiceFactory
@@ -26,6 +26,8 @@ use OxidSolutionCatalysts\PayPal\Core\Api\IdentityService;
  */
 class ServiceFactory
 {
+    use ServiceContainer;
+
     /**
      * @var Client
      */
@@ -115,9 +117,11 @@ class ServiceFactory
         if ($this->client === null) {
             /** @var Config $config */
             $config = oxNew(Config::class);
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
 
             $client = new Client(
-                Registry::getLogger(),
+                $logger,
                 $config->isSandbox() ? Client::SANDBOX_URL : Client::PRODUCTION_URL,
                 $config->getClientId(),
                 $config->getClientSecret(),

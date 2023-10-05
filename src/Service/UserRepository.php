@@ -12,9 +12,9 @@ namespace OxidSolutionCatalysts\PayPal\Service;
 use PDO;
 use Doctrine\DBAL\Query\QueryBuilder;
 use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
+use OxidEsales\Eshop\Core\Session as EshopCoreSession;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
-use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 
@@ -29,19 +29,19 @@ class UserRepository
     /** @var EshopCoreConfig */
     private $config;
 
-    /** @var EshopRegistry */
-    private $registry;
+    /** @var EshopCoreSession */
+    private $session;
 
     public function __construct(
         QueryBuilderFactoryInterface $queryBuilderFactory,
         ContextInterface $context,
         EshopCoreConfig $config,
-        EshopRegistry $registry
+        EshopCoreSession $session
     ) {
         $this->queryBuilderFactory = $queryBuilderFactory;
         $this->context = $context;
         $this->config = $config;
-        $this->registry = $registry;
+        $this->session = $session;
     }
 
     /**
@@ -96,7 +96,7 @@ class UserRepository
     public function getUserCountryIso(): string
     {
         $result = '';
-        if ($user = $this->registry->getSession()->getUser()) {
+        if ($user = $this->session->getUser()) {
             $country = oxNew(Country::class);
             $country->load($user->getFieldData('oxcountryid'));
             $result = (string) $country->getFieldData('oxisoalpha2');
@@ -107,7 +107,7 @@ class UserRepository
     public function getUserStateIso(): string
     {
         $result = '';
-        if ($user = $this->registry->getSession()->getUser()) {
+        if ($user = $this->session->getUser()) {
             $state = oxNew(State::class);
             $state->loadByIdAndCountry(
                 $user->getFieldData('oxstateid'),

@@ -9,16 +9,20 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook;
 
-use OxidEsales\Eshop\Core\Registry as EshopRegistry;
+use JsonException;
 use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier as VerificationService;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher as WebhookDispatcher;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
+use Psr\Log\LoggerInterface;
 
 final class RequestHandler
 {
+    use ServiceContainer;
+
     /** @var RequestReader */
     private $requestReader;
 
@@ -41,6 +45,8 @@ final class RequestHandler
     public function process(): bool
     {
         $result = false;
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
 
         try {
             $requestBody = $this->requestReader->getRawPost();
@@ -53,21 +59,25 @@ final class RequestHandler
             $result = true;
         } catch (WebhookEventException | WebhookEventTypeException  $exception) {
             //we could not handle the call and don't want to receive it again, log and be done
-            EshopRegistry::getLogger()->error($exception->getMessage(), [$exception]);
+            $logger->error($exception->getMessage(), [$exception]);
         } catch (ApiException $exception) {
             //we could not handle the call but want to retry, so log and rethrow
-            EshopRegistry::getLogger()->error($exception->getMessage(), [$exception]);
+            $logger->error($exception->getMessage(), [$exception]);
             throw $exception;
         }
 
         return $result;
     }
 
+    /**
+     * @throws WebhookEventTypeException
+     * @throws WebhookEventException
+     * @throws JsonException
+     */
     private function processEvent(string $data): void
     {
-        $data = json_decode($data, true);
+        $data = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
         if (
-            is_array($data) &&
             isset($data['event_type'])
         ) {
             $this->webhookDispatcher->dispatch(new Event($data, $data['event_type']));

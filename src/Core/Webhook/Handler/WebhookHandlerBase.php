@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
-use OxidEsales\EshopCommunity\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
@@ -19,6 +18,7 @@ use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use Psr\Log\LoggerInterface;
 
 abstract class WebhookHandlerBase
 {
@@ -59,7 +59,9 @@ abstract class WebhookHandlerBase
                 $order
             );
         } else {
-            Registry::getLogger()->debug(
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->debug(
                 "Not enough information to handle " . static::WEBHOOK_EVENT_NAME .
                 " with PayPal order_id '" . $payPalOrderId . "' and PayPal transaction id '" .
                 $payPalTransactionId . "'"

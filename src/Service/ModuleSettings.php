@@ -12,7 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Service;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\Payment;
 use OxidEsales\Eshop\Application\Model\User;
-use OxidEsales\EshopCommunity\Core\Registry;
+use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleConfigurationDaoBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\DataObject\ModuleConfiguration;
@@ -21,6 +21,7 @@ use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Module;
+use Psr\Log\LoggerInterface;
 
 class ModuleSettings
 {
@@ -61,6 +62,8 @@ class ModuleSettings
     /** @var ContextInterface */
     private $context;
 
+    private LoggerInterface $moduleLogger;
+
     //TODO: we need service for fetching module settings from db (this one)
     //another class for moduleconfiguration (database values/edefaults)
     //and the view configuration should go into some separate class
@@ -69,11 +72,13 @@ class ModuleSettings
     public function __construct(
         ModuleSettingBridgeInterface $moduleSettingBridge,
         ContextInterface $context,
-        ModuleConfigurationDaoBridgeInterface $moduleConfigurationDaoBridgeInterface
+        ModuleConfigurationDaoBridgeInterface $moduleConfigurationDaoBridgeInterface,
+        LoggerInterface $moduleLogger
     ) {
         $this->moduleSettingBridge = $moduleSettingBridge;
         $this->context = $context;
         $this->moduleConfigurationDaoBridgeInterface = $moduleConfigurationDaoBridgeInterface;
+        $this->moduleLogger = $moduleLogger;
     }
 
     public function showAllPayPalBanners(): bool
@@ -396,12 +401,12 @@ class ModuleSettings
         $isSandbox = !is_null($isSandbox) ? $isSandbox : $this->isSandbox();
         if ($isSandbox) {
             $this->save('oscPayPalSandboxClientMerchantId', $merchantId);
-            Registry::getLogger()->info(sprintf('Saving Sandbox Merchant ID %s from onboarding', $merchantId));
+            $this->moduleLogger->info(sprintf('Saving Sandbox Merchant ID %s from onboarding', $merchantId));
         }
 
         if (!$isSandbox) {
             $this->save('oscPayPalClientMerchantId', $merchantId);
-            Registry::getLogger()->info(sprintf('Saving Live  Merchant ID %s from onboarding', $merchantId));
+            $this->moduleLogger->info(sprintf('Saving Live  Merchant ID %s from onboarding', $merchantId));
         }
     }
 

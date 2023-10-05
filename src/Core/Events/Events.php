@@ -13,6 +13,7 @@ use OxidEsales\DoctrineMigrationWrapper\MigrationsBuilder;
 use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Application\Model\Payment as EshopModelPayment;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleConfigurationDaoBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -160,10 +161,13 @@ class Events
         $moduleSettingsBridge = $container->get(ModuleSettingBridgeInterface::class);
         /** @var ContextInterface $context */
         $context = $container->get(ContextInterface::class);
+        /** @var ModuleConfigurationDaoBridgeInterface $moduleConfigurationDaoBridgeInterface */
+        $moduleConfigurationDaoBridgeInterface = $container->get(ModuleConfigurationDaoBridgeInterface::class);
 
         return new ModuleSettings(
             $moduleSettingsBridge,
-            $context
+            $context,
+            $moduleConfigurationDaoBridgeInterface
         );
     }
 }
