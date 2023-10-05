@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - [0007537](https://bugs.oxid-esales.com/view.php?id=7537): Show PayNow-Button on PP-Standard instead of Continue-Button
 - [0007531](https://bugs.oxid-esales.com/view.php?id=7531): Correct Handling of Vouchers from Voucher-Series
+  [0007547](https://bugs.oxid-esales.com/view.php?id=7547): PayPal error messages are written into seperate log (/log/paypal/paypal_YYYY-MM-DD.log)
 
 ## [1.3.1] - 2023-08-17
 
