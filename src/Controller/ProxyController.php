@@ -29,6 +29,7 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use Psr\Log\LoggerInterface;
 
 /**
  * Server side interface for PayPal smart buttons.
@@ -91,7 +92,9 @@ class ProxyController extends FrontendController
         try {
             $response = $service->showOrderDetails($orderId, '');
         } catch (Exception $exception) {
-            Registry::getLogger()->error("Error on order capture call.", [$exception]);
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->error("Error on order capture call.", [$exception]);
         }
 
         if (!$this->getUser()) {
@@ -270,8 +273,9 @@ class ProxyController extends FrontendController
         return Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_EXPRESS;
     }
 
-    protected function getRequestedPayPalPaymentId($defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID): string
-    {
+    protected function getRequestedPayPalPaymentId(
+        $defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
+    ): string {
         $paymentId = (string) Registry::getRequest()->getRequestEscapedParameter('paymentid');
         return PayPalDefinitions::isPayPalPayment($paymentId) ?
             $paymentId :

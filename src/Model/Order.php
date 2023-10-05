@@ -32,6 +32,7 @@ use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidEsales\Eshop\Core\Counter as EshopCoreCounter;
+use Psr\Log\LoggerInterface;
 
 /**
  * PayPal Eshop model order class
@@ -288,7 +289,9 @@ class Order extends Order_parent
                 return self::ORDER_STATE_SESSIONPAYMENT_INPROGRESS;
             } catch (\Exception $exception) {
                 $this->delete();
-                Registry::getLogger()->error($exception->getMessage(), [$exception]);
+                /** @var LoggerInterface $logger */
+                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+                $logger->error($exception->getMessage(), [$exception]);
             }
             return self::ORDER_STATE_PAYMENTERROR;
         } elseif ($isPayPalACDC) {
@@ -338,7 +341,9 @@ class Order extends Order_parent
             // success means at this point, that we triggered the capture without errors
             $success = true;
         } catch (\Exception $exception) {
-            Registry::getLogger()->error("Error on order capture call.", [$exception]);
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->error("Error on order capture call.", [$exception]);
         }
 
         // destroy PayPal-Session

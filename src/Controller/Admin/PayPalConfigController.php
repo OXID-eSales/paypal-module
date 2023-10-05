@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
 
 use GuzzleHttp\Exception\ClientException;
+use JsonException;
 use OxidEsales\Eshop\Application\Controller\Admin\AdminController;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
@@ -22,6 +23,7 @@ use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use Psr\Log\LoggerInterface;
 
 /**
  * Controller for admin > PayPal/Configuration page
@@ -204,7 +206,10 @@ class PayPalConfigController extends AdminController
             $merchantInformations = $onBoardingClient->getMerchantInformations();
             $handler->saveEligibility($merchantInformations);
         } catch (ClientException $exception) {
-            Registry::getLogger()->error("Error on checkEligibility", [$exception]);
+
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->error("Error on checkEligibility", [$exception]);
         }
     }
 
@@ -332,6 +337,7 @@ class PayPalConfigController extends AdminController
 
     /**
      * Get ClientID, ClientSecret, WebhookID
+     * @throws JsonException
      */
     public function autoConfigurationFromCallback()
     {
@@ -339,12 +345,13 @@ class PayPalConfigController extends AdminController
             $requestReader = oxNew(RequestReader::class);
             PayPalSession::storeOnboardingPayload($requestReader->getRawPost());
         } catch (\Exception $exception) {
-            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            $logger = $this->getServiceFromContainer(LoggerInterface::class);
+            $logger->error($exception->getMessage(), [$exception]);
         }
 
         $result = [];
         header('Content-Type: application/json; charset=UTF-8');
-        Registry::getUtils()->showMessageAndExit(json_encode($result));
+        Registry::getUtils()->showMessageAndExit(json_encode($result, JSON_THROW_ON_ERROR));
     }
 
     public function returnFromSignup()
@@ -382,7 +389,9 @@ class PayPalConfigController extends AdminController
             $handler = oxNew(Onboarding::class);
             $credentials = $handler->autoConfigurationFromCallback();
         } catch (\Exception $exception) {
-            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->error($exception->getMessage(), [$exception]);
         }
         return $credentials;
     }
@@ -401,7 +410,9 @@ class PayPalConfigController extends AdminController
         } catch (OnboardingException $exception) {
             Registry::getUtilsView()->addErrorToDisplay($exception->getMessage());
         } catch (\Exception $exception) {
-            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->error($exception->getMessage(), [$exception]);
         }
 
         return $webhookId;

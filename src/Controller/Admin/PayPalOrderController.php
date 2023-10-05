@@ -16,7 +16,6 @@ use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalOrder;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\Refund;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\RefundRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Payments;
@@ -27,6 +26,7 @@ use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalModelPayPalOrder;
 use OxidSolutionCatalysts\PayPal\Traits\AdminOrderTrait;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use Psr\Log\LoggerInterface;
 
 /**
  * Order class wrapper for PayPal module
@@ -94,7 +94,10 @@ class PayPalOrderController extends AdminDetailsController
             parent::executeFunction($functionName);
         } catch (ApiException $exception) {
             $this->addTplParam('error', $exception->getErrorDescription());
-            Registry::getLogger()->error($exception->getMessage());
+
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->error($exception->getMessage());
         }
     }
 
@@ -155,7 +158,9 @@ class PayPalOrderController extends AdminDetailsController
                 }
             } catch (ApiException $exception) {
                 $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()));
-                Registry::getLogger()->error($exception->getMessage());
+                /** @var LoggerInterface $logger */
+                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+                $logger->error($exception->getMessage());
             }
         } elseif (
             $order->getFieldData('oxpaymenttype') == $this->payPalPlusPaymentType &&
