@@ -17,6 +17,7 @@ use OxidEsales\Eshop\Application\Model\User;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidEsales\Eshop\Application\Model\Country;
+use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalLogger;
 
 class ModuleSettings
 {
@@ -383,15 +384,16 @@ class ModuleSettings
 
     public function saveMerchantId($merchantId, $isSandbox = null)
     {
+        $logger = new PayPalLogger();
         $isSandbox = !is_null($isSandbox) ? $isSandbox : $this->isSandbox();
         if ($isSandbox) {
             $this->save('oscPayPalSandboxClientMerchantId', $merchantId);
-            Registry::getLogger()->info(sprintf('Saving Sandbox Merchant ID %s from onboarding', $merchantId));
+            $logger->info(sprintf('Saving Sandbox Merchant ID %s from onboarding', $merchantId));
         }
 
         if (!$isSandbox) {
             $this->save('oscPayPalClientMerchantId', $merchantId);
-            Registry::getLogger()->info(sprintf('Saving Live  Merchant ID %s from onboarding', $merchantId));
+            $logger->info(sprintf('Saving Live  Merchant ID %s from onboarding', $merchantId));
         }
     }
 

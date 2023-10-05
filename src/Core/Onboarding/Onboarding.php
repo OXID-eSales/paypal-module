@@ -11,6 +11,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
 use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalLogger;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -56,7 +57,8 @@ class Onboarding
 
             $credentials = $apiClient->getCredentials();
         } catch (ApiException $exception) {
-            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            $logger = new PayPalLogger();
+            $logger->error($exception->getMessage(), [$exception]);
         }
 
         return $credentials;
@@ -117,8 +119,9 @@ class Onboarding
             $merchantId = $paypalConfig->getMerchantId();
         }
 
+        $logger = new PayPalLogger();
         return new ApiOnboardingClient(
-            Registry::getLogger(),
+            $logger,
             $isSandbox ? $paypalConfig->getClientSandboxUrl() : $paypalConfig->getClientLiveUrl(),
             $clientId,
             $clientSecret,
@@ -136,7 +139,8 @@ class Onboarding
             $apiClient = $this->getOnboardingClient($onboardingResponse['isSandBox'], true);
             $merchantInformations = $apiClient->getMerchantInformations();
         } catch (ApiException $exception) {
-            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            $logger = new PayPalLogger();
+            $logger->error($exception->getMessage(), [$exception]);
         }
         return $merchantInformations;
     }

@@ -19,6 +19,7 @@ use OxidSolutionCatalysts\PayPal\Core\Onboarding\Webhook;
 use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\RequestReader;
+use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalLogger;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -207,7 +208,8 @@ class PayPalConfigController extends AdminController
             $merchantInformations = $onBoardingClient->getMerchantInformations();
             $handler->saveEligibility($merchantInformations);
         } catch (ClientException $exception) {
-            Registry::getLogger()->error("Error on checkEligibility", [$exception]);
+            $logger = new PayPalLogger();
+            $logger->error("Error on checkEligibility", [$exception]);
         }
     }
 
@@ -346,7 +348,8 @@ class PayPalConfigController extends AdminController
             $requestReader = oxNew(RequestReader::class);
             PayPalSession::storeOnboardingPayload($requestReader->getRawPost());
         } catch (\Exception $exception) {
-            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            $logger = new PayPalLogger();
+            $logger->error($exception->getMessage(), [$exception]);
         }
 
         $result = [];
@@ -389,7 +392,8 @@ class PayPalConfigController extends AdminController
             $handler = oxNew(Onboarding::class);
             $credentials = $handler->autoConfigurationFromCallback();
         } catch (\Exception $exception) {
-            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            $logger = new PayPalLogger();
+            $logger->error($exception->getMessage(), [$exception]);
         }
         return $credentials;
     }
@@ -408,7 +412,8 @@ class PayPalConfigController extends AdminController
         } catch (OnboardingException $exception) {
             Registry::getUtilsView()->addErrorToDisplay($exception->getMessage());
         } catch (\Exception $exception) {
-            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            $logger = new PayPalLogger();
+            $logger->error($exception->getMessage(), [$exception]);
         }
 
         return $webhookId;
