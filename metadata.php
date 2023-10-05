@@ -410,7 +410,7 @@ $aModule = [
         [
             'name' => 'oscPayPalBannersColorScheme',
             'type' => 'select',
-            'constraints' => 'blue|black|white|white-no-border',
+            'constraints' => 'blue|black|white|gray|monochrome|grayscale',
             'value' => 'blue',
             'group' => null
         ],
