@@ -163,11 +163,13 @@ class Events
         $context = $container->get(ContextInterface::class);
         /** @var ModuleConfigurationDaoBridgeInterface $moduleConfigurationDaoBridgeInterface */
         $moduleConfigurationDaoBridgeInterface = $container->get(ModuleConfigurationDaoBridgeInterface::class);
+        $logger = $container->get('OxidSolutionCatalysts\PayPal\Logger');
 
         return new ModuleSettings(
             $moduleSettingsBridge,
             $context,
-            $moduleConfigurationDaoBridgeInterface
+            $moduleConfigurationDaoBridgeInterface,
+            $logger
         );
     }
 }
