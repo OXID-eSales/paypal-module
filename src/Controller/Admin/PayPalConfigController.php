@@ -180,7 +180,6 @@ class PayPalConfigController extends AdminController
     protected function saveConfig(array $conf, int $shopId)
     {
         foreach ($conf as $confName => $value) {
-            $value = trim($value);
             $this->getServiceFromContainer(ModuleSettings::class)->save($confName, $value);
         }
     }
@@ -222,47 +221,43 @@ class PayPalConfigController extends AdminController
      */
     protected function handleSpecialFields(array $conf): array
     {
-        if ($conf['oscPayPalSandboxMode'] === 'sandbox') {
-            $conf['oscPayPalSandboxMode'] = 1;
-        } else {
-            $conf['oscPayPalSandboxMode'] = 0;
-        }
+        $conf['oscPayPalSandboxMode'] = $conf['oscPayPalSandboxMode'] === 'sandbox';
 
         if (!isset($conf['oscPayPalShowProductDetailsButton'])) {
-            $conf['oscPayPalShowProductDetailsButton'] = 0;
+            $conf['oscPayPalShowProductDetailsButton'] = false;
         }
         if (!isset($conf['oscPayPalShowBasketButton'])) {
-            $conf['oscPayPalShowBasketButton'] = 0;
+            $conf['oscPayPalShowBasketButton'] = false;
         }
         if (!isset($conf['oscPayPalShowMiniBasketButton'])) {
-            $conf['oscPayPalShowMiniBasketButton'] = 0;
+            $conf['oscPayPalShowMiniBasketButton'] = false;
         }
         if (!isset($conf['oscPayPalShowPayLaterButton'])) {
-            $conf['oscPayPalShowPayLaterButton'] = 0;
+            $conf['oscPayPalShowPayLaterButton'] = false;
         }
         if (!isset($conf['oscPayPalBannersShowAll'])) {
-            $conf['oscPayPalBannersShowAll'] = 0;
+            $conf['oscPayPalBannersShowAll'] = false;
         }
         if (!isset($conf['oscPayPalBannersStartPage'])) {
-            $conf['oscPayPalBannersStartPage'] = 0;
+            $conf['oscPayPalBannersStartPage'] = false;
         }
         if (!isset($conf['oscPayPalBannersCategoryPage'])) {
-            $conf['oscPayPalBannersCategoryPage'] = 0;
+            $conf['oscPayPalBannersCategoryPage'] = false;
         }
         if (!isset($conf['oscPayPalBannersSearchResultsPage'])) {
-            $conf['oscPayPalBannersSearchResultsPage'] = 0;
+            $conf['oscPayPalBannersSearchResultsPage'] = false;
         }
         if (!isset($conf['oscPayPalBannersProductDetailsPage'])) {
-            $conf['oscPayPalBannersProductDetailsPage'] = 0;
+            $conf['oscPayPalBannersProductDetailsPage'] = false;
         }
         if (!isset($conf['oscPayPalBannersCheckoutPage'])) {
-            $conf['oscPayPalBannersCheckoutPage'] = 0;
+            $conf['oscPayPalBannersCheckoutPage'] = false;
         }
         if (!isset($conf['oscPayPalLoginWithPayPalEMail'])) {
-            $conf['oscPayPalLoginWithPayPalEMail'] = 0;
+            $conf['oscPayPalLoginWithPayPalEMail'] = false;
         }
         if (!isset($conf['oscPayPalCleanUpNotFinishedOrdersAutomaticlly'])) {
-            $conf['oscPayPalCleanUpNotFinishedOrdersAutomaticlly'] = 0;
+            $conf['oscPayPalCleanUpNotFinishedOrdersAutomaticlly'] = false;
         }
 
         return $conf;
