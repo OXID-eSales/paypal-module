@@ -9,6 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Core\Onboarding;
 
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalLogger;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventHandlerMapping;
 use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -68,7 +69,8 @@ class Webhook
 
             $webhookId = $webHookResponse['id'] ?? '';
         } catch (\Exception $exception) {
-            Registry::getLogger()->error(
+            $logger = new PayPalLogger();
+            $logger->error(
                 'PayPal Webhook creation failed: ' . $exception->getMessage(),
                 [$exception]
             );

@@ -7,9 +7,9 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
-use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\EshopCommunity\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalLogger;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 
@@ -19,8 +19,7 @@ class PaymentCaptureCompletedHandler extends WebhookHandlerBase
 
     protected function getPayPalOrderIdFromResource(array $eventPayload): string
     {
-        $orderId = isset($eventPayload['supplementary_data']['related_ids']['order_id']) ?
-            $eventPayload['supplementary_data']['related_ids']['order_id'] : '';
+        $orderId = $eventPayload['supplementary_data']['related_ids']['order_id'] ?? '';
 
         return $orderId;
     }
@@ -33,8 +32,7 @@ class PaymentCaptureCompletedHandler extends WebhookHandlerBase
     protected function getStatusFromResource(array $eventPayload): string
     {
         //API v1 response uses 'state', v2 uses 'status' and some webhook events don't come with a status
-        return isset($eventPayload['state']) ? $eventPayload['state'] :
-            (isset($eventPayload['status']) ? $eventPayload['status'] : '');
+        return $eventPayload['state'] ?? ($eventPayload['status'] ?? '');
     }
 
     /**
@@ -49,7 +47,8 @@ class PaymentCaptureCompletedHandler extends WebhookHandlerBase
                 ->getOrderService()
                 ->showOrderDetails($payPalOrderId, '');
         } catch (ApiException $exception) {
-            Registry::getLogger()->debug(
+            $logger = new PayPalLogger();
+            $logger->debug(
                 'Exception during PaymentCaptureCompletedHandler::getPayPalOrderDetails().',
                 [$exception]
             );

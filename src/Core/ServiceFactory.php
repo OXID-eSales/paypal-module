@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalLogger;
 use OxidSolutionCatalysts\PayPalApi\Client;
 use OxidSolutionCatalysts\PayPalApi\Service\Partner;
 use OxidSolutionCatalysts\PayPalApi\Service\Catalog;
@@ -115,9 +116,10 @@ class ServiceFactory
         if ($this->client === null) {
             /** @var Config $config */
             $config = oxNew(Config::class);
+            $logger = new PayPalLogger();
 
             $client = new Client(
-                Registry::getLogger(),
+                $logger,
                 $config->isSandbox() ? Client::SANDBOX_URL : Client::PRODUCTION_URL,
                 $config->getClientId(),
                 $config->getClientSecret(),

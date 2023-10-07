@@ -448,8 +448,14 @@
                                     <option value="white" [{if $config->getPayPalCheckoutBannerColorScheme() == 'white'}]selected[{/if}]>
                                         [{oxmultilang ident="OSC_PAYPAL_BANNER_COLORSCHEMEWHITE"}]
                                     </option>
-                                    <option value="white-no-border" [{if $config->getPayPalCheckoutBannerColorScheme() == 'white-no-border'}]selected[{/if}]>
-                                        [{oxmultilang ident="OSC_PAYPAL_BANNER_COLORSCHEMEWHITENOBORDER"}]
+                                    <option value="gray" [{if $config->getPayPalCheckoutBannerColorScheme() == 'gray'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_BANNER_COLORSCHEMEGRAY"}]
+                                    </option>
+                                    <option value="monochrome" [{if $config->getPayPalCheckoutBannerColorScheme() == 'monochrome'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_BANNER_COLORSCHEMEMONOCHROME"}]
+                                    </option>
+                                    <option value="grayscale" [{if $config->getPayPalCheckoutBannerColorScheme() == 'grayscale'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_BANNER_COLORSCHEMEGRAYSCALE"}]
                                     </option>
                                 </select>
                             </div>

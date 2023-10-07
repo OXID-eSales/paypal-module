@@ -11,6 +11,7 @@ use Exception;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalLogger;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -63,13 +64,14 @@ class PaymentGateway extends PaymentGateway_parent
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
         $success = false;
+        $logger = new PayPalLogger();
 
         if ($checkoutOrderId = PayPalSession::getCheckoutOrderId()) {
             // Update Order
             try {
                 $paymentService->doPatchPayPalOrder(Registry::getSession()->getBasket(), $checkoutOrderId);
             } catch (Exception $exception) {
-                Registry::getLogger()->error("Error on order patch call.", [$exception]);
+                $logger->error("Error on order patch call.", [$exception]);
             }
 
             // Capture Order
@@ -80,7 +82,7 @@ class PaymentGateway extends PaymentGateway_parent
                 // success means at this point, that we triggered the capture without errors
                 $success = true;
             } catch (Exception $exception) {
-                Registry::getLogger()->error("Error on order capture call.", [$exception]);
+                $logger->error("Error on order capture call.", [$exception]);
                 $success = false;
             }
 
@@ -105,7 +107,8 @@ class PaymentGateway extends PaymentGateway_parent
             );
             PayPalSession::unsetPayPalPuiCmId();
         } catch (Exception $exception) {
-            Registry::getLogger()->error("Error on execute pui payment call.", [$exception]);
+            $logger = new PayPalLogger();
+            $logger->error("Error on execute pui payment call.", [$exception]);
         }
         // destroy PayPal-Session
         PayPalSession::unsetPayPalOrderId();
