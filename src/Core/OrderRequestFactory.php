@@ -206,11 +206,12 @@ class OrderRequestFactory
 
         // possible price surcharge
         if ($discount < 0) {
-            $itemTotal += $discount;
+            $itemTotal -= $discount;
             $discount = 0;
         }
+        $total = $itemTotal - $discount;
 
-        $total = PriceToMoney::convert($itemTotal, $currency);
+        $total = PriceToMoney::convert($total, $currency);
 
         //Total amount
         $amount = new AmountWithBreakdown();
