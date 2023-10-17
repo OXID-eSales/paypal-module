@@ -197,7 +197,7 @@ class PayPalOrderController extends AdminDetailsController
         $refundAmount = preg_replace("/[\,\.](\d{3})/", "$1", $refundAmount);
         $invoiceId = $request->getRequestEscapedParameter('invoiceId');
         $refundAll = $request->getRequestEscapedParameter('refundAll');
-        $noteToPayer = $request->getRequestParameter('noteToPayer');
+        $noteToPayer = $request->getRequestEscapedParameter('noteToPayer');
 
         /** @var Order $order */
         $order = $this->getOrder();
