@@ -211,7 +211,7 @@
                         <td><input type="text" id="invoiceId" name="invoiceId" maxlength="127"></td>
                     </tr>
                     <tr>
-                        <td><label for="noteToBuyer">[{oxmultilang ident="OSC_PAYPAL_NOTE_TO_BUYER"}]</label></td>
+                        <td><label for="noteToPayer">[{oxmultilang ident="OSC_PAYPAL_NOTE_TO_BUYER"}]</label></td>
                         <td><textarea id="noteToPayer" name="noteToPayer" maxlength="255"></textarea></td>
                     </tr>
                     <tr>
