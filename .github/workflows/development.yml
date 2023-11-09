@@ -14,14 +14,14 @@ jobs:
   install_shop_with_module:
     strategy:
       matrix:
-        php: [ '7.4', '8.0', '8.1' ]
+        php: [ '8.0', '8.1' ]
     runs-on: ubuntu-latest
     steps:
       - name: Clone testing environment v3.0.0
         run: git clone https://github.com/OXID-eSales/docker-eshop-sdk.git . && git reset --hard v3.0.0
 
       - name: Clone the shop
-        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-6.5.x --single-branch source
+        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-7.0.x --single-branch source
 
       - name: Cache current installation
         uses: actions/cache@v3.3.2
@@ -161,7 +161,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: [ '7.4', '8.0', '8.1' ]
+        php: [ '8.0', '8.1' ]
     needs: [ install_shop_with_module ]
     runs-on: ubuntu-latest
     steps:
@@ -202,61 +202,6 @@ jobs:
           path: |
             source/coverage.xml
             source/phpunit.xml
-
-  codeception_tests:
-    strategy:
-      fail-fast: false
-      matrix:
-        php: [ '7.4', '8.0', '8.1' ]
-        group:
-          - 'oe_moduletemplate'
-    needs: [ install_shop_with_module ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Load current installation from cache
-        uses: actions/cache@v3.3.2
-        with:
-          path: |
-            ./*
-          key: moduleDevelopmentInstallation-${{ matrix.php }}-${{ github.sha }}
-          restore-keys: |
-            moduleDevelopmentInstallation-${{ matrix.php }}-${{ github.sha }}
-
-      - name: Start containers
-        run: |
-          make up
-          sleep 2
-
-      - name: Install codeception dependencies
-        run: |
-          docker-compose exec -T php composer require codeception/module-rest:^1.4.2 --dev --no-update
-          docker-compose exec -T php composer require codeception/module-phpbrowser:^1.0.2 --dev --no-update
-          docker-compose exec -T php composer update
-
-      - name: Run tests
-        run: |
-          docker-compose exec -T \
-            -e PARTIAL_MODULE_PATHS=${{ env.MODULE_PATH }} \
-            -e ACTIVATE_ALL_MODULES=1 \
-            -e RUN_TESTS_FOR_SHOP=0 \
-            -e RUN_TESTS_FOR_MODULES=0 \
-            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.PACKAGE_NAME }}/tests' \
-            php php vendor/bin/runtests-codeception
-
-      - name: Stop containers
-        if: always()
-        run: |
-          docker-compose down
-          sleep 2
-      - name: Upload log artifact
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: CodeceptionTestsLog-${{ matrix.php }}
-          path: |
-            source/vendor/${{ env.PACKAGE_NAME }}/tests/Codeception/_output/
-            source/source/log/oxideshop.log
-            source/data/php/logs/error_log.txt
 
   sonarcloud:
     needs: [ styles, unit_tests ]
