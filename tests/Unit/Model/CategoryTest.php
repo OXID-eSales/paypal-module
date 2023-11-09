@@ -9,10 +9,10 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Model\Logger;
 
-use OxidEsales\TestingLibrary\UnitTestCase;
+use PHPUnit\Framework\TestCase;
 use OxidSolutionCatalysts\PayPal\Model\Category;
 
-class CategoryTest extends UnitTestCase
+class CategoryTest extends TestCase
 {
     public function testGetCategories()
     {

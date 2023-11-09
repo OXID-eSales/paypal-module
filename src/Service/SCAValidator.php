@@ -61,6 +61,9 @@ class SCAValidator implements SCAValidatorInterface
     public function isCardUsableForPayment(PayPalApiOrder $order): bool
     {
         $authenticationResult = $this->getCardAuthenticationResult($order);
+        if (is_null($authenticationResult)) {
+            return false;
+        }
 
         $enrollmentStatus = !is_null($authenticationResult->three_d_secure) &&
             !is_null($authenticationResult->three_d_secure->enrollment_status) ?

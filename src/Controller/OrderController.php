@@ -345,7 +345,7 @@ class OrderController extends OrderController_parent
         return $cmId;
     }
 
-    protected function _getNextStep($success) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+    protected function getNextStep($success) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
     {
         if (
             (PayPalOrderModel::ORDER_STATE_SESSIONPAYMENT_INPROGRESS == $success) &&
@@ -389,6 +389,6 @@ class OrderController extends OrderController_parent
             PayPalSession::unsetPayPalSession();
         }
 
-        return parent::_getNextStep($success);
+        return parent::getNextStep($success);
     }
 }

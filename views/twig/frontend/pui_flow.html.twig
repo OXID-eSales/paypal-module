@@ -1,0 +1,165 @@
+<script type="application/json" fncls="{{ oViewConf.getPayPalPuiFNParams() }}">
+    {
+    {% if oViewConf.isPayPalSandbox() %}
+    "sandbox":true,
+    {% endif %}
+    "f":"{{ oView.getPayPalPuiFraudnetCmId() }}",
+    "s":"{{ oViewConf.getPayPalPuiFlowId() }}"
+    }
+</script>
+{{ script({ include: "https://c.paypal.com/da/r/fb.js", dynamic: __oxid_include_dynamic }) }}
+
+{% set oscpaypalpui_hidden_inputs %}
+    function oscpaypalAddHiddenInputToForm(form, name) {
+        let newInput = document.createElement("input");
+        newInput.type = "hidden";
+        newInput.name = name;
+
+        document.getElementById(form).appendChild(newInput);
+    }
+    oscpaypalAddHiddenInputToForm("orderConfirmAgbBottom", "pui_required[birthdate][day]");
+    oscpaypalAddHiddenInputToForm("orderConfirmAgbBottom", "pui_required[birthdate][month]");
+    oscpaypalAddHiddenInputToForm("orderConfirmAgbBottom", "pui_required[birthdate][year]");
+    oscpaypalAddHiddenInputToForm("orderConfirmAgbBottom", "pui_required[phonenumber]");
+{% endset %}
+{{ script({ add: oscpaypalpui_hidden_inputs.__toString(), priority: 10, dynamic: __oxid_include_dynamic }) }}
+
+{% set oscpaypalpui_requiredfields_script %}
+    var paypalGetSubmitButton = function (){
+        let button = null;
+
+        let result = document.querySelectorAll("button.btn.btn-highlight.btn-lg.w-100");
+        if (result.length === 1 && result[0].onclick !== null) {
+            button = result[0];
+        } else {
+            for (var i = 0; i < result.length; i++) {
+                if(result[i].onclick !== null) {
+                    button = result[i];
+                    break;
+                }
+            }
+        }
+        return button;
+    }
+
+    let button = paypalGetSubmitButton();
+    if (button !== null) {
+        button.onclick = null; // remove on click event from button and add an extended on click event which also submits the form
+        button.addEventListener('click', async e => {
+            document.getElementById('orderConfirmAgbBottom').dispatchEvent(new Event('submit'));
+        });
+    }
+
+    document.querySelector("#orderConfirmAgbBottom").addEventListener('submit', (event) => {
+        let dontStopSubmit = true;
+        let puiInputs = document.querySelectorAll("#pui_form [id^=pui_required_]");
+        for (let i = 0; i < puiInputs.length; i++) {
+            let help = document.querySelector('#pui_form .' + puiInputs[i].id + '_help > div.text-danger');
+            if (!puiInputs[i].value) {
+                dontStopSubmit = false;
+                help.classList.remove('visually-hidden');
+            } else {
+                help.classList.add('visually-hidden');
+            }
+            document.querySelector('#orderConfirmAgbBottom input[name="' + puiInputs[i].name + '"]').value = puiInputs[i].value;
+        }
+        if (!dontStopSubmit) {
+            document.getElementById("pui_form").scrollIntoView(true);
+            return false;
+        }
+        event.target.submit();
+    });
+{% endset %}
+{{ script({ add: oscpaypalpui_requiredfields_script.__toString(), priority: 10, dynamic: __oxid_include_dynamic }) }}
+
+{% set invadr = oView.getInvoiceAddress() %}
+{% if invadr.oxuser__oxbirthdate.month is defined %}
+    {% set iBirthdayMonth = invadr.oxuser__oxbirthdate.month %}
+{% elseif oxcmp_user.oxuser__oxbirthdate.value and oxcmp_user.oxuser__oxbirthdate.value != "0000-00-00" %}
+    {% set iBirthdayMonth = oxcmp_user.oxuser__oxbirthdate.value|regex_replace("/^([0-9]{4})[-]/", "")|regex_replace("/[-]([0-9]{1,2})$/", "") %}
+{% else %}
+    {% set iBirthdayMonth = 0 %}
+{% endif %}
+
+{% if invadr.oxuser__oxbirthdate.day is defined %}
+    {% set iBirthdayDay = invadr.oxuser__oxbirthdate.day %}
+{% elseif oxcmp_user.oxuser__oxbirthdate.value and oxcmp_user.oxuser__oxbirthdate.value != "0000-00-00" %}
+    {% set iBirthdayDay = oxcmp_user.oxuser__oxbirthdate.value|regex_replace("/^([0-9]{4})[-]([0-9]{1,2})[-]/", "") %}
+{% else %}
+    {% set iBirthdayDay = 0 %}
+{% endif %}
+
+{% if invadr.oxuser__oxbirthdate.year is defined %}
+    {% set iBirthdayYear = invadr.oxuser__oxbirthdate.year %}
+{% elseif oxcmp_user.oxuser__oxbirthdate.value and oxcmp_user.oxuser__oxbirthdate.value != "0000-00-00" %}
+    {% set iBirthdayYear = oxcmp_user.oxuser__oxbirthdate.value|regex_replace("/[-]([0-9]{1,2})[-]([0-9]{1,2})$/","") %}
+{% else %}
+    {% set iBirthdayYear = 0 %}
+{% endif %}
+
+{% set phonenumber = "" %}
+{% if invadr.oxuser__oxfon is defined %}
+    {% set phonenumber = invadr.oxuser__oxfon %}
+{% else %}
+    {% set phonenumber = oxcmp_user.oxuser__oxfon.value %}
+{% endif %}
+
+<p class="mt-4">{{ translate({ ident: "OSC_PAYPAL_PUI_HELP" }) }}</p>
+<div id="card_container" class="card_container">
+    <form id="pui_form" class="needs-validation">
+        <div class="mb-3 oxDate {% if not iBirthdayMonth or not iBirthdayDay or not iBirthdayYear %}text-danger{% else %}text-success{% endif %}">
+            <label class="">{{ translate({ ident: "OSC_PAYPAL_PUI_BIRTHDAY" }) }}</label>
+            <div class="row gx-2">
+                <div class="col-3">
+                    <div class="form-floating">
+                        <input id="pui_required_birthdate_day" class="oxDay form-control" name="pui_required[birthdate][day]" type="text" maxlength="2" value="{% if iBirthdayDay > 0 %}{{ iBirthdayDay }}{% endif %}" placeholder="{{ translate({ ident: "DAY" }) }}">
+                        <label for="pui_required_birthdate_day">{{ translate({ ident: "DAY" }) }}</label>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-floating">
+                        <select id="pui_required_birthdate_month" class="oxMonth form-select" name="pui_required[birthdate][month]" required>
+                            <option value="" label="-">-</option>
+                            {% for month in 1..13 %}
+                                <option value="{{ month }}" label="{{ translate({ ident: "MONTH_NAME_"|cat(month) }) }}" {% if iBirthdayMonth == month %} selected="selected" {% endif %}>
+                                    {{ translate({ ident: "MONTH_NAME_"|cat(month) }) }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <label for="pui_required_birthdate_month">{{ translate({ ident: "MONTH" }) }}</label>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="form-floating">
+                        <input id="pui_required_birthdate_year" class="oxYear form-control" name="pui_required[birthdate][year]" type="text" maxlength="4" placeholder="{{ translate({ ident: "YEAR" }) }}" value="{% if iBirthdayYear %}{{ iBirthdayYear }}{% endif %}">
+                        <label for="pui_required_birthdate_year">{{ translate({ ident: "YEAR" }) }}</label>
+                    </div>
+                </div>
+                <div class="col-lg-offset-3 col-lg-9 col-xs-12">
+                    <div class="help-block pui_required_birthdate_day_help pui_required_birthdate_month_help pui_required_birthdate_year_help">
+                        <div class="text-danger visually-hidden">{{ translate({ ident: "DD_FORM_VALIDATION_REQUIRED" }) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row gx-2 {% if not phonenumber %}text-danger{% else %}text-success{% endif %}">
+            <div class="col-md-12 px-1">
+                <div class="form-floating">
+                    <input id="pui_required_phonenumber" class="form-control" autocomplete="off" placeholder="{{ translate({ ident: "OSC_PAYPAL_PUI_PHONENUMBER_PLACEHOLDER" }) }}" type="text" maxlength="128" name="pui_required[phonenumber]" value="{{ phonenumber }}">
+                    <label for="pui_required_phonenumber">{{ translate({ ident: "PHONE" }) }}</label>
+                </div>
+            </div>
+            <div class="col-lg-offset-3 col-lg-9 col-xs-12">
+                <div class="help-block pui_required_phonenumber_help">
+                    <div class="text-danger visually-hidden">{{ translate({ ident: "DD_FORM_VALIDATION_REQUIRED" }) }}</div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% ifcontent ident "oscpaypalpuiconfirmation" set oCont %}
+    {% if oCont.oxcontents__oxcontent.value is not empty %}
+        <div class="mt-4">{{ oCont.oxcontents__oxcontent.value|raw }}</div>
+    {% endif %}
+{% endifcontent %}

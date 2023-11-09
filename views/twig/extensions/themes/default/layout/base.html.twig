@@ -1,0 +1,42 @@
+{% extends "layout/base.html.twig" %}
+
+{% block base_js %}
+    {{ parent() }}
+    {% if oViewConf.isPayPalCheckoutActive() %}
+        {% set className = oViewConf.getTopActiveClassName() %}
+        {% if oViewConf.isPayPalExpressPaymentEnabled() and
+            ((className == 'order' and not oViewConf.isPayPalACDCSessionActive()) or (className != 'order' and className != 'payment')) and
+            (
+                (oxcmp_basket.getProductsCount() and oViewConf.showPayPalMiniBasketButton()) or
+                (className == 'details' and oViewConf.showPayPalProductDetailsButton()) or
+                (className == 'basket' and oViewConf.showPayPalBasketButton())
+            )
+        %}
+            <script src="{{ oViewConf.getPayPalJsSdkUrl()|raw }}" data-partner-attribution-id="{{ oViewConf.getPayPalPartnerAttributionIdForBanner() }}"></script>
+            {% set sCountryRestriction = oViewConf.getCountryRestrictionForPayPalExpress() %}
+            {% if sCountryRestriction %}
+                <script>
+                    const countryRestriction = [{{ sCountryRestriction }}];
+                </script>
+            {% endif %}
+        {% elseif className == 'order' and oViewConf.isPayPalACDCSessionActive() %}
+            <script src="{{ oViewConf.getPayPalJsSdkUrlForACDC()|raw }}" data-client-token="{{ oViewConf.getDataClientToken() }}"></script>
+        {% elseif className == 'payment' %}
+            <script src="{{ oViewConf.getPayPalJsSdkUrlForButtonPayments()|raw }}" data-partner-attribution-id="{{ oViewConf.getPayPalPartnerAttributionIdForBanner() }}"></script>
+        {% elseif oViewConf.isPayPalBannerActive() and (className == 'start' or className == 'search' or className == 'details' or className == 'alist' or className == 'basket') %}
+            <script src="{{ oViewConf.getPayPalApiBannerUrl()|raw }}" data-partner-attribution-id="{{ oViewConf.getPayPalPartnerAttributionIdForBanner() }}"></script>
+        {% endif %}
+        {% if submitCart %}
+            <script>
+                document.getElementById('orderConfirmAgbBottom').submit();
+            </script>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+{% block base_style %}
+    {{ parent() }}
+    {% if oViewConf.isPayPalCheckoutActive() %}
+        {{ style({ include: oViewConf.getModuleUrl('osc_paypal', 'css/paypal.min.css') }) }}
+    {% endif %}
+{% endblock %}

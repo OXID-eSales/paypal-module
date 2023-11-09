@@ -1,0 +1,21 @@
+{% extends "page/checkout/basket.html.twig" %}
+
+{% block checkout_basket_next_step_top %}
+    {{ parent() }}
+    {% if attribute(oViewConf, 'showPayPalCheckoutBannerOnCheckoutPage') is defined and oViewConf.showPayPalCheckoutBannerOnCheckoutPage() %}
+        <div id="basket-paypal-installment-banner"></div>
+        {{ style({ include: oViewConf.getModuleUrl('osc_paypal', 'css/paypal_installment.css') }) }}
+        {% set basketAmount = oxcmp_basket.getPrice() %}
+        {% include "@osc_paypal/frontend/installment_banners.html.twig" with {amount: basketAmount.getPrice(), selector: oViewConf.getPayPalCheckoutBannerCartPageSelector(), addClass: "mt-5"} %}
+    {% endif %}
+{% endblock %}
+
+{% block checkout_basket_emptyshippingcart %}
+    {% if attribute(oViewConf, 'showPayPalCheckoutBannerOnCheckoutPage') is defined and oViewConf.showPayPalCheckoutBannerOnCheckoutPage() %}
+        <div id="basket-paypal-installment-banner"></div>
+        {{ style({ include: oViewConf.getModuleUrl('osc_paypal', 'css/paypal_installment.css') }) }}
+        {% set basketAmount = oxcmp_basket.getPrice() %}
+        {% include "@osc_paypal/frontend/installment_banners.html.twig" with {amount: basketAmount.getPrice(), selector: oViewConf.getPayPalCheckoutBannerCartPageSelector(), addClass: "mt-5"} %}
+    {% endif %}
+    {{ parent() }}
+{% endblock %}

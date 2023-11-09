@@ -15,7 +15,7 @@ use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 
 final class UserTest extends BaseTestCase
 {
-    private const TEST_USER_ID = 'e7af1c3b786fd02906ccd75698f4e6b9';
+    private const TEST_USER_ID = '06823b68-e4c3-4da8-b011-147195d9';
     private const ORDER_TEMPLATE_ID = '7d090db46a124f48cb7e6836ceef3f66';
 
     protected function tearDown(): void
@@ -53,7 +53,8 @@ final class UserTest extends BaseTestCase
                  'oxid' => '_testorder' . $ordernumber,
                  'oxuserid' => self::TEST_USER_ID,
                  'oxordernr' => $ordernumber,
-                 'oxorderdate' => date('Y-m-d h:i:s')
+                 'oxorderdate' => date('Y-m-d h:i:s'),
+                 'oxsenddate' => '',
              ]
          );
 

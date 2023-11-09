@@ -1,29 +1,32 @@
-<phpunit backupGlobals="true"
+<?xml version="1.0"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         backupGlobals="true"
+         bootstrap="../../../../source/bootstrap.php"
          backupStaticAttributes="false"
-         bootstrap="bootstrap.php"
-         cacheTokens="true"
-         colors="false"
-         convertErrorsToExceptions="false"
-         convertNoticesToExceptions="false"
-         convertWarningsToExceptions="false"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
          forceCoversAnnotation="false"
-         printerClass="PHPUnit\TextUI\ResultPrinter"
          processIsolation="false"
          stopOnError="false"
          stopOnFailure="false"
          stopOnIncomplete="false"
          stopOnSkipped="false"
          beStrictAboutTestsThatDoNotTestAnything="true"
-         verbose="false">
-<testsuites>
-    <testsuite name="UnitTests">
-        <directory>Unit/</directory>
-        <directory>Integration/</directory>
-    </testsuite>
-</testsuites>
-<filter>
-    <whitelist addUncoveredFilesFromWhitelist="true">
-        <directory suffix=".php">../src</directory>
-    </whitelist>
-</filter>
+         verbose="false"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
+    <testsuites>
+        <testsuite name="UnitTests">
+            <directory>Unit/</directory>
+            <directory>Integration/</directory>
+        </testsuite>
+    </testsuites>
+    <coverage includeUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">../src</directory>
+        </include>
+    </coverage>
+    <php>
+        <const name="OXID_PHP_UNIT" value="true"/>
+    </php>
 </phpunit>

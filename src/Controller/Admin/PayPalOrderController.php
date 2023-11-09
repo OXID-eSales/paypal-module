@@ -111,7 +111,7 @@ class PayPalOrderController extends AdminDetailsController
 
         $lang = Registry::getLang();
 
-        $result = "oscpaypalorder.tpl";
+        $result = "@osc_paypal/admin/oscpaypalorder";
 
         $order = $this->getOrder();
         $orderId = $this->getEditObjectId();
@@ -170,7 +170,7 @@ class PayPalOrderController extends AdminDetailsController
         } elseif ($order->paidWithPayPalPlus()) {
             // old paypalplus order
             $this->addTplParam('payPalOrder', $this->getPayPalPlusOrder());
-            $result = "oscpaypalorder_ppplus.tpl";
+            $result = "@osc_paypal/admin/oscpaypalorder_ppplus";
         } elseif (
             $order->getFieldData('oxpaymenttype') == $this->payPalSoapPaymentType &&
             !$order->tableExitsForPayPalSoap()
@@ -179,7 +179,7 @@ class PayPalOrderController extends AdminDetailsController
         } elseif ($order->paidWithPayPalSoap()) {
             // old paypalsoap order
             $this->addTplParam('payPalOrder', $this->getPayPalSoapOrder());
-            $result = "oscpaypalorder_pp.tpl";
+            $result = "@osc_paypal/admin/oscpaypalorder_pp";
         } else {
             $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'));
         }

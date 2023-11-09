@@ -187,7 +187,7 @@ class Order extends Order_parent
             //manual capture for PayPal standard will be done later, so no transaction id yet
             $transactionId = '';
 
-            $this->_setOrderStatus('NOT_FINISHED');
+            $this->setOrderStatus('NOT_FINISHED');
             //prepare capture tracking
             $paymentService->trackPayPalOrder(
                 $this->getId(),
@@ -221,7 +221,7 @@ class Order extends Order_parent
         $userPayment->load($this->getFieldData('oxpaymentid'));
 
         Registry::getSession()->setVariable('blDontCheckProductStockForPayPalMails', true);
-        $this->_sendOrderByEmail($user, $basket, $userPayment);
+        $this->sendOrderByEmail($user, $basket, $userPayment);
         Registry::getSession()->deleteVariable('blDontCheckProductStockForPayPalMails');
     }
 
@@ -235,14 +235,14 @@ class Order extends Order_parent
         $basket->setOrderId($this->getId());
 
         // updating wish lists
-        $this->_updateWishlist($basket->getContents(), $user);
+        $this->updateWishlist($basket->getContents(), $user);
 
         // updating users notice list
-        $this->_updateNoticeList($basket->getContents(), $user);
+        $this->updateNoticeList($basket->getContents(), $user);
 
         // marking vouchers as used and sets them to $this->_aVoucherList (will be used in order email)
         // skipping this action in case of order recalculation
-        $this->_markVouchers($basket, $user);
+        $this->markVouchers($basket, $user);
     }
 
     /**
@@ -258,7 +258,7 @@ class Order extends Order_parent
      * @deprecated underscore prefix violates PSR12, will be renamed to "executePayment" in next major
      */
     // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
-    protected function _executePayment(Basket $basket, $userpayment)
+    protected function executePayment(Basket $basket, $userpayment)
     {
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
@@ -303,7 +303,7 @@ class Order extends Order_parent
             }
             return self::ORDER_STATE_ACDCINPROGRESS;
         } else {
-            return parent::_executePayment($basket, $userpayment);
+            return parent::executePayment($basket, $userpayment);
         }
     }
 
@@ -378,7 +378,7 @@ class Order extends Order_parent
      */
     public function markOrderPaid()
     {
-        $this->_setOrderStatus('OK');
+        $this->setOrderStatus('OK');
 
         $db = DatabaseProvider::getDb();
         $utilsDate = Registry::getUtilsDate();
@@ -407,7 +407,7 @@ class Order extends Order_parent
 
     public function markOrderPaymentFailed()
     {
-        $this->_setOrderStatus('ERROR');
+        $this->setOrderStatus('ERROR');
     }
 
     /**
@@ -544,10 +544,10 @@ class Order extends Order_parent
     public function setOrderNumber(): void
     {
         if (!$this->hasOrderNumber()) {
-            $this->_setNumber();
+            $this->setNumber();
         } else {
             oxNew(EshopCoreCounter::class)
-                ->update($this->_getCounterIdent(), $this->oxorder__oxordernr->value);
+                ->update($this->getCounterIdent(), $this->oxorder__oxordernr->value);
         }
     }
 

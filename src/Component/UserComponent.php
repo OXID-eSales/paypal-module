@@ -20,11 +20,11 @@ class UserComponent extends UserComponent_parent
     {
         $return = parent::render();
 
-        $this->getSession()->deleteVariable('paypalRedirect');
+        Registry::getSession()->deleteVariable('paypalRedirect');
 
         $redirect = Registry::getRequest()->getRequestEscapedParameter('return');
         if ($redirect) {
-            $this->getSession()->setVariable('paypalRedirect', $redirect);
+            Registry::getSession()->setVariable('paypalRedirect', $redirect);
         }
 
         return $return;
@@ -33,9 +33,9 @@ class UserComponent extends UserComponent_parent
     public function login_noredirect() //phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps
     {
         $return = parent::login_noredirect();
-        $redirect = $this->getSession()->getVariable('paypalRedirect');
+        $redirect = Registry::getSession()->getVariable('paypalRedirect');
         if ($redirect) {
-            $this->getSession()->deleteVariable('paypalRedirect');
+            Registry::getSession()->deleteVariable('paypalRedirect');
             Registry::getUtils()->redirect($redirect, true, 302);
         }
 
@@ -69,7 +69,7 @@ class UserComponent extends UserComponent_parent
             $loginSuccess = $user->login(
                 $response->payer->email_address,
                 '',
-                Registry::getConfig()->getRequestParameter('lgn_cook')
+                Registry::getRequest()->getRequestParameter('lgn_cook')
             )
         ) {
             $this->setLoginStatus(USER_LOGIN_SUCCESS);

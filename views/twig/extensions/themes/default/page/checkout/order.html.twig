@@ -1,0 +1,56 @@
+{% extends "page/checkout/order.html.twig" %}
+
+{% block shippingAndPayment %}
+    {% set payment = oView.getPayment() %}
+    {% if payment.getId() == "oscpaypal_acdc" or payment.getId() == "oscpaypal_pui" %}
+        {% set sPaymentID = payment.getId() %}
+        {% set sSelfLink = oViewConf.getSslSelfLink()|replace({"&amp;": "&"}) %}
+        <form action="{{ oViewConf.getSslSelfLink()|raw }}" method="post"
+              id="orderShipping">
+            {{ oViewConf.getHiddenSid()|raw }}
+            <input type="hidden" name="cl" value="payment">
+            <input type="hidden" name="fnc" value="">
+            <h4 class="card-header card-title card-header-edit d-flex justify-content-between align-items-center">
+                {{ translate({ ident: "SHIPPING_CARRIER" }) }}
+                <button type="submit" class="btn"
+                        title="{{ translate({ ident: "EDIT" }) }}">
+                    <svg aria-hidden="true">
+                        <use xlink:href="#pencil"></use>
+                    </svg>
+                </button>
+            </h4>
+            {% set oShipSet = oView.getShipSet() %}
+            <div class="card-body">
+                {{ oShipSet.oxdeliveryset__oxtitle.value }}
+            </div>
+        </form>
+        <form action="{{ oViewConf.getSslSelfLink()|raw }}" method="post"
+              id="orderPayment">
+            {{ oViewConf.getHiddenSid()|raw }}
+            <input type="hidden" name="cl" value="payment">
+            <input type="hidden" name="fnc" value="">
+            <h4 class="card-header card-title card-header-edit d-flex justify-content-between align-items-center">
+                {{ translate({ ident: "PAYMENT_METHOD" }) }}
+                <button type="submit" class="btn"
+                        title="{{ translate({ ident: "EDIT" }) }}">
+                    <svg aria-hidden="true">
+                        <use xlink:href="#pencil"></use>
+                    </svg>
+                </button>
+            </h4>
+        </form>
+        <div class="card-body">
+            {% set payment = oView.getPayment() %}
+            {{ payment.oxpayments__oxdesc.value }}
+            {% if not oscpaypal_executing_order %}
+                {% if sPaymentID == "oscpaypal_acdc" %}
+                    {% include "@osc_paypal/frontend/acdc.html.twig" %}
+                {% elseif sPaymentID == "oscpaypal_pui" %}
+                    {% include "@osc_paypal/frontend/pui_flow.html.twig" %}
+                {% endif %}
+            {% endif %}
+        </div>
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock %}

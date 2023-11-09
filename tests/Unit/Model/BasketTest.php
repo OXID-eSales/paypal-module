@@ -10,9 +10,9 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Model;
 
 use OxidEsales\Eshop\Application\Model\Basket;
-use OxidEsales\TestingLibrary\UnitTestCase;
+use PHPUnit\Framework\TestCase;
 
-class BasketTest extends UnitTestCase
+class BasketTest extends TestCase
 {
     public function providerHasProductVariantInBasket()
     {

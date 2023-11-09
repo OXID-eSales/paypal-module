@@ -88,6 +88,7 @@ final class StaticContentTest extends BaseTestCase
                 'oxlongdesc' => 'test_longdesc_de'
             ]
         );
+        $payment->setId(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
         $payment->save();
 
         $service = $this->getServiceFromContainer(StaticContent::class);
@@ -99,6 +100,9 @@ final class StaticContentTest extends BaseTestCase
         $this->assertEquals('test_longdesc_de', $payment->getFieldData('oxlongdesc'));
 
         $payPalDefinitions = PayPalDefinitions::getPayPalDefinitions();
+
+        $payment->delete();
+        $service->ensurePayPalPaymentMethods();
 
         $payment->loadInLang(1, PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
         $this->assertEquals(

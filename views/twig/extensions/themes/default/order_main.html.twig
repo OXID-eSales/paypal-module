@@ -1,0 +1,109 @@
+{% extends "order_main.html.twig" %}
+
+{% block admin_order_main_send_order %}
+    {% if not oView.paidWithPayPal() %}
+        {{ parent() }}
+    {% endif %}
+{% endblock %}
+
+{% block admin_order_main_form_shipping %}
+    {% if oView.paidWithPayPal() %}
+        {% set sSelfLink = oViewConf.getSslSelfLink()|replace({"&amp;": "&"}) %}
+        {% set populateCarrierScript %}
+            {% if phpStorm %}<script>{% endif %}
+            function populateCarrier(countryCode) {
+                fetch('{{ sSelfLink|cat("cl=order_main&fnc=getPayPalTrackingCarrierProviderAsJson&oxid=")|cat(oxid)|cat("&countrycode=")|raw }}' + countryCode, {
+                    method: 'post'
+                }).then(function (res) {
+                    return res.json();
+                }).then(function (providerObj) {
+                    let providerHtml = '';
+                    Object.values(providerObj).forEach(provider => {
+                        providerHtml += '<option value="' + provider.id + '">' + provider.title + '</option>';
+                    });
+                    document.getElementById("paypaltrackingcarrierprovider").innerHTML = providerHtml;
+                });
+            }
+            {% if phpStorm %}</script>{% endif %}
+        {% endset %}
+        {{ script({ add: populateCarrierScript.__toString(), priority: 10, dynamic: __oxid_include_dynamic }) }}
+        <tr>
+            <td class="edittext" colspan="3">
+                {{ translate({ ident: "ORDER_MAIN_SHIPPING_INFORMATION" }) }}
+            </td>
+        </tr>
+
+        <tr>
+            <td class="edittext">
+                {{ translate({ ident: "OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_COUNTRY" }) }}
+            </td>
+            <td class="edittext">
+                <select name="paypaltrackingcarriercountry" class="editinput" style="width: 135px;" onchange="populateCarrier(this.value)" {{ readonly }}>
+                    {% for aCountry in oView.getPayPalTrackingCarrierCountries() %}
+                        <option value="{{ aCountry.id }}" {% if aCountry.selected %}SELECTED{% endif %}>{{ aCountry.title }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td class="edittext">
+                {{ translate({ ident: "OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_PROVIDER" }) }}
+            </td>
+            <td class="edittext">
+                <select id="paypaltrackingcarrierprovider" name="paypaltrackingcarrier" class="editinput" style="width: 135px;" {{ readonly }}>
+                    {% for aProvider in oView.getPayPalTrackingCarrierProvider() %}
+                        <option value="{{ aProvider.id }}" {% if aProvider.selected %}SELECTED{% endif %}>{{ aProvider.title }}</option>
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td class="edittext">
+                {{ translate({ ident: "ORDER_MAIN_TRACKCODE" }) }}
+            </td>
+            <td class="edittext">
+                <input type="text" class="editinput" size="25" name="paypaltrackingcode" value="{{ oView.getPayPalTrackingCode() }}" {{ readonly }}>
+                {% include "inputhelp.html.twig" with {'sHelpId': help_id("HELP_ORDER_MAIN_TRACKCODE"), 'sHelpText': help_text("HELP_ORDER_MAIN_TRACKCODE")} %}
+            </td>
+        </tr>
+        <tr >
+            <td class="edittext">
+                {{ translate({ ident: "GENERAL_DELIVERYCOST" }) }}
+            </td>
+            <td class="edittext">
+                <input type="text" class="editinput" size="15" maxlength="{{ edit.oxorder__oxdelcost.fldmax_length }}" name="editval[oxorder__oxdelcost]" value="{{ edit.oxorder__oxdelcost.value }}" {{ readonly }}> ({{ edit.oxorder__oxcurrency.value }})
+                {% include "inputhelp.html.twig" with {'sHelpId': help_id("HELP_GENERAL_DELIVERYCOST"), 'sHelpText': help_text("HELP_GENERAL_DELIVERYCOST")} %}
+            </td>
+        </tr>
+        <tr>
+            <td class="edittext">{{ translate({ ident: "ORDER_MAIN_DELTYPE" }) }}:</td>
+            <td class="edittext">
+                <select name="setDelSet" class="editinput" style="width: 135px;" {{ readonly }}>
+                    <option value="">----</option>
+                    {% for sShipSetId, oShipSet in oShipSet %}
+                        <option value="{{ sShipSetId }}" {% if edit.oxorder__oxdeltype.value == sShipSetId %}SELECTED{% endif %}>{{ oShipSet.oxdeliveryset__oxtitle.value }}</option>
+                    {% endfor %}
+                </select>
+                {% include "inputhelp.html.twig" with {'sHelpId': help_id("HELP_ORDER_MAIN_DELTYPE"), 'sHelpText': help_text("HELP_ORDER_MAIN_DELTYPE")} %}
+            </td>
+            <td>
+                <input type="submit" class="edittext" name="save" id="shippNowButton" onclick="document.myedit.sendorder.value=1;document.myedit.submit();return false;" value="&nbsp;&nbsp;{{ translate({ ident: "GENERAL_NOWSEND" }) }}&nbsp;&nbsp;" {{ readonly }}>
+                <input id='sendmail' class="edittext" type="checkbox" name="sendmail" value='1' {{ readonly }}> {{ translate({ ident: "GENERAL_SENDEMAIL" }) }}
+                <input type="hidden" name="sendorder" value='0'>
+            </td>
+        </tr>
+        <tr>
+            <td class="edittext" valign="middle">
+                <b>{{ translate({ ident: "GENERAL_SENDON" }) }}</b>
+            </td>
+            <td class="edittext" valign="bottom">
+                <b>{{ edit.oxorder__oxsenddate.value|format_date('datetime', true) }}</b>
+            </td>
+            <td>
+                <input type="submit" class="edittext" name="save" id="resetShippingDateButton" value="{{ translate({ ident: "GENERAL_SETBACKSENDTIME" }) }}" onclick="document.resetorder.submit();return false;" {{ readonly }}>
+            </td>
+        </tr>
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock %}

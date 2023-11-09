@@ -10,14 +10,14 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
-use OxidEsales\TestingLibrary\UnitTestCase;
+use PHPUnit\Framework\TestCase;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher as WebhookEventDispatcher;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutOrderCompletedHandler;
 
-final class WebhookEventDispatcherTest extends UnitTestCase
+final class WebhookEventDispatcherTest extends TestCase
 {
     public function testEventIsMappedToExpectedHandler(): void
     {

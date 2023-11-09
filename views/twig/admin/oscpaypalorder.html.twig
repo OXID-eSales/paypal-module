@@ -1,0 +1,239 @@
+{% include "headitem.html.twig" with {title: "GENERAL_ADMIN_TITLE"|translate} %}
+
+<form name="transfer" id="transfer" action="{{ oViewConf.getSelfLink() }}" method="post">
+    {{ oViewConf.getHiddenSid()|raw }}
+    <input type="hidden" name="oxid" value="{{ oxid }}">
+    <input type="hidden" name="cl" value="oscpaypalorder">
+</form>
+
+{% if error %}
+    <div class="errorbox">{{ error }}</div>
+{% endif %}
+
+{% if order and payPalOrder %}
+    {% set currency = oView.getPayPalCurrency() %}
+    <table width="98%" cellspacing="0" cellpadding="0" border="0">
+        <tbody>
+        <tr>
+            <td class="edittext" valign="top">
+                <table class="paypalActionsTable">
+                    <tr>
+                        <td class="edittext">{{ translate({ ident: "OSC_PAYPAL_SHOP_PAYMENT_STATUS", suffix: "COLON" }) }}</td>
+                        <td class="edittext" align="right">
+                            <b>{{ translate({ ident: "OSC_PAYPAL_STATUS_"|cat(oView.getPayPalPaymentStatus()) }) }}</b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="edittext">{{ translate({ ident: "OSC_PAYPAL_ORDER_PRICE", suffix: "COLON" }) }}</td>
+                        <td class="edittext" align="right">
+                            <b>{{ oView.formatPrice(oView.getPayPalTotalOrderSum()) }} {{ currency }}</b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="edittext">{{ translate({ ident: "OSC_PAYPAL_AUTHORIZED_AMOUNT", suffix: "COLON" }) }}</td>
+                        <td class="edittext" align="right">
+                            <b>{{ oView.formatPrice(oView.getPayPalAuthorizationAmount()) }} {{ currency }}</b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="edittext">{{ translate({ ident: "OSC_PAYPAL_CAPTURED_AMOUNT", suffix: "COLON" }) }}</td>
+                        <td class="edittext" align="right">
+                            <b>{{ oView.formatPrice(oView.getPayPalCapturedAmount()) }} {{ currency }}</b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="edittext">{{ translate({ ident: "OSC_PAYPAL_REFUNDED_AMOUNT", suffix: "COLON" }) }}</td>
+                        <td class="edittext" align="right">
+                            <b>{{ oView.formatPrice(oView.getPayPalRefundedAmount()) }} {{ currency }}</b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="edittext">{{ translate({ ident: "OSC_PAYPAL_CAPTURED_NET", suffix: "COLON" }) }}</td>
+                        <td class="edittext" align="right">
+                            <b>{{ oView.formatPrice(oView.getPayPalResultedAmount()) }} {{ currency }}</b>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <td class="edittext" valign="top">
+                {% if payPalOrderDetails.oscpaypal_order__oscpaypalpuipaymentreference.value %}
+                    <b>{{ translate({ ident: "OSC_PAYPAL_PAYMENT_PUI", suffix: "COLON" }) }}</b>
+                    <table class="paypalActionsTable">
+                        <tr>
+                            <td class="edittext">{{ translate({ ident: "OSC_PAYPAL_PAYMENT_PUI_REFERENCE", suffix: "COLON" }) }}</td>
+                            <td class="edittext" align="right">
+                                <b>{{ payPalOrderDetails.oscpaypal_order__oscpaypalpuipaymentreference.value }}</b>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="edittext">{{ translate({ ident: "OSC_PAYPAL_PAYMENT_PUI_BIC", suffix: "COLON" }) }}</td>
+                            <td class="edittext" align="right">
+                                <b>{{ payPalOrderDetails.oscpaypal_order__oscpaypalpuibic.value }}</b>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="edittext">{{ translate({ ident: "OSC_PAYPAL_PAYMENT_PUI_IBAN", suffix: "COLON" }) }}</td>
+                            <td class="edittext" align="right">
+                                <b>{{ payPalOrderDetails.oscpaypal_order__oscpaypalpuiiban.value }}</b>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="edittext">{{ translate({ ident: "OSC_PAYPAL_PAYMENT_PUI_BANKNAME", suffix: "COLON" }) }}</td>
+                            <td class="edittext" align="right">
+                                <b>{{ payPalOrderDetails.oscpaypal_order__oscpaypalpuibankname.value }}</b>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="edittext">{{ translate({ ident: "OSC_PAYPAL_PAYMENT_PUI_ACCOUNTHOLDER", suffix: "COLON" }) }}</td>
+                            <td class="edittext" align="right">
+                                <b>{{ payPalOrderDetails.oscpaypal_order__oscpaypalpuiaccountholdername.value }}</b>
+                            </td>
+                        </tr>
+                    </table>
+                {% endif %}
+            </td>
+            <td class="edittext" valign="top" align="left">
+                <p><b>{{ translate({ ident: "OSC_PAYPAL_ORDER_PRODUCTS", suffix: "COLON" }) }}</b></p>
+                <table cellspacing="0" cellpadding="0" border="0" width="98%">
+                    <tr>
+                        <td class="listheader first">{{ translate({ ident: "GENERAL_SUM" }) }}</td>
+                        <td class="listheader" height="15">&nbsp;&nbsp;&nbsp;{{ translate({ ident: "GENERAL_ITEMNR" }) }}</td>
+                        <td class="listheader">&nbsp;&nbsp;&nbsp;{{ translate({ ident: "GENERAL_TITLE" }) }}</td>
+                        {% if order.isNettoMode() %}
+                            <td class="listheader">{{ translate({ ident: "ORDER_ARTICLE_ENETTO" }) }}</td>
+                        {% else %}
+                            <td class="listheader">{{ translate({ ident: "ORDER_ARTICLE_EBRUTTO" }) }}</td>
+                        {% endif %}
+                        <td class="listheader">{{ translate({ ident: "GENERAL_ATALL" }) }}</td>
+                        <td class="listheader" colspan="3">{{ translate({ ident: "ORDER_ARTICLE_MWST" }) }}</td>
+                    </tr>
+                    {% set blWhite = "" %}
+                    {% for listitem in order.getOrderArticles() %}
+                        {% if listitem.oxorderarticles__oxstorno.value == 1 %}
+                            {% set listclass = "listitem3" %}
+                        {% else %}
+                            {% set listclass = "listitem3"|cat(blWhite) %}
+                        {% endif %}
+                        <tr id="art.{{ loop.index }}">
+                            <td valign="top" class="{{ listclass }}">{{ listitem.oxorderarticles__oxamount.value }}</td>
+                            <td valign="top" class="{{ listclass }}" height="15">{{ listitem.oxorderarticles__oxartnum.value }}</td>
+                            <td valign="top" class="{{ listclass }}">{{ listitem.oxorderarticles__oxtitle.value|truncate(20, "")|striptags }}</td>
+                            {% if order.isNettoMode() %}
+                                <td valign="top" class="{{ listclass }}">{{ listitem.getNetPriceFormated() }}
+                                    <small>{{ order.oxorder__oxcurrency.value }}</small>
+                                </td>
+                                <td valign="top" class="{{ listclass }}">{{ listitem.getTotalNetPriceFormated() }}
+                                    <small>{{ order.oxorder__oxcurrency.value }}</small>
+                                </td>
+                            {% else %}
+                                <td valign="top" class="{{ listclass }}">{{ listitem.getBrutPriceFormated() }}
+                                    <small>{{ order.oxorder__oxcurrency.value }}</small>
+                                </td>
+                                <td valign="top" class="{{ listclass }}">{{ listitem.getTotalBrutPriceFormated() }}
+                                    <small>{{ order.oxorder__oxcurrency.value }}</small>
+                                </td>
+                            {% endif %}
+                            <td valign="top" class="{{ listclass }}">{{ listitem.oxorderarticles__oxvat.value }}</td>
+                        </tr>
+                        {% if blWhite == "2" %}
+                            {% set blWhite = "" %}
+                        {% else %}
+                            {% set blWhite = "2" %}
+                        {% endif %}
+                    {% endfor %}
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td class="edittext" valign="top" colspan="3">
+                <b>{{ translate({ ident: "OSC_PAYPAL_PAYMENT_HISTORY", suffix: "COLON" }) }}</b>
+                <table id="historyTable">
+                    <colgroup>
+                        <col width="20%">
+                        <col width="20%">
+                        <col width="20%">
+                        <col width="20%">
+                        <col width="20%">
+                    </colgroup>
+                    <tr>
+                        <td class="listheader first">{{ translate({ ident: "OSC_PAYPAL_HISTORY_DATE" }) }}</td>
+                        <td class="listheader">{{ translate({ ident: "OSC_PAYPAL_HISTORY_ACTION" }) }}</td>
+                        <td class="listheader">{{ translate({ ident: "OSC_PAYPAL_AMOUNT" }) }}</td>
+                        <td class="listheader">
+                            {{ translate({ ident: "OSC_PAYPAL_HISTORY_PAYPAL_STATUS" }) }}
+                            {% include "inputhelp.html.twig" with {'sHelpId': help_id("OSC_PAYPAL_HISTORY_PAYPAL_STATUS_HELP"), 'sHelpText': help_text("OSC_PAYPAL_HISTORY_PAYPAL_STATUS_HELP")} %}
+                        </td>
+                        <td class="listheader">{{ translate({ ident: "OSC_PAYPAL_TRANSACTIONID" }) }}</td>
+                        <td class="listheader">{{ translate({ ident: "OSC_PAYPAL_INVOICE_ID" }) }}</td>
+                        <td class="listheader">{{ translate({ ident: "OSC_PAYPAL_COMMENT" }) }}</td>
+                    </tr>
+                    {% for listitem in oView.getPayPalHistory() %}
+                        {% set class = smarty_cycle(["listitem", "listitem2"]) %}
+                        <tr>
+                            <td valign="top" class="{{ class }}">{{ listitem.date }}</td>
+                            <td valign="top" class="{{ class }}">{{ translate({ ident: "OSC_PAYPAL_"|cat(listitem.action) }) }}</td>
+                            <td valign="top" class="{{ class }}">
+                                {{ oView.formatPrice(listitem.amount) }}
+                                <small>{{ currency }}</small>
+                            </td>
+                            <td valign="top" class="{{ class }}">{{ translate({ ident: "OSC_PAYPAL_STATUS_"|cat(listitem.status) }) }}</td>
+                            <td valign="top" class="{{ class }}">{{ listitem.transactionid }}</td>
+                            <td valign="top" class="{{ class }}">{{ listitem.invoiceid }}</td>
+                            <td valign="top" class="{{ class }}">{{ listitem.comment }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+            </td>
+        </tr>
+
+        </tbody>
+    </table>
+    {% if oView.getPayPalPaymentStatus() == 'COMPLETED' and oView.getPayPalRemainingRefundAmount() %}
+        <div style="margin-top: 10px">
+            <p><b>{{ translate({ ident: "OSC_PAYPAL_ISSUE_REFUND" }) }}</b></p>
+            <form action="{{ oViewConf.getSelfLink() }}" method="post">
+                {{ oViewConf.getHiddenSid()|raw }}
+                <input type="hidden" name="fnc" value="refund">
+                <input type="hidden" name="cl" value="oscpaypalorder">
+                <input type="hidden" name="oxid" value="{{ oxid }}">
+                <input type="hidden" name="language" value="{{ actlang }}">
+                <table class="paypalActionsTable">
+                    <tr>
+                        <td><label for="refundAmount">{{ translate({ ident: "OSC_PAYPAL_REFUND_AMOUNT" }) }}</label></td>
+                        <td><input type="text" id="refundAmount" name="refundAmount" value="{{ oView.formatPrice(oView.getPayPalRemainingRefundAmount()) }}"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="invoiceId">{{ translate({ ident: "OSC_PAYPAL_INVOICE_ID" }) }}</label></td>
+                        <td><input type="text" id="invoiceId" name="invoiceId" maxlength="127"></td>
+                    </tr>
+                    <tr>
+                        <td><label for="noteToPayer">{{ translate({ ident: "OSC_PAYPAL_NOTE_TO_BUYER" }) }}</label></td>
+                        <td><textarea id="noteToPayer" name="noteToPayer" maxlength="255"></textarea></td>
+                    </tr>
+                    <tr>
+                        <td><label for="refundAll">{{ translate({ ident: "OSC_PAYPAL_REFUND_ALL" }) }}</label></td>
+                        <td><input type="checkbox" id="refundAll" name="refundAll"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="submit" value="{{ translate({ ident: "OSC_PAYPAL_REFUND" }) }}"></td>
+                    </tr>
+                </table>
+            </form>
+        </div>
+    {% elseif oView.getPayPalPaymentStatus() != 'COMPLETED' %}
+        <div style="margin-top: 10px">
+            <p><b>{{ translate({ ident: "OSC_PAYPAL_ACTIONS", suffix: "COLON" }) }}</b></p>
+            <form action="{{ oViewConf.getSelfLink() }}" method="post">
+                {{ oViewConf.getHiddenSid()|raw }}
+                <input type="hidden" name="fnc" value="capturePayPalStandard">
+                <input type="hidden" name="cl" value="oscpaypalorder">
+                <input type="hidden" name="oxid" value="{{ oxid }}">
+                <input type="hidden" name="language" value="{{ actlang }}">
+                <input type="submit" value="{{ translate({ ident: "OSC_PAYPAL_CAPTURE" }) }}">
+            </form>
+            <p>{{ translate({ ident: "OSC_PAYPAL_CAPTURE_DAYS_LEFT", args: oView.getTimeLeftForPayPalCapture() }) }}</p>
+        </div>
+    {% endif %}
+{% endif %}
+{% include "bottomnaviitem.html.twig" %}
+{% include "bottomitem.html.twig" %}

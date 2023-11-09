@@ -18,9 +18,9 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20220112120100 extends AbstractMigration
 {
-    public function __construct($version)
+    public function __construct($version, $logger)
     {
-        parent::__construct($version);
+        parent::__construct($version, $logger);
 
         $this->platform->registerDoctrineTypeMapping('enum', 'string');
     }

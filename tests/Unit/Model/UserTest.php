@@ -10,25 +10,29 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Model;
 
 use DateTimeImmutable;
-use OxidEsales\TestingLibrary\UnitTestCase;
+use PHPUnit\Framework\TestCase;
 use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
 use OxidSolutionCatalysts\PayPal\Exception\UserPhone as UserPhoneException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
+use OxidEsales\Eshop\Core\Request;
+use OxidEsales\Eshop\Core\Registry;
 
-final class UserTest extends UnitTestCase
+final class UserTest extends TestCase
 {
     public function testPuiBirthDate(): void
     {
-        $this->setRequestParameter(
-            'pui_required',
-            [
-                    'birthdate' => [
-                        'day' => 1,
-                        'month' => 4,
-                        'year' => 2000
-                    ],
-                ]
-        );
+        $puiRequired = [
+            'birthdate' => [
+                'day' => 1,
+                'month' => 4,
+                'year' => 2000
+            ],
+        ];
+
+        $request = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();
+        $request->method('getRequestParameter')->willReturn($puiRequired);
+
+        Registry::set(Request::class, $request);
 
         $user = oxNew(EshopModelUser::class);
 
@@ -37,16 +41,18 @@ final class UserTest extends UnitTestCase
 
     public function testPuiBirthDateNotSet(): void
     {
-        $this->setRequestParameter(
-            'pui_required',
-            [
-                'birthdate' => [
-                    'day' => null,
-                    'month' => null,
-                    'year' => null
-                ],
-            ]
-        );
+        $puiRequired = [
+            'birthdate' => [
+                'day' => null,
+                'month' => null,
+                'year' => null
+            ],
+        ];
+
+        $request = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();
+        $request->method('getRequestParameter')->willReturn($puiRequired);
+
+        Registry::set(Request::class, $request);
 
         $user = oxNew(EshopModelUser::class);
 
@@ -55,19 +61,19 @@ final class UserTest extends UnitTestCase
 
     public function testPuiPhone(): void
     {
-        $this->setRequestParameter(
-            'pui_required',
-            [
-                'phonenumber' => '040 111222333'
-            ]
-        );
+        $puiRequired = [
+            'phonenumber' => '040 111222333'
+        ];
+
+        $request = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();
+        $request->method('getRequestParameter')->willReturn($puiRequired);
+
+        Registry::set(Request::class, $request);
 
         $user = oxNew(EshopModelUser::class);
-        $user->assign(
-            [
-                'oxcountryid' => 'a7c40f631fc920687.20179984'
-            ]
-        );
+        $user->assign([
+            'oxcountryid' => 'a7c40f631fc920687.20179984'
+        ]);
 
         /** @var ApiModelPhone $apiPhone */
         $apiPhone = $user->getPhoneNumberForPuiRequest();
@@ -79,12 +85,14 @@ final class UserTest extends UnitTestCase
 
     public function testPuiPhoneWithCountryPrefix(): void
     {
-        $this->setRequestParameter(
-            'pui_required',
-            [
-                'phonenumber' => '+49 40 111222333'
-            ]
-        );
+        $puiRequired = [
+            'phonenumber' => '+49 40 111222333'
+        ];
+
+        $request = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();
+        $request->method('getRequestParameter')->willReturn($puiRequired);
+
+        Registry::set(Request::class, $request);
 
         $user = oxNew(EshopModelUser::class);
         $user->assign(
@@ -103,12 +111,14 @@ final class UserTest extends UnitTestCase
 
     public function testPuiPhoneInvalid(): void
     {
-        $this->setRequestParameter(
-            'pui_required',
-            [
-                'phonenumber' => 'NO_PHONE'
-            ]
-        );
+        $puiRequired = [
+            'phonenumber' => 'NO_PHONE'
+        ];
+
+        $request = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();
+        $request->method('getRequestParameter')->willReturn($puiRequired);
+
+        Registry::set(Request::class, $request);
 
         $user = oxNew(EshopModelUser::class);
 

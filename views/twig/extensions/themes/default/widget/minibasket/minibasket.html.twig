@@ -1,0 +1,13 @@
+{% extends "widget/minibasket/minibasket.html.twig" %}
+
+{% block dd_layout_page_header_icon_menu_minibasket_functions %}
+    {{ parent() }}
+    {% set config = oViewConf.getPayPalCheckoutConfig() %}
+    {% set className = oViewConf.getTopActiveClassName() %}
+    {% if config.isActive() and not oViewConf.isPayPalExpressSessionActive() and ((className == 'order' and not oViewConf.isPayPalACDCSessionActive()) or className != 'order') and config.showPayPalMiniBasketButton() %}
+        <div class="text-center paypal-button-or">
+            {{ translate({ ident: "OR" })|upper }}
+        </div>
+        {% include "@osc_paypal/frontend/paymentbuttons.html.twig" with {buttonId: "PayPalPayButtonNextCart1", buttonClass: "paypal-button-wrapper"} %}
+    {% endif %}
+{% endblock %}

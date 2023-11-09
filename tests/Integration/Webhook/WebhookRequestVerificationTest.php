@@ -10,13 +10,13 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
-use OxidEsales\TestingLibrary\UnitTestCase;
+use PHPUnit\Framework\TestCase;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventVerificationException;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier as WebhookRequestValidator;
 use OxidSolutionCatalysts\PayPalApi\Service\GenericService;
 
-final class WebhookRequestVerificationTest extends UnitTestCase
+final class WebhookRequestVerificationTest extends TestCase
 {
     private $defaultHeaders = [
         'PAYPAL-CERT-URL' => '',

@@ -27,6 +27,29 @@ class PayPalOrder extends BaseModel
         $this->init();
     }
 
+    /**
+     * Sets unique object id
+     * Needed for Unit-Tests
+     * Adds an underscore to created PayPal order entities while unit testing to mark them as test-orders
+     * Which will be removed by cleanUpTable
+     *
+     * @param string $oxid Record ID
+     *
+     * @return string
+     */
+    public function setId($oxid = null)
+    {
+        $return = parent::setId($oxid);
+        if (defined('OXID_PHP_UNIT')) {
+            $oxid = $this->getId();
+            if (strpos($oxid, '_') === false) {
+                $oxid = "_".substr($oxid, 1);
+                $return = parent::setId($oxid);
+            }
+        }
+        return $return;
+    }
+
     public function getPayPalOrderId(): string
     {
         return (string) $this->getFieldData('oxpaypalorderid');

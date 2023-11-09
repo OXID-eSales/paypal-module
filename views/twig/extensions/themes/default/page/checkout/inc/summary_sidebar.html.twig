@@ -1,0 +1,15 @@
+{% extends "page/checkout/inc/summary_sidebar.html.twig" %}
+
+{% block basket_btn_next_bottom %}
+    {{ parent() }}
+    {% if oViewConf.getActiveClassName() == 'basket' %}
+        {% set config = oViewConf.getPayPalCheckoutConfig() %}
+        {% set className = oViewConf.getTopActiveClassName() %}
+        {% if config.isActive() and not oViewConf.isPayPalExpressSessionActive() and config.showPayPalBasketButton() %}
+            <div class="text-center paypal-button-or">
+                {{ translate({ ident: "OR" })|upper }}
+            </div>
+            {% include "@osc_paypal/frontend/paymentbuttons.html.twig" with {buttonId: "PayPalPayButtonNextCart2", buttonClass: "paypal-button-wrapper"} %}
+        {% endif %}
+    {% endif %}
+{% endblock %}

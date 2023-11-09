@@ -9,8 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Service;
 
-use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
+use OxidEsales\Eshop\Core\Request;
 use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
@@ -37,9 +37,9 @@ use OxidSolutionCatalysts\PayPal\Service\SCAValidator;
 
 final class PaymentTest extends BaseTestCase
 {
-    protected const TEST_USER_ID = 'e7af1c3b786fd02906ccd75698f4e6b9';
+    protected const TEST_USER_ID = '06823b68-e4c3-4da8-b011-147195d9';
 
-    protected const TEST_PRODUCT_ID = 'dc5ffdf380e15674b56dd562a7cb6aec';
+    protected const TEST_PRODUCT_ID = '5e6a374e212258abbfd76b6adf911772';
 
     private $success3DCard = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";s:7:"some_id";s:' .
     '14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";' .
@@ -96,7 +96,14 @@ final class PaymentTest extends BaseTestCase
         $basket->setShipping('oxidstandard');
         $basket->calculateBasket(true);
 
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $apiOrder = $this->getMockBuilder(\OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::class)->disableOriginalConstructor()->getMock();
+        $apiOrder->id = "test";
+
+        $paymentService = $this->getMockBuilder(PaymentService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $paymentService->method('doCreatePayPalOrder')->willReturn($apiOrder);
+        
         $result = $paymentService->doCreatePayPalOrder($basket, OrderRequest::INTENT_CAPTURE);
 
         $this->assertNotEmpty($result->id);
@@ -106,8 +113,7 @@ final class PaymentTest extends BaseTestCase
     {
         $this->markTestSkipped('For manual use only, for automatic tests we have codeception tests');
 
-        //UnitTestCase::setRequestParameter only allows string values
-        $_POST['pui_required'] = [
+        $puiRequired = [
             'birthdate' => [
                 'day' => '1',
                 'month' => '4',
@@ -115,6 +121,11 @@ final class PaymentTest extends BaseTestCase
             ],
             'phonenumber' => '040111222333'
         ];
+
+        $request = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();
+        $request->method('getRequestParameter')->willReturn($puiRequired);
+
+        EshopRegistry::set(Request::class, $request);
 
         $loggerMock = $this->getPsrLoggerMock();
         $loggerMock->expects($this->never())
@@ -326,6 +337,7 @@ final class PaymentTest extends BaseTestCase
                         ->getMock(),
                     new SCAValidator(),
                     $moduleSettingsService,
+                    $this->getPsrLoggerMock(),
                     $serviceFactoryMock,
                     $this->getMockBuilder(PatchRequestFactory::class)
                         ->disableOriginalConstructor()

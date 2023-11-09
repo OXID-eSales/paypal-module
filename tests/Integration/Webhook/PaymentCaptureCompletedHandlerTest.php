@@ -55,7 +55,6 @@ final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCas
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
         $loggerMock = $this->getPsrLoggerMock();
-        /** @var MockObject $loggerMock */
         $loggerMock->expects($this->once())
             ->method('debug')
             ->with(
@@ -66,6 +65,7 @@ final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCas
         EshopRegistry::set('logger', $loggerMock);
 
         $handler = oxNew(PaymentCaptureCompletedHandler::class);
+        $handler->addServiceMock('OxidSolutionCatalysts\PayPal\Logger', $loggerMock);
         $handler->handle($event);
     }
 

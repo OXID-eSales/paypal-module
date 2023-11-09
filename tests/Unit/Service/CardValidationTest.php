@@ -9,12 +9,12 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Service;
 
-use OxidEsales\TestingLibrary\UnitTestCase;
+use PHPUnit\Framework\TestCase;
 use OxidSolutionCatalysts\PayPal\Service\SCAValidator;
 use OxidSolutionCatalysts\PayPal\Exception\CardValidation as CardValidationException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 
-class CardValidationTest extends UnitTestCase
+class CardValidationTest extends TestCase
 {
     private $missingCardAuthentication = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";N;s:14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";O:57:"OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse":11:{s:2:"id";N;s:4:"name";N;s:15:"billing_address";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"9760";s:5:"brand";s:4:"VISA";s:4:"type";s:6:"CREDIT";s:6:"issuer";N;s:3:"bin";N;s:21:"authentication_result";N;s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";N;s:6:"mybank";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:6:"sofort";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
 

@@ -57,16 +57,15 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
         $loggerMock = $this->getPsrLoggerMock();
-        /** @var MockObject $loggerMock */
         $loggerMock->expects($this->once())
             ->method('debug')
             ->with(
                 "Not enough information to handle PAYMENT.CAPTURE.DENIED with PayPal order_id '' and " .
                 "PayPal transaction id '" . $resourceId . "'"
             );
-        EshopRegistry::set('logger', $loggerMock);
 
         $handler = oxNew(static::HANDLER_CLASS);
+        $handler->addServiceMock('OxidSolutionCatalysts\PayPal\Logger', $loggerMock);
         $handler->handle($event);
     }
 

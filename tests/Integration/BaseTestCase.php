@@ -10,12 +10,13 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration;
 
 use Codeception\Util\Fixtures;
-use OxidEsales\TestingLibrary\UnitTestCase;
+use PHPUnit\Framework\TestCase;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidEsales\Eshop\Core\DatabaseProvider;
 use Psr\Log\LoggerInterface;
 
-abstract class BaseTestCase extends UnitTestCase
+abstract class BaseTestCase extends TestCase
 {
     use ServiceContainer;
 
@@ -29,6 +30,22 @@ abstract class BaseTestCase extends UnitTestCase
         $this->updateModuleConfiguration('oscPayPalSandboxClientId', $_ENV['oscPayPalSandboxClientId']);
         $this->updateModuleConfiguration('oscPayPalSandboxMode', true);
         $this->updateModuleConfiguration('oscPayPalSandboxClientSecret', $_ENV['oscPayPalSandboxClientSecret']);
+    }
+
+    /**
+     * Cleans up table
+     *
+     * @param string $table      Table name
+     * @param string $columnName Column name
+     */
+    protected function cleanUpTable($table, $columnName = null)
+    {
+        $sCol = (!empty($columnName)) ? $columnName : 'oxid';
+
+        //deletes allrecords where oxid or specified column name values starts with underscore(_)
+        $sQ = "delete from `$table` where `$sCol` like '\_%' ";
+
+        DatabaseProvider::getDB()->execute($sQ);
     }
 
     protected function getPsrLoggerMock(): LoggerInterface

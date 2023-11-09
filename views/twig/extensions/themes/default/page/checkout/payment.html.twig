@@ -1,0 +1,85 @@
+{% extends "page/checkout/payment.html.twig" %}
+
+{% block select_payment %}
+    {% if sPaymentID == "oscpaypal_express" %}
+        {% include "@osc_paypal/frontend/select_payment.html.twig" %}
+    {% elseif sPaymentID == "oscpaypal_sepa" or sPaymentID == "oscpaypal_cc_alternative" %}
+        {% set config = oViewConf.getPayPalCheckoutConfig() %}
+        {% if config.isActive() and not oViewConf.isPayPalExpressSessionActive() %}
+            <div class="payment-option">
+                <div class="payment-option-form">
+                    {% include "@osc_paypal/frontend/select_payment.html.twig" %}
+                    <label class="form-check-label" for="payment_{{ sPaymentID }}">{{ paymentmethod.oxpayments__oxdesc.value }}</label>
+                        <div class="paypal-sepa-option-info{% if oView.getCheckedPaymentId() == paymentmethod.oxpayments__oxid.value %} activePayment{% endif %}">
+                            {% for value in paymentmethod.getDynValues() %}
+                                <div class="form-floating mb-3">
+                                    <input type="text" size="20"
+                                           maxlength="64" name="dynvalue[{{ value.name }}]" value="{{ value.value }}"
+                                           class="form-control" id="{{ sPaymentID }}_{{ loop.index }}"
+                                           placeholder="name@example.com">
+                                    <label for="{{ sPaymentID }}_{{ loop.index }}">{{ value.name }}</label>
+                                </div>
+                            {% endfor %}
+
+                            {% include "@osc_paypal/frontend/paymentbuttons.html.twig" with {buttonId: sPaymentID, buttonClass: "paypal-button-wrapper large"} %}
+
+                            {% block checkout_payment_longdesc %}
+                                {% if paymentmethod.oxpayments__oxlongdesc.value|striptags|trim %}
+                                    <div class="desc">
+                                        {{ paymentmethod.oxpayments__oxlongdesc.value }}
+                                    </div>
+                                {% endif %}
+                            {% endblock %}
+                        </div>
+                </div>
+                {% if paymentmethod.getPrice() %}
+                    <div class="payment-option-price">
+                        {% set oPaymentPrice = paymentmethod.getPrice() %}
+                        {% if oViewConf.isFunctionalityEnabled('blShowVATForPayCharge') %}
+                            {% apply spaceless %}
+                                {{ format_price(oPaymentPrice.getNettoPrice(), { currency: currency }) }}
+                                {% if oPaymentPrice.getVatValue() > 0 %}
+                                    {{ translate({ ident: "PLUS_VAT" }) }} {{ format_price(oPaymentPrice.getVatValue(), { currency: currency }) }}
+                                {% endif %}
+                            {% endapply %}
+                        {% else %}
+                            {{ format_price(oPaymentPrice.getBruttoPrice(), { currency: currency }) }}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock %}
+
+{% block change_payment %}
+    {% if oView.getPaymentList().oscpaypal_express is defined and oViewConf.isPayPalExpressSessionActive() %}
+        {% set config = oViewConf.getPayPalCheckoutConfig() %}
+        <h4 class="card-header card-title">
+            {{ translate({ ident: "OSC_PAYPAL_PAY_EXPRESS" }) }}
+        </h4>
+        <div class="card-body">
+            {{ translate({ ident: "OSC_PAYPAL_PAY_PROCESSED" }) }}
+            <a class="btn btn-outline-primary w-50 mt-3" href="{{ oViewConf.getCancelPayPalPaymentUrl()|raw }}">{{ translate({ ident: "OSC_PAYPAL_PAY_UNLINK" }) }}</a>
+            {% set hide_payment %}
+                let paymentElements = document.querySelectorAll('#payment > .card-header, #payment > .card-body');
+                for (let i = 0; i < paymentElements.length; i++) {
+                    paymentElements[i].style.display = "none";
+                }
+            {% endset %}
+            {{ script({ add: hide_payment.__toString(), priority: 10, dynamic: __oxid_include_dynamic }) }}
+        </div>
+    {% endif %}
+    {{ parent() }}
+{% endblock %}
+
+{% block checkout_payment_main %}
+    {% if attribute(oViewConf, 'showPayPalCheckoutBannerOnCheckoutPage') is defined and oViewConf.showPayPalCheckoutBannerOnCheckoutPage() %}
+        {{ style({ include: oViewConf.getModuleUrl('osc_paypal', 'css/paypal_installment.css') }) }}
+        {% set basketAmount = oxcmp_basket.getPrice() %}
+        {% include "@osc_paypal/frontend/installment_banners.html.twig" with {amount: basketAmount.getPrice(), selector: oViewConf.getPayPalCheckoutBannerPaymentPageSelector(), addClass: "mt-5"} %}
+    {% endif %}
+    {{ parent() }}
+{% endblock %}

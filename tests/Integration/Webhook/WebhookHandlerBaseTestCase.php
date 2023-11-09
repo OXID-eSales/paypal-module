@@ -12,14 +12,15 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 use Doctrine\DBAL\Query\QueryBuilder;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
-use OxidEsales\TestingLibrary\UnitTestCase;
-use OxidEsales\EshopCommunity\Tests\Integration\Internal\ContainerTrait;
+use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
+use OxidEsales\EshopCommunity\Tests\ContainerTrait;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
+use OxidSolutionCatalysts\PayPal\Model\Order as PayPalExtendOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
 use Psr\Log\LoggerInterface;
 
-class WebhookHandlerBaseTestCase extends UnitTestCase
+class WebhookHandlerBaseTestCase extends BaseTestCase
 {
     use ContainerTrait;
 
@@ -67,8 +68,8 @@ class WebhookHandlerBaseTestCase extends UnitTestCase
         string $orderId = 'order_oxid',
         string $methodName = 'markOrderPaid',
         string $expectCalls = 'once'
-    ): EshopModelOrder {
-        $mock = $this->getMockBuilder(EshopModelOrder::class)
+    ): PayPalExtendOrderModel {
+        $mock = $this->getMockBuilder(PayPalExtendOrderModel::class)
             ->disableOriginalConstructor()
             ->getMock();
         $mock->expects($this->any())

@@ -1,0 +1,16 @@
+{% extends "page/shop/start.html.twig" %}
+
+{% block start_newest_articles %}
+    {% if attribute(oViewConf, 'showPayPalCheckoutBannerOnStartPage') is defined and oViewConf.showPayPalCheckoutBannerOnStartPage() %}
+        {% set paypalInstallmentPrice = oxcmp_basket.getBruttoSum() %}
+        {% if oxcmp_basket.isPriceViewModeNetto() %}
+            {% set paypalInstallmentPrice = oxcmp_basket.getNettoSum() %}
+        {% endif %}
+
+        {{ style({ include: oViewConf.getModuleUrl('osc_paypal', 'css/paypal_installment.css') }) }}
+        <div id="start-paypal-installment-banner"></div>
+        {% include "@osc_paypal/frontend/installment_banners.html.twig" with {amount: paypalInstallmentPrice, selector: oViewConf.getPayPalCheckoutBannerStartPageSelector(), addClass: "mt-3"} %}
+    {% endif %}
+
+    {{ parent() }}
+{% endblock %}

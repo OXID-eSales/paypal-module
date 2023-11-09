@@ -12,6 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\DatabaseProvider;
+use OxidSolutionCatalysts\PayPal\Module;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Client;
@@ -310,15 +311,41 @@ class Config
     }
 
     /**
+     * Return path to cache dir
+     * Write to a extra folder in the tmp folder to not be deleted when module config changes
+     * (tmp dir is cleared when module config changes in oxid 7)
+     *
+     * @return string
+     */
+    public function getCacheDir(): string
+    {
+        $dir = Registry::getConfig()->getConfigParam('sCompileDir').DIRECTORY_SEPARATOR.Module::MODULE_ID.DIRECTORY_SEPARATOR;
+        if (file_exists($dir) === false) {
+            mkdir($dir);
+        }
+        return $dir;
+    }
+
+    /**
      * get the full File Name of the Token Cache
      *
      * @return string
      */
     public function getTokenCacheFileName(): string
     {
-        $config = Registry::getConfig();
-        $shopId = $config->getActiveShop()->getId();
-        return $config->getConfigParam('sCompileDir') . 'paypaltoken_' . $shopId . '.txt';
+        return $this->getCacheDir() . 'paypaltoken_' . Registry::getConfig()->getActiveShop()->getId() . '.txt';
+    }
+
+    /**
+     * Get the full file name of the onboarding block cache file
+     * It is needed because the PayPal Javascript sends 2 identical requests to the shop at the same time to trigger
+     * "returnFromSignup" which creates a race-condition which interferes with changing the module config correctly.
+     *
+     * @return string
+     */
+    public function getOnboardingBlockCacheFileName(): string
+    {
+        return $this->getCacheDir() . 'paypalonboarding_' . Registry::getConfig()->getActiveShop()->getId() . '.txt';
     }
 
     /**

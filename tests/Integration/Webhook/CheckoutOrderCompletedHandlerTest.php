@@ -24,6 +24,14 @@ final class CheckoutOrderCompletedHandlerTest extends WebhookHandlerBaseTestCase
 
     public const WEBHOOK_EVENT = 'CHECKOUT.ORDER.COMPLETED';
 
+    protected function tearDown(): void
+    {
+        $this->cleanUpTable('oscpaypal_order');
+        $this->cleanUpTable('oxorder');
+
+        parent::tearDown();
+    }
+
     public function testRequestMissingData(): void
     {
         $event = new WebhookEvent([], static::WEBHOOK_EVENT);

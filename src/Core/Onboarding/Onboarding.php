@@ -33,6 +33,9 @@ class Onboarding
             // fetch and save Eligibility
             $merchantInformations = $this->fetchMerchantInformations();
             $this->saveEligibility($merchantInformations);
+
+            $paypalConfig = oxNew(PayPalConfig::class);
+            file_put_contents($paypalConfig->getOnboardingBlockCacheFileName(), "1");
         } catch (\Exception $exception) {
             throw OnboardingException::autoConfiguration($exception->getMessage());
         }

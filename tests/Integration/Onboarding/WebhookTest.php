@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Onboarding;
 
 use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidSolutionCatalysts\PayPal\Core\Onboarding\Webhook;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;

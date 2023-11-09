@@ -1,0 +1,65 @@
+{% if oViewConf.enablePayPalBanners() and oViewConf.getPayPalClientId() %}
+    {% if size is not defined %}
+        {% set size = "20x1" %}
+    {% endif %}
+
+    {% set currency = oView.getActCurrency() %}
+
+    {% set installmentBanners %}
+        // Create installment banner holder
+        var newNode = document.createElement('div');
+        var addClass = "";
+        {% if addClass is not empty %}
+            addClass = "{{ addClass }}";
+        {% endif %}
+        newNode.setAttribute('id', 'paypal-installment-banner-container');
+        var referenceNode = document.querySelector('{{ selector|raw }}');
+
+        if (referenceNode) {
+            referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+        } else {
+            console.warn('Installment banners was not added due to missing element `{{ selector }}`');
+        }
+
+        var PayPalMessage = function () {
+            var windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+            var bannerLayout = windowWidth <= 400 ? 'text' : 'flex';
+
+            paypal.Messages({
+                amount: {{ amount }},
+                currency: '{{ currency.name }}',
+                countryCode: '{{ oViewConf.getActLanguageAbbr()|upper }}',
+                style: {
+                    layout: bannerLayout,
+                    color: '{{ oViewConf.getPayPalCheckoutBannersColorScheme() }}',
+                    ratio: '{{ size }}'
+                }
+            }).render('#paypal-installment-banner-container').then(function () {
+                if (addClass) {
+                    document.getElementById("paypal-installment-banner-container").classList.add(addClass);
+                }
+            });
+        };
+
+        var initWhenPayPalMessageAvailable = function (){
+            if (typeof paypal !== 'undefined' && typeof paypal.Messages !== 'undefined') {
+                PayPalMessage();
+            } else {
+                setTimeout(function(){
+                    initWhenPayPalMessageAvailable();
+                }, 100);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initWhenPayPalMessageAvailable);
+        } else {
+            initWhenPayPalMessageAvailable();
+        }
+
+        window.onresize = function () {
+            initWhenPayPalMessageAvailable();
+        }
+    {% endset %}
+    {{ script({ add: installmentBanners.__toString(), priority: 10, dynamic: __oxid_include_dynamic }) }}
+{% endif %}

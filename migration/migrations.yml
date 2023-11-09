@@ -1,4 +1,11 @@
-name: OxidSolutionCatalysts PayPal Module Migrations
-migrations_namespace: OxidSolutionCatalysts\PayPal\Migrations
-table_name: oxmigrations_oscpaypal
-migrations_directory: data
+table_storage:
+  table_name: oxmigrations_oscpaypal
+  version_column_name: version
+  version_column_length: 191
+  executed_at_column_name: executed_at
+  execution_time_column_name: execution_time
+
+migrations_paths:
+  'OxidSolutionCatalysts\PayPal\Migrations': ./data
+
+all_or_nothing: true

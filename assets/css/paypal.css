@@ -1,0 +1,15 @@
+.paypal-button-or {
+  padding: 10px; }
+
+.paypal-button-wrapper {
+  width: 100%; }
+  .paypal-button-wrapper.large {
+    max-width: 250px; }
+  .paypal-button-wrapper.small {
+    max-height: 200px; }
+#paypal-installment-banner-container>SPAN {
+  margin: 0 auto;
+}
+.paypal-sepa-option-info {
+  margin-top: 10px;
+}

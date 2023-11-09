@@ -1,0 +1,30 @@
+{% extends "page/details/inc/productmain.html.twig" %}
+
+{% block details_productmain_tobasket %}
+    {{ parent() }}
+    {% set config = oViewConf.getPayPalCheckoutConfig() %}
+    {% if blCanBuy and not oDetailsProduct.isNotBuyable() and config.isActive() and not oViewConf.isPayPalExpressSessionActive() and config.showPayPalProductDetailsButton() %}
+        {% include "@osc_paypal/frontend/paymentbuttons.html.twig" with {buttonId: "PayPalButtonProductMain", buttonClass: "paypal-button-wrapper", aid: oDetailsProduct.oxarticles__oxid.value} %}
+    {% endif %}
+{% endblock %}
+
+{% block details_productmain_price_value %}
+    {{ parent() }}
+    {% if attribute(oViewConf, 'showPayPalCheckoutBannerOnProductDetailsPage') is defined and oViewConf.showPayPalCheckoutBannerOnProductDetailsPage() %}
+        {% set bannerAmount = oxcmp_basket.getBruttoSum() %}
+        {% if oxcmp_basket.isPriceViewModeNetto() %}
+            {% set bannerAmount = oxcmp_basket.getNettoSum() %}
+        {% endif %}
+
+        {% if oxcmp_basket.getArtStockInBasket(oDetailsProduct.getId()) == 0 and not oxcmp_basket.hasProductVariantInBasket(oDetailsProduct) %}
+            {% set oPrice = oDetailsProduct.getPrice() %}
+
+            {% if oDetailsProduct.isParentNotBuyable() %}
+                {% set oPrice = oDetailsProduct.getVarMinPrice() %}
+            {% endif %}
+            {% set productPrice = oPrice.getPrice() %}
+            {% set bannerAmount = bannerAmount + productPrice %}
+        {% endif %}
+        {% include "@osc_paypal/frontend/installment_banners.html.twig" with {amount: bannerAmount, selector: oViewConf.getPayPalCheckoutBannerProductDetailsPageSelector(), addClass: "mt-4"} %}
+    {% endif %}
+{% endblock %}
