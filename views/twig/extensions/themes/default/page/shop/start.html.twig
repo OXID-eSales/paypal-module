@@ -9,7 +9,7 @@
 
         {{ style({ include: oViewConf.getModuleUrl('osc_paypal', 'css/paypal_installment.css') }) }}
         <div id="start-paypal-installment-banner"></div>
-        {% include "@osc_paypal/frontend/installment_banners.html.twig" with {amount: paypalInstallmentPrice, selector: oViewConf.getPayPalCheckoutBannerStartPageSelector(), addClass: "mt-3"} %}
+        {% include "@osc_paypal/frontend/installment_banners.html.twig" with {amount: paypalInstallmentPrice, selector: oViewConf.getPayPalCheckoutBannerStartPageSelector(), addClass: "mt-5"} %}
     {% endif %}
 
     {{ parent() }}
