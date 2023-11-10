@@ -302,7 +302,7 @@ class PayPalOrderController extends AdminDetailsController
     public function getPayPalCapturedAmount()
     {
         $captureAmount = 0;
-        $captures = (array) $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures;
+        $captures = (array) $this->getPayPalCheckoutOrder()->purchase_units[0]->payments?->captures;
 
         foreach ($captures as $capture) {
             $captureAmount += (float)$capture->amount->value;
@@ -316,7 +316,7 @@ class PayPalOrderController extends AdminDetailsController
     public function getPayPalAuthorizationAmount()
     {
         $authorizationAmount = 0;
-        $authorizations = (array) $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->authorizations;
+        $authorizations = (array) $this->getPayPalCheckoutOrder()->purchase_units[0]->payments?->authorizations;
 
         foreach ($authorizations as $authorization) {
             $authorizationAmount += (float)$authorization->amount->value;
@@ -330,7 +330,7 @@ class PayPalOrderController extends AdminDetailsController
     public function getPayPalRefundedAmount()
     {
         $refundAmount = 0;
-        $refunds = (array) $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->refunds;
+        $refunds = (array) $this->getPayPalCheckoutOrder()->purchase_units[0]->payments?->refunds;
 
         foreach ($refunds as $refund) {
             $refundAmount += (float)$refund->amount->value;
@@ -405,13 +405,13 @@ class PayPalOrderController extends AdminDetailsController
                 $payPalOrder->purchase_units[0]->payments ?
                 $payPalOrder->purchase_units[0]->payments : null;
             $purchaseUnitData = [
-                'captures' => is_array($purchaseUnitPayments->captures) ?
+                'captures' => is_array($purchaseUnitPayments?->captures) ?
                     $purchaseUnitPayments->captures :
                     [],
-                'refunds' => is_array($purchaseUnitPayments->refunds) ?
+                'refunds' => is_array($purchaseUnitPayments?->refunds) ?
                     $purchaseUnitPayments->refunds :
                     [],
-                'authorizations' => is_array($purchaseUnitPayments->authorizations) ?
+                'authorizations' => is_array($purchaseUnitPayments?->authorizations) ?
                     $purchaseUnitPayments->authorizations :
                     [],
             ];

@@ -256,7 +256,7 @@ class Payment
 
                 // check if we need a reauthorization
                 $timeAuthorizationValidity = time()
-                    - strtotime($payPalOrder->update_time)
+                    - strtotime($payPalOrder->update_time ?? '')
                     + Constants::PAYPAL_AUTHORIZATION_VALIDITY;
                 if ($timeAuthorizationValidity <= 0) {
                     $reAuthorizeRequest = new ReauthorizeRequest();
