@@ -242,7 +242,7 @@ $aModule = [
         [
             'name' => 'oscPayPalBannersProductDetailsPageSelector',
             'type' => 'str',
-            'value' => '#detailsItemsPager'
+            'value' => '.breadcrumb-wrapper > .container-xxl'
         ],
         [
             'name' => 'oscPayPalBannersCheckoutPage',

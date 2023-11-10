@@ -120,7 +120,7 @@
                     <div class="form-floating">
                         <select id="pui_required_birthdate_month" class="oxMonth form-select" name="pui_required[birthdate][month]" required>
                             <option value="" label="-">-</option>
-                            {% for month in 1..13 %}
+                            {% for month in 1..12 %}
                                 <option value="{{ month }}" label="{{ translate({ ident: "MONTH_NAME_"|cat(month) }) }}" {% if iBirthdayMonth == month %} selected="selected" {% endif %}>
                                     {{ translate({ ident: "MONTH_NAME_"|cat(month) }) }}
                                 </option>

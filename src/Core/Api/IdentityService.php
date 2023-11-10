@@ -12,13 +12,15 @@ use Psr\Http\Message\ResponseInterface;
 
 class IdentityService extends BaseService
 {
+    protected $basePath = '/v1/identity';
+
     public function requestClientToken(): array
     {
         $headers = [];
         $headers['Content-Type'] = 'application/json';
         $headers = array_merge($headers, $this->getAuthHeaders());
 
-        $path = '/v1/identity/generate-token';
+        $path = '/generate-token';
         $method = 'post';
 
         /** @var ResponseInterface $response */
