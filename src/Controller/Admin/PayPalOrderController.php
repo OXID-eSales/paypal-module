@@ -226,7 +226,12 @@ class PayPalOrderController extends AdminDetailsController
             );
 
             /** @var Refund $refund */
-            $refund = $apiPaymentService->refundCapturedPayment($capture->id, $request, '');
+            $refund = $apiPaymentService->refundCapturedPayment(
+                $capture->id,
+                $request,
+                '',
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+            );
 
             /** @var PaymentService $paymentService */
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
