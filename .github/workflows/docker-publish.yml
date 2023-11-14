@@ -9,7 +9,7 @@ on:
   schedule:
     - cron: '16 6 * * *'
   push:
-    branches: [ b-6.5.x ]
+    branches: [ b-6.3.x ]
   repository_dispatch:
     types: [docker-build]
 
