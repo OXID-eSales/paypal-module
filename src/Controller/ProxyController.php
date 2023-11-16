@@ -61,7 +61,7 @@ class ProxyController extends FrontendController
             '',
             '',
             '',
-            $this->getPayPalPartnerAttributionId(),
+            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
             null,
             null,
             false,
@@ -264,11 +264,6 @@ class ProxyController extends FrontendController
         }
 
         return $isLoggedIn;
-    }
-
-    protected function getPayPalPartnerAttributionId(): string
-    {
-        return Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_EXPRESS;
     }
 
     protected function getRequestedPayPalPaymentId($defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID): string
