@@ -4,9 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.3.3] - 2023-??-??
+## [3.3.2] - 2023-11-17
 
-- [0007549](https://bugs.oxid-esales.com/view.php?id=7549): Optional field in shop admin -> refund "Note to buyer" is transmitted to PayPal
+- first Version for OXID7 with APEX-Theme as Twig-Frontend-Standard-Theme, without Smarty-Support
 
 ## [2.3.2] - 2023-10-05
 
