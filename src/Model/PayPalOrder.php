@@ -43,7 +43,7 @@ class PayPalOrder extends BaseModel
         if (defined('OXID_PHP_UNIT')) {
             $oxid = $this->getId();
             if (strpos($oxid, '_') === false) {
-                $oxid = "_".substr($oxid, 1);
+                $oxid = "_" . substr($oxid, 1);
                 $return = parent::setId($oxid);
             }
         }

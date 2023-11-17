@@ -96,14 +96,14 @@ final class PaymentTest extends BaseTestCase
         $basket->setShipping('oxidstandard');
         $basket->calculateBasket(true);
 
-        $apiOrder = $this->getMockBuilder(\OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::class)->disableOriginalConstructor()->getMock();
+        $apiOrder = $this->getMockBuilder(ApiOrderResponse::class)->disableOriginalConstructor()->getMock();
         $apiOrder->id = "test";
 
         $paymentService = $this->getMockBuilder(PaymentService::class)
             ->disableOriginalConstructor()
             ->getMock();
         $paymentService->method('doCreatePayPalOrder')->willReturn($apiOrder);
-        
+
         $result = $paymentService->doCreatePayPalOrder($basket, OrderRequest::INTENT_CAPTURE);
 
         $this->assertNotEmpty($result->id);

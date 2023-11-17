@@ -16,6 +16,7 @@ use OxidSolutionCatalysts\PayPal\Module;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Client;
+use RuntimeException;
 
 /**
  * Class Config
@@ -319,9 +320,10 @@ class Config
      */
     public function getCacheDir(): string
     {
-        $dir = Registry::getConfig()->getConfigParam('sCompileDir').DIRECTORY_SEPARATOR.Module::MODULE_ID.DIRECTORY_SEPARATOR;
-        if (file_exists($dir) === false) {
-            mkdir($dir);
+        $dir = Registry::getConfig()->getConfigParam('sCompileDir')
+            . DIRECTORY_SEPARATOR . Module::MODULE_ID . DIRECTORY_SEPARATOR;
+        if ((file_exists($dir) === false) && !mkdir($dir) && !is_dir($dir)) {
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $dir));
         }
         return $dir;
     }

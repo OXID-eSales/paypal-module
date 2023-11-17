@@ -141,7 +141,7 @@ final class CheckoutOrderApprovedHandlerTest extends WebhookHandlerBaseTestCase
         $paymentServiceMock->expects($this->once())
             ->method('doCapturePayPalOrder')
             ->willThrowException(new \Exception('hit a capture api errorr'));
-        
+
         $loggerMock = $this->getPsrLoggerMock();
         $loggerMock->expects($this->once())
             ->method('debug')

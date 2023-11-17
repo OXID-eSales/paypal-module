@@ -105,7 +105,7 @@ class User extends User_parent
         $requiredFields[] = 'oxuser__oxcountryid';
         $requiredFields[] = 'oxuser__oxcompany';
         $requiredAddressFields->setRequiredFields($requiredFields);
-        
+
         foreach ($requiredAddressFields->getBillingFields() as $requiredAddressField) {
             $result[$requiredAddressField] = $this->{$requiredAddressField}->value;
         }
