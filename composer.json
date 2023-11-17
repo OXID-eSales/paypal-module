@@ -31,7 +31,7 @@
         "giggsey/libphonenumber-for-php": "^8.12",
         "viison/address-splitter": "^0.3.4",
         "webmozart/path-util": "^2.3.0",
-        "oxid-solution-catalysts/paypal-client": "v2.0.8"
+        "oxid-solution-catalysts/paypal-client": "v3.0.8"
     },
     "require-dev": {
         "codeception/module-rest": "^3.3.0",
@@ -43,6 +43,9 @@
         "oxid-esales/oxideshop-ce": "dev-b-7.0.x",
         "phpstan/phpstan": "^1.10",
         "phpunit/phpunit": "^9.1.1"
+    },
+    "conflicts": {
+        "oxid-esales/oxideshop-ce": "<7.0"
     },
     "autoload": {
         "psr-4": {
