@@ -46,7 +46,7 @@ $sMetadataVersion = '2.1';
  * Module information
  */
 $aModule = [
-    'id' => 'osc_paypal',
+    'id' => \OxidSolutionCatalysts\PayPal\Module::MODULE_ID,
     'title' => [
         'de' => 'PayPal Checkout für OXID',
         'en' => 'PayPal Checkout for OXID'
