@@ -5,7 +5,7 @@
     <!-- Paths to check -->
     <file>../src/</file>
     <file>./</file>
-    <file>../translations</file>
+    <file>../Application/translations</file>
     <file>../migration</file>
 
     <exclude-pattern>\.env\.dist</exclude-pattern>
@@ -26,7 +26,7 @@
 
     <!-- some of the files can have longer lines, at least temporary -->
     <rule ref="Generic.Files.LineLength">
-        <exclude-pattern>../translations</exclude-pattern>
+        <exclude-pattern>../Application/translations</exclude-pattern>
         <exclude-pattern>../migration</exclude-pattern>
         <exclude-pattern>../src/Core/PayPalDefinitions.php</exclude-pattern>
         <exclude-pattern>Integration/Onboarding/OnboardingTest.php</exclude-pattern>
