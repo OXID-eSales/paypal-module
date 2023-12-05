@@ -48,7 +48,9 @@ class Constants
 
     // BN Codes defined together with PayPal
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP = 'Oxid_Cart_Payments';
+    // deprecated, we use only the PPCP-BN-Code since now 2023-11
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_EXPRESS = 'Oxid_Cart_PymtsShortcut';
+    // deprecated, we use only the PPCP-BN-Code since now 2023-11
     public const PAYPAL_PARTNER_ATTRIBUTION_ID_BANNER = 'oxid_Cart_Instbanners';
 
     //SCA contingencies parameter
