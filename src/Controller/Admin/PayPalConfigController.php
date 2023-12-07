@@ -111,7 +111,8 @@ class PayPalConfigController extends AdminController
         $countryCode = strtoupper($lang->getLanguageAbbr());
         $localeCode = $lang->getLanguageAbbr() . '-' . $countryCode;
 
-        $partnerLogoUrl = Registry::getConfig()->getOutUrl(null, true) . 'modules/' . Module::MODULE_ID. '/img/oxid_logo.png';
+        $partnerLogoUrl = Registry::getConfig()->getOutUrl(null, true)
+            . 'modules/' . Module::MODULE_ID . '/img/oxid_logo.png';
         $returnToPartnerUrl = $config->getAdminUrlForJSCalls() .
             'cl=oscpaypalconfig&fnc=returnFromSignup' .
             '&isSandbox=' . ($isSandbox ? '1' : '0')
