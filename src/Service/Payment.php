@@ -341,8 +341,8 @@ class Payment
                     $this->displayErrorIfInstrumentDeclined($issue);
                     /** @var Config $payPalConfig */
                     $payPalConfig = oxNew(Config::class);
-                    if ($payPalConfig->isLogLevel('error')) {
-                        $this->moduleLogger->error($exception->getMessage(), [$exception]);
+                    if ($payPalConfig->isLogLevel('debug')) {
+                        $this->moduleLogger->debug($exception->getMessage(), [$exception]);
                     }
                     throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
                 }
