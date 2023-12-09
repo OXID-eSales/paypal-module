@@ -9,6 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
@@ -147,7 +148,11 @@ class OrderController extends OrderController_parent
         } catch (\Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->error($exception->getMessage(), [$exception]);
+            /** @var Config $payPalConfig */
+            $payPalConfig = oxNew(Config::class);
+            if ($payPalConfig->isLogLevel('error')) {
+                $logger->error($exception->getMessage(), [$exception]);
+            }
             $this->outputJson(['acdcerror' => 'failed to execute shop order']);
             return;
         }
@@ -183,12 +188,17 @@ class OrderController extends OrderController_parent
         $sessionAcdcOrderId = (string) PayPalSession::getCheckoutOrderId();
         $acdcStatus = Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
 
+        /** @var Config $payPalConfig */
+        $payPalConfig = oxNew(Config::class);
+
         if (
             'COMPLETED' === $acdcStatus &&
             $sessionOrderId &&
             $sessionAcdcOrderId
         ) {
-            $logger->debug('captureAcdcOrder already COMPLETED for PayPal Order id ' . $sessionAcdcOrderId);
+            if ($payPalConfig->isLogLevel('debug')) {
+                $logger->debug('captureAcdcOrder already COMPLETED for PayPal Order id ' . $sessionAcdcOrderId);
+            }
 
             $result = [
                 'location' => [
@@ -234,7 +244,9 @@ class OrderController extends OrderController_parent
             //track status in session
             Registry::getSession()->setVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS, $response->status);
         } catch (\Exception $exception) {
-            $logger->debug($exception->getMessage(), [$exception]);
+            if ($payPalConfig->isLogLevel('debug')) {
+                $logger->debug($exception->getMessage(), [$exception]);
+            }
             $this->getServiceFromContainer(PaymentService::class)->removeTemporaryOrder();
         }
 
@@ -275,10 +287,14 @@ class OrderController extends OrderController_parent
         } catch (PayPalException $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->debug(
-                'PayPal Checkout error during order finalization ' . $exception->getMessage(),
-                [$exception]
-            );
+            /** @var Config $payPalConfig */
+            $payPalConfig = oxNew(Config::class);
+            if ($payPalConfig->isLogLevel('debug')) {
+                $logger->debug(
+                    'PayPal Checkout error during order finalization ' . $exception->getMessage(),
+                    [$exception]
+                );
+            }
             $this->cancelpaypalsession('cannot finalize order');
             return 'payment?payerror=2';
         }
@@ -301,10 +317,14 @@ class OrderController extends OrderController_parent
         } catch (\Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->error(
-                'failure during finalizeOrderAfterExternalPayment',
-                [$exception]
-            );
+            /** @var Config $payPalConfig */
+            $payPalConfig = oxNew(Config::class);
+            if ($payPalConfig->isLogLevel('error')) {
+                $logger->error(
+                    'failure during finalizeOrderAfterExternalPayment',
+                    [$exception]
+                );
+            }
             $this->cancelpaypalsession('cannot finalize order');
             $goNext = 'payment?payerror=2';
         }

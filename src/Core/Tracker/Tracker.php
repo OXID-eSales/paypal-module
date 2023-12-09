@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Core\Tracker;
 
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Service\GenericService;
@@ -55,10 +56,14 @@ class Tracker
         } catch (\Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->error(
-                'PayPal sending Tracker failed: ' . $exception->getMessage(),
-                [$exception]
-            );
+            /** @var Config $payPalConfig */
+            $payPalConfig = oxNew(Config::class);
+            if ($payPalConfig->isLogLevel('error')) {
+                $logger->error(
+                    'PayPal sending Tracker failed: ' . $exception->getMessage(),
+                    [$exception]
+                );
+            }
         }
 
         return $result;

@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
+use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
@@ -61,11 +62,15 @@ abstract class WebhookHandlerBase
         } else {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->debug(
-                "Not enough information to handle " . static::WEBHOOK_EVENT_NAME .
-                " with PayPal order_id '" . $payPalOrderId . "' and PayPal transaction id '" .
-                $payPalTransactionId . "'"
-            );
+            /** @var Config $payPalConfig */
+            $payPalConfig = oxNew(Config::class);
+            if ($payPalConfig->isLogLevel('debug')) {
+                $logger->debug(
+                    "Not enough information to handle " . static::WEBHOOK_EVENT_NAME .
+                    " with PayPal order_id '" . $payPalOrderId . "' and PayPal transaction id '" .
+                    $payPalTransactionId . "'"
+                );
+            }
         }
 
         //Webhook is used to trigger unfinished order cleanup at the end of each webhook handle.

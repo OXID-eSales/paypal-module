@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook;
 
 use JsonException;
+use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier as VerificationService;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher as WebhookDispatcher;
@@ -47,6 +48,8 @@ final class RequestHandler
         $result = false;
         /** @var LoggerInterface $logger */
         $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        /** @var Config $payPalConfig */
+        $payPalConfig = oxNew(Config::class);
 
         try {
             $requestBody = $this->requestReader->getRawPost();
@@ -58,11 +61,15 @@ final class RequestHandler
 
             $result = true;
         } catch (WebhookEventException | WebhookEventTypeException  $exception) {
-            //we could not handle the call and don't want to receive it again, log and be done
-            $logger->error($exception->getMessage(), [$exception]);
+            if ($payPalConfig->isLogLevel('error')) {
+                //we could not handle the call and don't want to receive it again, log and be done
+                $logger->error($exception->getMessage(), [$exception]);
+            }
         } catch (ApiException $exception) {
-            //we could not handle the call but want to retry, so log and rethrow
-            $logger->error($exception->getMessage(), [$exception]);
+            if ($payPalConfig->isLogLevel('error')) {
+                //we could not handle the call but want to retry, so log and rethrow
+                $logger->error($exception->getMessage(), [$exception]);
+            }
             throw $exception;
         }
 

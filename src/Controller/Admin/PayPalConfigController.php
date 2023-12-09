@@ -209,7 +209,11 @@ class PayPalConfigController extends AdminController
 
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->error("Error on checkEligibility", [$exception]);
+            /** @var Config $payPalConfig */
+            $payPalConfig = oxNew(Config::class);
+            if ($payPalConfig->isLogLevel('error')) {
+                $logger->error("Error on checkEligibility", [$exception]);
+            }
         }
     }
 
@@ -346,7 +350,11 @@ class PayPalConfigController extends AdminController
             PayPalSession::storeOnboardingPayload($requestReader->getRawPost());
         } catch (\Exception $exception) {
             $logger = $this->getServiceFromContainer(LoggerInterface::class);
-            $logger->error($exception->getMessage(), [$exception]);
+            /** @var Config $payPalConfig */
+            $payPalConfig = oxNew(Config::class);
+            if ($payPalConfig->isLogLevel('error')) {
+                $logger->error($exception->getMessage(), [$exception]);
+            }
         }
 
         $result = [];
@@ -391,7 +399,11 @@ class PayPalConfigController extends AdminController
         } catch (\Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->error($exception->getMessage(), [$exception]);
+            /** @var Config $payPalConfig */
+            $payPalConfig = oxNew(Config::class);
+            if ($payPalConfig->isLogLevel('error')) {
+                $logger->error($exception->getMessage(), [$exception]);
+            }
         }
         return $credentials;
     }
@@ -412,7 +424,11 @@ class PayPalConfigController extends AdminController
         } catch (\Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->error($exception->getMessage(), [$exception]);
+            /** @var Config $payPalConfig */
+            $payPalConfig = oxNew(Config::class);
+            if ($payPalConfig->isLogLevel('error')) {
+                $logger->error($exception->getMessage(), [$exception]);
+            }
         }
 
         return $webhookId;

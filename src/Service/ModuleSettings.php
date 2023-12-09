@@ -18,6 +18,7 @@ use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\Mod
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\DataObject\ModuleConfiguration;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Exception\ModuleSettingNotFountException;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
+use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Module;
@@ -399,14 +400,21 @@ class ModuleSettings
     public function saveMerchantId(string $merchantId, ?bool $isSandbox = null): void
     {
         $isSandbox = !is_null($isSandbox) ? $isSandbox : $this->isSandbox();
+        /** @var Config $payPalConfig */
+        $payPalConfig = oxNew(Config::class);
+
         if ($isSandbox) {
             $this->save('oscPayPalSandboxClientMerchantId', $merchantId);
-            $this->moduleLogger->info(sprintf('Saving Sandbox Merchant ID %s from onboarding', $merchantId));
+            if ($payPalConfig->isLogLevel('debug')) {
+                $this->moduleLogger->debug(sprintf('Saving Sandbox Merchant ID %s from onboarding', $merchantId));
+            }
         }
 
         if (!$isSandbox) {
             $this->save('oscPayPalClientMerchantId', $merchantId);
-            $this->moduleLogger->info(sprintf('Saving Live  Merchant ID %s from onboarding', $merchantId));
+            if ($payPalConfig->isLogLevel('debug')) {
+                $this->moduleLogger->debug(sprintf('Saving Live  Merchant ID %s from onboarding', $merchantId));
+            }
         }
     }
 

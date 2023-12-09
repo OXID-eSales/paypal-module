@@ -59,7 +59,11 @@ class Onboarding
         } catch (ApiException $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->error($exception->getMessage(), [$exception]);
+            /** @var PayPalConfig $payPalConfig */
+            $payPalConfig = oxNew(PayPalConfig::class);
+            if ($payPalConfig->isLogLevel('error')) {
+                $logger->error($exception->getMessage(), [$exception]);
+            }
         }
 
         return $credentials;

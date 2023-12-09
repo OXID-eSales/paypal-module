@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Model;
 
 use DateTimeImmutable;
+use Exception;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Application\Model\UserPayment;
@@ -17,6 +18,7 @@ use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Model\BaseModel;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
 use OxidSolutionCatalysts\PayPal\Core\Tracker\Tracker;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
@@ -287,11 +289,15 @@ class Order extends Order_parent
                 PayPalSession::setSessionRedirectLink($redirectLink);
 
                 return self::ORDER_STATE_SESSIONPAYMENT_INPROGRESS;
-            } catch (\Exception $exception) {
+            } catch (Exception $exception) {
                 $this->delete();
                 /** @var LoggerInterface $logger */
                 $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-                $logger->error($exception->getMessage(), [$exception]);
+                /** @var PayPalConfig $payPalConfig */
+                $payPalConfig = oxNew(PayPalConfig::class);
+                if ($payPalConfig->isLogLevel('error')) {
+                    $logger->error($exception->getMessage(), [$exception]);
+                }
             }
             return self::ORDER_STATE_PAYMENTERROR;
         } elseif ($isPayPalACDC) {
@@ -340,10 +346,14 @@ class Order extends Order_parent
             $order = $paymentService->doCapturePayPalOrder($this, $payPalOrderId, $sessionPaymentId);
             // success means at this point, that we triggered the capture without errors
             $success = true;
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->error("Error on order capture call.", [$exception]);
+            /** @var PayPalConfig $payPalConfig */
+            $payPalConfig = oxNew(PayPalConfig::class);
+            if ($payPalConfig->isLogLevel('error')) {
+                $logger->error("Error on order capture call.", [$exception]);
+            }
         }
 
         // destroy PayPal-Session

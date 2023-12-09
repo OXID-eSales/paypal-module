@@ -9,6 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 
 use Exception;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -65,14 +66,18 @@ class PaymentGateway extends PaymentGateway_parent
         $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
         $success = false;
 
-        /** @var LoggerInterface $logger */
-        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
         if ($checkoutOrderId = PayPalSession::getCheckoutOrderId()) {
             // Update Order
             try {
                 $paymentService->doPatchPayPalOrder(Registry::getSession()->getBasket(), $checkoutOrderId);
             } catch (Exception $exception) {
-                $logger->error("Error on order patch call.", [$exception]);
+                /** @var LoggerInterface $logger */
+                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+                /** @var Config $payPalConfig */
+                $payPalConfig = oxNew(Config::class);
+                if ($payPalConfig->isLogLevel('error')) {
+                    $logger->error("Error on order patch call.", [$exception]);
+                }
             }
 
             // Capture Order

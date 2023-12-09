@@ -368,4 +368,17 @@ class Config
     {
         return Client::SANDBOX_URL;
     }
+
+    public function isLogLevel(string $level): bool
+    {
+        $possiblePayPalLevels = [
+            'error' => 400,
+            'info'  => 200,
+            'debug' => 100
+        ];
+        $logLevel = Registry::getConfig()->getConfigParam('sLogLevel') ?? 'error';
+        $logLevel = isset($possiblePayPalLevels[$logLevel]) ? $logLevel : 'error';
+        $level = isset($possiblePayPalLevels[$level]) ? $level : 'error';
+        return $possiblePayPalLevels[$logLevel] <= $possiblePayPalLevels[$level];
+    }
 }

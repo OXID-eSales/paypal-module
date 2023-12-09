@@ -71,10 +71,14 @@ class Webhook
         } catch (\Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->error(
-                'PayPal Webhook creation failed: ' . $exception->getMessage(),
-                [$exception]
-            );
+            /** @var PayPalConfig $payPalConfig */
+            $payPalConfig = oxNew(PayPalConfig::class);
+            if ($payPalConfig->isLogLevel('error')) {
+                $logger->error(
+                    'PayPal Webhook creation failed: ' . $exception->getMessage(),
+                    [$exception]
+                );
+            }
         }
 
         return $webhookId;
