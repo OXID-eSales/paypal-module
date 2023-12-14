@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
-use OxidSolutionCatalysts\PayPal\Core\Config;
+use OxidSolutionCatalysts\PayPal\Core\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
@@ -19,7 +19,6 @@ use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
-use Psr\Log\LoggerInterface;
 
 abstract class WebhookHandlerBase
 {
@@ -60,17 +59,16 @@ abstract class WebhookHandlerBase
                 $order
             );
         } else {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            /** @var Config $payPalConfig */
-            $payPalConfig = oxNew(Config::class);
-            if ($payPalConfig->isLogLevel('debug')) {
-                $logger->debug(
-                    "Not enough information to handle " . static::WEBHOOK_EVENT_NAME .
-                    " with PayPal order_id '" . $payPalOrderId . "' and PayPal transaction id '" .
-                    $payPalTransactionId . "'"
-                );
-            }
+            /** @var Logger $logger */
+            $logger = oxNew(Logger::class);
+            $logger->log('debug',
+                sprintf(
+                    "Not enough information to handle %s with PayPal order_id '%s' and PayPal transaction id '%s'",
+                    static::WEBHOOK_EVENT_NAME,
+                    $payPalOrderId,
+                    $payPalTransactionId
+                )
+            );
         }
 
         //Webhook is used to trigger unfinished order cleanup at the end of each webhook handle.

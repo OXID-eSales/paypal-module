@@ -17,6 +17,7 @@ use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Exception\StandardException;
+use OxidSolutionCatalysts\PayPal\Core\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -29,7 +30,6 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
-use Psr\Log\LoggerInterface;
 
 /**
  * Server side interface for PayPal smart buttons.
@@ -92,13 +92,9 @@ class ProxyController extends FrontendController
         try {
             $response = $service->showOrderDetails($orderId, '');
         } catch (Exception $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            /** @var Config $payPalConfig */
-            $payPalConfig = oxNew(Config::class);
-            if ($payPalConfig->isLogLevel('error')) {
-                $logger->error("Error on order capture call.", [$exception]);
-            }
+            /** @var Logger $logger */
+            $logger = oxNew(Logger::class);
+            $logger->log('error',"Error on order capture call.", [$exception]);
         }
 
         if (!$this->getUser()) {

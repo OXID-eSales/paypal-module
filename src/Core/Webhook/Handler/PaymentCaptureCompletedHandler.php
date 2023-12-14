@@ -8,11 +8,10 @@
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
 use OxidEsales\EshopCommunity\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Core\Config;
+use OxidSolutionCatalysts\PayPal\Core\Logger;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
-use Psr\Log\LoggerInterface;
 
 class PaymentCaptureCompletedHandler extends WebhookHandlerBase
 {
@@ -20,10 +19,7 @@ class PaymentCaptureCompletedHandler extends WebhookHandlerBase
 
     protected function getPayPalOrderIdFromResource(array $eventPayload): string
     {
-        $orderId = isset($eventPayload['supplementary_data']['related_ids']['order_id']) ?
-            $eventPayload['supplementary_data']['related_ids']['order_id'] : '';
-
-        return $orderId;
+        return $eventPayload['supplementary_data']['related_ids']['order_id'] ?? '';
     }
 
     protected function getPayPalTransactionIdFromResource(array $eventPayload): string
@@ -46,16 +42,12 @@ class PaymentCaptureCompletedHandler extends WebhookHandlerBase
                 ->getOrderService()
                 ->showOrderDetails($payPalOrderId, '');
         } catch (ApiException $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            /** @var Config $payPalConfig */
-            $payPalConfig = oxNew(Config::class);
-            if ($payPalConfig->isLogLevel('debug')) {
-                $logger->debug(
-                    'Exception during PaymentCaptureCompletedHandler::getPayPalOrderDetails().',
-                    [$exception]
-                );
-            }
+            /** @var Logger $logger */
+            $logger = oxNew(Logger::class);
+            $logger->log('debug',
+                'Exception during PaymentCaptureCompletedHandler::getPayPalOrderDetails().',
+                [$exception]
+            );
         }
 
         return $apiOrder;

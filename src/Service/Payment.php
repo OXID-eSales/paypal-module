@@ -13,7 +13,7 @@ use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session as EshopSession;
-use OxidSolutionCatalysts\PayPal\Core\Config;
+use OxidSolutionCatalysts\PayPal\Core\Logger;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
@@ -33,7 +33,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiModelOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderAuthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Payments\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\CaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\ReauthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
@@ -81,14 +80,12 @@ class Payment
     /** @var ModuleSettingsService */
     private $moduleSettingsService;
 
-    private LoggerInterface $moduleLogger;
 
     public function __construct(
         EshopSession $eshopSession,
         OrderRepository $orderRepository,
         SCAValidatorInterface $scaValidator,
         ModuleSettingsService $moduleSettingsService,
-        LoggerInterface $moduleLogger,
         ServiceFactory $serviceFactory = null,
         PatchRequestFactory $patchRequestFactory = null,
         OrderRequestFactory $orderRequestFactory = null
@@ -97,7 +94,6 @@ class Payment
         $this->orderRepository = $orderRepository;
         $this->scaValidator = $scaValidator;
         $this->moduleSettingsService = $moduleSettingsService;
-        $this->moduleLogger = $moduleLogger;
         $this->serviceFactory = $serviceFactory ?: Registry::get(ServiceFactory::class);
         $this->patchRequestFactory = $patchRequestFactory ?: Registry::get(PatchRequestFactory::class);
         $this->orderRequestFactory = $orderRequestFactory ?: Registry::get(OrderRequestFactory::class);
@@ -123,8 +119,8 @@ class Payment
 
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
-        /** @var Config $payPalConfig */
-        $payPalConfig = oxNew(Config::class);
+        /** @var Logger $logger */
+        $logger = oxNew(Logger::class);
 
         $request = $this->orderRequestFactory->getRequest(
             $basket,
@@ -151,17 +147,14 @@ class Payment
                 $payPalRequestId
             );
         } catch (ApiException $exception) {
-            if ($payPalConfig->isLogLevel('error')) {
-                $this->moduleLogger->error(
-                    "Api error on order create call. " . $exception->getErrorIssue(),
-                    [$exception]
-                );
-            }
+            $logger->log(
+                'error',
+                'Api error on order create call. ' . $exception->getErrorIssue(),
+                [$exception]
+            );
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
-            if ($payPalConfig->isLogLevel('error')) {
-                $this->moduleLogger->error("Error on order create call.", [$exception]);
-            }
+            $logger->log('error', 'Error on order create call.', [$exception]);
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
         }
 
@@ -226,11 +219,9 @@ class Payment
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
         } catch (Exception $exception) {
-            /** @var Config $payPalConfig */
-            $payPalConfig = oxNew(Config::class);
-            if ($payPalConfig->isLogLevel('error')) {
-                $this->moduleLogger->error("Error on order patch call.", [$exception]);
-            }
+            /** @var Logger $logger */
+            $logger = oxNew(Logger::class);
+            $logger->log('error', 'Error on order patch call.', [$exception]);
             throw $exception;
         }
     }
@@ -256,6 +247,8 @@ class Payment
         $paymentService = Registry::get(ServiceFactory::class)->getPaymentService();
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
+        /** @var Logger $logger */
+        $logger = oxNew(Logger::class);
 
         // Capture Order
         try {
@@ -313,11 +306,7 @@ class Payment
 
                     $issue = $exception->getErrorIssue();
                     $this->displayErrorIfInstrumentDeclined($issue);
-                    /** @var Config $payPalConfig */
-                    $payPalConfig = oxNew(Config::class);
-                    if ($payPalConfig->isLogLevel('error')) {
-                        $this->moduleLogger->error($exception->getMessage(), [$exception]);
-                    }
+                    $logger->log('error', $exception->getMessage(), [$exception]);
 
                     throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
                 }
@@ -339,11 +328,7 @@ class Payment
 
                     $issue = $exception->getErrorIssue();
                     $this->displayErrorIfInstrumentDeclined($issue);
-                    /** @var Config $payPalConfig */
-                    $payPalConfig = oxNew(Config::class);
-                    if ($payPalConfig->isLogLevel('debug')) {
-                        $this->moduleLogger->debug($exception->getMessage(), [$exception]);
-                    }
+                    $logger->log('debug', $exception->getMessage(), [$exception]);
                     throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
                 }
             }
@@ -369,15 +354,9 @@ class Payment
                 $order->setTransId((string)$payPalTransactionId);
             }
         } catch (Exception $exception) {
-            /** @var Config $payPalConfig */
-            $payPalConfig = oxNew(Config::class);
-            if ($payPalConfig->isLogLevel('debug')) {
-                //Webhook might try to capture already captured order
-                $this->moduleLogger->debug("Warning on order capture call.", [$exception]);
-            }
+            $logger->log('debug', 'Warning on order capture call.', [$exception]);
             throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
         }
-
 
         return $result;
     }
@@ -466,11 +445,9 @@ class Payment
 
         if ($orderModel->isLoaded()) {
             if ($orderModel->hasOrderNumber()) {
-                /** @var Config $payPalConfig */
-                $payPalConfig = oxNew(Config::class);
-                if ($payPalConfig->isLogLevel('debug')) {
-                    $this->moduleLogger->debug('Cannot delete valid order with id ' . $sessionOrderId);
-                }
+                /** @var Logger $logger */
+                $logger = oxNew(Logger::class);
+                $logger->log('debug','Cannot delete valid order with id ' . $sessionOrderId);
             } else {
                 $orderModel->delete();
             }
@@ -525,12 +502,10 @@ class Payment
         } catch (Exception $exception) {
             PayPalSession::unsetPayPalOrderId();
             $this->removeTemporaryOrder();
-            /** @var Config $payPalConfig */
-            $payPalConfig = oxNew(Config::class);
-            if ($payPalConfig->isLogLevel('error')) {
-                //TODO: do we need to log this?
-                $this->moduleLogger->error($exception->getMessage(), [$exception]);
-            }
+            //TODO: do we need to log this?
+            /** @var Logger $logger */
+            $logger = oxNew(Logger::class);
+            $logger->log('error', $exception->getMessage(), [$exception]);
         }
 
         //NOTE: payment not fully executed, we need customer interaction first
@@ -621,8 +596,6 @@ class Payment
         string $payPalClientMetadataId = ''
     ): bool {
         $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
-        /** @var Config $payPalConfig */
-        $payPalConfig = oxNew(Config::class);
 
         try {
             $result = $this->doCreatePayPalOrder(
@@ -641,16 +614,14 @@ class Payment
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_PHONE);
         } catch (Exception $exception) {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_GENERIC);
-            if ($payPalConfig->isLogLevel('error')) {
-                $this->moduleLogger->error("Error on pui order creation call.", [$exception]);
-            }
+            /** @var Logger $logger */
+            $logger = oxNew(Logger::class);
+            $logger->log('error', 'Error on pui order creation call.', [$exception]);
         }
 
         # TODO: check what we created, ensure it is a pui order
         # $paymentSource = $this->fetchOrderFields((string) $payPalOrderId, 'payment_source');
-        # if ($payPalConfig->isLogLevel('error')) {
-        # $this->moduleLogger->error(serialize($paymentSource));
-        # }
+        # $logger->log('error', serialize($paymentSource));
 
         if (!$payPalOrderId) {
             return false;

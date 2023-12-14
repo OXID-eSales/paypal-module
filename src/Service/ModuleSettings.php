@@ -18,7 +18,7 @@ use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\Mod
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\DataObject\ModuleConfiguration;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Exception\ModuleSettingNotFountException;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
-use OxidSolutionCatalysts\PayPal\Core\Config;
+use OxidSolutionCatalysts\PayPal\Core\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Module;
@@ -63,8 +63,6 @@ class ModuleSettings
     /** @var ContextInterface */
     private $context;
 
-    private LoggerInterface $moduleLogger;
-
     //TODO: we need service for fetching module settings from db (this one)
     //another class for moduleconfiguration (database values/edefaults)
     //and the view configuration should go into some separate class
@@ -73,13 +71,11 @@ class ModuleSettings
     public function __construct(
         ModuleSettingBridgeInterface $moduleSettingBridge,
         ContextInterface $context,
-        ModuleConfigurationDaoBridgeInterface $moduleConfigurationDaoBridgeInterface,
-        LoggerInterface $moduleLogger
+        ModuleConfigurationDaoBridgeInterface $moduleConfigurationDaoBridgeInterface
     ) {
         $this->moduleSettingBridge = $moduleSettingBridge;
         $this->context = $context;
         $this->moduleConfigurationDaoBridgeInterface = $moduleConfigurationDaoBridgeInterface;
-        $this->moduleLogger = $moduleLogger;
     }
 
     public function showAllPayPalBanners(): bool
@@ -397,25 +393,30 @@ class ModuleSettings
         }
     }
 
+    /**
+     * @throws ModuleSettingNotFountException
+     */
     public function saveMerchantId(string $merchantId, ?bool $isSandbox = null): void
     {
         $isSandbox = !is_null($isSandbox) ? $isSandbox : $this->isSandbox();
-        /** @var Config $payPalConfig */
-        $payPalConfig = oxNew(Config::class);
 
         if ($isSandbox) {
             $this->save('oscPayPalSandboxClientMerchantId', $merchantId);
-            if ($payPalConfig->isLogLevel('debug')) {
-                $this->moduleLogger->debug(sprintf('Saving Sandbox Merchant ID %s from onboarding', $merchantId));
-            }
         }
 
         if (!$isSandbox) {
             $this->save('oscPayPalClientMerchantId', $merchantId);
-            if ($payPalConfig->isLogLevel('debug')) {
-                $this->moduleLogger->debug(sprintf('Saving Live  Merchant ID %s from onboarding', $merchantId));
-            }
         }
+
+        /** @var Logger $logger */
+        $logger = oxNew(Logger::class);
+        $logger->log(
+            'debug',
+            sprintf(
+                'Saving Live  Merchant ID %s from onboarding',
+                $merchantId
+            )
+        );
     }
 
     public function saveAcdcEligibility(bool $eligibility): void

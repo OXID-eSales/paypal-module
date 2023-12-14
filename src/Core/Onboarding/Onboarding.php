@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Core\Onboarding;
 
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
 use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
@@ -57,13 +58,9 @@ class Onboarding
 
             $credentials = $apiClient->getCredentials();
         } catch (ApiException $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            /** @var PayPalConfig $payPalConfig */
-            $payPalConfig = oxNew(PayPalConfig::class);
-            if ($payPalConfig->isLogLevel('error')) {
-                $logger->error($exception->getMessage(), [$exception]);
-            }
+            /** @var Logger $logger */
+            $logger = oxNew(Logger::class);
+            $logger->log('error', $exception->getMessage(), [$exception]);
         }
 
         return $credentials;
@@ -146,9 +143,9 @@ class Onboarding
             $apiClient = $this->getOnboardingClient($onboardingResponse['isSandBox'], true);
             $merchantInformations = $apiClient->getMerchantInformations();
         } catch (ApiException $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->error($exception->getMessage(), [$exception]);
+            /** @var Logger $logger */
+            $logger = oxNew(Logger::class);
+            $logger->log('error', $exception->getMessage(), [$exception]);
         }
         return $merchantInformations;
     }
