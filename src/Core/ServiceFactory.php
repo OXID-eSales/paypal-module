@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
+use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Client;
 use OxidSolutionCatalysts\PayPalApi\Service\Partner;
@@ -82,6 +83,17 @@ class ServiceFactory
             GenericService::class,
             $this->getClient(),
             '/v1/shipping/trackers-batch'
+        );
+    }
+
+    /**
+     * @return UserIdService
+     */
+    public function getVaultingService(): VaultingService
+    {
+        return oxNew(
+            VaultingService::class,
+            $this->getClient()
         );
     }
 

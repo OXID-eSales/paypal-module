@@ -493,6 +493,33 @@
                     </div>
                 </div>
             </div>
+            <div class="card">
+                <div class="card-header" id="heading9">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse9" aria-expanded="false" aria-controls="collapse9">
+                        [{oxmultilang ident="OSC_PAYPAL_VAULTING_TITLE"}]
+                    </h4>
+                </div>
+
+                <div id="collapse9" class="collapse" aria-labelledby="heading9" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="controls">
+                                <div class="form-group">
+                                    <div class="controls">
+                                        <div class="checkbox">
+                                            <label>
+                                                <input type="checkbox" name="conf[oscPayPalSetVaulting]" [{if $config->getIsVaultingActive()}]checked[{/if}] value="1">
+                                                [{oxmultilang ident="OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING"}]
+                                            </label>
+                                        </div>
+                                        <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING"}]</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         </div>
         <button type="submit" class="btn btn-primary bottom-space">[{oxmultilang ident="GENERAL_SAVE"}]</button>

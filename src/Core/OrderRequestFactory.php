@@ -19,7 +19,7 @@ use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Model\Article;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
@@ -36,6 +36,7 @@ use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
 use OxidSolutionCatalysts\PayPalApi\Pui\ExperienceContext;
 use OxidSolutionCatalysts\PayPalApi\Pui\PuiPaymentSource;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
 /**
  * Class OrderRequestBuilder
@@ -43,6 +44,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
  */
 class OrderRequestFactory
 {
+    use ServiceContainer;
     /**
      * After you redirect the customer to the PayPal payment page, a Continue button appears.
      * Use this option when the final amount is not known when the checkout flow is initiated and you want to
@@ -97,16 +99,16 @@ class OrderRequestFactory
         if (!$paymentSource && $basket->getUser()) {
             $request->payer = $this->getPayer();
         }
-
         $request->purchase_units = $this->getPurchaseUnits($transactionId, $invoiceId, $withArticles);
 
+        //todo test why this breaks vaulting
         if ($userAction || $returnUrl || $cancelUrl) {
-            $request->application_context = $this->getApplicationContext(
-                $userAction,
-                $returnUrl,
-                $cancelUrl,
-                $setProvidedAddress
-            );
+//            $request->application_context = $this->getApplicationContext(
+//                $userAction,
+//                $returnUrl,
+//                $cancelUrl,
+//                $setProvidedAddress
+//            );
         }
 
         if ($processingInstruction) {
@@ -117,6 +119,13 @@ class OrderRequestFactory
             /** @var PaymentSource $puiPaymentSource */
             $puiPaymentSource = $this->getPuiPaymentSource();
             $request->payment_source = $puiPaymentSource;
+        }
+
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $setVaulting = $moduleSettings->getIsVaultingActive();
+
+        if($setVaulting) {
+            $this->modifyPaymentSourceForVaulting($request);
         }
 
         return $request;
@@ -593,5 +602,80 @@ class OrderRequestFactory
         $paymentSource->experience_context = $experienceContext;
 
         return [PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME => $paymentSource];
+    }
+
+    /**
+     * @param OrderRequest $request
+     * @return void
+     */
+    protected function modifyPaymentSourceForVaulting(OrderRequest $request): void
+    {
+        $config = Registry::getConfig();
+        $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+
+        $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
+
+        $card = Registry::getRequest()->getRequestParameter("fnc") == "createAcdcOrder";
+
+        //use selected vault
+        if (!is_null($selectedVaultPaymentSourceIndex) && $payPalCustomerId = $config->getUser()->getFieldData("oscpaypalcustomerid")) {
+
+            $paymentTokens = $vaultingService->getVaultPaymentTokens($payPalCustomerId);
+            //find out which payment token was selected by getting the index via request param
+            $selectedPaymentToken = $paymentTokens["payment_tokens"][$selectedVaultPaymentSourceIndex];
+            $customerId = $selectedPaymentToken["customer"]["id"];
+
+
+            $request->payment_source =
+                [
+                    "paypal" =>
+                        [
+                            "vault_id" => $selectedPaymentToken[0]["id"],
+                            "attributes" => [
+                                "customer" => [
+                                    "id" => $customerId
+                                ]
+                            ],
+                            "experience_context" =>
+                                [
+                                    "return_url" => $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession',
+                                    "cancel_url" => $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
+                                    "shipping_preference" => "SET_PROVIDED_ADDRESS",
+                                ]
+                        ]
+                ];
+        } elseif ($config->getUser()) {
+            //save during purchase
+            if ($card) {
+                $newPaymentSource = $vaultingService->getPaymentSourceForVaulting(true);
+                $newPaymentSource["attributes"] = [
+                    "verification" => [
+                        "method" => "SCA_WHEN_REQUIRED"
+                    ],
+                    "vault" => [
+                        "store_in_vault" => "ON_SUCCESS"
+                    ],
+                ];
+            } else {
+                $newPaymentSource = [
+                    "paypal" =>
+                        [
+                            "attributes" =>
+                                [
+                                    "vault" =>
+                                        PayPalDefinitions::PAYMENT_VAULTING
+                                ],
+                            "experience_context" =>
+                                [
+                                    "return_url" => $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession',
+                                    "cancel_url" => $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
+                                    "shipping_preference" => "SET_PROVIDED_ADDRESS",
+                                ]
+                        ],
+                ];
+            }
+
+            $request->payment_source = $newPaymentSource;
+        }
     }
 }

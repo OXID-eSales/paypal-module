@@ -27,8 +27,11 @@ use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderMain as PayPalOrderMainCo
 use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderOverview as PayPalOrderOverviewController;
 use OxidSolutionCatalysts\PayPal\Controller\OrderController as PayPalFrontEndOrderController;
 use OxidSolutionCatalysts\PayPal\Controller\PaymentController as PayPalPaymentController;
+use OxidSolutionCatalysts\PayPal\Controller\PayPalVaultingCardController;
 use OxidSolutionCatalysts\PayPal\Controller\ProxyController;
+use OxidSolutionCatalysts\PayPal\Controller\VaultingTokenController;
 use OxidSolutionCatalysts\PayPal\Controller\WebhookController;
+use OxidSolutionCatalysts\PayPal\Controller\PayPalVaultingController;
 use OxidSolutionCatalysts\PayPal\Core\InputValidator as PayPalInputValidator;
 use OxidSolutionCatalysts\PayPal\Core\ShopControl as PayPalShopControl;
 use OxidSolutionCatalysts\PayPal\Core\ViewConfig as PayPalViewConfig;
@@ -78,10 +81,13 @@ $aModule = [
         State::class => PayPalState::class
     ],
     'controllers' => [
-        'oscpaypalconfig' => PayPalConfigController::class,
-        'oscpaypalwebhook' => WebhookController::class,
-        'oscpaypalproxy' => ProxyController::class,
-        'oscpaypalorder' => PayPalOrderController::class,
+        'oscpaypalconfig'       => PayPalConfigController::class,
+        'oscpaypalwebhook'      => WebhookController::class,
+        'oscpaypalproxy'        => ProxyController::class,
+        'oscpaypalorder'        => PayPalOrderController::class,
+        'oscaccountvault'       => PayPalVaultingController::class,
+        'oscaccountvaultcard'   => PayPalVaultingCardController::class,
+        'osctokencontroller'    => VaultingTokenController::class,
     ],
     'templates' => [
         // Admin: Config
@@ -121,6 +127,11 @@ $aModule = [
 
         // PSPAYPAL-491 Installment banners
         'modules/osc/paypal/installment_banners.tpl' => 'osc/paypal/views/tpl/shared/installment_banners.tpl',
+
+        //PSPAYPAL-680 Vaulting
+        'modules/osc/paypal/account_vaulting_paypal.tpl'    => 'osc/paypal/views/tpl/shared/page/account/account_vaulting_paypal.tpl',
+        'modules/osc/paypal/account_vaulting_card.tpl'      => 'osc/paypal/views/tpl/shared/page/account/account_vaulting_card.tpl',
+        'modules/osc/paypal/vaultedpaymentsources.tpl'      => 'osc/paypal/views/tpl/shared/vaultedpaymentsources.tpl',
     ],
     'events' => [
         'onActivate' => '\OxidSolutionCatalysts\PayPal\Core\Events\Events::onActivate',
@@ -229,6 +240,16 @@ $aModule = [
             'template' => 'page/shop/start.tpl',
             'block' => 'start_welcome_text',
             'file' => '/views/blocks/page/shop/start.tpl',
+        ],
+        [
+            'template' => 'page/account/inc/account_menu.tpl',
+            'block' => 'account_menu',
+            'file' => '/views/blocks/page/account/inc/account_menu.tpl',
+        ],
+        [
+            'template' => 'page/checkout/thankyou.tpl',
+            'block' => 'checkout_thankyou_info',
+            'file' => '/views/blocks/page/checkout/thankyou.tpl',
         ],
         // <-- PSPAYPAL-491
     ],
@@ -480,6 +501,12 @@ $aModule = [
             'name' => 'oscPayPalLocales',
             'type' => 'str',
             'value' => 'de_DE,en_US',
+        ],
+        [
+            'name' => 'oscPayPalSetVaulting',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
         ],
     ],
 ];

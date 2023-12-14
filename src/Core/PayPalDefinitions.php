@@ -22,6 +22,14 @@ final class PayPalDefinitions
     public const SEPA_PAYPAL_PAYMENT_ID = 'oscpaypal_sepa';
     public const CCALTERNATIVE_PAYPAL_PAYMENT_ID = 'oscpaypal_cc_alternative';
 
+    //vaulting
+    public const PAYMENT_VAULTING = [
+        "store_in_vault" => "ON_SUCCESS",
+        "usage_type" => "MERCHANT",
+        "customer_type" => "CONSUMER",
+        "permit_multiple_payment_tokens" => false,
+    ];
+
     private const PAYMENT_CONSTRAINTS_PAYPAL = [
         'oxfromamount' => 0.01,
         'oxtoamount' => 60000,

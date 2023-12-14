@@ -94,6 +94,10 @@ class ViewConfig extends ViewConfig_parent
         return $this->getServiceFromContainer(ModuleSettings::class)->isPayPalCheckoutExpressPaymentEnabled();
     }
 
+    public function getIsVaultingActive():bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getIsVaultingActive();
+    }
 
     /**
      * @return Config
@@ -243,9 +247,42 @@ class ViewConfig extends ViewConfig_parent
         if ($this->isPayPalBannerActive()) {
             $params['components'] .= ',messages';
         }
+
+        if($this->getIsVaultingActive()) {
+            $params['components'] .= ',card-fields';
+        }
+
         $params['locale'] = $localeCode;
 
         return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
+    }
+
+    public function getUserIdForVaulting(): string
+    {
+        $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+        $response = $vaultingService->generateUserIdToken();
+
+        return $response["id_token"];
+    }
+
+    public function getSessionVaultSuccess(): bool|null
+    {
+        $session = Registry::getSession();
+        $vaultSuccess = $session->getVariable("vaultSuccess");
+        $session->deleteVariable("vaultSuccess");
+
+        return $vaultSuccess;
+    }
+
+    public function getVaultPaymentTokens()
+    {
+        if ($this->getIsVaultingActive() && $customerId = $this->getUser()->getFieldData("oscpaypalcustomerid")) {
+            $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+
+            return $vaultingService->getVaultPaymentTokens($customerId)["payment_tokens"] ?? null;
+        }
+
+        return null;
     }
 
     public function getDataClientToken(): string

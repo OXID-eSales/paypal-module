@@ -539,6 +539,11 @@ class ModuleSettings
         return $value === Constants::PAYPAL_SCA_DISABLED;
     }
 
+    public function getIsVaultingActive(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSetVaulting');
+    }
+
     /**
      * @return mixed
      */

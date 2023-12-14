@@ -11,6 +11,7 @@ use Exception;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Exception\StandardException;
+use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
@@ -322,6 +323,25 @@ class Payment
             );
 
             if ($result instanceof Order && $order->isPayPalOrderCompleted($result)) {
+
+                //todo only do this if vaulting was actually attempted
+                $session = Registry::getSession();
+                $vault = $result->payment_source->paypal->attributes->vault;
+                if ($vault->status == "VAULTED") {
+                    if ($id = $vault->customer["id"]) {
+                        $user = Registry::getConfig()->getUser();
+
+                        $user->oxuser__oscpaypalcustomerid = new Field($id);
+
+                        $vaultSuccess = $user->save();
+                        $session->setVariable("vaultSuccess",$vaultSuccess);
+                    }else {
+                        $session->setVariable("vaultSuccess",false);
+                    }
+                }else {
+                    $session->setVariable("vaultSuccess",false);
+                }
+
                 $order->setOrderNumber();
                 $order->markOrderPaid();
                 $order->setTransId((string)$payPalTransactionId);
@@ -526,7 +546,7 @@ class Payment
             throw PayPalException::sessionPaymentMalformedResponse();
         }
         foreach ($response->links as $links) {
-            if ($links['rel'] === 'approve') {
+            if ($links['rel'] === 'approve' || $links['rel'] === 'payer-action') {
                 $redirectLink = $links['href'];
                 break;
             }

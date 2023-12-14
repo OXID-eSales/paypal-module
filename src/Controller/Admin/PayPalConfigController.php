@@ -260,6 +260,9 @@ class PayPalConfigController extends AdminController
         if (!isset($conf['oscPayPalCleanUpNotFinishedOrdersAutomaticlly'])) {
             $conf['oscPayPalCleanUpNotFinishedOrdersAutomaticlly'] = false;
         }
+        if (!isset($conf['oscPayPalSetVaulting'])) {
+            $conf['oscPayPalSetVaulting'] = false;
+        }
 
         return $conf;
     }

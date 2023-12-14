@@ -267,4 +267,8 @@ $aLang = [
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_COUNTRY'    => 'Tracking Carrier (Country)',
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_PROVIDER'   => 'Tracking Carrier (Provider)',
     'OSC_PAYPAL_TRACKCARRIER_GLOBAL'                => 'global',
+
+    'OSC_PAYPAL_VAULTING_TITLE'                     => 'Vaulting',
+    'OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'         => 'Vaulting active',
+    'HELP_OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'    => 'This is a dummy text.',
 ];
