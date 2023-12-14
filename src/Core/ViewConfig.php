@@ -330,7 +330,7 @@ class ViewConfig extends ViewConfig_parent
      */
     public function getPayPalPartnerAttributionIdForBanner(): string
     {
-        return Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_BANNER;
+        return Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
     }
 
     /**

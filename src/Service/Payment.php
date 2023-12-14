@@ -174,7 +174,7 @@ class Payment
             null,
             '',
             '',
-            '',
+            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
             null,
             null,
             false
@@ -212,7 +212,11 @@ class Payment
 
         // Update Order
         try {
-            $orderService->updateOrder($checkoutOrderId, $request);
+            $orderService->updateOrder(
+                $checkoutOrderId,
+                $request,
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+            );
         } catch (Exception $exception) {
             $this->moduleLogger->error("Error on order patch call.", [$exception]);
             throw $exception;
@@ -248,7 +252,13 @@ class Payment
                 // if order approved then authorize
                 if ($payPalOrder->status === ApiOrderModel::STATUS_APPROVED) {
                     $request = new OrderAuthorizeRequest();
-                    $payPalOrder = $orderService->authorizePaymentForOrder('', $checkoutOrderId, $request, '');
+                    $payPalOrder = $orderService->authorizePaymentForOrder(
+                        '',
+                        $checkoutOrderId,
+                        $request,
+                        '',
+                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+                    );
                 }
 
                 /** @var AuthorizationWithAdditionalData $authorization */
@@ -261,7 +271,11 @@ class Payment
                     + Constants::PAYPAL_AUTHORIZATION_VALIDITY;
                 if ($timeAuthorizationValidity <= 0) {
                     $reAuthorizeRequest = new ReauthorizeRequest();
-                    $paymentService->reauthorizeAuthorizedPayment($authorizationId, $reAuthorizeRequest);
+                    $paymentService->reauthorizeAuthorizedPayment(
+                        $authorizationId,
+                        $reAuthorizeRequest,
+                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+                    );
                 }
 
                 //track authorization
@@ -277,8 +291,11 @@ class Payment
                 // capture
                 $request = new CaptureRequest();
                 try {
-                    /** @var Capture $capture */
-                    $capture = $paymentService->captureAuthorizedPayment($authorizationId, $request, '');
+                    $paymentService->captureAuthorizedPayment(
+                        $authorizationId,
+                        $request,
+                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+                    );
                 } catch (ApiException $exception) {
                     $this->handlePayPalApiError($exception);
 
@@ -295,7 +312,13 @@ class Payment
                 $request = new OrderCaptureRequest();
                 try {
                     /** @var ApiOrderModel */
-                    $result = $orderService->capturePaymentForOrder('', $checkoutOrderId, $request, '');
+                    $result = $orderService->capturePaymentForOrder(
+                        '',
+                        $checkoutOrderId,
+                        $request,
+                        '',
+                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+                    );
                 } catch (ApiException $exception) {
                     $this->handlePayPalApiError($exception);
 
@@ -384,7 +407,8 @@ class Payment
         $response = $orderService->confirmTheOrder(
             $payPalClientMetadataId,
             $checkoutOrderId,
-            $request
+            $request,
+            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
         );
 
         if (!isset($response->links)) {

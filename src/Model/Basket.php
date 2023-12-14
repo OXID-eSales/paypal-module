@@ -167,7 +167,7 @@ class Basket extends Basket_parent
         // vouchers..
         $vouchers = (array) $this->getVouchers();
         foreach ($vouchers as $voucher) {
-            $discount -= round($voucher->dVoucherdiscount, 2);
+            $discount += round($voucher->dVoucherdiscount, 2);
         }
 
         return $discount;

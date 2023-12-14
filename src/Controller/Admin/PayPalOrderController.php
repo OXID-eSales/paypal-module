@@ -200,7 +200,7 @@ class PayPalOrderController extends AdminDetailsController
         $refundAmount = preg_replace("/[\,\.](\d{3})/", "$1", $refundAmount);
         $invoiceId = $request->getRequestEscapedParameter('invoiceId');
         $refundAll = $request->getRequestEscapedParameter('refundAll');
-        $noteToPayer = $request->getRequestParameter('noteToPayer');
+        $noteToPayer = $request->getRequestEscapedParameter('noteToPayer');
 
         /** @var Order $order */
         $order = $this->getOrder();
@@ -229,7 +229,12 @@ class PayPalOrderController extends AdminDetailsController
             );
 
             /** @var Refund $refund */
-            $refund = $apiPaymentService->refundCapturedPayment($capture->id, $request, '');
+            $refund = $apiPaymentService->refundCapturedPayment(
+                $capture->id,
+                $request,
+                '',
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+            );
 
             /** @var PaymentService $paymentService */
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
