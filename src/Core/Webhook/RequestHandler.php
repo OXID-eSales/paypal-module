@@ -62,8 +62,10 @@ final class RequestHandler
 
             $result = true;
         } catch (WebhookEventException | WebhookEventTypeException $exception) {
+            //we could not handle the call and don't want to receive it again, log and be done
             $logger->log('error', $exception->getMessage(), [$exception]);
         } catch (ApiException $exception) {
+            //we could not handle the call but want to retry, so log and rethrow
             $logger->log('error', $exception->getMessage(), [$exception]);
             throw $exception;
         }

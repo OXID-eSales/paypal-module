@@ -266,7 +266,7 @@ class Payment
 
                 // check if we need a reauthorization
                 $timeAuthorizationValidity = time()
-                    - strtotime($payPalOrder->update_time)
+                    - strtotime($payPalOrder->update_time ?? '')
                     + Constants::PAYPAL_AUTHORIZATION_VALIDITY;
                 if ($timeAuthorizationValidity <= 0) {
                     $reAuthorizeRequest = new ReauthorizeRequest();
@@ -348,6 +348,7 @@ class Payment
                 $order->setTransId((string)$payPalTransactionId);
             }
         } catch (Exception $exception) {
+            //Webhook might try to capture already captured order
             $this->logger->log('debug', 'Warning on order capture call.', [$exception]);
             throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
         }

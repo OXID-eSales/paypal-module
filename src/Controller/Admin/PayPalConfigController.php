@@ -284,12 +284,16 @@ class PayPalConfigController extends AdminController
      */
     public function showTransferLegacySettingsButton(): bool
     {
-        $LegacyOeppModuleDetails = Registry::get(LegacyOeppModuleDetails::class);
+        try {
+            $LegacyOeppModuleDetails = Registry::get(LegacyOeppModuleDetails::class);
 
-        if ($LegacyOeppModuleDetails->isLegacyModulePresent()) {
-            $showButton = !$this->getServiceFromContainer(ModuleSettings::class)->getLegacySettingsTransferStatus();
+            if ($LegacyOeppModuleDetails->isLegacyModulePresent()) {
+                $showButton = !$this->getServiceFromContainer(ModuleSettings::class)->getLegacySettingsTransferStatus();
 
-            return $showButton;
+                return $showButton;
+            }
+        } catch (\Throwable $exc) {
+            // If not existing, an exception will be thrown -> do nothing and return false
         }
 
         return false;
@@ -358,20 +362,26 @@ class PayPalConfigController extends AdminController
     public function returnFromSignup()
     {
         $config = new Config();
-        $request = Registry::getRequest();
-        if (
-            ('true' === (string)$request->getRequestParameter('permissionsGranted')) &&
-            ('true' === (string)$request->getRequestParameter('consentStatus'))
-        ) {
-            /** @var ModuleSettings $moduleSettings */
-            $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-            $isSandbox = (string)$request->getRequestParameter('isSandbox');
-            $isSandbox = $isSandbox === '1';
-            $moduleSettings->saveMerchantId($request->getRequestParameter('merchantIdInPayPal'), $isSandbox);
-        }
 
-        $this->autoConfiguration();
-        $this->registerWebhooks();
+        $onboardingFile = $config->getOnboardingBlockCacheFileName();
+        if (file_exists($onboardingFile) === false) {
+            $request = Registry::getRequest();
+            if (
+                ('true' === (string)$request->getRequestParameter('permissionsGranted')) &&
+                ('true' === (string)$request->getRequestParameter('consentStatus'))
+            ) {
+                /** @var ModuleSettings $moduleSettings */
+                $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+                $isSandbox = (string)$request->getRequestParameter('isSandbox');
+                $isSandbox = $isSandbox === '1';
+                $moduleSettings->saveMerchantId($request->getRequestParameter('merchantIdInPayPal'), $isSandbox);
+            }
+
+            $this->autoConfiguration();
+            $this->registerWebhooks();
+        } else {
+            unlink($onboardingFile);
+        }
 
         $url = $config->getAdminUrlForJSCalls() . 'cl=oscpaypalconfig';
 

@@ -33,7 +33,12 @@ class Webhook
         $hook = $this->getHookForUrl($endpoint);
         $webhookId = $hook['id'] ?? '';
         $registeredEvents = $this->getEnabledEvents($hook);
-        if (array_diff($this->getAvailableEventNames(), $registeredEvents)) {
+        if (
+            array_diff(
+                array_column($this->getAvailableEventNames(), "name"),
+                array_column($registeredEvents, "name")
+            )
+        ) {
             $this->removeWebhook($webhookId);
             $webhookId = $this->registerWebhooks();
         }
