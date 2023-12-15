@@ -8,23 +8,22 @@
 namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use Exception;
+use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Core\Logger;
-use OxidSolutionCatalysts\PayPal\Core\Config;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
-use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
+use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
+use OxidSolutionCatalysts\PayPal\Exception\Redirect;
 use OxidSolutionCatalysts\PayPal\Exception\RedirectWithMessage;
+use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModel;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
-use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
-use OxidSolutionCatalysts\PayPal\Exception\Redirect;
-use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
-use OxidSolutionCatalysts\PayPal\Service\UserRepository;
-use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
-use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 use Psr\Log\LoggerInterface;
 
@@ -149,7 +148,7 @@ class OrderController extends OrderController_parent
             $status = $this->execute();
         } catch (Exception $exception) {
             /** @var Logger $logger */
-            $logger = oxNew(Logger::class);
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
             $logger->log('error', $exception->getMessage(), [$exception]);
             $this->outputJson(['acdcerror' => 'failed to execute shop order']);
             return;
@@ -187,7 +186,7 @@ class OrderController extends OrderController_parent
         $acdcStatus = Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
 
         /** @var Logger $logger */
-        $logger = oxNew(Logger::class);
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
 
         if (
             'COMPLETED' === $acdcStatus &&
@@ -287,7 +286,7 @@ class OrderController extends OrderController_parent
             $order->save();
         } catch (PayPalException $exception) {
             /** @var Logger $logger */
-            $logger = oxNew(Logger::class);
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
             $logger->log(
                 'debug',
                 'PayPal Checkout error during order finalization ' . $exception->getMessage(),
@@ -314,7 +313,7 @@ class OrderController extends OrderController_parent
             $goNext = 'thankyou';
         } catch (Exception $exception) {
             /** @var Logger $logger */
-            $logger = oxNew(Logger::class);
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
             $logger->log(
                 'error',
             'failure during finalizeOrderAfterExternalPayment',

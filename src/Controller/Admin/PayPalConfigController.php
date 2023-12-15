@@ -12,7 +12,7 @@ use JsonException;
 use OxidEsales\Eshop\Application\Controller\Admin\AdminController;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Core\Logger;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
 use OxidSolutionCatalysts\PayPal\Core\LegacyOeppModuleDetails;
@@ -208,7 +208,7 @@ class PayPalConfigController extends AdminController
         } catch (ClientException $exception) {
 
             /** @var Logger $logger */
-            $logger = oxNew(Logger::class);
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
             $logger->log('error','Error on checkEligibility', [$exception]);
         }
     }
@@ -346,7 +346,7 @@ class PayPalConfigController extends AdminController
             PayPalSession::storeOnboardingPayload($requestReader->getRawPost());
         } catch (\Exception $exception) {
             /** @var Logger $logger */
-            $logger = oxNew(Logger::class);
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
             $logger->log('error',$exception->getMessage(), [$exception]);
         }
 
@@ -391,7 +391,7 @@ class PayPalConfigController extends AdminController
             $credentials = $handler->autoConfigurationFromCallback();
         } catch (\Exception $exception) {
             /** @var Logger $logger */
-            $logger = oxNew(Logger::class);
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
             $logger->log('error',$exception->getMessage(), [$exception]);
         }
         return $credentials;
@@ -412,7 +412,7 @@ class PayPalConfigController extends AdminController
             Registry::getUtilsView()->addErrorToDisplay($exception->getMessage());
         } catch (\Exception $exception) {
             /** @var Logger $logger */
-            $logger = oxNew(Logger::class);
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
             $logger->log('error', $exception->getMessage(), [$exception]);
         }
 

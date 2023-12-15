@@ -10,10 +10,10 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook;
 
 use JsonException;
-use OxidSolutionCatalysts\PayPal\Core\Logger;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\RequestReader;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier as VerificationService;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher as WebhookDispatcher;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier as VerificationService;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -50,7 +50,7 @@ final class RequestHandler
     {
         $result = false;
         /** @var Logger $logger */
-        $logger = oxNew(Logger::class);
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
 
         try {
             $requestBody = $this->requestReader->getRawPost();

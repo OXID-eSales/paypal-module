@@ -8,28 +8,28 @@
 namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use Exception;
+use OxidEsales\Eshop\Application\Component\UserComponent;
+use OxidEsales\Eshop\Application\Controller\FrontendController;
 use OxidEsales\Eshop\Application\Model\Address;
 use OxidEsales\Eshop\Application\Model\DeliverySetList;
-use OxidEsales\Eshop\Application\Controller\FrontendController;
-use OxidEsales\Eshop\Application\Component\UserComponent;
 use OxidEsales\Eshop\Core\Exception\ArticleInputException;
 use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
-use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Exception\StandardException;
-use OxidSolutionCatalysts\PayPal\Core\Logger;
-use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
-use OxidSolutionCatalysts\PayPal\Service\UserRepository;
+use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Config;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use OxidSolutionCatalysts\PayPal\Service\UserRepository;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
-use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 
 /**
  * Server side interface for PayPal smart buttons.
@@ -93,7 +93,7 @@ class ProxyController extends FrontendController
             $response = $service->showOrderDetails($orderId, '');
         } catch (Exception $exception) {
             /** @var Logger $logger */
-            $logger = oxNew(Logger::class);
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
             $logger->log('error',"Error on order capture call.", [$exception]);
         }
 

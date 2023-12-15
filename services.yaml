@@ -40,20 +40,14 @@ services:
     arguments:
       $loggerName: 'PayPal Payment Logger'
       $logFilePath: '@=service("OxidSolutionCatalysts\\PayPal\\Service\\Context").getPayPalLogFilePath()'
-      $logLevel: !php/const Psr\Log\LogLevel::INFO
+      $logLevel: !php/const Psr\Log\LogLevel::DEBUG
 
   OxidSolutionCatalysts\PayPal\Service\:
     resource: 'src/Service/*'
     public: true
 
-  OxidSolutionCatalysts\PayPal\Service\Payment:
-    class: OxidSolutionCatalysts\PayPal\Service\Payment
-    public: true
-    arguments:
-      Psr\Log\LoggerInterface: '@OxidSolutionCatalysts\PayPal\Logger'
-
-  OxidSolutionCatalysts\PayPal\Service\ModuleSettings:
-    class: OxidSolutionCatalysts\PayPal\Service\ModuleSettings
+  OxidSolutionCatalysts\PayPal\Service\Logger:
+    class: OxidSolutionCatalysts\PayPal\Service\Logger
     public: true
     arguments:
       Psr\Log\LoggerInterface: '@OxidSolutionCatalysts\PayPal\Logger'

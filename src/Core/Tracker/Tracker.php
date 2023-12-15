@@ -8,7 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Core\Tracker;
 
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Core\Logger;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Service\GenericService;
@@ -54,7 +54,7 @@ class Tracker
             $result = $trackerResponse['tracker_identifiers'][0]['tracking_number'] === $trackingNumber;
         } catch (\Exception $exception) {
             /** @var Logger $logger */
-            $logger = oxNew(Logger::class);
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
             $logger->log(
                 'error',
                 'PayPal sending Tracker failed: ' . $exception->getMessage(),

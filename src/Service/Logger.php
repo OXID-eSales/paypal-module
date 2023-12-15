@@ -7,18 +7,23 @@
 
 declare(strict_types=1);
 
-namespace OxidSolutionCatalysts\PayPal\Core;
+namespace OxidSolutionCatalysts\PayPal\Service;
 
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use Psr\Log\LoggerInterface;
 
 /**
- * Class Config
+ * Service Logger
  */
 class Logger
 {
-    use ServiceContainer;
+    private LoggerInterface $moduleLogger;
+
+    public function __construct(
+        LoggerInterface $moduleLogger
+    ) {
+        $this->moduleLogger = $moduleLogger;
+    }
 
     private array $possiblePayPalLevels = [
         'error' => 400,
@@ -28,20 +33,16 @@ class Logger
 
     public function log(string $level, string $message, array $exception = []): void
     {
-        /** @var LoggerInterface $logger */
-        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-
         if ($this->isLogLevel($level)) {
-            $logger->{$level}($message, $exception);
+            $this->moduleLogger->$level($message, $exception);
         }
     }
 
     public function isLogLevel(string $level): bool
     {
-
         $logLevel = Registry::getConfig()->getConfigParam('sLogLevel') ?? 'error';
-        $logLevel = isset($possiblePayPalLevels[$logLevel]) ? $logLevel : 'error';
-        $level = isset($possiblePayPalLevels[$level]) ? $level : 'error';
+        $logLevel = isset($this->possiblePayPalLevels[$logLevel]) ? $logLevel : 'error';
+        $level = isset($this->possiblePayPalLevels[$level]) ? $level : 'error';
         return $this->possiblePayPalLevels[$logLevel] <= $this->possiblePayPalLevels[$level];
     }
 }

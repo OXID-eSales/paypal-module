@@ -18,11 +18,9 @@ use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\Mod
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\DataObject\ModuleConfiguration;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Exception\ModuleSettingNotFountException;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
-use OxidSolutionCatalysts\PayPal\Core\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Module;
-use Psr\Log\LoggerInterface;
 
 class ModuleSettings
 {
@@ -63,6 +61,9 @@ class ModuleSettings
     /** @var ContextInterface */
     private $context;
 
+    /** @var Logger */
+    private $logger;
+
     //TODO: we need service for fetching module settings from db (this one)
     //another class for moduleconfiguration (database values/edefaults)
     //and the view configuration should go into some separate class
@@ -71,11 +72,13 @@ class ModuleSettings
     public function __construct(
         ModuleSettingBridgeInterface $moduleSettingBridge,
         ContextInterface $context,
-        ModuleConfigurationDaoBridgeInterface $moduleConfigurationDaoBridgeInterface
+        ModuleConfigurationDaoBridgeInterface $moduleConfigurationDaoBridgeInterface,
+        Logger $logger
     ) {
         $this->moduleSettingBridge = $moduleSettingBridge;
         $this->context = $context;
         $this->moduleConfigurationDaoBridgeInterface = $moduleConfigurationDaoBridgeInterface;
+        $this->logger = $logger;
     }
 
     public function showAllPayPalBanners(): bool
@@ -408,9 +411,7 @@ class ModuleSettings
             $this->save('oscPayPalClientMerchantId', $merchantId);
         }
 
-        /** @var Logger $logger */
-        $logger = oxNew(Logger::class);
-        $logger->log(
+        $this->logger->log(
             'debug',
             sprintf(
                 'Saving Live  Merchant ID %s from onboarding',

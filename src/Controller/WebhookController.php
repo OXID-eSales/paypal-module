@@ -9,10 +9,10 @@ namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use OxidEsales\Eshop\Application\Component\Widget\WidgetController;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Core\Logger;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\RequestReader;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\RequestHandler as WebhookRequestHandler;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
@@ -32,7 +32,7 @@ class WebhookController extends WidgetController
         parent::init();
 
         /** @var Logger $logger */
-        $logger = oxNew(Logger::class);
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
 
         try {
             $requestReader = new RequestReader();
