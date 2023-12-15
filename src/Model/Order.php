@@ -292,7 +292,7 @@ class Order extends Order_parent
                 $this->delete();
                 /** @var Logger $logger */
                 $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
-                $logger->log('error',$exception->getMessage(), [$exception]);
+                $logger->log('error', $exception->getMessage(), [$exception]);
             }
             return self::ORDER_STATE_PAYMENTERROR;
         } elseif ($isPayPalACDC) {
@@ -344,7 +344,7 @@ class Order extends Order_parent
         } catch (Exception $exception) {
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
-            $logger->log('error',"Error on order capture call.", [$exception]);
+            $logger->log('error', "Error on order capture call.", [$exception]);
         }
 
         // destroy PayPal-Session

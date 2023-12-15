@@ -45,7 +45,6 @@ class WebhookController extends WidgetController
             $webhookRequestHandler = new WebhookRequestHandler($requestReader, $verificationService, $dispatcher);
             $webhookRequestHandler->process();
         } catch (\Exception $exception) {
-
             $logger->log('error', $exception->getMessage(), [$exception]);
             $this->sendErrorResponse();
         }

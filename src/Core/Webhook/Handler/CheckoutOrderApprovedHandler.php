@@ -42,7 +42,8 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
             } catch (\Exception $exception) {
                 /** @var Logger $logger */
                 $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
-                $logger->log('debug',
+                $logger->log(
+                    'debug',
                     sprintf(
                         "Error during %s for PayPal order_id '%s'",
                         self::WEBHOOK_EVENT_NAME,

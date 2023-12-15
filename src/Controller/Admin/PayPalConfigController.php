@@ -209,7 +209,7 @@ class PayPalConfigController extends AdminController
 
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
-            $logger->log('error','Error on checkEligibility', [$exception]);
+            $logger->log('error', 'Error on checkEligibility', [$exception]);
         }
     }
 
@@ -347,7 +347,7 @@ class PayPalConfigController extends AdminController
         } catch (\Exception $exception) {
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
-            $logger->log('error',$exception->getMessage(), [$exception]);
+            $logger->log('error', $exception->getMessage(), [$exception]);
         }
 
         $result = [];
@@ -392,7 +392,7 @@ class PayPalConfigController extends AdminController
         } catch (\Exception $exception) {
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
-            $logger->log('error',$exception->getMessage(), [$exception]);
+            $logger->log('error', $exception->getMessage(), [$exception]);
         }
         return $credentials;
     }

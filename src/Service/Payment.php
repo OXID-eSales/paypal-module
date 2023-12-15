@@ -439,7 +439,7 @@ class Payment
 
         if ($orderModel->isLoaded()) {
             if ($orderModel->hasOrderNumber()) {
-                $this->logger->log('debug','Cannot delete valid order with id ' . $sessionOrderId);
+                $this->logger->log('debug', 'Cannot delete valid order with id ' . $sessionOrderId);
             } else {
                 $orderModel->delete();
             }

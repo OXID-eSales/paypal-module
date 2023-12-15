@@ -73,8 +73,8 @@ class Webhook
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
             $logger->log(
-            'error',
-            'PayPal Webhook creation failed: ' . $exception->getMessage(),
+                'error',
+                'PayPal Webhook creation failed: ' . $exception->getMessage(),
                 [$exception]
             );
         }

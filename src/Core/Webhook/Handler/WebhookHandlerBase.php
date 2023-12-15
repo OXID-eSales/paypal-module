@@ -61,7 +61,8 @@ abstract class WebhookHandlerBase
         } else {
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
-            $logger->log('debug',
+            $logger->log(
+                'debug',
                 sprintf(
                     "Not enough information to handle %s with PayPal order_id '%s' and PayPal transaction id '%s'",
                     static::WEBHOOK_EVENT_NAME,

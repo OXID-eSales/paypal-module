@@ -316,7 +316,7 @@ class OrderController extends OrderController_parent
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
             $logger->log(
                 'error',
-            'failure during finalizeOrderAfterExternalPayment',
+                'failure during finalizeOrderAfterExternalPayment',
                 [$exception]
             );
             $this->cancelpaypalsession('cannot finalize order');

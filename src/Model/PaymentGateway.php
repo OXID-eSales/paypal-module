@@ -73,7 +73,7 @@ class PaymentGateway extends PaymentGateway_parent
             try {
                 $paymentService->doPatchPayPalOrder(Registry::getSession()->getBasket(), $checkoutOrderId);
             } catch (Exception $exception) {
-                $logger->log('error','Error on order patch call.', [$exception]);
+                $logger->log('error', 'Error on order patch call.', [$exception]);
             }
 
             // Capture Order
@@ -84,7 +84,7 @@ class PaymentGateway extends PaymentGateway_parent
                 // success means at this point, that we triggered the capture without errors
                 $success = true;
             } catch (Exception $exception) {
-                $logger->log('error','Error on order capture call.', [$exception]);
+                $logger->log('error', 'Error on order capture call.', [$exception]);
             }
 
             // destroy PayPal-Session
@@ -110,7 +110,7 @@ class PaymentGateway extends PaymentGateway_parent
         } catch (Exception $exception) {
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
-            $logger->log('error','Error on execute pui payment call.', [$exception]);
+            $logger->log('error', 'Error on execute pui payment call.', [$exception]);
         }
         // destroy PayPal-Session
         PayPalSession::unsetPayPalOrderId();
