@@ -9,14 +9,14 @@ namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalModelOrder;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as OrderResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
-use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
-use Psr\Log\LoggerInterface;
 
 class CheckoutOrderApprovedHandler extends WebhookHandlerBase
 {
@@ -40,11 +40,15 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
                     );
                 $order->setOrderNumber(); //ensure the order has a number
             } catch (\Exception $exception) {
-                /** @var LoggerInterface $logger */
-                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-                $logger->debug(
-                    "Error during " . self::WEBHOOK_EVENT_NAME . " for PayPal order_id '" .
-                    $payPalOrderId . "'",
+                /** @var Logger $logger */
+                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+                $logger->log(
+                    'debug',
+                    sprintf(
+                        "Error during %s for PayPal order_id '%s'",
+                        self::WEBHOOK_EVENT_NAME,
+                        $payPalOrderId
+                    ),
                     [$exception]
                 );
             }

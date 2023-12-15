@@ -10,14 +10,14 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook;
 
 use JsonException;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\RequestReader;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier as VerificationService;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher as WebhookDispatcher;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier as VerificationService;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
-use Psr\Log\LoggerInterface;
 
 final class RequestHandler
 {
@@ -42,11 +42,15 @@ final class RequestHandler
         $this->webhookDispatcher = $webhookDispatcher;
     }
 
+    /**
+     * @throws ApiException
+     * @throws JsonException
+     */
     public function process(): bool
     {
         $result = false;
-        /** @var LoggerInterface $logger */
-        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        /** @var Logger $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
 
         try {
             $requestBody = $this->requestReader->getRawPost();
@@ -57,12 +61,12 @@ final class RequestHandler
             $this->processEvent($requestBody);
 
             $result = true;
-        } catch (WebhookEventException | WebhookEventTypeException  $exception) {
+        } catch (WebhookEventException | WebhookEventTypeException $exception) {
             //we could not handle the call and don't want to receive it again, log and be done
-            $logger->error($exception->getMessage(), [$exception]);
+            $logger->log('error', $exception->getMessage(), [$exception]);
         } catch (ApiException $exception) {
             //we could not handle the call but want to retry, so log and rethrow
-            $logger->error($exception->getMessage(), [$exception]);
+            $logger->log('error', $exception->getMessage(), [$exception]);
             throw $exception;
         }
 

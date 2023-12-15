@@ -21,7 +21,6 @@ use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Module;
-use Psr\Log\LoggerInterface;
 
 class ModuleSettings
 {
@@ -62,7 +61,8 @@ class ModuleSettings
     /** @var ContextInterface */
     private $context;
 
-    private LoggerInterface $moduleLogger;
+    /** @var Logger */
+    private $logger;
 
     //TODO: we need service for fetching module settings from db (this one)
     //another class for moduleconfiguration (database values/edefaults)
@@ -73,12 +73,12 @@ class ModuleSettings
         ModuleSettingBridgeInterface $moduleSettingBridge,
         ContextInterface $context,
         ModuleConfigurationDaoBridgeInterface $moduleConfigurationDaoBridgeInterface,
-        LoggerInterface $moduleLogger
+        Logger $logger
     ) {
         $this->moduleSettingBridge = $moduleSettingBridge;
         $this->context = $context;
         $this->moduleConfigurationDaoBridgeInterface = $moduleConfigurationDaoBridgeInterface;
-        $this->moduleLogger = $moduleLogger;
+        $this->logger = $logger;
     }
 
     public function showAllPayPalBanners(): bool
@@ -396,18 +396,28 @@ class ModuleSettings
         }
     }
 
+    /**
+     * @throws ModuleSettingNotFountException
+     */
     public function saveMerchantId(string $merchantId, ?bool $isSandbox = null): void
     {
         $isSandbox = !is_null($isSandbox) ? $isSandbox : $this->isSandbox();
+
         if ($isSandbox) {
             $this->save('oscPayPalSandboxClientMerchantId', $merchantId);
-            $this->moduleLogger->info(sprintf('Saving Sandbox Merchant ID %s from onboarding', $merchantId));
         }
 
         if (!$isSandbox) {
             $this->save('oscPayPalClientMerchantId', $merchantId);
-            $this->moduleLogger->info(sprintf('Saving Live  Merchant ID %s from onboarding', $merchantId));
         }
+
+        $this->logger->log(
+            'debug',
+            sprintf(
+                'Saving Live  Merchant ID %s from onboarding',
+                $merchantId
+            )
+        );
     }
 
     public function saveAcdcEligibility(bool $eligibility): void

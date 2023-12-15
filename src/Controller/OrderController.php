@@ -7,21 +7,23 @@
 
 namespace OxidSolutionCatalysts\PayPal\Controller;
 
+use Exception;
+use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
-use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
+use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
+use OxidSolutionCatalysts\PayPal\Exception\Redirect;
 use OxidSolutionCatalysts\PayPal\Exception\RedirectWithMessage;
+use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModel;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
-use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
-use OxidSolutionCatalysts\PayPal\Exception\Redirect;
-use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
-use OxidSolutionCatalysts\PayPal\Service\UserRepository;
-use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
-use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 use Psr\Log\LoggerInterface;
 
@@ -144,10 +146,10 @@ class OrderController extends OrderController_parent
             Registry::getSession()->setVariable('sess_challenge', $this->getUtilsObjectInstance()->generateUID());
 
             $status = $this->execute();
-        } catch (\Exception $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->error($exception->getMessage(), [$exception]);
+        } catch (Exception $exception) {
+            /** @var Logger $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger->log('error', $exception->getMessage(), [$exception]);
             $this->outputJson(['acdcerror' => 'failed to execute shop order']);
             return;
         }
@@ -160,7 +162,7 @@ class OrderController extends OrderController_parent
             return;
         }
 
-        if (!$status || (\OxidSolutionCatalysts\PayPal\Model\Order::ORDER_STATE_ACDCINPROGRESS != $status)) {
+        if (!$status || (PayPalOrderModel::ORDER_STATE_ACDCINPROGRESS !== $status)) {
             $response = ['acdcerror' => 'unexpected order status ' . $status];
             $paymentService->removeTemporaryOrder();
         } else {
@@ -183,12 +185,18 @@ class OrderController extends OrderController_parent
         $sessionAcdcOrderId = (string) PayPalSession::getCheckoutOrderId();
         $acdcStatus = Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
 
+        /** @var Logger $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+
         if (
             'COMPLETED' === $acdcStatus &&
             $sessionOrderId &&
             $sessionAcdcOrderId
         ) {
-            $logger->debug('captureAcdcOrder already COMPLETED for PayPal Order id ' . $sessionAcdcOrderId);
+            $logger->log(
+                'debug',
+                'captureAcdcOrder already COMPLETED for PayPal Order id ' . $sessionAcdcOrderId
+            );
 
             $result = [
                 'location' => [
@@ -233,8 +241,12 @@ class OrderController extends OrderController_parent
             ];
             //track status in session
             Registry::getSession()->setVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS, $response->status);
-        } catch (\Exception $exception) {
-            $logger->debug($exception->getMessage(), [$exception]);
+        } catch (Exception $exception) {
+            $logger->log(
+                'debug',
+                $exception->getMessage(),
+                [$exception]
+            );
             $this->getServiceFromContainer(PaymentService::class)->removeTemporaryOrder();
         }
 
@@ -273,9 +285,10 @@ class OrderController extends OrderController_parent
             $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);
             $order->save();
         } catch (PayPalException $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->debug(
+            /** @var Logger $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger->log(
+                'debug',
                 'PayPal Checkout error during order finalization ' . $exception->getMessage(),
                 [$exception]
             );
@@ -298,10 +311,11 @@ class OrderController extends OrderController_parent
             $order->load($sessionOrderId);
             $order->finalizeOrderAfterExternalPayment($sessionAcdcOrderId, $forceFetchDetails);
             $goNext = 'thankyou';
-        } catch (\Exception $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->error(
+        } catch (Exception $exception) {
+            /** @var Logger $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger->log(
+                'error',
                 'failure during finalizeOrderAfterExternalPayment',
                 [$exception]
             );

@@ -7,15 +7,16 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core\Onboarding;
 
+use Exception;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
+use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventHandlerMapping;
-use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
-use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Service\GenericService;
-use Psr\Log\LoggerInterface;
 
 class Webhook
 {
@@ -30,7 +31,7 @@ class Webhook
         }
 
         $hook = $this->getHookForUrl($endpoint);
-        $webhookId = isset($hook['id']) ? $hook['id'] : '';
+        $webhookId = $hook['id'] ?? '';
         $registeredEvents = $this->getEnabledEvents($hook);
         if (
             array_diff(
@@ -73,10 +74,11 @@ class Webhook
             $webHookResponse = $webhookService->request('post', $paypload);
 
             $webhookId = $webHookResponse['id'] ?? '';
-        } catch (\Exception $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->error(
+        } catch (Exception $exception) {
+            /** @var Logger $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger->log(
+                'error',
                 'PayPal Webhook creation failed: ' . $exception->getMessage(),
                 [$exception]
             );
@@ -103,10 +105,8 @@ class Webhook
 
     public function getWebhookEndpoint(): string
     {
-        $paypalConfig = oxNew(PayPalConfig::class);
-
         //TODO: PayPal wants a https url, so we could validate and warn the customer if url does not fit
-        return $paypalConfig->getWebhookControllerUrl();
+        return oxNew(PayPalConfig::class)->getWebhookControllerUrl();
     }
 
     public function saveWebhookId(string $webhookId): void
@@ -137,7 +137,7 @@ class Webhook
 
     public function getEnabledEvents(array $hook): array
     {
-        $types = isset($hook['event_types']) ? $hook['event_types'] : [];
+        $types = $hook['event_types'] ?? [];
         $events = [];
         foreach ($types as $type) {
             if ('ENABLED' === $type['status']) {
