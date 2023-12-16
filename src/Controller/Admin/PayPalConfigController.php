@@ -24,6 +24,7 @@ use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use Throwable;
 
 /**
  * Controller for admin > PayPal/Configuration page
@@ -186,7 +187,7 @@ class PayPalConfigController extends AdminController
     /**
      * check Eligibility if config would be changed
      *
-     * @param array $confArr
+     * @throws OnboardingException
      */
     protected function checkEligibility(): void
     {
@@ -288,11 +289,9 @@ class PayPalConfigController extends AdminController
             $LegacyOeppModuleDetails = Registry::get(LegacyOeppModuleDetails::class);
 
             if ($LegacyOeppModuleDetails->isLegacyModulePresent()) {
-                $showButton = !$this->getServiceFromContainer(ModuleSettings::class)->getLegacySettingsTransferStatus();
-
-                return $showButton;
+                return !$this->getServiceFromContainer(ModuleSettings::class)->getLegacySettingsTransferStatus();
             }
-        } catch (\Throwable $exc) {
+        } catch (Throwable $exc) {
             // If not existing, an exception will be thrown -> do nothing and return false
         }
 
@@ -318,7 +317,7 @@ class PayPalConfigController extends AdminController
             );
 
             // Invert "hide" option
-            if ($configKeyName == 'oePayPalBannersHideAll') {
+            if ($configKeyName === 'oePayPalBannersHideAll') {
                 $legacyConfigValue = !$legacyConfigValue;
             }
 
