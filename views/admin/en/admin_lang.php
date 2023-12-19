@@ -268,9 +268,9 @@ $aLang = [
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_PROVIDER'   => 'Tracking Carrier (Provider)',
     'OSC_PAYPAL_TRACKCARRIER_GLOBAL'                => 'global',
 
-    'OSC_PAYPAL_VAULTING_TITLE'                     => 'Vaulting',
-    'OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'         => 'Vaulting active',
-    'HELP_OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'    => 'Checkout with Vault is a one-time PayPal Checkout experience, but with vaulting capability. It automatically creates a PayPal Billing Agreement and
-                                                        stores a customer\'s PayPal account in the Braintree Vault, allowing you to charge the account in the future without requiring your customer
-                                                        to re-authenticate with PayPal and choose a payment method within their wallet.',
+    'OSC_PAYPAL_VAULTING_TITLE'                     => 'PayPal Vaulting',
+    'OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'         => 'PayPal Vaulting active',
+    'HELP_OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'    => 'Repeat purchases made easy: With PayPal you can securely store your customers preferred payment methods, making it quick and easy
+                                                        Enable purchase processing. With their saved payment details, customers can make repeat purchases with just a few clicks. This can be for you
+                                                        mean higher checkout conversion.',
 ];

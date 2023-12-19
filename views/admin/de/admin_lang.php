@@ -268,9 +268,9 @@ $aLang = [
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_PROVIDER'   => 'Versanddienstleister (Anbieter)',
     'OSC_PAYPAL_TRACKCARRIER_GLOBAL'                => 'weltweit',
 
-    'OSC_PAYPAL_VAULTING_TITLE'                     => 'PayPal Tresor',
-    'OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'         => 'PayPal Tresor aktivieren',
-    'HELP_OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'    => 'Diese Funktion ist ein einmaliges PayPal-Checkout-Erlebnis, jedoch mit Tresorfunktion. Es erstellt automatisch eine PayPal-Abrechnungsvereinbarung
-                                                        und speichert das PayPal-Konto eines Kunden im Braintree Tresor, sodass Sie das Konto in Zukunft belasten können, ohne dass sich Ihr Kunde erneut
-                                                        bei PayPal authentifizieren und eine Zahlungsmethode in seinem Wallet auswählen muss.',
+    'OSC_PAYPAL_VAULTING_TITLE'                     => 'PayPal Vaulting',
+    'OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'         => 'PayPal Vaulting aktivieren',
+    'HELP_OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'    => 'Wiederholungskäufe leicht gemacht: Mit PayPal können Sie die bevorzugten Zahlarten Ihrer Kund:innen sicher speichern und so eine schnelle und einfache
+                                                        Kaufabwicklung ermöglichen. Mit ihren gespeicherten Zahlungsdaten können Kund:innen mit nur wenigen Klicks Wiederholungskäufe tätigen. Dies kann für Sie
+                                                        eine höhere Checkout-Conversion bedeuten.',
 ];
