@@ -268,7 +268,7 @@ jobs:
 
       - name: Download phpunit artifacts
         continue-on-error: true
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: TestsLog-7.4
           path: ./tests/
@@ -280,7 +280,7 @@ jobs:
           sed -i 's+/var/www/test-module/++' tests/phpunit.xml
 
       - name: Download styles artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: StylesLog-8.0
           path: ./styles/
