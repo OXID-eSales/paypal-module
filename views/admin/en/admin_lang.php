@@ -270,5 +270,7 @@ $aLang = [
 
     'OSC_PAYPAL_VAULTING_TITLE'                     => 'Vaulting',
     'OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'         => 'Vaulting active',
-    'HELP_OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'    => 'This is a dummy text.',
+    'HELP_OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'    => 'Checkout with Vault is a one-time PayPal Checkout experience, but with vaulting capability. It automatically creates a PayPal Billing Agreement and
+                                                        stores a customer\'s PayPal account in the Braintree Vault, allowing you to charge the account in the future without requiring your customer
+                                                        to re-authenticate with PayPal and choose a payment method within their wallet.',
 ];
