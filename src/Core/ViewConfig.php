@@ -265,7 +265,12 @@ class ViewConfig extends ViewConfig_parent
         return $response["id_token"];
     }
 
-    public function getSessionVaultSuccess(): bool|null
+    /**
+     * get Session Vault Success
+     *
+     * @return bool|null
+     */
+    public function getSessionVaultSuccess()
     {
         $session = Registry::getSession();
         $vaultSuccess = $session->getVariable("vaultSuccess");
@@ -274,6 +279,11 @@ class ViewConfig extends ViewConfig_parent
         return $vaultSuccess;
     }
 
+    /**
+     * get Vault Token
+     *
+     * @return string|null
+     */
     public function getVaultPaymentTokens()
     {
         if ($this->getIsVaultingActive() && $customerId = $this->getUser()->getFieldData("oscpaypalcustomerid")) {
