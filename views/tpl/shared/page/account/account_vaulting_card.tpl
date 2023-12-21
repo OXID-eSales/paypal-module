@@ -80,7 +80,7 @@
             });
 
             function showSuccessMessage() {
-                $('#PayPalButtonVaulting').hide();
+                $('#payPalVaultingCardContainer').hide();
                 $('#PayPalVaultingSuccess').show();
             }
 
