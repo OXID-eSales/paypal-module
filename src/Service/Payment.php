@@ -109,12 +109,12 @@ class Payment
         string $processingInstruction = null,
         string $paymentSource = null,
         string $payPalClientMetadataId = '',
-        string $payPalRequestId = '',
         string $payPalPartnerAttributionId = '',
         string $returnUrl = null,
         string $cancelUrl = null,
         bool $withArticles = true,
-        bool $setProvidedAddress = true
+        bool $setProvidedAddress = true,
+        ?EshopModelOrder $order = null
         #): ?ApiModelOrder
     ) {
         //TODO return value
@@ -127,7 +127,7 @@ class Payment
             $basket,
             $intent,
             $userAction,
-            null,
+            $order instanceof EshopModelOrder ?? $order->getFieldData('oxordernr'),
             $processingInstruction,
             $paymentSource,
             null,
@@ -145,7 +145,7 @@ class Payment
                 $payPalPartnerAttributionId,
                 $payPalClientMetadataId,
                 'return=minimal',
-                $payPalRequestId
+                $order instanceof EshopModelOrder ?? $order->getId()
             );
         } catch (ApiException $exception) {
             $this->moduleLogger->error("Api error on order create call. " .
@@ -171,7 +171,6 @@ class Payment
             OrderRequestFactory::USER_ACTION_CONTINUE,
             null,
             null,
-            '',
             '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
             null,
@@ -309,8 +308,12 @@ class Payment
                 $result = $this->fetchOrderFields($checkoutOrderId);
             } else {
                 $request = new OrderCaptureRequest();
+                //order number must be resolved before order patching
+                $order->setOrderNumber();
                 try {
-                    /** @var ApiOrderModel */
+                    //Patching the order with OXID order number as custom value
+                    $this->doPatchPayPalOrder(Registry::getSession()->getBasket(), $checkoutOrderId, $order->getFieldData('oxordernr'));
+                    /** @var $result ApiOrderModel */
                     $result = $orderService->capturePaymentForOrder(
                         '',
                         $checkoutOrderId,
@@ -345,7 +348,6 @@ class Payment
             );
 
             if ($result instanceof Order && $order->isPayPalOrderCompleted($result)) {
-                $order->setOrderNumber();
                 $order->markOrderPaid();
                 $order->setTransId((string)$payPalTransactionId);
             }
@@ -530,7 +532,6 @@ class Payment
             null,
             null,
             '',
-            '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
             $returnUrl,
             $cancelUrl,
@@ -574,7 +575,6 @@ class Payment
             null,
             null,
             '',
-            '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
             null,
             null,
@@ -599,8 +599,12 @@ class Payment
                 Constants::PAYPAL_PUI_PROCESSING_INSTRUCTIONS,
                 PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME,
                 $payPalClientMetadataId,
-                $order->getId(),
-                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
+                null,
+                null,
+                true,
+                true,
+                $order
             );
             $payPalOrderId = $result->id;
         } catch (UserPhoneException $e) {
