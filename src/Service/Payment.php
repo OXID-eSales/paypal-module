@@ -25,6 +25,7 @@ use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Exception\UserPhone as UserPhoneException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings as ModuleSettingsService;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthorizationWithAdditionalData;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
@@ -33,7 +34,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiModelOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderAuthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Payments\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\CaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\ReauthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
@@ -42,6 +42,7 @@ use Psr\Log\LoggerInterface;
 
 class Payment
 {
+    use ServiceContainer;
     public const PAYMENT_ERROR_NONE = 'PAYPAL_PAYMENT_ERROR_NONE';
     public const PAYMENT_ERROR_GENERIC = 'PAYPAL_PAYMENT_ERROR_GENERIC';
     public const PAYMENT_ERROR_PUI_PHONE = 'PAYPAL_PAYMENT_ERROR_PUI_PHONE';
@@ -139,6 +140,19 @@ class Payment
         );
 
         $response = [];
+
+        /*
+         * Set required request id if payer uses vaulted payment.
+         * The OXID order is not created yet, so a random id will be given.
+         */
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $setVaulting = $moduleSettings->getIsVaultingActive();
+        $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
+        $useVaulting = $setVaulting && !is_null($selectedVaultPaymentSourceIndex);
+
+        if ($useVaulting) {
+            $payPalRequestId = time();
+        }
 
         try {
             $response = $orderService->createOrder(
@@ -575,6 +589,12 @@ class Payment
                 break;
             }
         }
+
+        //no customer interaction needed if a vaulted payment is used
+        if ($response->status === Constants::PAYPAL_STATUS_COMPLETED) {
+            return $returnUrl."&vaulting=true";
+        }
+
         if (!$redirectLink) {
             PayPalSession::unsetPayPalSession();
             $this->removeTemporaryOrder();

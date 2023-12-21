@@ -259,8 +259,10 @@ class ViewConfig extends ViewConfig_parent
 
     public function getUserIdForVaulting(): string
     {
+        $payPalCustomerId = $this->getUser()->getFieldData("oscpaypalcustomerid") ?? null;
+
         $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
-        $response = $vaultingService->generateUserIdToken();
+        $response = $vaultingService->generateUserIdToken($payPalCustomerId);
 
         return $response["id_token"];
     }

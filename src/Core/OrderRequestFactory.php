@@ -95,20 +95,30 @@ class OrderRequestFactory
         $request = $this->request = new OrderRequest();
         $this->basket = $basket;
 
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $setVaulting = $moduleSettings->getIsVaultingActive();
+        $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
+        $useVaulting = $setVaulting && !is_null($selectedVaultPaymentSourceIndex);
+
         $request->intent = $intent;
+        $request->purchase_units = $this->getPurchaseUnits($transactionId, $invoiceId, $withArticles);
+
+        if($useVaulting) {
+            $this->modifyPaymentSourceForVaulting($request);
+            return $request;
+        }
+
         if (!$paymentSource && $basket->getUser()) {
             $request->payer = $this->getPayer();
         }
-        $request->purchase_units = $this->getPurchaseUnits($transactionId, $invoiceId, $withArticles);
 
-        //todo test why this breaks vaulting
         if ($userAction || $returnUrl || $cancelUrl) {
-//            $request->application_context = $this->getApplicationContext(
-//                $userAction,
-//                $returnUrl,
-//                $cancelUrl,
-//                $setProvidedAddress
-//            );
+            $request->application_context = $this->getApplicationContext(
+                $userAction,
+                $returnUrl,
+                $cancelUrl,
+                $setProvidedAddress
+            );
         }
 
         if ($processingInstruction) {
@@ -119,13 +129,6 @@ class OrderRequestFactory
             /** @var PaymentSource $puiPaymentSource */
             $puiPaymentSource = $this->getPuiPaymentSource();
             $request->payment_source = $puiPaymentSource;
-        }
-
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $setVaulting = $moduleSettings->getIsVaultingActive();
-
-        if($setVaulting) {
-            $this->modifyPaymentSourceForVaulting($request);
         }
 
         return $request;
@@ -392,9 +395,9 @@ class OrderRequestFactory
     public function getItemCategoryByBasketContent(): string
     {
         return (
-            $this->basket->isEntirelyVirtualPayPalBasket()
-                ? Item::CATEGORY_DIGITAL_GOODS
-                : Item::CATEGORY_PHYSICAL_GOODS
+        $this->basket->isEntirelyVirtualPayPalBasket()
+            ? Item::CATEGORY_DIGITAL_GOODS
+            : Item::CATEGORY_PHYSICAL_GOODS
         );
     }
 
@@ -624,25 +627,12 @@ class OrderRequestFactory
             $paymentTokens = $vaultingService->getVaultPaymentTokens($payPalCustomerId);
             //find out which payment token was selected by getting the index via request param
             $selectedPaymentToken = $paymentTokens["payment_tokens"][$selectedVaultPaymentSourceIndex];
-            $customerId = $selectedPaymentToken["customer"]["id"];
-
 
             $request->payment_source =
                 [
                     "paypal" =>
                         [
-                            "vault_id" => $selectedPaymentToken[0]["id"],
-                            "attributes" => [
-                                "customer" => [
-                                    "id" => $customerId
-                                ]
-                            ],
-                            "experience_context" =>
-                                [
-                                    "return_url" => $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession',
-                                    "cancel_url" => $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
-                                    "shipping_preference" => "SET_PROVIDED_ADDRESS",
-                                ]
+                            "vault_id" => $selectedPaymentToken["id"],
                         ]
                 ];
         } elseif ($config->getUser()) {

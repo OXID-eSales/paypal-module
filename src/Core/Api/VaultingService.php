@@ -27,7 +27,7 @@ class VaultingService extends BaseService
         $params['response_type']    = 'id_token';
 
         if($payPalCustomerId) {
-            $params["target_customer_id"]   = $payPalCustomerId;
+            $params["target_customer_id"] = $payPalCustomerId;
         }
 
         $path = '/v1/oauth2/token';
@@ -47,14 +47,22 @@ class VaultingService extends BaseService
      */
     public function createVaultSetupToken(bool $card = false): array
     {
-        $body = $this->getPaymentSourceForVaulting($card);
+        if($card) {
+            $body = [
+                "payment_source" => [
+                    "card" => [],
+                ]
+            ];
+        }else {
+            $body = $this->getPaymentSourceForVaulting($card);
+        }
 
         $headers = $this->getVaultingHeaders();
 
         $path = '/v3/vault/setup-tokens';
         $method = 'post';
 
-        $response = $this->send($method, $path, [], $headers, json_encode($body));
+        $response = $this->send($method, $path, [], $headers, json_encode($body, JSON_FORCE_OBJECT));
         $body = $response->getBody();
 
         return json_decode((string)$body, true);
@@ -171,15 +179,20 @@ class VaultingService extends BaseService
             return null;
         }
 
-        $headers = $this->getVaultingHeaders();
-
         $path = '/v3/vault/payment-tokens?customer_id='.$paypalCustomerId;
         $method = 'get';
 
-        $response = $this->send($method, $path, [], $headers);
+        $response = $this->send($method, $path);
         $body = $response->getBody();
 
         return json_decode((string)$body, true);
+    }
+
+    public function getVaultPaymentTokenByIndex($paypalCustomerId, $index)
+    {
+        $paymentTokens = $this->getVaultPaymentTokens($paypalCustomerId);
+
+        return $paymentTokens["payment_tokens"][$index];
     }
 
     /**
