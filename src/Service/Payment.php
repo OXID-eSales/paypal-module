@@ -127,7 +127,7 @@ class Payment
             $basket,
             $intent,
             $userAction,
-            $order instanceof EshopModelOrder ?? $order->getFieldData('oxordernr'),
+            $order instanceof EshopModelOrder ? $order->getFieldData('oxordernr') : null,
             $processingInstruction,
             $paymentSource,
             null,
@@ -145,7 +145,7 @@ class Payment
                 $payPalPartnerAttributionId,
                 $payPalClientMetadataId,
                 'return=minimal',
-                $order instanceof EshopModelOrder ?? $order->getId()
+                $order instanceof EshopModelOrder ? $order->getId() : null
             );
         } catch (ApiException $exception) {
             $this->moduleLogger->error("Api error on order create call. " .
