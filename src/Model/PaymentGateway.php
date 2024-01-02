@@ -66,7 +66,7 @@ class PaymentGateway extends PaymentGateway_parent
         $success = false;
 
         /** @var Logger $logger */
-        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+        $logger = $this->getServiceFromContainer(Logger::class);
 
         if ($checkoutOrderId = PayPalSession::getCheckoutOrderId()) {
             // Update Order
@@ -109,7 +109,7 @@ class PaymentGateway extends PaymentGateway_parent
             PayPalSession::unsetPayPalPuiCmId();
         } catch (Exception $exception) {
             /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', 'Error on execute pui payment call.', [$exception]);
         }
         // destroy PayPal-Session

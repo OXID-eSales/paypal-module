@@ -93,7 +93,7 @@ class ProxyController extends FrontendController
             $response = $service->showOrderDetails($orderId, '');
         } catch (Exception $exception) {
             /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', "Error on order capture call.", [$exception]);
         }
 

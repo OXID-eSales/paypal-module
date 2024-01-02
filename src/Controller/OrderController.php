@@ -148,7 +148,7 @@ class OrderController extends OrderController_parent
             $status = $this->execute();
         } catch (Exception $exception) {
             /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', $exception->getMessage(), [$exception]);
             $this->outputJson(['acdcerror' => 'failed to execute shop order']);
             return;
@@ -178,15 +178,13 @@ class OrderController extends OrderController_parent
 
     public function captureAcdcOrder(): void
     {
-        /** @var LoggerInterface $logger */
-        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
         $acdcRequestId = (string) Registry::getRequest()->getRequestParameter('acdcorderid');
         $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
         $sessionAcdcOrderId = (string) PayPalSession::getCheckoutOrderId();
         $acdcStatus = Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
 
         /** @var Logger $logger */
-        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+        $logger = $this->getServiceFromContainer(Logger::class);
 
         if (
             'COMPLETED' === $acdcStatus &&
@@ -286,7 +284,7 @@ class OrderController extends OrderController_parent
             $order->save();
         } catch (PayPalException $exception) {
             /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log(
                 'debug',
                 'PayPal Checkout error during order finalization ' . $exception->getMessage(),
@@ -313,7 +311,7 @@ class OrderController extends OrderController_parent
             $goNext = 'thankyou';
         } catch (Exception $exception) {
             /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log(
                 'error',
                 'failure during finalizeOrderAfterExternalPayment',

@@ -76,7 +76,7 @@ class Webhook
             $webhookId = $webHookResponse['id'] ?? '';
         } catch (Exception $exception) {
             /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log(
                 'error',
                 'PayPal Webhook creation failed: ' . $exception->getMessage(),

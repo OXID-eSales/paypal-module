@@ -54,7 +54,7 @@ class Tracker
             $result = $trackerResponse['tracker_identifiers'][0]['tracking_number'] === $trackingNumber;
         } catch (\Exception $exception) {
             /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log(
                 'error',
                 'PayPal sending Tracker failed: ' . $exception->getMessage(),
