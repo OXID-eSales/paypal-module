@@ -101,6 +101,8 @@ class PaymentGateway extends PaymentGateway_parent
 
         $success = false;
         try {
+            //order number must be resolved before requesting payment
+            $order->setOrderNumber();
             $success = $paymentService->doExecutePuiPayment(
                 $order,
                 Registry::getSession()->getBasket(),
