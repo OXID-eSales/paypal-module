@@ -211,7 +211,7 @@ class PayPalConfigController extends AdminController
         } catch (ClientException $exception) {
 
             /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', 'Error on checkEligibility', [$exception]);
         }
     }
@@ -351,7 +351,7 @@ class PayPalConfigController extends AdminController
             PayPalSession::storeOnboardingPayload($requestReader->getRawPost());
         } catch (\Exception $exception) {
             /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', $exception->getMessage(), [$exception]);
         }
 
@@ -402,7 +402,7 @@ class PayPalConfigController extends AdminController
             $credentials = $handler->autoConfigurationFromCallback();
         } catch (\Exception $exception) {
             /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', $exception->getMessage(), [$exception]);
         }
         return $credentials;
@@ -423,7 +423,7 @@ class PayPalConfigController extends AdminController
             Registry::getUtilsView()->addErrorToDisplay($exception->getMessage());
         } catch (\Exception $exception) {
             /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', $exception->getMessage(), [$exception]);
         }
 

@@ -17,6 +17,7 @@ use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\Mod
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\StaticContent;
@@ -24,7 +25,6 @@ use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
-use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 class Events
@@ -164,13 +164,13 @@ class Events
         $context = $container->get(ContextInterface::class);
         /** @var ModuleConfigurationDaoBridgeInterface $moduleConfigurationDaoBridgeInterface */
         $moduleConfigurationDaoBridgeInterface = $container->get(ModuleConfigurationDaoBridgeInterface::class);
-        /** @var LoggerInterface $loggerInterface */
-        $loggerInterface = $container->get(LoggerInterface::class);
+        /** @var Logger $logger */
+        $logger = $container->get(Logger::class);
         return new ModuleSettings(
             $moduleSettingsBridge,
             $context,
             $moduleConfigurationDaoBridgeInterface,
-            $loggerInterface
+            $logger
         );
     }
 }

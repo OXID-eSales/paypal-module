@@ -60,7 +60,7 @@ abstract class WebhookHandlerBase
             );
         } else {
             /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log(
                 'debug',
                 sprintf(

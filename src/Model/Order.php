@@ -291,7 +291,7 @@ class Order extends Order_parent
             } catch (Exception $exception) {
                 $this->delete();
                 /** @var Logger $logger */
-                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+                $logger = $this->getServiceFromContainer(Logger::class);
                 $logger->log('error', $exception->getMessage(), [$exception]);
             }
             return self::ORDER_STATE_PAYMENTERROR;
@@ -343,7 +343,7 @@ class Order extends Order_parent
             $success = true;
         } catch (Exception $exception) {
             /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', "Error on order capture call.", [$exception]);
         }
 

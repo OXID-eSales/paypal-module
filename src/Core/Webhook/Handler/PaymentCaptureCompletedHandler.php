@@ -43,7 +43,7 @@ class PaymentCaptureCompletedHandler extends WebhookHandlerBase
                 ->showOrderDetails($payPalOrderId, '');
         } catch (ApiException $exception) {
             /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+            $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log(
                 'debug',
                 'Exception during PaymentCaptureCompletedHandler::getPayPalOrderDetails().',

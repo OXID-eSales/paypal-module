@@ -50,7 +50,7 @@ final class RequestHandler
     {
         $result = false;
         /** @var Logger $logger */
-        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+        $logger = $this->getServiceFromContainer(Logger::class);
 
         try {
             $requestBody = $this->requestReader->getRawPost();

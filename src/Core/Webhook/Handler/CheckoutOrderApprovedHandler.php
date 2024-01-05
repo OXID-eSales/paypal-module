@@ -41,7 +41,7 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
                 $order->setOrderNumber(); //ensure the order has a number
             } catch (\Exception $exception) {
                 /** @var Logger $logger */
-                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\Logger');
+                $logger = $this->getServiceFromContainer(Logger::class);
                 $logger->log(
                     'debug',
                     sprintf(
