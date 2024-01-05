@@ -312,7 +312,11 @@ class Payment
                 $order->setOrderNumber();
                 try {
                     //Patching the order with OXID order number as custom value
-                    $this->doPatchPayPalOrder(Registry::getSession()->getBasket(), $checkoutOrderId, $order->getFieldData('oxordernr'));
+                    $this->doPatchPayPalOrder(
+                        Registry::getSession()->getBasket(),
+                        $checkoutOrderId,
+                        $order->getFieldData('oxordernr')
+                    );
                     /** @var $result ApiOrderModel */
                     $result = $orderService->capturePaymentForOrder(
                         '',
