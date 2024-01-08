@@ -310,7 +310,6 @@ class Payment
                 $result = $this->fetchOrderFields($checkoutOrderId);
             } else {
                 $request = new OrderCaptureRequest();
-
                 try {;
                     /** @var ApiOrderModel */
                     $result = $orderService->capturePaymentForOrder(
