@@ -309,7 +309,10 @@ class Payment
                 $result = $this->fetchOrderFields($checkoutOrderId);
             } else {
                 $request = new OrderCaptureRequest();
-                try {
+                //order number must be resolved before order patching
+               // $order->setOrderNumber(); delete this if commented out
+
+                try {;
                     /** @var ApiOrderModel */
                     $result = $orderService->capturePaymentForOrder(
                         '',
