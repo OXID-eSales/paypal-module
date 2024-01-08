@@ -172,9 +172,6 @@ class Order extends Order_parent
             }
         }
 
-        //ensure order number
-        $this->setOrderNumber();
-
         if ($isPayPalACDC) {
             //webhook should kick in and handle order state and we should not call the api too often
             Registry::getSession()->deleteVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
