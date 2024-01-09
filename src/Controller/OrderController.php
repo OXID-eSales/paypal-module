@@ -162,7 +162,7 @@ class OrderController extends OrderController_parent
             return;
         }
 
-        if (!$status || (PayPalOrderModel::ORDER_STATE_ACDCINPROGRESS !== $status)) {
+        if (!$status || (PayPalOrderModel::ORDER_STATE_ACDCINPROGRESS !== (int)$status)) {
             $response = ['acdcerror' => 'unexpected order status ' . $status];
             $paymentService->removeTemporaryOrder();
         } else {
