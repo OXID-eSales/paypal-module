@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Core\Onboarding;
 
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
 use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
@@ -33,6 +34,9 @@ class Onboarding
             // fetch and save Eligibility
             $merchantInformations = $this->fetchMerchantInformations();
             $this->saveEligibility($merchantInformations);
+
+            $paypalConfig = oxNew(PayPalConfig::class);
+            file_put_contents($paypalConfig->getOnboardingBlockCacheFileName(), "1");
         } catch (\Exception $exception) {
             throw OnboardingException::autoConfiguration($exception->getMessage());
         }
@@ -57,9 +61,9 @@ class Onboarding
 
             $credentials = $apiClient->getCredentials();
         } catch (ApiException $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->error($exception->getMessage(), [$exception]);
+            /** @var Logger $logger */
+            $logger = $this->getServiceFromContainer(Logger::class);
+            $logger->log('error', $exception->getMessage(), [$exception]);
         }
 
         return $credentials;
@@ -142,9 +146,9 @@ class Onboarding
             $apiClient = $this->getOnboardingClient($onboardingResponse['isSandBox'], true);
             $merchantInformations = $apiClient->getMerchantInformations();
         } catch (ApiException $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->error($exception->getMessage(), [$exception]);
+            /** @var Logger $logger */
+            $logger = $this->getServiceFromContainer(Logger::class);
+            $logger->log('error', $exception->getMessage(), [$exception]);
         }
         return $merchantInformations;
     }
