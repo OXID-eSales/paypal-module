@@ -8,13 +8,13 @@
 namespace OxidSolutionCatalysts\PayPal\Model;
 
 use Exception;
+use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
-use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
-use Psr\Log\LoggerInterface;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
 /**
  * Class PaymentGateway
@@ -40,7 +40,7 @@ class PaymentGateway extends PaymentGateway_parent
 
         if (PayPalDefinitions::isButtonPayment($sessionPaymentId)) {
             $success = $this->doExecutePayPalExpressPayment($order);
-        } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID == $sessionPaymentId) {
+        } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID === $sessionPaymentId) {
             $success = $this->doExecutePuiPayment($order);
         } else {
             $success = parent::executePayment($amount, $order);
@@ -65,14 +65,15 @@ class PaymentGateway extends PaymentGateway_parent
         $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
         $success = false;
 
-        /** @var LoggerInterface $logger */
-        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        /** @var Logger $logger */
+        $logger = $this->getServiceFromContainer(Logger::class);
+
         if ($checkoutOrderId = PayPalSession::getCheckoutOrderId()) {
             // Update Order
             try {
                 $paymentService->doPatchPayPalOrder(Registry::getSession()->getBasket(), $checkoutOrderId);
             } catch (Exception $exception) {
-                $logger->error("Error on order patch call.", [$exception]);
+                $logger->log('error', 'Error on order patch call.', [$exception]);
             }
 
             // Capture Order
@@ -83,7 +84,7 @@ class PaymentGateway extends PaymentGateway_parent
                 // success means at this point, that we triggered the capture without errors
                 $success = true;
             } catch (Exception $exception) {
-                $logger->error("Error on order capture call.", [$exception]);
+                $logger->log('error', 'Error on order capture call.', [$exception]);
             }
 
             // destroy PayPal-Session
@@ -107,9 +108,9 @@ class PaymentGateway extends PaymentGateway_parent
             );
             PayPalSession::unsetPayPalPuiCmId();
         } catch (Exception $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->error("Error on execute pui payment call.", [$exception]);
+            /** @var Logger $logger */
+            $logger = $this->getServiceFromContainer(Logger::class);
+            $logger->log('error', 'Error on execute pui payment call.', [$exception]);
         }
         // destroy PayPal-Session
         PayPalSession::unsetPayPalOrderId();
