@@ -104,7 +104,29 @@ class OrderRequestFactory
         $request->purchase_units = $this->getPurchaseUnits($transactionId, $invoiceId, $withArticles);
 
         if($useVaulting) {
-            $this->modifyPaymentSourceForVaulting($request);
+            $config = Registry::getConfig();
+            $vaultingService = $this->getVaultingService();
+            $payPalCustomerId = $this->getUsersPayPalCustomerId();
+
+            $selectedPaymentToken = $vaultingService->getVaultPaymentTokenByIndex($payPalCustomerId,$selectedVaultPaymentSourceIndex);
+            //find out which payment token was selected by getting the index via request param
+            $paymentType = key($selectedPaymentToken["payment_source"]);
+            $useCard = $paymentType == "card";
+
+            $this->modifyPaymentSourceForVaulting($request,$useCard);
+
+            //we use the PayPal payment type as a "dummy payment" when we use vaulted payments.
+            //therefore, we need to use a returnURL depending on the payment type.
+            if ($useCard) {
+                $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc';
+            }
+
+            $request->application_context = $this->getApplicationContext(
+                "",
+                $returnUrl,
+                $cancelUrl,
+                false
+            );
             return $request;
         }
 
@@ -612,17 +634,15 @@ class OrderRequestFactory
      * @param OrderRequest $request
      * @return void
      */
-    protected function modifyPaymentSourceForVaulting(OrderRequest $request): void
+    protected function modifyPaymentSourceForVaulting(OrderRequest $request, $useCard = false): void
     {
         $config = Registry::getConfig();
-        $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+        $vaultingService = $this->getVaultingService();
 
         $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
 
-        $card = Registry::getRequest()->getRequestParameter("fnc") == "createAcdcOrder";
-
         //use selected vault
-        if (!is_null($selectedVaultPaymentSourceIndex) && $payPalCustomerId = $config->getUser()->getFieldData("oscpaypalcustomerid")) {
+        if (!is_null($selectedVaultPaymentSourceIndex) && $payPalCustomerId = $this->getUsersPayPalCustomerId()) {
 
             $paymentTokens = $vaultingService->getVaultPaymentTokens($payPalCustomerId);
             //find out which payment token was selected by getting the index via request param
@@ -637,7 +657,7 @@ class OrderRequestFactory
                 ];
         } elseif ($config->getUser()) {
             //save during purchase
-            if ($card) {
+            if ($useCard) {
                 $newPaymentSource = $vaultingService->getPaymentSourceForVaulting(true);
                 $newPaymentSource["attributes"] = [
                     "verification" => [
@@ -668,5 +688,16 @@ class OrderRequestFactory
 
             $request->payment_source = $newPaymentSource;
         }
+    }
+
+    private function getVaultingService()
+    {
+        return Registry::get(ServiceFactory::class)->getVaultingService();
+    }
+
+    private function getUsersPayPalCustomerId()
+    {
+        $config = Registry::getConfig();
+        return $config->getUser()->getFieldData("oscpaypalcustomerid");
     }
 }

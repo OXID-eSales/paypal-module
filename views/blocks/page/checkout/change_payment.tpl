@@ -34,11 +34,7 @@
             document.getElementById("paypalVaultCheckoutButton").onclick = function () {
                 document.querySelectorAll(".vaulting_paymentsource").forEach(function (paymentsource) {
                     if (paymentsource.checked) {
-                        if (paymentsource.dataset.paymenttype === "paypal") {
-                            document.getElementById("payment_oscpaypal").click();
-                        }else {
-                            document.getElementById("payment_oscpaypal_acdc").click();
-                        }
+                        document.getElementById("payment_oscpaypal").click();
 
                         let input = document.createElement("input");
                         input.type = "hidden";
