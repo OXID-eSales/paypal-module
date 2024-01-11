@@ -398,7 +398,7 @@ class Config
         return Client::SANDBOX_URL;
     }
 
-    public function getIsVaultingActive():bool
+    public function getIsVaultingActive(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getIsVaultingActive();
     }

@@ -33,9 +33,9 @@ class VaultingTokenController extends FrontendController
         $setupToken = Registry::getRequest()->getRequestParameter("token");
 
         $paymentToken = $vaultingService->createVaultPaymentToken($setupToken);
-        if($this->storePayPalUserId($paymentToken["customer"]["id"])) {
+        if ($this->storePayPalUserId($paymentToken["customer"]["id"])) {
             $this->outputJson(["state" => "SUCCESS"]);
-        }else {
+        } else {
             $this->outputJson(["state" => "ERROR"]);
         }
     }
@@ -49,7 +49,7 @@ class VaultingTokenController extends FrontendController
 
     protected function getVaultingService()
     {
-        if(!$this->vaultingService) {
+        if (!$this->vaultingService) {
             $this->vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
         }
 

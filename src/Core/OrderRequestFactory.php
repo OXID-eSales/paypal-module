@@ -46,6 +46,7 @@ use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 class OrderRequestFactory
 {
     use ServiceContainer;
+
     /**
      * After you redirect the customer to the PayPal payment page, a Continue button appears.
      * Use this option when the final amount is not known when the checkout flow is initiated and you want to
@@ -104,17 +105,17 @@ class OrderRequestFactory
         $request->purchase_units = $this->getPurchaseUnits($transactionId, $invoiceId, $withArticles);
 
         $useVaultedPayment = $setVaulting && !is_null($selectedVaultPaymentSourceIndex);
-        if($useVaultedPayment) {
+        if ($useVaultedPayment) {
             $config = Registry::getConfig();
             $vaultingService = $this->getVaultingService();
             $payPalCustomerId = $this->getUsersPayPalCustomerId();
 
-            $selectedPaymentToken = $vaultingService->getVaultPaymentTokenByIndex($payPalCustomerId,$selectedVaultPaymentSourceIndex);
+            $selectedPaymentToken = $vaultingService->getVaultPaymentTokenByIndex($payPalCustomerId, $selectedVaultPaymentSourceIndex);
             //find out which payment token was selected by getting the index via request param
             $paymentType = key($selectedPaymentToken["payment_source"]);
             $useCard = $paymentType == "card";
 
-            $this->modifyPaymentSourceForVaulting($request,$useCard);
+            $this->modifyPaymentSourceForVaulting($request, $useCard);
 
             //we use the PayPal payment type as a "dummy payment" when we use vaulted payments.
             //therefore, we need to use a returnURL depending on the payment type.
@@ -129,7 +130,7 @@ class OrderRequestFactory
                 false
             );
             return $request;
-        }elseif (Registry::getRequest()->getRequestParameter("vaultPayment")) {
+        } elseif (Registry::getRequest()->getRequestParameter("vaultPayment")) {
             $paymentType = Registry::getRequest()->getRequestParameter("oscPayPalPaymentTypeForVaulting");
             $card = $paymentType == PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
 
@@ -651,7 +652,6 @@ class OrderRequestFactory
 
         //use selected vault
         if (!is_null($selectedVaultPaymentSourceIndex) && $payPalCustomerId = $this->getUsersPayPalCustomerId()) {
-
             $paymentTokens = $vaultingService->getVaultPaymentTokens($payPalCustomerId);
             //find out which payment token was selected by getting the index via request param
             $selectedPaymentToken = $paymentTokens["payment_tokens"][$selectedVaultPaymentSourceIndex];

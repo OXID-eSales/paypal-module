@@ -26,7 +26,7 @@ class VaultingService extends BaseService
         $params['grant_type']       = 'client_credentials';
         $params['response_type']    = 'id_token';
 
-        if($payPalCustomerId) {
+        if ($payPalCustomerId) {
             $params["target_customer_id"] = $payPalCustomerId;
         }
 
@@ -47,13 +47,13 @@ class VaultingService extends BaseService
      */
     public function createVaultSetupToken(bool $card = false): array
     {
-        if($card) {
+        if ($card) {
             $body = [
                 "payment_source" => [
                     "card" => [],
                 ]
             ];
-        }else {
+        } else {
             $body = $this->getPaymentSourceForVaulting($card);
         }
 
@@ -72,7 +72,7 @@ class VaultingService extends BaseService
      * @param bool $card
      * @return array[]
      */
-    public function getPaymentSourceForVaulting(bool $card) :array
+    public function getPaymentSourceForVaulting(bool $card): array
     {
         $viewConf   = Registry::get(ViewConfig::class);
         $config     = Registry::getConfig();
@@ -115,7 +115,7 @@ class VaultingService extends BaseService
             "cancel_url"        => $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
         ];
 
-        if($card) {
+        if ($card) {
             $paymentSource = [
                 "payment_source" => [
                     "card" => [
@@ -126,7 +126,7 @@ class VaultingService extends BaseService
                     ]
                 ]
             ];
-        }else {
+        } else {
             $paymentSource = [
                 "payment_source" => [
                     "paypal" => [
@@ -179,7 +179,7 @@ class VaultingService extends BaseService
             return null;
         }
 
-        $path = '/v3/vault/payment-tokens?customer_id='.$paypalCustomerId;
+        $path = '/v3/vault/payment-tokens?customer_id=' . $paypalCustomerId;
         $method = 'get';
 
         $response = $this->send($method, $path);

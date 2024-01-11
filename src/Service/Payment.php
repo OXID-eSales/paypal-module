@@ -42,6 +42,7 @@ use OxidSolutionCatalysts\PayPalApi\Service\Payments as ApiPaymentService;
 class Payment
 {
     use ServiceContainer;
+
     public const PAYMENT_ERROR_NONE = 'PAYPAL_PAYMENT_ERROR_NONE';
     public const PAYMENT_ERROR_GENERIC = 'PAYPAL_PAYMENT_ERROR_GENERIC';
     public const PAYMENT_ERROR_PUI_PHONE = 'PAYPAL_PAYMENT_ERROR_PUI_PHONE';
@@ -366,7 +367,6 @@ class Payment
             );
 
             if ($result instanceof Order && $order->isPayPalOrderCompleted($result)) {
-
                 //todo only do this if vaulting was actually attempted
                 $session = Registry::getSession();
                 $vault = $result->payment_source->paypal->attributes->vault;
@@ -377,12 +377,12 @@ class Payment
                         $user->oxuser__oscpaypalcustomerid = new Field($id);
 
                         $vaultSuccess = $user->save();
-                        $session->setVariable("vaultSuccess",$vaultSuccess);
-                    }else {
-                        $session->setVariable("vaultSuccess",false);
+                        $session->setVariable("vaultSuccess", $vaultSuccess);
+                    } else {
+                        $session->setVariable("vaultSuccess", false);
                     }
-                }else {
-                    $session->setVariable("vaultSuccess",false);
+                } else {
+                    $session->setVariable("vaultSuccess", false);
                 }
 
                 $order->markOrderPaid();
@@ -595,7 +595,7 @@ class Payment
 
         //no customer interaction needed if a vaulted payment is used
         if ($response->status === Constants::PAYPAL_STATUS_COMPLETED) {
-            return $returnUrl."&vaulting=true";
+            return $returnUrl . "&vaulting=true";
         }
 
         if (!$redirectLink) {

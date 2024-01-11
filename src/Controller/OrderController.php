@@ -85,7 +85,7 @@ class OrderController extends OrderController_parent
         if (!is_null($selectedVaultPaymentSourceIndex) && $payPalCustomerId = $config->getUser()->getFieldData("oscpaypalcustomerid")) {
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
 
-            $selectedPaymentToken = $vaultingService->getVaultPaymentTokenByIndex($payPalCustomerId,$selectedVaultPaymentSourceIndex);
+            $selectedPaymentToken = $vaultingService->getVaultPaymentTokenByIndex($payPalCustomerId, $selectedVaultPaymentSourceIndex);
             //find out which payment token was selected by getting the index via request param
             $paymentType = key($selectedPaymentToken["payment_source"]);
             $paymentSource = $selectedPaymentToken["payment_source"][$paymentType];
@@ -93,13 +93,13 @@ class OrderController extends OrderController_parent
             $paymentDescription = "";
             if ($paymentType === "card") {
                 $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_ENDING_IN");
-                $paymentDescription = $paymentSource["brand"]." ".$string.$paymentSource["last_digits"];
-            }elseif ($paymentType === "paypal") {
+                $paymentDescription = $paymentSource["brand"] . " " . $string . $paymentSource["last_digits"];
+            } elseif ($paymentType === "paypal") {
                 $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
-                $paymentDescription = $string." ".$paymentSource["email_address"];
+                $paymentDescription = $string . " " . $paymentSource["email_address"];
             }
 
-            $this->addTplParam("vaultedPaymentDescription",$paymentDescription);
+            $this->addTplParam("vaultedPaymentDescription", $paymentDescription);
         }
 
         return parent::render();

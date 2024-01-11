@@ -94,7 +94,7 @@ class ViewConfig extends ViewConfig_parent
         return $this->getServiceFromContainer(ModuleSettings::class)->isPayPalCheckoutExpressPaymentEnabled();
     }
 
-    public function getIsVaultingActive():bool
+    public function getIsVaultingActive(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getIsVaultingActive();
     }
@@ -248,7 +248,7 @@ class ViewConfig extends ViewConfig_parent
             $params['components'] .= ',messages';
         }
 
-        if($this->getIsVaultingActive()) {
+        if ($this->getIsVaultingActive()) {
             $params['components'] .= ',card-fields';
         }
 

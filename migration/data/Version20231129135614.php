@@ -12,17 +12,17 @@ use Doctrine\Migrations\AbstractMigration;
  */
 final class Version20231129135614 extends AbstractMigration
 {
-    public function getDescription() : string
+    public function getDescription(): string
     {
         return '';
     }
 
-    public function up(Schema $schema) : void
+    public function up(Schema $schema): void
     {
         $this->updateUserTable($schema);
     }
 
-    public function down(Schema $schema) : void
+    public function down(Schema $schema): void
     {
     }
 
