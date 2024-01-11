@@ -11,6 +11,10 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
  */
 class PayPalVaultingController extends AccountController
 {
+    /**
+     * @var string Current class template name.
+     */
+    // phpcs:ignore PSR2.Classes.PropertyDeclaration
     protected $_sThisTemplate = 'modules/osc/paypal/account_vaulting_paypal.tpl';
 
     public function render()

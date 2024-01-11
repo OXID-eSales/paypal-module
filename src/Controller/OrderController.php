@@ -82,10 +82,16 @@ class OrderController extends OrderController_parent
 
         $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
         $config = Registry::getConfig();
-        if (!is_null($selectedVaultPaymentSourceIndex) && $payPalCustomerId = $config->getUser()->getFieldData("oscpaypalcustomerid")) {
+        if (
+            !is_null($selectedVaultPaymentSourceIndex) &&
+            $payPalCustomerId = $config->getUser()->getFieldData("oscpaypalcustomerid")
+        ) {
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
 
-            $selectedPaymentToken = $vaultingService->getVaultPaymentTokenByIndex($payPalCustomerId, $selectedVaultPaymentSourceIndex);
+            $selectedPaymentToken = $vaultingService->getVaultPaymentTokenByIndex(
+                $payPalCustomerId,
+                $selectedVaultPaymentSourceIndex
+            );
             //find out which payment token was selected by getting the index via request param
             $paymentType = key($selectedPaymentToken["payment_source"]);
             $paymentSource = $selectedPaymentToken["payment_source"][$paymentType];
@@ -280,7 +286,9 @@ class OrderController extends OrderController_parent
         $sessionCheckoutOrderId = PayPalSession::getCheckoutOrderId();
         $vaulting = Registry::getRequest()->getRequestParameter("vaulting");
 
-        $cancelSession = !$sessionOrderId || !$sessionCheckoutOrderId || ($standardRequestId !== $sessionCheckoutOrderId);
+        $cancelSession = !$sessionOrderId ||
+            !$sessionCheckoutOrderId ||
+            ($standardRequestId !== $sessionCheckoutOrderId);
         if (!$vaulting && $cancelSession) {
             $this->cancelpaypalsession('request to session mismatch');
         }

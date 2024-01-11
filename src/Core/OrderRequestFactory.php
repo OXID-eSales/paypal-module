@@ -110,7 +110,10 @@ class OrderRequestFactory
             $vaultingService = $this->getVaultingService();
             $payPalCustomerId = $this->getUsersPayPalCustomerId();
 
-            $selectedPaymentToken = $vaultingService->getVaultPaymentTokenByIndex($payPalCustomerId, $selectedVaultPaymentSourceIndex);
+            $selectedPaymentToken = $vaultingService->getVaultPaymentTokenByIndex(
+                $payPalCustomerId,
+                $selectedVaultPaymentSourceIndex
+            );
             //find out which payment token was selected by getting the index via request param
             $paymentType = key($selectedPaymentToken["payment_source"]);
             $useCard = $paymentType == "card";
@@ -686,8 +689,10 @@ class OrderRequestFactory
                                 ],
                             "experience_context" =>
                                 [
-                                    "return_url" => $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession',
-                                    "cancel_url" => $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
+                                    "return_url" => $config->getSslShopUrl() .
+                                        'index.php?cl=order&fnc=finalizepaypalsession',
+                                    "cancel_url" => $config->getSslShopUrl() .
+                                        'index.php?cl=order&fnc=cancelpaypalsession',
                                     "shipping_preference" => "SET_PROVIDED_ADDRESS",
                                 ]
                         ],
