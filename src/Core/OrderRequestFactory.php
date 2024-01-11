@@ -20,6 +20,7 @@ use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Model\Article;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
@@ -68,7 +69,7 @@ class OrderRequestFactory
      * @param Basket $basket
      * @param string $intent Order::INTENT_CAPTURE or Order::INTENT_AUTHORIZE constant values
      * @param null|string $userAction USER_ACTION_CONTINUE constant values
-     * @param null|string $transactionId transaction id
+     * @param null|string $customId custom id reference
      * @param null|string $processingInstruction processing instruction
      * @param null|string $paymentSource Payment-Source Name
      * @param null|string $invoiceId custom invoice number
@@ -83,7 +84,7 @@ class OrderRequestFactory
         Basket $basket,
         string $intent,
         ?string $userAction = null,
-        ?string $transactionId = null,
+        ?string $customId = null,
         ?string $processingInstruction = null,
         ?string $paymentSource = null,
         ?string $invoiceId = null,
