@@ -160,7 +160,8 @@ class Payment
     }
 
     public function doCreatePatchedOrder(
-        EshopModelBasket $basket
+        EshopModelBasket $basket,
+        EshopModelOrder $order
     ): array {
         // PatchOrders access an OrderCall that has taken place before.
         // For this reason, the payPalPartnerAttributionId does not have
@@ -177,7 +178,7 @@ class Payment
             null,
             false,
             true,
-            null
+            $order
         );
 
         $paypalOrderId = $response->id ?: '';
