@@ -154,15 +154,19 @@ class OrderController extends OrderController_parent
             return;
         }
 
+        $order = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
+        $orderId = \OxidEsales\Eshop\Core\Registry::getSession()->getVariable('sess_challenge');
+        $order->load($orderId);
         $response = $paymentService->doCreatePatchedOrder(
-            Registry::getSession()->getBasket()
+            Registry::getSession()->getBasket(),
+            $order
         );
         if (!($paypalOrderId = $response['id'])) {
             $this->outputJson(['acdcerror' => 'cannot create paypal order']);
             return;
         }
 
-        if (!$status || (PayPalOrderModel::ORDER_STATE_ACDCINPROGRESS !== $status)) {
+        if (!$status && ($status !== 'thankyou' || (PayPalOrderModel::ORDER_STATE_ACDCINPROGRESS !== (int)$status))) {
             $response = ['acdcerror' => 'unexpected order status ' . $status];
             $paymentService->removeTemporaryOrder();
         } else {
@@ -307,6 +311,7 @@ class OrderController extends OrderController_parent
         try {
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
+
             $order->finalizeOrderAfterExternalPayment($sessionAcdcOrderId, $forceFetchDetails);
             $goNext = 'thankyou';
         } catch (Exception $exception) {
