@@ -166,7 +166,7 @@ class OrderController extends OrderController_parent
             return;
         }
 
-        if (!$status && ($status !== 'thankyou' || (PayPalOrderModel::ORDER_STATE_ACDCINPROGRESS !== (int)$status))) {
+        if (!$status || (PayPalOrderModel::ORDER_STATE_ACDCINPROGRESS !== (int)$status)) {
             $response = ['acdcerror' => 'unexpected order status ' . $status];
             $paymentService->removeTemporaryOrder();
         } else {
@@ -311,7 +311,6 @@ class OrderController extends OrderController_parent
         try {
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
-
             $order->finalizeOrderAfterExternalPayment($sessionAcdcOrderId, $forceFetchDetails);
             $goNext = 'thankyou';
         } catch (Exception $exception) {
