@@ -154,8 +154,12 @@ class OrderController extends OrderController_parent
             return;
         }
 
+        $order = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
+        $orderId = \OxidEsales\Eshop\Core\Registry::getSession()->getVariable('sess_challenge');
+        $order->load($orderId);
         $response = $paymentService->doCreatePatchedOrder(
-            Registry::getSession()->getBasket()
+            Registry::getSession()->getBasket(),
+            $order
         );
         if (!($paypalOrderId = $response['id'])) {
             $this->outputJson(['acdcerror' => 'cannot create paypal order']);

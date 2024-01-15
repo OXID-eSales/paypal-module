@@ -488,6 +488,13 @@ class Payment
         $redirectLink = '';
 
         try {
+            //sent Order OXID as custom_id to PayPal
+            $this->doPatchPayPalOrder(
+                Registry::getSession()->getBasket(),
+                $uapmOrderId,
+                (string)$order->getFieldData('oxordernr')
+            );
+
             $redirectLink = $this->doConfirmUAPM(
                 $order,
                 $basket,
