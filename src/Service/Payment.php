@@ -608,7 +608,11 @@ class Payment
                 PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME,
                 $payPalClientMetadataId,
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-                null, null, true, true, $order
+                null,
+                null,
+                true,
+                true,
+                $order
             );
             $payPalOrderId = $result->id;
         } catch (UserPhoneException $e) {
