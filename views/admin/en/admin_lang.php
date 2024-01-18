@@ -71,6 +71,8 @@ $aLang = [
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Creditcard',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '(As an alternative to the missing payment method, an additional "credit card" button is displayed under the Paypal buttons.)',
 
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING'        => 'Vaulting',
+
     'OSC_PAYPAL_LOCALISATIONS'                    => 'Locals',
     'OSC_PAYPAL_LOCALES'                          => 'regional language settings',
     'HELP_OSC_PAYPAL_LOCALES'                     => 'PayPal supports displaying the PayPal buttons in regional languages. Please enter the codes separated by commas in ISO 639-1 alpha-2 / ISO 3166-1 alpha-2 format (e.g. de_DE). The first entry is the default entry.',

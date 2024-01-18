@@ -158,6 +158,13 @@ class ModuleSettings
             $this->isLivePuiEligibility();
     }
 
+    public function isVaultingEligibility(): bool
+    {
+        return $this->isSandbox()?
+            $this->isSandBoxVaultingEligibility() :
+            $this->isLiveVaultingEligibility();
+    }
+
     public function getLiveClientId(): string
     {
         return (string)$this->getSettingValue('oscPayPalClientId');
@@ -336,6 +343,11 @@ class ModuleSettings
         return (bool)$this->getSettingValue('oscPayPalPuiEligibility');
     }
 
+    public function isLiveVaultingEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalVaultingEligibility');
+    }
+
     public function isSandboxAcdcEligibility(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalSandboxAcdcEligibility');
@@ -344,6 +356,11 @@ class ModuleSettings
     public function isSandboxPuiEligibility(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalSandboxPuiEligibility');
+    }
+
+    public function isSandboxVaultingEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSandboxVaultingEligibility');
     }
 
     public function getActivePayments(): array
@@ -435,6 +452,15 @@ class ModuleSettings
             $this->save('oscPayPalSandboxPuiEligibility', $eligibility);
         } else {
             $this->save('oscPayPalPuiEligibility', $eligibility);
+        }
+    }
+
+    public function saveVaultingEligibility(bool $eligibility): void
+    {
+        if ($this->isSandbox()) {
+            $this->save('oscPayPalSandboxVaultingEligibility', $eligibility);
+        } else {
+            $this->save('oscPayPalVaultingEligibility', $eligibility);
         }
     }
 

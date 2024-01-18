@@ -109,6 +109,11 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->isPuiEligibility();
     }
 
+    public function isVaultingEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isVaultingEligibility();
+    }
+
     public function getLiveClientId(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getLiveClientId();
