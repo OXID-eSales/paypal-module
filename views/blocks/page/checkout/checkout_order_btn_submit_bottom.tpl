@@ -1,9 +1,8 @@
 [{assign var="payment" value=$oView->getPayment()}]
 [{if "oscpaypal_acdc" == $payment->getId() || "oscpaypal" == $payment->getId()}]
     <div class="float-right ml-5 mt-3">
-        <input type="checkbox" name="vaultPayment" id="oscPayPalVaultPayment">
+        <input type="hidden" name="vaultPayment" id="oscPayPalVaultPayment" value="">
         <input type="hidden" name="oscPayPalPaymentTypeForVaulting" value="[{$payment->getId()}]">
-        <label for="oscPayPalVaultPayment"><strong>[{oxmultilang ident="OSC_PAYPAL_VAULTING_SAVE"}]</strong></label>
     </div>
 [{/if}]
 [{if "oscpaypal_pui" == $payment->getId()}]
