@@ -20,12 +20,6 @@
             ]
         }
     },
-    "repositories": [
-        {
-            "type": "composer",
-            "url": "https://paypal-module.packages.oxid-esales.com/"
-        }
-    ],
     "require": {
         "giggsey/libphonenumber-for-php": "^8.12",
         "viison/address-splitter": "^0.3.4",
