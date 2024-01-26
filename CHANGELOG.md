@@ -4,10 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.3.4] - 2024-??-??
+## [3.3.4] - 2024-01-26
 
 - Transfer OXID-Ordernumber to PayPal
 - PayPal-Log consider Shop-ErrorLogLevel
+- Composer-Installation now via packagist.
+  - https://packagist.org/packages/oxid-solution-catalysts/paypal-module
+  - https://packagist.org/packages/oxid-solution-catalysts/paypal-client
+-  "Repositories"-requirement for Source https://paypal-module.packages.oxid-esales.com/ not need anymore
 
 ## [3.3.2] - 2023-11-17
 
