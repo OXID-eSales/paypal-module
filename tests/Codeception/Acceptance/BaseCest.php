@@ -339,7 +339,6 @@ abstract class BaseCest
     {
         //we did not end up on shop start page
         $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oscpaypal_pui']);
-        $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oscpaypal_sofort']);
         $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oscpaypal_acdc']);
         $I->updateInDatabase('oxpayments', ['oxactive' => 1], ['oxid' => 'oscpaypal']);
     }

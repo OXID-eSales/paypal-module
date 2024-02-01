@@ -18,7 +18,6 @@ final class PayPalDefinitions
     public const PUI_PAYPAL_PAYMENT_ID = 'oscpaypal_pui';
     public const PUI_REQUEST_PAYMENT_SOURCE_NAME = 'pay_upon_invoice';
     public const GIROPAY_PAYPAL_PAYMENT_ID = 'oscpaypal_giropay';
-    public const SOFORT_PAYPAL_PAYMENT_ID = 'oscpaypal_sofort';
     public const SEPA_PAYPAL_PAYMENT_ID = 'oscpaypal_sepa';
     public const CCALTERNATIVE_PAYPAL_PAYMENT_ID = 'oscpaypal_cc_alternative';
 
@@ -360,38 +359,6 @@ final class PayPalDefinitions
             'buttonpayment' => false,
             'defaulton' => true
         ],
-        // uAPM MyBank
-        'oscpaypal_mybank' => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => 'MyBank',
-                    'longdesc' => '',
-                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_mybank_color.svg" title="MyBank" style="float: left;margin-right: 10px;" />
-                        MyBank bietet sichere und geschützte Banküberweisungen in Echtzeit zwischen Kunden
-                        und Kaufleute. MyBank ist auf einer Vielzahl von Websites für den Kauf von Produkten verfügbar,
-                        Dienstleistungen und für Zahlungen an Einrichtungen der öffentlichen Verwaltung. MyBank
-                        ist eine flexibele Lösung für B2B- und B2C-Unternehmen: 40 Millionen aktivierte Kunden und über
-                        210 Banken und PSPs haben sich dem MyBank-Netzwerk in ganz Europa angeschlossen.'
-                ],
-                'en' => [
-                    'desc' => 'MyBank',
-                    'longdesc' => '',
-                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_mybank_color.svg" title="MyBank" style="float: left;margin-right: 10px;" />
-                        MyBank offers safe and protected real-time bank transfers between customers
-                        and merchants. MyBank is available on a wide range of sites for the purchase of products,
-                        services and for payments towards public administration entities. MyBank is a flexible
-                        solution for both B2B and B2C businesses: 40 million enabled customers and over 210 banks
-                        and PSPs have joined the MyBank network throughout Europe.'
-                ]
-            ],
-            'countries' => ['IT'],
-            'currencies' => ['EUR'],
-            'uapmpaymentsource' => 'mybank',
-            'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,
-            'onlybrutto' => false,
-            'buttonpayment' => false,
-            'defaulton' => true
-        ],
         // uAPM Przelewy24
         'oscpaypal_przelewy24' => [
             'descriptions' => [
@@ -415,41 +382,6 @@ final class PayPalDefinitions
             'countries' => ['PL'],
             'currencies' => ['EUR', 'PLN'],
             'uapmpaymentsource' => 'p24',
-            'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,
-            'onlybrutto' => false,
-            'buttonpayment' => false,
-            'defaulton' => true
-        ],
-        // uAPM Sofort
-        self::SOFORT_PAYPAL_PAYMENT_ID => [
-            'descriptions' => [
-                'de' => [
-                    'desc' => 'Sofort',
-                    'longdesc' => '',
-                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_sofort_black.svg" title="Sofort" style="float: left;margin-right: 10px;" />
-                        Sofort, auch bekannt als Jetzt bezahlen mit Klarna, ist eine beliebte Online-
-                        Banking-Methode in Deutschland, Österreich, der Schweiz und Belgien, was es zu einem Muss für
-                        jedes Unternehmen macht, das in diesem Bereich tätig sein will. Im Jahr 2014 wurde Sofort von
-                        Klarna und der Klarna Group übernommen. Bei Sofort nutzen sicherheitsbewusste Verbraucher ihre
-                        eigenen Online-Banking-Daten, über die sichere Zahlungsseite von Sofort eingegeben. Einmal
-                        eingeloggt, wird ein einmaliger Bestätigungs-Code vom Verbraucher verwendet, um die Zahlung zu
-                        autorisieren.'
-                ],
-                'en' => [
-                    'desc' => 'Sofort',
-                    'longdesc' => '',
-                    'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_sofort_black.svg" title="Sofort" style="float: left;margin-right: 10px;" />
-                        Sofort, also known as Pay now with Klarna, is a popular online banking method
-                        in Germany, Austria, Switzerland and Belgium, making it a must-have for any business wanting
-                        to operate in this area. In 2014 Sofort was acquired by Klarna and the Klarna Group was
-                        established. With Sofort, security-conscious consumers use their own online banking details,
-                        entered through the secure payment page of Sofort. Once logged in, a one-time confirmation
-                        code is used by the consumer to authorize payment.'
-                ]
-            ],
-            'countries' => ['DE', 'AT', 'BE', 'IT', 'NL', 'GB', 'ES'],
-            'currencies' => ['EUR', 'GBP'],
-            'uapmpaymentsource' => 'sofort',
             'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,
             'onlybrutto' => false,
             'buttonpayment' => false,
