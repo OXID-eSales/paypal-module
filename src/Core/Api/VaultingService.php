@@ -7,6 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core\Api;
 
+use JsonException;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
@@ -44,6 +45,7 @@ class VaultingService extends BaseService
      * @param bool $card
      * @return array
      * @throws ApiException
+     * @throws JsonException
      */
     public function createVaultSetupToken(bool $card = false): array
     {
@@ -62,7 +64,7 @@ class VaultingService extends BaseService
         $path = '/v3/vault/setup-tokens';
         $method = 'post';
 
-        $response = $this->send($method, $path, [], $headers, json_encode($body, JSON_FORCE_OBJECT));
+        $response = $this->send($method, $path, [], $headers, json_encode($body, JSON_THROW_ON_ERROR | JSON_FORCE_OBJECT));
         $body = $response->getBody();
 
         return json_decode((string)$body, true);
@@ -109,10 +111,11 @@ class VaultingService extends BaseService
             . '-'
             . strtoupper($country->oxcountry__oxisoalpha2->value);
         $experience_context     = [
-            "brand_name"        => $activeShop->getFieldData('oxname'),
-            "locale"            => $locale,
-            "return_url"        => $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession',
-            "cancel_url"        => $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
+            "brand_name"          => $activeShop->getFieldData('oxname'),
+            "locale"              => $locale,
+            "return_url"          => $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession',
+            "cancel_url"          => $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
+//            "shipping_preference" => "SET_PROVIDED_ADDRESS",
         ];
 
         if ($card) {
@@ -204,6 +207,19 @@ class VaultingService extends BaseService
         $headers['Content-Type'] = 'application/json';
         $headers['PayPal-Request-Id'] = time();
         $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
+        $headers = array_merge($headers, $this->getAuthHeaders());
+        return $headers;
+    }
+
+    protected function getAuthHeaders(): array
+    {
+        if (!$this->client->isAuthenticated()) {
+            $this->client->auth();
+        }
+
+        $headers = [];
+        $headers['Authorization'] = 'Bearer ' . $this->client->getTokenResponse();
+
         return $headers;
     }
 }

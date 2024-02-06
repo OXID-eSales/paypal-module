@@ -13,13 +13,12 @@
             <div id="PayPalButtonVaulting" class="paypal-button-container paypal-button-wrapper large"></div>
         </div>
     </div>
-
     <script>
         window.onload = function () {
             paypal.Buttons({
                                createVaultSetupToken: async () => {
                                    const result = await fetch(
-                                       "[{oxgetseourl ident=$oViewConf->getSslSelfLink()}]&cl=osctokencontroller&fnc=generatesetuptoken",
+                                       "[{oxgetseourl ident=$oViewConf->getSslSelfLink()}]&cl=osctokencontroller&fnc=generatesetuptoken&XDEBUG_SESSION_START=1",
                                        { method: "POST"
                                        })
                                    const { id } = await result.json();
@@ -27,7 +26,7 @@
                                },
                                onApprove: async ({ vaultSetupToken }) => {
                                    const result = await fetch(
-                                       "[{oxgetseourl ident=$oViewConf->getSslSelfLink()}]&cl=osctokencontroller&fnc=generatepaymenttoken&token="+vaultSetupToken,
+                                       "[{oxgetseourl ident=$oViewConf->getSslSelfLink()}]&cl=osctokencontroller&fnc=generatepaymenttoken&XDEBUG_SESSION_START=1&token="+vaultSetupToken,
                                        {method: 'POST'
                                        })
                                    const status = await result.json();
