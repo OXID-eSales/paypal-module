@@ -133,7 +133,7 @@ class OrderRequestFactory
                 false
             );
             return $request;
-        } elseif (Registry::getRequest()->getRequestParameter("vaultPayment")) {
+        } elseif (Registry::getRequest()->getRequestParameter("vaultPayment") === "true") {
             $paymentType = Registry::getRequest()->getRequestParameter("oscPayPalPaymentTypeForVaulting");
             $card = ($paymentType == PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID);
 

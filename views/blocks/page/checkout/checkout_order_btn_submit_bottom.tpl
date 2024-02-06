@@ -1,8 +1,7 @@
 [{assign var="payment" value=$oView->getPayment()}]
-[{if "oscpaypal_acdc" == $payment->getId() || "oscpaypal" == $payment->getId()}]
+[{if "oscpaypal" == $payment->getId()}]
     <div class="float-right ml-5 mt-3">
         <input type="hidden" name="vaultPayment" id="oscPayPalVaultPayment" value="">
-        <input type="hidden" name="oscPayPalPaymentTypeForVaulting" value="[{$payment->getId()}]">
     </div>
 [{/if}]
 [{if "oscpaypal_pui" == $payment->getId()}]
