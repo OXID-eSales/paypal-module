@@ -7,9 +7,12 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Request;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidEsales\Eshop\Application\Controller\FrontendController;
+use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 
 class VaultingTokenController extends FrontendController
 {
+    use JsonTrait;
+
     protected $vaultingService;
 
     public function generateSetupToken()
@@ -78,17 +81,5 @@ class VaultingTokenController extends FrontendController
         $user->oxuser__oscpaypalcustomerid = new Field($id);
 
         return $user->save();
-    }
-
-    /**
-     * Encodes and sends response as json
-     *
-     * @param $response
-     */
-    protected function outputJson($response)
-    {
-        $utils = Registry::getUtils();
-        $utils->setHeader('Content-Type: application/json; charset=utf-8');
-        $utils->showMessageAndExit(json_encode($response));
     }
 }

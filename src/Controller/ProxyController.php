@@ -27,6 +27,7 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
+use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
@@ -36,6 +37,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
  */
 class ProxyController extends FrontendController
 {
+    use JsonTrait;
     use ServiceContainer;
 
     public function createOrder()
@@ -155,18 +157,6 @@ class ProxyController extends FrontendController
         PayPalSession::unsetPayPalOrderId();
         Registry::getSession()->getBasket()->setPayment(null);
         Registry::getUtils()->redirect(Registry::getConfig()->getShopSecureHomeURL() . 'cl=payment', false, 301);
-    }
-
-    /**
-     * Encodes and sends response as json
-     *
-     * @param $response
-     */
-    protected function outputJson($response)
-    {
-        $utils = Registry::getUtils();
-        $utils->setHeader('Content-Type: application/json');
-        $utils->showMessageAndExit(json_encode($response));
     }
 
     protected function addToBasket($qty = 1): void
