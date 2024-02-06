@@ -87,7 +87,7 @@ class ServiceFactory
     }
 
     /**
-     * @return UserIdService
+     * @return VaultingService
      */
     public function getVaultingService(): VaultingService
     {
