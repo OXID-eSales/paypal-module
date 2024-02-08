@@ -369,15 +369,13 @@ class PayPalConfigController extends AdminController
         $onboardingFile = $config->getOnboardingBlockCacheFileName();
         if (file_exists($onboardingFile) === false) {
             $request = Registry::getRequest();
-            if (
-                ('true' === (string)$request->getRequestParameter('permissionsGranted')) &&
-                ('true' === (string)$request->getRequestParameter('consentStatus'))
-            ) {
+
+            if ($merchantId = (string)$request->getRequestParameter('merchantIdInPayPal')) {
                 /** @var ModuleSettings $moduleSettings */
                 $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
                 $isSandbox = (string)$request->getRequestParameter('isSandbox');
                 $isSandbox = $isSandbox === '1';
-                $moduleSettings->saveMerchantId($request->getRequestParameter('merchantIdInPayPal'), $isSandbox);
+                $moduleSettings->saveMerchantId($merchantId, $isSandbox);
             }
 
             $this->autoConfiguration();
