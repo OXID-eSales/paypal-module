@@ -125,7 +125,7 @@ class PayPalConfigController extends AdminController
             'returnToPartnerUrl' => $returnToPartnerUrl,
             'product' => 'PPCP',
             'secondaryProducts' => 'advanced_vaulting,payment_methods',
-            'capabilities' => 'GOOGLE_PAY,APPLE_PAY,PAY_UPON_INVOICE,paypal_wallet_vaulting_advanced',
+            'capabilities' => 'GOOGLE_PAY,APPLE_PAY,PAY_UPON_INVOICE,PAYPAL_WALLET_VAULTING_ADVANCED',
             'integrationType' => 'FO',
             'features' => 'PAYMENT,REFUND,ACCESS_MERCHANT_INFORMATION,ADVANCED_TRANSACTIONS_SEARCH',
             'country.x' => $countryCode,
