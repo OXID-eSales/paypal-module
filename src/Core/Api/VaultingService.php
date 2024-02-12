@@ -120,13 +120,11 @@ class VaultingService extends BaseService
 
         if ($card) {
             $paymentSource = [
-                "payment_source" => [
-                    "card" => [
-                        "name" => "$name",
-                        "billing_address"       => $address,
-                        "verification_method"   => "SCA_WHEN_REQUIRED",
-                        "experience_context"    => $experience_context
-                    ]
+                "card" => [
+                    "name" => "$name",
+                    "billing_address"       => $address,
+                    "verification_method"   => "SCA_WHEN_REQUIRED",
+                    "experience_context"    => $experience_context
                 ]
             ];
         } else {
