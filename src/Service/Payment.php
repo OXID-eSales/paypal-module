@@ -159,7 +159,7 @@ class Payment
                 $payPalPartnerAttributionId,
                 $payPalClientMetadataId,
                 'return=minimal',
-                $order instanceof EshopModelOrder ? $order->getId() : null
+                $payPalRequestId
             );
         } catch (ApiException $exception) {
             $this->logger->log(
