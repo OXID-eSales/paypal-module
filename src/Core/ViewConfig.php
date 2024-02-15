@@ -560,4 +560,31 @@ class ViewConfig extends ViewConfig_parent
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalSCAContingency();
     }
+
+    public function getGenerateSetupTokenLink()
+    {
+        $config = oxNew(Config::class);
+        $params = 'cl=osctokencontroller&fnc=generatesetuptoken';
+        if ($config->isSandbox()) {
+            $params.= '&XDEBUG_SESSION_START=1';
+        }
+
+        $url = html_entity_decode($this->getConfig()->getShopHomeUrl());
+
+        return $url.$params;
+    }
+
+    public function getGeneratePaymentTokenLink()
+    {
+        $config = oxNew(Config::class);
+        $params = 'cl=osctokencontroller&fnc=generatepaymenttoken';
+        if ($config->isSandbox()) {
+            $params.= '&XDEBUG_SESSION_START=1';
+        }
+
+        $url = html_entity_decode($this->getConfig()->getShopHomeUrl());
+
+        return $url.$params.'&token=';
+
+    }
 }
