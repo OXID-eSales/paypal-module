@@ -27,7 +27,7 @@
                 // Call your server API to generate a vaultSetupToken
                 // and return it here as a string
                 const result = await fetch(
-                    "[{oxgetseourl ident=$oViewConf->getSslSelfLink()}]&cl=osctokencontroller&fnc=generatesetuptoken&card=true",
+                    "[{oxgetseourl ident=$oViewConf->getGenerateSetupTokenLink(true)}]",
                     { method: "POST"
                 })
                 const { id } = await result.json();
@@ -40,7 +40,7 @@
                 }
 
                 const result = await fetch(
-                    "[{oxgetseourl ident=$oViewConf->getSslSelfLink()}]&cl=osctokencontroller&fnc=generatepaymenttoken&token="+data.vaultSetupToken,
+                    "[{oxgetseourl ident=$oViewConf->getGeneratePaymentTokenLink()}]"+data.vaultSetupToken,
                     {
                         method: "POST",
                         body: JSON.stringify(data)

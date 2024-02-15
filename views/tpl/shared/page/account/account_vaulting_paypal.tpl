@@ -18,7 +18,7 @@
             paypal.Buttons({
                                createVaultSetupToken: async () => {
                                    const result = await fetch(
-                                       "[{oxgetseourl ident=$oViewConf->getSslSelfLink()}]&cl=osctokencontroller&fnc=generatesetuptoken&XDEBUG_SESSION_START=1",
+                                       "[{oxgetseourl ident=$oViewConf->getGenerateSetupTokenLink()}]",
                                        { method: "POST"
                                        })
                                    const { id } = await result.json();
@@ -26,7 +26,7 @@
                                },
                                onApprove: async ({ vaultSetupToken }) => {
                                    const result = await fetch(
-                                       "[{oxgetseourl ident=$oViewConf->getSslSelfLink()}]&cl=osctokencontroller&fnc=generatepaymenttoken&XDEBUG_SESSION_START=1&token="+vaultSetupToken,
+                                       "[{oxgetseourl ident=$oViewConf->getGeneratePaymentTokenLink()}]"+vaultSetupToken,
                                        {method: 'POST'
                                        })
                                    const status = await result.json();
