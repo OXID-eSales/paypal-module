@@ -26,7 +26,7 @@
                                },
                                onApprove: async ({ vaultSetupToken }) => {
                                    const result = await fetch(
-                                       "[{oxgetseourl ident=$oViewConf->getSslSelfLink()}]"+vaultSetupToken,
+                                       "[{oxgetseourl ident=$oViewConf->getGeneratePaymentTokenLink()}]"+vaultSetupToken,
                                        {method: 'POST'
                                        })
                                    const status = await result.json();
