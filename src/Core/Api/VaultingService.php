@@ -124,7 +124,15 @@ class VaultingService extends BaseService
                     "name" => "$name",
                     "billing_address"       => $address,
                     "verification_method"   => "SCA_WHEN_REQUIRED",
-                    "experience_context"    => $experience_context
+                    "experience_context"    => $experience_context,
+                    "attributes" => [
+                        "verification" => [
+                            "method" => "SCA_WHEN_REQUIRED"
+                        ],
+                        "vault" => [
+                            "store_in_vault" => "ON_SUCCESS"
+                        ]
+                    ],
                 ]
             ];
         } else {

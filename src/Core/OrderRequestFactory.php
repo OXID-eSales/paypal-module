@@ -137,6 +137,8 @@ class OrderRequestFactory
             $paymentType = Registry::getRequest()->getRequestParameter("oscPayPalPaymentTypeForVaulting");
             $card = ($paymentType == PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID);
 
+            Registry::getSession()->setVariable("vaultSuccess", true);
+
             $this->modifyPaymentSourceForVaulting($request, $card);
 
             return $request;

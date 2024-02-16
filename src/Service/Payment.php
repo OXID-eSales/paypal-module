@@ -366,10 +366,18 @@ class Payment
             );
 
             if ($result instanceof Order && $order->isPayPalOrderCompleted($result)) {
-                //todo only do this if vaulting was actually attempted
+
+                //save vault to user and set success message
                 $session = Registry::getSession();
-                $vault = $result->payment_source->paypal->attributes->vault;
-                if ($vault->status == "VAULTED") {
+                $vault = null;
+
+                if ($paypal = $result->payment_source->paypal) {
+                    $vault = $paypal->attributes->vault;
+                }elseif ($card = $result->payment_source->card) {
+                    $vault = $card->attributes->vault;
+                }
+
+                if ($session->getVariable("vaultSuccess") && $vault->status == "VAULTED") {
                     if ($id = $vault->customer["id"]) {
                         $user = Registry::getConfig()->getUser();
 
@@ -381,7 +389,7 @@ class Payment
                         $session->setVariable("vaultSuccess", false);
                     }
                 } else {
-                    $session->setVariable("vaultSuccess", false);
+                    $session->deleteVariable("vaultSuccess");
                 }
 
                 $order->markOrderPaid();
