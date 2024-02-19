@@ -127,7 +127,7 @@ class PayPalConfigController extends AdminController
             'secondaryProducts' => 'advanced_vaulting,payment_methods',
             'capabilities' => 'GOOGLE_PAY,APPLE_PAY,PAY_UPON_INVOICE,PAYPAL_WALLET_VAULTING_ADVANCED',
             'integrationType' => 'FO',
-            'features' => 'PAYMENT,REFUND,ACCESS_MERCHANT_INFORMATION,ADVANCED_TRANSACTIONS_SEARCH',
+            'features' => 'PAYMENT,REFUND,ACCESS_MERCHANT_INFORMATION,ADVANCED_TRANSACTIONS_SEARCH,VAULT,BILLING_AGREEMENT',
             'country.x' => $countryCode,
             'locale.x' => $localeCode,
             'sellerNonce' => $this->createNonce(),
