@@ -322,7 +322,10 @@ class Payment
                 }
 
                 $result = $this->fetchOrderFields($checkoutOrderId);
-            } else {
+            } elseif (Registry::getRequest()->getRequestParameter("vaulting")) {
+                //when a vaulted payment is used, the order is already finished.
+                $result = $this->fetchOrderFields($checkoutOrderId);
+            }else {
                 $request = new OrderCaptureRequest();
                 //order number must be resolved before order patching
                 $order->setOrderNumber();
