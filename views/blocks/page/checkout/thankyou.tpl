@@ -1,7 +1,9 @@
 [{$smarty.block.parent}]
 
-[{if $oViewConf->getSessionVaultSuccess() !== null}]
-    [{if $oViewConf->getSessionVaultSuccess()}]
+[{assign var=vaultSuccess value=$oViewConf->getSessionVaultSuccess()}]
+
+[{if $vaultSuccess !== null}]
+    [{if $vaultSuccess}]
         <p class="alert alert-success">
             [{oxmultilang ident="OSC_PAYPAL_VAULTING_SUCCESS"}]
         </p>

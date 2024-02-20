@@ -381,16 +381,24 @@ class Payment
                 }
 
                 if ($session->getVariable("vaultSuccess") && $vault->status == "VAULTED") {
+
+                    $vaultSuccess = false;
+
                     if ($id = $vault->customer["id"]) {
                         $user = Registry::getConfig()->getUser();
 
                         $user->oxuser__oscpaypalcustomerid = new Field($id);
 
-                        $vaultSuccess = $user->save();
-                        $session->setVariable("vaultSuccess", $vaultSuccess);
-                    } else {
-                        $session->setVariable("vaultSuccess", false);
+                        if ($user->save()) {
+                            $vaultSuccess = true;
+                        }
                     }
+
+                    if (!$vaultSuccess) {
+                        $this->logger->log('debug', "Vaulting was attempted but didn't succeed.");
+                    }
+
+                    $session->setVariable("vaultSuccess", $vaultSuccess);
                 } else {
                     $session->deleteVariable("vaultSuccess");
                 }
