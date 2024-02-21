@@ -37,7 +37,6 @@ final class UapmCheckoutCest extends BaseCest
     protected function providerPaymentMethods(): array
     {
         return [
-           # ['paymentId' => PayPalDefinitions::SOFORT_PAYPAL_PAYMENT_ID],
             ['paymentId' => PayPalDefinitions::GIROPAY_PAYPAL_PAYMENT_ID]
         ];
     }
