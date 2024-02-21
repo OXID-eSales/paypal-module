@@ -21,6 +21,7 @@ use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Exception\Redirect;
 use OxidSolutionCatalysts\PayPal\Exception\RedirectWithMessage;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModel;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
@@ -78,6 +79,11 @@ class OrderController extends OrderController_parent
             $paymentService->getSessionPaymentId() === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID
         ) {
             $paymentService->removeTemporaryOrder();
+        }
+
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        if ($moduleSettings->getIsVaultingActive() && $this->getUser()->oxuser__oxpassword->value) {
+            $this->addTplParam('oscpaypal_payment_saveable',true);
         }
 
         $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");

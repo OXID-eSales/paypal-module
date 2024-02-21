@@ -43,10 +43,12 @@
                 <div class="card-body">
                     [{assign var="payment" value=$oView->getPayment()}]
                     [{$payment->oxpayments__oxdesc->value}]
-                    <br>
-                    <br>
-                    <input type="checkbox" id="oscPayPalVaultPaymentCheckbox" onclick="setVaultingCheckbox()">
-                    <label for="oscPayPalVaultPaymentCheckbox">[{oxmultilang ident="OSC_PAYPAL_VAULTING_SAVE"}]</label>
+                    [{if $oscpaypal_payment_saveable}]
+                        <br>
+                        <br>
+                        <input type="checkbox" id="oscPayPalVaultPaymentCheckbox" onclick="setVaultingCheckbox()">
+                        <label for="oscPayPalVaultPaymentCheckbox">[{oxmultilang ident="OSC_PAYPAL_VAULTING_SAVE"}]</label>
+                    [{/if}]
                 </div>
             </div>
         </form>
