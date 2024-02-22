@@ -102,7 +102,7 @@ class OrderRequestFactory
         $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
 
         $request->intent = $intent;
-        $request->purchase_units = $this->getPurchaseUnits($transactionId, $invoiceId, $withArticles);
+        $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $withArticles);
 
         $useVaultedPayment = $setVaulting && !is_null($selectedVaultPaymentSourceIndex);
         if ($useVaultedPayment) {
