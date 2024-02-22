@@ -47,11 +47,11 @@ class PaymentController extends PaymentController_parent
                     foreach ($vaultedPaymentToken["payment_source"] as $paymentType => $paymentSource) {
                         if ($paymentType == "card") {
                             $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_ENDING_IN");
-                            $vaultedPaymentSources[$paymentType] = $paymentSource["brand"] . " " .
+                            $vaultedPaymentSources[$paymentType][] = $paymentSource["brand"] . " " .
                                 $string . $paymentSource["last_digits"];
                         } elseif ($paymentType == "paypal") {
                             $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
-                            $vaultedPaymentSources[$paymentType] = $string . " " . $paymentSource["email_address"];
+                            $vaultedPaymentSources[$paymentType][] = $string . " " . $paymentSource["email_address"];
                         }
                     }
                 }

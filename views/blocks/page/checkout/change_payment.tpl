@@ -4,17 +4,19 @@
             <h3 id="paymentHeader" class="card-title">[{oxmultilang ident="OSC_PAYPAL_VAULTING_VAULTED_PAYMENTS"}]</h3>
         </div>
         <div class="card-body">
-            [{foreach from=$vaultedPaymentSources item=paymentDescription name="paymentSources" key="paymentType"}]
-                [{assign var="iterator" value=$smarty.foreach.paymentSources.iteration-1}]
-
-                <div class="well well-sm">
-                    <dl>
-                        <dt>
-                            <input class="vaulting_paymentsource" name="vaulting_paymentsource" type="radio" id="paymentsource_[{$iterator}]" data-index="[{$iterator}]" data-paymenttype="[{$paymentType}]">
-                            <label for="paymentsource_[{$iterator}]">[{$paymentDescription}]</label>
-                        </dt>
-                    </dl>
-                </div>
+            [{assign var="iterator" value=0}]
+            [{foreach from=$vaultedPaymentSources item=vaultedPayment key="paymentType"}]
+                [{foreach from=$vaultedPayment item=paymentDescription name="paymentSources"}]
+                    <div class="well well-sm">
+                        <dl>
+                            <dt>
+                                <input class="vaulting_paymentsource" name="vaulting_paymentsource" type="radio" id="paymentsource_[{$iterator}]" data-index="[{$iterator}]" data-paymenttype="[{$paymentType}]">
+                                <label for="paymentsource_[{$iterator}]">[{$paymentDescription}]</label>
+                            </dt>
+                        </dl>
+                    </div>
+                    [{math assign="iterator" equation="x+1" x=$iterator}]
+                [{/foreach}]
             [{/foreach}]
 
             <div class="text-right">
