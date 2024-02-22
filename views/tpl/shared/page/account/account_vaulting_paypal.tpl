@@ -39,6 +39,9 @@
                                },
                                onError: (error) => {
                                    //TODO
+                               },
+                               style: {
+                                   label: 'checkout'
                                }
                            }).render("#PayPalButtonVaulting");
 
