@@ -27,7 +27,7 @@ final class PayPalDefinitions
         "store_in_vault" => "ON_SUCCESS",
         "usage_type" => "MERCHANT",
         "customer_type" => "CONSUMER",
-        "permit_multiple_payment_tokens" => false,
+        "permit_multiple_payment_tokens" => true,
     ];
 
     private const PAYMENT_CONSTRAINTS_PAYPAL = [

@@ -41,19 +41,21 @@ class PaymentController extends PaymentController_parent
         if ($paypalCustomerId = $this->getUser()->getFieldData("oscpaypalcustomerid")) {
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
             if ($vaultedPaymentTokens = $vaultingService->getVaultPaymentTokens($paypalCustomerId)["payment_tokens"]) {
-                $paymentType = key($vaultedPaymentTokens[0]["payment_source"]);
 
                 $vaultedPaymentSources = [];
-                foreach ($vaultedPaymentTokens[0]["payment_source"] as $paymentSource) {
-                    if ($paymentType == "card") {
-                        $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_ENDING_IN");
-                        $vaultedPaymentSources[$paymentType] = $paymentSource["brand"] . " " .
-                            $string . $paymentSource["last_digits"];
-                    } elseif ($paymentType == "paypal") {
-                        $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
-                        $vaultedPaymentSources[$paymentType] = $string . " " . $paymentSource["email_address"];
+                foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
+                    foreach ($vaultedPaymentToken["payment_source"] as $paymentType => $paymentSource) {
+                        if ($paymentType == "card") {
+                            $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_ENDING_IN");
+                            $vaultedPaymentSources[$paymentType] = $paymentSource["brand"] . " " .
+                                $string . $paymentSource["last_digits"];
+                        } elseif ($paymentType == "paypal") {
+                            $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
+                            $vaultedPaymentSources[$paymentType] = $string . " " . $paymentSource["email_address"];
+                        }
                     }
                 }
+
                 $this->addTplParam("vaultedPaymentSources", $vaultedPaymentSources);
             }
         }
