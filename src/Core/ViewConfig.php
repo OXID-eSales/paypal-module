@@ -184,7 +184,7 @@ class ViewConfig extends ViewConfig_parent
             $params['enable-funding'] = 'paylater';
         }
 
-        $params['disable-funding'] = 'sepa,bancontact,blik,eps,giropay,ideal,mercadopago,mybank,p24,sofort,venmo';
+        $params['disable-funding'] = 'sepa,bancontact,blik,eps,giropay,ideal,mercadopago,p24,venmo';
 
         if ($moduleSettings->isAcdcEligibility()) {
             $params['disable-funding'] .= ',card';
