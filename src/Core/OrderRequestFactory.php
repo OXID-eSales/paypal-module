@@ -668,8 +668,10 @@ class OrderRequestFactory
                             "vault_id" => $selectedPaymentToken["id"],
                         ]
                 ];
-        } elseif ($config->getUser()) {
+        } elseif ($user = $config->getUser()) {
             //save during purchase
+            $paypalCustomerId = $user->getFieldData("oscpaypalcustomerid");
+
             if ($useCard) {
                 $newPaymentSource = $vaultingService->getPaymentSourceForVaulting(true);
                 $newPaymentSource["attributes"] = [
@@ -680,6 +682,12 @@ class OrderRequestFactory
                         "store_in_vault" => "ON_SUCCESS"
                     ],
                 ];
+
+                if ($paypalCustomerId) {
+                    $newPaymentSource["card"]["attributes"]["customer"] = [
+                        "id" => $paypalCustomerId
+                    ];
+                }
             } else {
                 $newPaymentSource = [
                     "paypal" =>
@@ -699,6 +707,12 @@ class OrderRequestFactory
                                 ]
                         ],
                 ];
+
+                if ($paypalCustomerId) {
+                    $newPaymentSource["paypal"]["attributes"]["customer"] = [
+                        "id" => $paypalCustomerId
+                    ];
+                }
             }
 
             $request->payment_source = $newPaymentSource;
