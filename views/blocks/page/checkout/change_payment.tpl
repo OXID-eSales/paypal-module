@@ -10,7 +10,7 @@
                 <div class="well well-sm">
                     <dl>
                         <dt>
-                            <input class="vaulting_paymentsource" type="radio" id="paymentsource_[{$iterator}]" data-index="[{$iterator}]" data-paymenttype="[{$paymentType}]">
+                            <input class="vaulting_paymentsource" name="vaulting_paymentsource" type="radio" id="paymentsource_[{$iterator}]" data-index="[{$iterator}]" data-paymenttype="[{$paymentType}]">
                             <label for="paymentsource_[{$iterator}]">[{$paymentDescription}]</label>
                         </dt>
                     </dl>
@@ -30,7 +30,6 @@
 
     <script>
         window.onload = function () {
-            //depending on the selected vaulted payment, either credit card or paypal will be selected for the next step
             document.getElementById("paypalVaultCheckoutButton").onclick = function () {
                 document.querySelectorAll(".vaulting_paymentsource").forEach(function (paymentsource) {
                     if (paymentsource.checked) {

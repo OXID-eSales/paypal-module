@@ -59,6 +59,13 @@ class VaultingService extends BaseService
             $body = $this->getPaymentSourceForVaulting($card);
         }
 
+        //add customerid if there already is one
+        if ($paypalCustomerId = Registry::getConfig()->getUser()->getFieldData("oscpaypalcustomerid")) {
+            $body["customer"] = [
+                "id" => $paypalCustomerId
+            ];
+        }
+
         $headers = $this->getVaultingHeaders();
 
         $path = '/v3/vault/setup-tokens';
@@ -148,7 +155,7 @@ class VaultingService extends BaseService
                         ],
                         "usage_type" => "MERCHANT",
                         "customer_type" => "CONSUMER",
-                        "permit_multiple_payment_tokens" => false,
+                        "permit_multiple_payment_tokens" => true,
                         "usage_pattern" => "IMMEDIATE",
                         "experience_context" => $experience_context
                     ]
