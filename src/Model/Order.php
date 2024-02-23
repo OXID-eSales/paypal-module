@@ -170,9 +170,6 @@ class Order extends Order_parent
             }
         }
 
-        //ensure order number
-        $this->setOrderNumber();
-
         if ($isPayPalACDC) {
             //webhook should kick in and handle order state and we should not call the api too often
             Registry::getSession()->deleteVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
@@ -204,10 +201,15 @@ class Order extends Order_parent
         if (is_null($transactionId)) {
             $capture = $this->getOrderPaymentCapture($payPalOrderId);
             if (!$payPalPaymentSuccess || is_null($capture) || $capture->status === 'DECLINED') {
+                $paymentService = $this->getServiceFromContainer(PaymentService::class);
+                $paymentService->removeTemporaryOrder();
                 throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
             }
             $this->setTransId($capture->id);
         }
+
+        //ensure order number
+        $this->setOrderNumber();
 
         $this->sendPayPalOrderByEmail($user, $basket);
     }
