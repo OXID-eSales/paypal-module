@@ -1,8 +1,6 @@
 [{assign var="payment" value=$oView->getPayment()}]
 [{if "oscpaypal" == $payment->getId()}]
-    <div class="float-right ml-5 mt-3">
-        <input type="hidden" name="vaultPayment" id="oscPayPalVaultPayment" value="">
-    </div>
+    <input type="hidden" name="vaultPayment" id="oscPayPalVaultPayment" value="">
 [{/if}]
 [{if "oscpaypal_pui" == $payment->getId()}]
     [{if $oViewConf->isFlowCompatibleTheme()}]
