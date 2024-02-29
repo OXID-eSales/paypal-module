@@ -189,7 +189,9 @@ class Order extends Order_parent
                 $this->getId(),
                 $payPalOrderId,
                 $paymentsId,
-                PayPalApiOrder::STATUS_APPROVED
+                PayPalApiOrder::STATUS_APPROVED,
+                '',
+                Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
             );
         } else {
             // uAPM, PayPal Standard directly, PayPal Paylater
