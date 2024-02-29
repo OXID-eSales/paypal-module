@@ -212,6 +212,20 @@ class VaultingService extends BaseService
     }
 
     /**
+     * @param $paymentTokenId
+     * @return bool
+     */
+    public function deleteVaultedPayment($paymentTokenId)
+    {
+        $path = '/v3/vault/payment-tokens/'.$paymentTokenId;
+        $method = 'delete';
+
+        $response = $this->send($method,$path);
+
+        return $response->getStatusCode() == 204;
+    }
+
+    /**
      * @return array
      */
     protected function getVaultingHeaders(): array

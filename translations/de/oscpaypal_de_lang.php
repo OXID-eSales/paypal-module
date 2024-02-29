@@ -51,7 +51,9 @@ $aLang = [
     'OSC_PAYPAL_VAULTING_ERROR'                     => 'Beim Speichern Ihrer Zahlart ist etwas schiefgelaufen.',
     'OSC_PAYPAL_VAULTING_SUCCESS'                   => 'Ihre Zahlart wurde erfolgreich gespeichert. Sie finden Ihre gespeicherten Zahlungsarten im "Mein Konto" Bereich.',
     'OSC_PAYPAL_VAULTING_SAVE'                      => 'Zahlart speichern',
+    'OSC_PAYPAL_VAULTING_DELETE'                    => 'Zahlart löschen',
     'OSC_PAYPAL_CONTINUE_TO_NEXT_STEP'              => 'Weiter mit gespeicherter Zahlungsart',
     'OSC_PAYPAL_CARD_ENDING_IN'                     => 'endet mit ●●●',
     'OSC_PAYPAL_CARD_PAYPAL_PAYMENT'                => 'PayPal Zahlung mit',
+    'OSC_PAYPAL_DELETE_FAILED'                      => 'Beim Löschen Ihrer Zahlart ist etwas schiefgelaufen.',
 ];

@@ -23,4 +23,18 @@ class PayPalVaultingCardController extends AccountController
 
         return parent::render();
     }
+
+    public function deleteVaultedPayment()
+    {
+        $paymentTokenId = Registry::getRequest()->getRequestEscapedParameter("paymentTokenId");
+        $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+
+        if (!$vaultingService->deleteVaultedPayment($paymentTokenId)) {
+            Registry::getUtilsView()->addErrorToDisplay(
+                Registry::getLang()->translateString('OSC_PAYPAL_DELETE_FAILED'),
+                false,
+                true
+            );
+        }
+    }
 }
