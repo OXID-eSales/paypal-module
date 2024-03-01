@@ -204,10 +204,9 @@ class Order extends Order_parent
             $capture = $this->getOrderPaymentCapture($payPalOrderId);
             if (!$payPalPaymentSuccess || is_null($capture) || $capture->status === 'DECLINED') {
                 // We don't have a capture but the order has already been created with the order number.
-                // So it is no longer a temporary order with could be deleted via
-                // $this->getServiceFromContainer(PaymentService::class)->removeTemporaryOrder();
-                // That's why the order is deleted via delete(). Now there is a gap in the order numbers
-                $this->delete();
+                // so we set the order to "oxtransstatus" = ERROR
+                // The Merchant has the opportunity to see what is going on and can contact the customer if necessary
+                $this->setOrderStatus('ERROR');
                 throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
             }
             $this->setTransId($capture->id);
