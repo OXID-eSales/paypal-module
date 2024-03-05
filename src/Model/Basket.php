@@ -149,13 +149,13 @@ class Basket extends Basket_parent
 
     /**
      * Collects all basket discounts (basket, payment and vouchers)
-     * and returns sum of collected discounts.
-     *
-     * @return float
+     * and returns sum of collected discounts brut value.
      */
     public function getPayPalCheckoutDiscount(): float
     {
-        // collect discounts
+        $config = Registry::getConfig();
+        $netMode = $config->getConfigParam('blShowNetPrice');
+        $defaultVAT = $config->getConfigParam('dDefaultVAT');
         $discount = 0.0;
 
         $totalDiscount = $this->getTotalDiscount();
@@ -164,44 +164,35 @@ class Basket extends Basket_parent
             $discount += $totalDiscount->getBruttoPrice();
         }
 
-        // vouchers..
-        $vouchers = (array) $this->getVouchers();
+        //vouchers
+        $vouchers = (array)$this->getVouchers();
         foreach ($vouchers as $voucher) {
-            $discount += round($voucher->dVoucherdiscount, 2);
+            $voucherPrice = oxNew(Price::class);
+            $voucherPrice->setNettoMode($netMode);
+            $voucherPrice->setPrice($voucher->dVoucherdiscount, (float)$defaultVAT);
+
+            $discount += $voucherPrice->getBruttoPrice();
         }
 
         return $discount;
     }
 
     /**
-     * collect the netto-sum of all articles in Basket
-     * and returns sum of all costs.
-     *
-     * Normally we could use the method: $this->getProductsPrice()->getSum(true)
-     * to calculate the total net amount. However, since Paypal calculates the
-     * sum of the items on the basis of the rounded net prices, rounding errors
-     * can occur in the total. Therefore we calculate the sum over the following
-     * iteration.
-     *
-     * @return double
+     * Collect the brut-sum of all articles in Basket.
      */
-    public function getPayPalCheckoutItems($isOxidSum = true): float
+    public function getPayPalCheckoutItems(bool $isOxidSum = true): float
     {
         $result = 0;
+        $netMode = Registry::getConfig()->getConfigParam('blShowNetPrice');
+
         if ($isOxidSum) {
-            $result += $this->getBruttoSum();
+            $result += $netMode ? $this->getProductsPrice()->getSum(false) : $this->getBruttoSum();
         } else {
             foreach ($this->getContents() as $basketItem) {
                 $itemUnitPrice = $basketItem->getUnitPrice();
                 $result += $itemUnitPrice->getBruttoPrice() * $basketItem->getAmount();
             }
         }
-
-        // Wrapping-Costs, Gift-Cards and Payment-Costs are also Items for PayPal, so we add them
-        $result += $this->getPayPalCheckoutWrapping();
-        $result += $this->getPayPalCheckoutGiftCard();
-        $result += $this->getPayPalCheckoutPayment();
-        $result += $this->getPayPalCheckoutDeliveryCosts();
 
         return $result;
     }
@@ -238,5 +229,23 @@ class Basket extends Basket_parent
         }
 
         return $return;
+    }
+
+    /**
+     * Return sum of:
+     *  - Wrapping-Costs
+     *  - Gift-Cards
+     *  - Payment-Costs
+     *  - Delivery-Costs
+     */
+    public function getAdditionalPayPalCheckoutItemCosts(): float
+    {
+        $result = 0;
+        $result += $this->getPayPalCheckoutWrapping();
+        $result += $this->getPayPalCheckoutGiftCard();
+        $result += $this->getPayPalCheckoutPayment();
+        $result += $this->getPayPalCheckoutDeliveryCosts();
+
+        return $result;
     }
 }
