@@ -96,32 +96,27 @@ class Order extends Order_parent
     /**
      * PayPal order information
      */
-    /** @var PayPalApiOrder|null  */
-    protected $payPalApiOrder = null;
+    protected ?PayPalApiOrder $payPalApiOrder = null;
 
     /**
      * PayPal order Id
      */
-    /** @var string|null  */
-    protected $payPalOrderId = null;
+    protected ?string $payPalOrderId = null;
 
     /**
      * PayPal order Repo
      */
-    /** @var PayPalOrder  */
-    protected $payPalOrder;
+    protected PayPalOrder $payPalOrder;
 
     /**
      * PayPalPlus order Id
      */
-    /** @var string|null  */
-    protected $payPalPlusOrderId = null;
+    protected ?string $payPalPlusOrderId = null;
 
     /**
      * PayPalPlus order Id
      */
-    /** @var string|null  */
-    protected $payPalSoapOrderId = null;
+    protected ?string $payPalSoapOrderId = null;
 
     public function savePuiInvoiceNr(string $invoiceNr): void
     {
@@ -131,6 +126,10 @@ class Order extends Order_parent
         $this->save();
     }
 
+    /**
+     * @throws PayPalException
+     * @throws ApiException
+     */
     public function finalizeOrderAfterExternalPayment(string $payPalOrderId, bool $forceFetchDetails = false): void
     {
         if (!$this->isLoaded()) {
@@ -151,11 +150,10 @@ class Order extends Order_parent
         $isPayPalACDC = $paymentsId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
         $transactionId = null;
+        $payPalPaymentSuccess = true;
 
         if ($isPayPalACDC && $forceFetchDetails) {
-            /** @var PayPalApiOrder $payPalApiOrder */
             $payPalApiOrder = $paymentService->fetchOrderFields($payPalOrderId);
-            $transactionId = '';
             if ($this->isPayPalOrderCompleted($payPalApiOrder)) {
                 $this->markOrderPaid();
                 $transactionId = $this->extractTransactionId($payPalApiOrder);
@@ -171,9 +169,6 @@ class Order extends Order_parent
                 throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
             }
         }
-
-        //ensure order number
-        $this->setOrderNumber();
 
         if ($isPayPalACDC) {
             //webhook should kick in and handle order state and we should not call the api too often
@@ -200,17 +195,25 @@ class Order extends Order_parent
             );
         } else {
             // uAPM, PayPal Standard directly, PayPal Paylater
-            $this->doExecutePayPalPayment($payPalOrderId);
+            $payPalPaymentSuccess = $this->doExecutePayPalPayment($payPalOrderId);
             //TODO: maybe we can get transation id as return value if payment was completed
         }
 
         //TODO: reduce calls to api, see above
-        if (is_null($transactionId) && ($capture = $this->getOrderPaymentCapture($payPalOrderId))) {
-            if ($capture->status === 'DECLINED') {
+        if (is_null($transactionId)) {
+            $capture = $this->getOrderPaymentCapture($payPalOrderId);
+            if (!$payPalPaymentSuccess || is_null($capture) || $capture->status === 'DECLINED') {
+                // We don't have a capture but the order has already been created with the order number.
+                // so we set the order to "oxtransstatus" = ERROR
+                // The Merchant has the opportunity to see what is going on and can contact the customer if necessary
+                $this->_setOrderStatus('ERROR');
                 throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
             }
             $this->setTransId($capture->id);
         }
+
+        //ensure order number
+        $this->setOrderNumber();
 
         $this->sendPayPalOrderByEmail($user, $basket);
     }
@@ -261,6 +264,9 @@ class Order extends Order_parent
     // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
     protected function _executePayment(Basket $basket, $userpayment)
     {
+        //order number needs to be set before the payment is requested
+        $this->setOrderNumber();
+
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
 
@@ -377,7 +383,7 @@ class Order extends Order_parent
     /**
      * Update order oxpaid to current time.
      */
-    public function markOrderPaid()
+    public function markOrderPaid(): void
     {
         $this->_setOrderStatus('OK');
 
@@ -395,7 +401,7 @@ class Order extends Order_parent
     /**
      * Update order oxtransid
      */
-    public function setTransId($sTransId)
+    public function setTransId($sTransId): void
     {
         $db = DatabaseProvider::getDb();
 
@@ -406,7 +412,7 @@ class Order extends Order_parent
         $this->oxorder__oxtransid = new Field($sTransId);
     }
 
-    public function markOrderPaymentFailed()
+    public function markOrderPaymentFailed(): void
     {
         $this->_setOrderStatus('ERROR');
     }
@@ -415,10 +421,8 @@ class Order extends Order_parent
      * Returns PayPal order id.
      *
      * @param string|null $oxId
-     *
-     * @return string
      */
-    public function getPayPalOrderIdForOxOrderId(string $oxId = null)
+    public function getPayPalOrderIdForOxOrderId(string $oxId = null): string
     {
         //TODO: model?
         if (is_null($this->payPalOrderId)) {
@@ -446,7 +450,7 @@ class Order extends Order_parent
      *
      * @return string
      */
-    public function getPayPalPlusOrderIdForOxOrderId(string $oxId = null)
+    public function getPayPalPlusOrderIdForOxOrderId(string $oxId = null): string
     {
         if (is_null($this->payPalPlusOrderId)) {
             $this->payPalPlusOrderId = '';
@@ -466,7 +470,7 @@ class Order extends Order_parent
      *
      * @return string
      */
-    public function getPayPalSoapOrderIdForOxOrderId(string $oxId = null)
+    public function getPayPalSoapOrderIdForOxOrderId(string $oxId = null): string
     {
         if (is_null($this->payPalSoapOrderId)) {
             $this->payPalSoapOrderId = '';
@@ -516,8 +520,7 @@ class Order extends Order_parent
      */
     public function tableExitsForPayPalPlus(): bool
     {
-        $order = oxNew(PayPalPlusOrder::class);
-        return $order->tableExists();
+        return oxNew(PayPalPlusOrder::class)->tableExists();
     }
 
     /**
@@ -527,8 +530,7 @@ class Order extends Order_parent
      */
     public function tableExitsForPayPalSoap(): bool
     {
-        $order = oxNew(PayPalSoapOrder::class);
-        return $order->tableExists();
+        return oxNew(PayPalSoapOrder::class)->tableExists();
     }
 
     /**
@@ -548,7 +550,7 @@ class Order extends Order_parent
             $this->_setNumber();
         } else {
             oxNew(EshopCoreCounter::class)
-                ->update($this->_getCounterIdent(), $this->oxorder__oxordernr->value);
+                ->update($this->_getCounterIdent(), $this->getFieldData('oxordernr'));
         }
     }
 
@@ -562,6 +564,9 @@ class Order extends Order_parent
         return false === strpos((string) $this->getFieldData('oxpaid'), '0000');
     }
 
+    /**
+     * @throws Exception
+     */
     public function isWaitForWebhookTimeoutReached(): bool
     {
         $orderTime = new DateTimeImmutable((string) $this->getFieldData('oxorderdate'));
@@ -577,6 +582,7 @@ class Order extends Order_parent
 
     /**
      * @inheritdoc
+     * @throws Exception
      */
     public function finalizeOrder(Basket $basket, $user, $recalculatingOrder = false)
     {
@@ -625,10 +631,12 @@ class Order extends Order_parent
     public function isPayPalOrderCompleted(PayPalApiOrder $apiOrder): bool
     {
         return (
-            isset($apiOrder->status) &&
-            isset($apiOrder->purchase_units[0]->payments->captures[0]->status) &&
-            $apiOrder->status == PayPalApiOrder::STATUS_COMPLETED &&
-            $apiOrder->purchase_units[0]->payments->captures[0]->status == Capture::STATUS_COMPLETED
+            isset(
+                $apiOrder->status,
+                $apiOrder->purchase_units[0]->payments->captures[0]->status
+            ) &&
+            $apiOrder->status === PayPalApiOrder::STATUS_COMPLETED &&
+            $apiOrder->purchase_units[0]->payments->captures[0]->status === Capture::STATUS_COMPLETED
         );
     }
 
