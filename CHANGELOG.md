@@ -4,12 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.3.5] - 2024-??-??
+## [2.4.0] - 2024-??-??
 
+### FIX
 - [0007588](https://bugs.oxid-esales.com/view.php?id=7588): Improve Error handling for Capture Order Requests (thanks to mount7)
 - remove Sofort and MyBank, Paymentmethods will soon no longer be accepted via PayPal
 - fix: Refund only with note to Buyer (required)
 - [0007595](https://bugs.oxid-esales.com/view.php?id=7595): : Fix PayPal Checkout substract discount from coupon series again, if 'Show net prices in frontend (B2B)' is active
+
+### NEW
+- PayPal Vaulting https://developer.paypal.com/braintree/docs/guides/paypal/checkout-with-vault/
 
 ## [2.3.4] - 2024-01-26
 
