@@ -1,4 +1,7 @@
 [{assign var="payment" value=$oView->getPayment()}]
+[{if "oscpaypal" == $payment->getId()}]
+    <input type="hidden" name="vaultPayment" id="oscPayPalVaultPayment" value="">
+[{/if}]
 [{if "oscpaypal_pui" == $payment->getId()}]
     [{if $oViewConf->isFlowCompatibleTheme()}]
         [{include file="modules/osc/paypal/checkout_order_btn_submit_bottom_flow.tpl"}]

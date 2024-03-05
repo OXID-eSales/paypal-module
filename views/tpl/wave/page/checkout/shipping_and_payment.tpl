@@ -41,8 +41,10 @@
                     </h3>
                 </div>
                 <div class="card-body">
-                    [{$payment->oxpayments__oxdesc->value}]
-                    [{if !$oscpaypal_executing_order }]
+                    [{if $vaultedPaymentDescription}]
+                        [{$vaultedPaymentDescription}]
+                    [{elseif !$oscpaypal_executing_order}]
+                        [{$payment->oxpayments__oxdesc->value}]
                         [{if $sPaymentID == "oscpaypal_acdc"}]
                             [{include file="modules/osc/paypal/acdc.tpl"}]
                         [{elseif $sPaymentID == "oscpaypal_pui"}]

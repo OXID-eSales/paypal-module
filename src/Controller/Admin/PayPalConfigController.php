@@ -36,7 +36,8 @@ class PayPalConfigController extends AdminController
     /**
      * @var string Current class template name.
      */
-    protected $_sThisTemplate = 'oscpaypalconfig.tpl'; // phpcs:ignore PSR2.Classes.PropertyDeclaration
+    // phpcs:ignore PSR2.Classes.PropertyDeclaration
+    protected $_sThisTemplate = 'oscpaypalconfig.tpl';
 
     /**
      * @return string
@@ -122,11 +123,11 @@ class PayPalConfigController extends AdminController
             'partnerId' => $partnerId,
             'partnerLogoUrl' => $partnerLogoUrl,
             'returnToPartnerUrl' => $returnToPartnerUrl,
-            'product' => 'ppcp',
-            'secondaryProducts' => 'payment_methods',
-            'capabilities' => 'PAY_UPON_INVOICE',
+            'product' => 'PPCP',
+            'secondaryProducts' => 'advanced_vaulting,payment_methods',
+            'capabilities' => 'GOOGLE_PAY,APPLE_PAY,PAY_UPON_INVOICE,PAYPAL_WALLET_VAULTING_ADVANCED',
             'integrationType' => 'FO',
-            'features' => 'PAYMENT,REFUND,ACCESS_MERCHANT_INFORMATION,ADVANCED_TRANSACTIONS_SEARCH',
+            'features' => 'PAYMENT,REFUND,ACCESS_MERCHANT_INFORMATION,ADVANCED_TRANSACTIONS_SEARCH,VAULT,BILLING_AGREEMENT',
             'country.x' => $countryCode,
             'locale.x' => $localeCode,
             'sellerNonce' => $this->createNonce(),
@@ -261,6 +262,9 @@ class PayPalConfigController extends AdminController
         if (!isset($conf['oscPayPalCleanUpNotFinishedOrdersAutomaticlly'])) {
             $conf['oscPayPalCleanUpNotFinishedOrdersAutomaticlly'] = false;
         }
+        if (!isset($conf['oscPayPalSetVaulting'])) {
+            $conf['oscPayPalSetVaulting'] = false;
+        }
 
         return $conf;
     }
@@ -365,15 +369,13 @@ class PayPalConfigController extends AdminController
         $onboardingFile = $config->getOnboardingBlockCacheFileName();
         if (file_exists($onboardingFile) === false) {
             $request = Registry::getRequest();
-            if (
-                ('true' === (string)$request->getRequestParameter('permissionsGranted')) &&
-                ('true' === (string)$request->getRequestParameter('consentStatus'))
-            ) {
+
+            if ($merchantId = (string)$request->getRequestParameter('merchantIdInPayPal')) {
                 /** @var ModuleSettings $moduleSettings */
                 $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
                 $isSandbox = (string)$request->getRequestParameter('isSandbox');
                 $isSandbox = $isSandbox === '1';
-                $moduleSettings->saveMerchantId($request->getRequestParameter('merchantIdInPayPal'), $isSandbox);
+                $moduleSettings->saveMerchantId($merchantId, $isSandbox);
             }
 
             $this->autoConfiguration();

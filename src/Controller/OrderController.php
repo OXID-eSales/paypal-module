@@ -15,17 +15,18 @@ use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Exception\Redirect;
 use OxidSolutionCatalysts\PayPal\Exception\RedirectWithMessage;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModel;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
-use Psr\Log\LoggerInterface;
 
 /**
  * Class OrderController
@@ -80,6 +81,39 @@ class OrderController extends OrderController_parent
             $paymentService->removeTemporaryOrder();
         }
 
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        if ($moduleSettings->getIsVaultingActive() && $this->getUser()->oxuser__oxpassword->value) {
+            $this->addTplParam('oscpaypal_payment_saveable',true);
+        }
+
+        $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
+        $config = Registry::getConfig();
+        if (
+            !is_null($selectedVaultPaymentSourceIndex) &&
+            $payPalCustomerId = $config->getUser()->getFieldData("oscpaypalcustomerid")
+        ) {
+            $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+
+            $selectedPaymentToken = $vaultingService->getVaultPaymentTokenByIndex(
+                $payPalCustomerId,
+                $selectedVaultPaymentSourceIndex
+            );
+            //find out which payment token was selected by getting the index via request param
+            $paymentType = key($selectedPaymentToken["payment_source"]);
+            $paymentSource = $selectedPaymentToken["payment_source"][$paymentType];
+
+            $paymentDescription = "";
+            if ($paymentType === "card") {
+                $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_ENDING_IN");
+                $paymentDescription = $paymentSource["brand"] . " " . $string . $paymentSource["last_digits"];
+            } elseif ($paymentType === "paypal") {
+                $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
+                $paymentDescription = $string . " " . $paymentSource["email_address"];
+            }
+
+            $this->addTplParam("vaultedPaymentDescription", $paymentDescription);
+        }
+
         return parent::render();
     }
 
@@ -100,7 +134,7 @@ class OrderController extends OrderController_parent
             Registry::getUtilsView()->addErrorToDisplay($displayError);
 
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
-            if (in_array((string) $paymentService->getSessionPaymentId(), $this->removeTemporaryOrderOnRetry)) {
+            if (in_array((string)$paymentService->getSessionPaymentId(), $this->removeTemporaryOrderOnRetry, true)) {
                 $paymentService->removeTemporaryOrder();
             }
             return true;
@@ -256,8 +290,12 @@ class OrderController extends OrderController_parent
         $standardRequestId = (string) Registry::getRequest()->getRequestParameter('token');
         $sessionOrderId = Registry::getSession()->getVariable('sess_challenge');
         $sessionCheckoutOrderId = PayPalSession::getCheckoutOrderId();
+        $vaulting = Registry::getRequest()->getRequestParameter("vaulting");
 
-        if (!$sessionOrderId || !$sessionCheckoutOrderId || ($standardRequestId !== $sessionCheckoutOrderId)) {
+        $cancelSession = !$sessionOrderId ||
+            !$sessionCheckoutOrderId ||
+            ($standardRequestId !== $sessionCheckoutOrderId);
+        if (!$vaulting && $cancelSession) {
             $this->cancelpaypalsession('request to session mismatch');
         }
 
@@ -266,7 +304,8 @@ class OrderController extends OrderController_parent
 
             /** @var PayPalApiModelOrder $payPalOrder */
             $payPalOrder = $paymentService->fetchOrderFields((string) $sessionCheckoutOrderId, '');
-            if ('APPROVED' !== $payPalOrder->status) {
+            $vaultingPaymentCompleted = $vaulting && $payPalOrder->status == "COMPLETED";
+            if (!$vaultingPaymentCompleted && 'APPROVED' !== $payPalOrder->status) {
                 throw PayPalException::sessionPaymentFail(
                     'Unexpected status ' . $payPalOrder->status . ' for PayPal order ' . $sessionCheckoutOrderId
                 );
@@ -349,7 +388,6 @@ class OrderController extends OrderController_parent
      */
     public function getPayPalPuiFraudnetCmId(): string
     {
-
         if (!($cmId = PayPalSession::getPayPalPuiCmId())) {
             $cmId = Registry::getUtilsObject()->generateUId();
             PayPalSession::storePayPalPuiCmId($cmId);
@@ -360,41 +398,41 @@ class OrderController extends OrderController_parent
     protected function _getNextStep($success) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
     {
         if (
-            (PayPalOrderModel::ORDER_STATE_SESSIONPAYMENT_INPROGRESS == $success) &&
+            (PayPalOrderModel::ORDER_STATE_SESSIONPAYMENT_INPROGRESS === $success) &&
             ($redirectLink = PayPalSession::getSessionRedirectLink())
         ) {
             PayPalSession::unsetSessionRedirectLink();
             throw new Redirect($redirectLink);
         }
 
-        if (PayPalOrderModel::ORDER_STATE_ACDCINPROGRESS == $success) {
+        if (PayPalOrderModel::ORDER_STATE_ACDCINPROGRESS === $success) {
             return (string) $success;
         }
 
-        if (PaymentService::PAYMENT_ERROR_PUI_PHONE == $success) {
+        if (PaymentService::PAYMENT_ERROR_PUI_PHONE === $success) {
             //user needs to retry, entered pui phone number was not accepted by PayPal
             return 'order?retryoscpp=puiretry';
         }
 
-        if (PayPalOrderModel::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS == $success) {
+        if (PayPalOrderModel::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS === $success) {
             return 'order';
         }
 
-        if (PayPalOrderModel::ORDER_STATE_NEED_CALL_ACDC_FINALIZE == $success) {
+        if (PayPalOrderModel::ORDER_STATE_NEED_CALL_ACDC_FINALIZE === $success) {
             return 'order?fnc=finalizeacdc';
         }
 
-        if (PayPalOrderModel::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS == $success) {
+        if (PayPalOrderModel::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS === $success) {
             return 'order?fnc=finalizeacdc&fallbackfinalize=1';
         }
 
-        if (PayPalOrderModel::ORDER_STATE_ACDCCOMPLETED == $success) {
+        if (PayPalOrderModel::ORDER_STATE_ACDCCOMPLETED === $success) {
             return 'order?fnc=finalizeacdc&fallbackfinalize=1';
         }
 
         if (
-            EshopModelOrder::ORDER_STATE_ORDEREXISTS == $success &&
-            Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS) ==
+            EshopModelOrder::ORDER_STATE_ORDEREXISTS === $success &&
+            Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS) ===
             Constants::PAYPAL_STATUS_COMPLETED
         ) {
             Registry::getSession()->deleteVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);

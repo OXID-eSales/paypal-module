@@ -49,11 +49,11 @@ $aLang = [
         besteht die Möglichkeit, sich durch ein Login bei PayPal auch automatisch im Shop anzumelden. Möglicherweise ist dieses Verhalten nicht im
         Sicherheitsinteresse Ihrer Kunden',
 
-    'HELP_OSC_PAYPAL_CREDENTIALS_PART1'           => 'Tragen Sie die API-Anmeldeinformationen (Client-ID, Client Passwort,
-         Webhook-ID) nur dann per Hand ein, wenn Sie auf die Zahlarten "Kreditkarte" und "Kauf auf Rechnung" nicht benötigen und in der Lage sind einen Webhook im PayPal-
+    'HELP_OSC_PAYPAL_CREDENTIALS_PART1'           => 'Bitte nutzen Sie für die Anmeldung und die Freischaltung neuer Features den eingeblendeten "PayPal Integration"-Button. Während der Integration werden durch PayPal die Zahlarten "Kreditkarte",
+         "Kauf auf Rechnung", "ApplePay" und "GooglePay" freigeschaltet, sowie der Webhook automatisch registriert.',
+    'HELP_OSC_PAYPAL_CREDENTIALS_PART2'           => 'Tragen Sie die API-Anmeldeinformationen (Client-ID, Client Passwort,
+         Webhook-ID) nur dann per Hand ein, wenn Sie die o.g. Zahlarten nicht benötigen und in der Lage sind einen Webhook im PayPal-
          Backend selbst zu konfigurieren.',
-    'HELP_OSC_PAYPAL_CREDENTIALS_PART2'           => 'Bitte nutzen Sie für die Anmeldung den eingeblendeten "PayPal Integration"-Button. Während der Integration werden durch PayPal die Zahlarten "Kreditkarte"
-         und "Kauf auf Rechnung" freigeschaltet, sowie der Webhook automatisch registriert.',
     'HELP_OSC_PAYPAL_CLIENT_ID'                   => 'Client-ID des Live-Account für Live-Modus',
     'HELP_OSC_PAYPAL_CLIENT_SECRET'               => 'Passwort des Live-Account für Live-Modus. Bitte geben Sie das Passwort zweimal ein.',
     'HELP_OSC_PAYPAL_MERCHANT_ID'                 => 'Merchant-ID des Live-Account für Live-Modus',
@@ -71,6 +71,8 @@ $aLang = [
     'OSC_PAYPAL_SPECIAL_PAYMENTS_PUI'             => 'Rechnungskauf',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Kreditkarte',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '(Alternativ zur fehlenden Zahlart wird ein zusätzlicher Button "Kreditkarte" unter den Paypal-Buttons angezeigt.)',
+
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING'        => 'Vaulting',
 
     'OSC_PAYPAL_LOCALISATIONS'                    => 'Spracheinstellungen',
     'OSC_PAYPAL_LOCALES'                          => 'regionale Spracheinstellungen',
@@ -267,4 +269,10 @@ $aLang = [
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_COUNTRY'    => 'Versanddienstleister (Land)',
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_PROVIDER'   => 'Versanddienstleister (Anbieter)',
     'OSC_PAYPAL_TRACKCARRIER_GLOBAL'                => 'weltweit',
+
+    'OSC_PAYPAL_VAULTING_TITLE'                     => 'PayPal Vaulting',
+    'OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'         => 'PayPal Vaulting aktivieren',
+    'HELP_OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'    => 'Wiederholungskäufe leicht gemacht: Mit PayPal können Sie die bevorzugten Zahlarten Ihrer Kund:innen sicher speichern und so eine schnelle und einfache
+                                                        Kaufabwicklung ermöglichen. Mit ihren gespeicherten Zahlungsdaten können Kund:innen mit nur wenigen Klicks Wiederholungskäufe tätigen. Dies kann für Sie
+                                                        eine höhere Checkout-Conversion bedeuten.',
 ];

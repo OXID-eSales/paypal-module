@@ -11,6 +11,7 @@ use Exception;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Exception\StandardException;
+use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
@@ -24,6 +25,7 @@ use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Exception\UserPhone as UserPhoneException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings as ModuleSettingsService;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthorizationWithAdditionalData;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
@@ -39,6 +41,8 @@ use OxidSolutionCatalysts\PayPalApi\Service\Payments as ApiPaymentService;
 
 class Payment
 {
+    use ServiceContainer;
+
     public const PAYMENT_ERROR_NONE = 'PAYPAL_PAYMENT_ERROR_NONE';
     public const PAYMENT_ERROR_GENERIC = 'PAYPAL_PAYMENT_ERROR_GENERIC';
     public const PAYMENT_ERROR_PUI_PHONE = 'PAYPAL_PAYMENT_ERROR_PUI_PHONE';
@@ -136,6 +140,19 @@ class Payment
         );
 
         $response = [];
+
+        /*
+         * Set required request id if payer uses vaulted payment.
+         * The OXID order is not created yet, so a random id will be given.
+         */
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $setVaulting = $moduleSettings->getIsVaultingActive();
+        $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
+        $useVaulting = $setVaulting && !is_null($selectedVaultPaymentSourceIndex);
+
+        if ($useVaulting) {
+            $payPalRequestId = time();
+        }
 
         try {
             $response = $orderService->createOrder(
@@ -307,7 +324,10 @@ class Payment
                 }
 
                 $result = $this->fetchOrderFields($checkoutOrderId);
-            } else {
+            } elseif (Registry::getRequest()->getRequestParameter("vaulting")) {
+                //when a vaulted payment is used, the order is already finished.
+                $result = $this->fetchOrderFields($checkoutOrderId);
+            }else {
                 $request = new OrderCaptureRequest();
                 //order number must be resolved before order patching
                 $order->setOrderNumber();
@@ -324,7 +344,6 @@ class Payment
                         $checkoutOrderId,
                         $request,
                         '',
-                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                     );
                 } catch (ApiException $exception) {
                     $this->handlePayPalApiError($exception);
@@ -352,6 +371,40 @@ class Payment
             );
 
             if ($result instanceof Order && $order->isPayPalOrderCompleted($result)) {
+
+                //save vault to user and set success message
+                $session = Registry::getSession();
+                $vault = null;
+
+                if ($paypal = $result->payment_source->paypal) {
+                    $vault = $paypal->attributes->vault;
+                }elseif ($card = $result->payment_source->card) {
+                    $vault = $card->attributes->vault;
+                }
+
+                if ($session->getVariable("vaultSuccess") && $vault->status == "VAULTED") {
+
+                    $vaultSuccess = false;
+
+                    if ($id = $vault->customer["id"]) {
+                        $user = Registry::getConfig()->getUser();
+
+                        $user->oxuser__oscpaypalcustomerid = new Field($id);
+
+                        if ($user->save()) {
+                            $vaultSuccess = true;
+                        }
+                    }
+
+                    if (!$vaultSuccess) {
+                        $this->logger->log('debug', "Vaulting was attempted but didn't succeed.");
+                    }
+
+                    $session->setVariable("vaultSuccess", $vaultSuccess);
+                } else {
+                    $session->deleteVariable("vaultSuccess");
+                }
+
                 $order->markOrderPaid();
                 $order->setTransId((string)$payPalTransactionId);
             }
@@ -555,11 +608,17 @@ class Payment
             throw PayPalException::sessionPaymentMalformedResponse();
         }
         foreach ($response->links as $links) {
-            if ($links['rel'] === 'approve') {
+            if ($links['rel'] === 'approve' || $links['rel'] === 'payer-action') {
                 $redirectLink = $links['href'];
                 break;
             }
         }
+
+        //no customer interaction needed if a vaulted payment is used
+        if ($response->status === Constants::PAYPAL_STATUS_COMPLETED) {
+            return $returnUrl . "&vaulting=true";
+        }
+
         if (!$redirectLink) {
             PayPalSession::unsetPayPalSession();
             $this->removeTemporaryOrder();

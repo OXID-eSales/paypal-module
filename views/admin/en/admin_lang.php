@@ -49,10 +49,10 @@ $aLang = [
         it is possible to be autonmatically be logged in to shop when logging in to PayPal. This behavior may not be in the
         security interests of your customers',
 
-    'HELP_OSC_PAYPAL_CREDENTIALS_PART1'           => 'Enter the API login information (client ID, client password, Webhook ID)
-         only if you do not need the "credit card" and "Pay upon Invoice" payment methods and are able to set up a webhook in the PayPal backend by yourself.',
-    'HELP_OSC_PAYPAL_CREDENTIALS_PART2'           => 'Please use the "PayPal integration"-button that appears to register. During the integration, PayPal will activate the "credit card"
-         and "Pay upon Invoice" payment methods and the webhook is automatically registered.',
+    'HELP_OSC_PAYPAL_CREDENTIALS_PART1'           => 'Please use the “PayPal Integration” button displayed to register and activate new features. During the integration, PayPal activates
+        the payment methods "credit card", "Pay upon Invoice", "ApplePay" and "GooglePay" and automatically registers the webhook.',
+    'HELP_OSC_PAYPAL_CREDENTIALS_PART2'           => 'Enter the API credentials (client ID, client password, Webhook ID) only if you do not need the above payment methods and are able
+        to configure a webhook in the PayPal backend yourself.',
     'HELP_OSC_PAYPAL_CLIENT_ID'                   => 'Client ID for live mode.',
     'HELP_OSC_PAYPAL_CLIENT_SECRET'               => 'Secret for live mode. Please enter the password twice.',
     'HELP_OSC_PAYPAL_MERCHANT_ID'                 => 'Merchant ID for live mode.',
@@ -70,6 +70,8 @@ $aLang = [
     'OSC_PAYPAL_SPECIAL_PAYMENTS_PUI'             => 'Pay upon Invoice',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Creditcard',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '(As an alternative to the missing payment method, an additional "credit card" button is displayed under the Paypal buttons.)',
+
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING'        => 'Vaulting',
 
     'OSC_PAYPAL_LOCALISATIONS'                    => 'Locals',
     'OSC_PAYPAL_LOCALES'                          => 'regional language settings',
@@ -267,4 +269,10 @@ $aLang = [
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_COUNTRY'    => 'Tracking Carrier (Country)',
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_PROVIDER'   => 'Tracking Carrier (Provider)',
     'OSC_PAYPAL_TRACKCARRIER_GLOBAL'                => 'global',
+
+    'OSC_PAYPAL_VAULTING_TITLE'                     => 'PayPal Vaulting',
+    'OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'         => 'PayPal Vaulting active',
+    'HELP_OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'    => 'Repeat purchases made easy: With PayPal you can securely store your customers preferred payment methods, making it quick and easy
+                                                        Enable purchase processing. With their saved payment details, customers can make repeat purchases with just a few clicks. This can be for you
+                                                        mean higher checkout conversion.',
 ];

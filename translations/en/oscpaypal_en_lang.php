@@ -41,5 +41,20 @@ $aLang = [
     'OSC_PAYPAL_LOG_IN_TO_CONTINUE'                => 'Please log in to continue checking out.',
 
     'OSC_PAYPAL_3DSECURITY_ERROR'                  => 'Security check failed, please retry.',
-    'OSC_PAYPAL_ORDEREXECUTION_ERROR'              => 'Payment process could not be completed.'
+    'OSC_PAYPAL_ORDEREXECUTION_ERROR'              => 'Payment process could not be completed.',
+
+    'OSC_PAYPAL_VAULTING_MENU'                      => 'Save PayPal payment method',
+    'OSC_PAYPAL_VAULTING_MENU_CARD'                 => 'Save PayPal card',
+    'OSC_PAYPAL_VAULTING_CARD_SAVE'                 => 'Save card',
+    'OSC_PAYPAL_VAULTING_SAVE_INSTRUCTION'          => 'Save your PayPal payment method here for a faster checkout.',
+    'OSC_PAYPAL_VAULTING_SAVE_INSTRUCTION_CARD'     => 'Save your Card here for a faster checkout.',
+    'OSC_PAYPAL_VAULTING_VAULTED_PAYMENTS'          => 'Saved payments',
+    'OSC_PAYPAL_VAULTING_ERROR'                     => 'There was an error saving your payment method.',
+    'OSC_PAYPAL_VAULTING_SUCCESS'                   => 'Your payment method was saved successfully. You will find your saved payments in your Account area.',
+    'OSC_PAYPAL_VAULTING_SAVE'                      => 'Save payment',
+    'OSC_PAYPAL_VAULTING_DELETE'                    => 'Delete payment',
+    'OSC_PAYPAL_CONTINUE_TO_NEXT_STEP'              => 'Continue with saved payment method',
+    'OSC_PAYPAL_CARD_ENDING_IN'                     => 'ending in ●●●',
+    'OSC_PAYPAL_CARD_PAYPAL_PAYMENT'                => 'PayPal payment with',
+    'OSC_PAYPAL_DELETE_FAILED'                      => 'There was an error deleting your payment method.'
 ];
