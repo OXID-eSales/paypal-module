@@ -38,7 +38,7 @@ class PayPalRequestAmountFactory
         $currency = $basket->getBasketCurrency();
 
         //Discount
-        $discount = $basket->getPayPalCheckoutDiscount();
+        $discount = $basket->getPayPalCheckoutDiscount() + 1;
         //Item total cost
         $itemTotal = $basket->getPayPalCheckoutItems();
 
