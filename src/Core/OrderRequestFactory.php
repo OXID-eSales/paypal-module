@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use DateTime;
+use Exception;
 use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
@@ -79,6 +80,7 @@ class OrderRequestFactory
      * @param bool $setProvidedAddress Address changeable in PayPal?
      *
      * @return OrderRequest
+     * @throws Exception
      */
     public function getRequest(
         Basket $basket,
@@ -204,6 +206,7 @@ class OrderRequestFactory
 
     /**
      * @return PurchaseUnitRequest[]
+     * @throws Exception
      */
     protected function getPurchaseUnits(
         ?string $transactionId,
@@ -240,6 +243,7 @@ class OrderRequestFactory
 
     /**
      * @return AmountWithBreakdown
+     * @throws Exception
      */
     protected function getAmount(): AmountWithBreakdown
     {
