@@ -148,6 +148,35 @@ class ViewConfig extends ViewConfig_parent
     {
         return $this->getSslSelfLink() . 'cl=oscpaypalproxy&fnc=cancelPayPalPayment';
     }
+    
+    /**
+     * Gets PayPalGooglepay JS SDK url
+     *
+     * @return string
+     */
+    public function getPayPalJsSdkGooglepayUrl(): string
+    {
+        $config = Registry::getConfig();
+        $lang = Registry::getLang();
+
+        $localeCode = $this->getServiceFromContainer(LanguageLocaleMapper::class)
+            ->mapLanguageToLocale($lang->getLanguageAbbr());
+
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $params = [];
+
+        $params['client-id'] = $this->getPayPalClientId();
+
+        if ($currency = $config->getActShopCurrencyObject()) {
+            $params['currency'] = strtoupper($currency->name);
+        }
+
+        $params['components'] = 'googlepay';
+        $params['merchant-id'] = $moduleSettings->getMerchantId();
+        $params['buyer-country'] = strtoupper($lang->getLanguageAbbr());
+
+        return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
+    }
 
     /**
      * Gets PayPal JS SDK url
@@ -174,7 +203,7 @@ class ViewConfig extends ViewConfig_parent
             $params['currency'] = strtoupper($currency->name);
         }
 
-        $params['components'] = 'buttons';
+        $params['components'] = 'buttons,googlepay';
         // Available components: enable messages+buttons for PDP
         if ($this->isPayPalBannerActive()) {
             $params['components'] .= ',messages';

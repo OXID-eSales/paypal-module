@@ -129,6 +129,9 @@ $aModule = [
 
         // PSPAYPAL-491 Installment banners
         'modules/osc/paypal/installment_banners.tpl' => 'osc/paypal/views/tpl/shared/installment_banners.tpl',
+        
+        // PSPAYPAL-685 Installment banners
+        'modules/osc/paypal/googlepay.tpl' => 'osc/paypal/views/tpl/shared/googlepay.tpl',
 
         //PSPAYPAL-680 Vaulting
         'modules/osc/paypal/account_vaulting_paypal.tpl'    => 'osc/paypal/views/tpl/shared/page/account/account_vaulting_paypal.tpl',
