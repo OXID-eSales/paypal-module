@@ -31,6 +31,13 @@ use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\PhoneWithType;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
 
 /**
  * Server side interface for PayPal smart buttons.
@@ -179,6 +186,7 @@ class ProxyController extends FrontendController
             OrderRequest::INTENT_AUTHORIZE,
             OrderRequestFactory::USER_ACTION_CONTINUE,
             null,
+            '',
             '',
             '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,

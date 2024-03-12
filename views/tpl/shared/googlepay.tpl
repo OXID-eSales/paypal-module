@@ -125,7 +125,6 @@ function onGooglePayLoaded() {
 function addGooglePayButton() {
   const paymentsClient = getGooglePaymentsClient();
   const button = paymentsClient.createButton({ "buttonType": "buy", 
-                                               "buttonSizeMode": "fill", 
                                                "buttonLocale": "[{$oView->getActiveLangAbbr()|oxlower}]", 
                                                "onClick": onGooglePaymentButtonClicked 
   });
