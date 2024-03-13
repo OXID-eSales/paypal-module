@@ -4,25 +4,21 @@
 
 <script>
 [{capture name="detailsGooglePayScript"}]
-/* Fetch Default Config from PayPal via PayPal SDK */  
-allowedPaymentMethods = null;
-merchantInfo = null;
 
+let googlePayConfig = null;
 async function getGooglePayConfig() {  
-  if (allowedPaymentMethods == null || merchantInfo == null) {  
+  if ( googlePayConfig == null) {  
     const googlePayConfig = await paypal.Googlepay().config();  
-    allowedPaymentMethods = googlePayConfig.allowedPaymentMethods;  
-    merchantInfo = googlePayConfig.merchantInfo;
     console.log(googlePayConfig);  
   }  
  
-  return {  
-     allowedPaymentMethods,  
-     merchantInfo,  
-   };  
+  return googlePayConfig;  
 }  
  
-a = getGooglePayConfig();  
+getGooglePayConfig().then(Config => {
+    console.log(Config);  
+});  
+
 
 const baseRequest = { "apiVersion": 2, "apiVersionMinor": 0 };
 
@@ -50,8 +46,6 @@ const cardPaymentMethod = Object.assign(
     "tokenizationSpecification": tokenizationSpecification
   }
 );
-
-
 
 let paymentsClient = null;
 
@@ -124,10 +118,7 @@ function onGooglePayLoaded() {
 
 function addGooglePayButton() {
   const paymentsClient = getGooglePaymentsClient();
-  const button = paymentsClient.createButton({ "buttonType": "buy", 
-                                               "buttonLocale": "[{$oView->getActiveLangAbbr()|oxlower}]", 
-                                               "onClick": onGooglePaymentButtonClicked 
-  });
+  const button = paymentsClient.createButton({ "buttonType": "buy", "buttonLocale": "[{$oView->getActiveLangAbbr()|oxlower}]", "onClick": onGooglePaymentButtonClicked });
   document.getElementById("[{$buttonId}]").appendChild(button);
 }
 
@@ -184,6 +175,62 @@ function processPayment(paymentData) {
     }, 500);
   });
 }
+
+async function processPaymenttest(paymentData) {  
+  return new Promise(function async (resolve, reject) {  
+    try {  
+        // Create the order on your server  
+        const {id} = fetch('/orders', {  
+        method: "POST",  
+        body: '' 
+        // You can use the "body" parameter to pass optional, additional order information, such as:  
+        // amount, and amount breakdown elements like tax, shipping, and handling  
+        // item data, such as sku, name, unit_amount, and quantity  
+        // shipping information, like name, address, and address type  
+      });  
+      const confirmOrderResponse =  paypal.Googlepay().confirmOrder({  
+          orderId: id,  
+          paymentMethodData: paymentData.paymentMethodData  
+        });  
+ 
+      /** Capture the Order on your Server  */  
+      if(confirmOrderResponse.status === "APPROVED"){  
+           const response =   fetch('/capture/${id}', {  
+              method: 'POST',  
+            }).then(res => res.json());  
+          if(response.capture.status === "COMPLETED")  
+              resolve({transactionState: 'SUCCESS'});  
+          else  
+              resolve({  
+                transactionState: 'ERROR',  
+                error: {  
+                  intent: 'PAYMENT_AUTHORIZATION',  
+                  message: 'TRANSACTION FAILED',  
+                }  
+      })  
+      } else {  
+           resolve({  
+            transactionState: 'ERROR',  
+            error: {  
+              intent: 'PAYMENT_AUTHORIZATION',  
+              message: 'TRANSACTION FAILED',  
+            }  
+          })  
+      }  
+    } catch(err) {  
+      resolve({  
+        transactionState: 'ERROR',  
+ 
+        error: {  
+          intent: 'PAYMENT_AUTHORIZATION',  
+          message: err.message,  
+        }  
+      })  
+    }  
+  });  
+}  
+
+
 [{/capture}]
 </script>
 [{oxscript add=$smarty.capture.detailsGooglePayScript}]

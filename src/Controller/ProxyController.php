@@ -38,7 +38,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PhoneWithType;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
-
+ 
 /**
  * Server side interface for PayPal smart buttons.
  */
@@ -149,16 +149,7 @@ class ProxyController extends FrontendController
     public function createGooglepayOrder()
     {
        $data = json_decode( file_get_contents( 'php://input' ), true );
-       
-       $billingAddress = new AddressPortable();
-       $billingAddress->address_line_1 = $data['paymentMethodData']['info']['billingAddress']['address1'] ?? '';
-       $billingAddress->address_line_2 = $data['paymentMethodData']['info']['billingAddress']['address2'] ?? '';
-       $billingAddress->address_line_3 = $data['paymentMethodData']['info']['billingAddress']['address3'] ?? '';
-       $billingAddress->postal_code    = $data['paymentMethodData']['info']['billingAddress']['postalCode'] ?? '';
-       $billingAddress->admin_area_2   = $data['paymentMethodData']['info']['billingAddress']['locality'] ?? '';
-       $billingAddress->admin_area_1   = $data['paymentMethodData']['info']['billingAddress']['administrativeArea'] ?? '';
-       $billingAddress->country_code   = $data['paymentMethodData']['info']['billingAddress']['countryCode'] ?? '';
-             
+                    
        $shippingAddress = new AddressPortable();
        $shippingAddress->address_line_1 = $data['shippingAddress']['address1'] ?? '';
        $shippingAddress->address_line_2 = $data['shippingAddress']['address2'] ?? '';
