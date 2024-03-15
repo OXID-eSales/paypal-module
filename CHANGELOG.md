@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - fix: Refund only with note to Buyer (required)
 - [0007595](https://bugs.oxid-esales.com/view.php?id=7595): : Fix PayPal Checkout substract discount from coupon series again, if 'Show net prices in frontend (B2B)' is active
 - use PayPal-Request-Id for every api-call
+- use PayPal-Client v2.0.11
 
 ### NEW
 - PayPal Vaulting https://developer.paypal.com/braintree/docs/guides/paypal/checkout-with-vault/
