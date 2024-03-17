@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace OxidEsales\EshopCommunity\modules\osc\paypal\src\Core;
+namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Core\Registry;

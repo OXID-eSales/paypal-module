@@ -149,7 +149,9 @@ class ProxyController extends FrontendController
     public function createGooglepayOrder()
     {
        $data = json_decode( file_get_contents( 'php://input' ), true );
-                    
+       
+       #error_log( serialize($data) . "\n", 3, getShopBasePath() . "log" . DIRECTORY_SEPARATOR . date( "Ym" ) . "creategooglepayorder_json.txt" );
+                           
        $shippingAddress = new AddressPortable();
        $shippingAddress->address_line_1 = $data['shippingAddress']['address1'] ?? '';
        $shippingAddress->address_line_2 = $data['shippingAddress']['address2'] ?? '';
@@ -191,7 +193,8 @@ class ProxyController extends FrontendController
         if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);
         }
-        
+        #error_log( serialize($response) . "\n", 3, getShopBasePath() . "log" . DIRECTORY_SEPARATOR . date( "Ym" ) . "creategooglepayorder_response.txt" );
+
         if (!$this->getUser()) {
             
             $purchaseUnitRequest = new PurchaseUnitRequest();
@@ -257,7 +260,7 @@ class ProxyController extends FrontendController
             PayPalSession::unsetPayPalOrderId();
             Registry::getSession()->getBasket()->setPayment(null);
         }
-
+        #error_log( serialize($response) . "\n", 3, getShopBasePath() . "log" . DIRECTORY_SEPARATOR . date( "Ym" ) . "creategooglepayorder_id.txt" );
         $this->outputJson($response);
     }
 

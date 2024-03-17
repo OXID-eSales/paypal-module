@@ -4,7 +4,7 @@
 
 <script>
 [{capture name="detailsGooglePayScript"}]
-
+/*
 let googlePayConfig = null;
 async function getGooglePayConfig() {  
   if ( googlePayConfig == null) {  
@@ -18,7 +18,7 @@ async function getGooglePayConfig() {
 getGooglePayConfig().then(Config => {
     console.log(Config);  
 });  
-
+*/
 
 const baseRequest = { "apiVersion": 2, "apiVersionMinor": 0 };
 
@@ -149,55 +149,37 @@ async function onGooglePaymentButtonClicked() {
   .catch(err => {
      if( err.statusCode != "CANCELED")
         console.log(err)
-  });
+  }); 
 }
 
-function processPayment(paymentData) {
-  return new Promise(function(resolve, reject) {
-    setTimeout(function() {
-
-        console.log(paymentData);
-        paymentToken = paymentData.paymentMethodData.tokenizationData.token;
-      
-        data = fetch("[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createGooglepayOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]", {
-           "credentials": "same-origin",
-           "mode": "same-origin",
-           "method": "post",
-           "headers": { "content-type": "application/json" },
-           "body": JSON.stringify(paymentData)
-        })
-        .catch(err => {
-           console.log(err)
-         });
-
-	     resolve({});   
- 
-    }, 500);
-  });
+async function getRespose( url = '', params ='') {
+   let reponse = await fetch( url, { "credentials": "same-origin", "mode": "same-origin", "method": "post", "headers": { "content-type": "application/json" }, "body": params } )
+   .catch(err => { console.log(err) });
+   let object = await response.json();
+   console.log(object);
+   return object;
 }
 
-async function processPaymenttest(paymentData) {  
-  return new Promise(function async (resolve, reject) {  
+function processPayment(paymentData) {  
+  return new Promise( async function (resolve, reject) {  
+    
+    const create_url = '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createGooglepayOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]';
+  
     try {  
-        // Create the order on your server  
-        const {id} = fetch('/orders', {  
-        method: "POST",  
-        body: '' 
-        // You can use the "body" parameter to pass optional, additional order information, such as:  
-        // amount, and amount breakdown elements like tax, shipping, and handling  
-        // item data, such as sku, name, unit_amount, and quantity  
-        // shipping information, like name, address, and address type  
-      });  
-      const confirmOrderResponse =  paypal.Googlepay().confirmOrder({  
-          orderId: id,  
+        const json = await getRespose( create_url, JSON.stringify(paymentData) ); 
+        console.log(json);
+        
+        const confirmOrderResponse = paypal.Googlepay().confirmOrder({  
+          orderId: json.id,  
           paymentMethodData: paymentData.paymentMethodData  
-        });  
- 
-      /** Capture the Order on your Server  */  
-      if(confirmOrderResponse.status === "APPROVED"){  
-           const response =   fetch('/capture/${id}', {  
+        });
+         
+        console.debug(confirmOrderResponse);
+        /** Capture the Order on your Server  */  
+        if(confirmOrderResponse.status === "APPROVED"){  
+           const response = fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=dglog&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&capture=' + json.id, {  
               method: 'POST',  
-            }).then(res => res.json());  
+           }).then(res => res.json());  
           if(response.capture.status === "COMPLETED")  
               resolve({transactionState: 'SUCCESS'});  
           else  
@@ -231,6 +213,29 @@ async function processPaymenttest(paymentData) {
 }  
 
 
+function processPayment2(paymentData) {
+  return new Promise(function(resolve, reject) {
+    setTimeout(function() {
+
+        console.log(paymentData);
+        paymentToken = paymentData.paymentMethodData.tokenizationData.token;
+      
+        data = fetch("[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createGooglepayOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]", {
+           "credentials": "same-origin",
+           "mode": "same-origin",
+           "method": "post",
+           "headers": { "content-type": "application/json" },
+           "body": JSON.stringify(paymentData)
+        })
+        .catch(err => {
+           console.log(err)
+         });
+
+	     resolve({});   
+ 
+    }, 500);
+  });
+}
 [{/capture}]
 </script>
 [{oxscript add=$smarty.capture.detailsGooglePayScript}]
