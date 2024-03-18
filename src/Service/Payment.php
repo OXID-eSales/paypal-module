@@ -477,8 +477,8 @@ class Payment
     {
         $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
 
-        //For UAPM payment we should not yet have a paypal order in session.
-        //We create a fresh paypal order at this point
+        //For UAPM payment we should not yet have a PayPal order in session.
+        //We create a fresh PayPal order at this point
 
         $uapmOrderId = $this->doCreateUAPMOrder($basket);
         if (!$uapmOrderId) {
@@ -711,7 +711,7 @@ class Payment
         if ($this->moduleSettingsService->alwaysIgnoreSCAResult()) {
             return true;
         }
-        //case check is to be done automatic but we have no result to check
+        //case check is to be done automatic, but we have no result to check
         if (
             (Constants::PAYPAL_SCA_WHEN_REQUIRED === $this->moduleSettingsService->getPayPalSCAContingency()) &&
             is_null($this->scaValidator->getCardAuthenticationResult($payPalOrder))

@@ -364,7 +364,7 @@ class ModuleSettings
         $moduleSetting = $this->moduleConfiguration->getModuleSetting($name);
 
         if ($moduleSetting->getType() === 'str') {
-            $value = trim($value);
+            $value = trim((string)$value);
         }
         if ($moduleSetting->getType() === 'bool') {
             $value = (bool)$value;

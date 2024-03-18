@@ -10,11 +10,13 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration;
 
 use Codeception\Util\Fixtures;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use PHPUnit\Framework\TestCase;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Dotenv\Dotenv;
 
 abstract class BaseTestCase extends TestCase
 {
@@ -24,7 +26,7 @@ abstract class BaseTestCase extends TestCase
     {
         parent::setUp();
 
-        $dotenv = new \Symfony\Component\Dotenv\Dotenv();
+        $dotenv = new Dotenv();
         $dotenv->load(__DIR__ . '/../../tests/.env');
 
         $this->updateModuleConfiguration('oscPayPalSandboxClientId', $_ENV['oscPayPalSandboxClientId']);
@@ -48,9 +50,9 @@ abstract class BaseTestCase extends TestCase
         DatabaseProvider::getDB()->execute($sQ);
     }
 
-    protected function getPsrLoggerMock(): LoggerInterface
+    protected function getPsrLoggerMock2(): Logger
     {
-        $psrLogger = $this->getMockBuilder(LoggerInterface::class)
+        $psrLogger = $this->getMockBuilder(Logger::class)
             ->disableOriginalConstructor()
             ->setMethods(
                 [
