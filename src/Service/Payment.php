@@ -144,8 +144,9 @@ class Payment
         /*
          * Set required request id if payer uses vaulted payment.
          * The OXID order is not created yet, so a random id will be given.
+         * TODO: Provide an central PalRequestId based on Request-Hash
          */
-        $payPalRequestId = time();
+        $payPalRequestId = (string) time();
 
         try {
             $response = $orderService->createOrder(
@@ -156,11 +157,6 @@ class Payment
                 $payPalRequestId
             );
         } catch (ApiException $exception) {
-            $this->logger->log(
-                'error',
-                'Api error on order create call. ' . $exception->getErrorIssue(),
-                [$exception]
-            );
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
             $this->logger->log('error', 'Error on order create call.', [$exception]);
@@ -317,7 +313,6 @@ class Payment
 
                     $issue = $exception->getErrorIssue();
                     $this->displayErrorIfInstrumentDeclined($issue);
-                    $this->logger->log('error', $exception->getMessage(), [$exception]);
 
                     throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
                 }
@@ -352,7 +347,6 @@ class Payment
 
                     $issue = $exception->getErrorIssue();
                     $this->displayErrorIfInstrumentDeclined($issue);
-                    $this->logger->log('debug', $exception->getMessage(), [$exception]);
                     throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
                 }
             }

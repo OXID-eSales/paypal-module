@@ -35,20 +35,12 @@ class PaymentCaptureCompletedHandler extends WebhookHandlerBase
 
     protected function getPayPalOrderDetails(string $payPalOrderId): ?PayPalApiModelOrder
     {
-        $apiOrder = null;
-
         try {
             $apiOrder = Registry::get(ServiceFactory::class)
                 ->getOrderService()
                 ->showOrderDetails($payPalOrderId, '');
         } catch (ApiException $exception) {
-            /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer(Logger::class);
-            $logger->log(
-                'debug',
-                'Exception during PaymentCaptureCompletedHandler::getPayPalOrderDetails().',
-                [$exception]
-            );
+            $apiOrder = null;
         }
 
         return $apiOrder;
