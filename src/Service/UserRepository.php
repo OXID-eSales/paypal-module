@@ -85,36 +85,39 @@ class UserRepository
             $parameters['oxshopid'] = $this->context->getCurrentShopId();
         }
 
+        /** @phpstan-ignore-next-line */
         $userId = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
             ->execute()
             ->fetch(PDO::FETCH_COLUMN);
 
-        return (string) $userId;
+        return (string) $userId; /** @phpstan-ignore-line */
     }
 
     public function getUserCountryIso(): string
     {
-        $result = '';
-        if ($user = $this->session->getUser()) {
-            $country = oxNew(Country::class);
-            $country->load($user->getFieldData('oxcountryid'));
-            $result = (string) $country->getFieldData('oxisoalpha2');
+        $user = $this->session->getUser();
+        $country = oxNew(Country::class);
+        $countryId = $user->getFieldData('oxcountryid');
+        if(is_string($countryId)) {
+            $country->load($countryId);
         }
-        return $result;
+        $iso = $country->getFieldData('oxisoalpha2');
+
+        return is_string($iso) ? $iso : '';
     }
 
     public function getUserStateIso(): string
     {
-        $result = '';
-        if ($user = $this->session->getUser()) {
-            $state = oxNew(State::class);
-            $state->loadByIdAndCountry(
-                $user->getFieldData('oxstateid'),
-                $user->getFieldData('oxcountryid')
-            );
-            $result = (string) $state->getFieldData('oxisoalpha2');
-        }
-        return $result;
+        $user = $this->session->getUser();
+        $state = oxNew(State::class);
+        /** @phpstan-ignore-next-line */
+        $state->loadByIdAndCountry(
+            $user->getFieldData('oxstateid'),
+            $user->getFieldData('oxcountryid')
+        );
+        $iso = $state->getFieldData('oxisoalpha2');
+
+        return is_string($iso) ? $iso : '';
     }
 }

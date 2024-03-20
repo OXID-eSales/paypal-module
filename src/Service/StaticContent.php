@@ -115,7 +115,9 @@ class StaticContent
         $paymentModel = oxNew(EshopModelPayment::class);
         $paymentModel->load($paymentId);
 
-        $paymentModel->oxpayments__oxactive = new Field(true);
+        if (property_exists($paymentModel, 'oxpayments__oxactive')) {
+            $paymentModel->oxpayments__oxactive = new Field(true);
+        }
 
         $paymentModel->save();
     }
@@ -166,6 +168,7 @@ class StaticContent
     {
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->queryBuilderFactory->create();
+        /** @phpstan-ignore-next-line */
         $fromDb = $queryBuilder
             ->select('oxid')
             ->from('oxdeliveryset')
@@ -173,8 +176,9 @@ class StaticContent
             ->execute()
             ->fetchAll(PDO::FETCH_ASSOC);
 
+        $result = [];
         foreach ($fromDb as $row) {
-            $result[$row['oxid']] = $row['oxid'];
+            $result[$row['oxid']] = $row['oxid']; /** @phpstan-ignore-line */
         }
 
         return $result;
