@@ -20,22 +20,22 @@ getGooglePayConfig().then(Config => {
 });  
 */
 
-const baseRequest = { "apiVersion": 2, "apiVersionMinor": 0 };
+const baseRequest = { 'apiVersion': 2, 'apiVersionMinor': 0 };
 
-const allowedCardNetworks = ["MASTERCARD", "DISCOVER", "VISA", "AMEX"];
+const allowedCardNetworks = ['MASTERCARD', 'DISCOVER', 'VISA', 'AMEX'];
 
-const allowedCardAuthMethods = ["PAN_ONLY", "CRYPTOGRAM_3DS"];
+const allowedCardAuthMethods = ['PAN_ONLY', 'CRYPTOGRAM_3DS'];
 
-const tokenizationSpecification = { "type": "PAYMENT_GATEWAY", "parameters": { "gateway": "paypalsb", "gatewayMerchantId": "[{$config->getMerchantId()}]" }};
+const tokenizationSpecification = { 'type': 'PAYMENT_GATEWAY', 'parameters': { 'gateway': 'paypalsb', 'gatewayMerchantId': '[{$config->getMerchantId()}]' }};
 
 const baseCardPaymentMethod = {
-  "type": "CARD",
-  "parameters": {
-    "allowedAuthMethods": allowedCardAuthMethods,
-    "allowedCardNetworks": allowedCardNetworks,
-    "billingAddressRequired": true, 
-    "assuranceDetailsRequired": true,
-    "billingAddressParameters": { "format": "FULL" }
+  'type': 'CARD',
+  'parameters': {
+    'allowedAuthMethods': allowedCardAuthMethods,
+    'allowedCardNetworks': allowedCardNetworks,
+    'billingAddressRequired': true, 
+    'assuranceDetailsRequired': true,
+    'billingAddressParameters': { 'format': 'FULL' }
   }
 };
 
@@ -43,7 +43,7 @@ const cardPaymentMethod = Object.assign(
   {},
   baseCardPaymentMethod,
   {
-    "tokenizationSpecification": tokenizationSpecification
+    'tokenizationSpecification': tokenizationSpecification
   }
 );
 
@@ -53,29 +53,17 @@ function getGoogleIsReadyToPayRequest() {
   return Object.assign(
       {},
       baseRequest,
-      { "allowedPaymentMethods": [baseCardPaymentMethod] }
+      { 'allowedPaymentMethods': [baseCardPaymentMethod] }
   );
 }
 
-function getGooglePaymentDataRequest() {
-  const paymentDataRequest = Object.assign({}, baseRequest );
 
-  paymentDataRequest.allowedPaymentMethods = [cardPaymentMethod];
-  paymentDataRequest.merchantInfo = { "merchantId": "[{$config->getMerchantId()}]", "merchantName": [{$oxcmp_shop->oxshops__oxname->value|json_encode}] };
-
-  paymentDataRequest.callbackIntents = ["PAYMENT_AUTHORIZATION"];
-  paymentDataRequest.emailRequired = true;  
-  paymentDataRequest.shippingAddressRequired = true;
-  paymentDataRequest.shippingAddressParameters = { "phoneNumberRequired": true };
-
-  return paymentDataRequest;
-}
 
 function getGooglePaymentsClient() {
   if ( paymentsClient === null ) {
      paymentsClient = new google.payments.api.PaymentsClient({
-        "environment": [{ if $config->isSandbox() }]"TEST"[{else}]"PRODUCTION"[{/if}],
-        "paymentDataCallbacks": { "onPaymentAuthorized": onPaymentAuthorized }
+        'environment': [{ if $config->isSandbox() }]'TEST'[{else}]'PRODUCTION'[{/if}],
+        'paymentDataCallbacks': { 'onPaymentAuthorized': onPaymentAuthorized }
     });
   }
   return paymentsClient;
@@ -118,8 +106,22 @@ function onGooglePayLoaded() {
 
 function addGooglePayButton() {
   const paymentsClient = getGooglePaymentsClient();
-  const button = paymentsClient.createButton({ "buttonType": "buy", "buttonLocale": "[{$oView->getActiveLangAbbr()|oxlower}]", "onClick": onGooglePaymentButtonClicked });
-  document.getElementById("[{$buttonId}]").appendChild(button);
+  const button = paymentsClient.createButton({ 'buttonType': 'buy', 'buttonLocale': '[{$oView->getActiveLangAbbr()|oxlower}]', 'onClick': onGooglePaymentButtonClicked });
+  document.getElementById('[{$buttonId}]').appendChild(button);
+}
+
+function getGooglePaymentDataRequest() {
+  const paymentDataRequest = Object.assign({}, baseRequest );
+
+  paymentDataRequest.allowedPaymentMethods = [cardPaymentMethod];
+  paymentDataRequest.merchantInfo = { "merchantId": "[{$config->getMerchantId()}]", "merchantName": [{$oxcmp_shop->oxshops__oxname->value|json_encode}] };
+
+  paymentDataRequest.callbackIntents = ['PAYMENT_AUTHORIZATION'];
+  paymentDataRequest.emailRequired = true;  
+  paymentDataRequest.shippingAddressRequired = true;
+  paymentDataRequest.shippingAddressParameters = { 'phoneNumberRequired': true };
+
+  return paymentDataRequest;
 }
 
 async function onGooglePaymentButtonClicked() {
@@ -153,11 +155,12 @@ async function onGooglePaymentButtonClicked() {
 }
 
 async function getRespose( url = '', params ='') {
-   let reponse = await fetch( url, { "credentials": "same-origin", "mode": "same-origin", "method": "post", "headers": { "content-type": "application/json" }, "body": params } )
-   .catch(err => { console.log(err) });
-   let object = await response.json();
-   console.log(object);
-   return object;
+   return await fetch( url, { "method": "post", "headers": { "content-type": "application/json" }, "body": params } )
+    .then(function (res) {
+       return res.json();
+    }).then(function (data) {
+      return data.id;
+    });
 }
 
 function processPayment(paymentData) {  
@@ -166,30 +169,55 @@ function processPayment(paymentData) {
     const create_url = '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createGooglepayOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]';
   
     try {  
-        const json = await getRespose( create_url, JSON.stringify(paymentData) ); 
-        console.log(json);
-        
+        const id = await getRespose( create_url, JSON.stringify(paymentData) ); 
         const confirmOrderResponse = paypal.Googlepay().confirmOrder({  
-          orderId: json.id,  
-          paymentMethodData: paymentData.paymentMethodData  
+          'orderId': id,  
+          'paymentMethodData': paymentData.paymentMethodData  
         });
-         
+        
+        console.log(confirmOrderResponse);
         console.debug(confirmOrderResponse);
-        /** Capture the Order on your Server  */  
-        if(confirmOrderResponse.status === "APPROVED"){  
-           const response = fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=dglog&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&capture=' + json.id, {  
-              method: 'POST',  
-           }).then(res => res.json());  
-          if(response.capture.status === "COMPLETED")  
+        
+        const confirmOrderPromise = Promise.resolve(confirmOrderResponse);
+        confirmOrderPromise.then((value) => {
+            console.log(value);
+            
+             if(value.status === "APPROVED" ){  
+                console.log('start');
+                captureData = new FormData();
+                captureData.append('orderID', id);
+           
+                const response = fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&capture=' + id, 
+                            { method: 'post', body: captureData }).then(res => res.json());  
+
+                console.log(response);
+                console.log('ende');
+                 location.replace("[{$sSelfLink|cat:"cl=order"}]");
+           };
+        });
+       
+       
+       
+        /**
+         Capture the Order on your Server  */  
+        if(value.status === "APPROVED"){  
+           captureData = new FormData();
+           captureData.append('orderID', id);
+           
+           const response = fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&capture=' + id, 
+                            { method: 'post', body: captureData }).then(res => res.json());  
+
+           console.log(response);
+           if(response.capture.status === "COMPLETED")  
               resolve({transactionState: 'SUCCESS'});  
-          else  
+           else  
               resolve({  
                 transactionState: 'ERROR',  
                 error: {  
                   intent: 'PAYMENT_AUTHORIZATION',  
                   message: 'TRANSACTION FAILED',  
                 }  
-      })  
+             })  
       } else {  
            resolve({  
             transactionState: 'ERROR',  
@@ -207,7 +235,7 @@ function processPayment(paymentData) {
           intent: 'PAYMENT_AUTHORIZATION',  
           message: err.message,  
         }  
-      })  
+      });  
     }  
   });  
 }  

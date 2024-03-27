@@ -271,7 +271,7 @@ class ViewConfig extends ViewConfig_parent
             $params['commit'] = 'false';
         }
 
-        $params['components'] = 'buttons,' . $type;
+        $params['components'] = 'buttons,googlepay,' . $type;
 
         if ($this->isPayPalBannerActive()) {
             $params['components'] .= ',messages';
