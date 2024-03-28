@@ -29,6 +29,7 @@ use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use OxidSolutionCatalysts\PayPal\Traits\DataGetter;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
@@ -43,7 +44,7 @@ use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 class Order extends Order_parent
 {
     use ServiceContainer;
-
+    use DataGetter;
     /**
      * Uapm payment in progress
      *
