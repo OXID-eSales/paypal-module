@@ -17,6 +17,7 @@ use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInt
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
+use Doctrine\DBAL\ForwardCompatibility\Result;
 
 class UserRepository
 {
@@ -64,7 +65,7 @@ class UserRepository
         return empty($userId) ? false : true;
     }
 
-    private function getUserId(string $userEmail, bool $hasPassword = true): string
+    private function getUserId(string $userEmail, bool $hasPassword = true): ?string
     {
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->queryBuilderFactory->create();
@@ -85,13 +86,18 @@ class UserRepository
             $parameters['oxshopid'] = $this->context->getCurrentShopId();
         }
 
-        /** @phpstan-ignore-next-line */
-        $userId = $queryBuilder->setParameters($parameters)
+        $result = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
-            ->execute()
-            ->fetch(PDO::FETCH_COLUMN);
+            ->execute();
 
-        return (string) $userId; /** @phpstan-ignore-line */
+        if($result instanceof Result ) {
+            $id = $result->fetchOne();
+            if ($id !== '' && is_string($id)) {
+                return $id;
+            }
+        }
+
+        return null;
     }
 
     public function getUserCountryIso(): string

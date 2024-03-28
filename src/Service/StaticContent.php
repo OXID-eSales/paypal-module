@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
+use Doctrine\DBAL\Driver\Exception;
 use PDO;
 use Doctrine\DBAL\Query\QueryBuilder;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
@@ -18,6 +19,7 @@ use OxidEsales\Eshop\Application\Model\Content as EshopModelContent;
 use OxidEsales\Eshop\Application\Model\Payment as EshopModelPayment;
 use OxidEsales\Eshop\Core\Model\BaseModel as EshopBaseModel;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
+use Doctrine\DBAL\ForwardCompatibility\Result;
 
 //NOTE: later we will do this on module installation, for now on first activation
 class StaticContent
@@ -164,24 +166,29 @@ class StaticContent
         return $content;
     }
 
+    /**
+     * @throws Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
     protected function getActiveDeliverySetIds(): array
     {
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->queryBuilderFactory->create();
-        /** @phpstan-ignore-next-line */
-        $fromDb = $queryBuilder
+        $return = [];
+        $result = $queryBuilder
             ->select('oxid')
             ->from('oxdeliveryset')
             ->where('oxactive = 1')
-            ->execute()
-            ->fetchAll(PDO::FETCH_ASSOC);
+            ->execute();
 
-        $result = [];
-        foreach ($fromDb as $row) {
-            $result[$row['oxid']] = $row['oxid']; /** @phpstan-ignore-line */
+        if($result instanceof Result ) {
+            $results = $result->fetchAllAssociative();
+            foreach ($results as $row) {
+                $return[$row['oxid']] = $row['oxid'];
+            }
         }
 
-        return $result;
+        return $return;
     }
 
     /**

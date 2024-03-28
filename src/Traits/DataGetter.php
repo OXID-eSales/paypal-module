@@ -18,7 +18,7 @@ trait DataGetter
     {
         /** @var null|string $value */
         $value = $this->getFieldData($key);
-        return $value ?? '';
+        return (string)$value;
     }
 
     public function getPaypalFloatData(string $key): float
@@ -26,9 +26,9 @@ trait DataGetter
         return (float)$this->getPaypalStringData($key);
     }
 
-    public function getPaypalIntData(string $key): float
+    public function getPaypalIntData(string $key): int
     {
-        return (float)$this->getPaypalStringData($key);
+        return (int)$this->getPaypalStringData($key);
     }
 
     public function getPaypalBoolData(string $key): bool
