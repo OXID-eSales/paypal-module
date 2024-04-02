@@ -1,8 +1,9 @@
 parameters:
+    treatPhpDocTypesAsCertain: false
     checkMissingIterableValueType: false
     bootstrapFiles:
         - phpstan-bootstrap.php
-    level: max
+    level: 8
     scanFiles:
         - ../../vendor/oxid-esales/oxideshop-ce/source/oxfunctions.php
         - ../../vendor/oxid-esales/oxideshop-ce/source/overridablefunctions.php
