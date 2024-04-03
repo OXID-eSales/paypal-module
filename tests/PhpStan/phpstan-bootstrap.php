@@ -59,7 +59,7 @@ class_alias(
 
 class_alias(
     \OxidEsales\EshopCommunity\Application\Model\User::class,
-    \OxidEsales\EshopCommunity\Application\Model\User_parent::class
+    \OxidEsales\Eshop\Application\Model\User_parent::class
 );
 
 class_alias(
