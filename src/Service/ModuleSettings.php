@@ -350,7 +350,7 @@ class ModuleSettings
     /**
      * @throws ModuleSettingNotFountException
      */
-    public function save(string $name, $value): void
+    public function save(string $name, mixed $value): void
     {
         if (is_null($this->moduleConfiguration)) {
             $this->moduleConfiguration = $this->moduleConfigurationDaoBridgeInterface->get(Module::MODULE_ID);
@@ -455,7 +455,8 @@ class ModuleSettings
         $cfg = $config->getConfigParam('aRequireSessionWithParams');
         $cfg = is_array($cfg) ? $cfg : [];
         $cfg = array_merge_recursive($cfg, $this->requireSessionWithParams);
-        $config->saveShopConfVar('arr', 'aRequireSessionWithParams', $cfg, (string)$this->context->getCurrentShopId());
+        $currentShopId = is_int($this->context->getCurrentShopId()) ? $this->context->getCurrentShopId() : null;
+        $config->saveShopConfVar('arr', 'aRequireSessionWithParams', $cfg, $currentShopId);
     }
 
     /**
@@ -474,9 +475,11 @@ class ModuleSettings
     {
         if ($this->payPalCheckoutExpressPaymentEnabled === null) {
             $expressEnabled = false;
+            /** @var Payment $payment */
             $payment = oxNew(Payment::class);
             $payment->load(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
             // check currency
+            /** @phpstan-ignore-next-line */
             if ($expressEnabled = (bool)$payment->oxpayments__oxactive->value) {
                 $actShopCurrency = Registry::getConfig()->getActShopCurrencyObject();
                 $payPalDefinitions = PayPalDefinitions::getPayPalDefinitions();
