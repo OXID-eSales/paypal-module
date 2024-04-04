@@ -254,7 +254,7 @@ class OrderRepository
         if($result instanceof Result ) {
             $id = $result->fetchOne();
 
-            if (filter_var($id, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) && !$id) {
+            if (is_bool($id) && false === $id) {
                 return '';
             }
 

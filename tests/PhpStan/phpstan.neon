@@ -1,4 +1,33 @@
 parameters:
+    ignoreErrors:
+        -
+            message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\UserComponent::\\s?.*calls parent::.*but OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\UserComponent\\s?does\\s?not\\s?extend\\s?any\\s?class\\.$#"
+            count: 2
+            path: ../../src/Component/UserComponent.php
+        -
+            message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain::\\s?.*calls parent::.*but OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain\\s?does\\s?not\\s?extend\\s?any\\s?class\\.$#"
+            count: 2
+            path: ../../src/Controller/Admin/OrderMain.php
+        -
+            message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderOverview::\\s?.*calls parent::.*but OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderOverview\\s?does\\s?not\\s?extend\\s?any\\s?class\\.$#"
+            count: 1
+            path: ../../src/Controller/Admin/OrderOverview.php
+        -
+            message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\OrderController::\\s?.*calls parent::.*but OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\OrderController\\s?does\\s?not\\s?extend\\s?any\\s?class\\.$#"
+            count: 2
+            path: ../../src/Controller/OrderController.php
+        -
+            message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\PaymentController::\\s?.*calls parent::.*but OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\PaymentController\\s?does\\s?not\\s?extend\\s?any\\s?class\\.$#"
+            count: 3
+            path: ../../src/Controller/PaymentController.php
+        -
+            message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator::\\s?.*calls parent::.*but OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator\\s?does\\s?not\\s?extend\\s?any\\s?class\\.$#"
+            count: 2
+            path: ../../src/Core/InputValidator.php
+        -
+            message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ShopControl::\\s?.*calls parent::.*but OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ShopControl\\s?does\\s?not\\s?extend\\s?any\\s?class\\.$#"
+            count: 2
+            path: ../../src/Core/ShopControl.php
     treatPhpDocTypesAsCertain: false
     checkMissingIterableValueType: false
     bootstrapFiles:

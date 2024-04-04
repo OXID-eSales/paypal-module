@@ -210,7 +210,7 @@ class Order extends Order_parent
                 $this->setOrderStatus('ERROR');
                 throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
             }
-            $this->setTransId($capture->id);
+            $this->setTransId((string)$capture->id);
         }
 
         //ensure order number
@@ -322,7 +322,7 @@ class Order extends Order_parent
      * @return PayPalApiOrder
      * @throws ApiException
      */
-    public function getPayPalCheckoutOrder($payPalOrderId = ''): PayPalApiOrder
+    public function getPayPalCheckoutOrder(string $payPalOrderId = ''): PayPalApiOrder
     {
         $payPalOrderId = $payPalOrderId ?: $this->getPayPalOrderIdForOxOrderId();
         if (!$this->payPalApiOrder) {
@@ -334,7 +334,7 @@ class Order extends Order_parent
         return $this->payPalApiOrder;
     }
 
-    protected function doExecutePayPalPayment($payPalOrderId): bool
+    protected function doExecutePayPalPayment(string $payPalOrderId): bool
     {
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
@@ -402,7 +402,7 @@ class Order extends Order_parent
     /**
      * Update order oxtransid
      */
-    public function setTransId($sTransId): void
+    public function setTransId(string $sTransId): void
     {
         $db = DatabaseProvider::getDb();
 
@@ -542,7 +542,7 @@ class Order extends Order_parent
      * @return Capture|null
      * @throws ApiException
      */
-    public function getOrderPaymentCapture($payPalOrderId = ''): ?Capture
+    public function getOrderPaymentCapture(string $payPalOrderId = ''): ?Capture
     {
         return $this->getPayPalCheckoutOrder($payPalOrderId)->purchase_units[0]->payments->captures[0] ?? null;
     }

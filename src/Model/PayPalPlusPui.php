@@ -112,11 +112,9 @@ class PayPalPlusPui extends \OxidEsales\Eshop\Core\Model\BaseModel
     /**
      * Load entry by payment ID.
      *
-     * @param string $sPaymentId
-     *
      * @return bool
      */
-    public function loadByReferenceNumber($sReferenceNumber)
+    public function loadByReferenceNumber(string $sReferenceNumber): bool
     {
         return $this->_loadBy('OXREFERENCENUMBER', $sReferenceNumber);
     }

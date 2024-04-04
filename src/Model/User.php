@@ -18,7 +18,6 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Exception\UserPhone;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
-use \OxidEsales\Eshop\Application\Model\User_parent;
 
 /**
  * PayPal oxOrder class

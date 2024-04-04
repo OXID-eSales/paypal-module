@@ -38,7 +38,7 @@ class PaymentGateway extends PaymentGateway_parent
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $sessionPaymentId = $paymentService->getSessionPaymentId();
 
-        if (PayPalDefinitions::isButtonPayment($sessionPaymentId)) {
+        if (PayPalDefinitions::isButtonPayment((string)$sessionPaymentId)) {
             $success = $this->doExecutePayPalExpressPayment($order);
         } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID === $sessionPaymentId) {
             $success = $this->doExecutePuiPayment($order);
