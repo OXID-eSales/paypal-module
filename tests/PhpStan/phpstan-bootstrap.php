@@ -43,16 +43,6 @@ class_alias(
 );
 
 class_alias(
-    \OxidEsales\Eshop\Core\ViewConfig::class,
-    \OxidEsales\Eshop\Core\ViewConfig_parent::class,
-);
-
-class_alias(
-    \OxidEsales\Eshop\Core\ShopControl::class,
-    \OxidEsales\Eshop\Core\ShopControl_parent::class,
-);
-
-class_alias(
     \OxidEsales\Eshop\Application\Controller\PaymentController::class,
     \OxidEsales\Eshop\Controller\PaymentController_parent::class,
 );
@@ -105,11 +95,6 @@ class_alias(
 class_alias(
     \OxidEsales\Eshop\Application\Model\Article::class,
     \OxidSolutionCatalysts\PayPal\Model\Article_parent::class
-);
-
-class_alias(
-    \OxidEsales\EshopCommunity\Application\Controller\OrderController::class,
-    \OxidEsales\EshopCommunity\Application\Controller\OrderController_parent::class
 );
 
 class_alias(

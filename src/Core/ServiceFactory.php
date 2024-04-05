@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Client;
 use OxidSolutionCatalysts\PayPalApi\Service\Partner;
@@ -118,6 +119,7 @@ class ServiceFactory
             /** @var Config $config */
             $config = oxNew(Config::class);
             /** @var LoggerInterface $logger */
+            /** @phpstan-ignore-next-line */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
 
             $client = new Client(

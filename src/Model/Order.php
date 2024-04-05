@@ -34,6 +34,7 @@ use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentCollection;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 
 /**
@@ -158,13 +159,13 @@ class Order extends Order_parent
             if ($this->isPayPalOrderCompleted($payPalApiOrder)) {
                 $this->markOrderPaid();
                 $transactionId = $this->extractTransactionId($payPalApiOrder);
-                $this->setTransId($transactionId);
+                $this->setTransId((string)$transactionId);
                 $paymentService->trackPayPalOrder(
                     $this->getId(),
                     $payPalOrderId,
                     $paymentsId,
                     PayPalApiOrder::STATUS_COMPLETED,
-                    $transactionId
+                    (string)$transactionId
                 );
             } else {
                 throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
@@ -643,9 +644,21 @@ class Order extends Order_parent
         );
     }
 
-    protected function extractTransactionId(PayPalApiOrder $apiOrder): string
+    protected function extractTransactionId(PayPalApiOrder $apiOrder): ?string
     {
-        return (string) $apiOrder->purchase_units[0]->payments->captures[0]->id;
+        $id = null;
+        $purchaseUnits = $apiOrder->purchase_units;
+        if(!empty($purchaseUnits)){
+            $payments = $purchaseUnits[0]->payments;
+            if ($payments instanceof PaymentCollection) {
+                $captures = $payments->captures;
+                if(!empty($captures)){
+                    $id = $captures[0]->id;
+                }
+            }
+        }
+
+        return $id;
     }
 
     public function setPayPalTracking(string $trackingCarrier, string $trackingCode): void

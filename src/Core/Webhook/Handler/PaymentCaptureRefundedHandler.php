@@ -114,7 +114,6 @@ class PaymentCaptureRefundedHandler extends WebhookHandlerBase
     protected function getPayPalOrderIdByShopOrderId(string $shopOrderId): string
     {
         try {
-            /** @var EshopModelOrder $order */
             $orderId = $this->getOrderRepository()
                 ->getPayPalOrderIdByShopOrderId($shopOrderId);
         } catch (NotFound $exception) {

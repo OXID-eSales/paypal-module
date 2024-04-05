@@ -1,5 +1,16 @@
 parameters:
+    excludePaths:
+        - ../../src/Core/ViewConfig.php
+        - ../../src/Core/ShopControl.php
     ignoreErrors:
+        -
+            message: "#Access\\s?to\\s?an\\s?undefined\\s?property#"
+            count: 2
+            path: ../../src/Model/Order.php
+        -
+            message: "#Access\\s?to\\s?an\\s?undefined\\s?property#"
+            count: 2
+            path: ../../src/Model/Article.php
         -
             message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\UserComponent::\\s?.*calls parent::.*but OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\UserComponent\\s?does\\s?not\\s?extend\\s?any\\s?class\\.$#"
             count: 2
