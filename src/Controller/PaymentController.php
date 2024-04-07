@@ -9,6 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
+use OxidSolutionCatalysts\PayPal\Model\PayPalSoapOrderPaymentList;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -47,6 +48,7 @@ class PaymentController extends PaymentController_parent
      */
     public function getPaymentList()
     {
+        /** @var PayPalSoapOrderPaymentList $paymentList */
         $paymentList = parent::getPaymentList();
         $payPalDefinitions = PayPalDefinitions::getPayPalDefinitions();
         $actShopCurrency = Registry::getConfig()->getActShopCurrencyObject();

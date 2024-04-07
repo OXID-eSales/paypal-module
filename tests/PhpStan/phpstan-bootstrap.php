@@ -33,18 +33,13 @@ class_alias(
 );
 
 class_alias(
-    \OxidEsales\Eshop\Application\Controller\PaymentController::class,
-    \OxidEsales\Eshop\Application\Controller\PaymentController_parent::class,
-);
-
-class_alias(
     \OxidEsales\EshopCommunity\Core\InputValidator::class,
     \OxidEsales\EshopCommunity\Core\InputValidator_parent::class,
 );
 
 class_alias(
     \OxidEsales\Eshop\Application\Controller\PaymentController::class,
-    \OxidEsales\Eshop\Controller\PaymentController_parent::class,
+    \OxidSolutionCatalysts\PayPal\Controller\PaymentController_parent::class,
 );
 
 class_alias(
@@ -104,7 +99,7 @@ class_alias(
 
 class_alias(
     \OxidEsales\EshopCommunity\Application\Controller\OrderController::class,
-    \OxidEsales\EshopCommunity\Application\Controller\OrderController_parent::class,
+    \OxidSolutionCatalysts\PayPal\Controller\OrderController_parent::class,
 );
 
 class_alias(
