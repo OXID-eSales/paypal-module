@@ -27,21 +27,9 @@ use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
  */
 class PatchRequestFactory
 {
-    /**
-     * @var array
-     */
-    private $request = [];
+    private array $request = [];
+    private Basket $basket;
 
-    /**
-     * @var Basket
-     */
-    private $basket;
-
-    /**
-     * @param Basket $basket
-     *
-     * @return array
-     */
     public function getRequest(
         Basket $basket,
         string $orderId = ''
@@ -54,15 +42,6 @@ class PatchRequestFactory
         if ($orderId) {
             $this->getCustomIdPatch($orderId);
         }
-
-        /** @var BasketItem $basketItem */
-        // PayPal cannot fully patch the items in the shopping cart.
-        // At the moment only the amount and the title of the article
-        // are relevant. However, no inventory.
-        // So we ignore the Article-Patch
-        //foreach ($this->basket->getContents() as $basketItem) {
-        //    $this->getPurchaseUnitsPatch($basketItem);
-        //}
 
         return $this->request;
     }
@@ -97,7 +76,9 @@ class PatchRequestFactory
 
             $address->admin_area_1 = $state->getFieldData('oxtitle');
             $address->admin_area_2 = $deliveryAddress->getFieldData('oxcity');
-            $address->country_code = $country->oxcountry__oxisoalpha2->value;
+            if (isset($country->oxcountry__oxisoalpha2)) {
+                $address->country_code = $country->oxcountry__oxisoalpha2->value;
+            }
             $address->postal_code = $deliveryAddress->getFieldData('oxzip');
 
             $patch->value = $address;
@@ -112,7 +93,10 @@ class PatchRequestFactory
         $deliveryAddress = oxNew(Address::class);
 
         if ($deliveryId && $deliveryAddress->load($deliveryId)) {
-            $fullName = $deliveryAddress->oxaddress__oxfname->value . " " . $deliveryAddress->oxaddress__oxlname->value;
+            $fullName = '';
+            if (isset($deliveryAddress->oxaddress__oxfname) && isset($deliveryAddress->oxaddress__oxlname)) {
+                $fullName = $deliveryAddress->oxaddress__oxfname->value . " " . $deliveryAddress->oxaddress__oxlname->value;
+            }
             $patch = new Patch();
             $patch->op = Patch::OP_REPLACE;
             $patch->path = "/purchase_units/@reference_id=='"
@@ -137,8 +121,6 @@ class PatchRequestFactory
 
     /**
      * @param BasketItem $basketItem
-     * @param bool $nettoPrices
-     * @param $currency
      */
     protected function getPurchaseUnitsPatch(
         BasketItem $basketItem

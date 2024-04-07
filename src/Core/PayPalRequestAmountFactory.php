@@ -23,13 +23,13 @@ class PayPalRequestAmountFactory
 {
     public function getAmount(Basket $basket): AmountWithBreakdown
     {
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Basket $basket */
+
         $netMode = Registry::getConfig()->getConfigParam('blShowNetPrice');
         $currency = $basket->getBasketCurrency();
 
-        //Discount
-        $discount = $basket->getPayPalCheckoutDiscount();
-        //Item total cost
-        $itemTotal = $basket->getPayPalCheckoutItems();
+        $discount = $basket->getPayPalCheckoutDiscount(); //Discount
+        $itemTotal = $basket->getPayPalCheckoutItems(); //Item total cost
 
         $itemTotalAdditionalCosts = $basket->getAdditionalPayPalCheckoutItemCosts();
 
