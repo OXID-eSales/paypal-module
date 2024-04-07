@@ -21,7 +21,7 @@ class OrderOverview extends OrderOverview_parent
     /**
      * Sends order.
      */
-    public function sendorder()
+    public function sendorder()/* @phpstan-ignore-line */
     {
         parent::sendorder();
         if ($this->isPayPalStandardOnDeliveryCapture()) {

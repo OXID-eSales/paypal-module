@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 class_alias(
     \OxidEsales\Eshop\Application\Component\UserComponent::class,
-    \OxidEsales\Eshop\Application\Component\UserComponent_parent::class
+    \OxidSolutionCatalysts\PayPal\Component\UserComponent_parent::class
 );
 
 class_alias(
@@ -19,12 +19,12 @@ class_alias(
 
 class_alias(
     \OxidEsales\Eshop\Application\Controller\Admin\OrderMain::class,
-    \OxidEsales\Eshop\Application\Controller\Admin\OrderMain_parent::class
+    \OxidSolutionCatalysts\PayPal\Controller\Admin\OrderMain_parent::class
 );
 
 class_alias(
     \OxidEsales\Eshop\Application\Controller\Admin\OrderOverview::class,
-    \OxidEsales\Eshop\Application\Controller\Admin\OrderOverview_parent::class
+    \OxidSolutionCatalysts\PayPal\Controller\Admin\OrderOverview_parent::class
 );
 
 class_alias(

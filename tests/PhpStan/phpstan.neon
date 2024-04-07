@@ -13,18 +13,6 @@ parameters:
             count: 2
             path: ../../src/Model/Article.php
         -
-            message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\UserComponent::\\s?.*calls parent::.*but OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\UserComponent\\s?does\\s?not\\s?extend\\s?any\\s?class\\.$#"
-            count: 2
-            path: ../../src/Component/UserComponent.php
-        -
-            message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain::\\s?.*calls parent::.*but OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain\\s?does\\s?not\\s?extend\\s?any\\s?class\\.$#"
-            count: 2
-            path: ../../src/Controller/Admin/OrderMain.php
-        -
-            message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderOverview::\\s?.*calls parent::.*but OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderOverview\\s?does\\s?not\\s?extend\\s?any\\s?class\\.$#"
-            count: 1
-            path: ../../src/Controller/Admin/OrderOverview.php
-        -
             message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator::\\s?.*calls parent::.*but OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator\\s?does\\s?not\\s?extend\\s?any\\s?class\\.$#"
             count: 2
             path: ../../src/Core/InputValidator.php

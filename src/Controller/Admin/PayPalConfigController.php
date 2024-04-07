@@ -164,7 +164,7 @@ class PayPalConfigController extends AdminController
     /**
      * Saves configuration values
      */
-    public function save()
+    public function save()/* @phpstan-ignore-line */
     {
         $confArr = Registry::getRequest()->getRequestEscapedParameter('conf');
 
@@ -303,7 +303,7 @@ class PayPalConfigController extends AdminController
     /**
      * Transcribe banner settings from the classic PayPal Module (oepaypal)
      */
-    public function transferBannerSettings()
+    public function transferBannerSettings(): void
     {
         $LegacyOeppModuleDetails = Registry::get(LegacyOeppModuleDetails::class);
         $transferrableSettings = $LegacyOeppModuleDetails->getTransferrableSettings();
@@ -314,7 +314,7 @@ class PayPalConfigController extends AdminController
             // Read old values
             $legacyConfigValue = Registry::getConfig()->getShopConfVar(
                 $configKeyName,
-                $currentShopId,
+                (int)$currentShopId,
                 'module:' . LegacyOeppModuleDetails::LEGACY_MODULE_ID
             );
 
@@ -332,19 +332,16 @@ class PayPalConfigController extends AdminController
 
         // Save legacy settings transfer status
         $this->getServiceFromContainer(ModuleSettings::class)->save('oscPayPalLegacySettingsTransferred', true);
-
-        Registry::getUtilsView()->addErrorToDisplay(
-            Registry::getLang()->translateString('OSC_PAYPAL_BANNER_TRANSFERREDOLDSETTINGS'),
-            false,
-            true
-        );
+        $banner = Registry::getLang()->translateString('OSC_PAYPAL_DESCRIPTION');
+        $banner = is_array($banner) ? implode(' ', $banner) : $banner;
+        Registry::getUtilsView()->addErrorToDisplay($banner, false, true);
     }
 
     /**
      * Get ClientID, ClientSecret, WebhookID
      * @throws JsonException
      */
-    public function autoConfigurationFromCallback()
+    public function autoConfigurationFromCallback(): void
     {
         try {
             $requestReader = oxNew(RequestReader::class);
@@ -360,7 +357,7 @@ class PayPalConfigController extends AdminController
         Registry::getUtils()->showMessageAndExit(json_encode($result, JSON_THROW_ON_ERROR));
     }
 
-    public function returnFromSignup()
+    public function returnFromSignup(): void
     {
         $config = new Config();
 
