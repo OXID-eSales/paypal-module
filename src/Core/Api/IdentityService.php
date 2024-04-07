@@ -12,7 +12,7 @@ use Psr\Http\Message\ResponseInterface;
 
 class IdentityService extends BaseService
 {
-    protected $basePath = '/v1/identity';
+    protected string $basePath = '/v1/identity';
 
     public function requestClientToken(): array
     {

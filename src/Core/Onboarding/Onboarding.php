@@ -32,8 +32,10 @@ class Onboarding
             $this->saveCredentials($credentials);
 
             // fetch and save Eligibility
-            $merchantInformations = $this->fetchMerchantInformations();
-            $this->saveEligibility($merchantInformations);
+            $merchantInformation = $this->fetchMerchantInformation();
+            if ($merchantInformation) {
+                $this->saveEligibility($merchantInformation);
+            }
 
             $paypalConfig = oxNew(PayPalConfig::class);
             file_put_contents($paypalConfig->getOnboardingBlockCacheFileName(), "1");
@@ -71,7 +73,7 @@ class Onboarding
 
     public function getOnboardingPayload(): array
     {
-        $response = json_decode(PayPalSession::getOnboardingPayload(), true);
+        $response = json_decode((string)PayPalSession::getOnboardingPayload(), true);
 
         if (
             !is_array($response) ||
@@ -125,6 +127,7 @@ class Onboarding
         }
 
         /** @var LoggerInterface $logger */
+        /** @phpstan-ignore-next-line */
         $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
 
         return new ApiOnboardingClient(
@@ -138,19 +141,20 @@ class Onboarding
         );
     }
 
-    public function fetchMerchantInformations()
+    public function fetchMerchantInformation(): ?array
     {
         $onboardingResponse = $this->getOnboardingPayload();
+        $merchantInformation = [];
         try {
             /** @var ApiOnboardingClient $apiClient */
             $apiClient = $this->getOnboardingClient($onboardingResponse['isSandBox'], true);
-            $merchantInformations = $apiClient->getMerchantInformations();
+            $merchantInformation = $apiClient->getMerchantInformations();
         } catch (ApiException $exception) {
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', $exception->getMessage(), [$exception]);
         }
-        return $merchantInformations;
+        return is_array($merchantInformation) ? $merchantInformation : null;
     }
 
     public function saveEligibility(array $merchantInformations): array

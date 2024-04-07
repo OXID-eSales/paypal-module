@@ -24,10 +24,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
  */
 class ConfirmOrderRequestFactory
 {
-    /**
-     * @var ConfirmOrderRequest
-     */
-    private $request;
 
     /**
      * @param Basket $basket
@@ -39,7 +35,7 @@ class ConfirmOrderRequestFactory
         Basket $basket,
         string $requestName
     ): ConfirmOrderRequest {
-        $request = $this->request = new ConfirmOrderRequest();
+        $request = new ConfirmOrderRequest();
 
         $request->payment_source = $this->getPaymentSource($basket, $requestName);
         $request->application_context = $this->getApplicationContext();

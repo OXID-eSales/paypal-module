@@ -58,6 +58,7 @@ class Events
             $paymentMethod = oxNew(EshopModelPayment::class);
             if (
                 $paymentMethod->load($paymentId) &&
+                isset($paymentMethod->oxpayments__oxactive) &&
                 (bool)$paymentMethod->oxpayments__oxactive->value
             ) {
                 $activePayments[] = $paymentId;
