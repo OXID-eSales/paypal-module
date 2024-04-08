@@ -407,6 +407,7 @@ class OrderRequestFactory
             $user->getFieldData('oxcountryid')
         );
 
+        /** @var Country $country */
         $country = oxNew(Country::class);
         $country->load($user->getFieldData('oxcountryid'));
 

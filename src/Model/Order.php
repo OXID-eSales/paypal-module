@@ -41,6 +41,8 @@ use OxidSolutionCatalysts\PayPalApi\Service\Orders;
  * PayPal Eshop model order class
  *
  * @mixin \OxidEsales\Eshop\Application\Model\Order
+ * @property Field $oxorder__oxpaid
+ * @property Field $oxorder__oxtransid
  */
 class Order extends Order_parent
 {

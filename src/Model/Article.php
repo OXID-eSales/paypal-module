@@ -63,8 +63,17 @@ class Article extends Article_parent
      */
     public function isVirtualPayPalArticle()
     {
-        $bIsDownloadable = ($this->oxarticles__oxisdownloadable->value != 0);
-        $bIsNonMaterial = ($this->oxarticles__oxnonmaterial->value != 0);
+        $bIsDownloadable = false;
+        $bIsNonMaterial = false;
+
+        if (isset($this->oxarticles__oxisdownloadable)) {
+            $bIsDownloadable = $this->oxarticles__oxisdownloadable->value != 0;
+        }
+
+        if (isset($this->oxarticles__oxnonmaterial)) {
+            $bIsNonMaterial = $this->oxarticles__oxnonmaterial->value != 0;
+        }
+
         return ($bIsDownloadable || $bIsNonMaterial);
     }
 }

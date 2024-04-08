@@ -5,14 +5,6 @@ parameters:
         - ../../src/Core/InputValidator.php
     ignoreErrors:
         -
-            message: "#Access\\s?to\\s?an\\s?undefined\\s?property#"
-            count: 2
-            path: ../../src/Model/Order.php
-        -
-            message: "#Access\\s?to\\s?an\\s?undefined\\s?property#"
-            count: 2
-            path: ../../src/Model/Article.php
-        -
             message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator::\\s?.*calls parent::.*but OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator\\s?does\\s?not\\s?extend\\s?any\\s?class\\.$#"
             count: 2
             path: ../../src/Core/InputValidator.php
