@@ -136,14 +136,14 @@ class OrderRepository
             ->setMaxResults(1)
             ->execute();
 
-        if($result instanceof Result ) {
+        if ($result instanceof Result) {
             $id = $result->fetchOne();
             if ($id !== '' && is_string($id)) {
                 return $id;
             }
         }
 
-        throw new \Exception('Order ID `'.$shopOrderId.'` not found.');
+        throw new \Exception('Order ID `' . $shopOrderId . '` not found.');
     }
 
     /**
@@ -157,7 +157,7 @@ class OrderRepository
         }
 
         $sessiontime = $this->config->getConfigParam('oscPayPalStartTimeCleanUpOrders');
-        if (is_int($sessiontime)){
+        if (is_int($sessiontime)) {
             $sessiontime = (int)$sessiontime;
         }
         $shopId = $this->config->getShopId();
@@ -187,7 +187,7 @@ class OrderRepository
         $result = $queryBuilder->setParameters($parameters)
             ->execute();
 
-        if($result instanceof Result ) {
+        if ($result instanceof Result) {
             $ids = $result->fetchOne();
             if (is_array($ids)) {
                 foreach ($ids as $id) {
@@ -251,7 +251,7 @@ class OrderRepository
             ->setMaxResults(1)
             ->execute();
 
-        if($result instanceof Result ) {
+        if ($result instanceof Result) {
             $id = $result->fetchOne();
 
             if (is_bool($id) && false === $id) {
@@ -290,7 +290,7 @@ class OrderRepository
             ->setMaxResults(1)
             ->execute();
 
-        if($result instanceof Result ) {
+        if ($result instanceof Result) {
             $id = $result->fetchOne();
             if ($id !== '' && is_string($id)) {
                 return $id;
@@ -324,7 +324,7 @@ class OrderRepository
             ->setMaxResults(1)
             ->execute();
 
-        if($result instanceof Result ) {
+        if ($result instanceof Result) {
             $id = $result->fetchOne();
             if ($id !== '' && is_string($id)) {
                 return $id;

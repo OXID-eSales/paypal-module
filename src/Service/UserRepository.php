@@ -90,7 +90,7 @@ class UserRepository
             ->setMaxResults(1)
             ->execute();
 
-        if($result instanceof Result ) {
+        if ($result instanceof Result) {
             $id = $result->fetchOne();
             if ($id !== '' && is_string($id)) {
                 return $id;
@@ -105,7 +105,7 @@ class UserRepository
         $user = $this->session->getUser();
         $country = oxNew(Country::class);
         $countryId = $user->getFieldData('oxcountryid');
-        if(is_string($countryId)) {
+        if (is_string($countryId)) {
             $country->load($countryId);
         }
         $iso = $country->getFieldData('oxisoalpha2');

@@ -22,7 +22,7 @@ trait JsonTrait
         $utils->setHeader('Content-Type: application/json');
 
         $sMsg = json_encode($response);
-        if(is_string($sMsg)) {
+        if (is_string($sMsg)) {
             $utils->showMessageAndExit($sMsg);
         }
     }

@@ -213,10 +213,10 @@ class PayPalOrderController extends AdminDetailsController
             if (!$refundAll) {
                 $request->initAmount();
                 $amount = $request->amount;
-                if($amount) {
+                if ($amount) {
                     $currency_code = $amount->currency_code;
                     $amount->currency_code = $currency_code;
-                    $amount->value = is_array($refundAmount) ? '' :(string)$refundAmount;
+                    $amount->value = is_array($refundAmount) ? '' : (string)$refundAmount;
                 }
             }
 

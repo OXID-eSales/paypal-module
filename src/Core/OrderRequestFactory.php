@@ -435,10 +435,12 @@ class OrderRequestFactory
         $deliveryAddress = oxNew(Address::class);
         $shipping = new ShippingDetail();
         $name = $shipping->initName();
-        if ($deliveryId
+        if (
+            $deliveryId
             && $deliveryAddress->load($deliveryId)
             && isset($deliveryAddress->oxaddress__oxfname)
-            && isset($deliveryAddress->oxaddress__oxlname)) {
+            && isset($deliveryAddress->oxaddress__oxlname)
+        ) {
             $fullName = $deliveryAddress->oxaddress__oxfname->value . " " . $deliveryAddress->oxaddress__oxlname->value;
             $name->full_name = $fullName;
 
@@ -557,7 +559,7 @@ class OrderRequestFactory
 
         $billingAddress = new AddressPortable();
         $address = $payer->address;
-        if($address) {
+        if ($address) {
             $billingAddress->address_line_1 = $address->address_line_1;
             $billingAddress->address_line_2 = $address->address_line_2;
             $billingAddress->admin_area_2 = $address->admin_area_2;
@@ -580,7 +582,7 @@ class OrderRequestFactory
         $activeShop = Registry::getConfig()->getActiveShop();
         $experienceContext = new ExperienceContext();
         $experienceContext->brand_name = $activeShop->getFieldData('oxname');
-        if($address) {
+        if ($address) {
             $experienceContext->locale = strtolower($address->country_code)
                 . '-'
                 . strtoupper($address->country_code);

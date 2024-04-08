@@ -42,14 +42,14 @@ final class OrderTest extends BaseTestCase
         ];
 
         $request = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();
-        $request->method('getRequestParameter')->willReturnCallback(function () use ($puiRequired){
+        $request->method('getRequestParameter')->willReturnCallback(function () use ($puiRequired) {
             $args = func_get_args();
 
-            if ("listorderby" === $args[0] ){
+            if ("listorderby" === $args[0]) {
                 return 'OXID';
             }
 
-            if ("listorder" === $args[0] ){
+            if ("listorder" === $args[0]) {
                 return 'ASC';
             }
 

@@ -46,6 +46,7 @@ class Order extends Order_parent
 {
     use ServiceContainer;
     use DataGetter;
+
     /**
      * Uapm payment in progress
      *
@@ -648,11 +649,11 @@ class Order extends Order_parent
     {
         $id = null;
         $purchaseUnits = $apiOrder->purchase_units;
-        if(!empty($purchaseUnits)){
+        if (!empty($purchaseUnits)) {
             $payments = $purchaseUnits[0]->payments;
             if ($payments instanceof PaymentCollection) {
                 $captures = $payments->captures;
-                if(!empty($captures)){
+                if (!empty($captures)) {
                     $id = $captures[0]->id;
                 }
             }

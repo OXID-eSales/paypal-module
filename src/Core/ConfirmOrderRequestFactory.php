@@ -24,7 +24,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
  */
 class ConfirmOrderRequestFactory
 {
-
     /**
      * @param Basket $basket
      * @param string $requestName Name of the RequestClass defined in PayPalClient

@@ -181,7 +181,7 @@ class StaticContent
             ->where('oxactive = 1')
             ->execute();
 
-        if($result instanceof Result ) {
+        if ($result instanceof Result) {
             $results = $result->fetchAllAssociative();
             foreach ($results as $row) {
                 $return[$row['oxid']] = $row['oxid'];

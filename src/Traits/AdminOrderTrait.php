@@ -20,6 +20,7 @@ use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+
 use function PHPUnit\Framework\throwException;
 
 trait AdminOrderTrait
@@ -160,7 +161,8 @@ trait AdminOrderTrait
             $order = $this->getOrder();
             if (
                 property_exists($order, 'oxorder__oxpaymenttype')
-                && $order->oxorder__oxpaymenttype->value === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID ) {
+                && $order->oxorder__oxpaymenttype->value === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID
+            ) {
                 $this->isPayPalStandardOrder = true;
             }
         }

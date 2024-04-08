@@ -198,8 +198,9 @@ class ProxyController extends FrontendController
         }
     }
 
-    public function setPayPalPaymentMethod(string $defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID): void
-    {
+    public function setPayPalPaymentMethod(
+        string $defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
+    ): void {
         $session = Registry::getSession();
         $basket = $session->getBasket();
         $user = null;
@@ -214,8 +215,9 @@ class ProxyController extends FrontendController
 
             // get the active shippingSetId
             /** @psalm-suppress InvalidArgument */
+            $deliverySetList = Registry::get(DeliverySetList::class);
             list(, $shippingSetId,) =
-                Registry::get(DeliverySetList::class)->getDeliverySetData('', $user, $basket);/** @phpstan-ignore-line */
+                $deliverySetList->getDeliverySetData('', $user, $basket);/** @phpstan-ignore-line */
 
             if ($shippingSetId) {
                 $basket->setShipping($shippingSetId);
@@ -279,7 +281,7 @@ class ProxyController extends FrontendController
     }
 
     protected function getRequestedPayPalPaymentId(
-       string $defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
+        string $defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
     ): string {
         $paymentId = (string) Registry::getRequest()->getRequestEscapedParameter('paymentid');
         return PayPalDefinitions::isPayPalPayment($paymentId) ?

@@ -121,6 +121,4 @@ class PaymentGateway extends PaymentGateway_parent
 
         return $success;
     }
-
-
 }

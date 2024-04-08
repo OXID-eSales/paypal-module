@@ -19,7 +19,7 @@ trait ModuleSettingsGetter
     public function getPaypalStringSetting(string $key): string
     {
         $value = $this->moduleSettingBridge->get($key, Module::MODULE_ID);
-        if(is_string($value) && $value !== '') {
+        if (is_string($value) && $value !== '') {
             return $value;
         }
 
@@ -35,7 +35,7 @@ trait ModuleSettingsGetter
     public function getPaypalIntSetting(string $key): ?int
     {
         $value = $this->moduleSettingBridge->get($key, Module::MODULE_ID);
-        if($value && is_int($value)){
+        if ($value && is_int($value)) {
             return (int)$value;
         }
 

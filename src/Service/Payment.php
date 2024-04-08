@@ -121,7 +121,8 @@ class Payment
         $orderService = $this->serviceFactory->getOrderService();
 
         /** @var Order $order */
-        $transactionId = $order && method_exists($order, 'getPaypalIntData') ? $order->getPaypalIntData('oxordernr') : null;
+        $transactionId = $order && method_exists($order, 'getPaypalIntData')
+                        ? $order->getPaypalIntData('oxordernr') : null;
         $request = $this->orderRequestFactory->getRequest(
             $basket,
             $intent,
@@ -187,7 +188,7 @@ class Payment
             $order
         );
 
-        if (null == $response){
+        if (null == $response) {
             throw new Exception('Creating paypal order error');
         }
 
@@ -560,7 +561,7 @@ class Payment
             $order
         );
 
-        if (null == $response){
+        if (null == $response) {
             throw new Exception('Creating paypal order error');
         }
 
@@ -616,7 +617,7 @@ class Payment
             null
         );
 
-        if (null == $response){
+        if (null == $response) {
             throw new Exception('Creating paypal order error');
         }
 
@@ -647,7 +648,7 @@ class Payment
                 $order
             );
 
-            if (null == $response){
+            if (null == $response) {
                 throw new Exception('Creating paypal order error');
             }
 
@@ -668,7 +669,7 @@ class Payment
             return false;
         }
 
-        if(isset($response)){
+        if (isset($response)) {
             $this->trackPayPalOrder(
                 (string)$order->getId(),
                 $payPalOrderId,
@@ -677,7 +678,7 @@ class Payment
             );
         }
 
-        if(method_exists($order, 'savePuiInvoiceNr')) {
+        if (method_exists($order, 'savePuiInvoiceNr')) {
             $order->savePuiInvoiceNr($payPalOrderId);
         }
 

@@ -95,7 +95,8 @@ class PatchRequestFactory
         if ($deliveryId && $deliveryAddress->load($deliveryId)) {
             $fullName = '';
             if (isset($deliveryAddress->oxaddress__oxfname) && isset($deliveryAddress->oxaddress__oxlname)) {
-                $fullName = $deliveryAddress->oxaddress__oxfname->value . " " . $deliveryAddress->oxaddress__oxlname->value;
+                $fullName = $deliveryAddress->oxaddress__oxfname->value
+                            . " " . $deliveryAddress->oxaddress__oxlname->value;
             }
             $patch = new Patch();
             $patch->op = Patch::OP_REPLACE;
