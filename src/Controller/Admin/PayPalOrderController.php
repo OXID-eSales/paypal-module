@@ -221,15 +221,12 @@ class PayPalOrderController extends AdminDetailsController
                 $order->getFieldData('oxtransid')
             );
 
-            $payPalRequestId = time();
-
             /** @var Refund $refund */
             $refund = $apiPaymentService->refundCapturedPayment(
                 $capture->id,
                 $request,
                 '',
-                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-                $payPalRequestId
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
 
             /** @var PaymentService $paymentService */

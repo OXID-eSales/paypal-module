@@ -88,15 +88,12 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
         $service = $serviceFactory->getOrderService();
         $request = new OrderCaptureRequest();
 
-        $payPalRequestId = time();
-        
         return $service->capturePaymentForOrder(
             '',
             $orderId,
             $request,
             '',
-            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-            $payPalRequestId
+            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
         );
     }
 
