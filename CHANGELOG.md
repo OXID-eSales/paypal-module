@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.4.1] - 2024-??-??
+
+- PayPal-Request-Id based on serialized body, no extra PayPal-Request-Id necessary anymore
+- use PayPal-Client v2.0.13
+
 ## [2.4.0] - 2024-04-04
 
 ### FIX
@@ -12,7 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - fix: Refund only with note to Buyer (required)
 - [0007595](https://bugs.oxid-esales.com/view.php?id=7595): : Fix PayPal Checkout substract discount from coupon series again, if 'Show net prices in frontend (B2B)' is active
 - use PayPal-Request-Id for every api-call
-- use PayPal-Client v2.0.11
+- use PayPal-Client v2.0.12
 
 ### NEW
 - PayPal Vaulting https://developer.paypal.com/braintree/docs/guides/paypal/checkout-with-vault/
