@@ -71,7 +71,13 @@ class VaultingService extends BaseService
         $path = '/v3/vault/setup-tokens';
         $method = 'post';
 
-        $response = $this->send($method, $path, [], $headers, json_encode($body, JSON_THROW_ON_ERROR | JSON_FORCE_OBJECT));
+        $response = $this->send(
+            $method,
+            $path,
+            [],
+            $headers,
+            json_encode($body, JSON_THROW_ON_ERROR | JSON_FORCE_OBJECT)
+        );
         $body = $response->getBody();
 
         return json_decode((string)$body, true);
@@ -217,10 +223,10 @@ class VaultingService extends BaseService
      */
     public function deleteVaultedPayment($paymentTokenId)
     {
-        $path = '/v3/vault/payment-tokens/'.$paymentTokenId;
+        $path = '/v3/vault/payment-tokens/' . $paymentTokenId;
         $method = 'delete';
 
-        $response = $this->send($method,$path);
+        $response = $this->send($method, $path);
 
         return $response->getStatusCode() == 204;
     }
@@ -232,7 +238,6 @@ class VaultingService extends BaseService
     {
         $headers = [];
         $headers['Content-Type'] = 'application/json';
-        $headers['PayPal-Request-Id'] = time();
         $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
         $headers = array_merge($headers, $this->getAuthHeaders());
         return $headers;

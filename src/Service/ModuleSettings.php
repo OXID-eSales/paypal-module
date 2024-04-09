@@ -160,7 +160,7 @@ class ModuleSettings
 
     public function isVaultingEligibility(): bool
     {
-        return $this->isSandbox()?
+        return $this->isSandbox() ?
             $this->isSandBoxVaultingEligibility() :
             $this->isLiveVaultingEligibility();
     }

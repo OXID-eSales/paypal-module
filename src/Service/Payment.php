@@ -141,20 +141,12 @@ class Payment
 
         $response = [];
 
-        /*
-         * Set required request id if payer uses vaulted payment.
-         * The OXID order is not created yet, so a random id will be given.
-         * TODO: Provide an central PalRequestId based on Request-Hash
-         */
-        $payPalRequestId = (string) time();
-
         try {
             $response = $orderService->createOrder(
                 $request,
                 $payPalPartnerAttributionId,
                 $payPalClientMetadataId,
-                'return=minimal',
-                $payPalRequestId
+                'return=minimal'
             );
         } catch (ApiException $exception) {
             $this->handlePayPalApiError($exception);
@@ -256,7 +248,6 @@ class Payment
             //TODO: split into multiple methods
             if ($payPalOrder->intent === Constants::PAYPAL_ORDER_INTENT_AUTHORIZE) {
                 // if order approved then authorize
-                $paypalRequestId = time();
                 if ($payPalOrder->status === ApiOrderModel::STATUS_APPROVED) {
                     $request = new OrderAuthorizeRequest();
                     $payPalOrder = $orderService->authorizePaymentForOrder(
@@ -264,8 +255,7 @@ class Payment
                         $checkoutOrderId,
                         $request,
                         '',
-                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-                        $paypalRequestId
+                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                     );
                 }
 
@@ -273,7 +263,6 @@ class Payment
                 $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
                 $authorizationId = $authorization->id;
 
-                $paypalRequestId = time();
                 // check if we need a reauthorization
                 $timeAuthorizationValidity = time()
                     - strtotime($payPalOrder->update_time ?? '')
@@ -283,8 +272,7 @@ class Payment
                     $paymentService->reauthorizeAuthorizedPayment(
                         $authorizationId,
                         $reAuthorizeRequest,
-                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-                        $paypalRequestId
+                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                     );
                 }
 
@@ -300,13 +288,11 @@ class Payment
 
                 // capture
                 $request = new CaptureRequest();
-                $paypalRequestId = time();
                 try {
                     $paymentService->captureAuthorizedPayment(
                         $authorizationId,
                         $request,
-                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-                        $paypalRequestId
+                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                     );
                 } catch (ApiException $exception) {
                     $this->handlePayPalApiError($exception);
@@ -321,12 +307,11 @@ class Payment
             } elseif (Registry::getRequest()->getRequestParameter("vaulting")) {
                 //when a vaulted payment is used, the order is already finished.
                 $result = $this->fetchOrderFields($checkoutOrderId);
-            }else {
+            } else {
                 $request = new OrderCaptureRequest();
                 //order number must be resolved before order patching
                 $order->setOrderNumber();
 
-                $paypalRequestId = time();
                 try {
                     //Patching the order with OXID order number as custom value
                     $this->doPatchPayPalOrder(
@@ -339,8 +324,7 @@ class Payment
                         '',
                         $checkoutOrderId,
                         $request,
-                        '',
-                        $paypalRequestId
+                        ''
                     );
                 } catch (ApiException $exception) {
                     $this->handlePayPalApiError($exception);
@@ -367,19 +351,17 @@ class Payment
             );
 
             if ($result instanceof Order && $order->isPayPalOrderCompleted($result)) {
-
                 //save vault to user and set success message
                 $session = Registry::getSession();
                 $vault = null;
 
                 if ($paypal = $result->payment_source->paypal) {
                     $vault = $paypal->attributes->vault;
-                }elseif ($card = $result->payment_source->card) {
+                } elseif ($card = $result->payment_source->card) {
                     $vault = $card->attributes->vault;
                 }
 
                 if ($session->getVariable("vaultSuccess") && $vault->status == "VAULTED") {
-
                     $vaultSuccess = false;
 
                     if ($id = $vault->customer["id"]) {

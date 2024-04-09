@@ -83,7 +83,7 @@ class OrderController extends OrderController_parent
 
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         if ($moduleSettings->getIsVaultingActive() && $this->getUser()->oxuser__oxpassword->value) {
-            $this->addTplParam('oscpaypal_payment_saveable',true);
+            $this->addTplParam('oscpaypal_payment_saveable', true);
         }
 
         $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
