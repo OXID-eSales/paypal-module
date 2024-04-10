@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Service;
 
+use Exception;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Core\Request;
 use OxidEsales\Eshop\Core\Session as EshopSession;
@@ -205,11 +206,7 @@ final class PaymentTest extends BaseTestCase
 
     public function testACDCOrder3DSecureFail(): void
     {
-        //$paymentService = $this->getPaymentServiceMock($this->failedAuthentication, ['verify3D']);
-
-        $paymentService = $this->getMockBuilder(PaymentService::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $paymentService = $this->getPaymentServiceMock($this->failedAuthentication, ['verify3D']);
 
         $paymentService->expects($this->once())
             ->method('verify3D')

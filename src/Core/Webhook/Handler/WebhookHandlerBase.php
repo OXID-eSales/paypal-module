@@ -35,7 +35,7 @@ abstract class WebhookHandlerBase
     {
         $eventPayload = $this->getEventPayload($event);
 
-        //PayPal transaction id might not yet be tracked in database depending on payment method
+        //PayPal's transaction id might not yet be tracked in database depending on payment method
         $payPalTransactionId = $this->getPayPalTransactionIdFromResource($eventPayload);
 
         //Depending on payment method, there might not be an order id in that result
@@ -62,8 +62,7 @@ abstract class WebhookHandlerBase
         } else {
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer(Logger::class);
-            $logger->log(
-                'debug',
+            $logger->debug(
                 sprintf(
                     "Not enough information to handle %s with PayPal order_id '%s' and PayPal transaction id '%s'",
                     static::WEBHOOK_EVENT_NAME,

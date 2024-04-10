@@ -25,7 +25,7 @@ abstract class BaseTestCase extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
+        define('OXID_PHP_UNIT', true); //@TODO check if there is abetter place to define this const
         $dotenv = new Dotenv();
         $dotenv->load(__DIR__ . '/../../tests/.env');
 
