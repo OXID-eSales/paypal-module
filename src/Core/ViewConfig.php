@@ -204,6 +204,7 @@ class ViewConfig extends ViewConfig_parent
         }
 
         $params['components'] = 'buttons,googlepay';
+        $params['merchant-id'] = $moduleSettings->getMerchantId();
         // Available components: enable messages+buttons for PDP
         if ($this->isPayPalBannerActive()) {
             $params['components'] .= ',messages';
