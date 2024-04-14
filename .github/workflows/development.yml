@@ -17,32 +17,40 @@ jobs:
         php: [ '8.0', '8.1' ]
     runs-on: ubuntu-latest
     steps:
-      - name: Clone testing environment v3.0.0
-        run: git clone https://github.com/OXID-eSales/docker-eshop-sdk.git . && git reset --hard v3.0.0
+      - name: Cleanup workspace
+        run: |
+          ls -la ./
+          sudo rm -rf ./* || true
+          sudo rm -rf ./.??* || true
+          ls -la ./
+
+      - name: Clone testing environment
+        run: git clone https://github.com/OXID-eSales/docker-eshop-sdk.git .
 
       - name: Clone the shop
         run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-7.0.x --single-branch source
 
       - name: Cache current installation
-        uses: actions/cache@v3.3.2
+        uses: actions/cache@v4
         with:
           path: |
             ./*
-          key: moduleDevelopmentInstallation-${{ matrix.php }}-${{ github.sha }}
+          key: development-${{ matrix.php }}-${{ github.run_number }}-${{ github.run_attempt }}
 
       - name: Prepare container configuration
         run: |
+          cd source/source
+          ls -alh
           make setup
           make addbasicservices
           make file=services/selenium-chrome.yml addservice
           perl -pi\
             -e "s#PHP_VERSION=.*#PHP_VERSION='${{ matrix.php }}'#g;"\
             .env
-
           perl -pi\
             -e 's#display_errors =.*#display_errors = false#g;'\
             -e 'print "xdebug.max_nesting_level=1000\nxdebug.mode=coverage\n\n"'\
-            containers/php-fpm/custom.ini
+            containers/php/custom.ini
 
           perl -pi\
             -e 's#/var/www/#/var/www/source/#g;'\
@@ -74,43 +82,40 @@ jobs:
 
       - name: Install module
         run: |
-          docker-compose exec -T \
-            php composer require symfony/dotenv:^5.1 --no-update
-          docker-compose exec -T \
-            php composer require codeception/module-rest:1.4.2 --no-update
-          docker-compose exec -T \
-            php composer require codeception/module-phpbrowser:^1.0.2 --no-update
-          docker-compose exec -T \
-            php composer config repositories.${{ env.CLIENT_PACKAGE_NAME }} git ${{ env.CLIENT_REPO_NAME }}
-          docker-compose exec -T \
+          docker compose exec -T \
             php composer config repositories.${{ env.PACKAGE_NAME }} \
             --json '{"type":"path", "url":"./test-module", "options": {"symlink": true}}'
-          docker-compose exec -T \
+          docker compose exec -T \
             php composer require ${{ env.PACKAGE_NAME }}:* --no-interaction --no-update
 
       - name: Install dependencies and reset shop
         run: |
-          docker-compose exec -T php composer update --no-interaction
-          docker-compose exec -T php php vendor/bin/reset-shop
+          docker compose exec -T php composer update --no-interaction
+          docker compose exec -T php php vendor/bin/reset-shop
 
       - name: Put module settings
         continue-on-error: true
         run: |
           mkdir -p source/var/configuration/environment/
           echo "${{ secrets.MODULE_SETTINGS }}" > source/var/configuration/environment/1.yaml
-          echo "${{ secrets.MODULE_ENV }}" > source/vendor/${{ env.PACKAGE_NAME }}/tests/.env
-          docker-compose exec -T php php bin/oe-console oe:module:apply-configuration
+          docker compose exec -T php php bin/oe-console oe:module:apply-configuration
+
+      - name: Show docker log
+        if: always()
+        run: |
+          docker compose logs
 
       - name: Stop containers
+        if: always()
         run: |
-          docker-compose down
+          docker compose down
           sleep 2
 
   styles:
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         php: [ '8.0' ]
-    runs-on: ubuntu-latest
     steps:
       - name: Checkout current module
         uses: actions/checkout@v4
@@ -122,19 +127,11 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           coverage: xdebug
-          extensions: gd, zip
 
       - name: Install module dependencies
-        id: dependencies
-        working-directory: source/test-module
-        run: composer install
-
-      - name: Run phpcs
-        id: phpcs
-        if: always()
-        working-directory: source/test-module
-        run: composer phpcs
-
+        run: |
+          cd source/test-module
+          composer install
 
       - name: Run phpstan
         id: phpstan
@@ -148,31 +145,41 @@ jobs:
         working-directory: source/test-module
         run: composer phpmd-report || composer phpmd
 
+      - name: Run phpcs
+        if: always()
+        run: |
+          cd source/test-module
+          composer phpcs
+
       - name: Upload log artifact
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: StylesLog-${{ matrix.php }}
           path: |
-            source/test-module/tests/reports/phpstan.report.json
-            source/test-module/tests/reports/phpmd.report.json
+            source/test-module/logs/psalm.sonarqube.json
 
   unit_tests:
     strategy:
-      fail-fast: false
       matrix:
         php: [ '8.0', '8.1' ]
     needs: [ install_shop_with_module ]
     runs-on: ubuntu-latest
     steps:
       - name: Load current installation from cache
-        uses: actions/cache@v3.3.2
+        uses: actions/cache@v4
         with:
           path: |
             ./*
-          key: moduleDevelopmentInstallation-${{ matrix.php }}-${{ github.sha }}
+          key: development-${{ matrix.php }}-${{ github.run_number }}-${{ github.run_attempt }}
           restore-keys: |
-            moduleDevelopmentInstallation-${{ matrix.php }}-${{ github.sha }}
+            development-${{ matrix.php }}-${{ github.run_number }}-${{ github.run_attempt }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Start containers
         run: |
@@ -181,27 +188,101 @@ jobs:
 
       - name: Run tests
         run: |
-          docker-compose exec -T \
+          docker compose exec -T \
             -e PARTIAL_MODULE_PATHS=${{ env.MODULE_PATH }} \
             -e ACTIVATE_ALL_MODULES=1 \
             -e RUN_TESTS_FOR_SHOP=0 \
             -e RUN_TESTS_FOR_MODULES=0 \
             -e XDEBUG_MODE=coverage \
-            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.PACKAGE_NAME }}/tests' \
+            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.PACKAGE_NAME }}/Tests' \
             php php vendor/bin/runtests \
               --coverage-clover=/var/www/coverage.xml \
               --coverage-text \
               --log-junit=/var/www/phpunit.xml \
               AllTestsUnit
 
+      - name: Stop containers
+        if: always()
+        run: |
+          docker compose down
+          sleep 2
+
       - name: Upload log artifact
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: TestsLog-${{ matrix.php }}
           path: |
             source/coverage.xml
             source/phpunit.xml
+
+  codeception_tests:
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [ '7.4' ]
+        group:
+          [
+            'PaymentAvailableTest',
+            'FirstGroup',
+            'SecondGroup',
+            'ThirdGroup',
+          ]
+    needs: [ install_shop_with_module ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Load current installation from cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ./*
+          key: development-${{ matrix.php }}-${{ github.run_number }}-${{ github.run_attempt }}
+          restore-keys: |
+            development-${{ matrix.php }}-${{ github.run_number }}-${{ github.run_attempt }}
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Start containers
+        run: |
+          make up
+          sleep 2
+
+      - name: Install codeception dependencies
+        run: |
+          docker compose exec -T php composer require codeception/module-rest:^1.4.2 --dev --no-update
+          docker compose exec -T php composer require codeception/module-phpbrowser:^1.0.2 --dev --no-update
+          docker compose exec -T php composer update
+
+      - name: Run tests
+        run: |
+          docker compose exec -T \
+            -e PARTIAL_MODULE_PATHS=${{ env.MODULE_PATH }} \
+            -e ACTIVATE_ALL_MODULES=1 \
+            -e RUN_TESTS_FOR_SHOP=0 \
+            -e RUN_TESTS_FOR_MODULES=0 \
+            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.PACKAGE_NAME }}/Tests' \
+            php php vendor/bin/runtests-codeception -g ${{ matrix.group }}
+
+      - name: Stop containers
+        if: always()
+        run: |
+          docker compose down
+          sleep 2
+
+      - name: Upload log artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: CodeceptionTestsLog-${{ matrix.php }}-${{ matrix.group }}
+          path: |
+            source/vendor/${{ env.PACKAGE_NAME }}/Tests/Codeception/_output/
+            source/source/log/oxideshop.log
+            source/source/log/paypal/
+            source/data/php/logs/error_log.txt
 
   sonarcloud:
     needs: [ styles, unit_tests ]
@@ -213,7 +294,7 @@ jobs:
 
       - name: Download phpunit artifacts
         continue-on-error: true
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: TestsLog-7.4
           path: ./tests/
@@ -225,15 +306,11 @@ jobs:
           sed -i 's+/var/www/test-module/++' tests/phpunit.xml
 
       - name: Download styles artifacts
-        uses: actions/download-artifact@v3
+        continue-on-error: true
+        uses: actions/download-artifact@v4
         with:
           name: StylesLog-8.0
           path: ./styles/
-
-      - name: Fix paths in styles logs
-        continue-on-error: true
-        run: |
-          sed -i 's+\/home\/runner\/work\/.*?\/.*?\/source\/test-module\/++' styles/phpstan.report.json
 
       - name: SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
@@ -245,10 +322,9 @@ jobs:
             -Dsonar.organization=${{ env.SONARCLOUD_ORGANIZATION }}
             -Dsonar.projectKey=${{ env.SONARCLOUD_PROJECT_KEY }}
             -Dsonar.sources=src
-            -Dsonar.tests=tests
+            -Dsonar.tests=Tests
             -Dsonar.sourceEncoding=UTF-8
             -Dsonar.php.coverage.reportPaths=tests/coverage.xml
-            -Dsonar.php.phpstan.reportPaths=styles/phpstan.report.json
-            -Dsonar.php.phpmd.reportPaths=styles/phpmd.report.json
+            -Dsonar.php.psalm.reportPaths=styles/psalm.sonarqube.json
             -Dsonar.cpd.php.minimumTokens=25
             -Dsonar.cpd.php.minimumLines=5
