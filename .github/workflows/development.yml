@@ -90,7 +90,6 @@ jobs:
 
       - name: Prepare container configuration
         run: |
-          cd source/source
           ls -alh
           make setup
           make addbasicservices
