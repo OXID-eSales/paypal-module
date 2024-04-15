@@ -138,6 +138,9 @@ jobs:
           docker compose exec -T \
             php composer require ${{ env.PACKAGE_NAME }}:* --no-interaction --no-update
 
+      - name: Require dotenv
+        run: docker-compose exec -T php composer require symfony/dotenv:* --no-update --no-interaction --dev
+
       - name: Install dependencies and reset shop
         run: |
           docker compose exec -T php composer update --no-interaction
