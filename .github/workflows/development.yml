@@ -1,7 +1,6 @@
 name: Development
 
 on:
-  push:
   workflow_call:
     inputs:
       php:
