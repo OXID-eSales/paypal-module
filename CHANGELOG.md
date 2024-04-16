@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - remove Sofort and MyBank, Paymentmethods will soon no longer be accepted via PayPal
 - fix: Refund only with note to Buyer (required)
 - [0007595](https://bugs.oxid-esales.com/view.php?id=7595): : Fix PayPal Checkout substract discount from coupon series again, if 'Show net prices in frontend (B2B)' is active
+- use PayPal-Request-ID in any API-Call (via Client, v3.0.10)
 
 ## [3.3.4] - 2024-01-26
 
