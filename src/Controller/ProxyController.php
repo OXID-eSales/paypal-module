@@ -149,7 +149,7 @@ class ProxyController extends FrontendController
     public function createGooglepayOrder()
     {
        $data = json_decode( file_get_contents( 'php://input' ), true );
-       
+                           
        $shippingAddress = new AddressPortable();
        $shippingAddress->address_line_1 = $data['shippingAddress']['address1'] ?? '';
        $shippingAddress->address_line_2 = $data['shippingAddress']['address2'] ?? '';
@@ -191,7 +191,7 @@ class ProxyController extends FrontendController
         if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);
         }
- 
+
         if (!$this->getUser()) {
             
             $purchaseUnitRequest = new PurchaseUnitRequest();
@@ -257,15 +257,13 @@ class ProxyController extends FrontendController
             PayPalSession::unsetPayPalOrderId();
             Registry::getSession()->getBasket()->setPayment(null);
         }
-        
-         $this->outputJson($response);
+        $this->outputJson($response);
     }
 
 
     public function approveOrder()
     {
         $data = json_decode( file_get_contents( 'php://input' ), true );
-        error_log( serialize($data) . "\n", 3, getShopBasePath() . "log" . DIRECTORY_SEPARATOR . date( "Ym" ) . "approveorder_json.txt" );
         $orderId = (string) Registry::getRequest()->getRequestEscapedParameter('orderID');
         $sessionOrderId = PayPalSession::getCheckoutOrderId();
 
@@ -280,8 +278,7 @@ class ProxyController extends FrontendController
 
         try {
             $response = $service->showOrderDetails($orderId, '');
-    
-          } catch (Exception $exception) {
+        } catch (Exception $exception) {
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', "Error on order capture call.", [$exception]);

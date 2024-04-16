@@ -17,8 +17,7 @@
   
   let paymentsClient = null,
       allowedPaymentMethods = null,
-      merchantInfo = null,
-      paySumInfo = null;
+      merchantInfo = null;
       
   /* Configure your site's support for payment methods supported by the Google Pay */
   function getGoogleIsReadyToPayRequest(allowedPaymentMethods) {
@@ -144,34 +143,30 @@
    
   async function processPayment(paymentData) {
      try {        
-         console.log(paymentData);       
-
          /*** Create oxid Order ***/  
          const createOrderUrl = '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createGooglepayOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]';
- 
          const { id } = await fetch(createOrderUrl, {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(paymentData),
-         }).then((res) => res.json());
-         
-         console.log(id);  
+               method: "POST",
+               headers: { "Content-Type": "application/json" },
+               body: JSON.stringify(paymentData),
+         }).then((res) => res.json());    
                   
          const confirmOrderResponse = await paypal.Googlepay().confirmOrder({
             orderId: id,
             paymentMethodData: paymentData.paymentMethodData,
          });
          
-         console.log(confirmOrderResponse);
-         
-         const confirmOrderPromise = Promise.resolve(confirmOrderResponse);
-         console.log(confirmOrderPromise);
-         
-         console.log(status);  
-                  
+         if (confirmOrderResponse.status === "APPROVED") {
+            /***  Capture the Order ****/
+            //const captureResponse = await fetch(`/orders/${id}/capture`, {
+            //          method: "POST",
+            //}).then((res) => res.json());
 
+            return { transactionState: "SUCCESS" };
+            
+         } else {
+            return { transactionState: "ERROR" };
+         }
                   
       } catch (err) {
          return {
