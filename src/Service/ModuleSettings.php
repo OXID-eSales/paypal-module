@@ -23,6 +23,10 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Module;
 use OxidSolutionCatalysts\PayPal\Traits\ModuleSettingsGetter;
 
+/**
+ * @method isSandBoxVaultingEligibility()
+ * @method isLiveVaultingEligibility()
+ */
 class ModuleSettings
 {
     use ModuleSettingsGetter;
@@ -237,7 +241,7 @@ class ModuleSettings
 
     public function getPaymentFailureThreshold(): string
     {
-        $value = $this->getSettingValue('oscPayPalPaymentFailureThreshold');
+        $value = $this->getPaypalStringSetting('oscPayPalPaymentFailureThreshold');
         return !empty($value) ? $value : '1';
     }
 
@@ -357,7 +361,7 @@ class ModuleSettings
     /**
      * @throws ModuleSettingNotFountException
      */
-    public function save(string $name, mixed $value): void
+    public function save(string $name, $value): void
     {
         if (is_null($this->moduleConfiguration)) {
             $this->moduleConfiguration = $this->moduleConfigurationDaoBridgeInterface->get(Module::MODULE_ID);
@@ -471,8 +475,12 @@ class ModuleSettings
         $cfg = $config->getConfigParam('aRequireSessionWithParams');
         $cfg = is_array($cfg) ? $cfg : [];
         $cfg = array_merge_recursive($cfg, $this->requireSessionWithParams);
-        $currentShopId = is_int($this->context->getCurrentShopId()) ? $this->context->getCurrentShopId() : null;
-        $config->saveShopConfVar('arr', 'aRequireSessionWithParams', $cfg, $currentShopId);
+        $config->saveShopConfVar(
+            'arr',
+            'aRequireSessionWithParams',
+            $cfg,
+            (string)$this->context->getCurrentShopId()
+        );
     }
 
     /**
@@ -552,7 +560,7 @@ class ModuleSettings
 
     public function getPayPalSCAContingency(): string
     {
-        $value = (string)$this->getSettingValue('oscPayPalSCAContingency');
+        $value = (string)$this->getPaypalStringSetting('oscPayPalSCAContingency');
         return $value === Constants::PAYPAL_SCA_ALWAYS ? $value : Constants::PAYPAL_SCA_WHEN_REQUIRED;
     }
 

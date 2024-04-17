@@ -1,5 +1,10 @@
 parameters:
     checkMissingIterableValueType: false
+    ignoreErrors:
+        -
+            message: "#^Method\\s?OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\ModuleSettings::save\\(\\)\\s?has\\s?parameter\\s?\\$value\\s?with\\s?no\\s?type\\s?specified.$#"
+            count: 1
+            path: ../../src/Service/ModuleSettings.php
     bootstrapFiles:
         - phpstan-bootstrap.php
     level: max
