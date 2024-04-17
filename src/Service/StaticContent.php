@@ -9,7 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
-use PDO;
+use Doctrine\DBAL\Driver\Exception;
+use Doctrine\DBAL\Driver\Result;
 use Doctrine\DBAL\Query\QueryBuilder;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Core\Field;
@@ -115,7 +116,9 @@ class StaticContent
         $paymentModel = oxNew(EshopModelPayment::class);
         $paymentModel->load($paymentId);
 
-        $paymentModel->oxpayments__oxactive = new Field(true);
+        if (property_exists($paymentModel, 'oxpayments__oxactive')) {
+            $paymentModel->oxpayments__oxactive = new Field(true);
+        }
 
         $paymentModel->save();
     }
@@ -162,22 +165,29 @@ class StaticContent
         return $content;
     }
 
+    /**
+     * @throws Exception
+     * @throws \Doctrine\DBAL\Exception
+     */
     protected function getActiveDeliverySetIds(): array
     {
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->queryBuilderFactory->create();
-        $fromDb = $queryBuilder
+        $return = [];
+        $result = $queryBuilder
             ->select('oxid')
             ->from('oxdeliveryset')
             ->where('oxactive = 1')
-            ->execute()
-            ->fetchAll(PDO::FETCH_ASSOC);
+            ->execute();
 
-        foreach ($fromDb as $row) {
-            $result[$row['oxid']] = $row['oxid'];
+        if ($result instanceof Result) {
+            $results = $result->fetchAllAssociative();
+            foreach ($results as $row) {
+                $return[$row['oxid']] = $row['oxid'];
+            }
         }
 
-        return $result;
+        return $return;
     }
 
     /**

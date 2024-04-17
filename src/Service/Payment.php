@@ -158,6 +158,9 @@ class Payment
         return $response;
     }
 
+    /**
+     * @throws Exception
+     */
     public function doCreatePatchedOrder(
         EshopModelBasket $basket
     ): array {
@@ -177,6 +180,10 @@ class Payment
             null,
             false
         );
+
+        if (null == $response) {
+            throw new Exception('Creating paypal order error');
+        }
 
         $paypalOrderId = $response->id ?: '';
         $status = $response->status ?: '';
@@ -262,6 +269,7 @@ class Payment
                 }
 
                 /** @var AuthorizationWithAdditionalData $authorization */
+                /** @phpstan-ignore-next-line */
                 $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
                 $authorizationId = $authorization->id;
 
@@ -279,12 +287,13 @@ class Payment
                 }
 
                 //track authorization
+                /** @var \OxidEsales\Eshop\Application\Model\Order $order */
                 $this->trackPayPalOrder(
                     $order->getId(),
                     $checkoutOrderId,
-                    (string)$order->getFieldData('oxpaymenttype'),
-                    $authorization->status,
-                    $authorizationId,
+                    (string)$order->getPaypalStringData('oxpaymenttype'), /** @phpstan-ignore-line */
+                    (string)$authorization->status,
+                    (string)$authorizationId,
                     Constants::PAYPAL_TRANSACTION_TYPE_AUTH
                 );
 

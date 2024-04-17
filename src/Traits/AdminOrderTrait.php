@@ -13,39 +13,37 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalOrder;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
 trait AdminOrderTrait
 {
     use ServiceContainer;
 
-    /** @var Order|null */
-    protected $order = null;
+    protected ?Order $order = null;
 
-    /** @var bool|null  */
-    protected $isPayPalStandardManuallyCapture = null;
+    protected ?bool $isPayPalStandardManuallyCapture = null;
 
-    /** @var bool|null  */
-    protected $isPayPalStandardOnDeliveryCapture = null;
+    protected ?bool $isPayPalStandardOnDeliveryCapture = null;
 
-    /** @var bool|null  */
-    protected $isPayPalStandardOrder = null;
+    protected ?bool $isPayPalStandardOrder = null;
 
-    /** @var bool|null  */
-    protected $isAuthorizedPayPalStandardOrder = null;
+    protected ?bool $isAuthorizedPayPalStandardOrder = null;
 
     /**
      * @throws StandardException
      */
     public function paidWithPayPal(): bool
     {
-        return (bool)$this->getOrder()->paidWithPayPal();
+        $order = $this->getOrder();
+        if (method_exists($order, 'paidWithPayPal')) {
+            $order->paidWithPayPal();
+        }
+
+        return false;
     }
 
     /**
@@ -67,12 +65,15 @@ trait AdminOrderTrait
             /** @var PayPalOrder $result */
             $result = $service->doCapturePayPalOrder(
                 $order,
-                $orderId,
+                (string)$orderId,
                 PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID,
                 $paypalOrder
             );
-            if ($order->isPayPalOrderCompleted($result)) {
+
+            if (method_exists($order, 'isPayPalOrderCompleted') && $order->isPayPalOrderCompleted($result)) {
+                /** @phpstan-ignore-next-line */
                 $order->setTransId($result->purchase_units[0]->payments->captures[0]->id);
+                /** @phpstan-ignore-next-line */
                 $order->markOrderPaid();
             }
         } else {
@@ -84,9 +85,9 @@ trait AdminOrderTrait
     }
 
     /**
-     * Template getter is it a Authorized PayPalStandardOrder
+     * Template getter is it an Authorized PayPalStandardOrder
      */
-    public function isAuthorizedPayPalStandardOrder()
+    public function isAuthorizedPayPalStandardOrder(): bool
     {
         if (is_null($this->isAuthorizedPayPalStandardOrder)) {
             $this->isAuthorizedPayPalStandardOrder = (
@@ -97,7 +98,7 @@ trait AdminOrderTrait
         return $this->isAuthorizedPayPalStandardOrder;
     }
 
-    public function isPayPalStandardOnDeliveryCapture()
+    public function isPayPalStandardOnDeliveryCapture(): bool
     {
         if (is_null($this->isPayPalStandardOnDeliveryCapture)) {
             $this->isPayPalStandardOnDeliveryCapture = false;
@@ -113,7 +114,7 @@ trait AdminOrderTrait
         return $this->isPayPalStandardOnDeliveryCapture;
     }
 
-    public function isPayPalStandardManuallyCapture()
+    public function isPayPalStandardManuallyCapture(): bool
     {
         if (is_null($this->isPayPalStandardManuallyCapture)) {
             $this->isPayPalStandardManuallyCapture = false;
@@ -133,12 +134,12 @@ trait AdminOrderTrait
     /**
      * Template getter How many Days left for capture?
      */
-    public function getTimeLeftForPayPalCapture($roundAsDay = true)
+    public function getTimeLeftForPayPalCapture(bool $roundAsDay = true): float
     {
         $result = 0;
         if ($this->isAuthorizedPayPalStandardOrder()) {
             $result = time()
-                - strtotime($this->getPayPalCheckoutOrder()->create_time)
+                - strtotime((string)$this->getPayPalCheckoutOrder()->create_time)
                 + Constants::PAYPAL_MAXIMUM_TIME_FOR_CAPTURE;
 
             $result = $roundAsDay ? ceil($result / Constants::PAYPAL_DAY) : $result;
@@ -146,13 +147,17 @@ trait AdminOrderTrait
         return $result;
     }
 
-    protected function isPayPalStandardOrder()
+    /**
+     * @throws StandardException
+     */
+    protected function isPayPalStandardOrder(): ?bool
     {
         if (is_null($this->isPayPalStandardOrder)) {
             $this->isPayPalStandardOrder = false;
+            $order = $this->getOrder();
             if (
-                ($order = $this->getOrder()) &&
-                ($order->oxorder__oxpaymenttype->value === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID)
+                property_exists($order, 'oxorder__oxpaymenttype')
+                && $order->oxorder__oxpaymenttype->value === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID
             ) {
                 $this->isPayPalStandardOrder = true;
             }
@@ -167,10 +172,8 @@ trait AdminOrderTrait
      */
     protected function getPayPalCheckoutOrder(): PayPalOrder
     {
-        $order = $this->getOrder();
-        /** @var PayPalOrder $payPalOrder */
-        $payPalOrder = $order->getPayPalCheckoutOrder();
-        return $payPalOrder;
+        /** @phpstan-ignore-next-line */
+        return $this->getOrder()->getPayPalCheckoutOrder();
     }
 
     /**
@@ -184,7 +187,7 @@ trait AdminOrderTrait
         if (is_null($this->order)) {
             $order = oxNew(Order::class);
             $orderId = $this->getEditObjectId();
-            if ($orderId === null || !$order->load($orderId)) {
+            if ($orderId == null || !$order->load($orderId)) {
                 throw new StandardException('PayPalCheckout-Order not found');
             }
             $this->order = $order;

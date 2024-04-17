@@ -33,7 +33,7 @@ class SCAValidator implements SCAValidatorInterface
     public const AUTH_STATUS_REJECTED  = 'R';
     public const AUTH_STATUS_ATTEMPTED = 'A';
 
-    private $okToProceed = [
+    private array $okToProceed = [
         [
             'enroll' => self::ENROLLMENT_STATUS_YES,
             'liability' => self::LIABILITY_SHIFT_POSSIBLE,
@@ -61,6 +61,9 @@ class SCAValidator implements SCAValidatorInterface
     public function isCardUsableForPayment(PayPalApiOrder $order): bool
     {
         $authenticationResult = $this->getCardAuthenticationResult($order);
+        if (is_null($authenticationResult)) {
+            return false;
+        }
 
         $enrollmentStatus = !is_null($authenticationResult->three_d_secure) &&
             !is_null($authenticationResult->three_d_secure->enrollment_status) ?
