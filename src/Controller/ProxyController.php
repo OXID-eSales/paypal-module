@@ -82,7 +82,7 @@ class ProxyController extends FrontendController
             PayPalSession::storePayPalOrderId($response->id);
         }
 
-        $this->outputJson($response);
+        $this->outputJson((array)$response);
     }
 
     public function getGooglepayBasket()
