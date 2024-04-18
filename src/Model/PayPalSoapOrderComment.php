@@ -7,11 +7,15 @@
 
 namespace OxidSolutionCatalysts\PayPal\Model;
 
+use OxidSolutionCatalysts\PayPal\Traits\DataGetter;
+
 /**
  * PayPal order payment comment class
  */
 class PayPalSoapOrderComment extends \OxidEsales\Eshop\Core\Model\BaseModel
 {
+    use DataGetter;
+
     /**
      * Coretable name
      *
@@ -36,7 +40,7 @@ class PayPalSoapOrderComment extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getCommentId(): string
     {
-        return (string) $this->getFieldData('oepaypal_commentid');
+        return $this->getPayPalStringData('oepaypal_commentid');
     }
 
     /**
@@ -46,7 +50,7 @@ class PayPalSoapOrderComment extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getPaymentId(): string
     {
-        return (string) $this->getFieldData('oepaypal_paymentid');
+        return $this->getPayPalStringData('oepaypal_paymentid');
     }
 
     /**
@@ -56,7 +60,7 @@ class PayPalSoapOrderComment extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getDate(): string
     {
-        return (string) $this->getFieldData('oepaypal_date');
+        return $this->getPayPalStringData('oepaypal_date');
     }
 
     /**
@@ -66,6 +70,6 @@ class PayPalSoapOrderComment extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getComment(): string
     {
-        return (string) $this->getFieldData('oepaypal_comment');
+        return $this->getPayPalStringData('oepaypal_comment');
     }
 }

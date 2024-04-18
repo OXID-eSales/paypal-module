@@ -58,8 +58,38 @@ class_alias(
 );
 
 class_alias(
-    \OxidEsales\EshopCommunity\Application\Model\User::class,
-    \OxidEsales\EshopCommunity\Application\Model\User_parent::class
+    \OxidEsales\Eshop\Application\Model\User::class,
+    \OxidSolutionCatalysts\PayPal\Model\User_parent::class
+);
+
+class_alias(
+    \OxidEsales\Eshop\Application\Model\State::class,
+    \OxidSolutionCatalysts\PayPal\Model\State_parent::class
+);
+
+class_alias(
+    \OxidEsales\Eshop\Application\Model\Payment::class,
+    \OxidSolutionCatalysts\PayPal\Model\Payment_parent::class
+);
+
+class_alias(
+    \OxidEsales\Eshop\Application\Model\PaymentGateway::class,
+    \OxidSolutionCatalysts\PayPal\Model\PaymentGateway_parent::class
+);
+
+class_alias(
+    \OxidEsales\Eshop\Application\Model\Article::class,
+    \OxidSolutionCatalysts\PayPal\Model\Article_parent::class
+);
+
+class_alias(
+    \OxidEsales\Eshop\Application\Model\Order::class,
+    \OxidSolutionCatalysts\PayPal\Model\Order_parent::class
+);
+
+class_alias(
+    \OxidEsales\Eshop\Application\Model\Basket::class,
+    \OxidSolutionCatalysts\PayPal\Model\Basket_parent::class
 );
 
 class_alias(

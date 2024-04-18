@@ -8,12 +8,15 @@
 namespace OxidSolutionCatalysts\PayPal\Model;
 
 use OxidSolutionCatalysts\PayPal\Model\PayPalSoapOrderCommentList;
+use OxidSolutionCatalysts\PayPal\Traits\DataGetter;
 
 /**
  * PayPal order payment list class
  */
 class PayPalSoapOrderPayment extends \OxidEsales\Eshop\Core\Model\BaseModel
 {
+    use DataGetter;
+
     /**
      * Coretable name
      *
@@ -45,7 +48,7 @@ class PayPalSoapOrderPayment extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getPaymentId(): string
     {
-        return (string) $this->getFieldData('oepaypal_paymentid');
+        return $this->getPaypalStringData('oepaypal_paymentid');
     }
 
     /**
@@ -55,7 +58,7 @@ class PayPalSoapOrderPayment extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getAction(): string
     {
-        return (string) $this->getFieldData('oepaypal_action');
+        return $this->getPaypalStringData('oepaypal_action');
     }
 
     /**
@@ -65,7 +68,7 @@ class PayPalSoapOrderPayment extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getOrderId(): string
     {
-        return (string) $this->getFieldData('oepaypal_orderid');
+        return $this->getPaypalStringData('oepaypal_orderid');
     }
 
     /**
@@ -75,7 +78,7 @@ class PayPalSoapOrderPayment extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getAmount(): float
     {
-        return (float) $this->getFieldData('oepaypal_amount');
+        return $this->getPaypalFloatData('oepaypal_amount');
     }
 
     /**
@@ -85,7 +88,7 @@ class PayPalSoapOrderPayment extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getRefundedAmount(): float
     {
-        return (float) $this->getFieldData('oepaypal_refundedamount');
+        return $this->getPaypalFloatData('oepaypal_refundedamount');
     }
 
     /**
@@ -107,7 +110,7 @@ class PayPalSoapOrderPayment extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getStatus(): string
     {
-        return (string) $this->getFieldData('oepaypal_status');
+        return (string) $this->getPaypalStringData('oepaypal_status');
     }
 
     /**
@@ -117,7 +120,7 @@ class PayPalSoapOrderPayment extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getDate(): string
     {
-        return (string) $this->getFieldData('oepaypal_date');
+        return (string) $this->getPaypalStringData('oepaypal_date');
     }
 
     /**
@@ -127,7 +130,7 @@ class PayPalSoapOrderPayment extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getCurrency(): string
     {
-        return (string) $this->getFieldData('oepaypal_currency');
+        return (string) $this->getPaypalStringData('oepaypal_currency');
     }
 
     /**
@@ -137,7 +140,7 @@ class PayPalSoapOrderPayment extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getTransactionId(): string
     {
-        return (string) $this->getFieldData('oepaypal_transactionid');
+        return (string) $this->getPaypalStringData('oepaypal_transactionid');
     }
 
     /**
@@ -147,7 +150,7 @@ class PayPalSoapOrderPayment extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getCorrelationId(): string
     {
-        return (string) $this->getFieldData('oepaypal_correlationid');
+        return (string) $this->getPaypalStringData('oepaypal_correlationid');
     }
 
     /**

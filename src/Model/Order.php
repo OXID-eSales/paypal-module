@@ -40,6 +40,8 @@ use OxidSolutionCatalysts\PayPalApi\Service\Orders;
  * PayPal Eshop model order class
  *
  * @mixin \OxidEsales\Eshop\Application\Model\Order
+ * @property Field $oxorder__oxpaid
+ * @property Field $oxorder__oxtransid
  */
 class Order extends Order_parent
 {
@@ -140,7 +142,7 @@ class Order extends Order_parent
 
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        $paymentsId = (string) $this->getFieldData('oxpaymenttype');
+        $paymentsId = $this->getPaypalStringData('oxpaymenttype');
         if (!$paymentService->isPayPalPayment($paymentsId)) {
             throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
         }
@@ -212,7 +214,7 @@ class Order extends Order_parent
                 $this->_setOrderStatus('ERROR');
                 throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
             }
-            $this->setTransId($capture->id);
+            $this->setTransId((string)$capture->id);
         }
 
         //ensure order number
@@ -225,7 +227,7 @@ class Order extends Order_parent
     protected function sendPayPalOrderByEmail(User $user, Basket $basket): void
     {
         $userPayment = oxNew(UserPayment::class);
-        $userPayment->load($this->getFieldData('oxpaymentid'));
+        $userPayment->load($this->getPaypalStringData('oxpaymentid'));
 
         Registry::getSession()->setVariable('blDontCheckProductStockForPayPalMails', true);
         $this->_sendOrderByEmail($user, $basket, $userPayment);
@@ -326,7 +328,7 @@ class Order extends Order_parent
      * @return PayPalApiOrder
      * @throws ApiException
      */
-    public function getPayPalCheckoutOrder($payPalOrderId = ''): PayPalApiOrder
+    public function getPayPalCheckoutOrder(string $payPalOrderId = ''): PayPalApiOrder
     {
         $payPalOrderId = $payPalOrderId ?: $this->getPayPalOrderIdForOxOrderId();
         if (!$this->payPalApiOrder) {
@@ -338,7 +340,7 @@ class Order extends Order_parent
         return $this->payPalApiOrder;
     }
 
-    protected function doExecutePayPalPayment($payPalOrderId): bool
+    protected function doExecutePayPalPayment(string $payPalOrderId): bool
     {
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
@@ -406,7 +408,7 @@ class Order extends Order_parent
     /**
      * Update order oxtransid
      */
-    public function setTransId($sTransId): void
+    public function setTransId(string $sTransId): void
     {
         $db = DatabaseProvider::getDb();
 
@@ -544,7 +546,7 @@ class Order extends Order_parent
      * @return Capture|null
      * @throws ApiException
      */
-    public function getOrderPaymentCapture($payPalOrderId = ''): ?Capture
+    public function getOrderPaymentCapture(string $payPalOrderId = ''): ?Capture
     {
         return $this->getPayPalCheckoutOrder($payPalOrderId)->purchase_units[0]->payments->captures[0] ?? null;
     }
@@ -555,18 +557,18 @@ class Order extends Order_parent
             $this->_setNumber();
         } else {
             oxNew(EshopCoreCounter::class)
-                ->update($this->_getCounterIdent(), $this->getFieldData('oxordernr'));
+                ->update($this->_getCounterIdent(), $this->getPaypalIntData('oxordernr'));
         }
     }
 
     public function isOrderFinished(): bool
     {
-        return 'OK' === $this->getFieldData('oxtransstatus');
+        return 'OK' === $this->getPaypalStringData('oxtransstatus');
     }
 
     public function isOrderPaid(): bool
     {
-        return false === strpos((string) $this->getFieldData('oxpaid'), '0000');
+        return false === strpos($this->getPaypalStringData('oxpaid'), '0000');
     }
 
     /**
@@ -574,7 +576,7 @@ class Order extends Order_parent
      */
     public function isWaitForWebhookTimeoutReached(): bool
     {
-        $orderTime = new DateTimeImmutable((string) $this->getFieldData('oxorderdate'));
+        $orderTime = new DateTimeImmutable($this->getPaypalStringData('oxorderdate'));
 
         return (new DateTimeImmutable('now'))->getTimestamp() >
             ($orderTime->getTimestamp() + Constants::PAYPAL_WAIT_FOR_WEBOOK_TIMEOUT_IN_SEC);
@@ -582,7 +584,7 @@ class Order extends Order_parent
 
     public function hasOrderNumber(): bool
     {
-        return 0 < (int) $this->getFieldData('oxordernr');
+        return 0 < $this->getPaypalIntData('oxordernr');
     }
 
     /**
@@ -591,13 +593,16 @@ class Order extends Order_parent
      */
     public function finalizeOrder(Basket $basket, $user, $recalculatingOrder = false)
     {
-        //we might have the case that the order is already stored but we are waiting for webhook events
+        //we might have the case that the order is already stored, but we are waiting for webhook events
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $sessChallenge = Registry::getSession()->getVariable('sess_challenge');
+        $sessChallenge = is_string($sessChallenge) ? (string)$sessChallenge : '';
+
         if (
             $paymentService->isPayPalPayment() &&
             $paymentService->isOrderExecutionInProgress() &&
-            $this->load(Registry::getSession()->getVariable('sess_challenge'))
+            $this->load($sessChallenge)
         ) {
             //order payment is being processed
             if (
@@ -647,7 +652,9 @@ class Order extends Order_parent
 
     protected function extractTransactionId(PayPalApiOrder $apiOrder): string
     {
-        return (string) $apiOrder->purchase_units[0]->payments->captures[0]->id;
+        $paymentCollection = $apiOrder->purchase_units[0]->payments;
+        $captures = $paymentCollection ? $paymentCollection->captures : [];
+        return !empty($captures) ? (string) $captures[0]->id : '';
     }
 
     public function setPayPalTracking(string $trackingCarrier, string $trackingCode): void
