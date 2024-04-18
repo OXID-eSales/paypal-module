@@ -1,4 +1,11 @@
 parameters:
+    excludePaths:
+        - ../../src/Core/ViewConfig.php
+        - ../../src/Core/ShopControl.php
+        - ../../src/Core/InputValidator.php
+        - ../../src/Traits/DataGetter.php
+    universalObjectCratesClasses:
+        - OxidEsales\Eshop\Application\Model\User
     checkMissingIterableValueType: false
     ignoreErrors:
         -

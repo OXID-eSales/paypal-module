@@ -11,7 +11,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Catalog\Product;
 
 class Category
 {
-    public function getCategories()
+    public function getCategories(): array
     {
         $refl = new \ReflectionClass(Product::class);
         $constants = $refl->getConstants();
@@ -29,7 +29,7 @@ class Category
         return $categoryList;
     }
 
-    public function getTypes()
+    public function getTypes(): array
     {
         $refl = new \ReflectionClass(Product::class);
         $types = $refl->getConstants();

@@ -28,7 +28,7 @@ class PayPalPlusRefundList extends \OxidEsales\Eshop\Core\Model\ListModel
      *
      * @param string $sSaleId
      */
-    public function loadRefundsBySaleId($sSaleId)
+    public function loadRefundsBySaleId($sSaleId): void
     {
         $db = DatabaseProvider::getDb();
 

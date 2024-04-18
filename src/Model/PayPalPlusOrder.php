@@ -14,9 +14,12 @@ use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidSolutionCatalysts\PayPal\Model\PayPalPlusRefundList;
+use OxidSolutionCatalysts\PayPal\Traits\DataGetter;
 
 class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
 {
+    use DataGetter;
+
     /**
      * Coretable name
      *
@@ -59,7 +62,7 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getOrderId(): string
     {
-        return $this->getFieldData('oxorderid');
+        return $this->getPaypalStringData('oxorderid');
     }
 
     /**
@@ -69,7 +72,7 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getSaleId(): string
     {
-        return $this->getFieldData('oxsaleid');
+        return $this->getPaypalStringData('oxsaleid');
     }
 
     /**
@@ -79,7 +82,7 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getPaymentId(): string
     {
-        return $this->getFieldData('oxpaymentid');
+        return $this->getPaypalStringData('oxpaymentid');
     }
 
     /**
@@ -89,7 +92,7 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getStatus(): string
     {
-        return $this->getFieldData('oxstatus');
+        return $this->getPaypalStringData('oxstatus');
     }
 
     /**
@@ -99,7 +102,7 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getDateCreated(): string
     {
-        return $this->getFieldData('oxdatecreated');
+        return $this->getPaypalStringData('oxdatecreated');
     }
 
     /**
@@ -109,7 +112,7 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getTotal(): float
     {
-        return (float)$this->getFieldData('oxtotal');
+        return $this->getPaypalFloatData('oxtotal');
     }
 
     /**
@@ -119,7 +122,7 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getCurrency()
     {
-        return $this->getFieldData('oxcurrency');
+        return $this->getPaypalStringData('oxcurrency');
     }
 
     /**
@@ -230,7 +233,7 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
         return (float)$this->totalAmountRefunded;
     }
 
-    public function getPaymentInstructions()
+    public function getPaymentInstructions(): ?PayPalPlusPui
     {
         $oPaymentInstructions = null;
         $oPayPalPlusPuiData = oxNew(PayPalPlusPui::class);
@@ -282,7 +285,7 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      *
      * @throws StandardException
      */
-    protected function _throwCouldNotLoadOrderError()
+    protected function _throwCouldNotLoadOrderError(): void
     {
         throw oxNew(StandardException::class, 'OSC_PAYPALPLUS_ERROR_NO_ORDER');
     }

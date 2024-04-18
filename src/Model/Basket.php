@@ -9,6 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 
 use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Traits\DataGetter;
 
 /**
  * PayPal basket class
@@ -17,6 +18,8 @@ use OxidEsales\Eshop\Core\Registry;
  */
 class Basket extends Basket_parent
 {
+    use DataGetter;
+
     /**
      * Checks if any product in basket is virtual and does not require real delivery.
      * Returns TRUE if virtual
@@ -89,7 +92,7 @@ class Basket extends Basket_parent
         $amount = 0.0;
 
         $wrappingCost = $this->getCosts('oxwrapping');
-        if ($wrappingCost) {
+        if ($wrappingCost instanceof Price) {
             $amount = $wrappingCost->getBruttoPrice();
         }
 
@@ -106,7 +109,7 @@ class Basket extends Basket_parent
         $amount = 0.0;
 
         $giftCardCost = $this->getCosts('oxgiftcard');
-        if ($giftCardCost) {
+        if ($giftCardCost instanceof Price) {
             $amount = $giftCardCost->getBruttoPrice();
         }
 
@@ -123,7 +126,7 @@ class Basket extends Basket_parent
         $amount = 0.0;
 
         $paymentCost = $this->getCosts('oxpayment');
-        if ($paymentCost) {
+        if ($paymentCost instanceof Price) {
             $amount = $paymentCost->getBruttoPrice();
         }
 
@@ -140,7 +143,7 @@ class Basket extends Basket_parent
         $amount = 0.0;
 
         $deliveryCost = $this->getCosts('oxdelivery');
-        if ($deliveryCost) {
+        if ($deliveryCost instanceof Price) {
             $amount = $deliveryCost->getBruttoPrice();
         }
 
@@ -155,12 +158,14 @@ class Basket extends Basket_parent
     {
         $config = Registry::getConfig();
         $netMode = $config->getConfigParam('blShowNetPrice');
+        $netMode = is_bool($netMode) ? (bool)$netMode : false;
         $defaultVAT = $config->getConfigParam('dDefaultVAT');
+        $defaultVAT = is_float($defaultVAT) ? (float)$defaultVAT : $defaultVAT;
         $discount = 0.0;
 
         $totalDiscount = $this->getTotalDiscount();
 
-        if ($totalDiscount) {
+        if ($totalDiscount instanceof Price) {
             $discount += $totalDiscount->getBruttoPrice();
         }
 
@@ -169,7 +174,9 @@ class Basket extends Basket_parent
         foreach ($vouchers as $voucher) {
             $voucherPrice = oxNew(Price::class);
             $voucherPrice->setNettoMode($netMode);
-            $voucherPrice->setPrice($voucher->dVoucherdiscount, (float)$defaultVAT);
+            if (is_float($defaultVAT)) {
+                $voucherPrice->setPrice($voucher->dVoucherdiscount, $defaultVAT);
+            }
 
             $discount += $voucherPrice->getBruttoPrice();
         }

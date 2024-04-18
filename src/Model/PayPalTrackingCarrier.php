@@ -8,9 +8,12 @@
 namespace OxidSolutionCatalysts\PayPal\Model;
 
 use OxidEsales\Eshop\Core\Model\BaseModel;
+use OxidSolutionCatalysts\PayPal\Traits\DataGetter;
 
 class PayPalTrackingCarrier extends BaseModel
 {
+    use DataGetter;
+
     /**
      * Coretable name
      *
@@ -29,16 +32,16 @@ class PayPalTrackingCarrier extends BaseModel
 
     public function getCountryCode(): string
     {
-        return (string) $this->getFieldData('oxcountrycode');
+        return (string) $this->getPaypalStringData('oxcountrycode');
     }
 
     public function getTitle(): string
     {
-        return (string) $this->getFieldData('oxtitle');
+        return (string) $this->getPaypalStringData('oxtitle');
     }
 
     public function getKey(): string
     {
-        return (string) $this->getFieldData('oxkey');
+        return (string) $this->getPaypalStringData('oxkey');
     }
 }

@@ -17,6 +17,7 @@ use OxidEsales\Eshop\Application\Model\Country as EshopModelCountry;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Exception\UserPhone;
+use OxidSolutionCatalysts\PayPal\Traits\DataGetter;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
 
 /**
@@ -26,6 +27,8 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
  */
 class User extends User_parent
 {
+    use DataGetter;
+
     /**
      * @inheritDoc
      */
@@ -55,28 +58,35 @@ class User extends User_parent
 
     public function getBirthDateForPuiRequest(): ?string
     {
-        $required = EshopRegistry::getRequest()->getRequestParameter('pui_required');
-        $day = $required['birthdate']['day'];
-        $month = $required['birthdate']['month'];
-        $year = $required['birthdate']['year'];
-
         $result = null;
-        if (checkdate($month, $day, $year)) {
-            $result = (new DateTimeImmutable())->setDate($year, $month, $day);
-            $result = $result->format('Y-m-d');
-        }
+        $required = EshopRegistry::getRequest()->getRequestParameter('pui_required');
+        if (is_array($required)) {
+            $day = $required['birthdate']['day'];
+            $month = $required['birthdate']['month'];
+            $year = $required['birthdate']['year'];
 
+            $result = null;
+            if (checkdate($month, $day, $year)) {
+                $result = (new DateTimeImmutable())->setDate($year, $month, $day);
+                $result = $result->format('Y-m-d');
+            }
+        }
         return $result;
     }
 
     public function getPhoneNumberForPuiRequest(): ?ApiModelPhone
     {
         $result = null;
-        $rawNumber = EshopRegistry::getRequest()->getRequestParameter('pui_required')['phonenumber'];
+        $required = EshopRegistry::getRequest()->getRequestParameter('pui_required');
+        $rawNumber = '';
+        if (is_array($required)) {
+            $rawNumber = $required['phonenumber'];
+        }
 
         $country = oxNew(EshopModelCountry::class);
-        $country->load($this->getFieldData('oxcountryId'));
+        $country->load($this->getPaypalStringData('oxcountryId'));
         $countryCode = $country->getFieldData('oxisoalpha2');
+        $countryCode = is_string($countryCode) ? (string)$countryCode : null;
         $phoneUtils = PhoneNumberUtil::getInstance();
 
         try {
@@ -101,7 +111,9 @@ class User extends User_parent
     {
         $result = [];
         $requiredAddressFields = oxNew(RequiredAddressFields::class);
-        foreach ($requiredAddressFields->getBillingFields() as $requiredAddressField) {
+        $billingFields = $requiredAddressFields->getBillingFields();
+        $billingFields = is_array($billingFields) ? (array)$billingFields : [];
+        foreach ($billingFields as $requiredAddressField) {
             $result[$requiredAddressField] = $this->{$requiredAddressField}->value;
         }
 
@@ -130,7 +142,7 @@ class User extends User_parent
      * @param string $userName
      * @param string $password
      */
-    protected function onLogin(mixed $userName, mixed $password): void
+    protected function onLogin($userName, $password): void
     {
         if (PayPalSession::isPayPalExpressOrderActive()) {
             $userId = $this->getUserIdByPayPalAddress($userName);
