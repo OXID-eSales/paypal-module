@@ -437,4 +437,9 @@ class Config
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getIsVaultingActive();
     }
+
+    public function getIsGooglePayDeliveryAdressActive(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getIsGooglePayDeliveryAddressActive();
+    }
 }

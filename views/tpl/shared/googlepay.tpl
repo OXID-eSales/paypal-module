@@ -1,6 +1,9 @@
 [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
 [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
 [{assign var="config" value=$oViewConf->getPayPalCheckoutConfig()}]
+[{assign var="oConfig" value=$oViewConf->getConfig()}]
+[{assign var="bGooglePayDelivery" value=$oConfig->getConfigParam('oscPayPalUseGooglePayAddress')}]
+
 
 <script>
 [{capture name="detailsGooglePayScript"}]
@@ -54,7 +57,7 @@
 
      paymentDataRequest.callbackIntents = ["PAYMENT_AUTHORIZATION"];
      paymentDataRequest.emailRequired = true;
-     paymentDataRequest.shippingAddressRequired = false;
+     paymentDataRequest.shippingAddressRequired = [{if $bGooglePayDelivery == true}]true[{else}]false[{/if}];
      paymentDataRequest.shippingAddressParameters = { 'phoneNumberRequired': true };
 
      return paymentDataRequest;

@@ -528,5 +528,11 @@ $aModule = [
             'value' => true,
             'group' => null
         ],
+        [
+            'name' => 'oscPayPalUseGooglePayAddress',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
     ],
 ];
