@@ -248,9 +248,11 @@ class Payment
     ): ApiOrderModel {
 
         /** @var ApiOrderModel $payPalOrder */
-        $payPalOrder = is_null($payPalOrder) || !isset($payPalOrder->payment_source) ?
-            $this->fetchOrderFields($checkoutOrderId, 'payment_source') :
-            $payPalOrder;
+        if (is_null($payPalOrder) || !isset($payPalOrder->payment_source)) {
+            $payPalOrder = $this->fetchOrderFields($checkoutOrderId, 'payment_source');
+        } else {
+            $payPalOrder = $payPalOrder;
+        }
 
         //Verify 3D result if acdc payment
         if (!$this->verify3D($paymentId, $payPalOrder)) {

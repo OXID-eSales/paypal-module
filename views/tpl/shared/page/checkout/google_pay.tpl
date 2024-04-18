@@ -1,8 +1,6 @@
 <dl>
     <dt>
-        [{include file="modules/osc/paypal/select_payment.tpl"}]
+        <input id="payment_[{$sPaymentID}]" type="radio" name="paymentid" value="[{$sPaymentID}]" [{if $oView->getCheckedPaymentId() == $paymentmethod->oxpayments__oxid->value}]checked[{/if}]>
         <label for="payment_[{$sPaymentID}]"><b>[{$paymentmethod->oxpayments__oxdesc->value}]</b></label>
-        <div id="[{$sPaymentID}]" class="paypal-button-container [{$buttonClass}]"></div>
-        [{include file="modules/osc/paypal/googlepay.tpl" buttonId=$sPaymentID buttonClass="paypal-button-wrapper large"}]
     </dt>
 </dl>
