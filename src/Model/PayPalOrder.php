@@ -8,9 +8,12 @@
 namespace OxidSolutionCatalysts\PayPal\Model;
 
 use OxidEsales\Eshop\Core\Model\BaseModel;
+use OxidSolutionCatalysts\PayPal\Traits\DataGetter;
 
 class PayPalOrder extends BaseModel
 {
+    use DataGetter;
+
     /**
      * Coretable name
      *
@@ -29,37 +32,37 @@ class PayPalOrder extends BaseModel
 
     public function getPayPalOrderId(): string
     {
-        return (string) $this->getFieldData('oxpaypalorderid');
+        return $this->getPaypalStringData('oxpaypalorderid');
     }
 
     public function getTransactionId(): string
     {
-        return (string) $this->getFieldData('oscpaypaltransactionid');
+        return $this->getPaypalStringData('oscpaypaltransactionid');
     }
 
     public function getTrackingCode(): string
     {
-        return (string) $this->getFieldData('oscpaypaltrackingid');
+        return $this->getPaypalStringData('oscpaypaltrackingid');
     }
 
     public function getTrackingCarrier(): string
     {
-        return (string) $this->getFieldData('oscpaypaltrackingtype');
+        return $this->getPaypalStringData('oscpaypaltrackingtype');
     }
 
     public function getShopOrderId(): string
     {
-        return (string) $this->getFieldData('oxorderid');
+        return $this->getPaypalStringData('oxorderid');
     }
 
     public function getStatus(): string
     {
-        return (string) $this->getFieldData('oscpaypalstatus');
+        return $this->getPaypalStringData('oscpaypalstatus');
     }
 
     public function getPaymentMethodId(): string
     {
-        return (string) $this->getFieldData('oscpaymentmethodid');
+        return $this->getPaypalStringData('oscpaymentmethodid');
     }
 
     public function setStatus(string $status): void

@@ -25,7 +25,7 @@ class PayPalSoapOrderCommentList extends \OxidEsales\Eshop\Core\Model\ListModel
      *
      * @param string $paymentId Order id.
      */
-    public function load($paymentId)
+    public function load($paymentId): void
     {
         $oBaseObject = $this->getBaseObject();
         $sPaymentTable = $oBaseObject->getViewName();
