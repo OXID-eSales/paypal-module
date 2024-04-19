@@ -93,6 +93,28 @@ $aModule = [
         '@osc_paypal/admin/oscpaypalorder_pp.tpl' => 'views/smarty/admin/oscpaypalorder_pp.tpl',
         '@osc_paypal/admin/oscpaypalorder_ppplus.tpl' => 'views/smarty/admin/oscpaypalorder_ppplus.tpl',
     ],
+    'blocks'    => [
+        [
+            'template' => 'headitem.tpl',
+            'block' => 'admin_headitem_inccss',
+            'file' => 'views/smarty/extensions/theme/default/headitem__admin_headitem_inccss.tpl'
+        ],
+        [
+            'template' => 'headitem.tpl',
+            'block' => 'admin_headitem_incjs',
+            'file' => 'views/smarty/extensions/theme/default/headitem__admin_headitem_incjs.tpl'
+        ],
+        [
+            'template' => 'order_main.tpl',
+            'block' => 'admin_order_main_form_shipping',
+            'file' => 'views/smarty/extensions/theme/default/order_main__admin_order_main_form_shipping.tpl'
+        ],
+        [
+            'template' => 'order_main.tpl',
+            'block' => 'admin_order_main_send_order',
+            'file' => 'views/smarty/extensions/theme/default/order_main__admin_order_main_send_order.tpl'
+        ],
+    ],
     'settings' => [
         [
             'name' => 'oscPayPalSandboxMode',
