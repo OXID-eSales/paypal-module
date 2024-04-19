@@ -19,22 +19,22 @@ class_alias(
 
 class_alias(
     \OxidEsales\Eshop\Application\Controller\Admin\OrderMain::class,
-    \OxidEsales\Eshop\Application\Controller\Admin\OrderMain_parent::class
+    \OxidSolutionCatalysts\PayPal\Controller\Admin\OrderMain_parent::class
 );
 
 class_alias(
     \OxidEsales\Eshop\Application\Controller\Admin\OrderOverview::class,
-    \OxidEsales\Eshop\Application\Controller\Admin\OrderOverview_parent::class
+    \OxidSolutionCatalysts\PayPal\Controller\Admin\OrderOverview_parent::class
 );
 
 class_alias(
     \OxidEsales\Eshop\Application\Controller\OrderController::class,
-    \OxidEsales\Eshop\Application\Controller\OrderController_parent::class
+    \OxidSolutionCatalysts\PayPal\Controller\OrderController_parent::class
 );
 
 class_alias(
     \OxidEsales\Eshop\Application\Controller\PaymentController::class,
-    \OxidEsales\Eshop\Application\Controller\PaymentController_parent::class,
+    \OxidSolutionCatalysts\PayPal\Controller\PaymentController_parent::class,
 );
 
 class_alias(
@@ -55,6 +55,11 @@ class_alias(
 class_alias(
     \OxidEsales\Eshop\Application\Model\Order::class,
     \OxidEsales\Eshop\Application\Model\Order_parent::class,
+);
+
+class_alias(
+    \OxidSolutionCatalysts\PayPal\Model\Country::class,
+    \OxidEsales\Eshop\Application\Model\Country_parent::class,
 );
 
 class_alias(

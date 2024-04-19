@@ -5,17 +5,20 @@ namespace OxidSolutionCatalysts\PayPal\Controller;
 use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Request;
+use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidEsales\Eshop\Application\Controller\FrontendController;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
+use OxidSolutionCatalysts\PayPal\Traits\RequestDataGetter;
 
 class VaultingTokenController extends FrontendController
 {
     use JsonTrait;
+    use RequestDataGetter;
 
-    protected $vaultingService;
+    protected ?VaultingService $vaultingService = null;
 
-    public function generateSetupToken()
+    public function generateSetupToken(): void
     {
         $vaultingService = $this->getVaultingService();
         $card = (bool)Registry::get(Request::class)->getRequestEscapedParameter("card");
@@ -33,8 +36,7 @@ class VaultingTokenController extends FrontendController
     public function generatePaymentToken()
     {
         $vaultingService = $this->getVaultingService();
-        $setupToken = Registry::getRequest()->getRequestParameter("token");
-
+        $setupToken = self::getRequestStringParameter("token");
         $paymentToken = $vaultingService->createVaultPaymentToken($setupToken);
         if ($this->storePayPalUserId($paymentToken["customer"]["id"])) {
             $this->outputJson(["state" => "SUCCESS"]);
@@ -43,16 +45,9 @@ class VaultingTokenController extends FrontendController
         }
     }
 
-    public function generateAccessTokenFromCustomerId($payPalCustomerId)
+    protected function getVaultingService(): VaultingService
     {
-        $vaultingService = $this->getVaultingService();
-
-        $this->outputJson($vaultingService->generateAccessTokenFromCustomerId($payPalCustomerId));
-    }
-
-    protected function getVaultingService()
-    {
-        if (!$this->vaultingService) {
+        if (null == $this->vaultingService) {
             $this->vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
         }
 

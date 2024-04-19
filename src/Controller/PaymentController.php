@@ -10,6 +10,7 @@ namespace OxidSolutionCatalysts\PayPal\Controller;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
+use OxidSolutionCatalysts\PayPal\Model\User;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -38,23 +39,30 @@ class PaymentController extends PaymentController_parent
             $paymentService->removeTemporaryOrder();
         }
 
+        /** @var User $user */
         $user = $this->getUser();
-        if (
-            $user &&
-            ($paypalCustomerId = $user->getFieldData("oscpaypalcustomerid"))
-        ) {
+        if ($paypalCustomerId = $user->getPaypalStringData("oscpaypalcustomerid")) {
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
-            if ($vaultedPaymentTokens = $vaultingService->getVaultPaymentTokens($paypalCustomerId)["payment_tokens"]) {
+            $vaultedPaymentTokens = $vaultingService->getVaultPaymentTokens($paypalCustomerId);
+            if (isset($vaultedPaymentTokens["payment_tokens"])) {
                 $vaultedPaymentSources = [];
                 foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
                     foreach ($vaultedPaymentToken["payment_source"] as $paymentType => $paymentSource) {
                         if ($paymentType === "card") {
                             $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_ENDING_IN");
-                            $vaultedPaymentSources[$paymentType][] = $paymentSource["brand"] . " " .
-                                $string . $paymentSource["last_digits"];
+
+                            $vaultedPaymentSources[$paymentType][] =
+                                implode(
+                                    '',
+                                    [$paymentSource["brand"] . " " , $string , $paymentSource["last_digits"]]
+                                );
                         } elseif ($paymentType === "paypal") {
-                            $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
-                            $vaultedPaymentSources[$paymentType][] = $string . " " . $paymentSource["email_address"];
+                            $string = Registry::getLang()
+                                ->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
+                            $vaultedPaymentSources[$paymentType][] = implode(
+                                ' ',
+                                [$string, $paymentSource["email_address"]]
+                            );
                         }
                     }
                 }
@@ -105,7 +113,7 @@ class PaymentController extends PaymentController_parent
          * - netto-mode
          */
 
-        foreach ($paymentListRaw as $key => $payment) {
+        foreach ((array)$paymentListRaw as $key => $payment) {
             if (
                 !isset($payPalDefinitions[$key]) ||
                 (

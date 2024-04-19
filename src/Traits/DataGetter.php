@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Traits;
 
 /**
- * Convenience trait to work with JSON-Data
+ * Convenience trait to work getFieldData
  */
 trait DataGetter
 {
