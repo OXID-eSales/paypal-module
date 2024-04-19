@@ -11,6 +11,7 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Integration\RequestFactory;
 
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Core\Request;
+use OxidEsales\EshopCommunity\Application\Controller\FrontendController;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Exception\UserPhone as UserPhoneException;
@@ -41,14 +42,25 @@ final class OrderTest extends BaseTestCase
         ];
 
         $request = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();
-        $request->method('getRequestParameter')->willReturn($puiRequired);
+        $request->method('getRequestParameter')->willReturnCallback(function () use ($puiRequired) {
+            $args = func_get_args();
+
+            if ("listorderby" === $args[0]) {
+                return 'OXID';
+            }
+
+            if ("listorder" === $args[0]) {
+                return 'ASC';
+            }
+
+            return $puiRequired;
+        });
 
         EshopRegistry::set(Request::class, $request);
 
         //DE demo user
         $user = oxNew(EshopModelUser::class);
         $user->load(self::TEST_USER_ID);
-
         $basket = oxNew(EshopModelBasket::class);
         $basket->addToBasket(self::TEST_PRODUCT_ID, 1);
         $basket->setUser($user);

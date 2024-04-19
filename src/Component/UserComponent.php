@@ -30,6 +30,7 @@ class UserComponent extends UserComponent_parent
         return $return;
     }
 
+    /* @phpstan-ignore-next-line */
     public function login_noredirect() //phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps
     {
         $return = parent::login_noredirect();
@@ -44,9 +45,9 @@ class UserComponent extends UserComponent_parent
 
     public function createPayPalGuestUser(\OxidSolutionCatalysts\PayPalApi\Model\Orders\Order $response): void
     {
-        $this->setParent(oxNew('Register'));
+        $this->setParent(oxNew('Register')); /* @phpstan-ignore-line */
 
-        $this->setRequestParameterByPayPal('lgn_usr', $response->payer->email_address);
+        $this->setRequestParameterByPayPal('lgn_usr', $response->payer?->email_address);
         // Guest users have a blank password
         $password = '';
         $this->setRequestParameterByPayPal('lgn_pwd', $password);
@@ -67,7 +68,7 @@ class UserComponent extends UserComponent_parent
 
         if (
             $loginSuccess = $user->login(
-                $response->payer->email_address,
+                (string)$response->payer?->email_address,
                 '',
                 Registry::getRequest()->getRequestParameter('lgn_cook')
             )

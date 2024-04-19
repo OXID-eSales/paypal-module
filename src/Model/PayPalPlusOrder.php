@@ -230,7 +230,7 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
         return (float)$this->totalAmountRefunded;
     }
 
-    public function getPaymentInstructions()
+    public function getPaymentInstructions(): ?PayPalPlusPui
     {
         $oPaymentInstructions = null;
         $oPayPalPlusPuiData = oxNew(PayPalPlusPui::class);
@@ -282,7 +282,7 @@ class PayPalPlusOrder extends \OxidEsales\Eshop\Core\Model\BaseModel
      *
      * @throws StandardException
      */
-    protected function _throwCouldNotLoadOrderError()
+    protected function _throwCouldNotLoadOrderError(): void
     {
         throw oxNew(StandardException::class, 'OSC_PAYPALPLUS_ERROR_NO_ORDER');
     }

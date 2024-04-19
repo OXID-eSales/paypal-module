@@ -81,15 +81,13 @@ class Basket extends Basket_parent
 
     /**
      * Returns wrapping Brutto cost
-     *
-     * @return double
      */
-    public function getPayPalCheckoutWrapping()
+    public function getPayPalCheckoutWrapping(): float
     {
         $amount = 0.0;
 
         $wrappingCost = $this->getCosts('oxwrapping');
-        if ($wrappingCost) {
+        if ($wrappingCost instanceof Price) {
             $amount = $wrappingCost->getBruttoPrice();
         }
 
@@ -98,15 +96,13 @@ class Basket extends Basket_parent
 
     /**
      * Returns greeting card Brutto Costs
-     *
-     * @return double
      */
-    public function getPayPalCheckoutGiftCard()
+    public function getPayPalCheckoutGiftCard(): float
     {
         $amount = 0.0;
 
         $giftCardCost = $this->getCosts('oxgiftcard');
-        if ($giftCardCost) {
+        if ($giftCardCost instanceof Price) {
             $amount = $giftCardCost->getBruttoPrice();
         }
 
@@ -118,12 +114,12 @@ class Basket extends Basket_parent
      *
      * @return double
      */
-    public function getPayPalCheckoutPayment()
+    public function getPayPalCheckoutPayment(): float
     {
         $amount = 0.0;
 
         $paymentCost = $this->getCosts('oxpayment');
-        if ($paymentCost) {
+        if ($paymentCost instanceof Price) {
             $amount = $paymentCost->getBruttoPrice();
         }
 
@@ -140,7 +136,7 @@ class Basket extends Basket_parent
         $amount = 0.0;
 
         $deliveryCost = $this->getCosts('oxdelivery');
-        if ($deliveryCost) {
+        if ($deliveryCost instanceof Price) {
             $amount = $deliveryCost->getBruttoPrice();
         }
 
@@ -160,7 +156,7 @@ class Basket extends Basket_parent
 
         $totalDiscount = $this->getTotalDiscount();
 
-        if ($totalDiscount) {
+        if ($totalDiscount instanceof Price) {
             $discount += $totalDiscount->getBruttoPrice();
         }
 

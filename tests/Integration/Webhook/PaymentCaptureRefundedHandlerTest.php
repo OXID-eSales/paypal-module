@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
+use Exception;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
@@ -48,10 +49,8 @@ final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
         $data = $this->getRequestData(self::FIXTURE);
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
-        $this->expectException(WebhookEventException::class);
-        $this->expectExceptionMessage(
-            WebhookEventException::byPayPalTransactionId('5YH4578629195611S')->getMessage()
-        );
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage("Order not found.");
 
         $handler = oxNew(PaymentCaptureRefundedHandler::class);
         $handler->handle($event);

@@ -29,8 +29,11 @@ class User extends User_parent
     /**
      * @inheritDoc
      */
-    public function onOrderExecute($basket, $success): void
+    public function onOrderExecute(mixed $basket, mixed $success): void
     {
+        //this annotation below is for PHPStan, no other solution to meet all level 8 requirements yet
+        /** @var Basket $basket*/
+
         // we manipulate the $success only for this parent onOrderExecute
         // to add the customers to the correct usergroup
 
@@ -81,7 +84,7 @@ class User extends User_parent
             if ($phoneUtils->isValidNumber($phoneNumber)) {
                 $result = new ApiModelPhone();
                 $result->country_code = (string)$phoneNumber->getCountryCode();
-                $result->national_number = $phoneNumber->getNationalNumber();
+                $result->national_number = (string)$phoneNumber->getNationalNumber();
             }
         } catch (NumberParseException $exception) {
             throw UserPhone::byRequestData();
@@ -135,7 +138,7 @@ class User extends User_parent
      * @param string $userName
      * @param string $password
      */
-    protected function onLogin($userName, $password)
+    protected function onLogin(mixed $userName, mixed $password): void
     {
         if (PayPalSession::isPayPalExpressOrderActive()) {
             $userId = $this->getUserIdByPayPalAddress($userName);

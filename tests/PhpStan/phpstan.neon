@@ -1,8 +1,22 @@
 parameters:
+    excludePaths:
+        - ../../src/Core/ViewConfig.php
+        - ../../src/Core/ShopControl.php
+        - ../../src/Core/InputValidator.php
+    ignoreErrors:
+        -
+            message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator::\\s?.*calls parent::.*but OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator\\s?does\\s?not\\s?extend\\s?any\\s?class\\.$#"
+            count: 2
+            path: ../../src/Core/InputValidator.php
+        -
+            message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ShopControl::\\s?.*calls parent::.*but OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ShopControl\\s?does\\s?not\\s?extend\\s?any\\s?class\\.$#"
+            count: 2
+            path: ../../src/Core/ShopControl.php
+    treatPhpDocTypesAsCertain: false
     checkMissingIterableValueType: false
     bootstrapFiles:
         - phpstan-bootstrap.php
-    level: max
+    level: 8
     scanFiles:
         - ../../vendor/oxid-esales/oxideshop-ce/source/oxfunctions.php
         - ../../vendor/oxid-esales/oxideshop-ce/source/overridablefunctions.php

@@ -16,6 +16,7 @@ class PaymentCaptureDeniedHandler extends PaymentCaptureCompletedHandler
 
     protected function markShopOrderPaymentStatus(EshopModelOrder $order, string $payPalTransactionId): void
     {
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Order $order */
         $order->markOrderPaymentFailed();
         $order->setTransId($payPalTransactionId);
     }

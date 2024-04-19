@@ -40,12 +40,12 @@ class OrderController extends OrderController_parent
 
     public const RETRY_OSC_PAYMENT_REQUEST_PARAM = 'retryoscpp';
 
-    private $removeTemporaryOrderOnRetry = [
+    private array $removeTemporaryOrderOnRetry = [
         PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
         PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID
     ];
 
-    private $retryPaymentMessages = [
+    private array $retryPaymentMessages = [
         'acdcretry' => 'OSC_PAYPAL_ACDC_PLEASE_RETRY',
         'puiretry'  => 'OSC_PAYPAL_PUI_PLEASE_RETRY'
     ];
@@ -277,9 +277,10 @@ class OrderController extends OrderController_parent
             }
 
             $deliveryAddress = PayPalAddressResponseToOxidAddress::mapOrderDeliveryAddress($payPalOrder);
+            /** @var \OxidSolutionCatalysts\PayPal\Model\Order $order */
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
-            $paymentsId = $order->getFieldData('oxpaymenttype');
+            $paymentsId = $order->getPaypalStringData('oxpaymenttype');
             $isButtonPayment = PayPalDefinitions::isButtonPayment($paymentsId);
             if ($isButtonPayment) {
                 $order->assign($deliveryAddress);
@@ -309,6 +310,7 @@ class OrderController extends OrderController_parent
         $forceFetchDetails = (bool) Registry::getRequest()->getRequestParameter('fallbackfinalize');
 
         try {
+            /** @var \OxidSolutionCatalysts\PayPal\Model\Order $order */
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
             $order->finalizeOrderAfterExternalPayment($sessionAcdcOrderId, $forceFetchDetails);

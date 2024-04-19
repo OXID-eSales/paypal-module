@@ -37,6 +37,10 @@ class Logger
             $this->moduleLogger->$level($message, $exception);
         }
     }
+    public function debug(string $message, array $exception = []): void
+    {
+        $this->moduleLogger->debug($message, $exception);
+    }
 
     public function isLogLevel(string $level): bool
     {

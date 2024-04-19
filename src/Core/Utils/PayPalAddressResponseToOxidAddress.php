@@ -11,6 +11,7 @@ namespace OxidSolutionCatalysts\PayPal\Core\Utils;
 
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrderModel;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
 use VIISON\AddressSplitter\AddressSplitter;
 use VIISON\AddressSplitter\Exceptions\SplittingException;
 
@@ -64,54 +65,64 @@ class PayPalAddressResponseToOxidAddress
         PayPalApiOrderModel $response,
         string $DBTablePrefix
     ): array {
-        $country = oxNew(Country::class);
-
-        $shippingAddress = $response->purchase_units[0]->shipping->address;
-        $shippingFullName = $response->purchase_units[0]->shipping->name->full_name;
         $payer = $response->payer;
-
-        $countryId = $country->getIdByCode($shippingAddress->country_code);
-        $country->load($countryId);
-        $countryName = $country->oxcountry__oxtitle->value;
-
+        $country = oxNew(Country::class);
+        $countryName = '';
+        $countryId = '';
+        $street = '';
         $streetNo = '';
+        $shippingAddress = '';
+        $shippingFullName = '';
+        $shippingDetail = $response->purchase_units[0]->shipping;
+        if ($shippingDetail) {
+            $shippingAddress = $shippingDetail->address;
+            $shippingFullName = $shippingDetail->name?->full_name;
+            if (isset($shippingAddress) && property_exists($shippingAddress, 'country_code')) {
+                $countryId = $country->getIdByCode($shippingAddress->country_code);
+                $country->load($countryId);
+                if (!empty($country->oxcountry__oxtitle)) {
+                    $countryName = $country->oxcountry__oxtitle->value;
+                }
+            }
+        }
+
         try {
-            $streetTmp = $shippingAddress->address_line_1;
-            $addressData = AddressSplitter::splitAddress($streetTmp);
-            $street = $addressData['streetName'] ?? '';
-            $streetNo = $addressData['houseNumber'] ?? '';
+            if (!empty($shippingAddress)) {
+                $streetTmp = $shippingAddress->address_line_1;
+                $addressData = AddressSplitter::splitAddress((string)$streetTmp);
+                $street = $addressData['streetName'] ?? '';
+                $streetNo = $addressData['houseNumber'] ?? '';
+            }
         } catch (SplittingException $e) {
             // The Address could not be split
             $street = $streetTmp;
         }
 
-        $fon = $payer->phone->phone_number->national_number ?? null;
-
         return [
-            $DBTablePrefix . 'fname' => self::getFirstName($shippingFullName),
-            $DBTablePrefix . 'lname' => self::getLastName($shippingFullName),
+            $DBTablePrefix . 'fname' => self::getFirstName((string)$shippingFullName),
+            $DBTablePrefix . 'lname' => self::getLastName((string)$shippingFullName),
             $DBTablePrefix . 'street' => $street,
             $DBTablePrefix . 'streetnr' => $streetNo,
-            $DBTablePrefix . 'addinfo' => $shippingAddress->address_line_2,
-            $DBTablePrefix . 'city' => $shippingAddress->admin_area_2,
+            $DBTablePrefix . 'addinfo' => $shippingAddress->address_line_2 ?? '',
+            $DBTablePrefix . 'city' => $shippingAddress->admin_area_2 ?? '',
             $DBTablePrefix . 'countryid' => $countryId,
             $DBTablePrefix . 'country' => $countryName,
-            $DBTablePrefix . 'zip' => $shippingAddress->postal_code,
-            $DBTablePrefix . 'fon' => $fon,
+            $DBTablePrefix . 'zip' => $shippingAddress->postal_code ?? '',
+            $DBTablePrefix . 'fon' => $payer->phone->phone_number->national_number ?? '',
             // Needed to not produce an error in InputValidator->hasRequiredParametersForVatInCheck()
-            $DBTablePrefix . 'ustid' => "",
+            $DBTablePrefix . 'ustid' => '',
             // Needed to not produce an error in InputValidator->hasRequiredParametersForVatInCheck()
-            $DBTablePrefix . 'company' => "",
+            $DBTablePrefix . 'company' => '',
         ];
     }
 
-    protected static function getFirstName($name)
+    protected static function getFirstName(string $name): string
     {
-        return implode(' ', array_slice(explode(' ', (string) $name), 0, -1));
+        return implode(' ', array_slice(explode(' ', $name), 0, -1));
     }
 
-    protected static function getLastName($name)
+    protected static function getLastName(string $name): string
     {
-        return array_slice(explode(' ', (string) $name), -1)[0];
+        return array_slice(explode(' ', $name), -1)[0];
     }
 }

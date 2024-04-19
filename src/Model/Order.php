@@ -29,20 +29,25 @@ use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use OxidSolutionCatalysts\PayPal\Traits\DataGetter;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentCollection;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 
 /**
  * PayPal Eshop model order class
  *
  * @mixin \OxidEsales\Eshop\Application\Model\Order
+ * @property Field $oxorder__oxpaid
+ * @property Field $oxorder__oxtransid
  */
 class Order extends Order_parent
 {
     use ServiceContainer;
+    use DataGetter;
 
     /**
      * Uapm payment in progress
@@ -157,13 +162,13 @@ class Order extends Order_parent
             if ($this->isPayPalOrderCompleted($payPalApiOrder)) {
                 $this->markOrderPaid();
                 $transactionId = $this->extractTransactionId($payPalApiOrder);
-                $this->setTransId($transactionId);
+                $this->setTransId((string)$transactionId);
                 $paymentService->trackPayPalOrder(
                     $this->getId(),
                     $payPalOrderId,
                     $paymentsId,
                     PayPalApiOrder::STATUS_COMPLETED,
-                    $transactionId
+                    (string)$transactionId
                 );
             } else {
                 throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
@@ -209,7 +214,7 @@ class Order extends Order_parent
                 $this->setOrderStatus('ERROR');
                 throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
             }
-            $this->setTransId($capture->id);
+            $this->setTransId((string)$capture->id);
         }
 
         //ensure order number
@@ -321,7 +326,7 @@ class Order extends Order_parent
      * @return PayPalApiOrder
      * @throws ApiException
      */
-    public function getPayPalCheckoutOrder($payPalOrderId = ''): PayPalApiOrder
+    public function getPayPalCheckoutOrder(string $payPalOrderId = ''): PayPalApiOrder
     {
         $payPalOrderId = $payPalOrderId ?: $this->getPayPalOrderIdForOxOrderId();
         if (!$this->payPalApiOrder) {
@@ -333,7 +338,7 @@ class Order extends Order_parent
         return $this->payPalApiOrder;
     }
 
-    protected function doExecutePayPalPayment($payPalOrderId): bool
+    protected function doExecutePayPalPayment(string $payPalOrderId): bool
     {
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
@@ -401,7 +406,7 @@ class Order extends Order_parent
     /**
      * Update order oxtransid
      */
-    public function setTransId($sTransId): void
+    public function setTransId(string $sTransId): void
     {
         $db = DatabaseProvider::getDb();
 
@@ -541,7 +546,7 @@ class Order extends Order_parent
      * @return Capture|null
      * @throws ApiException
      */
-    public function getOrderPaymentCapture($payPalOrderId = ''): ?Capture
+    public function getOrderPaymentCapture(string $payPalOrderId = ''): ?Capture
     {
         return $this->getPayPalCheckoutOrder($payPalOrderId)->purchase_units[0]->payments->captures[0] ?? null;
     }
@@ -642,9 +647,21 @@ class Order extends Order_parent
         );
     }
 
-    protected function extractTransactionId(PayPalApiOrder $apiOrder): string
+    protected function extractTransactionId(PayPalApiOrder $apiOrder): ?string
     {
-        return (string) $apiOrder->purchase_units[0]->payments->captures[0]->id;
+        $id = null;
+        $purchaseUnits = $apiOrder->purchase_units;
+        if (!empty($purchaseUnits)) {
+            $payments = $purchaseUnits[0]->payments;
+            if ($payments instanceof PaymentCollection) {
+                $captures = $payments->captures;
+                if (!empty($captures)) {
+                    $id = $captures[0]->id;
+                }
+            }
+        }
+
+        return $id;
     }
 
     public function setPayPalTracking(string $trackingCarrier, string $trackingCode): void

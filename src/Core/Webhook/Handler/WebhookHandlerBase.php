@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidSolutionCatalysts\PayPal\Model\Order;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
@@ -34,7 +35,7 @@ abstract class WebhookHandlerBase
     {
         $eventPayload = $this->getEventPayload($event);
 
-        //PayPal transaction id might not yet be tracked in database depending on payment method
+        //PayPal's transaction id might not yet be tracked in database depending on payment method
         $payPalTransactionId = $this->getPayPalTransactionIdFromResource($eventPayload);
 
         //Depending on payment method, there might not be an order id in that result
@@ -61,8 +62,7 @@ abstract class WebhookHandlerBase
         } else {
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer(Logger::class);
-            $logger->log(
-                'debug',
+            $logger->debug(
                 sprintf(
                     "Not enough information to handle %s with PayPal order_id '%s' and PayPal transaction id '%s'",
                     static::WEBHOOK_EVENT_NAME,
@@ -101,7 +101,6 @@ abstract class WebhookHandlerBase
     public function cleanUpNotFinishedOrders(): void
     {
         // check for not finished orders and reset
-        /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
         $this->getOrderRepository()->cleanUpNotFinishedOrders();
     }
 
@@ -173,11 +172,11 @@ abstract class WebhookHandlerBase
             $orderDetails &&
             ($puiPaymentDetails = $orderDetails->payment_source->pay_upon_invoice ?? null)
         ) {
-            $paypalOrderModel->setPuiPaymentReference($puiPaymentDetails->payment_reference);
-            $paypalOrderModel->setPuiBic($puiPaymentDetails->bic);
-            $paypalOrderModel->setPuiIban($puiPaymentDetails->iban);
-            $paypalOrderModel->setPuiBankName($puiPaymentDetails->bank_name);
-            $paypalOrderModel->setPuiAccountHolderName($puiPaymentDetails->account_holder_name);
+            $paypalOrderModel->setPuiPaymentReference((string)$puiPaymentDetails->payment_reference);
+            $paypalOrderModel->setPuiBic((string)$puiPaymentDetails->bic);
+            $paypalOrderModel->setPuiIban((string)$puiPaymentDetails->iban);
+            $paypalOrderModel->setPuiBankName((string)$puiPaymentDetails->bank_name);
+            $paypalOrderModel->setPuiAccountHolderName((string)$puiPaymentDetails->account_holder_name);
         }
 
         $paypalOrderModel->setStatus($status);
@@ -186,6 +185,7 @@ abstract class WebhookHandlerBase
 
     protected function markShopOrderPaymentStatus(EshopModelOrder $order, string $payPalTransactionId): void
     {
+        /** @var Order $order */
         $order->markOrderPaid();
         $order->setTransId($payPalTransactionId);
     }

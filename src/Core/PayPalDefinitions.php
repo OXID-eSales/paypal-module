@@ -414,12 +414,12 @@ final class PayPalDefinitions
         ]
     ];
 
-    public static function getPayPalDefinitions()
+    public static function getPayPalDefinitions(): array
     {
         return self::PAYPAL_DEFINTIONS;
     }
 
-    public static function getPayPalStaticContents()
+    public static function getPayPalStaticContents(): array
     {
         return self::PAYPAL_STATIC_CONTENTS;
     }
@@ -439,7 +439,7 @@ final class PayPalDefinitions
     public static function getPaymentSourceRequestName(string $oxid): string
     {
         return self::isUAPMPayment($oxid) ?
-            self::PAYPAL_DEFINTIONS[$oxid]['uapmpaymentsource'] :
+            (string)self::PAYPAL_DEFINTIONS[$oxid]['uapmpaymentsource'] :
             '';
     }
 

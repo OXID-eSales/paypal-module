@@ -15,14 +15,15 @@ trait JsonTrait
 {
     /**
      * Encodes and sends response as json
-     *
-     * @param $response
      */
-    protected function outputJson($response)
+    protected function outputJson(array $response): void
     {
         $utils = Registry::getUtils();
         $utils->setHeader('Content-Type: application/json');
 
-        $utils->showMessageAndExit(json_encode($response));
+        $sMsg = json_encode($response);
+        if (is_string($sMsg)) {
+            $utils->showMessageAndExit($sMsg);
+        }
     }
 }

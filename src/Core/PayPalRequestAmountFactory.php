@@ -23,13 +23,13 @@ class PayPalRequestAmountFactory
 {
     public function getAmount(Basket $basket): AmountWithBreakdown
     {
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Basket $basket */
+
         $netMode = Registry::getConfig()->getConfigParam('blShowNetPrice');
         $currency = $basket->getBasketCurrency();
 
-        //Discount
-        $discount = $basket->getPayPalCheckoutDiscount();
-        //Item total cost
-        $itemTotal = $basket->getPayPalCheckoutItems();
+        $discount = $basket->getPayPalCheckoutDiscount(); //Discount
+        $itemTotal = $basket->getPayPalCheckoutItems(); //Item total cost
 
         $itemTotalAdditionalCosts = $basket->getAdditionalPayPalCheckoutItemCosts();
 
@@ -46,7 +46,7 @@ class PayPalRequestAmountFactory
             $discount = 0;
         }
 
-        if ($netMode){
+        if ($netMode) {
             $total = $brutBasketTotal;
         } else {
             $total = $itemTotal - $discount + $itemTotalAdditionalCosts;
@@ -66,11 +66,10 @@ class PayPalRequestAmountFactory
             $breakdown->discount = PriceToMoney::convert($netMode ? $brutDiscountValue : $discount, $currency);
         }
 
-        $breakdown->item_total = PriceToMoney::convert($itemTotal + $itemTotalAdditionalCosts , $currency);
+        $breakdown->item_total = PriceToMoney::convert($itemTotal + $itemTotalAdditionalCosts, $currency);
         //Item tax sum - we use 0% and calculate with brutto to avoid rounding errors
         $breakdown->tax_total = PriceToMoney::convert(0, $currency);
 
         return $amount;
     }
-
 }

@@ -17,6 +17,7 @@ use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInt
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
+use Doctrine\DBAL\ForwardCompatibility\Result;
 
 class UserRepository
 {
@@ -64,7 +65,7 @@ class UserRepository
         return empty($userId) ? false : true;
     }
 
-    private function getUserId(string $userEmail, bool $hasPassword = true): string
+    private function getUserId(string $userEmail, bool $hasPassword = true): ?string
     {
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->queryBuilderFactory->create();
@@ -85,36 +86,44 @@ class UserRepository
             $parameters['oxshopid'] = $this->context->getCurrentShopId();
         }
 
-        $userId = $queryBuilder->setParameters($parameters)
+        $result = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
-            ->execute()
-            ->fetch(PDO::FETCH_COLUMN);
+            ->execute();
 
-        return (string) $userId;
+        if ($result instanceof Result) {
+            $id = $result->fetchOne();
+            if ($id !== '' && is_string($id)) {
+                return $id;
+            }
+        }
+
+        return null;
     }
 
     public function getUserCountryIso(): string
     {
-        $result = '';
-        if ($user = $this->session->getUser()) {
-            $country = oxNew(Country::class);
-            $country->load($user->getFieldData('oxcountryid'));
-            $result = (string) $country->getFieldData('oxisoalpha2');
+        $user = $this->session->getUser();
+        $country = oxNew(Country::class);
+        $countryId = $user->getFieldData('oxcountryid');
+        if (is_string($countryId)) {
+            $country->load($countryId);
         }
-        return $result;
+        $iso = $country->getFieldData('oxisoalpha2');
+
+        return is_string($iso) ? $iso : '';
     }
 
     public function getUserStateIso(): string
     {
-        $result = '';
-        if ($user = $this->session->getUser()) {
-            $state = oxNew(State::class);
-            $state->loadByIdAndCountry(
-                $user->getFieldData('oxstateid'),
-                $user->getFieldData('oxcountryid')
-            );
-            $result = (string) $state->getFieldData('oxisoalpha2');
-        }
-        return $result;
+        $user = $this->session->getUser();
+        $state = oxNew(State::class);
+        /** @phpstan-ignore-next-line */
+        $state->loadByIdAndCountry(
+            $user->getFieldData('oxstateid'),
+            $user->getFieldData('oxcountryid')
+        );
+        $iso = $state->getFieldData('oxisoalpha2');
+
+        return is_string($iso) ? $iso : '';
     }
 }

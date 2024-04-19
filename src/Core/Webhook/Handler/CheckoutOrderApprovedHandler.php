@@ -29,6 +29,7 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
         array $eventPayload,
         EshopModelOrder $order
     ): void {
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Order $order */
         if ($this->needsCapture($eventPayload)) {
             try {
                 //NOTE: capture will trigger CHECKOUT.ORDER.COMPLETED event which will mark order paid
@@ -42,8 +43,7 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
             } catch (\Exception $exception) {
                 /** @var Logger $logger */
                 $logger = $this->getServiceFromContainer(Logger::class);
-                $logger->log(
-                    'debug',
+                $logger->debug(
                     sprintf(
                         "Error during %s for PayPal order_id '%s'",
                         self::WEBHOOK_EVENT_NAME,
@@ -73,29 +73,31 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
         return isset($eventPayload['status']) ? $eventPayload['status'] : '';
     }
 
-    /**
-     * Captures payment for given order
-     *
-     * @param string $orderId
-     *
-     * @return OrderResponse
-     * @throws ApiException
-     */
-    private function capturePayment(string $orderId): OrderResponse
-    {
-        /** @var ServiceFactory $serviceFactory */
-        $serviceFactory = Registry::get(ServiceFactory::class);
-        $service = $serviceFactory->getOrderService();
-        $request = new OrderCaptureRequest();
-
-        return $service->capturePaymentForOrder(
-            '',
-            $orderId,
-            $request,
-            '',
-            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
-        );
-    }
+//    /**
+//     * NO USAGES! Check if not called dynamically
+//     *
+//     * Captures payment for given order
+//     *
+//     * @param string $orderId
+//     *
+//     * @return OrderResponse
+//     * @throws ApiException
+//     */
+//    private function capturePayment(string $orderId): OrderResponse
+//    {
+//        /** @var ServiceFactory $serviceFactory */
+//        $serviceFactory = Registry::get(ServiceFactory::class);
+//        $service = $serviceFactory->getOrderService();
+//        $request = new OrderCaptureRequest();
+//
+//        return $service->capturePaymentForOrder(
+//            '',
+//            $orderId,
+//            $request,
+//            '',
+//            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+//        );
+//    }
 
     private function needsCapture(array $eventPayload): bool
     {

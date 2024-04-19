@@ -16,8 +16,9 @@ class EventDispatcher
 {
     /**
      * @param Event $event
+     * @throws \OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException
      */
-    public function dispatch(Event $event)
+    public function dispatch(Event $event): bool
     {
         $handlers = EventHandlerMapping::MAPPING;
         $eventType = $event->getEventType();
@@ -28,5 +29,7 @@ class EventDispatcher
         } else {
             throw WebhookEventTypeException::handlerNotFound($eventType);
         }
+
+        return true;
     }
 }
