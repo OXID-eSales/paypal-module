@@ -10,6 +10,7 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 use DateTimeImmutable;
 use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberUtil;
+use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Application\Model\RequiredAddressFields;
@@ -24,6 +25,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
  * PayPal oxOrder class
  *
  * @mixin \OxidEsales\Eshop\Application\Model\Order
+ * @property Field $oxuser__oxusername
  */
 class User extends User_parent
 {

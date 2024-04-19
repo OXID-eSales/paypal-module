@@ -31,13 +31,6 @@ use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\PhoneWithType;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
 
 /**
  * Server side interface for PayPal smart buttons.
@@ -267,12 +260,14 @@ class ProxyController extends FrontendController
     public function approveOrder()
     {
         $data = json_decode(file_get_contents('php://input'), true);
-        $orderId = (string) Registry::getRequest()->getRequestEscapedParameter('orderID');
+        $orderId = Registry::getRequest()->getRequestEscapedParameter('orderID');
+        $orderId = is_string($orderId) ? (string)$orderId : $orderId;
         $sessionOrderId = PayPalSession::getCheckoutOrderId();
         if (!empty($data['orderID']) && $orderId == '') {
             $orderId = $data['orderID'];
         }
-        if (!$orderId || ($orderId !== $sessionOrderId)) {
+
+        if (empty($orderId) || ($orderId !== $sessionOrderId)) {
             //TODO: improve
             $this->outputJson(['ERROR' => 'OrderId not found in PayPal session.']);
         }

@@ -12,6 +12,7 @@ use JsonException;
 use OxidEsales\Eshop\Application\Controller\Admin\AdminController;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\Eshop\Core\Request;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
@@ -23,7 +24,9 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Traits\RequestDataGetter;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPal\Traits\SessionDataGetter;
 use Throwable;
 
 /**
@@ -32,6 +35,8 @@ use Throwable;
 class PayPalConfigController extends AdminController
 {
     use ServiceContainer;
+    use RequestDataGetter;
+    use SessionDataGetter;
 
     /**
      * @var string Current class template name.
@@ -146,9 +151,10 @@ class PayPalConfigController extends AdminController
     public function createNonce(): string
     {
         $session = Registry::getSession();
+        $nonce = self::getSessionStringVariable('PAYPAL_MODULE_NONCE');
 
-        if (!empty($session->getVariable('PAYPAL_MODULE_NONCE'))) {
-            return $session->getVariable('PAYPAL_MODULE_NONCE');
+        if (!empty($nonce)) {
+            return $nonce;
         }
 
         /** @var PartnerConfig $partnerConfig */
@@ -161,14 +167,13 @@ class PayPalConfigController extends AdminController
     }
 
 
+
     /**
      * Saves configuration values
      */
-    public function save()
+    public function save(): void
     {
-        $confArr = Registry::getRequest()->getRequestEscapedParameter('conf');
-
-        $confArr = $this->handleSpecialFields($confArr);
+        $confArr = $this->handleSpecialFields(self::getRequestArrayParameter('conf', true));
         $this->saveConfig($confArr);
         $this->checkEligibility();
         parent::save();
@@ -308,7 +313,7 @@ class PayPalConfigController extends AdminController
     /**
      * Transcribe banner settings from the classic PayPal Module (oepaypal)
      */
-    public function transferBannerSettings()
+    public function transferBannerSettings(): void
     {
         $LegacyOeppModuleDetails = Registry::get(LegacyOeppModuleDetails::class);
         $transferrableSettings = $LegacyOeppModuleDetails->getTransferrableSettings();
@@ -325,7 +330,7 @@ class PayPalConfigController extends AdminController
 
             // Invert "hide" option
             if ($configKeyName === 'oePayPalBannersHideAll') {
-                $legacyConfigValue = !$legacyConfigValue;
+                $legacyConfigValue = false;
             }
 
             // Write new config values
@@ -338,18 +343,22 @@ class PayPalConfigController extends AdminController
         // Save legacy settings transfer status
         $this->getServiceFromContainer(ModuleSettings::class)->save('oscPayPalLegacySettingsTransferred', true);
 
-        Registry::getUtilsView()->addErrorToDisplay(
-            Registry::getLang()->translateString('OSC_PAYPAL_BANNER_TRANSFERREDOLDSETTINGS'),
-            false,
-            true
-        );
+        $string = Registry::getLang()->translateString('OSC_PAYPAL_BANNER_TRANSFERREDOLDSETTINGS');
+        $string = !is_string($string) ?: (string)$string;
+        if (is_string($string)) {
+            Registry::getUtilsView()->addErrorToDisplay(
+                $string,
+                false,
+                true
+            );
+        }
     }
 
     /**
      * Get ClientID, ClientSecret, WebhookID
      * @throws JsonException
      */
-    public function autoConfigurationFromCallback()
+    public function autoConfigurationFromCallback(): void
     {
         try {
             $requestReader = oxNew(RequestReader::class);
@@ -365,19 +374,17 @@ class PayPalConfigController extends AdminController
         Registry::getUtils()->showMessageAndExit(json_encode($result, JSON_THROW_ON_ERROR));
     }
 
-    public function returnFromSignup()
+    public function returnFromSignup(): void
     {
         $config = new Config();
 
         $onboardingFile = $config->getOnboardingBlockCacheFileName();
         if (file_exists($onboardingFile) === false) {
-            $request = Registry::getRequest();
-
-            if ($merchantId = (string)$request->getRequestParameter('merchantIdInPayPal')) {
+            if ($merchantId = self::getRequestStringParameter('merchantIdInPayPal')) {
                 /** @var ModuleSettings $moduleSettings */
                 $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-                $isSandbox = (string)$request->getRequestParameter('isSandbox');
-                $isSandbox = $isSandbox === '1';
+                $isSandbox = self::getRequestBoolParameter('isSandbox');
+                $isSandbox = $isSandbox == '1';
                 $moduleSettings->saveMerchantId($merchantId, $isSandbox);
             }
 
