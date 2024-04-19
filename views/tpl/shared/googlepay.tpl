@@ -3,12 +3,15 @@
 [{assign var="config" value=$oViewConf->getPayPalCheckoutConfig()}]
 [{assign var="oConfig" value=$oViewConf->getConfig()}]
 [{assign var="bGooglePayDelivery" value=$oConfig->getConfigParam('oscPayPalUseGooglePayAddress')}]
-
-
+<style>
+    #oscpaypal_googlepay {
+        float: right;
+    }
+</style>
 <script>
 [{capture name="detailsGooglePayScript"}]
   document.addEventListener("DOMContentLoaded", (event) => {
-     if (google && paypal.Googlepay) {
+      if (google && paypal.Googlepay) {
         onGooglePayLoaded().catch(console.log);
      }
   });
@@ -92,7 +95,9 @@
   }
 
   async function onGooglePayLoaded() {
-     const paymentsClient = getGooglePaymentsClient();
+      console.log('onGooglePayLoaded triggered');
+
+      const paymentsClient = getGooglePaymentsClient();
      const { allowedPaymentMethods } = await getGooglePayConfig();
              paymentsClient
             .isReadyToPay(getGoogleIsReadyToPayRequest(allowedPaymentMethods))
@@ -257,5 +262,5 @@
   }
 [{/capture}]
 </script>
+[{oxscript include="https://pay.google.com/gp/p/js/pay.js" }]
 [{oxscript add=$smarty.capture.detailsGooglePayScript}]
-<script async="async" src="https://pay.google.com/gp/p/js/pay.js" onload="onGooglePayLoaded()"></script>

@@ -9,7 +9,7 @@
         [{include file="modules/osc/paypal/checkout_order_btn_submit_bottom_wave.tpl"}]
     [{/if}]
 [{/if}]
-[{$payment->getId()}]
+
 [{if "oscpaypal_googlepay" == $payment->getId()}]
     [{if $oViewConf->isFlowCompatibleTheme()}]
     [{include file="modules/osc/paypal/googlepay.tpl" buttonId=$payment->getId() buttonClass="paypal-button-wrapper large"}]
