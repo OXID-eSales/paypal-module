@@ -12,6 +12,10 @@ parameters:
             message: "#^Method\\s?OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\ModuleSettings::save\\(\\)\\s?has\\s?parameter\\s?\\$value\\s?with\\s?no\\s?type\\s?specified.$#"
             count: 1
             path: ../../src/Service/ModuleSettings.php
+        -
+            message: "#^Call\\s?to\\s?an\\s?undefined\\s?method\\s?OxidEsales\\\\Eshop\\\\Core\\\\Request::getVariable#"
+            count: 1
+            path: ../../src/Controller/ProxyController.php
     bootstrapFiles:
         - phpstan-bootstrap.php
     level: max

@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Model\PayPalTrackingCarrierList;
 use OxidSolutionCatalysts\PayPal\Traits\AdminOrderTrait;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
+use OxidSolutionCatalysts\PayPal\Traits\RequestDataGetter;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 
 /**
@@ -24,6 +25,7 @@ class OrderMain extends OrderMain_parent
 {
     use AdminOrderTrait;
     use JsonTrait;
+    use RequestDataGetter;
 
     /** @var array|null  */
     protected $trackingCarrierCountries = null;
@@ -32,13 +34,14 @@ class OrderMain extends OrderMain_parent
      * @throws ApiException
      * @throws StandardException
      */
-    protected function onOrderSend()
+    protected function onOrderSend(): void
     {
         parent::onOrderSend();
         if ($this->isPayPalStandardOnDeliveryCapture()) {
             $this->capturePayPalStandard();
         }
         if ($this->paidWithPayPal()) {
+            /** @var \OxidSolutionCatalysts\PayPal\Model\Order $order */
             $order = $this->getOrder();
             $order->doProvidePayPalTrackingCarrier();
         }
@@ -47,7 +50,7 @@ class OrderMain extends OrderMain_parent
     /**
      * @throws StandardException
      */
-    public function save()
+    public function save(): void
     {
         $config = Registry::getConfig();
         if ($config->getRequestParameter("sendorder")) {
@@ -55,8 +58,10 @@ class OrderMain extends OrderMain_parent
         }
         $trackingCarrier = $config->getRequestParameter("paypaltrackingcarrier");
         $trackingCode = $config->getRequestParameter("paypaltrackingcode");
-        if ($trackingCarrier && $trackingCode) {
-            $this->getOrder()->setPayPalTracking(
+        if (is_string($trackingCarrier) && is_string($trackingCode)) {
+            /** @var \OxidSolutionCatalysts\PayPal\Model\Order $order */
+            $order = $this->getOrder();
+            $order->setPayPalTracking(
                 $trackingCarrier,
                 $trackingCode
             );
@@ -67,7 +72,9 @@ class OrderMain extends OrderMain_parent
 
     public function getPayPalTrackingCode(): string
     {
-        return $this->getOrder()->getPayPalTrackingCode();
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Order $order */
+        $order = $this->getOrder();
+        return $order->getPayPalTrackingCode();
     }
 
     public function getPayPalTrackingCarrierCountries(): array
@@ -94,9 +101,10 @@ class OrderMain extends OrderMain_parent
         return $this->trackingCarrierCountries;
     }
 
-    public function getPayPalTrackingCarrierProvider($countryCode = ''): array
+    public function getPayPalTrackingCarrierProvider(string $countryCode = ''): array
     {
         $provider = $this->getPayPalDefaultCarrierSelection();
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Order $order */
         $order = $this->getOrder();
         $savedTrackingCarrierId = $order->getPayPalTrackingCarrier();
 
@@ -106,11 +114,12 @@ class OrderMain extends OrderMain_parent
             $trackingCarrierList = oxNew(PayPalTrackingCarrierList::class);
             $trackingCarrierList->loadTrackingCarriers($countryCode);
             if ($trackingCarrierList->count()) {
+                /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalTrackingCarrier $trackingCarrier */
                 foreach ($trackingCarrierList as $trackingCarrier) {
-                    $trackingCarrierId = $trackingCarrier->getFieldData('oxkey');
+                    $trackingCarrierId = $trackingCarrier->getPaypalStringData('oxkey');
                     $provider[$trackingCarrier->getId()] = [
-                        'id'       => $trackingCarrier->getFieldData('oxkey'),
-                        'title'    => $trackingCarrier->getFieldData('oxtitle'),
+                        'id'       => $trackingCarrier->getPaypalStringData('oxkey'),
+                        'title'    => $trackingCarrier->getPaypalStringData('oxtitle'),
                         'selected' => $savedTrackingCarrierId === $trackingCarrierId
                     ];
                 }
@@ -122,12 +131,12 @@ class OrderMain extends OrderMain_parent
 
     public function getPayPalTrackingCarrierProviderAsJson(): void
     {
-        $countryCode = (string)Registry::getRequest()->getRequestEscapedParameter('countrycode', '');
+        $countryCode = self::getRequestStringParameter('countrycode', true);
         $provider = $this->getPayPalTrackingCarrierProvider($countryCode);
         $this->outputJson($provider);
     }
 
-    protected function getPayPalDefaultCarrierSelection()
+    protected function getPayPalDefaultCarrierSelection(): array
     {
         return [[
             'id'       => '',
@@ -142,12 +151,14 @@ class OrderMain extends OrderMain_parent
     public function getPayPalOrderCountryCode(): string
     {
         $countryCode = '';
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Order $order */
         $order = $this->getOrder();
 
-        $countryId = $order->getFieldData('oxdelcountryid') ?: $order->getFieldData('oxbillcountryid');
+        $countryId = $order->getPaypalStringData('oxdelcountryid') ?: $order->getPaypalStringData('oxbillcountryid');
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Country $country */
         $country = oxNew(Country::class);
         if ($country->load($countryId)) {
-            $countryCode = $country->getFieldData('oxisoalpha2');
+            $countryCode = $country->getPaypalStringData('oxisoalpha2');
         }
 
         return $countryCode;

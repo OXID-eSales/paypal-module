@@ -23,10 +23,6 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Module;
 use OxidSolutionCatalysts\PayPal\Traits\ModuleSettingsGetter;
 
-/**
- * @method isSandBoxVaultingEligibility()
- * @method isLiveVaultingEligibility()
- */
 class ModuleSettings
 {
     use ModuleSettingsGetter;
@@ -338,7 +334,12 @@ class ModuleSettings
 
     public function isLivePuiEligibility(): bool
     {
-        return (bool)$this->getPaypalBoolSetting('oscPayPalPuiEligibility');
+        return (bool)$this->getSettingValue('oscPayPalPuiEligibility');
+    }
+
+    public function isLiveVaultingEligibility(): bool
+    {
+        return $this->getPaypalBoolSetting('oscPayPalVaultingEligibility');
     }
 
     public function isSandboxAcdcEligibility(): bool
@@ -348,7 +349,12 @@ class ModuleSettings
 
     public function isSandboxPuiEligibility(): bool
     {
-        return (bool)$this->getPaypalBoolSetting('oscPayPalSandboxPuiEligibility');
+        return (bool)$this->getSettingValue('oscPayPalSandboxPuiEligibility');
+    }
+
+    public function isSandboxVaultingEligibility(): bool
+    {
+        return $this->getPaypalBoolSetting('oscPayPalSandboxVaultingEligibility');
     }
 
     public function getActivePayments(): array

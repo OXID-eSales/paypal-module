@@ -16,7 +16,9 @@ use OxidEsales\Eshop\Core\Exception\ArticleInputException;
 use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Exception\StandardException;
+use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Model\User;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
@@ -40,7 +42,7 @@ class ProxyController extends FrontendController
     use JsonTrait;
     use ServiceContainer;
 
-    public function createOrder()
+    public function createOrder(): void
     {
         if (PayPalSession::isPayPalExpressOrderActive()) {
             //TODO: improve
@@ -51,7 +53,7 @@ class ProxyController extends FrontendController
         $this->setPayPalPaymentMethod();
         $basket = Registry::getSession()->getBasket();
 
-        if ($basket->getItemsCount() === 0) {
+        if ($basket->getItemsCount() == 0) {
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
         }
 
@@ -71,19 +73,20 @@ class ProxyController extends FrontendController
             null
         );
 
-        if ($response->id) {
+        if ($response instanceof PayPalApiOrder && $response->id) {
             PayPalSession::storePayPalOrderId($response->id);
         }
 
-        $this->outputJson((array)$response);
+        $this->outputJson((array)$response); //@TODO check if this casting is not breaking anything
     }
 
-    public function approveOrder()
+    public function approveOrder(): void
     {
-        $orderId = (string) Registry::getRequest()->getRequestEscapedParameter('orderID');
+        $orderId = Registry::getRequest()->getRequestEscapedParameter('orderID');
+        $orderId = is_string($orderId) ? (string)$orderId : $orderId;
         $sessionOrderId = PayPalSession::getCheckoutOrderId();
 
-        if (!$orderId || ($orderId !== $sessionOrderId)) {
+        if (empty($orderId) || ($orderId !== $sessionOrderId)) {
             //TODO: improve
             $this->outputJson(['ERROR' => 'OrderId not found in PayPal session.']);
         }
@@ -98,38 +101,46 @@ class ProxyController extends FrontendController
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', "Error on order capture call.", [$exception]);
+            exit; //@TODO verify if exit is the best option
+        }
+        /** @var User $user */
+        $user = $this->getUser();
+        $userRepository = $this->getServiceFromContainer(UserRepository::class);
+        $payer = $response->payer;
+        $paypalEmail = $payer ? (string) $payer->email_address : '';
+        $nonGuestAccountDetected = false;
+        if ($userRepository->userAccountExists($paypalEmail)) {
+            //got a non-guest account, so either we log in or redirect customer to login step
+            $isLoggedIn = $this->handleUserLogin($response);
+            $nonGuestAccountDetected = true;
+        } else {
+            //we need to use a guest account
+            /** @var \OxidSolutionCatalysts\PayPal\Component\UserComponent $userComponent */
+            $userComponent = oxNew(UserComponent::class);
+            $userComponent->createPayPalGuestUser($response);
         }
 
-        if (!$this->getUser()) {
-            $userRepository = $this->getServiceFromContainer(UserRepository::class);
-            $paypalEmail = (string) $response->payer->email_address;
-
-            $nonGuestAccountDetected = false;
-            if ($userRepository->userAccountExists($paypalEmail)) {
-                //got a non-guest account, so either we log in or redirect customer to login step
-                $isLoggedIn = $this->handleUserLogin($response);
-                $nonGuestAccountDetected = true;
-            } else {
-                //we need to use a guest account
-                $userComponent = oxNew(UserComponent::class);
-                $userComponent->createPayPalGuestUser($response);
-            }
-        }
-
-        if ($user = $this->getUser()) {
+        /** @var User $user */
+        $user = $this->getUser();
+        /** @phpstan-ignore-next-line */
+        if ($user) {
             /** @var array $userInvoiceAddress */
             $userInvoiceAddress = $user->getInvoiceAddress();
             // add PayPal-Address as Delivery-Address
             $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
             try {
+                $userName = '';
+                /** @var Field $userName */
+                if ($user->oxuser__oxusername instanceof Field && isset($user->oxuser__oxusername->value)) {
+                    $userName = (string)$user->oxuser__oxusername->value;
+                }
                 $user->changeUserData(
-                    $user->oxuser__oxusername->value,
+                    $userName,
                     '',
                     '',
                     $userInvoiceAddress,
                     $deliveryAddress
                 );
-
                 // use a deliveryaddress in oxid-checkout
                 Registry::getSession()->setVariable('blshowshipaddress', false);
 
@@ -150,22 +161,24 @@ class ProxyController extends FrontendController
             PayPalSession::unsetPayPalOrderId();
             Registry::getSession()->getBasket()->setPayment(null);
         }
-        $this->outputJson($response);
+        $this->outputJson((array)$response); //@TODO check if this casting is not breaking anything
     }
 
-    public function cancelPayPalPayment()
+    public function cancelPayPalPayment(): void
     {
         PayPalSession::unsetPayPalOrderId();
         Registry::getSession()->getBasket()->setPayment(null);
         Registry::getUtils()->redirect(Registry::getConfig()->getShopSecureHomeURL() . 'cl=payment', false, 301);
     }
 
-    protected function addToBasket($qty = 1): void
+    protected function addToBasket(int $qty = 1): void
     {
         $basket = Registry::getSession()->getBasket();
         $utilsView = Registry::getUtilsView();
+        $aid = Registry::getRequest()->getRequestEscapedParameter('aid');
+        $aid = is_string($aid) ? (string)$aid : $aid;
 
-        if ($aid = (string)Registry::getRequest()->getRequestEscapedParameter('aid')) {
+        if (is_string($aid)) {
             try {
                 $basket->addToBasket($aid, $qty);
                 // Remove flag of "new item added" to not show "Item added" popup when returning to checkout from paypal
@@ -181,13 +194,15 @@ class ProxyController extends FrontendController
         }
     }
 
-    public function setPayPalPaymentMethod($defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID): void
-    {
+    public function setPayPalPaymentMethod(
+        string $defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
+    ): void {
         $session = Registry::getSession();
         $basket = $session->getBasket();
+        $activeUser = $this->getUser();
         $user = null;
 
-        if ($activeUser = $this->getUser()) {
+        if ($activeUser instanceof User) {
             $user = $activeUser;
         }
 
@@ -198,6 +213,7 @@ class ProxyController extends FrontendController
             // get the active shippingSetId
             /** @psalm-suppress InvalidArgument */
             list(, $shippingSetId,) =
+                /** @phpstan-ignore-next-line */
                 Registry::get(DeliverySetList::class)->getDeliverySetData('', $user, $basket);
 
             if ($shippingSetId) {
@@ -216,9 +232,11 @@ class ProxyController extends FrontendController
     protected function getDeliveryCountryId()
     {
         $config = Registry::getConfig();
+        /** @var User $user */
         $user = $this->getUser();
+        $countryId = '';
 
-        if (!$user) {
+        if (!$user instanceof User) {
             $homeCountry = $config->getConfigParam('aHomeCountry');
             if (is_array($homeCountry)) {
                 $countryId = current($homeCountry);
@@ -226,15 +244,30 @@ class ProxyController extends FrontendController
         } else {
             if ($delCountryId = $config->getGlobalParameter('delcountryid')) {
                 $countryId = $delCountryId;
-            } elseif ($addressId = Registry::getSession()->getVariable('deladrid')) {
-                $deliveryAddress = oxNew(Address::class);
-                if ($deliveryAddress->load($addressId)) {
-                    $countryId = $deliveryAddress->oxaddress__oxcountryid->value;
+            } else {
+                /** @var \OxidEsales\Eshop\Core\Request $request */
+                $request = Registry::getRequest();
+                $addressId = $request->getVariable('deladrid');
+                $addressId = is_string($addressId) ? (string)$addressId : $addressId;
+                if (is_string($addressId)) {
+                    $deliveryAddress = oxNew(Address::class);
+                    if (
+                        $deliveryAddress->load((string)$addressId)
+                        && isset($deliveryAddress->oxaddress__oxcountryid->value)
+                    ) {
+                        $countryId = $deliveryAddress->oxaddress__oxcountryid->value;
+                    }
                 }
             }
 
             if (!$countryId) {
-                $countryId = $user->oxuser__oxcountryid->value;
+                if (
+                    isset($user->oxuser__oxcountryid)
+                    && $user->oxuser__oxcountryid instanceof Field
+                    && isset($user->oxuser__oxcountryid->value)
+                ) {
+                    $countryId = $user->oxuser__oxcountryid->value;
+                }
             }
         }
         return $countryId;
@@ -243,6 +276,7 @@ class ProxyController extends FrontendController
     protected function handleUserLogin(PayPalApiOrder $apiOrder): bool
     {
         $paypalConfig = oxNew(Config::class);
+        /** @var \OxidSolutionCatalysts\PayPal\Component\UserComponent $userComponent */
         $userComponent = oxNew(UserComponent::class);
         $isLoggedIn = false;
 
@@ -251,8 +285,8 @@ class ProxyController extends FrontendController
             $isLoggedIn = true;
         } else {
             //NOTE: ProxyController must not redirect from create Order/approvaOrder methods,
-            //      it has to show a json response in all cases.
-            //tell order controller to redirect to checkout login
+            //it has to show a json response in all cases.
+            //tell order controller to redirect to check out login
             Registry::getSession()->setVariable('oscpaypal_payment_redirect', true);
         }
 
@@ -260,11 +294,18 @@ class ProxyController extends FrontendController
     }
 
     protected function getRequestedPayPalPaymentId(
-        $defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
-    ): string {
-        $paymentId = (string) Registry::getRequest()->getRequestEscapedParameter('paymentid');
-        return PayPalDefinitions::isPayPalPayment($paymentId) ?
+        string $defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
+    ): ?string {
+
+        $paymentId = Registry::getRequest()->getRequestEscapedParameter('paymentid');
+        if (is_string($paymentId)) {
+            $paymentId = (string)$paymentId;
+
+            return PayPalDefinitions::isPayPalPayment($paymentId) ?
             $paymentId :
             $defaultPayPalPaymentId;
+        }
+
+        return '';
     }
 }

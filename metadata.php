@@ -40,6 +40,7 @@ use OxidSolutionCatalysts\PayPal\Model\Basket as PayPalBasket;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Model\State as PayPalState;
 use OxidSolutionCatalysts\PayPal\Model\User as PayPalUser;
+
 use OxidSolutionCatalysts\PayPal\Model\Payment as PayPalPayment;
 use OxidSolutionCatalysts\PayPal\Model\PaymentGateway as PayPalPaymentGateway;
 
@@ -69,6 +70,7 @@ $aModule = [
         ViewConfig::class => PayPalViewConfig::class,
         Order::class => PayPalOrder::class,
         User::class => PayPalUser::class,
+        OxidEsales\Eshop\Application\Model\Country::class => \OxidSolutionCatalysts\PayPal\Model\Country::class,
         Basket::class => PayPalBasket::class,
         Article::class => PayPalArticle::class,
         Payment::class => PayPalPayment::class,
