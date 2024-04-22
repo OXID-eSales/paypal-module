@@ -23,7 +23,7 @@ trait RequestDataGetter
         $value = $escaped ? $request->getRequestEscapedParameter($key) : $request->getRequestParameter($key);
         $value = is_string($value) ? (string)$value : $value;
 
-        if (is_string($value)){
+        if (is_string($value)) {
             return $value;
         }
 
@@ -46,5 +46,4 @@ trait RequestDataGetter
 
         return is_array($value) ? (array)$value : [$value];
     }
-
 }
