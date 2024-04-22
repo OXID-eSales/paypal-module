@@ -21,11 +21,10 @@ trait SessionDataGetter
         $value = Registry::getSession()->getVariable($key);
         $value = is_string($value) ? (string)$value : $value;
 
-        if (is_string($value)){
+        if (is_string($value)) {
             return $value;
         }
 
         return '';
     }
-
 }
