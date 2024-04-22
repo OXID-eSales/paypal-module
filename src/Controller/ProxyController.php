@@ -225,32 +225,36 @@ class ProxyController extends FrontendController
             /** @var array $userInvoiceAddress */
             $userInvoiceAddress = $user->getInvoiceAddress();
             // add PayPal-Address as Delivery-Address
+            if ($response !== null) {
+                if (!empty($response->purchase_units[0]->shipping)) {
+                    $response->purchase_units[0]->shipping;
 
-            $response->purchase_units[0]->shipping->address = $shippingAddress;
-            $response->purchase_units[0]->shipping->name->full_name = $data['shippingAddress']['name'] ?? '';
-            $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
-            if ($deliveryAddress['oxaddress__oxfname'] !== '' && $deliveryAddress['oxaddress__oxstreet'] !== '') {
-                try {
-                    $user->changeUserData(
-                        $user->oxuser__oxusername->value,
-                        '',
-                        '',
-                        $userInvoiceAddress,
-                        $deliveryAddress
-                    );
+                    $response->purchase_units[0]->shipping->address = $shippingAddress;
+                    $response->purchase_units[0]->shipping->name->full_name = $data['shippingAddress']['name'] ?? '';
+                    $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
+                    if ($deliveryAddress['oxaddress__oxfname'] !== '' && $deliveryAddress['oxaddress__oxstreet'] !== '') {
+                        try {
+                            $user->changeUserData(
+                                $user->oxuser__oxusername->value,
+                                '',
+                                '',
+                                $userInvoiceAddress,
+                                $deliveryAddress
+                            );
 
-                    // use a deliveryaddress in oxid-checkout
-                    Registry::getSession()->setVariable('blshowshipaddress', false);
+                            // use a deliveryaddress in oxid-checkout
+                            Registry::getSession()->setVariable('blshowshipaddress', false);
 
-                    $this->setPayPalPaymentMethod();
-                } catch (StandardException $exception) {
-                    Registry::getUtilsView()->addErrorToDisplay($exception);
-                    $response->status = 'ERROR';
-                    PayPalSession::unsetPayPalOrderId();
-                    Registry::getSession()->getBasket()->setPayment(null);
+                            $this->setPayPalPaymentMethod();
+                        } catch (StandardException $exception) {
+                            Registry::getUtilsView()->addErrorToDisplay($exception);
+                            $response->status = 'ERROR';
+                            PayPalSession::unsetPayPalOrderId();
+                            Registry::getSession()->getBasket()->setPayment(null);
+                        }
+                    }
                 }
             }
-
         } elseif ($nonGuestAccountDetected && !$isLoggedIn) {
             // PPExpress is actual no possible so we switch to PP-Standard
             $this->setPayPalPaymentMethod(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
