@@ -9,10 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 
 use OxidSolutionCatalysts\PayPal\Traits\DataGetter;
 
-/**
- * @property Field $oxcountry__oxisoalpha2
- */
-class Country extends \OxidEsales\Eshop\Application\Model\Country
+class Address extends \OxidEsales\Eshop\Application\Model\Address
 {
     use DataGetter;
 }
