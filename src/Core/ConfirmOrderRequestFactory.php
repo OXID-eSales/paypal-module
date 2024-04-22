@@ -47,7 +47,7 @@ class ConfirmOrderRequestFactory
         return $request;
     }
 
-    protected function getPaymentSource(Basket $basket, string $requestName)
+    protected function getPaymentSource(Basket $basket, string $requestName): PaymentSource
     {
         $user = $basket->getBasketUser();
 
@@ -79,7 +79,7 @@ class ConfirmOrderRequestFactory
             $paymentSource = new PaymentSource([
                 $requestName => [
                     'name' => $userName,
-                    'country_code' => $country->getFieldData('oxisoalpha2')
+                    'country_code' => $country->getPaypalStringData('oxisoalpha2')
                 ]
             ]);
         }

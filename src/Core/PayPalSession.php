@@ -32,14 +32,14 @@ class PayPalSession
     /**
      * PayPal remove checkoutOrderId
      */
-    public static function unsetPayPalOrderId()
+    public static function unsetPayPalOrderId(): void
     {
         Registry::getSession()->deleteVariable(
             Constants::SESSION_CHECKOUT_ORDER_ID
         );
     }
 
-    public static function unsetPayPalSession()
+    public static function unsetPayPalSession(): void
     {
         self::unsetPayPalOrderId();
 
@@ -75,7 +75,7 @@ class PayPalSession
     /**
      * PayPal remove PUI-CM-Id
      */
-    public static function unsetPayPalPuiCmId()
+    public static function unsetPayPalPuiCmId(): void
     {
         Registry::getSession()->deleteVariable(
             Constants::SESSION_PUI_CMID

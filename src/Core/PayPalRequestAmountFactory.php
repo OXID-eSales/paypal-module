@@ -23,6 +23,7 @@ class PayPalRequestAmountFactory
 {
     public function getAmount(Basket $basket): AmountWithBreakdown
     {
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Basket $basket */
         $netMode = Registry::getConfig()->getConfigParam('blShowNetPrice');
         $currency = $basket->getBasketCurrency();
 
