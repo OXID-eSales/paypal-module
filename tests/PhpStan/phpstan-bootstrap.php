@@ -8,13 +8,8 @@
 declare(strict_types=1);
 
 class_alias(
-    \OxidEsales\Eshop\Application\Component\UserComponent::class,
-    \OxidEsales\Eshop\Application\Component\UserComponent_parent::class
-);
-
-class_alias(
     \OxidEsales\EshopCommunity\Application\Component\UserComponent::class,
-    \OxidEsales\EshopCommunity\Application\Component\UserComponent_parent::class,
+    \OxidSolutionCatalysts\PayPal\Component\UserComponent_parent::class,
 );
 
 class_alias(
