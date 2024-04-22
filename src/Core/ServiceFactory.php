@@ -130,6 +130,7 @@ class ServiceFactory
             /** @var Config $config */
             $config = oxNew(Config::class);
             /** @var LoggerInterface $logger */
+            /** @phpstan-ignore-next-line */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
 
             $client = new Client(

@@ -22,6 +22,7 @@ class LegacyOeppModuleDetails
     public function isLegacyModulePresent(): bool
     {
         $container = ContainerFactory::getInstance()->getContainer();
+        /** @var ModuleActivationBridgeInterface $moduleActivationBridge */
         $moduleActivationBridge = $container
             ->get(ModuleActivationBridgeInterface::class);
 

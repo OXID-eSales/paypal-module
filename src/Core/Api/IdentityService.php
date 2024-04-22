@@ -9,6 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Core\Api;
 
 use OxidSolutionCatalysts\PayPalApi\Service\BaseService;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 
 class IdentityService extends BaseService
 {
@@ -24,8 +25,8 @@ class IdentityService extends BaseService
         /** @var ResponseInterface $response */
         $response = $this->send($method, $path, [], $headers);
         $body = $response->getBody();
-
-        return $body ? json_decode((string)$body, true) : [];
+        $decode = json_decode((string)$body, true);
+        return is_array($decode) ? (array)$decode : [];
     }
 
     /**

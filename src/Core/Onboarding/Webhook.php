@@ -69,7 +69,7 @@ class Webhook
                 'event_types' => $this->getAvailableEventNames(),
             ];
 
-            /** @var GenericService $notificationService */
+            /** @var GenericService $webhookService */
             $webhookService = Registry::get(ServiceFactory::class)->getWebhookService();
             $webHookResponse = $webhookService->request('post', $paypload);
 
@@ -94,7 +94,7 @@ class Webhook
             return;
         }
 
-        /** @var GenericService $notificationService */
+        /** @var GenericService $webhookService */
         $webhookService = Registry::get(ServiceFactory::class)->getWebhookService('/' . $webhookId);
 
         $headers = [];
@@ -117,7 +117,7 @@ class Webhook
 
     public function getAllRegisteredWebhooks(): array
     {
-        /** @var GenericService $notificationService */
+        /** @var GenericService $webhookService */
         $webhookService = Registry::get(ServiceFactory::class)->getWebhookService();
         $result = $webhookService->request('get');
 

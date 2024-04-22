@@ -7,6 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
+use Doctrine\DBAL\Exception;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
@@ -35,7 +36,7 @@ class PaymentCaptureRefundedHandler extends WebhookHandlerBase
         //NOTE: it is the capture (transaction) id, not the order we get from up link
         $transactionId = $this->getPayPalOrderIdFromResource($eventPayload);
 
-        /** @var EshopModelOrder $order */
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Order $order */
         $order = $this->getOrderByPayPalTransactionId($transactionId);
 
         //track the refund
@@ -43,7 +44,7 @@ class PaymentCaptureRefundedHandler extends WebhookHandlerBase
             ->trackPayPalOrder(
                 $order->getId(),
                 $this->getPayPalOrderIdByShopOrderId($order->getId()),
-                (string) $order->getFieldData('oxpaymenttype'),
+                $order->getPaypalStringData('oxpaymenttype'),
                 $this->getStatusFromResource($eventPayload),
                 $this->getPayPalTransactionIdFromResource($eventPayload),
                 Constants::PAYPAL_TRANSACTION_TYPE_REFUND
@@ -56,7 +57,7 @@ class PaymentCaptureRefundedHandler extends WebhookHandlerBase
             ->trackPayPalOrder(
                 $order->getId(),
                 $this->getPayPalOrderIdByShopOrderId($order->getId()),
-                (string)$order->getFieldData('oxpaymenttype'),
+                $order->getPaypalStringData('oxpaymenttype'),
                 $status,
                 $transactionId,
                 Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
@@ -111,10 +112,13 @@ class PaymentCaptureRefundedHandler extends WebhookHandlerBase
         return $order;
     }
 
+    /**
+     * @throws WebhookEventException
+     * @throws Exception
+     */
     protected function getPayPalOrderIdByShopOrderId(string $shopOrderId): string
     {
         try {
-            /** @var EshopModelOrder $order */
             $orderId = $this->getOrderRepository()
                 ->getPayPalOrderIdByShopOrderId($shopOrderId);
         } catch (NotFound $exception) {

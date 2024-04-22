@@ -17,7 +17,7 @@ class EventDispatcher
     /**
      * @param Event $event
      */
-    public function dispatch(Event $event)
+    public function dispatch(Event $event): void
     {
         $handlers = EventHandlerMapping::MAPPING;
         $eventType = $event->getEventType();

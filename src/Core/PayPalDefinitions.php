@@ -422,19 +422,19 @@ final class PayPalDefinitions
         ]
     ];
 
-    public static function getPayPalDefinitions()
+    public static function getPayPalDefinitions(): array
     {
         return self::PAYPAL_DEFINTIONS;
     }
 
-    public static function getPayPalStaticContents()
+    public static function getPayPalStaticContents(): array
     {
         return self::PAYPAL_STATIC_CONTENTS;
     }
 
     public static function isUAPMPayment(string $oxid): bool
     {
-        return (isset(self::PAYPAL_DEFINTIONS[$oxid]['uapmpaymentsource']));
+        return isset(self::PAYPAL_DEFINTIONS[$oxid]['uapmpaymentsource']);
     }
 
     public static function isButtonPayment(string $oxid): bool
@@ -447,7 +447,7 @@ final class PayPalDefinitions
     public static function getPaymentSourceRequestName(string $oxid): string
     {
         return self::isUAPMPayment($oxid) ?
-            self::PAYPAL_DEFINTIONS[$oxid]['uapmpaymentsource'] :
+            (string)self::PAYPAL_DEFINTIONS[$oxid]['uapmpaymentsource'] :
             '';
     }
 
