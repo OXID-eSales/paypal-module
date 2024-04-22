@@ -81,6 +81,7 @@ final class RequestHandler
     private function processEvent(string $data): void
     {
         $data = json_decode($data, true, 512, JSON_THROW_ON_ERROR);
+        $data = is_array($data) ? (array)$data : [];
         if (
             isset($data['event_type'])
         ) {

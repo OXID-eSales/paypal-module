@@ -16,6 +16,7 @@ use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\PayPalRequestAmountFactory;
+use OxidSolutionCatalysts\PayPal\Traits\RequestDataGetter;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch;
@@ -27,21 +28,12 @@ use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
  */
 class PatchRequestFactory
 {
-    /**
-     * @var array
-     */
-    private $request = [];
+    use RequestDataGetter;
 
-    /**
-     * @var Basket
-     */
-    private $basket;
+    private array $request = [];
 
-    /**
-     * @param Basket $basket
-     *
-     * @return array
-     */
+    private Basket $basket;
+
     public function getRequest(
         Basket $basket,
         string $orderId = ''
@@ -55,21 +47,13 @@ class PatchRequestFactory
             $this->getCustomIdPatch($orderId);
         }
 
-        /** @var BasketItem $basketItem */
-        // PayPal cannot fully patch the items in the shopping cart.
-        // At the moment only the amount and the title of the article
-        // are relevant. However, no inventory.
-        // So we ignore the Article-Patch
-        //foreach ($this->basket->getContents() as $basketItem) {
-        //    $this->getPurchaseUnitsPatch($basketItem);
-        //}
-
         return $this->request;
     }
 
     protected function getShippingAddressPatch(): void
     {
-        $deliveryId = Registry::getSession()->getVariable("deladrid");
+        $deliveryId = self::getRequestStringParameter("deladrid");
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Address $deliveryAddress */
         $deliveryAddress = oxNew(Address::class);
 
         if ($deliveryId && $deliveryAddress->load($deliveryId)) {
@@ -81,24 +65,27 @@ class PatchRequestFactory
 
             $address = new AddressPortable();
 
+            /** @var \OxidSolutionCatalysts\PayPal\Model\State $state */
             $state = oxNew(State::class);
-            $state->load($deliveryAddress->getFieldData('oxstateid'));
+            $state->load($deliveryAddress->getPaypalStringData('oxstateid'));
 
             $country = oxNew(Country::class);
-            $country->load($deliveryAddress->getFieldData('oxcountryid'));
+            $country->load($deliveryAddress->getPaypalStringData('oxcountryid'));
 
             $addressLine =
-                $deliveryAddress->getFieldData('oxstreet') . " " . $deliveryAddress->getFieldData('oxstreetnr');
+                $deliveryAddress->getPaypalStringData('oxstreet') . " " . $deliveryAddress->getPaypalStringData('oxstreetnr');
             $address->address_line_1 = $addressLine;
 
-            $addinfoLine = $deliveryAddress->getFieldData('oxcompany') . " " .
-                $deliveryAddress->getFieldData('oxaddinfo');
+            $addinfoLine = $deliveryAddress->getPaypalStringData('oxcompany') . " " .
+                $deliveryAddress->getPaypalStringData('oxaddinfo');
             $address->address_line_2 = $addinfoLine;
 
-            $address->admin_area_1 = $state->getFieldData('oxtitle');
-            $address->admin_area_2 = $deliveryAddress->getFieldData('oxcity');
-            $address->country_code = $country->oxcountry__oxisoalpha2->value;
-            $address->postal_code = $deliveryAddress->getFieldData('oxzip');
+            $address->admin_area_1 = $state->getPaypalStringData('oxtitle');
+            $address->admin_area_2 = $deliveryAddress->getPaypalStringData('oxcity');
+            if (isset($country->oxcountry__oxisoalpha2)) {
+                $address->country_code = $country->oxcountry__oxisoalpha2->value;
+            }
+            $address->postal_code = $deliveryAddress->getPaypalStringData('oxzip');
 
             $patch->value = $address;
 
@@ -108,11 +95,15 @@ class PatchRequestFactory
 
     protected function getShippingNamePatch(): void
     {
-        $deliveryId = Registry::getSession()->getVariable("deladrid");
+        $deliveryId = self::getRequestStringParameter("deladrid");
         $deliveryAddress = oxNew(Address::class);
 
         if ($deliveryId && $deliveryAddress->load($deliveryId)) {
-            $fullName = $deliveryAddress->oxaddress__oxfname->value . " " . $deliveryAddress->oxaddress__oxlname->value;
+            $fullName = '';
+            if (isset($deliveryAddress->oxaddress__oxfname) && isset($deliveryAddress->oxaddress__oxlname)) {
+                $fullName = $deliveryAddress->oxaddress__oxfname->value
+                            . " " . $deliveryAddress->oxaddress__oxlname->value;
+            }
             $patch = new Patch();
             $patch->op = Patch::OP_REPLACE;
             $patch->path = "/purchase_units/@reference_id=='"
@@ -137,8 +128,6 @@ class PatchRequestFactory
 
     /**
      * @param BasketItem $basketItem
-     * @param bool $nettoPrices
-     * @param $currency
      */
     protected function getPurchaseUnitsPatch(
         BasketItem $basketItem

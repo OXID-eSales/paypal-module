@@ -13,12 +13,17 @@ use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Model\Shop;
+use OxidSolutionCatalysts\PayPal\Model\User;
+use OxidSolutionCatalysts\PayPal\Traits\TranslationDataGetter;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Service\BaseService;
 
 class VaultingService extends BaseService
 {
-    public function generateUserIdToken($payPalCustomerId = false): array
+    use TranslationDataGetter;
+
+    public function generateUserIdToken(?bool $payPalCustomerId = false): array
     {
         $headers = [];
         $headers['Content-Type'] = 'application/x-www-form-urlencoded';
@@ -36,8 +41,8 @@ class VaultingService extends BaseService
 
         $response = $this->send($method, $path, $params, $headers);
         $body = $response->getBody();
-
-        return json_decode((string)$body, true);
+        $decode = json_decode((string)$body, true);
+        return is_array($decode) ? (array)$decode : [];
     }
 
     /**
@@ -79,8 +84,8 @@ class VaultingService extends BaseService
             json_encode($body, JSON_THROW_ON_ERROR | JSON_FORCE_OBJECT)
         );
         $body = $response->getBody();
-
-        return json_decode((string)$body, true);
+        $decode = json_decode((string)$body, true);
+        return is_array($decode) ? (array)$decode : [];
     }
 
     /**
@@ -91,38 +96,44 @@ class VaultingService extends BaseService
     {
         $viewConf   = Registry::get(ViewConfig::class);
         $config     = Registry::getConfig();
+        /** @var User $user */
         $user       = $viewConf->getUser();
 
         $country = oxNew(Country::class);
-        $country->load($user->getFieldData('oxcountryid'));
+        $country->load($user->getPaypalStringData('oxcountryid'));
 
+        /** @var \OxidSolutionCatalysts\PayPal\Model\State $state */
         $state = oxNew(State::class);
         $state->loadByIdAndCountry(
-            $user->getFieldData('oxstateid'),
-            $user->getFieldData('oxcountryid')
+            $user->getPaypalStringData('oxstateid'),
+            $user->getPaypalStringData('oxcountryid')
         );
 
-        $shopName = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
-        $lang = Registry::getLang();
-
-        $description = sprintf($lang->translateString('OSC_PAYPAL_DESCRIPTION'), $shopName);
-
+        /** @var Shop $activeShop */
         $activeShop = Registry::getConfig()->getActiveShop();
-
-        $name                   = $user->getFieldData("oxfname");
-        $name                   .= $user->getFieldData("oxlname");
+        $shopName = $activeShop->getPaypalStringData('oxname');
+        $description = sprintf(self::getTranslatedString('OSC_PAYPAL_DESCRIPTION'), $shopName);
+        $country_code = '';
+        $name                   = $user->getPaypalStringData("oxfname");
+        $name                   .= $user->getPaypalStringData("oxlname");
+        $locale = '';
+        if (
+            isset($country->oxcountry__oxisoalpha2)
+            && property_exists($country->oxcountry__oxisoalpha2, 'value')
+        ) {
+            $country_code = $country->oxcountry__oxisoalpha2->value;
+            $locale = strtolower($country_code) . '-' . strtoupper($country_code);
+        }
         $address                = [
-            "address_line_1"    => $user->getFieldData('oxstreet') . " " . $user->getFieldData('oxstreetnr'),
-            "address_line_2"    => $user->getFieldData('oxcompany') . " " . $user->getFieldData('oxaddinfo'),
-            "admin_area_1"      => $state->getFieldData('oxtitle'),
-            "admin_area_2"      => $user->getFieldData('oxcity'),
-            "postal_code"       => $user->getFieldData('oxzip'),
-            "country_code"      => $country->oxcountry__oxisoalpha2->value,
+            "address_line_1"    => $user->getPaypalStringData('oxstreet')
+                . " " . $user->getPaypalStringData('oxstreetnr'),
+            "address_line_2"    => $user->getPaypalStringData('oxcompany')
+                . " " . $user->getPaypalStringData('oxaddinfo'),
+            "admin_area_1"      => $state->getPaypalStringData('oxtitle'),
+            "admin_area_2"      => $user->getPaypalStringData('oxcity'),
+            "postal_code"       => $user->getPaypalStringData('oxzip'),
+            "country_code"      => $country_code,
         ];
-        $locale                 =
-            strtolower($country->oxcountry__oxisoalpha2->value)
-            . '-'
-            . strtoupper($country->oxcountry__oxisoalpha2->value);
         $experience_context     = [
             "brand_name"          => $activeShop->getFieldData('oxname'),
             "locale"              => $locale,
@@ -172,7 +183,7 @@ class VaultingService extends BaseService
         return $paymentSource;
     }
 
-    public function createVaultPaymentToken($setupToken)
+    public function createVaultPaymentToken(string $setupToken): array
     {
         $headers = $this->getVaultingHeaders();
 
@@ -187,15 +198,18 @@ class VaultingService extends BaseService
                 ]
             ]
         ];
+        $encoded = json_encode($requestBody);
+        $body = is_string($encoded) ? (string)$encoded : '';
+        $response = $this->send($method, $path, [], $headers, $body);
+        $body = $response->getBody();
+        $decode = json_decode((string)$body, true);
 
-        $response = $this->send($method, $path, [], $headers, json_encode($requestBody));
-        $responseBody = $response->getBody();
-
-        return json_decode((string)$responseBody, true);
+        return is_array($decode) ? (array)$decode : [];
     }
 
-    public function getVaultPaymentTokens($paypalCustomerId)
+    public function getVaultPaymentTokens(string $paypalCustomerId): ?array
     {
+        /** @var \OxidSolutionCatalysts\PayPal\Core\Config $viewConf */
         $viewConf = oxNew(ViewConfig::class);
         if (!$viewConf->getIsVaultingActive()) {
             return null;
@@ -206,22 +220,23 @@ class VaultingService extends BaseService
 
         $response = $this->send($method, $path);
         $body = $response->getBody();
+        $decode = json_decode((string)$body, true);
 
-        return json_decode((string)$body, true);
+        return is_array($decode) ? (array)$decode : null;
     }
 
-    public function getVaultPaymentTokenByIndex($paypalCustomerId, $index)
+    public function getVaultPaymentTokenByIndex(string $paypalCustomerId, string $index): array
     {
         $paymentTokens = $this->getVaultPaymentTokens($paypalCustomerId);
 
-        return $paymentTokens["payment_tokens"][$index];
+        return $paymentTokens["payment_tokens"][$index] ?? [];
     }
 
     /**
      * @param $paymentTokenId
      * @return bool
      */
-    public function deleteVaultedPayment($paymentTokenId)
+    public function deleteVaultedPayment(string $paymentTokenId): bool
     {
         $path = '/v3/vault/payment-tokens/' . $paymentTokenId;
         $method = 'delete';
@@ -239,8 +254,7 @@ class VaultingService extends BaseService
         $headers = [];
         $headers['Content-Type'] = 'application/json';
         $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
-        $headers = array_merge($headers, $this->getAuthHeaders());
-        return $headers;
+        return array_merge($headers, $this->getAuthHeaders());
     }
 
     protected function getAuthHeaders(): array

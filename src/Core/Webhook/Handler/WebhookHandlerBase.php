@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidSolutionCatalysts\PayPal\Model\Order;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
@@ -181,7 +182,6 @@ abstract class WebhookHandlerBase
             $paypalOrderModel->setPuiAccountHolderName($puiPaymentDetails->account_holder_name);
         }
 
-        $paypalOrderModel->setTransactionType(Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE);
         $paypalOrderModel->setStatus($status);
         $paypalOrderModel->save();
     }
