@@ -128,6 +128,14 @@ class Config
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isLiveVaultingEligibility();
     }
+    public function isLiveGooglePayEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveGooglePayEligibility();
+    }
+    public function isSandboxGooglePayEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxGooglePayEligibility();
+    }
 
     public function isSandboxAcdcEligibility(): bool
     {

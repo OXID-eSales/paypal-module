@@ -163,6 +163,7 @@ class Onboarding
         $isAcdcEligibility = false;
         $isVaultingEligibility = false;
         $isVaultingCapability = false;
+        $isGooglePayCapability = false;
 
         foreach ($merchantInformations['capabilities'] as $capability) {
             if (
@@ -170,7 +171,12 @@ class Onboarding
                 $capability['status'] === 'ACTIVE'
             ) {
                 $isVaultingCapability = true;
-                break;
+            }
+            if (
+                $capability['name'] === 'GOOGLE_PAY' &&
+                $capability['status'] === 'ACTIVE'
+            ) {
+                $isGooglePayCapability = true;
             }
         }
 
@@ -200,11 +206,13 @@ class Onboarding
         $moduleSettings->savePuiEligibility($isPuiEligibility);
         $moduleSettings->saveAcdcEligibility($isAcdcEligibility);
         $moduleSettings->saveVaultingEligibility($isVaultingEligibility);
+        $moduleSettings->saveGooglePayEligibility($isGooglePayCapability);
 
         return [
             'acdc' => $isAcdcEligibility,
             'pui' => $isPuiEligibility,
             'vaulting' => $isVaultingEligibility,
+            'googlepay' => $isGooglePayCapability,
         ];
     }
 }
