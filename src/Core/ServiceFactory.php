@@ -130,8 +130,7 @@ class ServiceFactory
             /** @var Config $config */
             $config = oxNew(Config::class);
             /** @var LoggerInterface $logger */
-            /** @phpstan-ignore-next-line */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger = $this->getServiceFromContainer(\OxidSolutionCatalysts\PayPal\Service\Logger::class);
 
             $client = new Client(
                 $logger,
@@ -140,7 +139,7 @@ class ServiceFactory
                 $config->getClientSecret(),
                 $config->getTokenCacheFileName(),
                 // must be empty. We do not have the merchant's payerid
-                //and confirmed by paypal we should not use it for auth and
+                //and confirmed by PayPal we should not use it for auth and
                 //so not ask for it on the configuration page
                 '',
                 false
