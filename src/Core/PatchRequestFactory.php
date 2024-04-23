@@ -73,7 +73,8 @@ class PatchRequestFactory
             $country->load($deliveryAddress->getPaypalStringData('oxcountryid'));
 
             $addressLine =
-                $deliveryAddress->getPaypalStringData('oxstreet') . " " . $deliveryAddress->getPaypalStringData('oxstreetnr');
+                $deliveryAddress->getPaypalStringData('oxstreet')
+                    . " " . $deliveryAddress->getPaypalStringData('oxstreetnr');
             $address->address_line_1 = $addressLine;
 
             $addinfoLine = $deliveryAddress->getPaypalStringData('oxcompany') . " " .
