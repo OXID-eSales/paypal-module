@@ -119,15 +119,15 @@ class UserRepository
 
     public function getUserStateIso(): string
     {
+        /** @var \OxidSolutionCatalysts\PayPal\Model\User $user */
         $user = $this->session->getUser();
+        /** @var \OxidSolutionCatalysts\PayPal\Model\State $state */
         $state = oxNew(State::class);
-        /** @phpstan-ignore-next-line */
         $state->loadByIdAndCountry(
-            $user->getFieldData('oxstateid'),
-            $user->getFieldData('oxcountryid')
+            $user->getPaypalStringData('oxcountryid'),
+            $user->getPaypalStringData('oxstateid')
         );
-        $iso = $state->getFieldData('oxisoalpha2');
 
-        return is_string($iso) ? $iso : '';
+        return $state->getPaypalStringData('oxisoalpha2');
     }
 }

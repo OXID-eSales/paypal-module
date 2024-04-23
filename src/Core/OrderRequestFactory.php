@@ -19,10 +19,17 @@ use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
+use OxidSolutionCatalysts\PayPal\Model\Shop;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Core\PayPalRequestAmountFactory;
+use OxidSolutionCatalysts\PayPal\Model\Article;
+use OxidSolutionCatalysts\PayPal\Model\User;
+use OxidSolutionCatalysts\PayPal\Traits\SessionDataGetter;
+use OxidSolutionCatalysts\PayPal\Traits\TranslationDataGetter;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderApplicationContext;
@@ -45,6 +52,8 @@ use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 class OrderRequestFactory
 {
     use ServiceContainer;
+    use TranslationDataGetter;
+    use SessionDataGetter;
 
     /**
      * After you redirect the customer to the PayPal payment page, a Continue button appears.
@@ -54,11 +63,6 @@ class OrderRequestFactory
     public const USER_ACTION_CONTINUE = 'CONTINUE';
 
     public const USER_ACTION_PAY_NOW = 'PAY_NOW';
-
-    /**
-     * @var OrderRequest
-     */
-    private $request;
 
     /**
      * @var Basket
@@ -93,20 +97,17 @@ class OrderRequestFactory
         bool $withArticles = true,
         bool $setProvidedAddress = true
     ): OrderRequest {
-        $request = $this->request = new OrderRequest();
+        $request = new OrderRequest();
         $this->basket = $basket;
 
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $setVaulting = $moduleSettings->getIsVaultingActive();
         $selectedVaultPaymentSourceIndex = self::getSessionStringVariable("selectedVaultPaymentSourceIndex");
-        $paymentId = Registry::getSession()->getVariable('paymentid');
-        if ($paymentId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID) {
-            $request->payment_source = $this->getGooglePayPaymentSource($basket, 'google_pay');
-        }
+
         $request->intent = $intent;
         $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $withArticles);
 
-        $useVaultedPayment = $setVaulting && !is_null($selectedVaultPaymentSourceIndex);
+        $useVaultedPayment = $setVaulting && !empty($selectedVaultPaymentSourceIndex);
         if ($useVaultedPayment) {
             $config = Registry::getConfig();
             $vaultingService = $this->getVaultingService();
@@ -146,7 +147,9 @@ class OrderRequestFactory
             return $request;
         }
 
-        if (!$paymentSource && $basket->getUser()) {
+        /** @var User $user */
+        $user = $basket->getUser();
+        if (!$paymentSource && null != $user) {
             $request->payer = $this->getPayer();
         }
 
@@ -186,7 +189,9 @@ class OrderRequestFactory
         ?bool $setProvidedAddress
     ): OrderApplicationContext {
         $context = new OrderApplicationContext();
-        $context->brand_name = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
+        /** @var Shop $activeShop */
+        $activeShop = Registry::getConfig()->getActiveShop();
+        $context->brand_name = $activeShop->getPaypalStringData('oxname');
         $context->shipping_preference = 'GET_FROM_FILE';
         $context->landing_page = 'LOGIN';
         if ($userAction) {
@@ -214,12 +219,16 @@ class OrderRequestFactory
         bool $withArticles = true
     ): array {
         $purchaseUnit = new PurchaseUnitRequest();
-        $shopName = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
+        /** @var Shop $activeShop */
+        $activeShop = Registry::getConfig()->getActiveShop();
+        $shopName = $activeShop->getPaypalStringData('oxname');
         $lang = Registry::getLang();
 
         $purchaseUnit->custom_id = $transactionId;
         $purchaseUnit->invoice_id = $invoiceId;
-        $description = sprintf($lang->translateString('OSC_PAYPAL_DESCRIPTION'), $shopName);
+        $format = $lang->translateString('OSC_PAYPAL_DESCRIPTION');
+        $format = is_array($format) ? implode(' ', $format) : $format;
+        $description = sprintf($format, $shopName);
         $purchaseUnit->description = $description;
 
         $purchaseUnit->amount = $this->getAmount();
@@ -234,7 +243,9 @@ class OrderRequestFactory
             $purchaseUnit->items = $this->getItems();
         }
 
-        if ($this->basket->getBasketUser()) {
+        /** @var User $user */
+        $user = $this->basket->getBasketUser();
+        if (null != $user) {
             $purchaseUnit->shipping = $this->getShippingAddress();
         }
 
@@ -255,6 +266,7 @@ class OrderRequestFactory
      */
     public function getItems(): array
     {
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Basket $basket */
         $basket = $this->basket;
         $itemCategory = $this->getItemCategoryByBasketContent();
         $currency = $basket->getBasketCurrency();
@@ -267,6 +279,7 @@ class OrderRequestFactory
             $item->name = substr($basketItem->getTitle(), 0, 120);
             $itemUnitPrice = $basketItem->getUnitPrice();
 
+            /** @var Article $basketArticle */
             $basketArticle = $basketItem->getArticle();
             $articleCategory = ($basketArticle->isVirtualPayPalArticle())
                 ? Item::CATEGORY_DIGITAL_GOODS
@@ -289,7 +302,7 @@ class OrderRequestFactory
 
         if ($wrapping = $basket->getPayPalCheckoutWrapping()) {
             $item = new Item();
-            $item->name = $language->translateString('GIFT_WRAPPING');
+            $item->name = self::getTranslatedString('GIFT_WRAPPING');
 
             $item->unit_amount = PriceToMoney::convert((float)$wrapping, $currency);
             // tax - we use 0% and calculate with brutto to avoid rounding errors
@@ -305,7 +318,7 @@ class OrderRequestFactory
 
         if ($giftCard = $basket->getPayPalCheckoutGiftCard()) {
             $item = new Item();
-            $item->name = $language->translateString('GREETING_CARD');
+            $item->name = self::getTranslatedString('GREETING_CARD');
 
             $item->unit_amount = PriceToMoney::convert((float)$giftCard, $currency);
             // tax - we use 0% and calculate with brutto to avoid rounding errors
@@ -321,7 +334,7 @@ class OrderRequestFactory
 
         if ($payment = $basket->getPayPalCheckoutPayment()) {
             $item = new Item();
-            $item->name = $language->translateString('PAYMENT_METHOD');
+            $item->name = self::getTranslatedString('PAYMENT_METHOD');
 
             $item->unit_amount = PriceToMoney::convert((float)$payment, $currency);
             // tax - we use 0% and calculate with brutto to avoid rounding errors
@@ -338,7 +351,7 @@ class OrderRequestFactory
         //Shipping cost
         if ($delivery = $basket->getPayPalCheckoutDeliveryCosts()) {
             $item = new Item();
-            $item->name = $language->translateString('SHIPPING_COST');
+            $item->name = self::getTranslatedString('SHIPPING_COST');
 
             $item->unit_amount = PriceToMoney::convert((float)$delivery, $currency);
             // tax - we use 0% and calculate with brutto to avoid rounding errors
@@ -357,7 +370,7 @@ class OrderRequestFactory
         if ($discount < 0) {
             $discount *= -1;
             $item = new Item();
-            $item->name = $language->translateString('SURCHARGE');
+            $item->name = self::getTranslatedString('SURCHARGE');
 
             $item->unit_amount = PriceToMoney::convert($discount, $currency);
             // tax - we use 0% and calculate with brutto to avoid rounding errors
@@ -374,7 +387,7 @@ class OrderRequestFactory
         // Dummy-Article for Rounding-Error
         if ($roundDiff = $basket->getPayPalCheckoutRoundDiff()) {
             $item = new Item();
-            $item->name = $language->translateString('OSC_PAYPAL_VAT_CORRECTION');
+            $item->name = self::getTranslatedString('OSC_PAYPAL_VAT_CORRECTION');
 
             $item->unit_amount = PriceToMoney::convert((float)$roundDiff, $currency);
             // tax - we use 0% and calculate with brutto to avoid rounding errors
@@ -399,10 +412,12 @@ class OrderRequestFactory
      */
     public function getItemCategoryByBasketContent(): string
     {
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Basket $basket */
+        $basket = $this->basket;
         return (
-        $this->basket->isEntirelyVirtualPayPalBasket()
-            ? Item::CATEGORY_DIGITAL_GOODS
-            : Item::CATEGORY_PHYSICAL_GOODS
+            $basket->isEntirelyVirtualPayPalBasket()
+                ? Item::CATEGORY_DIGITAL_GOODS
+                : Item::CATEGORY_PHYSICAL_GOODS
         );
     }
 
@@ -411,20 +426,22 @@ class OrderRequestFactory
      */
     protected function getPayer(string $payerClass = Payer::class): Payer
     {
+        /** @var Payer $payer */
         $payer = new $payerClass();
+        /** @var User $user */
         $user = $this->basket->getBasketUser();
 
         $name = $payer->initName();
-        $name->given_name = $user->getFieldData('oxfname');
-        $name->surname = $user->getFieldData('oxlname');
+        $name->given_name = $user->getPaypalStringData('oxfname');
+        $name->surname = $user->getPaypalStringData('oxlname');
 
-        $payer->email_address = $user->getFieldData('oxusername');
+        $payer->email_address = $user->getPaypalStringData('oxusername');
         $payer->phone = $this->getPayerPhone();
 
-        $birthDate = $user->getFieldData('oxbirthdate');
+        $birthDate = $user->getPaypalStringData('oxbirthdate');
         if ($birthDate && $birthDate !== '0000-00-00') {
             /** @var DateTime $birthDate */
-            $birthDate = oxNew(DateTime::class, $user->getFieldData('oxbirthdate'));
+            $birthDate = oxNew(DateTime::class, $user->getPaypalStringData('oxbirthdate'));
             $payer->birth_date = $birthDate->format('Y-m-d');
         }
 
@@ -438,26 +455,31 @@ class OrderRequestFactory
      */
     protected function getBillingAddress(): AddressPortable3
     {
+        /** @var User $user */
         $user = $this->basket->getBasketUser();
 
+        /** @var \OxidSolutionCatalysts\PayPal\Model\State $state */
         $state = oxNew(State::class);
         $state->loadByIdAndCountry(
-            $user->getFieldData('oxstateid'),
-            $user->getFieldData('oxcountryid')
+            $user->getPaypalStringData('oxstateid'),
+            $user->getPaypalStringData('oxcountryid')
         );
 
+        /** @var Country $country */
         $country = oxNew(Country::class);
-        $country->load($user->getFieldData('oxcountryid'));
+        $country->load($user->getPaypalStringData('oxcountryid'));
 
         $address = new AddressPortable3();
-        $addressLine = $user->getFieldData('oxstreet') . " " . $user->getFieldData('oxstreetnr');
+        $addressLine = $user->getPaypalStringData('oxstreet') . " " . $user->getPaypalStringData('oxstreetnr');
         $address->address_line_1 = $addressLine;
-        $addinfoLine = $user->getFieldData('oxcompany') . " " . $user->getFieldData('oxaddinfo');
+        $addinfoLine = $user->getPaypalStringData('oxcompany') . " " . $user->getPaypalStringData('oxaddinfo');
         $address->address_line_2 = $addinfoLine;
-        $address->admin_area_1 = $state->getFieldData('oxtitle');
-        $address->admin_area_2 = $user->getFieldData('oxcity');
-        $address->country_code = $country->oxcountry__oxisoalpha2->value;
-        $address->postal_code = $user->getFieldData('oxzip');
+        $address->admin_area_1 = $state->getPaypalStringData('oxtitle');
+        $address->admin_area_2 = $user->getPaypalStringData('oxcity');
+        if (isset($country->oxcountry__oxisoalpha2)) {
+            $address->country_code = $country->oxcountry__oxisoalpha2->value;
+        }
+        $address->postal_code = $user->getPaypalStringData('oxzip');
 
         return $address;
     }
@@ -467,42 +489,57 @@ class OrderRequestFactory
      */
     protected function getShippingAddress(): ?ShippingDetail
     {
+        /** @var User $user */
         $user = $this->basket->getBasketUser();
-        $deliveryId = Registry::getSession()->getVariable("deladrid");
+        $deliveryId = self::getSessionStringVariable("deladrid");
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Address $deliveryAddress */
         $deliveryAddress = oxNew(Address::class);
         $shipping = new ShippingDetail();
         $name = $shipping->initName();
-        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
+        if (
+            !empty($deliveryId)
+            && $deliveryAddress->load($deliveryId)
+            && isset($deliveryAddress->oxaddress__oxfname)
+            && isset($deliveryAddress->oxaddress__oxlname)
+        ) {
             $fullName = $deliveryAddress->oxaddress__oxfname->value . " " . $deliveryAddress->oxaddress__oxlname->value;
             $name->full_name = $fullName;
 
             $address = new AddressPortable3();
 
+            /** @var \OxidSolutionCatalysts\PayPal\Model\State $state */
             $state = oxNew(State::class);
             $state->loadByIdAndCountry(
-                $deliveryAddress->getFieldData('oxstateid'),
-                $deliveryAddress->getFieldData('oxcountryid')
+                $deliveryAddress->getPaypalStringData('oxstateid'),
+                $deliveryAddress->getPaypalStringData('oxcountryid')
             );
 
+            /** @var \OxidSolutionCatalysts\PayPal\Model\Country $country */
             $country = oxNew(Country::class);
-            $country->load($deliveryAddress->getFieldData('oxcountryid'));
+            $country->load($deliveryAddress->getPaypalStringData('oxcountryid'));
 
             $addressLine =
-                $deliveryAddress->getFieldData('oxstreet') . " " . $deliveryAddress->getFieldData('oxstreetnr');
+                $deliveryAddress->getPaypalStringData('oxstreet')
+                    . " " . $deliveryAddress->getPaypalStringData('oxstreetnr');
             $address->address_line_1 = $addressLine;
 
-            $addinfoLine = $deliveryAddress->getFieldData('oxcompany') . " " .
-                $deliveryAddress->getFieldData('oxaddinfo');
+            $addinfoLine = $deliveryAddress->getPaypalStringData('oxcompany') . " " .
+                $deliveryAddress->getPaypalStringData('oxaddinfo');
             $address->address_line_2 = $addinfoLine;
 
-            $address->admin_area_1 = $state->getFieldData('oxtitle');
-            $address->admin_area_2 = $deliveryAddress->getFieldData('oxcity');
-            $address->country_code = $country->oxcountry__oxisoalpha2->value;
-            $address->postal_code = $deliveryAddress->getFieldData('oxzip');
+            $address->admin_area_1 = $state->getPaypalStringData('oxtitle');
+            $address->admin_area_2 = $deliveryAddress->getPaypalStringData('oxcity');
+            if (
+                isset($country->oxcountry__oxisoalpha2)
+                && property_exists($country->oxcountry__oxisoalpha2, 'value')
+            ) {
+                $address->country_code = $country->oxcountry__oxisoalpha2->value;
+            }
+            $address->postal_code = $deliveryAddress->getPaypalStringData('oxzip');
 
             $shipping->address = $address;
         } else {
-            $fullName = $user->getFieldData('oxfname') . " " . $user->getFieldData('oxlname');
+            $fullName = $user->getPaypalStringData('oxfname') . " " . $user->getPaypalStringData('oxlname');
             $name->full_name = $fullName;
 
             $shipping->address = $this->getBillingAddress();
@@ -516,6 +553,7 @@ class OrderRequestFactory
      */
     protected function getPayerPhone(): ?PhoneWithType
     {
+        /** @var User $user */
         $user = $this->basket->getBasketUser();
         $phoneUtils = PhoneNumberUtil::getInstance();
 
@@ -527,14 +565,22 @@ class OrderRequestFactory
             'oxfax' => 'FAX'
         ];
 
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Country $country */
         $country = oxNew(Country::class);
-        $country->load($user->getFieldData('oxcountryid'));
-        $countryCode = $country->oxcountry__oxisoalpha2->value;
+        $country->load($user->getPaypalStringData('oxcountryid'));
+        $countryCode = '';
+        $type = '';
+        if (
+            isset($country->oxcountry__oxisoalpha2)
+            && property_exists($country->oxcountry__oxisoalpha2, 'value')
+        ) {
+            $countryCode = $country->oxcountry__oxisoalpha2->value;
+        }
 
         $number = null;
 
         foreach ($userPhoneFields as $numberField => $numberType) {
-            $number = $user->getFieldData($numberField);
+            $number = $user->getPaypalStringData($numberField);
 
             if (!$number) {
                 continue;
@@ -567,46 +613,54 @@ class OrderRequestFactory
      */
     protected function getPuiPaymentSource(): array
     {
+        /** @var User $user */
         $user = $this->basket->getBasketUser();
 
         // get Billing CountryCode
         $country = oxNew(Country::class);
-        $country->load($user->getFieldData('oxcountryid'));
+        $country->load($user->getPaypalStringData('oxcountryid'));
 
         // check possible deliveryCountry
-        $deliveryId = Registry::getSession()->getVariable("deladrid");
+        $deliveryId = self::getSessionStringVariable("deladrid");
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Address $deliveryAddress */
         $deliveryAddress = oxNew(Address::class);
-        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
-            $country->load($deliveryAddress->getFieldData('oxcountryid'));
+        if (!empty($deliveryId) && $deliveryAddress->load($deliveryId)) {
+            $country->load($deliveryAddress->getPaypalStringData('oxcountryid'));
         }
 
         $payer = $this->getPayer();
 
         $billingAddress = new AddressPortable();
-        $billingAddress->address_line_1 = $payer->address->address_line_1;
-        $billingAddress->address_line_2 = $payer->address->address_line_2;
-        $billingAddress->admin_area_2 = $payer->address->admin_area_2;
-        $billingAddress->postal_code = $payer->address->postal_code;
-        $billingAddress->country_code = $payer->address->country_code;
+        $address = $payer->address;
+        if ($address) {
+            $billingAddress->address_line_1 = $address->address_line_1;
+            $billingAddress->address_line_2 = $address->address_line_2;
+            $billingAddress->admin_area_2 = $address->admin_area_2;
+            $billingAddress->postal_code = $address->postal_code;
+            $billingAddress->country_code = $address->country_code;
+        } //@TODO maybe add exception here if address null ?
 
         $paymentSource = new PuiPaymentSource();
         $paymentSource->name = $payer->name;
-        $paymentSource->email = $payer->email_address;
+        $paymentSource->email = $payer->email_address ?? '';
         $paymentSource->billing_address = $billingAddress;
 
-        /** @var ApiModelPhone $phoneNumberForPuiRequest */
+        /** @var User $user */
         $phoneNumberForPuiRequest = $user->getPhoneNumberForPuiRequest();
         $paymentSource->phone = $phoneNumberForPuiRequest;
         if ($birthdate = $user->getBirthDateForPuiRequest()) {
             $paymentSource->birth_date = $birthdate;
         }
 
+        /** @var Shop $activeShop */
         $activeShop = Registry::getConfig()->getActiveShop();
         $experienceContext = new ExperienceContext();
-        $experienceContext->brand_name = $activeShop->getFieldData('oxname');
-        $experienceContext->locale = strtolower($payer->address->country_code)
-            . '-'
-            .  strtoupper($payer->address->country_code);
+        $experienceContext->brand_name = $activeShop->getPaypalStringData('oxname');
+        if ($address) {
+            $experienceContext->locale = strtolower($address->country_code)
+                . '-'
+                . strtoupper($address->country_code);
+        } //@TODO maybe add exception here if address null ?
         $experienceContext->customer_service_instructions[] = $activeShop->getFieldData('oxinfoemail');
         $paymentSource->experience_context = $experienceContext;
 
@@ -617,7 +671,7 @@ class OrderRequestFactory
      * @param OrderRequest $request
      * @return void
      */
-    protected function modifyPaymentSourceForVaulting(OrderRequest $request, $useCard = false): void
+    protected function modifyPaymentSourceForVaulting(OrderRequest $request, bool $useCard = false): void
     {
         $config = Registry::getConfig();
         $vaultingService = $this->getVaultingService();
@@ -628,9 +682,10 @@ class OrderRequestFactory
         if (!is_null($selectedVaultPaymentSourceIndex) && $payPalCustomerId = $this->getUsersPayPalCustomerId()) {
             $paymentTokens = $vaultingService->getVaultPaymentTokens($payPalCustomerId);
             //find out which payment token was selected by getting the index via request param
-            $selectedPaymentToken = $paymentTokens["payment_tokens"][$selectedVaultPaymentSourceIndex];
+            $selectedPaymentToken = isset($paymentTokens["payment_tokens"]) ?
+                $paymentTokens["payment_tokens"][$selectedVaultPaymentSourceIndex] : '';
 
-            $request->payment_source =
+            $request->payment_source =new PaymentSource(
                 [
                     "paypal" =>
                         [
@@ -684,18 +739,20 @@ class OrderRequestFactory
                 }
             }
 
-            $request->payment_source = $newPaymentSource;
+            $request->payment_source = new PaymentSource($newPaymentSource);
         }
     }
 
-    private function getVaultingService()
+    private function getVaultingService(): VaultingService
     {
         return Registry::get(ServiceFactory::class)->getVaultingService();
     }
 
-    private function getUsersPayPalCustomerId()
+    private function getUsersPayPalCustomerId(): string
     {
         $config = Registry::getConfig();
-        return $config->getUser()->getFieldData("oscpaypalcustomerid");
+        /** @var User $user */
+        $user = $config->getUser();
+        return $user->getPaypalStringData("oscpaypalcustomerid");
     }
 }
