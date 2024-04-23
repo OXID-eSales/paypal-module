@@ -80,7 +80,7 @@ trait AdminOrderTrait
             Registry::getUtilsView()->addErrorToDisplay('OSC_PAYPAL_CAPTURE_NOT_POSSIBLE_ANYMORE');
         }
 
-        // reset the order to get new informations about successful capture
+        // reset the order to get new information about successful capture
         $this->refreshOrder();
     }
 
@@ -172,8 +172,9 @@ trait AdminOrderTrait
      */
     protected function getPayPalCheckoutOrder(): PayPalOrder
     {
-        /** @phpstan-ignore-next-line */
-        return $this->getOrder()->getPayPalCheckoutOrder();
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Order $order */
+        $order = $this->getOrder();
+        return $order->getPayPalCheckoutOrder();
     }
 
     /**

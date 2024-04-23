@@ -27,6 +27,7 @@
         "oxid-solution-catalysts/paypal-client": "v2.0.14"
     },
     "require-dev": {
+        "phpunit/phpunit": "8.5.38",
         "codeception/module-rest": "^1.4.2",
         "codeception/module-phpbrowser": "^1.0.2",
         "codeception/module-db": "^1.1.0",
