@@ -133,8 +133,7 @@ class Onboarding
         }
 
         /** @var LoggerInterface $logger */
-        /** @phpstan-ignore-next-line */
-        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        $logger = $this->getServiceFromContainer(\OxidSolutionCatalysts\PayPal\Service\Logger::class);
 
         return new ApiOnboardingClient(
             $logger,
