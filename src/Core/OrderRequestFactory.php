@@ -684,14 +684,14 @@ class OrderRequestFactory
             //find out which payment token was selected by getting the index via request param
             $selectedPaymentToken = isset($paymentTokens["payment_tokens"]) ?
                 $paymentTokens["payment_tokens"][$selectedVaultPaymentSourceIndex] : '';
-            /** @phpstan-ignore-next-line */
-            $request->payment_source =
+
+            $request->payment_source =new PaymentSource(
                 [
                     "paypal" =>
                         [
                             "vault_id" => $selectedPaymentToken["id"],
                         ]
-                ];
+                ]);
         } elseif ($user = $config->getUser()) {
             //save during purchase
             $paypalCustomerId = $user->getFieldData("oscpaypalcustomerid");
@@ -738,8 +738,8 @@ class OrderRequestFactory
                     ];
                 }
             }
-            /** @phpstan-ignore-next-line */
-            $request->payment_source = $newPaymentSource;
+
+            $request->payment_source = new PaymentSource($newPaymentSource);
         }
     }
 

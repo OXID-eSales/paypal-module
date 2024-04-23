@@ -509,8 +509,11 @@ class ModuleSettings
             $payment = oxNew(Payment::class);
             $payment->load(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
             // check currency
-            /** @phpstan-ignore-next-line */
-            if ($expressEnabled = (bool)$payment->oxpayments__oxactive->value) {
+
+            if (isset($payment->oxpayments__oxactive)) {
+                $expressEnabled = (bool)$payment->oxpayments__oxactive->value;
+            }
+            if ($expressEnabled) {
                 $actShopCurrency = Registry::getConfig()->getActShopCurrencyObject();
                 $payPalDefinitions = PayPalDefinitions::getPayPalDefinitions();
                 $expressEnabled = in_array(

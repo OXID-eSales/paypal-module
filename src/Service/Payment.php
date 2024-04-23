@@ -265,11 +265,14 @@ class Payment
                         Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                     );
                 }
-
-                /** @var AuthorizationWithAdditionalData $authorization */
-                /** @phpstan-ignore-next-line */
-                $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
-                $authorizationId = $authorization->id;
+                $authorization = null;
+                $authorizationId = null;
+                    /** @var AuthorizationWithAdditionalData $authorization */
+                $paymentCollection = $payPalOrder->purchase_units[0]->payments;
+                if ($paymentCollection) {
+                    $authorization = $paymentCollection->authorizations ? $paymentCollection->authorizations[0] : null;
+                    $authorizationId = $authorization ? $authorization->id : null;
+                }
 
                 // check if we need a reauthorization
                 $timeAuthorizationValidity = time()
@@ -283,14 +286,15 @@ class Payment
                         Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                     );
                 }
-
+                /** @var \OxidSolutionCatalysts\PayPal\Model\Order $order */
+                $oxpaymenttype = $order->getPaypalStringData('oxpaymenttype');
                 //track authorization
                 /** @var \OxidEsales\Eshop\Application\Model\Order $order */
                 $this->trackPayPalOrder(
                     $order->getId(),
                     $checkoutOrderId,
-                    (string)$order->getPaypalStringData('oxpaymenttype'), /** @phpstan-ignore-line */
-                    (string)$authorization->status,
+                    $oxpaymenttype,
+                    $authorization ? (string)$authorization->status : '',
                     (string)$authorizationId,
                     Constants::PAYPAL_TRANSACTION_TYPE_AUTH
                 );
