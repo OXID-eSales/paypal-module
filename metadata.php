@@ -92,6 +92,12 @@ $aModule = [
         '@osc_paypal/admin/oscpaypalorder.tpl' => 'views/smarty/admin/oscpaypalorder.tpl',
         '@osc_paypal/admin/oscpaypalorder_pp.tpl' => 'views/smarty/admin/oscpaypalorder_pp.tpl',
         '@osc_paypal/admin/oscpaypalorder_ppplus.tpl' => 'views/smarty/admin/oscpaypalorder_ppplus.tpl',
+
+        '@osc_paypal/frontend/acdc.tpl' => 'views/smarty/frontend/acdc.tpl',
+        '@osc_paypal/frontend/installment_banners.tpl' => 'views/smarty/frontend/installment_banners.tpl',
+        '@osc_paypal/frontend/paymentbuttons.tpl' => 'views/smarty/frontend/paymentbuttons.tpl',
+        '@osc_paypal/frontend/pui_flow.tpl' => 'views/smarty/frontend/pui_flow.tpl',
+        '@osc_paypal/frontend/select_payment.tpl' => 'views/smarty/frontend/select_payment.tpl',
     ],
     'blocks'    => [
         [
