@@ -93,11 +93,6 @@ class_alias(
 );
 
 class_alias(
-    \OxidEsales\EshopCommunity\Application\Controller\OrderController::class,
-    \OxidEsales\EshopCommunity\Application\Controller\OrderController_parent::class
-);
-
-class_alias(
     \OxidEsales\EshopCommunity\Application\Model\Article::class,
     \OxidEsales\EshopCommunity\Application\Model\Article_parent::class,
 );
