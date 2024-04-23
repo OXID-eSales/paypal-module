@@ -7,6 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Model;
 
+use OxidEsales\Eshop\Core\Field;
 use OxidSolutionCatalysts\PayPal\Traits\DataGetter;
 
 /**

@@ -58,7 +58,8 @@ class Events
         foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
             /** @var \OxidEsales\Eshop\Application\Model\Payment $paymentMethod */
             $paymentMethod = oxNew(EshopModelPayment::class);
-            if (isset($paymentMethod->oxpayments__oxactive) &&
+            if (
+                isset($paymentMethod->oxpayments__oxactive) &&
                 $paymentMethod->load($paymentId) &&
                 (bool)$paymentMethod->oxpayments__oxactive->value
             ) {
