@@ -1,60 +1,212 @@
 <?xml version="1.0"?>
 <phpmd-baseline>
   <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Component/UserComponent.php"/>
-  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Component/UserComponent.php"/>
-  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Controller/Admin/ConfigController.php"/>
-  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Controller/Admin/DeliverySetMain.php"/>
-  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Controller/Admin/DeliverySetMain.php"/>
-  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Controller/Admin/OrderArticle.php"/>
-  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Controller/Admin/OrderList.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Component/UserComponent.php" method="loginPayPalCustomer"/>
   <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Controller/Admin/OrderMain.php"/>
-  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Controller/Admin/OrderOverview.php" method="render"/>
-  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="src/Controller/Admin/OrderOverview.php" method="render"/>
-  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Controller/Admin/OrderOverview.php"/>
-  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Controller/AmazonCheckoutController.php"/>
-  <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Controller/DispatchController.php"/>
-  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Controller/DispatchController.php" method="init"/>
-  <violation rule="PHPMD\Rule\Design\LongMethod" file="src/Controller/DispatchController.php" method="init"/>
-  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Controller/DispatchController.php"/>
-  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Controller/DispatchController.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Controller/Admin/OrderMain.php"/>
+  <violation rule="PHPMD\Rule\Design\WeightedMethodCount" file="src/Controller/Admin/PayPalConfigController.php"/>
+  <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Controller/Admin/PayPalConfigController.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="src/Controller/Admin/PayPalConfigController.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Controller/Admin/PayPalConfigController.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Controller/Admin/PayPalConfigController.php" method="handleSpecialFields"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="src/Controller/Admin/PayPalConfigController.php" method="handleSpecialFields"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Controller/Admin/PayPalConfigController.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Controller/Admin/PayPalConfigController.php" method="returnFromSignup"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Controller/Admin/PayPalConfigController.php"/>
+  <violation rule="PHPMD\Rule\Design\WeightedMethodCount" file="src/Controller/Admin/PayPalOrderController.php"/>
+  <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Controller/Admin/PayPalOrderController.php"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Controller/Admin/PayPalOrderController.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Controller/Admin/PayPalOrderController.php" method="render"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Controller/Admin/PayPalOrderController.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Controller/Admin/PayPalOrderController.php"/>
+  <violation rule="PHPMD\Rule\Design\EmptyCatchBlock" file="src/Controller/Admin/PayPalOrderController.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="src/Controller/Admin/PayPalOrderController.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Controller/Admin/PayPalOrderController.php" method="getPayPalHistory"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="src/Controller/Admin/PayPalOrderController.php" method="getPayPalHistory"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Controller/Admin/PayPalOrderController.php" method="getPayPalPlusRemainingRefundsCount"/>
   <violation rule="PHPMD\Rule\Design\WeightedMethodCount" file="src/Controller/OrderController.php"/>
   <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Controller/OrderController.php"/>
-  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Controller/OrderController.php"/>
   <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Controller/OrderController.php"/>
-  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Controller/OrderController.php" method="execute"/>
-  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Controller/OrderController.php" method="completeAmazonPaymentExpress"/>
-  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Controller/OrderController.php" method="setAmazonPayAsPaymentMethod"/>
-  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Controller/UserController.php"/>
-  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/AmazonClient.php"/>
-  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/AmazonInputValidator.php"/>
-  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="src/Core/AmazonService.php"/>
-  <violation rule="PHPMD\Rule\Design\WeightedMethodCount" file="src/Core/AmazonService.php"/>
-  <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Core/AmazonService.php"/>
-  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/AmazonService.php"/>
-  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Core/AmazonService.php" method="checkOrderState"/>
-  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="src/Core/AmazonService.php" method="checkOrderState"/>
-  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Core/AmazonService.php"/>
-  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Core/Config.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Controller/OrderController.php" method="render"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="src/Controller/OrderController.php" method="render"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Controller/OrderController.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Controller/OrderController.php" method="createAcdcOrder"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Controller/OrderController.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Controller/OrderController.php" method="finalizepaypalsession"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Controller/OrderController.php" method="getPayPalPuiFraudnetCmId"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Controller/OrderController.php" method="_getNextStep"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="src/Controller/OrderController.php" method="_getNextStep"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Controller/OrderController.php" method="_getNextStep"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Controller/PaymentController.php" method="render"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Controller/PaymentController.php" method="render"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Controller/PaymentController.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Controller/PaymentController.php" method="getPaymentList"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Controller/PaymentController.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Controller/PaymentController.php" method="validatePayment"/>
+  <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Controller/ProxyController.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Controller/ProxyController.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Controller/ProxyController.php" method="approveOrder"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="src/Controller/ProxyController.php" method="approveOrder"/>
+  <violation rule="PHPMD\Rule\Design\ExitExpression" file="src/Controller/ProxyController.php"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Controller/ProxyController.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Controller/ProxyController.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Controller/ProxyController.php" method="getDeliveryCountryId"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Controller/ProxyController.php" method="getDeliveryCountryId"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Controller/VaultingTokenController.php"/>
+  <violation rule="PHPMD\Rule\Naming\ShortVariable" file="src/Controller/VaultingTokenController.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Controller/WebhookController.php"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Controller/WebhookController.php"/>
+  <violation rule="PHPMD\Rule\Design\ExitExpression" file="src/Controller/WebhookController.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="src/Core/Api/VaultingService.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\UndefinedVariable" file="src/Core/Api/VaultingService.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Core/Api/VaultingService.php" method="createVaultSetupToken"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Core/Api/VaultingService.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/Api/VaultingService.php"/>
+  <violation rule="PHPMD\Rule\ExcessivePublicCount" file="src/Core/Config.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="src/Core/Config.php"/>
+  <violation rule="PHPMD\Rule\Design\WeightedMethodCount" file="src/Core/Config.php"/>
   <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/Config.php"/>
-  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Core/Events.php"/>
-  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/Events.php"/>
-  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Core/Helper/Address.php"/>
-  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Core/Helper/Address.php" method="parseAddress"/>
-  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/Helper/Address.php"/>
-  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/Logger.php"/>
-  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Core/Logger.php" method="logMessage"/>
-  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="src/Core/Logger.php" method="logMessage"/>
-  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Core/Logger.php" method="resolveLogContent"/>
-  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="src/Core/Logger.php" method="resolveLogContent"/>
-  <violation rule="PHPMD\Rule\Design\TooManyFields" file="src/Core/Payload.php"/>
-  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Core/Payload.php"/>
-  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Core/Payload.php" method="getData"/>
-  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="src/Core/Payload.php" method="getData"/>
-  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/Payload.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/ConfirmOrderRequestFactory.php"/>
+  <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Core/Events/Events.php"/>
+  <violation rule="PHPMD\Rule\UnusedLocalVariable" file="src/Core/Events/Events.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/Events/Events.php"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Core/Events/Events.php"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Core/InputValidator.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/InputValidator.php"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Core/LegacyOeppModuleDetails.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/Onboarding/Onboarding.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="src/Core/Onboarding/Onboarding.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Core/Onboarding/Onboarding.php" method="saveEligibility"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Core/Onboarding/Onboarding.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/Onboarding/Webhook.php"/>
+  <violation rule="PHPMD\Rule\UnusedLocalVariable" file="src/Core/Onboarding/Webhook.php"/>
+  <violation rule="PHPMD\Rule\Design\WeightedMethodCount" file="src/Core/OrderRequestFactory.php"/>
+  <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Core/OrderRequestFactory.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Core/OrderRequestFactory.php" method="getRequest"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="src/Core/OrderRequestFactory.php" method="getRequest"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Core/OrderRequestFactory.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="src/Core/OrderRequestFactory.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/OrderRequestFactory.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Core/OrderRequestFactory.php" method="getItems"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="src/Core/OrderRequestFactory.php" method="getItems"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="src/Core/OrderRequestFactory.php" method="getItems"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Core/OrderRequestFactory.php" method="getItems"/>
+  <violation rule="PHPMD\Rule\UnusedLocalVariable" file="src/Core/OrderRequestFactory.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Core/OrderRequestFactory.php"/>
+  <violation rule="PHPMD\Rule\Design\EmptyCatchBlock" file="src/Core/OrderRequestFactory.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Core/OrderRequestFactory.php" method="getPuiPaymentSource"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Core/OrderRequestFactory.php" method="modifyPaymentSourceForVaulting"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="src/Core/PartnerConfig.php"/>
+  <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Core/PatchRequestFactory.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\MissingImport" file="src/Core/PatchRequestFactory.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/PatchRequestFactory.php"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Core/PayPalRequestAmountFactory.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Core/PayPalRequestAmountFactory.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/PayPalRequestAmountFactory.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/PayPalSession.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Core/ShopControl.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="src/Core/ShopControl.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/Utils/PayPalAddressResponseToOxidAddress.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Core/Utils/PriceToMoney.php"/>
+  <violation rule="PHPMD\Rule\ExcessivePublicCount" file="src/Core/ViewConfig.php"/>
+  <violation rule="PHPMD\Rule\Design\WeightedMethodCount" file="src/Core/ViewConfig.php"/>
   <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Core/ViewConfig.php"/>
   <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/ViewConfig.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Core/ViewConfig.php" method="getPayPalJsSdkUrl"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Core/ViewConfig.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="src/Core/ViewConfig.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Core/ViewConfig.php" method="getBasePayPalJsSdkUrl"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Core/ViewConfig.php" method="getVaultPaymentTokens"/>
+  <violation rule="PHPMD\Rule\CleanCode\UndefinedVariable" file="src/Core/ViewConfig.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Core/Webhook/EventDispatcher.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/Webhook/EventDispatcher.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/Webhook/Handler/PaymentCaptureRefundedHandler.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Core/Webhook/Handler/WebhookHandlerBase.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/Webhook/Handler/WebhookHandlerBase.php"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="src/Core/Webhook/Handler/WebhookHandlerBase.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Core/Webhook/Handler/WebhookHandlerBase.php" method="updateStatus"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Core/Webhook/RequestHandler.php"/>
   <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Model/Basket.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="src/Model/Basket.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Model/Basket.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\MissingImport" file="src/Model/Category.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="src/Model/Order.php"/>
+  <violation rule="PHPMD\Rule\Design\WeightedMethodCount" file="src/Model/Order.php"/>
+  <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Model/Order.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Model/Order.php" method="finalizeOrderAfterExternalPayment"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="src/Model/Order.php" method="finalizeOrderAfterExternalPayment"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="src/Model/Order.php"/>
   <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Model/Order.php"/>
-  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Model/Order.php" method="updateAmazonPayOrderStatus"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Model/Order.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Model/Order.php" method="_executePayment"/>
+  <violation rule="PHPMD\Rule\UnusedLocalVariable" file="src/Model/Order.php"/>
+  <violation rule="PHPMD\Rule\Naming\ShortVariable" file="src/Model/Order.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Model/Order.php" method="getPayPalOrderIdForOxOrderId"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Model/Order.php" method="finalizeOrder"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="src/Model/Order.php" method="finalizeOrder"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Model/Order.php"/>
+  <violation rule="PHPMD\Rule\Naming\ShortVariable" file="src/Model/PayPalOrder.php"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Model/PayPalPlusOrder.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Model/PayPalPlusOrder.php"/>
+  <violation rule="PHPMD\Rule\Naming\ShortVariable" file="src/Model/PayPalPlusOrder.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Model/PayPalPlusOrder.php"/>
+  <violation rule="PHPMD\Rule\Naming\ShortVariable" file="src/Model/PayPalPlusPui.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Model/PayPalPlusPui.php"/>
+  <violation rule="PHPMD\Rule\Naming\ShortVariable" file="src/Model/PayPalPlusRefund.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Model/PayPalPlusRefund.php"/>
+  <violation rule="PHPMD\Rule\Naming\ShortVariable" file="src/Model/PayPalPlusRefundList.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Model/PayPalPlusRefundList.php"/>
+  <violation rule="PHPMD\Rule\Naming\ShortVariable" file="src/Model/PayPalSoapOrder.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Model/PayPalSoapOrder.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Model/Payment.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Model/PaymentGateway.php" method="executePayment"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Model/PaymentGateway.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Model/PaymentGateway.php"/>
   <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Model/User.php"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Model/User.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Model/User.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="src/Service/Logger.php"/>
+  <violation rule="PHPMD\Rule\ExcessivePublicCount" file="src/Service/ModuleSettings.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyMethods" file="src/Service/ModuleSettings.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="src/Service/ModuleSettings.php"/>
+  <violation rule="PHPMD\Rule\Design\WeightedMethodCount" file="src/Service/ModuleSettings.php"/>
+  <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Service/ModuleSettings.php"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Service/ModuleSettings.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Service/ModuleSettings.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Service/ModuleSettings.php"/>
+  <violation rule="PHPMD\Rule\Naming\BooleanGetMethodName" file="src/Service/ModuleSettings.php" method="getLegacySettingsTransferStatus"/>
+  <violation rule="PHPMD\Rule\UnusedLocalVariable" file="src/Service/OrderRepository.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Service/OrderRepository.php"/>
+  <violation rule="PHPMD\Rule\Naming\ShortVariable" file="src/Service/OrderRepository.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\MissingImport" file="src/Service/OrderRepository.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Service/OrderRepository.php" method="getId"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="src/Service/OrderRepository.php" method="getId"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Service/OrderRepository.php"/>
+  <violation rule="PHPMD\Rule\Design\TooManyPublicMethods" file="src/Service/Payment.php"/>
+  <violation rule="PHPMD\Rule\Design\WeightedMethodCount" file="src/Service/Payment.php"/>
+  <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Service/Payment.php"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Service/Payment.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Service/Payment.php"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="src/Service/Payment.php" method="doCreatePayPalOrder"/>
+  <violation rule="PHPMD\Rule\UnusedFormalParameter" file="src/Service/Payment.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="src/Service/Payment.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Service/Payment.php" method="doCapturePayPalOrder"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="src/Service/Payment.php" method="doCapturePayPalOrder"/>
+  <violation rule="PHPMD\Rule\Design\LongMethod" file="src/Service/Payment.php" method="doCapturePayPalOrder"/>
+  <violation rule="PHPMD\Rule\CleanCode\IfStatementAssignment" file="src/Service/Payment.php" method="doCapturePayPalOrder"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Service/Payment.php"/>
+  <violation rule="PHPMD\Rule\Naming\ShortVariable" file="src/Service/Payment.php"/>
+  <violation rule="PHPMD\Rule\CyclomaticComplexity" file="src/Service/Payment.php" method="doExecuteStandardPayment"/>
+  <violation rule="PHPMD\Rule\Design\NpathComplexity" file="src/Service/Payment.php" method="doExecuteStandardPayment"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Service/SCAValidator.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Service/StaticContent.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="src/Service/UserRepository.php"/>
+  <violation rule="PHPMD\Rule\Naming\ShortVariable" file="src/Service/UserRepository.php"/>
+  <violation rule="PHPMD\Rule\Naming\LongVariable" file="src/Traits/AdminOrderTrait.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\ElseExpression" file="src/Traits/AdminOrderTrait.php"/>
+  <violation rule="PHPMD\Rule\UnusedLocalVariable" file="src/Traits/AdminOrderTrait.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="src/Traits/AdminOrderTrait.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Traits/JsonTrait.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="src/Traits/RequestDataGetter.php"/>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Traits/RequestDataGetter.php"/>
 </phpmd-baseline>
