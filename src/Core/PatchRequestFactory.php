@@ -83,8 +83,10 @@ class PatchRequestFactory
 
             $address->admin_area_1 = $state->getPaypalStringData('oxtitle');
             $address->admin_area_2 = $deliveryAddress->getPaypalStringData('oxcity');
-            if (isset($country->oxcountry__oxisoalpha2)
-                && property_exists($country->oxcountry__oxisoalpha2, 'value')) {
+            if (
+                isset($country->oxcountry__oxisoalpha2)
+                && property_exists($country->oxcountry__oxisoalpha2, 'value')
+            ) {
                 $address->country_code = $country->oxcountry__oxisoalpha2->value;
             }
             $address->postal_code = $deliveryAddress->getPaypalStringData('oxzip');
