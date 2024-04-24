@@ -17,6 +17,7 @@ use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
@@ -29,8 +30,11 @@ use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
 
 /**
  * Server side interface for PayPal smart buttons.
@@ -44,7 +48,7 @@ class ProxyController extends FrontendController
     {
         if (PayPalSession::isPayPalExpressOrderActive()) {
             //TODO: improve
-            $this->outputJson(['ERROR' => 'PayPal session already started.']);
+          //  $this->outputJson(['ERROR' => 'PayPal session already started.']);
         }
 
         $this->addToBasket();

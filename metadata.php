@@ -103,6 +103,7 @@ $aModule = [
         'modules/osc/paypal/pui_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/pui.tpl',
         'modules/osc/paypal/pui_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/pui.tpl',
         'modules/osc/paypal/pui_fraudnet.tpl' => 'osc/paypal/views/tpl/shared/page/checkout/pui_fraudnet.tpl',
+        'modules/osc/paypal/apple_pay.tpl' => 'osc/paypal/views/tpl/shared/page/checkout/apple_pay.tpl',
         'modules/osc/paypal/shipping_and_payment_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/shipping_and_payment.tpl',
         'modules/osc/paypal/shipping_and_payment_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/shipping_and_payment.tpl',
         'modules/osc/paypal/shipping_and_payment_paypal_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/shipping_and_payment_paypal.tpl',
@@ -129,6 +130,8 @@ $aModule = [
 
         // PSPAYPAL-491 Installment banners
         'modules/osc/paypal/installment_banners.tpl' => 'osc/paypal/views/tpl/shared/installment_banners.tpl',
+
+        'modules/osc/paypal/applepay.tpl' => 'osc/paypal/views/tpl/shared/applepay.tpl',
 
         //PSPAYPAL-680 Vaulting
         'modules/osc/paypal/account_vaulting_paypal.tpl'    => 'osc/paypal/views/tpl/shared/page/account/account_vaulting_paypal.tpl',
