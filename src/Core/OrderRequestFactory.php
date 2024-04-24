@@ -685,13 +685,14 @@ class OrderRequestFactory
             $selectedPaymentToken = isset($paymentTokens["payment_tokens"]) ?
                 $paymentTokens["payment_tokens"][$selectedVaultPaymentSourceIndex] : '';
 
-            $request->payment_source =new PaymentSource(
+            $request->payment_source = new PaymentSource(
                 [
                     "paypal" =>
                         [
                             "vault_id" => $selectedPaymentToken["id"],
                         ]
-                ]);
+                ]
+            );
         } elseif ($user = $config->getUser()) {
             //save during purchase
             $paypalCustomerId = $user->getFieldData("oscpaypalcustomerid");
