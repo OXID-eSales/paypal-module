@@ -691,7 +691,8 @@ class OrderRequestFactory
                         [
                             "vault_id" => $selectedPaymentToken["id"],
                         ]
-                ];
+                ]
+            );
         } elseif ($user = $config->getUser()) {
             //save during purchase
             $paypalCustomerId = $user->getFieldData("oscpaypalcustomerid");
