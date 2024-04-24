@@ -95,13 +95,17 @@
   }
 
   async function onGooglePayLoaded() {
-      console.log('onGooglePayLoaded triggered');
 
       const paymentsClient = getGooglePaymentsClient();
      const { allowedPaymentMethods } = await getGooglePayConfig();
              paymentsClient
             .isReadyToPay(getGoogleIsReadyToPayRequest(allowedPaymentMethods))
             .then(function (response) {
+                [{if $config->isSandbox() }]
+                console.log('getGoogleIsReadyToPayResponse debug')
+                console.log(response)
+                console.log('getGoogleIsReadyToPayResponse debugend')
+                [{/if}]
                if (response.result) {
                   addGooglePayButton();
                }
@@ -143,6 +147,11 @@
      }
 
      const paymentsClient = getGooglePaymentsClient();
+      [{if $config->isSandbox() }]
+      console.log('paymentDataRequest debug')
+      console.log(paymentDataRequest)
+      console.log('paymentDataRequest debugend')
+      [{/if}]
      paymentsClient.loadPaymentData(paymentDataRequest)
      .then(function() {
       //   location.replace("[{$sSelfLink|cat:"cl=order&fnc=execute"}]");
@@ -167,13 +176,17 @@
             orderId: id,
             paymentMethodData: paymentData.paymentMethodData,
          });
-         console.log('--------')
+         [{if $config->isSandbox() }]
+         console.log('confirmOrderResponse debug')
          console.log(confirmOrderResponse)
-         console.log('--------')
+         console.log('confirmOrderResponse debugend')
+         [{/if}]
          if (confirmOrderResponse.status === "APPROVED") {
-             console.log('approved');
-             console.log(paymentData);
-
+             [{if $config->isSandbox() }]
+             console.log('approved paymentData debug')
+             console.log(paymentData)
+             console.log('approved paymentData debugend')
+             [{/if}]
              function onApprove(confirmOrderResponse, actions) {
                  // Create a new form dynamically
                  var form = document.createElement("form");
@@ -222,9 +235,11 @@
                      body: captureData }).then(function(res) {
                      return res.json();
                  }).then(function(data) {
-                     console.log('-----DATA------')
+                     [{if $config->isSandbox() }]
+                     console.log('onCreated captureData debug')
                      console.log(data)
-                     console.log('-----DATA END------')
+                     console.log('onCreated captureData debugend')
+                     [{/if}]
                      var errorDetail = Array.isArray(data.details) && data.details[0];
                      var goNext = Array.isArray(data.location) && data.location[0];
 
