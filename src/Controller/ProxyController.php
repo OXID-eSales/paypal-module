@@ -16,6 +16,7 @@ use OxidEsales\Eshop\Core\Exception\ArticleInputException;
 use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Exception\StandardException;
+use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
@@ -271,4 +272,54 @@ class ProxyController extends FrontendController
             $paymentId :
             $defaultPayPalPaymentId;
     }
+
+    public function getPaymentRequestLines() {
+
+        try {
+            $basket = Registry::getSession()->getBasket();
+            if ($basket->getItemsCount() === 0) {
+                throw new Exception('No Article in the Basket');
+            }
+
+            $deliveryCost = $basket->getDeliveryCost();
+            if (!$deliveryCost) {
+                throw new Exception('Delivery cost calculation failed');
+            }
+            $deliveryBruttoPrice = $deliveryCost->getBruttoPrice();
+
+            $sVat = 0.0;
+            foreach ($basket->getProductVats(false) as $VATitem) {
+                $sVat += $VATitem;
+            }
+
+            $paymentRequest = [
+                'total' => [
+                    'label' => Registry::getConfig()->getActiveShop()->getFieldData('oxname'),
+                    'amount' => (float)$basket->getBruttoSum(),
+                    'type' => 'final'
+                ],
+                'lineItems' => [
+                    [
+                        'label' => 'Subtotal',
+                        'amount' => number_format((double) $basket->getBruttoSum(), 2, '.', ''),
+                        'type' => 'final'
+                    ],
+                    [
+                        'label' => 'Tax',
+                        'amount' => number_format((double) $sVat, 2, '.', ''),
+                        'type' => 'final'
+                    ],
+                    [
+                        'label' => 'Shipping',
+                        'amount' => number_format($deliveryBruttoPrice, 2, '.', ''),
+                        'type' => 'final'
+                    ]
+                ]
+            ];
+            $this->outputJson($paymentRequest);
+        } catch (Exception $e) {
+            $this->outputJson(['ERROR' => $e->getMessage()]);
+        }
+    }
+
 }

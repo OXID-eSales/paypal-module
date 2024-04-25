@@ -11,10 +11,7 @@
 [{if $phpstorm}]<script>[{/if}]
     [{capture name="detailsApplePayScript"}]
 
-
-
     // Helper / Utility functions
-    let current_customer_id;
     let order_id;
     let global_apple_pay_config;
     let current_ap_session;
@@ -38,13 +35,6 @@
         //document.querySelector("#card-form").querySelector("input[type='submit']").value = "Purchase";
     }
 
-    const is_user_logged_in = () => {
-        return new Promise((resolve) => {
-            customer_id = localStorage.getItem("logged_in_user_id") || "oxdefaultadmin";
-            resolve();
-        });
-    }
-
 
     let handle_close = (event) => {
         event.target.closest(".ms-alert").remove();
@@ -56,10 +46,6 @@
     }
     document.addEventListener("click", handle_click);
 
-    const paypal_sdk_url = "https://www.paypal.com/sdk/js";
-    const client_id = "REPLACE_WITH_YOUR_CLIENT_ID";
-    const currency = "USD";
-    const intent = "capture";
 
     let display_error_alert = () => {
         window.scrollTo({
@@ -75,7 +61,7 @@
         console.log(order_details); //https://developer.paypal.com/docs/api/orders/v2/#orders_capture!c=201&path=create_time&t=response
         let intent_object = intent === "authorize" ? "authorizations" : "captures";
         //Custom Successful Message
-        document.getElementById("alert").innerHTML = `<div class=\'ms-alert ms-action\'>Thank you ` + (order_details?.payer?.name?.given_name || ``) + ` ` + (order_details?.payer?.name?.surname || ``) + ` for your payment of ` + order_details.purchase_units[0].payments[intent_object][0].amount.value + ` ` + order_details.purchase_units[0].payments[intent_object][0].amount.currency_code + `!</div>`;
+        document.getElementById("alert").innerHTML = `<div class='ms-alert ms-action'>Thank you ${order_details?.payer?.name?.given_name || ''} ${order_details?.payer?.name?.surname || ''} for your payment of ${order_details.purchase_units[0].payments[intent_object][0].amount.value} ${order_details.purchase_units[0].payments[intent_object][0].amount.currency_code}!</div>`;
 
         //Close out the PayPal buttons that were rendered
         paypal_buttons.close();
@@ -83,171 +69,6 @@
         document.getElementById("applepay-container").classList.add("hide");
     }
 
-    //PayPal Code
-    is_user_logged_in()
-
-        .then(() => {
-            //Handle loading spinner
-            //document.getElementById("loading").classList.add("hide");
-            //document.getElementById("content").classList.remove("hide");
-            /*let paypal_buttons = paypal.Buttons({ // https://developer.paypal.com/sdk/js/reference
-                onClick: (data) => { // https://developer.paypal.com/sdk/js/reference/#link-oninitonclick
-                    //Custom JS here
-                },
-                style: { //https://developer.paypal.com/sdk/js/reference/#link-style
-                    shape: 'rect',
-                    color: 'gold',
-                    layout: 'vertical',
-                    label: 'paypal'
-                },
-
-                createOrder: function(data, actions) { //https://developer.paypal.com/docs/api/orders/v2/#orders_create
-                    return fetch("/create_order", {
-                        method: "post", headers: { "Content-Type": "application/json; charset=utf-8" },
-                        body: JSON.stringify({ "intent": intent })
-                    })
-                        .then((response) => response.json())
-                        .then((order) => { return order.id; });
-                },
-
-                onApprove: function(data, actions) {
-                    order_id = data.orderID;
-                    console.log(data);
-                    return fetch("/complete_order", {
-                        method: "post", headers: { "Content-Type": "application/json; charset=utf-8" },
-                        body: JSON.stringify({
-                            "intent": intent,
-                            "order_id": order_id
-                        })
-                    })
-                        .then((response) => response.json())
-                        .then((order_details) => {
-                            let intent_object = intent === "authorize" ? "authorizations" : "captures";
-                            if (order_details.purchase_units[0].payments[intent_object][0].status === "COMPLETED") {
-                                display_success_message({"order_details": order_details, "paypal_buttons": paypal_buttons});
-                            } else {
-                                console.log(order_details);
-                                throw error("payment was not completed, please view console for more information");
-                            }
-                        })
-                        .catch((error) => {
-                            console.log(error);
-                            display_error_alert()
-                        });
-                },
-
-                onCancel: function (data) {
-                    document.getElementById("alerts").innerHTML = `<div class="ms-alert ms-action2 ms-small"><span class="ms-close"></span><p>Order cancelled!</p>  </div>`;
-                },
-
-                onError: function(err) {
-                    console.log(err);
-                }
-            });
-            paypal_buttons.render('#payment_options');
-            //Hosted Fields
-            if (paypal.HostedFields.isEligible()) {
-                // Renders card fields
-                paypal_hosted_fields = paypal.HostedFields.render({
-                    // Call your server to set up the transaction
-                    createOrder: () => {
-                        return fetch("/create_order", {
-                            method: "post", headers: { "Content-Type": "application/json; charset=utf-8" },
-                            body: JSON.stringify({ "intent": intent })
-                        })
-                            .then((response) => response.json())
-                            .then((order) => { order_id = order.id; return order.id; });
-                    },
-                    styles: {
-                        '.valid': {
-                            color: 'green'
-                        },
-                        '.invalid': {
-                            color: 'red'
-                        },
-                        'input': {
-                            'font-size': '16pt',
-                            'color': '#ffffff'
-                        },
-                    },
-                    fields: {
-                        number: {
-                            selector: "#card-number",
-                            placeholder: "4111 1111 1111 1111"
-                        },
-                        cvv: {
-                            selector: "#cvv",
-                            placeholder: "123"
-                        },
-                        expirationDate: {
-                            selector: "#expiration-date",
-                            placeholder: "MM/YY"
-                        }
-                    }
-                }).then((card_fields) => {
-                    document.querySelector("#card-form").addEventListener("submit", (event) => {
-                        event.preventDefault();
-                        document.querySelector("#card-form").querySelector("input[type='submit']").setAttribute("disabled", "");
-                        document.querySelector("#card-form").querySelector("input[type='submit']").value = "Loading...";
-                        card_fields
-                            .submit(
-                                //Customer Data BEGIN
-                                //This wasn't part of the video guide originally, but I've included it here
-                                //So you can reference how you could send customer data, which may
-                                //be a requirement of your project to pass this info to card issuers
-                                {
-                                    // Cardholder's first and last name
-                                    cardholderName: "Raúl Uriarte, Jr.",
-                                    // Billing Address
-                                    billingAddress: {
-                                        // Street address, line 1
-                                        streetAddress: "123 Springfield Rd",
-                                        // Street address, line 2 (Ex: Unit, Apartment, etc.)
-                                        extendedAddress: "",
-                                        // State
-                                        region: "AZ",
-                                        // City
-                                        locality: "CHANDLER",
-                                        // Postal Code
-                                        postalCode: "85224",
-                                        // Country Code
-                                        countryCodeAlpha2: "US",
-                                    },
-                                }
-                                //Customer Data END
-                            )
-                            .then(() => {
-                                return fetch("/complete_order", {
-                                    method: "post", headers: { "Content-Type": "application/json; charset=utf-8" },
-                                    body: JSON.stringify({
-                                        "intent": intent,
-                                        "order_id": order_id,
-                                        "email": document.getElementById("email").value
-                                    })
-                                })
-                                    .then((response) => response.json())
-                                    .then((order_details) => {
-                                        let intent_object = intent === "authorize" ? "authorizations" : "captures";
-                                        if (order_details.purchase_units[0].payments[intent_object][0].status === "COMPLETED") {
-                                            display_success_message({"order_details": order_details, "paypal_buttons": paypal_buttons});
-                                        } else {
-                                            console.log(order_details);
-                                            throw error("payment was not completed, please view console for more information");
-                                        }
-                                    })
-                                    .catch((error) => {
-                                        console.log(error);
-                                        display_error_alert();
-                                    });
-                            })
-                            .catch((err) => {
-                                console.log(err);
-                                reset_purchase_button();
-                                display_error_alert();
-                            });
-                    });
-                });
-            }*/
             //ApplePay Code
             let check_applepay = async () => {
                 return new Promise((resolve, reject) => {
@@ -286,7 +107,7 @@
                 .catch((error) => {
                     console.error(error);
                 });
-            let ap_payment_authed = (event) => {
+            let handleApplePayPaymentAuthorized = (event) => {
                 applepay_payment_event = event.payment;
                 createOrderUrl = "[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]"
                 fetch(createOrderUrl, {
@@ -350,7 +171,7 @@
                 applepay.validateMerchant({
                     validationUrl: event.validationURL,
                     // function to get oxid eshop-name
-                    displayName: "sss"
+                    displayName: ""
                 })
                     .then(validateResult => {
                         current_ap_session.completeMerchantValidation(validateResult.merchantSession);
@@ -360,7 +181,10 @@
                         current_ap_session.abort();
                     });
             };
-            let handle_applepay_clicked = (event) => {
+            let handle_applepay_clicked = async (event) => {
+                let url = "[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]";
+                const response = await fetch(url);
+                const payment_request_line = await response.json();
                 const payment_request = {
                     countryCode: global_apple_pay_config.countryCode,
                     merchantCapabilities: global_apple_pay_config.merchantCapabilities,
@@ -368,15 +192,15 @@
                     currencyCode: global_apple_pay_config.currencyCode,
                     requiredShippingContactFields: ["name", "phone", "email", "postalAddress"],
                     requiredBillingContactFields: ["postalAddress"],
-                    total: {
-                        label: "My Demo Company",
-                        type: "final",
-                        amount: 100.0,
-                    }
+                    ... payment_request_line
                 };
+                console.log('REQUEST LINE');
+                console.log(payment_request_line);
+                console.log('PAYMENT REQUEST');
+                console.log(payment_request);
                 current_ap_session = new ApplePaySession(4, payment_request);
                 current_ap_session.onvalidatemerchant = ap_validate;
-                current_ap_session.onpaymentauthorized = ap_payment_authed;
+                current_ap_session.onpaymentauthorized = handleApplePayPaymentAuthorized;
                 current_ap_session.begin()
             };
         })
