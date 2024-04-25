@@ -9,7 +9,7 @@
     }
 </style>
 [{capture name="detailsGooglePayScript"}]
-    [{if false}]<script>[{/if}]
+[{if false}]<script>[{/if}]
     document.addEventListener("DOMContentLoaded", (event) => {
         if (google && paypal.Googlepay) {
             onGooglePayLoaded().catch(console.log);
@@ -70,9 +70,11 @@
         return new Promise(function (resolve, reject) {
             processPayment(paymentData)
                 .then(function (data) {
-                    console.log('onPaymentAuthorized')
-                    console.log(data)
-                    console.log('onPaymentAuthorized End')
+                    [{if $oPPconfig->isSandbox()}]
+                        console.log('onPaymentAuthorized');
+                        console.log(data);
+                        console.log('onPaymentAuthorized End');
+                    [{/if}]
 
                     resolve({transactionState: "SUCCESS"});
                 })
@@ -221,7 +223,9 @@
                         }).then(function (res) {
                             return res.json();
                         }).then(function (data) {
-                            console.log(data);
+                            [{if $oPPconfig->isSandbox()}]
+                                console.log(data);
+                            [{/if}]
                             if (data.status === "ERROR") {
                                 location.reload();
                             } else if (data.id && data.status === "APPROVED") {
@@ -250,7 +254,9 @@
                         var goNext = Array.isArray(data.location) && data.location[0];
 
                         window.location.href = '[{$sSelfLink}]' + goNext;
-                        console.log(data)
+                        [{if $oPPconfig->isSandbox()}]
+                            console.log(data);
+                        [{/if}]
                         if (data.status === "ERROR") {
                             location.reload();
                         } else if (data.id && data.status === "APPROVED") {
