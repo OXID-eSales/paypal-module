@@ -1,3 +1,3 @@
 [{if !$oView->paidWithPayPal()}]
-    [{$marty.block.parent}]
+    [{$smarty.block.parent}]
 [{/if}]
