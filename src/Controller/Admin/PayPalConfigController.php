@@ -266,7 +266,9 @@ class PayPalConfigController extends AdminController
         if (!isset($conf['oscPayPalSetVaulting'])) {
             $conf['oscPayPalSetVaulting'] = false;
         }
-
+        if (!isset($conf['oscPayPalUseGooglePayAddress'])) {
+            $conf['oscPayPalUseGooglePayAddress'] = false;
+        }
         return $conf;
     }
 

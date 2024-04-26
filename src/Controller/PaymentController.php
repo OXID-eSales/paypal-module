@@ -69,6 +69,16 @@ class PaymentController extends PaymentController_parent
         return parent::render();
     }
 
+    public function getPayPalPuiFraudnetCmId(): string
+    {
+
+        if (!($cmId = \OxidSolutionCatalysts\PayPal\Core\PayPalSession::getPayPalPuiCmId())) {
+            $cmId = Registry::getUtilsObject()->generateUId();
+            \OxidSolutionCatalysts\PayPal\Core\PayPalSession::storePayPalPuiCmId($cmId);
+        }
+        return $cmId;
+    }
+
     /**
      * Template variable getter. Returns paymentlist
      *

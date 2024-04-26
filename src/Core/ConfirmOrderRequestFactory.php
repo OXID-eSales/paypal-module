@@ -47,7 +47,7 @@ class ConfirmOrderRequestFactory
         return $request;
     }
 
-    protected function getPaymentSource(Basket $basket, string $requestName): PaymentSource
+    protected function getPaymentSource(Basket $basket, string $requestName)
     {
         $user = $basket->getBasketUser();
 
@@ -63,13 +63,27 @@ class ConfirmOrderRequestFactory
         if ($deliveryId && $deliveryAddress->load($deliveryId)) {
             $country->load($deliveryAddress->getFieldData('oxcountryid'));
         }
+        //@todo remove the next line, until client has added googlepay
+        if ($requestName === 'googlepay') {
+            $requestName = 'google_pay';
+            $paymentSource = new \stdClass();
 
-        $paymentSource = new PaymentSource([
-            $requestName => [
-                'name' => $userName,
-                'country_code' => $country->getFieldData('oxisoalpha2')
-            ]
-        ]);
+// Dynamically adding properties to the stdClass object
+            $paymentSource->$requestName = new \stdClass();
+            $paymentSource->$requestName->name = $userName;
+            $paymentSource->$requestName->country_code = $country->getFieldData('oxisoalpha2');
+            $paymentSource->$requestName->attributes = new \stdClass();
+            $paymentSource->$requestName->attributes->verification = new \stdClass();
+            $paymentSource->$requestName->attributes->verification->method = 'SCA_ALWAYS';
+        } else {
+            $paymentSource = new PaymentSource([
+                $requestName => [
+                    'name' => $userName,
+                    'country_code' => $country->getFieldData('oxisoalpha2')
+                ]
+            ]);
+        }
+
 
         return $paymentSource;
     }

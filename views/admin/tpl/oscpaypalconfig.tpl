@@ -106,6 +106,8 @@
                                 [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC" suffix="COLON"}] [{if $config->isLiveAcdcEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}] [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK"}][{/if}]
                                 <br>
                                 [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING" suffix="COLON"}] [{if $config->isLiveVaultingEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                <br>
+                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY" suffix="COLON"}] [{if $config->isLiveGooglePayEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
                             </div>
                         </div>
 
@@ -161,6 +163,9 @@
                                 [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC" suffix="COLON"}] [{if $config->isSandboxAcdcEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}] [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK"}][{/if}]
                                 <br>
                                 [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING" suffix="COLON"}] [{if $config->isSandboxVaultingEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                <br>
+                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY" suffix="COLON"}] [{if $config->isSandboxGooglePayEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+
                             </div>
                         </div>
 
@@ -521,7 +526,33 @@
                     </div>
                 </div>
             </div>
-
+            [{*
+            <div class="card">
+                <div class="card-header" id="heading9">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse9" aria-expanded="false" aria-controls="collapse9">
+                        [{oxmultilang ident="OSC_PAYPAL_GOOGLEPAY_TITLE"}]
+                    </h4>
+                </div>
+            <div id="collapse9" class="collapse" aria-labelledby="heading9" data-parent="#accordion">
+                <div class="card-body">
+                    <div class="form-group">
+                        <div class="controls">
+                            <div class="form-group">
+                                <div class="controls">
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="conf[oscPayPalUseGooglePayAddress]" [{if $config->getIsGooglePayDeliveryAdressActive()}]checked[{/if}] value="1" >
+                                            [{oxmultilang ident="OSC_PAYPAL_GOOGLEPAY_ADDRESS_ACTIVATE"}]
+                                        </label>
+                                    </div>
+                                    <span class="help-block">[{oxmultilang ident="HELP_OSC_OSC_PAYPAL_GOOGLEPAY_ADRESS_ACTIVATE"}]</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> *}]
         </div>
         <button type="submit" class="btn btn-primary bottom-space">[{oxmultilang ident="GENERAL_SAVE"}]</button>
     </form>

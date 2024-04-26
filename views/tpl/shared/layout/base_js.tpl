@@ -19,7 +19,7 @@
     [{elseif $className == 'order' && $oViewConf->isPayPalACDCSessionActive()}]
         <script src="[{$oViewConf->getPayPalJsSdkUrlForACDC()}]" data-client-token="[{$oViewConf->getDataClientToken()}]"></script>
     [{elseif $className == 'payment' || $className == 'oscaccountvaultcard'}]
-        <script src="[{$oViewConf->getPayPalJsSdkUrlForButtonPayments()}]" data-partner-attribution-id="[{$oViewConf->getPayPalPartnerAttributionIdForBanner()}]}]"></script>
+        <script src="[{$oViewConf->getPayPalJsSdkUrlForButtonPayments()}]" data-partner-attribution-id="[{$oViewConf->getPayPalPartnerAttributionIdForBanner()}]"></script>
     [{elseif $className == 'oscaccountvault'}]
         <script src="[{$oViewConf->getPayPalJsSdkUrl()}]" data-user-id-token="[{$oViewConf->getUserIdForVaulting()}]"></script>
     [{elseif $oViewConf->isPayPalBannerActive() && ($className == 'start' || $className == 'search' || $className == 'details' || $className == 'alist' || $className == 'basket')}]

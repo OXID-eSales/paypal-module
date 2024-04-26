@@ -6,8 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [2.4.1] - 2024-??-??
 
+### NEW
 - PayPal-Request-Id based on serialized body, no extra PayPal-Request-Id necessary anymore
-- use PayPal-Client v2.0.13
+- Introduce GooglePay-Payment
+- use PayPal-Client v2.0.14
 
 ## [2.4.0] - 2024-04-04
 
