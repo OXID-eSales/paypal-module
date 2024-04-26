@@ -509,7 +509,8 @@ final class OrderTest extends BaseTestCase
                     'extractTransactionId',
                     '_sendOrderByEmail',
                     'getOrderPaymentCapture',
-                    'doExecutePayPalPayment'
+                    'doExecutePayPalPayment',
+                    'doCapturePayPalOrder'
                 ]
             )
             ->getMock();
@@ -519,6 +520,10 @@ final class OrderTest extends BaseTestCase
             ->getMock();
         $captureMock->id = self::TEST_PAYPAL_TRANS_ID;
 
+        //@TODO this is solution for error, but it breaks the test, reactor needed
+        $orderMock->expects($this->once())
+            ->method('doCapturePayPalOrder')
+            ->willReturn(true);
         $orderMock->expects($this->once())
             ->method('getOrderPaymentCapture')
             ->willReturn($captureMock);

@@ -16,6 +16,7 @@ use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings as ModuleSettingsService;
 use OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
@@ -50,8 +51,8 @@ final class PaymentTest extends BaseTestCase
     'lysts\PayPalApi\Model\Orders\ThreeDSecureAuthenticationResponse":2:{s:21:"authentication_status";s:1:"Y";' .
     's:17:"enrollment_status";s:1:"Y";}}s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipa' .
     'y";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"m' .
-    'ultibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;' .
-    's:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}' .
+    'ultibanco";N;s:6:"mybank";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;' .
+    's:8:"satispay";N;s:6:"sofort";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}' .
     's:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;' .
     's:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_cont' .
     'ext";N;s:11:"create_time";N;s:11:"update_time";N;}';
@@ -64,9 +65,9 @@ final class PaymentTest extends BaseTestCase
     'onResponse":2:{s:15:"liability_shift";s:2:"NO";s:14:"three_d_secure";O:79:"OxidSolutionCatalysts\PayPalApi\Mod' .
     'el\Orders\ThreeDSecureAuthenticationResponse":2:{s:21:"authentication_status";s:1:"N";s:17:"enrollment_status";' .
     's:1:"Y";}}s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;' .
-    's:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";' .
-    'N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;' .
-    's:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_i' .
+    's:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";N;s:6:"mybank";' .
+    'N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:6:"sofort' .
+    '";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_i' .
     'nstruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status' .
     '";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"upda' .
     'te_time";N;}';
@@ -77,8 +78,8 @@ final class PaymentTest extends BaseTestCase
     'ess";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"9760";s:5:"brand";s:4:"VISA";s:4:"type";s:6:"CREDIT";s:6:"i' .
     'ssuer";N;s:3:"bin";N;s:21:"authentication_result";N;s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"ban' .
     'k";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"id' .
-    'eal";N;s:10:"multibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"s' .
-    'afetypay";N;s:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"appl' .
+    'eal";N;s:10:"multibanco";N;s:6:"mybank";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"s' .
+    'afetypay";N;s:8:"satispay";N;s:6:"sofort";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"appl' .
     'e_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_ti' .
     'me";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"applicat' .
     'ion_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
@@ -300,6 +301,10 @@ final class PaymentTest extends BaseTestCase
         bool $alwaysIgnoreSCAResult = false,
         string $sca = Constants::PAYPAL_SCA_ALWAYS
     ): PaymentService {
+        $loggerService = $this->getMockBuilder(Logger::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $moduleSettingsService = $this->getMockBuilder(ModuleSettingsService::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -326,6 +331,7 @@ final class PaymentTest extends BaseTestCase
                         ->getMock(),
                     new SCAValidator(),
                     $moduleSettingsService,
+                    $loggerService,
                     $serviceFactoryMock,
                     $this->getMockBuilder(PatchRequestFactory::class)
                         ->disableOriginalConstructor()
