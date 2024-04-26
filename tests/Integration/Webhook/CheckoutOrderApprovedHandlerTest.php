@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Exception;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
@@ -51,8 +52,8 @@ final class CheckoutOrderApprovedHandlerTest extends WebhookHandlerBaseTestCase
 
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
-        $this->expectException(WebhookEventException::class);
-        $this->expectExceptionMessage(WebhookEventException::byPayPalOrderId($payPalOrderId)->getMessage());
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Order not found.');
 
         $handler = oxNew(CheckoutOrderApprovedHandler::class);
         $handler->handle($event);

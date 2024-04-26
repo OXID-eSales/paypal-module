@@ -37,6 +37,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Payments\CaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\ReauthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
 use OxidSolutionCatalysts\PayPalApi\Service\Payments as ApiPaymentService;
+use Psr\Log\LoggerInterface;
 
 class Payment
 {
@@ -80,14 +81,14 @@ class Payment
     /** @var ModuleSettingsService */
     private ModuleSettings $moduleSettingsService;
 
-    private Logger $logger;
+    private LoggerInterface $logger;
 
     public function __construct(
         EshopSession $eshopSession,
         OrderRepository $orderRepository,
         SCAValidatorInterface $scaValidator,
         ModuleSettingsService $moduleSettingsService,
-        Logger $logger,
+        LoggerInterface $logger,
         ServiceFactory $serviceFactory = null,
         PatchRequestFactory $patchRequestFactory = null,
         OrderRequestFactory $orderRequestFactory = null
