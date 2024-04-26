@@ -20,6 +20,7 @@ use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Core\PayPalRequestAmountFactory;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;

@@ -94,10 +94,6 @@ class PayPalOrderController extends AdminDetailsController
             parent::executeFunction($functionName);
         } catch (ApiException $exception) {
             $this->addTplParam('error', $exception->getErrorDescription());
-
-            /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer(Logger::class);
-            $logger->log('error', $exception->getMessage());
         }
     }
 
@@ -158,9 +154,6 @@ class PayPalOrderController extends AdminDetailsController
                 }
             } catch (ApiException $exception) {
                 $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()));
-                /** @var Logger $logger */
-                $logger = $this->getServiceFromContainer(Logger::class);
-                $logger->log('error', $exception->getMessage());
             }
         } elseif (
             $order->getFieldData('oxpaymenttype') == $this->payPalPlusPaymentType &&

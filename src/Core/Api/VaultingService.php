@@ -238,7 +238,6 @@ class VaultingService extends BaseService
     {
         $headers = [];
         $headers['Content-Type'] = 'application/json';
-        $headers['PayPal-Request-Id'] = time();
         $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
         $headers = array_merge($headers, $this->getAuthHeaders());
         return $headers;

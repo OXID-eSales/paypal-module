@@ -141,33 +141,14 @@ class Payment
 
         $response = [];
 
-        /*
-         * Set required request id if payer uses vaulted payment.
-         * The OXID order is not created yet, so a random id will be given.
-         */
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $setVaulting = $moduleSettings->getIsVaultingActive();
-        $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
-        $useVaulting = $setVaulting && !is_null($selectedVaultPaymentSourceIndex);
-
-        if ($useVaulting) {
-            $payPalRequestId = time();
-        }
-
         try {
             $response = $orderService->createOrder(
                 $request,
                 $payPalPartnerAttributionId,
                 $payPalClientMetadataId,
-                'return=minimal',
-                $payPalRequestId
+                'return=minimal'
             );
         } catch (ApiException $exception) {
-            $this->logger->log(
-                'error',
-                'Api error on order create call. ' . $exception->getErrorIssue(),
-                [$exception]
-            );
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
             $this->logger->log('error', 'Error on order create call.', [$exception]);
@@ -320,7 +301,6 @@ class Payment
 
                     $issue = $exception->getErrorIssue();
                     $this->displayErrorIfInstrumentDeclined($issue);
-                    $this->logger->log('error', $exception->getMessage(), [$exception]);
 
                     throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
                 }
@@ -333,6 +313,7 @@ class Payment
                 $request = new OrderCaptureRequest();
                 //order number must be resolved before order patching
                 $order->setOrderNumber();
+
                 try {
                     //Patching the order with OXID order number as custom value
                     $this->doPatchPayPalOrder(
@@ -345,14 +326,13 @@ class Payment
                         '',
                         $checkoutOrderId,
                         $request,
-                        '',
+                        ''
                     );
                 } catch (ApiException $exception) {
                     $this->handlePayPalApiError($exception);
 
                     $issue = $exception->getErrorIssue();
                     $this->displayErrorIfInstrumentDeclined($issue);
-                    $this->logger->log('debug', $exception->getMessage(), [$exception]);
                     throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
                 }
             }

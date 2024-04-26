@@ -38,17 +38,21 @@ class PaymentController extends PaymentController_parent
             $paymentService->removeTemporaryOrder();
         }
 
-        if ($paypalCustomerId = $this->getUser()->getFieldData("oscpaypalcustomerid")) {
+        $user = $this->getUser();
+        if (
+            $user &&
+            ($paypalCustomerId = $user->getFieldData("oscpaypalcustomerid"))
+        ) {
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
             if ($vaultedPaymentTokens = $vaultingService->getVaultPaymentTokens($paypalCustomerId)["payment_tokens"]) {
                 $vaultedPaymentSources = [];
                 foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
                     foreach ($vaultedPaymentToken["payment_source"] as $paymentType => $paymentSource) {
-                        if ($paymentType == "card") {
+                        if ($paymentType === "card") {
                             $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_ENDING_IN");
                             $vaultedPaymentSources[$paymentType][] = $paymentSource["brand"] . " " .
                                 $string . $paymentSource["last_digits"];
-                        } elseif ($paymentType == "paypal") {
+                        } elseif ($paymentType === "paypal") {
                             $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
                             $vaultedPaymentSources[$paymentType][] = $string . " " . $paymentSource["email_address"];
                         }
