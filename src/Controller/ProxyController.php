@@ -204,7 +204,6 @@ class ProxyController extends FrontendController
             $response->payer = new Payer();
             $response->payer->email_address = $data['email'];
             $response->payer->phone->phone_number->national_number = $data['shippingAddress']['phoneNumber'] ?? '';
-            $response->payer->address = $billingAddress;
 
             $userRepository = $this->getServiceFromContainer(UserRepository::class);
             $paypalEmail = $data['email'];
@@ -274,7 +273,9 @@ class ProxyController extends FrontendController
         $data = json_decode( file_get_contents( 'php://input' ), true );
         $orderId = (string) Registry::getRequest()->getRequestEscapedParameter('orderID');
         $sessionOrderId = PayPalSession::getCheckoutOrderId();
-
+        if(!empty($data['orderID']) && $orderId =='') {
+            $orderId = $data['orderID'];
+        }
         if (!$orderId || ($orderId !== $sessionOrderId)) {
             //TODO: improve
             $this->outputJson(['ERROR' => 'OrderId not found in PayPal session.']);

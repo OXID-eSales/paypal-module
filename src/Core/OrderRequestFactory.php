@@ -20,7 +20,6 @@ use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
-use OxidSolutionCatalysts\PayPal\Core\PayPalRequestAmountFactory;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
@@ -99,7 +98,10 @@ class OrderRequestFactory
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $setVaulting = $moduleSettings->getIsVaultingActive();
         $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
-
+        $paymentId = Registry::getSession()->getVariable('paymentid');
+        if ($paymentId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID) {
+            $request->payment_source = $this->getGooglePayPaymentSource($basket,'google_pay');
+        }
         $request->intent = $intent;
         $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $withArticles);
 
@@ -169,6 +171,30 @@ class OrderRequestFactory
         return $request;
     }
 
+    protected function getGooglePayPaymentSource($basket, $requestName) {
+        $user = $basket->getBasketUser();
+
+        $userName = $user->getFieldData('oxfname') . ' ' . $user->getFieldData('oxlname');
+
+        // get Billing CountryCode
+        $country = oxNew(Country::class);
+        $country->load($user->getFieldData('oxcountryid'));
+
+        // check possible deliveryCountry
+        $deliveryId = Registry::getSession()->getVariable("deladrid");
+        $deliveryAddress = oxNew(Address::class);
+        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
+            $country->load($deliveryAddress->getFieldData('oxcountryid'));
+        }
+        $paymentSource = new \stdClass();
+
+// Dynamically adding properties to the stdClass object
+        $paymentSource->$requestName = new \stdClass();
+        $paymentSource->$requestName->attributes = new \stdClass();
+        $paymentSource->$requestName->attributes->verification = new \stdClass();
+        $paymentSource->$requestName->attributes->verification->method = 'SCA_ALWAYS';
+        return $paymentSource;
+    }
     /**
      * Sets application context
      *

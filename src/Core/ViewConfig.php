@@ -148,7 +148,7 @@ class ViewConfig extends ViewConfig_parent
     {
         return $this->getSslSelfLink() . 'cl=oscpaypalproxy&fnc=cancelPayPalPayment';
     }
-    
+
     /**
      * Gets PayPalGooglepay JS SDK url
      *
@@ -269,7 +269,7 @@ class ViewConfig extends ViewConfig_parent
 
         if ($continueFlow) {
             $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
-            $params['commit'] = 'false';
+            $params['commit'] = 'true';
         }
 
         $params['components'] = 'buttons,googlepay,' . $type;

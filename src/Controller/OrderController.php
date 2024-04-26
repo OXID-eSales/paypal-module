@@ -215,20 +215,6 @@ class OrderController extends OrderController_parent
     }
     public function createGooglePayOrder(): void
     {
-        $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
-        $sessionAcdcOrderId = (string) PayPalSession::getCheckoutOrderId();
-        $acdcStatus = Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
-
-        if (
-            $sessionOrderId &&
-            $sessionAcdcOrderId &&
-            $acdcStatus === Constants::PAYPAL_STATUS_COMPLETED
-        ) {
-            //we already have a completed acdc order
-            $this->outputJson(['acdcerror' => 'shop order already completed']);
-            return;
-        }
-
         try {
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
             $paymentService->removeTemporaryOrder();
@@ -240,7 +226,7 @@ class OrderController extends OrderController_parent
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', $exception->getMessage(), [$exception]);
-            $this->outputJson(['acdcerror' => 'failed to execute shop order']);
+            $this->outputJson(['googlepayerror' => 'failed to execute shop order']);
             return;
         }
 
@@ -248,13 +234,13 @@ class OrderController extends OrderController_parent
             Registry::getSession()->getBasket()
         );
         if (!($paypalOrderId = $response['id'])) {
-            $this->outputJson(['acdcerror' => 'cannot create paypal order']);
+            $this->outputJson(['googlepayerror' => 'cannot create paypal order']);
             return;
         }
 
-        if (!$status || (PayPalOrderModel::ORDER_STATE_ACDCINPROGRESS !== (int)$status)) {
-          //  $response = ['acdcerror' => 'unexpected order status ' . $status];
-          //  $paymentService->removeTemporaryOrder();
+        if (!$status ) {
+            $response = ['googlepayerror' => 'unexpected order status ' . $status];
+            $paymentService->removeTemporaryOrder();
         } else {
             PayPalSession::storePayPalOrderId($paypalOrderId);
             $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
@@ -268,12 +254,8 @@ class OrderController extends OrderController_parent
     public function captureGooglePayOrder(): void
     {
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        $paymentService = Registry::get(ServiceFactory::class)->getPaymentService();
-        $acdcRequestId = (string) Registry::getRequest()->getRequestParameter('acdcorderid');
         $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
-        $sessionAcdcOrderId = (string) PayPalSession::getCheckoutOrderId();
-        $acdcStatus = Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
+        $checkoutOrderId = (string) PayPalSession::getCheckoutOrderId();
 
         /** @var Logger $logger */
         $logger = $this->getServiceFromContainer(Logger::class);
@@ -282,7 +264,7 @@ class OrderController extends OrderController_parent
             /** @var $result ApiOrderModel */
             $result = $orderService->capturePaymentForOrder(
                 '',
-                $sessionAcdcOrderId,
+                $checkoutOrderId,
                 $request,
                 '',
             );
@@ -308,7 +290,7 @@ class OrderController extends OrderController_parent
             ];
             //track status in session
             Registry::getSession()->setVariable('SessionGooglePay', $sessionOrderId);
-            Registry::getSession()->setVariable('GooglePayOrderId', $sessionAcdcOrderId);
+            Registry::getSession()->setVariable('GooglePayOrderId', $checkoutOrderId);
         } catch (Exception $exception) {
             $logger->log(
                 'debug',
