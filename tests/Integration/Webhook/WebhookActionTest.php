@@ -11,10 +11,12 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\TestingLibrary\UnitTestCase;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\EventHandlerMapping;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher as PayPalWebhookActions;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 
 final class WebhookActionTest extends WebhookHandlerBaseTestCase
 {
@@ -43,8 +45,16 @@ final class WebhookActionTest extends WebhookHandlerBaseTestCase
 
     public function testValidActionWithInvalidRequestData(): void
     {
-        $webhookEvent = new WebhookEvent(['resource' => ['bla' => 'foo']], 'CHECKOUT.ORDER.COMPLETED');
+        /** @var WebhookEvent $webhookEvent */
+        $eventType = 'CHECKOUT.ORDER.COMPLETED';
+        $webhookEvent = new WebhookEvent(['resource' => ['bla' => 'foo']], $eventType);
+/*
+$handlers = EventHandlerMapping::MAPPING;
+$handler = oxNew($handlers[$eventType]);
+            $handler->handle($webhookEvent);*/
 
+
+        /** @var PayPalWebhookActions $handler */
         $handler = oxNew(PayPalWebhookActions::class);
 
         $loggerMock = $this->getPsrLoggerMock();
