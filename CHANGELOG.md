@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [2.4.1] - 2024-??-??
 
+### FIX
+
+- Fix admin block parent call, thanks to Alpha-Sys
+
 ### NEW
 - PayPal-Request-Id based on serialized body, no extra PayPal-Request-Id necessary anymore
 - Introduce GooglePay-Payment
