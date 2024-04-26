@@ -88,7 +88,7 @@ class OrderController extends OrderController_parent
 
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         if ($moduleSettings->getIsVaultingActive() && $this->getUser()->oxuser__oxpassword->value) {
-            $this->addTplParam('oscpaypal_payment_saveable',true);
+            $this->addTplParam('oscpaypal_payment_saveable', true);
         }
 
         $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
@@ -238,7 +238,7 @@ class OrderController extends OrderController_parent
             return;
         }
 
-        if (!$status ) {
+        if (!$status) {
             $response = ['googlepayerror' => 'unexpected order status ' . $status];
             $paymentService->removeTemporaryOrder();
         } else {
@@ -273,7 +273,8 @@ class OrderController extends OrderController_parent
 
             $issue = $exception->getErrorIssue();
             $this->displayErrorIfInstrumentDeclined($issue);
-            $this->logger->log('error', $exception->getMessage(), [$exception]);
+            $logger = $this->getServiceFromContainer(Logger::class);
+            $logger->log('error', $exception->getMessage(), [$exception]);
 
             throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
         }
@@ -397,7 +398,7 @@ class OrderController extends OrderController_parent
 
             /** @var PayPalApiModelOrder $payPalOrder */
             $payPalOrder = $paymentService->fetchOrderFields((string) $sessionCheckoutOrderId, '');
-            $vaultingPaymentCompleted = $vaulting && $payPalOrder->status == "COMPLETED";
+            $vaultingPaymentCompleted = $vaulting && $payPalOrder->status === "COMPLETED";
             if (!$vaultingPaymentCompleted && 'APPROVED' !== $payPalOrder->status) {
                 throw PayPalException::sessionPaymentFail(
                     'Unexpected status ' . $payPalOrder->status . ' for PayPal order ' . $sessionCheckoutOrderId

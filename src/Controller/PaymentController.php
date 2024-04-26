@@ -41,7 +41,6 @@ class PaymentController extends PaymentController_parent
         if ($paypalCustomerId = $this->getUser()->getFieldData("oscpaypalcustomerid")) {
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
             if ($vaultedPaymentTokens = $vaultingService->getVaultPaymentTokens($paypalCustomerId)["payment_tokens"]) {
-
                 $vaultedPaymentSources = [];
                 foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
                     foreach ($vaultedPaymentToken["payment_source"] as $paymentType => $paymentSource) {
@@ -65,7 +64,7 @@ class PaymentController extends PaymentController_parent
 
         return parent::render();
     }
-    
+
     public function getPayPalPuiFraudnetCmId(): string
     {
 

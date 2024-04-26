@@ -100,7 +100,7 @@ class OrderRequestFactory
         $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
         $paymentId = Registry::getSession()->getVariable('paymentid');
         if ($paymentId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID) {
-            $request->payment_source = $this->getGooglePayPaymentSource($basket,'google_pay');
+            $request->payment_source = $this->getGooglePayPaymentSource($basket, 'google_pay');
         }
         $request->intent = $intent;
         $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $withArticles);
@@ -171,7 +171,8 @@ class OrderRequestFactory
         return $request;
     }
 
-    protected function getGooglePayPaymentSource($basket, $requestName) {
+    protected function getGooglePayPaymentSource($basket, $requestName)
+    {
         $user = $basket->getBasketUser();
 
         $userName = $user->getFieldData('oxfname') . ' ' . $user->getFieldData('oxlname');

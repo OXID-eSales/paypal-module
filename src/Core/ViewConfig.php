@@ -150,35 +150,6 @@ class ViewConfig extends ViewConfig_parent
     }
 
     /**
-     * Gets PayPalGooglepay JS SDK url
-     *
-     * @return string
-     */
-    public function getPayPalJsSdkGooglepayUrl(): string
-    {
-        $config = Registry::getConfig();
-        $lang = Registry::getLang();
-
-        $localeCode = $this->getServiceFromContainer(LanguageLocaleMapper::class)
-            ->mapLanguageToLocale($lang->getLanguageAbbr());
-
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $params = [];
-
-        $params['client-id'] = $this->getPayPalClientId();
-
-        if ($currency = $config->getActShopCurrencyObject()) {
-            $params['currency'] = strtoupper($currency->name);
-        }
-
-        $params['components'] = 'googlepay';
-        $params['merchant-id'] = $moduleSettings->getMerchantId();
-        $params['buyer-country'] = strtoupper($lang->getLanguageAbbr());
-
-        return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
-    }
-
-    /**
      * Gets PayPal JS SDK url
      *
      * @return string
@@ -289,7 +260,7 @@ class ViewConfig extends ViewConfig_parent
 
     public function getUserIdForVaulting(): string
     {
-        if(!$this->getUser()) {
+        if (!$this->getUser()) {
             return "";
         }
 
@@ -596,16 +567,16 @@ class ViewConfig extends ViewConfig_parent
         $config = oxNew(Config::class);
         $params = 'cl=osctokencontroller&fnc=generatesetuptoken';
         if ($config->isSandbox()) {
-            $params.= '&XDEBUG_SESSION_START=1';
+            $params .= '&XDEBUG_SESSION_START=1';
         }
 
-        if($card) {
-            $params.= '&card=true';
+        if ($card) {
+            $params .= '&card=true';
         }
 
         $url = html_entity_decode($this->getConfig()->getShopHomeUrl());
 
-        return $url.$params;
+        return $url . $params;
     }
 
     public function getGeneratePaymentTokenLink()
@@ -613,12 +584,11 @@ class ViewConfig extends ViewConfig_parent
         $config = oxNew(Config::class);
         $params = 'cl=osctokencontroller&fnc=generatepaymenttoken';
         if ($config->isSandbox()) {
-            $params.= '&XDEBUG_SESSION_START=1';
+            $params .= '&XDEBUG_SESSION_START=1';
         }
 
         $url = html_entity_decode($this->getConfig()->getShopHomeUrl());
 
-        return $url.$params.'&token=';
-
+        return $url . $params . '&token=';
     }
 }

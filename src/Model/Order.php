@@ -281,7 +281,7 @@ class Order extends Order_parent
         //catch UAPM, Standard and Pay Later PayPal payments here
         if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater) {
             try {
-                if ($isPayPalUAPM ) {
+                if ($isPayPalUAPM) {
                     $redirectLink = $paymentService->doExecuteUAPMPayment($this, $basket);
                 } else {
                     $intent = $this->getServiceFromContainer(ModuleSettings::class)
