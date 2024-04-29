@@ -55,6 +55,53 @@
 {% endblock %}
 
 {% block change_payment %}
+    {% if vaultedPaymentSources %}
+        <h2 class="h4 card-header card-title" class="card-title">{{ translate({ ident: "OSC_PAYPAL_VAULTING_VAULTED_PAYMENTS" }) }}</h2>
+        <div class="card-body">
+            <div class="payment-option">
+                {% set iterator = 0 %}
+                {% for paymentType, vaultedPayment in vaultedPaymentSources %}
+                    {% for paymentDescription in vaultedPayment %}
+                        <div class="payment-option-form">
+                            <input class="vaulting_paymentsource" name="vaulting_paymentsource" type="radio" id="paymentsource_{{ iterator }}" data-index="{{ iterator }}" data-paymenttype="{{ paymentType }}">
+                            <label for="paymentsource_{{ iterator }}">{{ paymentDescription }}</label>
+                        </div>
+                        {% set iterator = iterator+1 %}
+                    {% endfor %}
+                {% endfor %}
+
+                <div class="text-right">
+                    <button type="submit" name="userform"
+                            class="btn btn-highlight mt-5"
+                            id="paypalVaultCheckoutButton"
+                    >
+                        {{ translate({ ident: "OSC_PAYPAL_CONTINUE_TO_NEXT_STEP" }) }} <i class="fa fa-caret-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            window.onload = function () {
+                document.getElementById("paypalVaultCheckoutButton").onclick = function () {
+                    document.querySelectorAll(".vaulting_paymentsource").forEach(function (paymentsource) {
+                        if (paymentsource.checked) {
+                            document.getElementById("payment_oscpaypal").click();
+
+                            let input = document.createElement("input");
+                            input.type = "hidden";
+                            input.name = "vaultingpaymentsource";
+                            input.value = paymentsource.dataset.index;
+                            document.getElementById("payment").appendChild(input);
+
+                            document.getElementById('payment').submit();
+                        }
+                    });
+                }
+            }
+        </script>
+    {% endif %}
+
     {% if oView.getPaymentList().oscpaypal_express is defined and oViewConf.isPayPalExpressSessionActive() %}
         {% set config = oViewConf.getPayPalCheckoutConfig() %}
         <h4 class="card-header card-title">

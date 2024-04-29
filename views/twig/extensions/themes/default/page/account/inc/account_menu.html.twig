@@ -2,12 +2,14 @@
 
 {% block account_menu %}
     {% if oViewConf.getIsVaultingActive() %}
-        <li class="list-group-item{% if active_link == "oscPayPalVaulting" %} active{% endif %}">
-            <a class="list-group-link" href="{{ seo_url({ ident: oViewConf.getSslSelfLink()|cat("cl=oscaccountvault") }) }}" title="{{ translate({ ident: "OSC_PAYPAL_VAULTING_MENU" }) }}">{{ translate({ ident: "OSC_PAYPAL_VAULTING_MENU" }) }}</a>
-        </li>
-        <li class="list-group-item{% if active_link == "oscPayPalVaultingCard" %} active{% endif %}">
-            <a class="list-group-link" href="{{ seo_url({ ident: oViewConf.getSslSelfLink()|cat("cl=oscaccountvaultcard") }) }}" title="{{ translate({ ident: "OSC_PAYPAL_VAULTING_MENU_CARD" }) }}">{{ translate({ ident: "OSC_PAYPAL_VAULTING_MENU_CARD" }) }}</a>
-        </li>
+        <a class="dropdown-item{% if active_link == "oscPayPalVaulting" %} active{% endif %}"
+           href="{{ seo_url({ ident: oViewConf.getSslSelfLink() ~ "cl=oscaccountvault" }) }}" title="{{ translate({ ident: "OSC_PAYPAL_VAULTING_MENU" }) }}">
+            {{ translate({ ident: "OSC_PAYPAL_VAULTING_MENU" }) }}
+        </a>
+        <a class="dropdown-item{% if active_link == "oscPayPalVaultingCard" %} active{% endif %}"
+           href="{{ seo_url({ ident: oViewConf.getSslSelfLink() ~ "cl=oscaccountvaultcard" }) }}" title="{{ translate({ ident: "OSC_PAYPAL_VAULTING_MENU_CARD" }) }}">
+            {{ translate({ ident: "OSC_PAYPAL_VAULTING_MENU_CARD" }) }}
+        </a>
     {% endif %}
     {{ parent() }}
 {% endblock %}

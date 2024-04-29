@@ -2,7 +2,7 @@
 
 {% block shippingAndPayment %}
     {% set payment = oView.getPayment() %}
-    {% if payment.getId() == "oscpaypal_acdc" or payment.getId() == "oscpaypal_pui" %}
+    {% if payment.getId() == "oscpaypal_acdc" or payment.getId() == "oscpaypal_pui" or vaultedPaymentDescription%}
         {% set sPaymentID = payment.getId() %}
         {% set sSelfLink = oViewConf.getSslSelfLink()|replace({"&amp;": "&"}) %}
         <form action="{{ oViewConf.getSslSelfLink()|raw }}" method="post"
@@ -42,7 +42,9 @@
         <div class="card-body">
             {% set payment = oView.getPayment() %}
             {{ payment.oxpayments__oxdesc.value }}
-            {% if not oscpaypal_executing_order %}
+            {% if vaultedPaymentDescription %}
+                {{ vaultedPaymentDescription|raw }}
+            {% elseif not oscpaypal_executing_order %}
                 {% if sPaymentID == "oscpaypal_acdc" %}
                     {% include "@osc_paypal/frontend/acdc.html.twig" %}
                 {% elseif sPaymentID == "oscpaypal_pui" %}
@@ -50,7 +52,92 @@
                 {% endif %}
             {% endif %}
         </div>
+    {% elseif payment.getId() == "oscpaypal"%}
+        {% set sPaymentID = payment.getId() %}
+        {% set sSelfLink = oViewConf.getSslSelfLink()|replace({"&amp;": "&"}) %}
+        <form action="{{ oViewConf.getSslSelfLink()|raw }}" method="post"
+              id="orderShipping">
+            {{ oViewConf.getHiddenSid()|raw }}
+            <input type="hidden" name="cl" value="payment">
+            <input type="hidden" name="fnc" value="">
+            <h4 class="card-header card-title card-header-edit d-flex justify-content-between align-items-center">
+                {{ translate({ ident: "SHIPPING_CARRIER" }) }}
+                <button type="submit" class="btn"
+                        title="{{ translate({ ident: "EDIT" }) }}">
+                    <svg aria-hidden="true">
+                        <use xlink:href="#pencil"></use>
+                    </svg>
+                </button>
+            </h4>
+            {% set oShipSet = oView.getShipSet() %}
+            <div class="card-body">
+                {{ oShipSet.oxdeliveryset__oxtitle.value }}
+            </div>
+        </form>
+        <form action="{{ oViewConf.getSslSelfLink()|raw }}" method="post">
+            {{ oViewConf.getHiddenSid()|raw }}
+            <input type="hidden" name="cl" value="payment">
+            <input type="hidden" name="fnc" value="">
+
+            <h4 class="card-header card-title card-header-edit d-flex justify-content-between align-items-center">
+                {{ translate({ ident: "PAYMENT_METHOD" }) }}
+                <button type="submit" class="btn"
+                        title="{{ translate({ ident: "EDIT" }) }}">
+                    <svg aria-hidden="true">
+                        <use xlink:href="#pencil"></use>
+                    </svg>
+                </button>
+            </h4>
+
+            <div class="card-body">
+                {% set payment = oView.getPayment() %}
+                {{ payment.oxpayments__oxdesc.value }}
+                {% if oscpaypal_payment_saveable %}
+                    <br>
+                    <br>
+                    <input type="checkbox" id="oscPayPalVaultPaymentCheckbox" onclick="setVaultingCheckbox()">
+                    <label for="oscPayPalVaultPaymentCheckbox">{{ translate({ ident: "OSC_PAYPAL_VAULTING_SAVE" }) }}</label>
+                {% endif %}
+            </div>
+        </form>
+
+        <script>
+            function setVaultingCheckbox() {
+                let checkbox = document.getElementById("oscPayPalVaultPaymentCheckbox");
+                let vaultingInput = document.getElementById("oscPayPalVaultPayment");
+
+                if (checkbox.checked) {
+                    vaultingInput.value = "true";
+                }else {
+                    vaultingInput.value = "";
+                }
+            }
+        </script>
     {% else %}
         {{ parent() }}
     {% endif %}
+{% endblock %}
+
+{% block checkout_order_btn_confirm_bottom %}
+    {% set payment = oView.getPayment() %}
+    <form action="{{ oViewConf.getSslSelfLink()|raw }}" method="post"
+          id="orderConfirmAgbBottom">
+        {{ oViewConf.getHiddenSid()|raw }}
+        {{ oViewConf.getNavFormParams()|raw }}
+        <input type="hidden" name="vaultPayment" id="oscPayPalVaultPayment" value="">
+        <input type="hidden" name="cl" value="order">
+        <input type="hidden" name="fnc" value="{{ oView.getExecuteFnc() }}">
+        <input type="hidden" name="challenge" value="{{ challenge }}">
+        <input type="hidden" name="sDeliveryAddressMD5"
+               value="{{ oView.getDeliveryAddressMD5() }}">
+
+        {% if oView.isActive('PsLogin') or not oView.isConfirmAGBActive() %}
+            <input type="hidden" name="ord_agb" value="1">
+        {% else %}
+            <input type="hidden" name="ord_agb" value="0">
+        {% endif %}
+        <input type="hidden" name="oxdownloadableproductsagreement"
+               value="0">
+        <input type="hidden" name="oxserviceproductsagreement" value="0">
+    </form>
 {% endblock %}

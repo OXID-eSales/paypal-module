@@ -6,7 +6,7 @@
 
     {% set vaultSuccess = oViewConf.getSessionVaultSuccess() %}
 
-    {% if vaultSuccess != "null" %}
+    {% if vaultSuccess is not null %}
         {% if vaultSuccess %}
             <p class="alert alert-success">
                 {{ translate({ ident: "OSC_PAYPAL_VAULTING_SUCCESS" }) }}

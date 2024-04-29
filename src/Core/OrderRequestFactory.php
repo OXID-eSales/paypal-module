@@ -85,7 +85,7 @@ class OrderRequestFactory
         Basket $basket,
         string $intent,
         ?string $userAction = null,
-        ?string $transactionId = null,
+        ?string $customId = null,
         ?string $processingInstruction = null,
         ?string $paymentSource = null,
         ?string $invoiceId = null,
@@ -148,7 +148,7 @@ class OrderRequestFactory
             $request->payer = $this->getPayer();
         }
 
-        $request->purchase_units = $this->getPurchaseUnits($transactionId, $invoiceId, $withArticles);
+        $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $withArticles);
 
         if ($userAction || $returnUrl || $cancelUrl) {
             $request->application_context = $this->getApplicationContext(
