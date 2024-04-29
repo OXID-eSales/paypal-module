@@ -161,6 +161,18 @@ class Onboarding
 
         $isPuiEligibility = false;
         $isAcdcEligibility = false;
+        $isVaultingEligibility = false;
+        $isVaultingCapability = false;
+
+        foreach ($merchantInformations['capabilities'] as $capability) {
+            if (
+                $capability['name'] === 'PAYPAL_WALLET_VAULTING_ADVANCED' &&
+                $capability['status'] === 'ACTIVE'
+            ) {
+                $isVaultingCapability = true;
+                break;
+            }
+        }
 
         foreach ($merchantInformations['products'] as $product) {
             if (
@@ -174,15 +186,25 @@ class Onboarding
             ) {
                 $isAcdcEligibility = true;
             }
+
+            if (
+                $product['name'] === 'PPCP_CUSTOM' &&
+                in_array('PAYPAL_WALLET_VAULTING_ADVANCED', $product['capabilities']) &&
+                $isVaultingCapability
+            ) {
+                $isVaultingEligibility = true;
+            }
         }
 
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $moduleSettings->savePuiEligibility($isPuiEligibility);
         $moduleSettings->saveAcdcEligibility($isAcdcEligibility);
+        $moduleSettings->saveVaultingEligibility($isVaultingEligibility);
 
         return [
             'acdc' => $isAcdcEligibility,
-            'pui' => $isPuiEligibility
+            'pui' => $isPuiEligibility,
+            'vaulting' => $isVaultingEligibility,
         ];
     }
 }

@@ -1,0 +1,21 @@
+{% extends "page/checkout/thankyou.html.twig" %}
+
+{% block checkout_thankyou_info%}
+
+    {{ parent() }}
+
+    {% set vaultSuccess = oViewConf.getSessionVaultSuccess() %}
+
+    {% if vaultSuccess is not null %}
+        {% if vaultSuccess %}
+            <p class="alert alert-success">
+                {{ translate({ ident: "OSC_PAYPAL_VAULTING_SUCCESS" }) }}
+            </p>
+        {% else %}
+            <p class="alert alert-danger">
+                {{ translate({ ident: "OSC_PAYPAL_VAULTING_ERROR" }) }}
+            </p>
+        {% endif %}
+    {% endif %}
+
+{% endblock %}

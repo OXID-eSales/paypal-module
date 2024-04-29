@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -36,6 +37,31 @@ class PaymentController extends PaymentController_parent
         ) {
             $paymentService->removeTemporaryOrder();
         }
+
+        if ($paypalCustomerId = $this->getUser()->getFieldData("oscpaypalcustomerid")) {
+            $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+            if ($vaultedPaymentTokens = $vaultingService->getVaultPaymentTokens($paypalCustomerId)["payment_tokens"]) {
+
+                $vaultedPaymentSources = [];
+                foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
+                    foreach ($vaultedPaymentToken["payment_source"] as $paymentType => $paymentSource) {
+                        if ($paymentType == "card") {
+                            $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_ENDING_IN");
+                            $vaultedPaymentSources[$paymentType][] = $paymentSource["brand"] . " " .
+                                $string . $paymentSource["last_digits"];
+                        } elseif ($paymentType == "paypal") {
+                            $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
+                            $vaultedPaymentSources[$paymentType][] = $string . " " . $paymentSource["email_address"];
+                        }
+                    }
+                }
+
+                $this->addTplParam("vaultedPaymentSources", $vaultedPaymentSources);
+            }
+        }
+
+        //reset vaulting session var
+        Registry::getSession()->deleteVariable("selectedVaultPaymentSourceIndex");
 
         return parent::render();
     }
@@ -112,9 +138,10 @@ class PaymentController extends PaymentController_parent
      */
     public function validatePayment()
     {
+        $request = Registry::getRequest();
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $actualPaymentId = $paymentService->getSessionPaymentId();
-        $newPaymentId = Registry::getRequest()->getRequestParameter('paymentid');
+        $newPaymentId = $request->getRequestParameter('paymentid');
 
         // remove the possible exist paypal-payment, if we choose another
         if (
@@ -123,6 +150,11 @@ class PaymentController extends PaymentController_parent
             PayPalDefinitions::isPayPalPayment($actualPaymentId)
         ) {
             $paymentService->removeTemporaryOrder();
+        }
+
+        //if a vaulted payment was used, store its index in the session for using it in the next step
+        if (!is_null($paymentSourceIndex = $request->getRequestParameter("vaultingpaymentsource"))) {
+            Registry::getSession()->setVariable("selectedVaultPaymentSourceIndex", $paymentSourceIndex);
         }
 
         return parent::validatePayment();

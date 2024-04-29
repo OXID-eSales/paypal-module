@@ -1,0 +1,73 @@
+{% capture append = "oxidBlock_content" %}
+    {% set template_title = "OSC_PAYPAL_VAULTING_MENU"|translate %}
+
+    <div class="container-xxl py-5">
+        <div class="row">
+            <h1 class="h3 page-header col pl-0 ml-3">
+                {{ translate({ ident: "OSC_PAYPAL_VAULTING_MENU" }) }}
+            </h1>
+        </div>
+
+        <div class="card card-lg">
+            <div class="card-header">
+                <h4 class="card-title">{{ translate({ ident: "OSC_PAYPAL_VAULTING_SAVE_INSTRUCTION" }) }}</h4>
+            </div>
+            <div class="card-body">
+                <p id="PayPalVaultingSuccess" class="alert alert-success" style="display: none">{{ translate({ ident: "OSC_PAYPAL_VAULTING_SUCCESS" }) }}</p>
+                <p id="PayPalVaultingFailure" class="alert alert-danger" style="display: none">{{ translate({ ident: "OSC_PAYPAL_VAULTING_ERROR" }) }}</p>
+                <div id="PayPalButtonVaulting" class="paypal-button-container paypal-button-wrapper large"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        window.onload = function () {
+            paypal.Buttons({
+                               createVaultSetupToken: async () => {
+                                   const result = await fetch(
+                                       "{{ seo_url({ ident: oViewConf.getGenerateSetupTokenLink() }) }}",
+                                       { method: "POST"
+                                       })
+                                   const { id } = await result.json();
+                                   return id;
+                               },
+                               onApprove: async ({ vaultSetupToken }) => {
+                                   const result = await fetch(
+                                       "{{ seo_url({ ident: oViewConf.getGeneratePaymentTokenLink() }) }}"+vaultSetupToken,
+                                       {method: 'POST'
+                                       })
+                                   const status = await result.json();
+
+                                   if(status.state === "SUCCESS") {
+                                       showSuccessMessage();
+                                   }else {
+                                       showFailureMessage();
+                                   }
+                               },
+                               onError: (error) => {
+                                   //TODO
+                               },
+                               style: {
+                                   label: 'checkout'
+                               }
+                           }).render("#PayPalButtonVaulting");
+
+            function showSuccessMessage() {
+                $('#PayPalButtonVaulting').hide();
+                $('#PayPalVaultingSuccess').show();
+            }
+
+            function showFailureMessage() {
+                $('#PayPalVaultingFailure').show();
+            }
+        };
+    </script>
+
+    {{ insert_tracker({title: template_title}) }}
+{% endcapture %}
+
+{% capture append = "oxidBlock_sidebar" %}
+    {% include "page/account/inc/account_menu.html.twig" with {active_link: "oscPayPalVaulting"} %}
+{% endcapture %}
+{% include "layout/page.html.twig" with {sidebar: "Left"} %}

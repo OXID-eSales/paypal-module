@@ -102,12 +102,13 @@
                             <label for="special-payments">{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS", suffix:"COLON" }) }}</label>
                             <div>
                                 {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_PUI", suffix:"COLON" }) }} {% if config.isPuiEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}<br />
+                                <br>
                                 {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC", suffix:"COLON" }) }} {% if config.isAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
+                                <br>
+                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING", suffix:"COLON" }) }} {% if config.isLiveVaultingEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {% endif %}
                             </div>
                         </div>
 
-                        {% if not config.getSandboxClientId() and not config.getSandboxClientSecret() and not config.getSandboxWebhookId() %}
-                        <p class="sandbox help-block text-danger">{{ translate({ ident: "HELP_OSC_PAYPAL_CREDENTIALS_PART2" }) }}</p>
                         <p class="sandbox"><a target="_blank"
                                               class="popuplink"
                                               href="{{ oView.getSandboxSignUpMerchantIntegrationLink()|raw }}"
@@ -117,7 +118,6 @@
                                 {{ translate({ ident: "OSC_PAYPAL_SANDBOX_BUTTON_CREDENTIALS" }) }}
                             </a>
                         </p>
-                        {% endif %}
 
                         <h3 class="sandbox">{{ translate({ ident: "OSC_PAYPAL_SANDBOX_CREDENTIALS" }) }}</h3>
 
@@ -157,7 +157,10 @@
                             <label for="special-payments-sandbox">{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS", suffix:"COLON" }) }}</label>
                             <div>
                                 {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_PUI", suffix:"COLON" }) }} {% if config.isPuiEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}<br />
+                                <br>
                                 {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC", suffix:"COLON" }) }} {% if config.isAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
+                                <br>
+                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING", suffix:"COLON" }) }} {% if config.isLiveVaultingEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {% endif %}
                             </div>
                         </div>
 
@@ -486,6 +489,35 @@
                                     <div class="controls">
                                         <input type="text" class="form-control" id="locales" name="conf[oscPayPalLocales]" value="{{ config.getSupportedLocalesCommaSeparated() }}" />
                                         <span class="help-block">{{ translate({ ident: "HELP_OSC_PAYPAL_LOCALES" }) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header" id="heading9">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse9" aria-expanded="false" aria-controls="collapse9">
+                        {{ translate({ ident: "OSC_PAYPAL_VAULTING_TITLE" }) }}
+                    </h4>
+                </div>
+
+                <div id="collapse9" class="collapse" aria-labelledby="heading9" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="controls">
+                                <div class="form-group">
+                                    <div class="controls">
+                                        <div class="checkbox">
+                                            <label>
+
+                                                <input type="checkbox" name="conf[oscPayPalSetVaulting]" {% if config.getIsVaultingActive() %}checked{% endif %} value="1">
+                                                {{ translate({ ident: "OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING" }) }}
+                                            </label>
+                                        </div>
+                                        <span class="help-block">{{ translate({ ident: "HELP_OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING" }) }}</span>
                                     </div>
                                 </div>
                             </div>

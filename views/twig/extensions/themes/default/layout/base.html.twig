@@ -11,8 +11,9 @@
                 (className == 'details' and oViewConf.showPayPalProductDetailsButton()) or
                 (className == 'basket' and oViewConf.showPayPalBasketButton())
             )
+            and (className != 'oscaccountvaultcard') and (className != 'oscaccountvault')
         %}
-            <script src="{{ oViewConf.getPayPalJsSdkUrl()|raw }}" data-partner-attribution-id="{{ oViewConf.getPayPalPartnerAttributionIdForBanner() }}"></script>
+            <script src="{{ oViewConf.getPayPalJsSdkUrl()|raw }}" data-user-id-token="{{oViewConf.getUserIdForVaulting()}}" data-partner-attribution-id="{{ oViewConf.getPayPalPartnerAttributionIdForBanner() }}"></script>
             {% set sCountryRestriction = oViewConf.getCountryRestrictionForPayPalExpress() %}
             {% if sCountryRestriction %}
                 <script>
@@ -21,8 +22,10 @@
             {% endif %}
         {% elseif className == 'order' and oViewConf.isPayPalACDCSessionActive() %}
             <script src="{{ oViewConf.getPayPalJsSdkUrlForACDC()|raw }}" data-client-token="{{ oViewConf.getDataClientToken() }}"></script>
-        {% elseif className == 'payment' %}
+        {% elseif className == 'payment' or className == 'oscaccountvaultcard'%}
             <script src="{{ oViewConf.getPayPalJsSdkUrlForButtonPayments()|raw }}" data-partner-attribution-id="{{ oViewConf.getPayPalPartnerAttributionIdForBanner() }}"></script>
+        {% elseif className == 'oscaccountvault' %}
+            <script src="{{ oViewConf.getPayPalJsSdkUrl() }}" data-user-id-token="{{ oViewConf.getUserIdForVaulting() }}"></script>
         {% elseif oViewConf.isPayPalBannerActive() and (className == 'start' or className == 'search' or className == 'details' or className == 'alist' or className == 'basket') %}
             <script src="{{ oViewConf.getPayPalApiBannerUrl()|raw }}" data-partner-attribution-id="{{ oViewConf.getPayPalPartnerAttributionIdForBanner() }}"></script>
         {% endif %}
