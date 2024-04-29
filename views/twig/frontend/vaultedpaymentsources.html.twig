@@ -1,0 +1,39 @@
+{% set vaultedPaymentSources = oViewConf.getVaultPaymentTokens() %}
+
+{% if vaultedPaymentSources %}
+
+    <div class="panel panel-default">
+        <div class="panel-heading">
+            <h3 id="paymentHeader" class="card-title">{{ translate({ ident: "OSC_PAYPAL_VAULTING_VAULTED_PAYMENTS" }) }}</h3>
+        </div>
+        <div class="panel-body">
+            <ul>
+                {% for paymentToken in vaultedPaymentSources %}
+                    <li class="mt-3">
+                        <form action="{{ oViewConf.getSslSelfLink() }}" method="post">
+                            <div class="hidden">
+                                {{ oViewConf.getHiddenSid() }}
+                                <input type="hidden" name="cl" value="{{ oViewConf.getActiveClassName() }}">
+                                <input type="hidden" name="fnc" value="deleteVaultedPayment">
+                                <input type="hidden" name="paymentTokenId" value="{{ paymentToken.id }}">
+                            </div>
+
+                            {% if paymentToken.payment_source.card %}
+                                {% set brand = paymentToken.payment_source.card.brand %}
+                                {% set lastdigits = paymentToken.payment_source.card.last_digits %}
+                                {{ brand }} {{ translate({ ident: "OSC_PAYPAL_CARD_ENDING_IN" }) }}{{ lastdigits }}
+                            {% elseif paymentToken.payment_source.paypal %}
+                                {% set lastdigits = paymentToken.payment_source.paypal.email_address %}
+                                {{ translate({ ident: "OSC_PAYPAL_CARD_PAYPAL_PAYMENT" }) }} {{ lastdigits }}
+                            {% endif %}
+
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                {{ translate({ ident: "OSC_PAYPAL_VAULTING_DELETE" }) }}
+                            </button>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endif %}

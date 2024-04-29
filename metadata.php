@@ -39,6 +39,9 @@ use OxidSolutionCatalysts\PayPal\Model\State as PayPalState;
 use OxidSolutionCatalysts\PayPal\Model\User as PayPalUser;
 use OxidSolutionCatalysts\PayPal\Model\Payment as PayPalPayment;
 use OxidSolutionCatalysts\PayPal\Model\PaymentGateway as PayPalPaymentGateway;
+use OxidSolutionCatalysts\PayPal\Controller\PayPalVaultingController;
+use OxidSolutionCatalysts\PayPal\Controller\VaultingTokenController;
+use OxidSolutionCatalysts\PayPal\Controller\PayPalVaultingCardController;
 
 $sMetadataVersion = '2.1';
 
@@ -82,6 +85,9 @@ $aModule = [
         'oscpaypalwebhook' => WebhookController::class,
         'oscpaypalproxy' => ProxyController::class,
         'oscpaypalorder' => PayPalOrderController::class,
+        'oscaccountvault'       => PayPalVaultingController::class,
+        'oscaccountvaultcard'   => PayPalVaultingCardController::class,
+        'osctokencontroller'    => VaultingTokenController::class,
     ],
     'events' => [
         'onActivate' => '\OxidSolutionCatalysts\PayPal\Core\Events\Events::onActivate',
@@ -294,6 +300,12 @@ $aModule = [
             'group' => null
         ],
         [
+            'name' => 'oscPayPalVaultingEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
             'name' => 'oscPayPalSandboxAcdcEligibility',
             'type' => 'bool',
             'value' => false,
@@ -301,6 +313,12 @@ $aModule = [
         ],
         [
             'name' => 'oscPayPalSandboxPuiEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalSandboxVaultingEligibility',
             'type' => 'bool',
             'value' => false,
             'group' => null
@@ -335,6 +353,12 @@ $aModule = [
             'name' => 'oscPayPalLocales',
             'type' => 'str',
             'value' => 'de_DE,en_US',
+        ],
+        [
+            'name' => 'oscPayPalSetVaulting',
+            'type' => 'bool',
+            'value' => true,
+            'group' => null
         ],
     ],
 ];
