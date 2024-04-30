@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### FIX
 
 - Fix admin block parent call, thanks to Alpha-Sys
+- Fix Errorlog-Message "Duplicate entry ..." + fix Update send PUI-Bankdata via Webhook
 
 ### NEW
 - PayPal-Request-Id based on serialized body, no extra PayPal-Request-Id necessary anymore
