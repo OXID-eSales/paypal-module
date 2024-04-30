@@ -91,15 +91,13 @@ abstract class WebhookHandlerBase
         /** @var ?PayPalApiModelOrder $orderDetail */
         $orderDetail = $this->getPayPalOrderDetails($payPalOrderId);
 
-        if (null != $orderDetail) {
-            $this->updateStatus(
-                $this->getStatusFromResource($eventPayload),
-                $paypalOrderModel,
-                $orderDetail
-            );
+        $this->updateStatus(
+            $this->getStatusFromResource($eventPayload),
+            $paypalOrderModel,
+            $orderDetail
+        );
 
-            $this->markShopOrderPaymentStatus($order, $payPalTransactionId);
-        }
+        $this->markShopOrderPaymentStatus($order, $payPalTransactionId);
     }
 
     /**
