@@ -7,8 +7,8 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
-use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Model\Order;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
@@ -22,6 +22,15 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
 {
     public const WEBHOOK_EVENT_NAME = 'CHECKOUT.ORDER.APPROVED';
 
+    /**
+     * @param PayPalModelOrder $paypalOrderModel
+     * @param string $payPalTransactionId
+     * @param string $payPalOrderId
+     * @param array $eventPayload
+     * @param Order $order
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     * @return void
+     */
     public function handleWebhookTasks(
         PayPalModelOrder $paypalOrderModel,
         string $payPalTransactionId,
@@ -41,7 +50,7 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
                 $order->setOrderNumber(); //ensure the order has a number
             } catch (\Exception $exception) {
                 /** @var Logger $logger */
-                $logger = Registry::get('logger');
+                $logger = Registry::get('logger');/** @phpstan-ignore-line */
                 $logger->debug(
                     sprintf(
                         "Error during %s for PayPal order_id '%s'",
