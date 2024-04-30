@@ -87,6 +87,111 @@ $aModule = [
         'onActivate' => '\OxidSolutionCatalysts\PayPal\Core\Events\Events::onActivate',
         'onDeactivate' => '\OxidSolutionCatalysts\PayPal\Core\Events\Events::onDeactivate'
     ],
+    'templates' => [
+        '@osc_paypal/admin/oscpaypalconfig.tpl' => 'views/smarty/admin/oscpaypalconfig.tpl',
+        '@osc_paypal/admin/oscpaypalorder.tpl' => 'views/smarty/admin/oscpaypalorder.tpl',
+        '@osc_paypal/admin/oscpaypalorder_pp.tpl' => 'views/smarty/admin/oscpaypalorder_pp.tpl',
+        '@osc_paypal/admin/oscpaypalorder_ppplus.tpl' => 'views/smarty/admin/oscpaypalorder_ppplus.tpl',
+
+        '@osc_paypal/frontend/acdc.tpl' => 'views/smarty/frontend/acdc.tpl',
+        '@osc_paypal/frontend/installment_banners.tpl' => 'views/smarty/frontend/installment_banners.tpl',
+        '@osc_paypal/frontend/paymentbuttons.tpl' => 'views/smarty/frontend/paymentbuttons.tpl',
+        '@osc_paypal/frontend/pui_flow.tpl' => 'views/smarty/frontend/pui_flow.tpl',
+        '@osc_paypal/frontend/select_payment.tpl' => 'views/smarty/frontend/select_payment.tpl',
+    ],
+    'blocks'    => [
+        [
+            'template' => 'headitem.tpl',
+            'block' => 'admin_headitem_inccss',
+            'file' => 'views/smarty/extensions/theme/default/headitem__admin_headitem_inccss.tpl'
+        ],
+        [
+            'template' => 'headitem.tpl',
+            'block' => 'admin_headitem_incjs',
+            'file' => 'views/smarty/extensions/theme/default/headitem__admin_headitem_incjs.tpl'
+        ],
+        [
+            'template' => 'order_main.tpl',
+            'block' => 'admin_order_main_form_shipping',
+            'file' => 'views/smarty/extensions/theme/default/order_main__admin_order_main_form_shipping.tpl'
+        ],
+        [
+            'template' => 'order_main.tpl',
+            'block' => 'admin_order_main_send_order',
+            'file' => 'views/smarty/extensions/theme/default/order_main__admin_order_main_send_order.tpl'
+        ],
+
+        [
+            'template' => 'layout/base.tpl',
+            'block' => 'base_js',
+            'file' => 'views/smarty/extensions/theme/default/layout/base__base_js.tpl'
+        ],
+        [
+            'template' => 'layout/base.tpl',
+            'block' => 'base_style',
+            'file' => 'views/smarty/extensions/theme/default/layout/base__base_style.tpl'
+        ],
+        [
+            'template' => 'page/checkout/basket.tpl',
+            'block' => 'basket_btn_next_bottom',
+            'file' => 'views/smarty/extensions/theme/default/page/checkout/inc/basket__basket_btn_next_bottom.tpl',
+        ],
+        [
+            'template' => 'page/checkout/basket.tpl',
+            'block' => 'checkout_basket_next_step_top',
+            'file' => 'views/smarty/extensions/theme/default/page/checkout/basket__checkout_basket_next_step_top.tpl',
+        ],
+        [
+            'template' => 'page/checkout/basket.tpl',
+            'block' => 'checkout_basket_emptyshippingcart',
+            'file' => 'views/smarty/extensions/theme/default/page/checkout/basket__checkout_basket_emptyshippingcart.tpl',
+        ],
+        [
+            'template' => 'page/checkout/payment.tpl',
+            'block' => 'select_payment',
+            'file' => 'views/smarty/extensions/theme/default/page/checkout/payment__select_payment.tpl',
+        ],
+        [
+            'template' => 'page/checkout/payment.tpl',
+            'block' => 'change_payment',
+            'file' => 'views/smarty/extensions/theme/default/page/checkout/payment__change_payment.tpl',
+        ],
+        [
+            'template' => 'page/checkout/payment.tpl',
+            'block' => 'checkout_payment_main',
+            'file' => 'views/smarty/extensions/theme/default/page/checkout/payment__checkout_payment_main.tpl',
+        ],
+        [
+            'template' => 'page/checkout/order.tpl',
+            'block' => 'shippingAndPayment',
+            'file' => 'views/smarty/extensions/theme/default/page/checkout/order__shippingAndPayment.tpl',
+        ],
+        [
+            'template' => 'page/details/inc/productmain.tpl',
+            'block' => 'details_productmain_tobasket',
+            'file' => 'views/smarty/extensions/theme/default/page/details/inc/productmain__details_productmain_tobasket.tpl',
+        ],
+        [
+            'template' => 'page/details/inc/productmain.tpl',
+            'block' => 'details_productmain_price_value',
+            'file' => 'views/smarty/extensions/theme/default/page/details/inc/productmain__details_productmain_price_value.tpl',
+        ],
+        [
+            'template' => 'page/list/list.tpl',
+            'block' => 'page_list_listhead',
+            'file' => 'views/smarty/extensions/theme/default/page/list/list__page_list_listhead.tpl',
+        ],
+        [
+            'template' => 'page/shop/start.tpl',
+            'block' => 'start_newest_articles',
+            'file' => 'views/smarty/extensions/theme/default/page/shop/start__start_newest_articles.tpl',
+        ],
+        [
+            'template' => 'widget/minibasket/minibasket.tpl',
+            'block' => 'dd_layout_page_header_icon_menu_minibasket_functions',
+            'file' => 'views/smarty/extensions/theme/default/widget/minibasket/minibasket__dd_layout_page_header_icon_menu_minibasket_functions.tpl',
+        ],
+    ],
     'settings' => [
         [
             'name' => 'oscPayPalSandboxMode',
@@ -259,7 +364,7 @@ $aModule = [
         [
             'name' => 'oscPayPalBannersPaymentPageSelector',
             'type' => 'str',
-            'value' => 'HEADER.header',
+            'value' => '#shipping',
             'group' => null
         ],
         [
