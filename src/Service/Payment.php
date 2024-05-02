@@ -125,7 +125,7 @@ class Payment
         $orderService = $this->serviceFactory->getOrderService();
 
         /** @var \OxidSolutionCatalysts\PayPal\Model\Order $order */
-        $transactionId = method_exists($order, 'getPaypalIntData')
+        $transactionId = null !== $order && method_exists($order, 'getPaypalIntData')
                         ? $order->getPaypalIntData('oxordernr') : null;
         $request = $this->orderRequestFactory->getRequest(
             $basket,
