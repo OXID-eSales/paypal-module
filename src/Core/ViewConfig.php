@@ -208,7 +208,7 @@ class ViewConfig extends ViewConfig_parent
      */
     public function getPayPalJsSdkUrlForACDC(): string
     {
-        return $this->getBasePayPalJsSdkUrl('hosted-fields');
+        return $this->getBasePayPalJsSdkUrl('card-fields');
     }
 
     /**
@@ -243,16 +243,23 @@ class ViewConfig extends ViewConfig_parent
             $params['commit'] = 'true';
         }
 
-        $params['components'] = 'buttons,googlepay,' . $type;
+        // components
+        $components = [
+            'buttons', 'googlepay'
+        ];
+        if ($type) {
+            $components[] = $type;
+        }
 
         if ($this->isPayPalBannerActive()) {
-            $params['components'] .= ',messages';
+            $components[] = 'messages';
         }
 
         if ($this->getIsVaultingActive()) {
-            $params['components'] .= ',card-fields';
+            $components[] = 'card-fields';
         }
 
+        $params['components'] = implode(',', array_unique($components));
         $params['locale'] = $localeCode;
 
         return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
