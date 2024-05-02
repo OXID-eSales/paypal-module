@@ -15,7 +15,6 @@ use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
-use OxidSolutionCatalysts\PayPal\Model\Order as PayPalExtendModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -509,8 +508,7 @@ final class OrderTest extends BaseTestCase
                     'extractTransactionId',
                     '_sendOrderByEmail',
                     'getOrderPaymentCapture',
-                    'doExecutePayPalPayment',
-                    'doCapturePayPalOrder'
+                    'doExecutePayPalPayment'
                 ]
             )
             ->getMock();
@@ -520,15 +518,12 @@ final class OrderTest extends BaseTestCase
             ->getMock();
         $captureMock->id = self::TEST_PAYPAL_TRANS_ID;
 
-        //@TODO this is solution for error, but it breaks the test, reactor needed
-        $orderMock->expects($this->once())
-            ->method('doCapturePayPalOrder')
-            ->willReturn(true);
         $orderMock->expects($this->once())
             ->method('getOrderPaymentCapture')
             ->willReturn($captureMock);
         $orderMock->expects($this->once())
-            ->method('doExecutePayPalPayment');
+            ->method('doExecutePayPalPayment')
+            ->willReturn(true);
         $orderMock->expects($this->any())
             ->method('getServiceFromContainer')
             ->willReturn($paymentServiceMock);
