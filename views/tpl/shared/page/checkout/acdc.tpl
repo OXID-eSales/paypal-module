@@ -34,17 +34,17 @@
 
 <!-- Implementation -->
 [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
-
+[{assign var="oPPconfig" value=$oViewConf->getPayPalCheckoutConfig()}]
 <script>
 
-    var PayPalHostedFields = function () {
+    var PayPalCardFields = function () {
         let orderId;
 
         // If this returns false or the card fields aren't visible, see Step #1.
-        if (paypal.HostedFields.isEligible()) {
+        if (paypal.CardFields.isEligible()) {
 
             // Renders card fields
-            paypal.HostedFields.render({
+            paypal.CardFields.render({
 
                 // Call your server to set up the transaction
                 createOrder: function(data, actions) {
@@ -107,9 +107,9 @@
                 }
             }).then(function (cardFields) {
                 cardFields.on('blur', function (event) {
-                    var key = event.emittedBy;
-                    var field = event.fields[key];
-                    var selector = field.container.classList;
+                    const key = event.emittedBy;
+                    const field = event.fields[key];
+                    const selector = field.container.classList;
                     if (field.isValid === true) {
                         selector.add('alert-success');
                         selector.remove('alert-danger');
@@ -128,7 +128,7 @@
                 });
                 // special check for cardholder
                 document.getElementById("card-holder-name").addEventListener('blur', (event) => {
-                    var cardHolder = event.target;
+                    const cardHolder = event.target;
                     if (cardHolder.value === "") {
                         cardHolder.classList.add('alert-danger');
                         cardHolder.classList.remove('alert-success');
@@ -142,11 +142,11 @@
                 document.querySelector("#orderConfirmAgbBottom").addEventListener('submit', (event) => {
                     event.preventDefault();
 
-                    var state = cardFields.getState();
-                    var isValid = true;
+                    const state = cardFields.getState();
+                    let isValid = true;
                     for (const [key,] of Object.entries(state.fields)) {
-                        var field = state.fields[key];
-                        var selector = field.container.classList;
+                        const field = state.fields[key];
+                        const selector = field.container.classList;
                         if (field.isEmpty === true) {
                             isValid = false;
                             selector.add('alert-danger');
@@ -155,7 +155,7 @@
                         }
                     }
                     // special check for cardholder
-                    var cardHolder = document.getElementById("card-holder-name");
+                    const cardHolder = document.getElementById("card-holder-name");
                     if (cardHolder.value === "") {
                         isValid = false;
                         cardHolder.classList.add('alert-danger');
@@ -193,45 +193,50 @@
                             }).then(function (res) {
                                 return res.json();
                             }).then(function (orderData) {
-                                var errorDetail = Array.isArray(orderData.details) && orderData.details[0];
-                                var goNext = Array.isArray(orderData.location) && orderData.location[0];
+                                [{if $oPPconfig->isSandbox()}]
+                                    const errorDetail = Array.isArray(orderData.details) && orderData.details[0];
+                                    console.log('Error on CardFields-Submit! ' + JSON.stringify(errorDetail));
+                                [{/if}]
+                                const goNext = Array.isArray(orderData.location) && orderData.location[0];
 
                                 window.location.href = '[{$sSelfLink}]' + goNext;
                             })
                         }).catch(function (err) {
-                            console.log('Payment could not be processed! ' + JSON.stringify(err))
+                            [{if $oPPconfig->isSandbox()}]
+                                console.log('Payment could not be processed! ' + JSON.stringify(err));
+                            [{/if}]
                             window.location.href = '[{$sSelfLink|cat:"cl=order&retryoscpp=acdcretry"}]'
                         })
                     }
                 })
             });
         } else {
-            // Hides card fields if the merchant isn't eligible
+        //    // Hides card fields if the merchant isn't eligible
             document.querySelector("#card_form").style = 'display: none';
         }
 
     }
 
-    var initWhenPayPalHostedFieldsAvailable = function (){
-        if (typeof paypal !== 'undefined' && typeof paypal.HostedFields !== 'undefined') {
+    const initWhenPayPalCardFieldsAvailable = function (){
+        if (typeof paypal !== 'undefined' && typeof paypal.CardFields !== 'undefined') {
             document.querySelector("#card_form").style = 'display: block';
-            PayPalHostedFields();
+            PayPalCardFields();
         } else {
             setTimeout(function(){
                 document.querySelector("#card_form").style = 'display: none';
-                initWhenPayPalHostedFieldsAvailable();
+                initWhenPayPalCardFieldsAvailable();
             }, 100);
         }
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initWhenPayPalHostedFieldsAvailable);
+        document.addEventListener('DOMContentLoaded', initWhenPayPalCardFieldsAvailable);
     } else {
-        initWhenPayPalHostedFieldsAvailable();
+        initWhenPayPalCardFieldsAvailable();
     }
 
     window.onresize = function () {
-        initWhenPayPalHostedFieldsAvailable();
+        initWhenPayPalCardFieldsAvailable();
     }
 
 
