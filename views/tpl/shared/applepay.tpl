@@ -30,6 +30,30 @@
             script.addEventListener('error', reject);
         });
     }
+    document.addEventListener('DOMContentLoaded', function() {
+        check_applepay();
+    });
+    let globalPaymentRequestData = null;
+    async function preloadPaymentRequestData() {
+        let url = "[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=getPaymentRequestLines&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]";
+        const response = await fetch(url);
+        const payment_request_line = await response.json();
+
+        globalPaymentRequestData = {
+            countryCode: global_apple_pay_config.countryCode,
+            merchantCapabilities: global_apple_pay_config.merchantCapabilities,
+            supportedNetworks: global_apple_pay_config.supportedNetworks,
+            currencyCode: global_apple_pay_config.currencyCode,
+            requiredShippingContactFields: ["name", "phone", "email", "postalAddress"],
+            requiredBillingContactFields: ["postalAddress"],
+            ...payment_request_line
+        };
+
+        console.log('REQUEST LINE');
+        console.log(payment_request_line);
+        console.log('PAYMENT REQUEST');
+        console.log(globalPaymentRequestData);
+    }
     let reset_purchase_button = () => {
         //document.querySelector("#card-form").querySelector("input[type='submit']").removeAttribute("disabled");
         //document.querySelector("#card-form").querySelector("input[type='submit']").value = "Purchase";
@@ -71,43 +95,38 @@
 
             //ApplePay Code
             let check_applepay = async () => {
-                return new Promise((resolve, reject) => {
-                    let error_message = "";
-                    if (!window.ApplePaySession) {
-                        error_message = "This device does not support Apple Pay";
-                    } else
-                    if (!ApplePaySession.canMakePayments()) {
-                        error_message = "This device, although an Apple device, is not capable of making Apple Pay payments";
-                    }
-                    if (error_message !== "") {
-                        resolve();
-                    } else {
-                        resolve();
-                    }
-                });
-            };
-            //Begin Displaying of ApplePay Button
-            check_applepay()
-                .then(async () => {
-                    applepay = paypal.Applepay();
-                    applepay.config()
-                        .then(applepay_config => {
+                let error_message = "";
+                if (!window.ApplePaySession) {
+                    error_message = "This device does not support Apple Pay";
+                } else if (!ApplePaySession.canMakePayments()) {
+                    error_message = "This device, although an Apple device, is not capable of making Apple Pay payments";
+                }
 
-                            if (applepay_config.isEligible) {
-                                document.getElementById("applepay-container").innerHTML = '<apple-pay-button id="applepay_button" buttonstyle="black" type="plain" locale="en">';
-                                global_apple_pay_config = applepay_config;
-                                document.getElementById("applepay_button").addEventListener("click", handle_applepay_clicked);
-                            }
-                        })
-                        .catch(applepay_config_error => {
-                            console.error('Error while fetching Apple Pay configuration:');
-                            console.error(applepay_config_error);
-                        });
-                })
-                .catch((error) => {
-                    console.error(error);
-                });
+                if (error_message !== "") {
+                    console.error(error_message);
+                    throw new Error(error_message); // Fehler werfen, wenn Apple Pay nicht unterstützt wird
+                }
+
+                applepay = paypal.Applepay();
+
+                try {
+                    const applepay_config = await applepay.config();
+                    if (applepay_config.isEligible && ApplePaySession.canMakePayments()) {
+                        global_apple_pay_config = applepay_config;
+                        await preloadPaymentRequestData(); // Jetzt innerhalb des try-Blocks nach dem Laden der Konfiguration
+                        document.getElementById("applepay-container").innerHTML = '<apple-pay-button id="applepay_button" buttonstyle="black" type="plain" locale="en">';
+                        document.getElementById("applepay_button").addEventListener("click", handle_applepay_clicked);
+                    } else {
+                        console.error("Apple Pay is not eligible on this device.");
+                    }
+                } catch (error) {
+                    console.error('Error while fetching Apple Pay configuration:', error);
+                    throw error; // Fehler weiter nach außen werfen
+                }
+            };
+
             let handleApplePayPaymentAuthorized = (event) => {
+                console.log('---- handleApplePayPaymentAuthorized -----')
                 applepay_payment_event = event.payment;
                 createOrderUrl = "[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]"
                 fetch(createOrderUrl, {
@@ -167,46 +186,64 @@
                             });
                     });
             };
-            let ap_validate = (event) => {
+            let ap_validate = (event, session) => {
+                console.log('ap_validate')
+                console.log(session)
                 applepay.validateMerchant({
                     validationUrl: event.validationURL,
                     // function to get oxid eshop-name
-                    displayName: ""
+                    displayName: "dsfasdf"
                 })
                     .then(validateResult => {
-                        current_ap_session.completeMerchantValidation(validateResult.merchantSession);
+                        session.completeMerchantValidation(validateResult.merchantSession);
                     })
                     .catch(validateError => {
                         console.error(validateError);
-                        current_ap_session.abort();
+                        session.abort();
                     });
             };
-            let handle_applepay_clicked = async (event) => {
-                let url = "[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]";
-                const response = await fetch(url);
-                const payment_request_line = await response.json();
-                const payment_request = {
-                    countryCode: global_apple_pay_config.countryCode,
-                    merchantCapabilities: global_apple_pay_config.merchantCapabilities,
-                    supportedNetworks: global_apple_pay_config.supportedNetworks,
-                    currencyCode: global_apple_pay_config.currencyCode,
-                    requiredShippingContactFields: ["name", "phone", "email", "postalAddress"],
-                    requiredBillingContactFields: ["postalAddress"],
-                    ... payment_request_line
-                };
-                console.log('REQUEST LINE');
-                console.log(payment_request_line);
-                console.log('PAYMENT REQUEST');
-                console.log(payment_request);
-                current_ap_session = new ApplePaySession(4, payment_request);
-                current_ap_session.onvalidatemerchant = ap_validate;
-                current_ap_session.onpaymentauthorized = handleApplePayPaymentAuthorized;
-                current_ap_session.begin()
+    let handle_applepay_clicked = async (event) => {
+        console.log('----- CLICKED -------');
+        console.log(globalPaymentRequestData);
+        try {
+            let session = new ApplePaySession(4, globalPaymentRequestData);
+            console.log('Session created:', session);
+            session.onvalidatemerchant = (event) => {
+                console.log('inside')
+                applepay
+                    .validateMerchant({
+                        validationUrl: event.validationURL,
+                    })
+                    .then((payload) => {
+                        session.completeMerchantValidation(payload.merchantSession);
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                        session.abort();
+                    });
             };
-        })
-        .catch((error) => {
-            reset_purchase_button();
-        });
+
+        /*    session.onpaymentmethodselected = () => {
+                session.completePaymentMethodSelection({
+                    newTotal: globalPaymentRequestData.total,
+                });
+            };
+            session.onpaymentauthorized = (event) => {
+                console.log('Payment authorized...', event.payment);
+                handleApplePayPaymentAuthorized(event.payment);
+            };*/
+            try {
+                session.begin();
+                console.log('BEGIN SESSION');
+            } catch (error) {
+                console.error('Error starting ApplePaySession:', error);
+            }
+        } catch (error) {
+            console.log('BLUB')
+            console.error('Error starting ApplePaySession:', error);
+        }
+    };
+
 
     [{/capture}]
 
