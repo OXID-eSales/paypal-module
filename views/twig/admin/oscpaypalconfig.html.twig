@@ -105,7 +105,7 @@
                                 <br>
                                 {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC", suffix:"COLON" }) }} {% if config.isAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
                                 <br>
-                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING", suffix:"COLON" }) }} {% if config.isLiveVaultingEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {% endif %}
+                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING", suffix:"COLON" }) }} {% if config.isVaultingEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}DD{% else %}AAA{{ translate({ ident: "GENERAL_NO" }) }} {% endif %}
                             </div>
                         </div>
 
