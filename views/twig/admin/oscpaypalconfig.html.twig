@@ -101,7 +101,7 @@
                         <div class="form-group live">
                             <label for="special-payments">{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS", suffix:"COLON" }) }}</label>
                             <div>
-                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_PUI", suffix:"COLON" }) }} {% if config.isPuiEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}<br />
+                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_PUI", suffix:"COLON" }) }} {% if config.isPuiEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
                                 <br>
                                 {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC", suffix:"COLON" }) }} {% if config.isAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
                                 <br>
