@@ -148,11 +148,11 @@ class Order extends Order_parent
         $isPayPalACDC = $paymentsId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
         $transactionId = null;
+        $payPalPaymentSuccess = true;
 
         if ($isPayPalACDC && $forceFetchDetails) {
             /** @var PayPalApiOrder $payPalApiOrder */
             $payPalApiOrder = $paymentService->fetchOrderFields($payPalOrderId);
-            $transactionId = '';
             if ($this->isPayPalOrderCompleted($payPalApiOrder)) {
                 $this->markOrderPaid();
                 $transactionId = $this->extractTransactionId($payPalApiOrder);
@@ -168,9 +168,6 @@ class Order extends Order_parent
                 throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
             }
         }
-
-        //ensure order number
-        $this->setOrderNumber();
 
         if ($isPayPalACDC) {
             //webhook should kick in and handle order state and we should not call the api too often
@@ -195,17 +192,25 @@ class Order extends Order_parent
             );
         } else {
             // uAPM, PayPal Standard directly, PayPal Paylater
-            $this->doExecutePayPalPayment($payPalOrderId);
+            $payPalPaymentSuccess = $this->doExecutePayPalPayment($payPalOrderId);
             //TODO: maybe we can get transation id as return value if payment was completed
         }
 
         //TODO: reduce calls to api, see above
-        if (is_null($transactionId) && ($capture = $this->getOrderPaymentCapture($payPalOrderId))) {
-            if ($capture->status === 'DECLINED') {
+        if (is_null($transactionId)) {
+            $capture = $this->getOrderPaymentCapture($payPalOrderId);
+            if (!$payPalPaymentSuccess || is_null($capture) || $capture->status === 'DECLINED') {
+                // We don't have a capture but the order has already been created with the order number.
+                // so we set the order to "oxtransstatus" = ERROR
+                // The Merchant has the opportunity to see what is going on and can contact the customer if necessary
+                $this->_setOrderStatus('ERROR');
                 throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
             }
             $this->setTransId($capture->id);
         }
+
+        //ensure order number
+        $this->setOrderNumber();
 
         $this->sendPayPalOrderByEmail($user, $basket);
     }
@@ -255,6 +260,8 @@ class Order extends Order_parent
      */
     protected function _executePayment(Basket $basket, $userpayment) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
     {
+        //order number needs to be set before the payment is requested
+        $this->setOrderNumber();
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
 

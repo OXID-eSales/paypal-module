@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ## [1.3.6] - 2024-05-30
 
 - fix Errorlog-Message "Duplicate entry ..." + fix Update send PUI-Bankdata via Webhook
+- [0007577](https://bugs.oxid-esales.com/view.php?id=7577): Declined Credit card orders would be saved as error-order
 
 ## [1.3.5] - 2024-02-21
 
