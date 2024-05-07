@@ -129,12 +129,11 @@ class Payment
 
         if ($paypal = $result->payment_source->paypal) {
             $vault = $paypal->attributes->vault;
-        }elseif ($card = $result->payment_source->card) {
+        } elseif ($card = $result->payment_source->card) {
             $vault = $card->attributes->vault;
         }
 
         if ($session->getVariable("vaultSuccess") && $vault->status == "VAULTED") {
-
             $vaultSuccess = false;
 
             if ($id = $vault->customer["id"]) {
@@ -365,7 +364,7 @@ class Payment
             } elseif (Registry::getRequest()->getRequestParameter("vaulting")) {
                 //when a vaulted payment is used, the order is already finished.
                 $result = $this->fetchOrderFields($checkoutOrderId);
-            }else {
+            } else {
                 $request = new OrderCaptureRequest();
                 try {
                     /** @var ApiOrderModel */
