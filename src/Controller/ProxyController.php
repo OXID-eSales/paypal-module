@@ -31,6 +31,13 @@ use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\PhoneWithType;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
 
 /**
  * Server side interface for PayPal smart buttons.
@@ -78,11 +85,193 @@ class ProxyController extends FrontendController
         $this->outputJson($response);
     }
 
+    public function getGooglepayBasket()
+    {
+        $basket = Registry::getSession()->getBasket();
+        $lang = Registry::getLang();
+        $actShopCurrency = Registry::getConfig()->getActShopCurrencyObject();
+
+        if ($basket->getItemsCount() === 0) {
+            $this->addToBasket();
+
+            $basket = Registry::getSession()->getBasket();
+            $blIsAdd = true;
+        }
+        $deliveryCost = $basket->getDeliveryCost();
+        $deliveryBruttoPrice = $deliveryCost->getBruttoPrice();
+        $this->setPayPalPaymentMethod();
+
+        $sVat = 0;
+        foreach ($basket->getProductVats(false) as $key => $VATitem) {
+            $sVat += $VATitem;
+        }
+
+        $aItems = [
+           "displayItems" => [
+             [
+                "label" => $lang->translateString("TOTAL_NET"),
+                "type" => "SUBTOTAL",
+                "price" => number_format((double) $basket->getNettoSum(), 2, '.', ''),
+             ],
+             [
+                "label" => $lang->translateString("VAT"),
+                "type" => "TAX",
+                "price" => number_format((double) $sVat, 2, '.', ''),
+             ],
+             [
+                "label" => $lang->translateString("SHIPPING"),
+                "type" => "LINE_ITEM",
+                "price" => number_format((double) $deliveryBruttoPrice, 2, '.', ''),
+                "status" => "FINAL"
+             ]
+           ],
+           "countryCode" => strtoupper($lang->getLanguageAbbr()),
+           "currencyCode" => strtoupper($actShopCurrency->name),
+           "totalPriceStatus" => "ESTIMATED",
+           "totalPrice" => number_format((double) $basket->getPrice()->getBruttoPrice(), 2, '.', ''),
+           "totalPriceLabel" => $lang->translateString("TOTAL"),
+        ];
+        if ($blIsAdd) {
+            if ($aid = (string)Registry::getRequest()->getRequestEscapedParameter('aid')) {
+                try {
+                    $basket->addToBasket($aid, 0);
+                    $basket->calculateBasket(false);
+                } catch (NoArticleException $exception) {
+                }
+            }
+        }
+
+        $utils = Registry::getUtils();
+        $utils->showMessageAndExit(json_encode($aItems));
+    }
+
+    public function createGooglepayOrder()
+    {
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        $shippingAddress = new AddressPortable();
+        $shippingAddress->address_line_1 = $data['shippingAddress']['address1'] ?? '';
+        $shippingAddress->address_line_2 = $data['shippingAddress']['address2'] ?? '';
+        $shippingAddress->address_line_3 = $data['shippingAddress']['address3'] ?? '';
+        $shippingAddress->postal_code    = $data['shippingAddress']['postalCode'] ?? '';
+        $shippingAddress->admin_area_2   = $data['shippingAddress']['locality'] ?? '';
+        $shippingAddress->admin_area_1   = $data['shippingAddress']['administrativeArea'] ?? '';
+        $shippingAddress->country_code   = $data['shippingAddress']['countryCode'] ?? '';
+
+        if (PayPalSession::isPayPalExpressOrderActive()) {
+            //TODO: improve
+            $this->outputJson([
+                'ERROR' => 'PayPal session already started.' . PayPalSession::isPayPalExpressOrderActive()
+            ]);
+        }
+        $paymentId = Registry::getSession()->getVariable('paymentid');
+
+        $this->addToBasket();
+        $this->setPayPalPaymentMethod($paymentId);
+        $basket = Registry::getSession()->getBasket();
+
+        if ($basket->getItemsCount() === 0) {
+            $this->outputJson(['ERROR' => 'No Article in the Basket']);
+        }
+
+        $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
+            $basket,
+            OrderRequest::INTENT_CAPTURE,
+            OrderRequestFactory::USER_ACTION_CONTINUE,
+            null,
+            '',
+            '',
+            '',
+            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
+            null,
+            null,
+            false,
+            false,
+            null
+        );
+
+        if ($response->id) {
+            PayPalSession::storePayPalOrderId($response->id);
+        }
+
+        if (!$this->getUser()) {
+            $purchaseUnitRequest = new PurchaseUnitRequest();
+            $purchaseUnitRequest->shipping->address = $shippingAddress;
+            $purchaseUnitRequest->shipping->name->full_name = $data['shippingAddress']['name'] ?? '';
+
+            $response->purchase_units = [$purchaseUnitRequest];
+
+            $response->payer = new Payer();
+            $response->payer->email_address = $data['email'];
+            $response->payer->phone->phone_number->national_number = $data['shippingAddress']['phoneNumber'] ?? '';
+
+            $userRepository = $this->getServiceFromContainer(UserRepository::class);
+            $paypalEmail = $data['email'];
+
+            $nonGuestAccountDetected = false;
+            if ($userRepository->userAccountExists($paypalEmail)) {
+                //got a non-guest account, so either we log in or redirect customer to login step
+                $isLoggedIn = $this->handleUserLogin($response);
+                $nonGuestAccountDetected = true;
+            } else {
+                //we need to use a guest account
+                $userComponent = oxNew(UserComponent::class);
+                $userComponent->createPayPalGuestUser($response);
+            }
+        }
+
+        if ($user = $this->getUser()) {
+            /** @var array $userInvoiceAddress */
+            $userInvoiceAddress = $user->getInvoiceAddress();
+            // add PayPal-Address as Delivery-Address
+            if (($response !== null) && !empty($response->purchase_units[0]->shipping)) {
+                $response->purchase_units[0]->shipping->address = $shippingAddress;
+                $response->purchase_units[0]->shipping->name->full_name = $data['shippingAddress']['name'] ?? '';
+                $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
+                if ($deliveryAddress['oxaddress__oxfname'] !== '' && $deliveryAddress['oxaddress__oxstreet'] !== '') {
+                    try {
+                        $user->changeUserData(
+                            $user->oxuser__oxusername->value,
+                            '',
+                            '',
+                            $userInvoiceAddress,
+                            $deliveryAddress
+                        );
+
+                        // use a deliveryaddress in oxid-checkout
+                        Registry::getSession()->setVariable('blshowshipaddress', false);
+
+                        $this->setPayPalPaymentMethod();
+                    } catch (StandardException $exception) {
+                        Registry::getUtilsView()->addErrorToDisplay($exception);
+                        $response->status = 'ERROR';
+                        PayPalSession::unsetPayPalOrderId();
+                        Registry::getSession()->getBasket()->setPayment(null);
+                    }
+                }
+            }
+        } elseif ($nonGuestAccountDetected && !$isLoggedIn) {
+            // PPExpress is actual no possible so we switch to PP-Standard
+            $this->setPayPalPaymentMethod(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
+        } else {
+            //TODO: we might end up in order step redirecting to start page without showing a message
+            // if we have no user, we stop the process
+            $response->status = 'ERROR';
+            PayPalSession::unsetPayPalOrderId();
+            Registry::getSession()->getBasket()->setPayment(null);
+        }
+        $this->outputJson($response);
+    }
+
+
     public function approveOrder()
     {
+        $data = json_decode(file_get_contents('php://input'), true);
         $orderId = (string) Registry::getRequest()->getRequestEscapedParameter('orderID');
         $sessionOrderId = PayPalSession::getCheckoutOrderId();
-
+        if (!empty($data['orderID']) && $orderId == '') {
+            $orderId = $data['orderID'];
+        }
         if (!$orderId || ($orderId !== $sessionOrderId)) {
             //TODO: improve
             $this->outputJson(['ERROR' => 'OrderId not found in PayPal session.']);
@@ -129,11 +318,14 @@ class ProxyController extends FrontendController
                     $userInvoiceAddress,
                     $deliveryAddress
                 );
-
+                $paymentId = Registry::getSession()->getVariable('paymentid');
                 // use a deliveryaddress in oxid-checkout
                 Registry::getSession()->setVariable('blshowshipaddress', false);
-
-                $this->setPayPalPaymentMethod();
+                if ($paymentId === 'oscpaypal_googlepay') {
+                    $this->setPayPalPaymentMethod($paymentId);
+                } else {
+                    $this->setPayPalPaymentMethod();
+                }
             } catch (StandardException $exception) {
                 Registry::getUtilsView()->addErrorToDisplay($exception);
                 $response->status = 'ERROR';

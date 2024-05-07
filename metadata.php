@@ -133,6 +133,9 @@ $aModule = [
         // PSPAYPAL-491 Installment banners
         'modules/osc/paypal/installment_banners.tpl' => 'osc/paypal/views/tpl/shared/installment_banners.tpl',
 
+        // PSPAYPAL-685 Installment banners
+        'modules/osc/paypal/googlepay.tpl' => 'osc/paypal/views/tpl/shared/googlepay.tpl',
+
         //PSPAYPAL-680 Vaulting
         'modules/osc/paypal/account_vaulting_paypal.tpl'    => 'osc/paypal/views/tpl/shared/page/account/account_vaulting_paypal.tpl',
         'modules/osc/paypal/account_vaulting_card.tpl'      => 'osc/paypal/views/tpl/shared/page/account/account_vaulting_card.tpl',
@@ -473,6 +476,12 @@ $aModule = [
             'group' => null
         ],
         [
+            'name' => 'oscPayPalGooglePayEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
             'name' => 'oscPayPalSandboxAcdcEligibility',
             'type' => 'bool',
             'value' => false,
@@ -486,6 +495,12 @@ $aModule = [
         ],
         [
             'name' => 'oscPayPalSandboxVaultingEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalSandboxGooglePayEligibility',
             'type' => 'bool',
             'value' => false,
             'group' => null
@@ -525,6 +540,12 @@ $aModule = [
             'name' => 'oscPayPalSetVaulting',
             'type' => 'bool',
             'value' => true,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalUseGooglePayAddress',
+            'type' => 'bool',
+            'value' => false,
             'group' => null
         ],
     ],
