@@ -60,7 +60,7 @@ class PayPalAddressResponseToOxidAddress
     /**
      * @param PayPalApiOrderModel $response PayPal Response
      * @param string $DBTablePrefix
-     * @return array|bool
+     * @return array
      */
     private static function mapAddress(
         PayPalApiOrderModel $response,

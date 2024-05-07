@@ -4,6 +4,8 @@ parameters:
         - ../../src/Core/ShopControl.php
         - ../../src/Core/InputValidator.php
         - ../../src/Traits/DataGetter.php
+        - ../../src/Controller/ProxyController.php
+        - ../../src/Service/Payment.php
     universalObjectCratesClasses:
         - OxidEsales\Eshop\Application\Model\User
     checkMissingIterableValueType: false
@@ -16,6 +18,10 @@ parameters:
             message: "#^Call\\s?to\\s?an\\s?undefined\\s?method\\s?OxidEsales\\\\Eshop\\\\Core\\\\Request::getVariable#"
             count: 1
             path: ../../src/Controller/ProxyController.php
+        -
+            message: "#^Method\\s?OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ConfirmOrderRequestFactory::getPaymentSource\\(\\)\\s?should\\s?return\\s?OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentSource\\s?but\\s?returns\\s?OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentSource\\|stdClass#"
+            count: 1
+            path: ../../src/Core/ConfirmOrderRequestFactory.php
     bootstrapFiles:
         - phpstan-bootstrap.php
     level: max
