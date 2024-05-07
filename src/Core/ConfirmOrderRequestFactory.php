@@ -19,6 +19,7 @@ use OxidSolutionCatalysts\PayPal\Traits\SessionDataGetter;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderConfirmApplicationContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
+use stdClass;
 
 /**
  * Class ConfirmOrderRequestFactory
@@ -64,27 +65,27 @@ class ConfirmOrderRequestFactory
         if ($deliveryId && $deliveryAddress->load($deliveryId)) {
             $country->load($deliveryAddress->getPaypalStringData('oxcountryid'));
         }
+
+        $paymentSource = new PaymentSource([
+            $requestName => [
+                'name' => $userName,
+                'country_code' => $country->getPaypalStringData('oxisoalpha2')
+            ]
+        ]);
+
         //@todo remove the next line, until client has added googlepay
         if ($requestName === 'googlepay') {
             $requestName = 'google_pay';
-            $paymentSource = new \stdClass();
+            $paymentSource = new stdClass();
 
-// Dynamically adding properties to the stdClass object
-            $paymentSource->$requestName = new \stdClass();
+            // Dynamically adding properties to the stdClass object
+            $paymentSource->$requestName = new stdClass();
             $paymentSource->$requestName->name = $userName;
             $paymentSource->$requestName->country_code = $country->getFieldData('oxisoalpha2');
-            $paymentSource->$requestName->attributes = new \stdClass();
-            $paymentSource->$requestName->attributes->verification = new \stdClass();
+            $paymentSource->$requestName->attributes = new stdClass();
+            $paymentSource->$requestName->attributes->verification = new stdClass();
             $paymentSource->$requestName->attributes->verification->method = 'SCA_ALWAYS';
-        } else {
-            $paymentSource = new PaymentSource([
-                $requestName => [
-                    'name' => $userName,
-                    'country_code' => $country->getPaypalStringData('oxisoalpha2')
-                ]
-            ]);
         }
-
 
         return $paymentSource;
     }

@@ -79,8 +79,8 @@ class PaymentController extends PaymentController_parent
 
     public function getPayPalPuiFraudnetCmId(): string
     {
-
-        if (!($cmId = \OxidSolutionCatalysts\PayPal\Core\PayPalSession::getPayPalPuiCmId())) {
+        $cmId = \OxidSolutionCatalysts\PayPal\Core\PayPalSession::getPayPalPuiCmId();
+        if (!($cmId)) {
             $cmId = Registry::getUtilsObject()->generateUId();
             \OxidSolutionCatalysts\PayPal\Core\PayPalSession::storePayPalPuiCmId($cmId);
         }

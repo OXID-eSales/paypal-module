@@ -19,7 +19,7 @@ parameters:
             count: 1
             path: ../../src/Controller/ProxyController.php
         -
-            message: "#^Method\\s?OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ConfirmOrderRequestFactory::getPaymentSource\\(\\)\\s?should\\s?return\\s?OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentSource\\s?but\\s?returns\\s?OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentSource\\|stdClass#"
+            message: "#^Method\\s?OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ConfirmOrderRequestFactory::getPaymentSource\\(\\)\\s?should\\s?return\\s?OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentSource\\s?but\\s?returns\\s?OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentSource\\k|stdClass#"
             count: 1
             path: ../../src/Core/ConfirmOrderRequestFactory.php
     bootstrapFiles:

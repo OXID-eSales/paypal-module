@@ -21,6 +21,9 @@ use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Onboarding as ApiOnboardingClient;
 use Psr\Log\LoggerInterface;
 
+/**
+ * @SuppressWarnings(PHPMD)
+ */
 class Onboarding
 {
     use ServiceContainer;

@@ -37,6 +37,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
 
 /**
  * Server side interface for PayPal smart buttons.
+ * @SuppressWarnings(PHPMD)
  */
 class ProxyController extends FrontendController
 {
