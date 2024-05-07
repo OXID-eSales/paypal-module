@@ -108,23 +108,23 @@ class OrderController extends OrderController_parent
             );
             //find out which payment token was selected by getting the index via request param
             if (isset($selectedPaymentToken["payment_source"])) {
-            $paymentType = key($selectedPaymentToken["payment_source"]);
-            $paymentSource = $selectedPaymentToken["payment_source"][$paymentType];
+                $paymentType = key($selectedPaymentToken["payment_source"]);
+                $paymentSource = $selectedPaymentToken["payment_source"][$paymentType];
 
-            $paymentDescription = "";
-            if ($paymentType === "card") {
-                $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_ENDING_IN");
+                $paymentDescription = "";
+                if ($paymentType === "card") {
+                    $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_ENDING_IN");
                     $paymentDescription = implode(
                         '',
                         [$paymentSource["brand"] . " ", $string . $paymentSource["last_digits"]]
                     );
-            } elseif ($paymentType === "paypal") {
-                $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
+                } elseif ($paymentType === "paypal") {
+                    $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
                     $paymentDescription = implode('', [$string, " ", $paymentSource["email_address"]]);
-            }
+                }
 
-            $this->addTplParam("vaultedPaymentDescription", $paymentDescription);
-        }
+                $this->addTplParam("vaultedPaymentDescription", $paymentDescription);
+            }
         }
 
         return parent::render();

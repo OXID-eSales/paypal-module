@@ -685,7 +685,7 @@ class OrderRequestFactory
             $selectedPaymentToken = isset($paymentTokens["payment_tokens"]) ?
                 $paymentTokens["payment_tokens"][$selectedVaultPaymentSourceIndex] : '';
 
-            $request->payment_source =new PaymentSource(
+            $request->payment_source = new PaymentSource(
                 [
                     "paypal" =>
                         [
