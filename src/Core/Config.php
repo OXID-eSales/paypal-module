@@ -256,6 +256,10 @@ class Config
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getStartPageBannerSelector();
     }
+    public function getDefaultShippingPriceForExpress(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getDefaultShippingPriceForExpress();
+    }
 
     public function showBannersOnCategoryPage(): bool
     {

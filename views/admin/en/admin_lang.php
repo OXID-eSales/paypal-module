@@ -276,6 +276,8 @@ $aLang = [
     'HELP_OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'    => 'Repeat purchases made easy: With PayPal you can securely store your customers preferred payment methods, making it quick and easy
                                                         Enable purchase processing. With their saved payment details, customers can make repeat purchases with just a few clicks. This can be for you
                                                         mean higher checkout conversion.',
+    'OSC_PAYPAL_EXPRESS_SHIPPING_TITLE'              => 'Express Shipping Price',
+    'OSC_PAYPAL_EXPRESS_SHIPPING_DESC'               => 'Shipping Price for ExpressOrders',
     'OSC_PAYPAL_GOOGLEPAY_TITLE'                     => 'Google Pay address',
     'OSC_PAYPAL_GOOGLEPAY_ADDRESS_ACTIVATE'           => 'Google Pay address active',
     'HELP_OSC_OSC_PAYPAL_GOOGLEPAY_ADRESS_ACTIVATE'     => 'Takeover delivery address from googlepay',

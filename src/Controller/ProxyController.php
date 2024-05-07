@@ -16,6 +16,7 @@ use OxidEsales\Eshop\Core\Exception\ArticleInputException;
 use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Exception\StandardException;
+use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Config;
@@ -57,7 +58,10 @@ class ProxyController extends FrontendController
         $this->addToBasket();
         $this->setPayPalPaymentMethod();
         $basket = Registry::getSession()->getBasket();
-
+        $defaultShippingPriceExpress = Registry::getConfig()->getConfigParam('oscPayPalDefaultShippingPriceExpress');
+        if (!empty($defaultShippingPriceExpress)) {
+            $this->addExpressShippingPrice($defaultShippingPriceExpress,$basket);
+        }
         if ($basket->getItemsCount() === 0) {
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
         }
@@ -85,6 +89,18 @@ class ProxyController extends FrontendController
         $this->outputJson($response);
     }
 
+    /**
+     * @param $defaultShippingPriceExpress
+     * @param $basket
+     * @return void
+     */
+    protected function addExpressShippingPrice($defaultShippingPriceExpress,$basket) {
+        $oPrice    = oxNew(Price::class);
+        $oPrice->setPrice((double)$defaultShippingPriceExpress);
+        $basket->setDeliveryPrice($oPrice);
+        $basket->onUpdate();
+        $basket->calculateBasket(true);
+    }
     public function getGooglepayBasket()
     {
         $basket = Registry::getSession()->getBasket();
@@ -389,7 +405,7 @@ class ProxyController extends FrontendController
 
             // get the active shippingSetId
             /** @psalm-suppress InvalidArgument */
-            list(, $shippingSetId,) =
+            [, $shippingSetId,] =
                 Registry::get(DeliverySetList::class)->getDeliverySetData('', $user, $basket);
 
             if ($shippingSetId) {
