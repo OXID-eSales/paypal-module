@@ -34,7 +34,7 @@ class BasketComponent extends BasketComponent_parent
         $blOverride = true
     ) {
 
-        if ( PayPalSession::isPayPalExpressOrderActive()) {
+        if (PayPalSession::isPayPalExpressOrderActive()) {
             PayPalSession::unsetPayPalOrderId();
             Registry::getSession()->getBasket()->setPayment(null);
         }
@@ -54,7 +54,7 @@ class BasketComponent extends BasketComponent_parent
      */
     public function toBasket($sProductId = null, $dAmount = null, $aSel = null, $aPersParam = null, $blOverride = false)
     {
-        if ( PayPalSession::isPayPalExpressOrderActive()) {
+        if (PayPalSession::isPayPalExpressOrderActive()) {
             PayPalSession::unsetPayPalOrderId();
             Registry::getSession()->getBasket()->setPayment(null);
         }
