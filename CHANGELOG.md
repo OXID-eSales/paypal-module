@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.3.7] - 2024-??-??
+## [1.3.7] - 2024-05-10
 
 - [0007577](https://bugs.oxid-esales.com/view.php?id=7577): Declined Credit card orders would be saved as error-order
 - [0007595](https://bugs.oxid-esales.com/view.php?id=7595): Fix PayPal Checkout substract discount from coupon series again, if 'Show net prices in frontend (B2B)' is active
