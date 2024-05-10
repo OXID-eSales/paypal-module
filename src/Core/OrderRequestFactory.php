@@ -201,40 +201,7 @@ class OrderRequestFactory
      */
     protected function getAmount(): AmountWithBreakdown
     {
-        $basket = $this->basket;
-        $currency = $basket->getBasketCurrency();
-
-        //Discount
-        $discount = $basket->getPayPalCheckoutDiscount();
-        //Item total cost
-        $itemTotal = $basket->getPayPalCheckoutItems();
-
-        // possible price surcharge
-        if ($discount < 0) {
-            $itemTotal += $discount;
-            $discount = 0;
-        }
-        $total = $itemTotal - $discount;
-
-        $total = PriceToMoney::convert($total, $currency);
-
-        //Total amount
-        $amount = new AmountWithBreakdown();
-        $amount->value = $total->value;
-        $amount->currency_code = $total->currency_code;
-
-        //Cost breakdown
-        $breakdown = $amount->breakdown = new AmountBreakdown();
-
-        if ($discount) {
-            $breakdown->discount = PriceToMoney::convert($discount, $currency);
-        }
-
-        $breakdown->item_total = PriceToMoney::convert($itemTotal, $currency);
-        //Item tax sum - we use 0% and calculate with brutto to avoid rounding errors
-        $breakdown->tax_total = PriceToMoney::convert(0, $currency);
-
-        return $amount;
+        return (Registry::get(PayPalRequestAmountFactory::class))->getAmount($this->basket);
     }
 
     /**
