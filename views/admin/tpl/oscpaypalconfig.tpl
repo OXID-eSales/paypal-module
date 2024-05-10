@@ -528,19 +528,19 @@
             </div>
 
             <div class="card">
-                <div class="card-header" id="heading9">
-                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse9" aria-expanded="false" aria-controls="collapse9">
+                <div class="card-header" id="heading10">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse10" aria-expanded="false" aria-controls="collapse9">
                         [{oxmultilang ident="OSC_PAYPAL_EXPRESS_SHIPPING_TITLE"}]
                     </h4>
                 </div>
-            <div id="collapse9" class="collapse" aria-labelledby="heading9" data-parent="#accordion">
+            <div id="collapse10" class="collapse" aria-labelledby="heading10" data-parent="#accordion">
                 <div class="card-body">
                     <div class="form-group">
                         <div class="controls">
                             <div class="form-group">
                                 <div class="controls">
                                     <label>
-                                        <input type="text" class="form-control" name="conf[oscPayPalDefaultShippingPriceExpress]" value="[{$config->getDefaultShippingPriceForExpress()}]">
+                                        <input type="number"  step="0.01" class="form-control" name="conf[oscPayPalDefaultShippingPriceExpress]" value="[{$config->getDefaultShippingPriceForExpress()}]">
                                     </label>
                                     <br>
                                     <span class="help-block">[{oxmultilang ident="OSC_PAYPAL_EXPRESS_SHIPPING_DESC"}]</span>
