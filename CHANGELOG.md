@@ -4,11 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [1.3.6] - 2024-05-30
+## [1.3.7] - 2024-??-??
 
-- fix Errorlog-Message "Duplicate entry ..." + fix Update send PUI-Bankdata via Webhook
 - [0007577](https://bugs.oxid-esales.com/view.php?id=7577): Declined Credit card orders would be saved as error-order
 - [0007595](https://bugs.oxid-esales.com/view.php?id=7595): Fix PayPal Checkout substract discount from coupon series again, if 'Show net prices in frontend (B2B)' is active
+
+## [1.3.6] - 2024-04-30
+
+- fix Errorlog-Message "Duplicate entry ..." + fix Update send PUI-Bankdata via Webhook
 
 ## [1.3.5] - 2024-02-21
 
