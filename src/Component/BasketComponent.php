@@ -16,9 +16,6 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 class BasketComponent extends BasketComponent_parent
 {
     /**
-     * Resets the session if the user has previously authorized a payment
-     * with PayPal Express and is now changing their basket.
-     *
      * @param $sProductId
      * @param $dAmount
      * @param $aSel
@@ -33,18 +30,11 @@ class BasketComponent extends BasketComponent_parent
         $aPersParam = null,
         $blOverride = true
     ) {
-
-        if (PayPalSession::isPayPalExpressOrderActive()) {
-            PayPalSession::unsetPayPalOrderId();
-            Registry::getSession()->getBasket()->setPayment(null);
-        }
+        $this->resetExpressOrderAndShowError();
         return parent::changeBasket($sProductId, $dAmount, $aSel, $aPersParam, $blOverride);
     }
 
     /**
-     * Resets the session if the user has previously authorized a payment
-     *  with PayPal Express and is now adding an item to the basket.
-     *
      * @param $sProductId
      * @param $dAmount
      * @param $aSel
@@ -54,10 +44,20 @@ class BasketComponent extends BasketComponent_parent
      */
     public function toBasket($sProductId = null, $dAmount = null, $aSel = null, $aPersParam = null, $blOverride = false)
     {
+        $this->resetExpressOrderAndShowError();
+        return parent::toBasket($sProductId, $dAmount, $aSel, $aPersParam, $blOverride);
+    }
+
+    /**
+     *  Resets the session if the user has previously authorized a payment
+     *  with PayPal Express and is now adding or changing an item to the basket.
+     * @return void
+     */
+    protected function resetExpressOrderAndShowError() {
         if (PayPalSession::isPayPalExpressOrderActive()) {
             PayPalSession::unsetPayPalOrderId();
             Registry::getSession()->getBasket()->setPayment(null);
+            Registry::getUtilsView()->addErrorToDisplay('OSCPAYPAL_KILL_EXPRESS_SESSION_REASON');
         }
-        return parent::toBasket($sProductId, $dAmount, $aSel, $aPersParam, $blOverride);
     }
 }
