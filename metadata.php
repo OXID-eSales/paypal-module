@@ -5,6 +5,7 @@
  * See LICENSE file for license details.
  */
 
+use OxidEsales\Eshop\Application\Component\BasketComponent;
 use OxidEsales\Eshop\Application\Component\UserComponent;
 use OxidEsales\Eshop\Application\Controller\OrderController;
 use OxidEsales\Eshop\Application\Controller\PaymentController;
@@ -20,6 +21,7 @@ use OxidEsales\Eshop\Application\Model\PaymentGateway;
 use OxidEsales\Eshop\Core\InputValidator;
 use OxidEsales\Eshop\Core\ShopControl;
 use OxidEsales\Eshop\Core\ViewConfig;
+use OxidSolutionCatalysts\PayPal\Component\BasketComponent as PayPalBasketComponent;
 use OxidSolutionCatalysts\PayPal\Component\UserComponent as PayPalUserComponent;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalConfigController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalOrderController;
@@ -76,6 +78,7 @@ $aModule = [
         OrderController::class => PayPalFrontEndOrderController::class,
         PaymentController::class => PayPalPaymentController::class,
         UserComponent::class => PayPalUserComponent::class,
+        BasketComponent::class => PayPalBasketComponent::class,
         OrderMain::class => PayPalOrderMainController::class,
         OrderOverview::class => PayPalOrderOverviewController::class,
         State::class => PayPalState::class

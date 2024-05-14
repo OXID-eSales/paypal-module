@@ -56,4 +56,5 @@ $aLang = [
     'OSC_PAYPAL_CARD_ENDING_IN'                     => 'endet mit ●●●',
     'OSC_PAYPAL_CARD_PAYPAL_PAYMENT'                => 'PayPal Zahlung mit',
     'OSC_PAYPAL_DELETE_FAILED'                      => 'Beim Löschen Ihrer Zahlart ist etwas schiefgelaufen.',
+    'OSCPAYPAL_KILL_EXPRESS_SESSION_REASON'         => 'Der Warenkorb wurde geändert. Aus diesem Grund wurde der aktive PayPal-Zahlvorgang automatisch abgebrochen. Bitte starten Sie die Zahlung mit PayPal erneut. Es wurde noch kein Geld von PayPal eingezogen.',
 ];
