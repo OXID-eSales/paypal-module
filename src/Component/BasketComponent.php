@@ -53,7 +53,8 @@ class BasketComponent extends BasketComponent_parent
      *  with PayPal Express and is now adding or changing an item to the basket.
      * @return void
      */
-    protected function resetExpressOrderAndShowError() {
+    protected function resetExpressOrderAndShowError()
+    {
         if (PayPalSession::isPayPalExpressOrderActive()) {
             PayPalSession::unsetPayPalOrderId();
             Registry::getSession()->getBasket()->setPayment(null);
