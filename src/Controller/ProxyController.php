@@ -11,11 +11,13 @@ use Exception;
 use OxidEsales\Eshop\Application\Component\UserComponent;
 use OxidEsales\Eshop\Application\Controller\FrontendController;
 use OxidEsales\Eshop\Application\Model\Address;
+use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\DeliverySetList;
 use OxidEsales\Eshop\Core\Exception\ArticleInputException;
 use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Exception\StandardException;
+use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Config;
@@ -80,7 +82,22 @@ class ProxyController extends FrontendController
 
         $this->outputJson($response);
     }
-
+    /**
+     * Clones the basket from the session and sets a specific express shipping price, ensuring the original basket remains unchanged.
+     * This cloned basket with the adjusted shipping price is specifically used in scenarios like a PayPal checkout,
+     * where a different shipping price might be necessary to prevent overcharge.
+     * @param $defaultShippingPriceExpress
+     * @return object|Basket|null
+     */
+    protected function createExpressShippingBasket($defaultShippingPriceExpress) {
+        $basket = Registry::getSession()->getBasket();
+        $basket = clone($basket);
+        $oPrice    = oxNew(Price::class);
+        $oPrice->setPrice((double)$defaultShippingPriceExpress);
+        $basket->setDeliveryPrice($oPrice);
+        $basket->calculateBasket(true);
+        return $basket;
+    }
     public function approveOrder()
     {
         $orderId = (string) Registry::getRequest()->getRequestEscapedParameter('orderID');
@@ -212,7 +229,7 @@ class ProxyController extends FrontendController
 
             // get the active shippingSetId
             /** @psalm-suppress InvalidArgument */
-            list(, $shippingSetId,) =
+            [, $shippingSetId,] =
                 Registry::get(DeliverySetList::class)->getDeliverySetData('', $user, $basket);
 
             if ($shippingSetId) {

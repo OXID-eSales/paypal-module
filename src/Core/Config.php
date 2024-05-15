@@ -253,7 +253,10 @@ class Config
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalCheckoutBannerCartPageSelector();
     }
-
+    public function getDefaultShippingPriceForExpress(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getDefaultShippingPriceForExpress();
+    }
     public function getPayPalCheckoutBannerPaymentPageSelector(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalCheckoutBannerPaymentPageSelector();
