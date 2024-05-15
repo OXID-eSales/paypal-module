@@ -263,6 +263,12 @@ class PayPalConfigController extends AdminController
         if (!isset($conf['oscPayPalCleanUpNotFinishedOrdersAutomaticlly'])) {
             $conf['oscPayPalCleanUpNotFinishedOrdersAutomaticlly'] = false;
         }
+        if (!isset($conf['oscPayPalDefaultShippingPriceExpress'])) {
+            $conf['oscPayPalDefaultShippingPriceExpress'] = false;
+        } else {
+            $dAmount = (string) str_replace(',', '.', $conf['oscPayPalDefaultShippingPriceExpress']);
+            $conf['oscPayPalDefaultShippingPriceExpress'] = $dAmount;
+        }
 
         return $conf;
     }

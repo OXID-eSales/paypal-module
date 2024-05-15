@@ -27,6 +27,7 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
+use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
@@ -48,7 +49,11 @@ class ProxyController extends FrontendController
         $this->addToBasket();
         $this->setPayPalPaymentMethod();
         $basket = Registry::getSession()->getBasket();
-
+        $defaultShippingPriceExpress = Registry::getConfig()->getConfigParam('oscPayPalDefaultShippingPriceExpress');
+        if (!empty($defaultShippingPriceExpress) && Registry::getConfig()->getConfigParam('blCalculateDelCostIfNotLoggedIn') !== true)
+        {
+            $basket = $this->createExpressShippingBasket($defaultShippingPriceExpress);
+        }
         if ($basket->getItemsCount() === 0) {
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
         }

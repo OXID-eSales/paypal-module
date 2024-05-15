@@ -493,7 +493,30 @@
                     </div>
                 </div>
             </div>
+            <div class="card">
+                <div class="card-header" id="heading9">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse9" aria-expanded="false" aria-controls="collapse8">
+                        {{ translate({ ident: "OSC_PAYPAL_EXPRESS_SHIPPING_TITLE" }) }}
+                    </h4>
+                </div>
 
+                <div id="collapse9" class="collapse" aria-labelledby="heading9" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="controls">
+                                <div class="form-group">
+                                    <div class="controls">
+                                        <label>
+                                            <input type="number" step="0.01" class="form-control" name="conf[oscPayPalDefaultShippingPriceExpress]" value="{{ config.getDefaultShippingPriceForExpress() }}">
+                                        </label> <br>
+                                        <span class="help-block">{{ translate({ ident: "OSC_PAYPAL_EXPRESS_SHIPPING_DESC" }) }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <button type="submit" class="btn btn-primary bottom-space">{{ translate({ ident: "GENERAL_SAVE" }) }}</button>
     </form>

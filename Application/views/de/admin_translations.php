@@ -247,10 +247,10 @@ return [
     'OSC_PAYPAL_SCA_WHEN_REQUIRED'                  => '3D Secure Abfrage automatisch, Entscheidung liegt beim PayPal System',
     'OSC_PAYPAL_SCA_DISABLED'                       => '3D Secure Ergebnis ignorieren',
     'OSC_PAYPAL_SCA_CONTINGENCY_LABEL'              => 'Kreditkarten Sicherheit',
-    'OSC_PAYPAL_SCA_CONTINGENCY_HELP'               => 'Die 3D Secure-Authentifizierung dient der direkten und sicheren Interaktion zwischen der ausstellenden Bank und dem Verbraucher. 
+    'OSC_PAYPAL_SCA_CONTINGENCY_HELP'               => 'Die 3D Secure-Authentifizierung dient der direkten und sicheren Interaktion zwischen der ausstellenden Bank und dem Verbraucher.
                                                         Hierbei hat PayPal keinen Zugriff auf die Bankdaten des Karteninhabers, ist jedoch für die Herstellung einer sicheren Verbindung zwischen der ausstellenden Bank
-                                                        und dem Kreditkarteninhaber verantwortlich. <br> Mit der Einstellung "3D Secure Abfrage automatisch" wird PayPal wird 3D Secure einführen, 
-                                                        sobald die entsprechenden Vorschriften wirksam werden.  
+                                                        und dem Kreditkarteninhaber verantwortlich. <br> Mit der Einstellung "3D Secure Abfrage automatisch" wird PayPal wird 3D Secure einführen,
+                                                        sobald die entsprechenden Vorschriften wirksam werden.
                                                         Die Einstellung "3D Secure Abfrage für jede ACDC Transaktion" erzwingt die 3D Prüfung für jede ACDC Transaktion.',
 
     'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS_TITLE' => 'Behandlung nicht beendeter Bestellungen',
@@ -261,7 +261,8 @@ return [
                                                         händisch löschen.',
     'OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'           => 'Startzeit für automatisches Löschen',
     'HELP_OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'      => 'Wie alt müssen nicht beendete Bestellungen sein, damit sie frühestens automatisch gelöscht werden (in Minuten)?',
-
+    'OSC_PAYPAL_EXPRESS_SHIPPING_TITLE'              => 'Pseudoversandkosten für PayPal Express',
+    'OSC_PAYPAL_EXPRESS_SHIPPING_DESC'               => 'Die hier eingegebenen Pseudeversandkosten werden verwendet, wenn die Shopoption “Versandkosten auch dann berechnen, wenn der Kunde noch nicht eingeloggt ist” nicht aktiviert ist.',
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_COUNTRY'    => 'Versanddienstleister (Land)',
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_PROVIDER'   => 'Versanddienstleister (Anbieter)',
     'OSC_PAYPAL_TRACKCARRIER_GLOBAL'                => 'weltweit',

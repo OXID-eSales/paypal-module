@@ -261,6 +261,8 @@ return [
                                                         delete manually.',
     'OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'           => 'Start time for automatic deletion',
     'HELP_OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'      => 'How old do not finished orders have to be before they are automatically deleted (in minutes)?',
+    'OSC_PAYPAL_EXPRESS_SHIPPING_TITLE'              => 'Pseudo shipping costs for PayPal Express',
+    'OSC_PAYPAL_EXPRESS_SHIPPING_DESC'               => 'The shipping costs entered here are used if the store option "Calculate default Shipping costs when User is not logged in yet” in not activated.',
 
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_COUNTRY'    => 'Tracking Carrier (Country)',
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_PROVIDER'   => 'Tracking Carrier (Provider)',

@@ -441,5 +441,11 @@ $aModule = [
             'type' => 'str',
             'value' => 'de_DE,en_US',
         ],
+        [
+            'name' => 'oscPayPalDefaultShippingPriceExpress',
+            'type' => 'str',
+            'value' => 3.5,
+            'group' => null
+        ],
     ],
 ];
