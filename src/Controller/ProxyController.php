@@ -60,8 +60,9 @@ class ProxyController extends FrontendController
         $this->setPayPalPaymentMethod();
         $basket = Registry::getSession()->getBasket();
         $defaultShippingPriceExpress = Registry::getConfig()->getConfigParam('oscPayPalDefaultShippingPriceExpress');
-        if (!empty($defaultShippingPriceExpress)) {
-           $basket = $this->createExpressShippingBasket($defaultShippingPriceExpress,$basket);
+        if (!empty($defaultShippingPriceExpress) && Registry::getConfig()->getConfigParam('blCalculateDelCostIfNotLoggedIn') !== true)
+        {
+           $basket = $this->createExpressShippingBasket($defaultShippingPriceExpress);
         }
         if ($basket->getItemsCount() === 0) {
             $this->outputJson(['ERROR' => 'No Article in the Basket']);

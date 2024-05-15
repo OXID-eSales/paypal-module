@@ -278,7 +278,7 @@ $aLang = [
                                                         eine höhere Checkout-Conversion bedeuten.',
     'OSC_PAYPAL_GOOGLEPAY_TITLE'                     => 'Google Pay Adresse',
     'OSC_PAYPAL_EXPRESS_SHIPPING_TITLE'              => 'Pseudoversandkosten für PayPal Express',
-    'OSC_PAYPAL_EXPRESS_SHIPPING_DESC'               => 'Die hier angegebenen Versandkosten werden für die Betragsauthorisierung bei PayPal verwendet. Die korrekten Versandkosten werden bei Rückkehr in den Shop berechnet, da dann erst das Lieferland zur Verfügung steht. ',
+    'OSC_PAYPAL_EXPRESS_SHIPPING_DESC'               => 'Die hier eingegebenen Pseudeversandkosten werden verwendet, wenn die Shopoption “Versandkosten auch dann berechnen, wenn der Kunde noch nicht eingeloggt ist” nicht aktiviert ist.',
     'OSC_PAYPAL_GOOGLEPAY_ADDRESS_ACTIVATE'          => 'Speicherung der Adresse aktivieren',
     'HELP_OSC_OSC_PAYPAL_GOOGLEPAY_ADRESS_ACTIVATE'  => 'Übernahme der Lieferadresse von GooglePay',
 ];

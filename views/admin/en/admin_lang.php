@@ -277,7 +277,7 @@ $aLang = [
                                                         Enable purchase processing. With their saved payment details, customers can make repeat purchases with just a few clicks. This can be for you
                                                         mean higher checkout conversion.',
     'OSC_PAYPAL_EXPRESS_SHIPPING_TITLE'              => 'Pseudo shipping costs for PayPal Express',
-    'OSC_PAYPAL_EXPRESS_SHIPPING_DESC'               => 'The shipping costs specified here are used for the amount authorization with PayPal Express. The correct shipping costs will be calculated when returning to the store, as only then will the country of delivery be available. ',
+    'OSC_PAYPAL_EXPRESS_SHIPPING_DESC'               => 'The shipping costs entered here are used if the store option "Calculate default Shipping costs when User is not logged in yet” in not activated.',
     'OSC_PAYPAL_GOOGLEPAY_TITLE'                     => 'Google Pay address',
     'OSC_PAYPAL_GOOGLEPAY_ADDRESS_ACTIVATE'           => 'Google Pay address active',
     'HELP_OSC_OSC_PAYPAL_GOOGLEPAY_ADRESS_ACTIVATE'     => 'Takeover delivery address from googlepay',
