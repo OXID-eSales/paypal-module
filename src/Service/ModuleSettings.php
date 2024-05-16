@@ -256,6 +256,10 @@ class ModuleSettings
     {
         return (string)$this->getSettingValue('oscPayPalBannersStartPageSelector');
     }
+    public function getDefaultShippingPriceForExpress(): string
+    {
+        return (string)$this->getSettingValue('oscPayPalDefaultShippingPriceExpress');
+    }
 
     public function showBannersOnCategoryPage(): bool
     {

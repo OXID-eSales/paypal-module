@@ -232,6 +232,18 @@ class Basket extends Basket_parent
     }
 
     /**
+     * add a ShippingPrice for PPExpress if it is not defined before to prevent overcharge.
+     * @param float $defaultShippingPriceExpress
+     */
+    public function addShippingPriceForExpress(float $defaultShippingPriceExpress): void
+    {
+        $oPrice = oxNew(Price::class);
+        $oPrice->setPrice($defaultShippingPriceExpress);
+        $this->setDeliveryPrice($oPrice);
+        $this->calculateBasket(true);
+    }
+
+    /**
      * Return sum of:
      *  - Wrapping-Costs
      *  - Gift-Cards

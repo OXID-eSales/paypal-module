@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - PayPal-Request-Id based on serialized body, no extra PayPal-Request-Id necessary anymore
 - Introduce GooglePay-Payment
 - use PayPal-Client v2.0.14
+- add Default-Shippingcosts for PP-Express to prevent overcharge.
 
 ## [2.4.0] - 2024-04-04
 
