@@ -35,7 +35,7 @@
     });
     let globalPaymentRequestData = null;
     async function preloadPaymentRequestData() {
-        let url = "[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=getPaymentRequestLines&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]";
+        let url = "[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=getPaymentRequestLines&paymentid=oscpaypal_applepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]";
         const response = await fetch(url);
         const payment_request_line = await response.json();
 
@@ -127,11 +127,16 @@
 
             let handleApplePayPaymentAuthorized = (event) => {
                 console.log('---- handleApplePayPaymentAuthorized -----')
+                console.log('Your billing address is:', event.payment.billingContact);
+                console.log('Your shipping address is:', event.payment.shippingContact);
                 applepay_payment_event = event.payment;
-                createOrderUrl = "[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]"
+                let intent = 'captures';
+                let intent_object = intent === "authorize" ? "authorizations" : "captures";
+
+                createOrderUrl = "[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&paymentid=oscpaypal_applepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]"
                 fetch(createOrderUrl, {
                     method: "post", headers: { "Content-Type": "application/json; charset=utf-8" },
-                    body: JSON.stringify({ "intent": intent })
+                    body: JSON.stringify({ "intent": intent_object })
                 })
                     .then((response) => response.json())
                     .then((pp_data) => {
@@ -149,7 +154,7 @@
                             billingContact: applepay_payment_event.billingContact
                         })
                             .then(confirmResult => {
-                                approve_order = "[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]"
+                                approve_order = "[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&paymentid=oscpaypal_applepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]"
                                 fetch(approve_order, {
                                     method: "post", headers: { "Content-Type": "application/json; charset=utf-8" },
                                     body: JSON.stringify({
@@ -162,10 +167,10 @@
                                     .then((order_details) => {
                                         let intent_object = intent === "authorize" ? "authorizations" : "captures";
                                         if (order_details.purchase_units[0].payments[intent_object][0].status === "COMPLETED") {
-                                            current_ap_session.completePayment(ApplePaySession.STATUS_SUCCESS);
+                                            current_ap_session.completePayment(session.STATUS_SUCCESS);
                                             display_success_message({"order_details": order_details, "paypal_buttons": paypal_buttons});
                                         } else {
-                                            current_ap_session.completePayment(ApplePaySession.STATUS_FAILURE);
+                                            current_ap_session.completePayment(session.STATUS_FAILURE);
                                             console.log(order_details);
                                             throw error("payment was not completed, please view console for more information");
                                         }
@@ -180,7 +185,7 @@
                                 if (confirmError) {
                                     console.error('Error confirming order with applepay token');
                                     console.error(confirmError);
-                                    current_ap_session.completePayment(ApplePaySession.STATUS_FAILURE);
+                                    session.completePayment(session.STATUS_FAILURE);
                                     display_error_alert();
                                 }
                             });
@@ -192,7 +197,7 @@
                 applepay.validateMerchant({
                     validationUrl: event.validationURL,
                     // function to get oxid eshop-name
-                    displayName: "dsfasdf"
+                    displayName: "Oxid Esales"
                 })
                     .then(validateResult => {
                         session.completeMerchantValidation(validateResult.merchantSession);
@@ -209,7 +214,7 @@
             let session = new ApplePaySession(4, globalPaymentRequestData);
             console.log('Session created:', session);
             session.onvalidatemerchant = (event) => {
-                console.log('inside')
+                console.log('onValidateMerchant')
                 applepay
                     .validateMerchant({
                         validationUrl: event.validationURL,
@@ -223,15 +228,15 @@
                     });
             };
 
-        /*    session.onpaymentmethodselected = () => {
+            session.onpaymentmethodselected = () => {
                 session.completePaymentMethodSelection({
                     newTotal: globalPaymentRequestData.total,
                 });
             };
             session.onpaymentauthorized = (event) => {
                 console.log('Payment authorized...', event.payment);
-                handleApplePayPaymentAuthorized(event.payment);
-            };*/
+                handleApplePayPaymentAuthorized(event);
+            };
             try {
                 session.begin();
                 console.log('BEGIN SESSION');

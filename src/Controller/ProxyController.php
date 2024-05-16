@@ -53,7 +53,12 @@ class ProxyController extends FrontendController
         }
 
         $this->addToBasket();
-        $this->setPayPalPaymentMethod();
+        $paymentId = Registry::getRequest()->getRequestParameter('paymentid');
+        if ($paymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID) {
+            $this->setPayPalPaymentMethod($paymentId);
+        }else {
+            $this->setPayPalPaymentMethod();
+        }
         $basket = Registry::getSession()->getBasket();
 
         if ($basket->getItemsCount() === 0) {
