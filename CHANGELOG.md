@@ -6,14 +6,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.3.5] - 2024-??-??
 
-- use central logger like in v2 Branch
+### FIX
+
 - [0007588](https://bugs.oxid-esales.com/view.php?id=7588): Improve Error handling for Capture Order Requests (thanks to mount7)
 - remove Sofort and MyBank, Paymentmethods will soon no longer be accepted via PayPal
 - fix: Refund only with note to Buyer (required)
 - [0007595](https://bugs.oxid-esales.com/view.php?id=7595): : Fix PayPal Checkout substract discount from coupon series again, if 'Show net prices in frontend (B2B)' is active
 - Fix Errorlog-Message "Duplicate entry ..." + fix Update send PUI-Bankdata via Webhook
+
+### NEW 
+
 - provide Smarty-Templates again for OXID7.0 - thank you to D3-Team
 - use PayPal-Request-ID in any API-Call (via Client, v3.0.10)
+- add Default-Shippingcosts for PP-Express to prevent overcharge.
+- use central logger like in v2 Branch
 
 ## [3.3.4] - 2024-01-26
 

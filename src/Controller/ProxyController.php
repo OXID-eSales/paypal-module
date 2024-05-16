@@ -11,11 +11,13 @@ use Exception;
 use OxidEsales\Eshop\Application\Component\UserComponent;
 use OxidEsales\Eshop\Application\Controller\FrontendController;
 use OxidEsales\Eshop\Application\Model\Address;
+use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\DeliverySetList;
 use OxidEsales\Eshop\Core\Exception\ArticleInputException;
 use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Exception\StandardException;
+use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Config;
@@ -27,6 +29,7 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
+use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
@@ -45,10 +48,15 @@ class ProxyController extends FrontendController
             $this->outputJson(['ERROR' => 'PayPal session already started.']);
         }
 
+        $config = Registry::getConfig();
         $this->addToBasket();
         $this->setPayPalPaymentMethod();
         $basket = Registry::getSession()->getBasket();
-
+        $defaultShippingPriceExpress = (double) $config->getConfigParam('oscPayPalDefaultShippingPriceExpress');
+        $calculateDelCostIfNotLoggedIn = (bool) $config->getConfigParam('blCalculateDelCostIfNotLoggedIn');
+        if ($basket && $defaultShippingPriceExpress && !$calculateDelCostIfNotLoggedIn) {
+            $basket->addShippingPriceForExpress($defaultShippingPriceExpress);
+        }
         if ($basket->getItemsCount() === 0) {
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
         }
@@ -207,7 +215,7 @@ class ProxyController extends FrontendController
 
             // get the active shippingSetId
             /** @psalm-suppress InvalidArgument */
-            list(, $shippingSetId,) =
+            [, $shippingSetId,] =
                 Registry::get(DeliverySetList::class)->getDeliverySetData('', $user, $basket);
 
             if ($shippingSetId) {
