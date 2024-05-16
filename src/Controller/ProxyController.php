@@ -48,14 +48,14 @@ class ProxyController extends FrontendController
             $this->outputJson(['ERROR' => 'PayPal session already started.']);
         }
 
+        $config = Registry::getConfig();
         $this->addToBasket();
         $this->setPayPalPaymentMethod();
         $basket = Registry::getSession()->getBasket();
-        $paypalConfig = oxNew(Config::class);
-        $defaultShippingPriceExpress =  $paypalConfig->getDefaultShippingPriceForExpress();
-        if (!empty($defaultShippingPriceExpress) && Registry::getConfig()->getConfigParam('blCalculateDelCostIfNotLoggedIn') !== true)
-        {
-            $basket = $this->createExpressShippingBasket($defaultShippingPriceExpress);
+        $defaultShippingPriceExpress = (double) $config->getConfigParam('oscPayPalDefaultShippingPriceExpress');
+        $calculateDelCostIfNotLoggedIn = (bool) $config->getConfigParam('blCalculateDelCostIfNotLoggedIn');
+        if ($basket && $defaultShippingPriceExpress && !$calculateDelCostIfNotLoggedIn) {
+            $basket->addShippingPriceForExpress($defaultShippingPriceExpress);
         }
         if ($basket->getItemsCount() === 0) {
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
@@ -83,22 +83,7 @@ class ProxyController extends FrontendController
 
         $this->outputJson($response);
     }
-    /**
-     * Clones the basket from the session and sets a specific express shipping price, ensuring the original basket remains unchanged.
-     * This cloned basket with the adjusted shipping price is specifically used in scenarios like a PayPal checkout,
-     * where a different shipping price might be necessary to prevent overcharge.
-     * @param $defaultShippingPriceExpress
-     * @return object|Basket|null
-     */
-    protected function createExpressShippingBasket($defaultShippingPriceExpress) {
-        $basket = Registry::getSession()->getBasket();
-        $basket = clone($basket);
-        $oPrice    = oxNew(Price::class);
-        $oPrice->setPrice((double)$defaultShippingPriceExpress);
-        $basket->setDeliveryPrice($oPrice);
-        $basket->calculateBasket(true);
-        return $basket;
-    }
+
     public function approveOrder()
     {
         $orderId = (string) Registry::getRequest()->getRequestEscapedParameter('orderID');
