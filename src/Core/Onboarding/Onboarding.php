@@ -8,14 +8,12 @@
 namespace OxidSolutionCatalysts\PayPal\Core\Onboarding;
 
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
 use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
-use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Onboarding as ApiOnboardingClient;
 use Psr\Log\LoggerInterface;
 
@@ -54,17 +52,11 @@ class Onboarding
         $nonce = Registry::getSession()->getVariable('PAYPAL_MODULE_NONCE');
         Registry::getSession()->deleteVariable('PAYPAL_MODULE_NONCE');
 
-        try {
-            /** @var ApiOnboardingClient $apiClient */
-            $apiClient = $this->getOnboardingClient($onboardingResponse['isSandBox']);
-            $apiClient->authAfterWebLogin($onboardingResponse['authCode'], $onboardingResponse['sharedId'], $nonce);
+        /** @var ApiOnboardingClient $apiClient */
+        $apiClient = $this->getOnboardingClient($onboardingResponse['isSandBox']);
+        $apiClient->authAfterWebLogin($onboardingResponse['authCode'], $onboardingResponse['sharedId'], $nonce);
 
-            $credentials = $apiClient->getCredentials();
-        } catch (ApiException $exception) {
-            /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer(Logger::class);
-            $logger->log('error', $exception->getMessage(), [$exception]);
-        }
+        $credentials = $apiClient->getCredentials();
 
         return $credentials;
     }
@@ -141,16 +133,9 @@ class Onboarding
     public function fetchMerchantInformations()
     {
         $onboardingResponse = $this->getOnboardingPayload();
-        try {
-            /** @var ApiOnboardingClient $apiClient */
-            $apiClient = $this->getOnboardingClient($onboardingResponse['isSandBox'], true);
-            $merchantInformations = $apiClient->getMerchantInformations();
-        } catch (ApiException $exception) {
-            /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer(Logger::class);
-            $logger->log('error', $exception->getMessage(), [$exception]);
-        }
-        return $merchantInformations;
+        /** @var ApiOnboardingClient $apiClient */
+        $apiClient = $this->getOnboardingClient($onboardingResponse['isSandBox'], true);
+        return $apiClient->getMerchantInformations();
     }
 
     public function saveEligibility(array $merchantInformations): array

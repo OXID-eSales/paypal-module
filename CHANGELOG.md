@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - provide Smarty-Templates again for OXID7.0 - thank you to D3-Team
 - use PayPal-Request-ID in any API-Call (via Client, v3.0.10)
 - add Default-Shippingcosts for PP-Express to prevent overcharge.
+- use central logger like in v2 Branch
 
 ## [3.3.4] - 2024-01-26
 
