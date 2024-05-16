@@ -62,9 +62,8 @@ class ProxyController extends FrontendController
         $basket = Registry::getSession()->getBasket();
         $defaultShippingPriceExpress = (double) $config->getConfigParam('oscPayPalDefaultShippingPriceExpress');
         $calculateDelCostIfNotLoggedIn = (bool) $config->getConfigParam('blCalculateDelCostIfNotLoggedIn');
-        if ($basket && $defaultShippingPriceExpress && !$calculateDelCostIfNotLoggedIn)
-        {
-           $basket->addShippingPriceForExpress($defaultShippingPriceExpress);
+        if ($basket && $defaultShippingPriceExpress && !$calculateDelCostIfNotLoggedIn) {
+            $basket->addShippingPriceForExpress($defaultShippingPriceExpress);
         }
         if ($basket->getItemsCount() === 0) {
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
