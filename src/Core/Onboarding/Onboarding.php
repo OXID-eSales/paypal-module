@@ -16,13 +16,18 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPal\Traits\SessionDataGetter;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Onboarding as ApiOnboardingClient;
 use Psr\Log\LoggerInterface;
 
+/**
+ * @SuppressWarnings(PHPMD)
+ */
 class Onboarding
 {
     use ServiceContainer;
+    use SessionDataGetter;
 
     public function autoConfigurationFromCallback(): array
     {
@@ -55,12 +60,15 @@ class Onboarding
         $onboardingResponse = $this->getOnboardingPayload();
         $this->saveSandboxMode($onboardingResponse['isSandBox']);
 
-        $nonce = Registry::getSession()->getVariable('PAYPAL_MODULE_NONCE');
         Registry::getSession()->deleteVariable('PAYPAL_MODULE_NONCE');
 
         /** @var ApiOnboardingClient $apiClient */
         $apiClient = $this->getOnboardingClient($onboardingResponse['isSandBox']);
-        $apiClient->authAfterWebLogin($onboardingResponse['authCode'], $onboardingResponse['sharedId'], $nonce);
+        $apiClient->authAfterWebLogin(
+            $onboardingResponse['authCode'],
+            $onboardingResponse['sharedId'],
+            self::getSessionStringVariable('PAYPAL_MODULE_NONCE')
+        );
 
         return $apiClient->getCredentials();
     }
@@ -71,11 +79,15 @@ class Onboarding
      */
     public function getOnboardingPayload(): array
     {
-        $response = json_decode(PayPalSession::getOnboardingPayload(), true, 512, JSON_THROW_ON_ERROR);
+        $response = json_decode(
+            (string)PayPalSession::getOnboardingPayload(),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
+        $response = is_array($response) ? (array)$response : [];
 
-        if (
-            !isset($response['authCode'], $response['sharedId'], $response['isSandBox'])
-        ) {
+        if (!isset($response['authCode'], $response['sharedId'], $response['isSandBox'])) {
             throw OnboardingException::mandatoryDataNotFound();
         }
 
@@ -124,7 +136,7 @@ class Onboarding
         }
 
         /** @var LoggerInterface $logger */
-        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        $logger = $this->getServiceFromContainer(\OxidSolutionCatalysts\PayPal\Service\Logger::class);
 
         return new ApiOnboardingClient(
             $logger,

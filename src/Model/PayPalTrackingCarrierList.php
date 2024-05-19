@@ -30,7 +30,7 @@ class PayPalTrackingCarrierList extends ListModel
      *
      * @param string $countryCode - optional
      */
-    public function loadTrackingCarriers(string $countryCode = '')
+    public function loadTrackingCarriers(string $countryCode = ''): void
     {
         $baseObject = $this->getBaseObject();
         $viewName = $baseObject->getViewName();

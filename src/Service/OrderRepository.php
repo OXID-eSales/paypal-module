@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
+use Doctrine\DBAL\Driver\Result;
+use Exception;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use PDO;
 use Doctrine\DBAL\Query\QueryBuilder;
@@ -112,9 +114,14 @@ class OrderRepository
         return $order;
     }
 
+    /**
+     * @throws Exception
+     * @throws \Doctrine\DBAL\Exception
+     * @throws \Exception
+     */
     public function getPayPalOrderIdByShopOrderId(string $shopOrderId): string
     {
-        /** @var QueryBuilder $queryBuilder */
+        $id = '';
         $queryBuilder = $this->queryBuilderFactory->create();
 
         $parameters = [
@@ -125,21 +132,34 @@ class OrderRepository
             ->from('oscpaypal_order')
             ->where('oxorderid = :oxorderid');
 
-        $id = $queryBuilder->setParameters($parameters)
+        $result = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
-            ->execute()
-            ->fetch(PDO::FETCH_COLUMN);
+            ->execute();
 
-        return (string) $id;
+        if ($result instanceof Result) {
+            $id = $result->fetchOne();
+            if ($id !== '' && is_string($id)) {
+                return $id;
+            }
+        }
+
+        throw new \Exception('Order ID `' . $shopOrderId . '` not found.');
     }
 
+    /**
+     * @throws \Doctrine\DBAL\Exception
+     * @throws Exception
+     */
     public function cleanUpNotFinishedOrders(): void
     {
         if (!$this->config->getConfigParam('oscPayPalCleanUpNotFinishedOrdersAutomaticlly')) {
             return;
         }
 
-        $sessiontime = (int)$this->config->getConfigParam('oscPayPalStartTimeCleanUpOrders');
+        $sessiontime = $this->config->getConfigParam('oscPayPalStartTimeCleanUpOrders');
+        if (is_int($sessiontime)) {
+            $sessiontime = (int)$sessiontime;
+        }
         $shopId = $this->config->getShopId();
 
         /** @var QueryBuilder $queryBuilder */
@@ -164,21 +184,30 @@ class OrderRepository
             ))
             ->andWhere('oxorderdate < now() - interval :sessiontime MINUTE');
 
-        $ids = $queryBuilder->setParameters($parameters)
-            ->execute()
-            ->fetchAll(PDO::FETCH_COLUMN);
+        $result = $queryBuilder->setParameters($parameters)
+            ->execute();
 
-        foreach ($ids as $id) {
-            $order = oxNew(EshopModelOrder::class);
-            if ($order->load($id)) {
-                // storno
-                $order->cancelOrder();
-                // delete
-                $order->delete();
+        if ($result instanceof Result) {
+            $ids = $result->fetchOne();
+            if (is_array($ids)) {
+                foreach ($ids as $id) {
+                    $order = oxNew(EshopModelOrder::class);
+                    if ($order->load($id)) {
+                        // storno
+                        $order->cancelOrder();
+                        // delete
+                        $order->delete();
+                    }
+                }
             }
         }
     }
 
+    /**
+     * @throws Exception
+     * @throws \Doctrine\DBAL\Exception
+     * @throws \Exception
+     */
     private function getId(
         string $shopOrderId,
         string $paypalOrderId = '',
@@ -218,14 +247,31 @@ class OrderRepository
             $queryBuilder->andWhere('oscpaypaltransactiontype = :oscpaypaltransactiontype');
         }
 
-        $id = $queryBuilder->setParameters($parameters)
+        $result = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
-            ->execute()
-            ->fetch(PDO::FETCH_COLUMN);
+            ->execute();
 
-        return (string) $id;
+        if ($result instanceof Result) {
+            $id = $result->fetchOne();
+
+            if (is_bool($id) && false === $id) {
+                return '';
+            }
+
+            if ($id !== '' && is_string($id)) {
+                return (string)$id;
+            }
+        }
+
+        //@TODO make error message more descriptive
+        throw new \Exception('Order not found.');
     }
 
+    /**
+     * @throws \Doctrine\DBAL\Exception
+     * @throws Exception
+     * @throws \Exception
+     */
     private function getShopOrderIdByPaypalOrderId(string $paypalOrderId): string
     {
         /** @var QueryBuilder $queryBuilder */
@@ -240,14 +286,26 @@ class OrderRepository
             ->where('oxpaypalorderid = :oxpaypalorderid')
             ->andWhere('LENGTH(oxorderid) > 0');
 
-        $id = $queryBuilder->setParameters($parameters)
+        $result = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
-            ->execute()
-            ->fetch(PDO::FETCH_COLUMN);
+            ->execute();
 
-        return (string) $id;
+        if ($result instanceof Result) {
+            $id = $result->fetchOne();
+            if ($id !== '' && is_string($id)) {
+                return $id;
+            }
+        }
+
+        //@TODO make error message more descriptive
+        throw new \Exception('Order not found.');
     }
 
+    /**
+     * @throws Exception
+     * @throws \Doctrine\DBAL\Exception
+     * @throws \Exception
+     */
     private function getShopOrderIdByPaypalTransactionId(string $paypalTransactionId): string
     {
         /** @var QueryBuilder $queryBuilder */
@@ -262,11 +320,17 @@ class OrderRepository
             ->where('oscpaypaltransactionid = :oscpaypaltransactionid')
             ->andWhere('LENGTH(oxorderid) > 0');
 
-        $id = $queryBuilder->setParameters($parameters)
+        $result = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
-            ->execute()
-            ->fetch(PDO::FETCH_COLUMN);
+            ->execute();
 
-        return (string) $id;
+        if ($result instanceof Result) {
+            $id = $result->fetchOne();
+            if ($id !== '' && is_string($id)) {
+                return $id;
+            }
+        }
+
+        throw new \Exception('Order not found.');
     }
 }

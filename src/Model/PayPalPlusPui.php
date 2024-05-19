@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Model;
 
 use OxidEsales\Eshop\Core\DatabaseProvider;
+use OxidSolutionCatalysts\PayPal\Traits\DataGetter;
 
 /**
  * Class paypPayPalPlusPuiData
@@ -17,6 +18,8 @@ use OxidEsales\Eshop\Core\DatabaseProvider;
  */
 class PayPalPlusPui extends \OxidEsales\Eshop\Core\Model\BaseModel
 {
+    use DataGetter;
+
     /**
      * Coretable name
      *
@@ -29,7 +32,7 @@ class PayPalPlusPui extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getPaymentId(): string
     {
-        return (string)$this->getFieldData('oxpaymentid');
+        return (string)$this->getPaypalStringData('oxpaymentid');
     }
 
     /**
@@ -37,7 +40,7 @@ class PayPalPlusPui extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getReferenceNumber(): string
     {
-        return (string)$this->getFieldData('oxreferencenumber');
+        return (string)$this->getPaypalStringData('oxreferencenumber');
     }
 
     /**
@@ -45,7 +48,7 @@ class PayPalPlusPui extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getDueDate(): string
     {
-        return (string)$this->getFieldData('oxduedate');
+        return (string)$this->getPaypalStringData('oxduedate');
     }
 
     /**
@@ -54,7 +57,7 @@ class PayPalPlusPui extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getTotal(): float
     {
-        return (float)$this->getFieldData('oxtotal');
+        return (float)$this->getPaypalFloatData('oxtotal');
     }
 
     /**
@@ -62,7 +65,7 @@ class PayPalPlusPui extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getCurrency(): string
     {
-        return (string)$this->getFieldData('oxcurrency');
+        return (string)$this->getPaypalStringData('oxcurrency');
     }
 
     /**
@@ -70,7 +73,7 @@ class PayPalPlusPui extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getBankName(): string
     {
-        return (string)$this->getFieldData('oxbankname');
+        return (string)$this->getPaypalStringData('oxbankname');
     }
 
     /**
@@ -78,7 +81,7 @@ class PayPalPlusPui extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getAccountHolder(): string
     {
-        return (string)$this->getFieldData('oxaccountholder');
+        return (string)$this->getPaypalStringData('oxaccountholder');
     }
 
     /**
@@ -86,7 +89,7 @@ class PayPalPlusPui extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getIban(): string
     {
-        return (string)$this->getFieldData('oxiban');
+        return (string)$this->getPaypalStringData('oxiban');
     }
 
     /**
@@ -94,7 +97,7 @@ class PayPalPlusPui extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getBic(): string
     {
-        return (string)$this->getFieldData('oxbic');
+        return (string)$this->getPaypalStringData('oxbic');
     }
 
     /**
@@ -111,12 +114,8 @@ class PayPalPlusPui extends \OxidEsales\Eshop\Core\Model\BaseModel
 
     /**
      * Load entry by payment ID.
-     *
-     * @param string $sPaymentId
-     *
-     * @return bool
      */
-    public function loadByReferenceNumber($sReferenceNumber)
+    public function loadByReferenceNumber(string $sReferenceNumber): bool
     {
         return $this->_loadBy('OXREFERENCENUMBER', $sReferenceNumber);
     }

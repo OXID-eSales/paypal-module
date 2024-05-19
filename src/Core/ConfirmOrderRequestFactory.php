@@ -14,9 +14,12 @@ use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Core\Language;
+use OxidSolutionCatalysts\PayPal\Model\User;
+use OxidSolutionCatalysts\PayPal\Traits\SessionDataGetter;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderConfirmApplicationContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
+use stdClass;
 
 /**
  * Class ConfirmOrderRequestFactory
@@ -24,10 +27,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
  */
 class ConfirmOrderRequestFactory
 {
-    /**
-     * @var ConfirmOrderRequest
-     */
-    private $request;
+    use SessionDataGetter;
 
     /**
      * @param Basket $basket
@@ -39,7 +39,7 @@ class ConfirmOrderRequestFactory
         Basket $basket,
         string $requestName
     ): ConfirmOrderRequest {
-        $request = $this->request = new ConfirmOrderRequest();
+        $request = new ConfirmOrderRequest();
 
         $request->payment_source = $this->getPaymentSource($basket, $requestName);
         $request->application_context = $this->getApplicationContext();
@@ -47,43 +47,45 @@ class ConfirmOrderRequestFactory
         return $request;
     }
 
-    protected function getPaymentSource(Basket $basket, string $requestName)
+    protected function getPaymentSource(Basket $basket, string $requestName): PaymentSource
     {
+        /** @var User $user */
         $user = $basket->getBasketUser();
-
-        $userName = $user->getFieldData('oxfname') . ' ' . $user->getFieldData('oxlname');
+        $userName = $user->getPaypalStringData('oxfname') . ' ' . $user->getPaypalStringData('oxlname');
 
         // get Billing CountryCode
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Country $country */
         $country = oxNew(Country::class);
-        $country->load($user->getFieldData('oxcountryid'));
+        $country->load($user->getPaypalStringData('oxcountryid'));
 
         // check possible deliveryCountry
-        $deliveryId = Registry::getSession()->getVariable("deladrid");
+        $deliveryId = self::getSessionStringVariable("deladrid");
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Address $deliveryAddress */
         $deliveryAddress = oxNew(Address::class);
         if ($deliveryId && $deliveryAddress->load($deliveryId)) {
-            $country->load($deliveryAddress->getFieldData('oxcountryid'));
+            $country->load($deliveryAddress->getPaypalStringData('oxcountryid'));
         }
+
+        $paymentSource = new PaymentSource([
+            $requestName => [
+                'name' => $userName,
+                'country_code' => $country->getPaypalStringData('oxisoalpha2')
+            ]
+        ]);
+
         //@todo remove the next line, until client has added googlepay
         if ($requestName === 'googlepay') {
             $requestName = 'google_pay';
-            $paymentSource = new \stdClass();
+            $paymentSource = new stdClass();
 
-// Dynamically adding properties to the stdClass object
-            $paymentSource->$requestName = new \stdClass();
+            // Dynamically adding properties to the stdClass object
+            $paymentSource->$requestName = new stdClass();
             $paymentSource->$requestName->name = $userName;
             $paymentSource->$requestName->country_code = $country->getFieldData('oxisoalpha2');
-            $paymentSource->$requestName->attributes = new \stdClass();
-            $paymentSource->$requestName->attributes->verification = new \stdClass();
+            $paymentSource->$requestName->attributes = new stdClass();
+            $paymentSource->$requestName->attributes->verification = new stdClass();
             $paymentSource->$requestName->attributes->verification->method = 'SCA_ALWAYS';
-        } else {
-            $paymentSource = new PaymentSource([
-                $requestName => [
-                    'name' => $userName,
-                    'country_code' => $country->getFieldData('oxisoalpha2')
-                ]
-            ]);
         }
-
 
         return $paymentSource;
     }

@@ -6,12 +6,16 @@ use mysql_xdevapi\Exception;
 use OxidEsales\Eshop\Application\Controller\AccountController;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Core\ViewConfig;
+use OxidSolutionCatalysts\PayPal\Traits\RequestDataGetter;
 
 /**
- * user account menu for saving paypal for purchase later (vaulting without purchase)
+ * user account menu for saving PayPal for purchase later (vaulting without purchase)
  */
 class PayPalVaultingController extends AccountController
 {
+    use RequestDataGetter;
+
     /**
      * @var string Current class template name.
      */
@@ -20,22 +24,28 @@ class PayPalVaultingController extends AccountController
 
     public function render()
     {
-        $this->_aViewData['vaultingUserId'] = $this->getViewConfig()->getUserIdForVaulting();
+        /** @var ViewConfig $viewConfig */
+        $viewConfig = $this->getViewConfig();
+        $this->_aViewData['vaultingUserId'] = $viewConfig->getUserIdForVaulting();
 
         return parent::render();
     }
 
-    public function deleteVaultedPayment()
+    public function deleteVaultedPayment(): void
     {
-        $paymentTokenId = Registry::getRequest()->getRequestEscapedParameter("paymentTokenId");
+        $paymentTokenId = self::getRequestStringParameter("paymentTokenId", true);
         $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
 
         if (!$vaultingService->deleteVaultedPayment($paymentTokenId)) {
-            Registry::getUtilsView()->addErrorToDisplay(
-                Registry::getLang()->translateString('OSC_PAYPAL_DELETE_FAILED'),
-                false,
-                true
-            );
+            $string = Registry::getLang()->translateString('OSC_PAYPAL_DELETE_FAILED');
+            $string = !is_string($string) ?: (string)$string;
+            if (is_string($string)) {
+                Registry::getUtilsView()->addErrorToDisplay(
+                    $string,
+                    false,
+                    true
+                );
+            }
         }
     }
 }

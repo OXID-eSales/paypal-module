@@ -7,27 +7,36 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
-use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Model\Order;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalModelOrder;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as OrderResponse;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 
 class CheckoutOrderApprovedHandler extends WebhookHandlerBase
 {
     public const WEBHOOK_EVENT_NAME = 'CHECKOUT.ORDER.APPROVED';
 
+    /**
+     * @param PayPalModelOrder $paypalOrderModel
+     * @param string $payPalTransactionId
+     * @param string $payPalOrderId
+     * @param array $eventPayload
+     * @param Order $order
+     * @SuppressWarnings(PHPMD.StaticAccess)
+     * @return void
+     */
     public function handleWebhookTasks(
         PayPalModelOrder $paypalOrderModel,
         string $payPalTransactionId,
         string $payPalOrderId,
         array $eventPayload,
-        EshopModelOrder $order
+        \OxidSolutionCatalysts\PayPal\Model\Order $order
     ): void {
         if ($this->needsCapture($eventPayload)) {
             try {
@@ -41,9 +50,8 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
                 $order->setOrderNumber(); //ensure the order has a number
             } catch (\Exception $exception) {
                 /** @var Logger $logger */
-                $logger = $this->getServiceFromContainer(Logger::class);
-                $logger->log(
-                    'debug',
+                $logger = Registry::get('logger');/** @phpstan-ignore-line */
+                $logger->debug(
                     sprintf(
                         "Error during %s for PayPal order_id '%s'",
                         self::WEBHOOK_EVENT_NAME,
@@ -73,29 +81,29 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
         return isset($eventPayload['status']) ? $eventPayload['status'] : '';
     }
 
-    /**
-     * Captures payment for given order
-     *
-     * @param string $orderId
-     *
-     * @return OrderResponse
-     * @throws ApiException
-     */
-    private function capturePayment(string $orderId): OrderResponse
-    {
-        /** @var ServiceFactory $serviceFactory */
-        $serviceFactory = Registry::get(ServiceFactory::class);
-        $service = $serviceFactory->getOrderService();
-        $request = new OrderCaptureRequest();
-
-        return $service->capturePaymentForOrder(
-            '',
-            $orderId,
-            $request,
-            '',
-            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
-        );
-    }
+//    /**
+//     * Captures payment for given order
+//     *
+//     * @param string $orderId
+//     *
+//     * @return OrderResponse
+//     * @throws ApiException
+//     */
+//    private function capturePayment(string $orderId): OrderResponse
+//    {
+//        /** @var ServiceFactory $serviceFactory */
+//        $serviceFactory = Registry::get(ServiceFactory::class);
+//        $service = $serviceFactory->getOrderService();
+//        $request = new OrderCaptureRequest();
+//
+//        return $service->capturePaymentForOrder(
+//            '',
+//            $orderId,
+//            $request,
+//            '',
+//            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+//        );
+//    }
 
     private function needsCapture(array $eventPayload): bool
     {

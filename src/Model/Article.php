@@ -7,12 +7,15 @@
 
 namespace OxidSolutionCatalysts\PayPal\Model;
 
+use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Registry;
 
 /**
  * PayPal article class
  *
  * @mixin \OxidEsales\Eshop\Application\Model\Article
+ * @property Field $oxarticles__oxisdownloadable
+ * @property Field $oxarticles__oxnonmaterial
  */
 class Article extends Article_parent
 {
@@ -63,8 +66,23 @@ class Article extends Article_parent
      */
     public function isVirtualPayPalArticle()
     {
-        $bIsDownloadable = ($this->oxarticles__oxisdownloadable->value != 0);
-        $bIsNonMaterial = ($this->oxarticles__oxnonmaterial->value != 0);
+        $bIsDownloadable = false;
+        $bIsNonMaterial = false;
+
+        if (
+            property_exists($this, 'oxarticles__oxisdownloadable')
+            && property_exists($this->oxarticles__oxisdownloadable, 'value')
+        ) {
+            $bIsDownloadable = $this->oxarticles__oxisdownloadable->value != 0;
+        }
+
+        if (
+            property_exists($this, 'oxarticles__oxnonmaterial')
+            && property_exists($this->oxarticles__oxnonmaterial, 'value')
+        ) {
+            $bIsNonMaterial = $this->oxarticles__oxnonmaterial->value != 0;
+        }
+
         return ($bIsDownloadable || $bIsNonMaterial);
     }
 }

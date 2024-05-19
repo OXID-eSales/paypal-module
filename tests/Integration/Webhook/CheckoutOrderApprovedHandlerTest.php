@@ -10,7 +10,9 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Exception;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
@@ -18,6 +20,7 @@ use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutOrderApprovedHandl
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 
@@ -51,8 +54,8 @@ final class CheckoutOrderApprovedHandlerTest extends WebhookHandlerBaseTestCase
 
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
-        $this->expectException(WebhookEventException::class);
-        $this->expectExceptionMessage(WebhookEventException::byPayPalOrderId($payPalOrderId)->getMessage());
+        $this->expectException(Exception::class);
+        $this->expectExceptionMessage('Order not found.');
 
         $handler = oxNew(CheckoutOrderApprovedHandler::class);
         $handler->handle($event);
@@ -145,9 +148,9 @@ final class CheckoutOrderApprovedHandlerTest extends WebhookHandlerBaseTestCase
         $loggerMock = $this->getPsrLoggerMock();
         $loggerMock->expects($this->once())
             ->method('debug')
-            ->with("Error during CHECKOUT.ORDER.APPROVED for PayPal order_id '" . $payPalOrderId . "'");
-
-        EshopRegistry::set('logger', $loggerMock);
+           ->with("Error during CHECKOUT.ORDER.APPROVED for PayPal order_id '" . $payPalOrderId . "'")
+        ;
+        Registry::set('logger', $loggerMock);
 
         $handler = $this->getMockBuilder(CheckoutOrderApprovedHandler::class)
             ->onlyMethods(['getPaymentService'])

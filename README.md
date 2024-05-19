@@ -28,7 +28,7 @@ PayPal checkout integration for OXID eShop 6.1 and above.
 
 ## Merging Strategy
 
-* The b-6.3.x branch is compatible with OXID6.3 to 6.5 and will not be merged automatically into the b-7.0.x branch
+* The b-6.3.x branch is compatible with OXID 6.3 to 6.5 and will not be merged automatically into the b-7.0.x branch
 * if something changes in the b-6.3.x main branch, it must be ported to the b-7.0.x branch
 
 ## Running tests
@@ -72,3 +72,52 @@ in OXID 6.3 and above:
 ```
 SELENIUM_SERVER_HOST=seleniumchrome BROWSER_NAME=chrome vendor/bin/runtests-codeception --group=examplegroup
 ```
+
+### Running tests using Docker with xDebug
+```
+docker compose exec -T \
+    -e PARTIAL_MODULE_PATHS='osc/paypal' \
+    -e ACTIVATE_ALL_MODULES=1 \
+    -e RUN_TESTS_FOR_SHOP=0 \
+    -e RUN_TESTS_FOR_MODULES=1 \
+    -e XDEBUG_MODE=debug \
+    -e XDEBUG_CONFIG='idekey=PHPSTORM' \
+    -e OXID_PHP_UNIT=true \
+    -e ADDITIONAL_TEST_PATHS='/var/www/vendor/oxid-solution-catalysts/paypal-module/Tests' \
+    php php -dxdebug.mode=debug -dxdebug.client_port=9003 -dxdebug.client_host=172.17.0.1 vendor/bin/runtests \
+      --log-junit=/var/www/phpunit.xml \
+      AllTestsUnit
+```
+#### Additional ENV variables:
+PHP_IDE_CONFIG='serverName=local.domain' ex.: john.oxiddev.de 
+#### PHP interpreter config variables:
+-dxdebug.client_host=172.17.0.1 will work on PC Linux 
+-dxdebug.client_host=host.docker.internal will work on Mac
+
+### Running tests using Docker with coverage
+```
+docker compose exec -T \
+    -e PARTIAL_MODULE_PATHS='osc/paypal' \
+    -e ACTIVATE_ALL_MODULES=1 \
+    -e RUN_TESTS_FOR_SHOP=0 \
+    -e RUN_TESTS_FOR_MODULES=1 \
+    -e XDEBUG_MODE=coverage \    
+    -e OXID_PHP_UNIT=true \
+    -e ADDITIONAL_TEST_PATHS='/var/www/vendor/oxid-solution-catalysts/paypal-module/Tests' \
+    php php -dxdebug.mode=debug -dxdebug.client_port=9003 -dxdebug.client_host=172.17.0.1 vendor/bin/runtests \
+      --log-junit=/var/www/phpunit.xml \
+      AllTestsUnit
+```
+
+### Running code static analysis
+Tools for checking various parts of written code making analysis and corrections.
+
+
+#### PHPStan
+```docker compose exec -w /var/www/source/modules/osc/paypal -T php composer phpstan```
+
+#### Php Code Sniffer
+```docker compose exec -w /var/www/source/modules/osc/paypal -T php composer phpcs```
+
+#### Php Mess Detector
+```docker compose exec -w /var/www/source/modules/osc/paypal -T php composer phpmd```

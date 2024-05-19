@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Model;
 
 use OxidEsales\Eshop\Core\DatabaseProvider;
+use OxidSolutionCatalysts\PayPal\Traits\DataGetter;
 
 /**
  * Class paypPayPalPlusRefundData.
@@ -15,6 +16,8 @@ use OxidEsales\Eshop\Core\DatabaseProvider;
  */
 class PayPalPlusRefund extends \OxidEsales\Eshop\Core\Model\BaseModel
 {
+    use DataGetter;
+
     /**
      * Coretable name
      *
@@ -38,7 +41,7 @@ class PayPalPlusRefund extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getSaleId(): string
     {
-        return $this->getFieldData('oxsaleid');
+        return $this->getPaypalStringData('oxsaleid');
     }
 
     /**
@@ -48,7 +51,7 @@ class PayPalPlusRefund extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getRefundId(): string
     {
-        return $this->getFieldData('oxrefundid');
+        return $this->getPaypalStringData('oxrefundid');
     }
 
     /**
@@ -58,7 +61,7 @@ class PayPalPlusRefund extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getStatus(): string
     {
-        return $this->getFieldData('oxstatus');
+        return $this->getPaypalStringData('oxstatus');
     }
 
     /**
@@ -68,7 +71,7 @@ class PayPalPlusRefund extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getDateCreated(): string
     {
-        return $this->getFieldData('oxdatecreated');
+        return $this->getPaypalStringData('oxdatecreated');
     }
 
     /**
@@ -78,7 +81,7 @@ class PayPalPlusRefund extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getTotal(): float
     {
-        return (float)$this->getFieldData('oxtotal');
+        return (float)$this->getPaypalFloatData('oxtotal');
     }
 
     /**
@@ -88,7 +91,7 @@ class PayPalPlusRefund extends \OxidEsales\Eshop\Core\Model\BaseModel
      */
     public function getCurrency(): string
     {
-        return $this->getFieldData('oxcurrency');
+        return $this->getPaypalStringData('oxcurrency');
     }
 
     /**
@@ -96,14 +99,14 @@ class PayPalPlusRefund extends \OxidEsales\Eshop\Core\Model\BaseModel
      *
      * @return object
      */
-    public function getRefundObject(): object
+    public function getRefundObject(): ?object
     {
         $oRefundObject = unserialize(
             htmlspecialchars_decode(
-                $this->getFieldData('oxrefundobject')
+                $this->getPaypalStringData('oxrefundobject')
             )
         );
-        return $oRefundObject;
+        return is_object($oRefundObject) ? $oRefundObject : null;
     }
 
     /**

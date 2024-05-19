@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
+use JsonException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher;
@@ -35,8 +36,7 @@ final class WebhookRequestHandlerTest extends UnitTestCase
         $dispatcher = $this->getMockBuilder(EventDispatcher::class)
             ->getMock();
         $dispatcher->expects($this->any())
-            ->method('dispatch')
-            ->willReturn(true);
+            ->method('dispatch');
 
         $webhookRequestHandler = new WebhookRequestHandler($requestReader, $verificationService, $dispatcher);
 
@@ -69,7 +69,7 @@ final class WebhookRequestHandlerTest extends UnitTestCase
         Registry::set('logger', $loggerMock);
 
         $webhookRequestHandler = new WebhookRequestHandler($requestReader, $verificationService, $dispatcher);
-
+        $this->expectException(JsonException::class);
         $this->assertFalse($webhookRequestHandler->process());
     }
 

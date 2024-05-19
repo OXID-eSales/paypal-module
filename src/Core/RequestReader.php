@@ -16,7 +16,7 @@ class RequestReader
      */
     public function getRawPost(): string
     {
-        return file_get_contents('php://input');
+        return (string)file_get_contents('php://input');
     }
 
     /**

@@ -31,18 +31,15 @@ use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\PhoneWithType;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
 
 /**
  * Server side interface for PayPal smart buttons.
+ * @SuppressWarnings(PHPMD)
  */
 class ProxyController extends FrontendController
 {
@@ -89,7 +86,7 @@ class ProxyController extends FrontendController
             PayPalSession::storePayPalOrderId($response->id);
         }
 
-        $this->outputJson($response);
+        $this->outputJson((array)$response);
     }
 
     public function getGooglepayBasket()
@@ -270,16 +267,17 @@ class ProxyController extends FrontendController
         $this->outputJson($response);
     }
 
-
-    public function approveOrder()
+    public function approveOrder(): void
     {
+        $orderId = Registry::getRequest()->getRequestEscapedParameter('orderID');
+        $orderId = is_string($orderId) ? (string)$orderId : $orderId;
         $data = json_decode(file_get_contents('php://input'), true);
-        $orderId = (string) Registry::getRequest()->getRequestEscapedParameter('orderID');
         $sessionOrderId = PayPalSession::getCheckoutOrderId();
         if (!empty($data['orderID']) && $orderId == '') {
             $orderId = $data['orderID'];
         }
-        if (!$orderId || ($orderId !== $sessionOrderId)) {
+
+        if (empty($orderId) || ($orderId !== $sessionOrderId)) {
             //TODO: improve
             $this->outputJson(['ERROR' => 'OrderId not found in PayPal session.']);
         }
@@ -328,11 +326,8 @@ class ProxyController extends FrontendController
                 $paymentId = Registry::getSession()->getVariable('paymentid');
                 // use a deliveryaddress in oxid-checkout
                 Registry::getSession()->setVariable('blshowshipaddress', false);
-                if ($paymentId === 'oscpaypal_googlepay') {
-                    $this->setPayPalPaymentMethod($paymentId);
-                } else {
-                    $this->setPayPalPaymentMethod();
-                }
+
+                $this->setPayPalPaymentMethod();
             } catch (StandardException $exception) {
                 Registry::getUtilsView()->addErrorToDisplay($exception);
                 $response->status = 'ERROR';

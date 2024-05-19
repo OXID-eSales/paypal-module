@@ -9,8 +9,10 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
+use Doctrine\DBAL\Exception;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
-use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidEsales\EshopCommunity\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Model\Order;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
@@ -35,14 +37,14 @@ abstract class WebhookHandlerBase
     {
         $eventPayload = $this->getEventPayload($event);
 
-        //PayPal transaction id might not yet be tracked in database depending on payment method
+        //PayPal's transaction id might not yet be tracked in database depending on payment method
         $payPalTransactionId = $this->getPayPalTransactionIdFromResource($eventPayload);
 
         //Depending on payment method, there might not be an order id in that result
         $payPalOrderId = $this->getPayPalOrderIdFromResource($eventPayload);
 
         if ($payPalOrderId) {
-            /** @var EshopModelOrder $order */
+            /** @var \OxidSolutionCatalysts\PayPal\Model\Order $order */
             $order = $this->getOrderByPayPalOrderId($payPalOrderId);
 
             /** @var PayPalModelOrder $paypalOrderModel */
@@ -61,9 +63,8 @@ abstract class WebhookHandlerBase
             );
         } else {
             /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer(Logger::class);
-            $logger->log(
-                'debug',
+            $logger = Registry::getLogger();
+            $logger->debug(
                 sprintf(
                     "Not enough information to handle %s with PayPal order_id '%s' and PayPal transaction id '%s'",
                     static::WEBHOOK_EVENT_NAME,
@@ -83,7 +84,7 @@ abstract class WebhookHandlerBase
         string $payPalTransactionId,
         string $payPalOrderId,
         array $eventPayload,
-        EshopModelOrder $order
+        \OxidSolutionCatalysts\PayPal\Model\Order $order
     ): void {
         $paypalOrderModel->setTransactionId($payPalTransactionId);
 
@@ -99,10 +100,14 @@ abstract class WebhookHandlerBase
         $this->markShopOrderPaymentStatus($order, $payPalTransactionId);
     }
 
+    /**
+     * Check for not finished orders and reset
+     *
+     * @return void
+     * @throws Exception
+     */
     public function cleanUpNotFinishedOrders(): void
     {
-        // check for not finished orders and reset
-        /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
         $this->getOrderRepository()->cleanUpNotFinishedOrders();
     }
 
@@ -172,21 +177,25 @@ abstract class WebhookHandlerBase
     ): void {
         if (
             $orderDetails &&
-            ($puiPaymentDetails = $orderDetails->payment_source->pay_upon_invoice ?? null)
+            ($paymentDetails = $orderDetails->payment_source->pay_upon_invoice ?? null)
         ) {
-            $paypalOrderModel->setPuiPaymentReference($puiPaymentDetails->payment_reference);
-            $paypalOrderModel->setPuiBic($puiPaymentDetails->bic);
-            $paypalOrderModel->setPuiIban($puiPaymentDetails->iban);
-            $paypalOrderModel->setPuiBankName($puiPaymentDetails->bank_name);
-            $paypalOrderModel->setPuiAccountHolderName($puiPaymentDetails->account_holder_name);
+            $paypalOrderModel->setPuiPaymentReference($paymentDetails->payment_reference ?? '');
+            $paypalOrderModel->setPuiBic($paymentDetails->bic ?? '');
+            $paypalOrderModel->setPuiIban($paymentDetails->iban ?? '');
+            $paypalOrderModel->setPuiBankName($paymentDetails->bank_name ?? '');
+            $paypalOrderModel->setPuiAccountHolderName($paymentDetails->account_holder_name ?? '');
         }
 
-        $paypalOrderModel->setTransactionType(Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE);
         $paypalOrderModel->setStatus($status);
         $paypalOrderModel->save();
     }
 
-    protected function markShopOrderPaymentStatus(EshopModelOrder $order, string $payPalTransactionId): void
+    /**
+     * @param Order $order
+     * @param string $payPalTransactionId
+     * @return void
+     */
+    protected function markShopOrderPaymentStatus(Order $order, string $payPalTransactionId): void
     {
         $order->markOrderPaid();
         $order->setTransId($payPalTransactionId);

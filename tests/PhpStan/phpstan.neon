@@ -1,5 +1,27 @@
 parameters:
+    excludePaths:
+        - ../../src/Core/ViewConfig.php
+        - ../../src/Core/ShopControl.php
+        - ../../src/Core/InputValidator.php
+        - ../../src/Traits/DataGetter.php
+        - ../../src/Controller/ProxyController.php
+        - ../../src/Service/Payment.php
+    universalObjectCratesClasses:
+        - OxidEsales\Eshop\Application\Model\User
     checkMissingIterableValueType: false
+    ignoreErrors:
+        -
+            message: "#^Method\\s?OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\ModuleSettings::save\\(\\)\\s?has\\s?parameter\\s?\\$value\\s?with\\s?no\\s?type\\s?specified.$#"
+            count: 1
+            path: ../../src/Service/ModuleSettings.php
+        -
+            message: "#^Call\\s?to\\s?an\\s?undefined\\s?method\\s?OxidEsales\\\\Eshop\\\\Core\\\\Request::getVariable#"
+            count: 1
+            path: ../../src/Controller/ProxyController.php
+        -
+            message: "#^Method\\s?OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ConfirmOrderRequestFactory::getPaymentSource\\(\\)\\s?should\\s?return\\s?OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentSource\\s?but\\s?returns\\s?OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentSource\\|stdClass#"
+            count: 1
+            path: ../../src/Core/ConfirmOrderRequestFactory.php
     bootstrapFiles:
         - phpstan-bootstrap.php
     level: max

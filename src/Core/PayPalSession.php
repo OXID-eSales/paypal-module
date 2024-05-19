@@ -10,9 +10,12 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Traits\SessionDataGetter;
 
 class PayPalSession
 {
+    use SessionDataGetter;
+
     /**
      * PayPal store checkoutOrderId
      *
@@ -29,14 +32,14 @@ class PayPalSession
     /**
      * PayPal remove checkoutOrderId
      */
-    public static function unsetPayPalOrderId()
+    public static function unsetPayPalOrderId(): void
     {
         Registry::getSession()->deleteVariable(
             Constants::SESSION_CHECKOUT_ORDER_ID
         );
     }
 
-    public static function unsetPayPalSession()
+    public static function unsetPayPalSession(): void
     {
         self::unsetPayPalOrderId();
 
@@ -66,15 +69,13 @@ class PayPalSession
 
     public static function getPayPalPuiCmId(): string
     {
-        return (string) Registry::getSession()->getVariable(
-            Constants::SESSION_PUI_CMID
-        );
+        return self::getSessionStringVariable(Constants::SESSION_PUI_CMID);
     }
 
     /**
      * PayPal remove PUI-CM-Id
      */
-    public static function unsetPayPalPuiCmId()
+    public static function unsetPayPalPuiCmId(): void
     {
         Registry::getSession()->deleteVariable(
             Constants::SESSION_PUI_CMID
@@ -112,12 +113,10 @@ class PayPalSession
 
     /**
      * PayPal checkout order id getter
-     *
-     * @return mixed
      */
-    public static function getCheckoutOrderId()
+    public static function getCheckoutOrderId(): string
     {
-        return Registry::getSession()->getVariable(Constants::SESSION_CHECKOUT_ORDER_ID);
+        return self::getSessionStringVariable(Constants::SESSION_CHECKOUT_ORDER_ID);
     }
 
     public static function setSessionRedirectLink(string $link): void
@@ -130,9 +129,7 @@ class PayPalSession
 
     public static function getSessionRedirectLink(): string
     {
-        return (string) Registry::getSession()->getVariable(
-            Constants::SESSION_REDIRECTLINK
-        );
+        return self::getSessionStringVariable(Constants::SESSION_REDIRECTLINK);
     }
 
     public static function unsetSessionRedirectLink(): void
@@ -152,9 +149,7 @@ class PayPalSession
 
     public static function getOnboardingPayload(): ?string
     {
-        return Registry::getSession()->getVariable(
-            Constants::SESSION_ONBOARDING_PAYLOAD
-        );
+        return self::getSessionStringVariable(Constants::SESSION_ONBOARDING_PAYLOAD);
     }
 
     public static function unsetOnboardingSession(): void

@@ -38,7 +38,7 @@ class PaymentGateway extends PaymentGateway_parent
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $sessionPaymentId = $paymentService->getSessionPaymentId();
 
-        if (PayPalDefinitions::isButtonPayment($sessionPaymentId)) {
+        if (PayPalDefinitions::isButtonPayment((string)$sessionPaymentId)) {
             $success = $this->doExecutePayPalExpressPayment($order);
         } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID === $sessionPaymentId) {
             $success = $this->doExecutePuiPayment($order);
@@ -68,10 +68,14 @@ class PaymentGateway extends PaymentGateway_parent
         /** @var Logger $logger */
         $logger = $this->getServiceFromContainer(Logger::class);
 
-        if ($checkoutOrderId = PayPalSession::getCheckoutOrderId()) {
+        $checkoutOrderId = PayPalSession::getCheckoutOrderId();
+        if (is_string($checkoutOrderId) && !empty($checkoutOrderId)) {
             // Update Order
             try {
-                $paymentService->doPatchPayPalOrder(Registry::getSession()->getBasket(), $checkoutOrderId);
+                $basket = Registry::getSession()->getBasket();
+                /** @var \OxidSolutionCatalysts\PayPal\Model\Order $order */
+                $shopOrderId = (string)$order->getPaypalStringData('oxordernr');
+                $paymentService->doPatchPayPalOrder($basket, (string)$checkoutOrderId, $shopOrderId);
             } catch (Exception $exception) {
                 $logger->log('error', 'Error on order patch call.', [$exception]);
             }
@@ -80,6 +84,7 @@ class PaymentGateway extends PaymentGateway_parent
             try {
                 // At this point we only trigger the capture. We find out that order was really captured via the
                 // CHECKOUT.ORDER.COMPLETED webhook, where we mark the order as paid
+                /** @var \OxidEsales\Eshop\Application\Model\Order $order */
                 $paymentService->doCapturePayPalOrder($order, $checkoutOrderId, $sessionPaymentId);
                 // success means at this point, that we triggered the capture without errors
                 $success = true;
@@ -102,7 +107,9 @@ class PaymentGateway extends PaymentGateway_parent
         $success = false;
         try {
             //order number must be resolved before requesting payment
+            /** @var Order $order */
             $order->setOrderNumber();
+            /** @var \OxidEsales\Eshop\Application\Model\Order $order */
             $success = $paymentService->doExecutePuiPayment(
                 $order,
                 Registry::getSession()->getBasket(),
