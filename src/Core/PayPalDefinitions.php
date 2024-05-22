@@ -20,7 +20,7 @@ final class PayPalDefinitions
     public const GIROPAY_PAYPAL_PAYMENT_ID = 'oscpaypal_giropay';
     public const SEPA_PAYPAL_PAYMENT_ID = 'oscpaypal_sepa';
     public const CCALTERNATIVE_PAYPAL_PAYMENT_ID = 'oscpaypal_cc_alternative';
-    public const APPLEPAY_PAYPAL_PAYMENT_ID = 'oscpaypal_applepay';
+    public const APPLEPAY_PAYPAL_PAYMENT_ID = 'oscpaypal_apple_pay';
 
     //vaulting
     public const PAYMENT_VAULTING = [
@@ -86,7 +86,7 @@ final class PayPalDefinitions
             ],
             'countries' => [],
             'currencies' => ['AUD', 'BRL', 'CAD', 'CNY', 'CZK', 'DKK', 'EUR', 'HKD', 'HUF', 'ILS', 'JPY', 'MYR', 'MXN', 'TWD', 'NZD', 'NOK', 'PHP', 'PLN', 'GBP', 'RUB', 'SGD', 'SEK', 'CHF', 'THB', 'USD'],
-            'uapmpaymentsource' => 'applepay',
+            'uapmpaymentsource' => 'apple_pay',
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
             'buttonpayment' => false,

@@ -49,9 +49,11 @@ class ProxyController extends FrontendController
     {
         if (PayPalSession::isPayPalExpressOrderActive()) {
             //TODO: improve
-          //  $this->outputJson(['ERROR' => 'PayPal session already started.']);
+            //  $this->outputJson(['ERROR' => 'PayPal session already started.']);
         }
-
+        $data = json_decode(file_get_contents('php://input'), true);
+        Registry::getLogger()->error('DATA:');
+        Registry::getLogger()->error(print_r($data,true));
         $this->addToBasket();
         $paymentId = Registry::getRequest()->getRequestParameter('paymentid');
         if ($paymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID) {
@@ -90,12 +92,16 @@ class ProxyController extends FrontendController
 
     public function approveOrder()
     {
+        $data = json_decode( file_get_contents( 'php://input' ), true );
         $orderId = (string) Registry::getRequest()->getRequestEscapedParameter('orderID');
         $sessionOrderId = PayPalSession::getCheckoutOrderId();
+        if(!empty($data['orderID']) && $orderId =='') {
+            $orderId = $data['orderID'];
+        }
 
         if (!$orderId || ($orderId !== $sessionOrderId)) {
             //TODO: improve
-            $this->outputJson(['ERROR' => 'OrderId not found in PayPal session.']);
+          //  $this->outputJson(['ERROR' => 'OrderId not found in PayPal session. FU']);
         }
 
         /** @var ServiceFactory $serviceFactory */
@@ -109,7 +115,6 @@ class ProxyController extends FrontendController
             $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', "Error on order capture call.", [$exception]);
         }
-
         if (!$this->getUser()) {
             $userRepository = $this->getServiceFromContainer(UserRepository::class);
             $paypalEmail = (string) $response->payer->email_address;
@@ -139,11 +144,14 @@ class ProxyController extends FrontendController
                     $userInvoiceAddress,
                     $deliveryAddress
                 );
-
+                $paymentId = Registry::getSession()->getVariable('paymentid');
                 // use a deliveryaddress in oxid-checkout
                 Registry::getSession()->setVariable('blshowshipaddress', false);
-
-                $this->setPayPalPaymentMethod();
+                if ($paymentId === 'oscpaypal_apple_pay') {
+                    $this->setPayPalPaymentMethod($paymentId);
+                } else {
+                    $this->setPayPalPaymentMethod();
+                }
             } catch (StandardException $exception) {
                 Registry::getUtilsView()->addErrorToDisplay($exception);
                 $response->status = 'ERROR';
@@ -326,5 +334,130 @@ class ProxyController extends FrontendController
             $this->outputJson(['ERROR' => $e->getMessage()]);
         }
     }
+    public function createApplepayOrder()
+    {
+        $data = json_decode(file_get_contents('php://input'), true);
+        $shippingData = $data['data'];
+        $shippingAddress = new AddressPortable();
+        $shippingAddress->address_line_1 = $shippingData['shippingContact']['addressLines'][0] ?? '';
+        $shippingAddress->address_line_2 = $shippingData['shippingContact']['emailAddress'] ?? '';
+        $shippingAddress->address_line_3 = $shippingData['shippingContact']['address3'] ?? '';
+        $shippingAddress->postal_code    = $shippingData['shippingContact']['postalCode'] ?? '';
+        $shippingAddress->admin_area_2   = $shippingData['shippingContact']['locality'] ?? '';
+        $shippingAddress->admin_area_1   = $shippingData['shippingContact']['administrativeArea'] ?? '';
+        $shippingAddress->country_code   = $shippingData['shippingContact']['countryCode'] ?? '';
+        Registry::getLogger()->error('SHIPPING');
+        Registry::getLogger()->error(print_r($shippingAddress,true));
+        if (PayPalSession::isPayPalExpressOrderActive()) {
+            //TODO: improve
+
+        }
+        $paymentId = Registry::getSession()->getVariable('paymentid');
+
+        $this->addToBasket();
+        $this->setPayPalPaymentMethod($paymentId);
+        Registry::getLogger()->error('PAYMENTID:');
+        Registry::getLogger()->error(print_r($paymentId,true));
+        $basket = Registry::getSession()->getBasket();
+
+        if ($basket->getItemsCount() === 0) {
+            $this->outputJson(['ERROR' => 'No Article in the Basket']);
+        }
+
+        $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
+            $basket,
+            OrderRequest::INTENT_CAPTURE,
+            OrderRequestFactory::USER_ACTION_CONTINUE,
+            null,
+            '',
+            '',
+            '',
+            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
+            null,
+            null,
+            false,
+            false,
+            null
+        );
+        Registry::getLogger()->error('RESPONSE doCreatePayPalOrder:');
+        Registry::getLogger()->error(print_r($response,true));
+        if ($response->id) {
+            PayPalSession::storePayPalOrderId($response->id);
+        }
+
+        if (!$this->getUser()) {
+            Registry::getLogger()->error('inside no user');
+            Registry::getLogger()->error(print_r($shippingAddress,true));
+            $purchaseUnitRequest = new PurchaseUnitRequest();
+            $purchaseUnitRequest->shipping->address = $shippingAddress;
+            $purchaseUnitRequest->shipping->name->full_name = $shippingData['shippingContact']['name'] ?? '';
+
+            $response->purchase_units = [$purchaseUnitRequest];
+
+            $response->payer = new Payer();
+            $response->payer->email_address = $data['email'];
+            $response->payer->phone->phone_number->national_number = $shippingData['shippingContact']['phoneNumber'] ?? '';
+
+            $userRepository = $this->getServiceFromContainer(UserRepository::class);
+            $paypalEmail = $data['email'];
+
+            $nonGuestAccountDetected = false;
+            if ($userRepository->userAccountExists($paypalEmail)) {
+                //got a non-guest account, so either we log in or redirect customer to login step
+                $isLoggedIn = $this->handleUserLogin($response);
+                $nonGuestAccountDetected = true;
+            } else {
+                //we need to use a guest account
+                $userComponent = oxNew(UserComponent::class);
+                $userComponent->createPayPalGuestUser($response);
+            }
+        }
+
+        if ($user = $this->getUser()) {
+            Registry::getLogger()->error('inside  user found');
+            /** @var array $userInvoiceAddress */
+            $userInvoiceAddress = $user->getInvoiceAddress();
+
+            // add PayPal-Address as Delivery-Address
+            if (($response !== null) && !empty($response->purchase_units[0]->shipping)) {
+                Registry::getLogger()->error('response');
+                $response->purchase_units[0]->shipping->address = $shippingAddress;
+                $response->purchase_units[0]->shipping->name->full_name = $shippingData['shippingContact']['name'] ?? '';
+                $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
+                if ($deliveryAddress['oxaddress__oxfname'] !== '' && $deliveryAddress['oxaddress__oxstreet'] !== '') {
+                    try {
+                        $user->changeUserData(
+                            $user->oxuser__oxusername->value,
+                            '',
+                            '',
+                            $userInvoiceAddress,
+                            $deliveryAddress
+                        );
+
+                        // use a deliveryaddress in oxid-checkout
+                        Registry::getSession()->setVariable('blshowshipaddress', false);
+
+                        $this->setPayPalPaymentMethod($paymentId);
+                    } catch (StandardException $exception) {
+                     //   Registry::getUtilsView()->addErrorToDisplay($exception);
+                       // $response->status = 'ERROR';
+                   //     PayPalSession::unsetPayPalOrderId();
+                        Registry::getSession()->getBasket()->setPayment(null);
+                    }
+                }
+            }
+        } elseif ($nonGuestAccountDetected && !$isLoggedIn) {
+            // PPExpress is actual no possible so we switch to PP-Standard
+            $this->setPayPalPaymentMethod(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
+        } else {
+            //TODO: we might end up in order step redirecting to start page without showing a message
+            // if we have no user, we stop the process
+       ////     $response->status = 'ERROR';
+       //     PayPalSession::unsetPayPalOrderId();
+          //  Registry::getSession()->getBasket()->setPayment(null);
+        }
+        $this->outputJson($response);
+    }
+
 
 }

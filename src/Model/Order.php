@@ -274,12 +274,15 @@ class Order extends Order_parent
         $isPayPalACDC = $sessionPaymentId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $sessionPaymentId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
         $isPayPalPayLater = $sessionPaymentId === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID;
+        $isApplePay = $sessionPaymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID;
 
         //catch UAPM, Standard and Pay Later PayPal payments here
-        if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater) {
+        if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater || $isApplePay) {
             try {
                 if ($isPayPalUAPM) {
                     $redirectLink = $paymentService->doExecuteUAPMPayment($this, $basket);
+                    Registry::getLogger()->error('REDIRECT LINK');
+                    Registry::getLogger()->error(print_r($redirectLink,true));
                 } else {
                     $intent = $this->getServiceFromContainer(ModuleSettings::class)
                         ->getPayPalStandardCaptureStrategy() === 'directly' ?

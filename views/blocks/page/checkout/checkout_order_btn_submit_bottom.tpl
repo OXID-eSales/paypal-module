@@ -9,7 +9,7 @@
         [{include file="modules/osc/paypal/checkout_order_btn_submit_bottom_wave.tpl"}]
     [{/if}]
 [{/if}]
-[{if "oscpaypal_applepay" == $payment->getId()}]
+[{if "oscpaypal_apple_pay" == $payment->getId()}]
     [{if $oViewConf->isFlowCompatibleTheme()}]
     [{include file="modules/osc/paypal/applepay.tpl" buttonId=$payment->getId() buttonClass="paypal-button-wrapper large"}]
     [{else}]
