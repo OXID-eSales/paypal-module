@@ -51,9 +51,6 @@ class ProxyController extends FrontendController
             //TODO: improve
             //  $this->outputJson(['ERROR' => 'PayPal session already started.']);
         }
-        $data = json_decode(file_get_contents('php://input'), true);
-        Registry::getLogger()->error('DATA:');
-        Registry::getLogger()->error(print_r($data,true));
         $this->addToBasket();
         $paymentId = Registry::getRequest()->getRequestParameter('paymentid');
         if ($paymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID) {
@@ -101,9 +98,8 @@ class ProxyController extends FrontendController
 
         if (!$orderId || ($orderId !== $sessionOrderId)) {
             //TODO: improve
-          //  $this->outputJson(['ERROR' => 'OrderId not found in PayPal session. FU']);
+            $this->outputJson(['ERROR' => 'OrderId not found in PayPal session.']);
         }
-
         /** @var ServiceFactory $serviceFactory */
         $serviceFactory = Registry::get(ServiceFactory::class);
         $service = $serviceFactory->getOrderService();
@@ -346,8 +342,6 @@ class ProxyController extends FrontendController
         $shippingAddress->admin_area_2   = $shippingData['shippingContact']['locality'] ?? '';
         $shippingAddress->admin_area_1   = $shippingData['shippingContact']['administrativeArea'] ?? '';
         $shippingAddress->country_code   = $shippingData['shippingContact']['countryCode'] ?? '';
-        Registry::getLogger()->error('SHIPPING');
-        Registry::getLogger()->error(print_r($shippingAddress,true));
         if (PayPalSession::isPayPalExpressOrderActive()) {
             //TODO: improve
 
@@ -356,8 +350,6 @@ class ProxyController extends FrontendController
 
         $this->addToBasket();
         $this->setPayPalPaymentMethod($paymentId);
-        Registry::getLogger()->error('PAYMENTID:');
-        Registry::getLogger()->error(print_r($paymentId,true));
         $basket = Registry::getSession()->getBasket();
 
         if ($basket->getItemsCount() === 0) {
@@ -379,15 +371,11 @@ class ProxyController extends FrontendController
             false,
             null
         );
-        Registry::getLogger()->error('RESPONSE doCreatePayPalOrder:');
-        Registry::getLogger()->error(print_r($response,true));
         if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);
         }
 
         if (!$this->getUser()) {
-            Registry::getLogger()->error('inside no user');
-            Registry::getLogger()->error(print_r($shippingAddress,true));
             $purchaseUnitRequest = new PurchaseUnitRequest();
             $purchaseUnitRequest->shipping->address = $shippingAddress;
             $purchaseUnitRequest->shipping->name->full_name = $shippingData['shippingContact']['name'] ?? '';
@@ -414,13 +402,11 @@ class ProxyController extends FrontendController
         }
 
         if ($user = $this->getUser()) {
-            Registry::getLogger()->error('inside  user found');
             /** @var array $userInvoiceAddress */
             $userInvoiceAddress = $user->getInvoiceAddress();
 
             // add PayPal-Address as Delivery-Address
             if (($response !== null) && !empty($response->purchase_units[0]->shipping)) {
-                Registry::getLogger()->error('response');
                 $response->purchase_units[0]->shipping->address = $shippingAddress;
                 $response->purchase_units[0]->shipping->name->full_name = $shippingData['shippingContact']['name'] ?? '';
                 $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);

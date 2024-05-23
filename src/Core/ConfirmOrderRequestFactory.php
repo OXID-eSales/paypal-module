@@ -70,8 +70,6 @@ class ConfirmOrderRequestFactory
                 'country_code' => $country->getFieldData('oxisoalpha2')
             ]
         ]);
-        Registry::getLogger()->error('ConfirmOrder');
-        Registry::getLogger()->error(print_r($paymentSource,true));
         return $paymentSource;
     }
 

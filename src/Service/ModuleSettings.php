@@ -347,10 +347,17 @@ class ModuleSettings
     {
         return (bool)$this->getSettingValue('oscPayPalVaultingEligibility');
     }
-
+    public function isLiveApplePayEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalApplePayEligibility');
+    }
     public function isSandboxAcdcEligibility(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalSandboxAcdcEligibility');
+    }
+    public function isSandboxApplePayEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSandboxApplePayEligibility');
     }
 
     public function isSandboxPuiEligibility(): bool
@@ -463,7 +470,14 @@ class ModuleSettings
             $this->save('oscPayPalVaultingEligibility', $eligibility);
         }
     }
-
+    public function saveApplePayEligibility(bool $eligibility): void
+    {
+        if ($this->isSandbox()) {
+            $this->save('oscPayPalSandboxApplePayEligibility', $eligibility);
+        } else {
+            $this->save('oscPayPalApplePayEligibility', $eligibility);
+        }
+    }
     public function saveWebhookId(string $webhookId): void
     {
         if ($this->isSandbox()) {

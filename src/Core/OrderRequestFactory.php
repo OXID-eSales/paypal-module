@@ -174,15 +174,7 @@ class OrderRequestFactory
     }
     protected function getApplePayPaymentSource($basket, $requestName) {
 
-        $serviceFactory = Registry::get(ServiceFactory::class);
-        $service = $serviceFactory->getOrderService();
-        $sessionAcdcOrderId = (string) PayPalSession::getCheckoutOrderId();
-
-        $response = $service->showOrderDetails($sessionAcdcOrderId, '');
-        Registry::getLogger()->error('PAYMENTSOURCESTUFF');
-        Registry::getLogger()->error(print_r($response,true));
-        return $response->payment_source;
-        /*$user = $basket->getBasketUser();
+        $user = $basket->getBasketUser();
 
         $userName = $user->getFieldData('oxfname') . ' ' . $user->getFieldData('oxlname');
 
@@ -201,7 +193,7 @@ class OrderRequestFactory
                 'name' => $userName,
                 'country_code' => $country->getFieldData('oxisoalpha2')
             ]
-        ]);*/
+        ]);
         return $paymentSource;
     }
 

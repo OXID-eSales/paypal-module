@@ -536,8 +536,7 @@ class Payment
             );
 
         } catch (Exception $exception) {
-            Registry::getLogger()->error('doConfirmUAPM');
-            Registry::getLogger()->error(print_r($exception->getMessage(),true));
+
             PayPalSession::unsetPayPalOrderId();
             $this->removeTemporaryOrder();
             //TODO: do we need to log this?

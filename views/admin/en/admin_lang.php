@@ -72,6 +72,7 @@ $aLang = [
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '(As an alternative to the missing payment method, an additional "credit card" button is displayed under the Paypal buttons.)',
 
     'OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING'        => 'Vaulting',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY'        => 'Applepay',
 
     'OSC_PAYPAL_LOCALISATIONS'                    => 'Locals',
     'OSC_PAYPAL_LOCALES'                          => 'regional language settings',

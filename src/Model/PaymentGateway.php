@@ -45,10 +45,14 @@ class PaymentGateway extends PaymentGateway_parent
         } else {
             $success = parent::executePayment($amount, $order);
         }
+        $paypalOrderId = '';
+        if ($sessionPaymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID ) {
+            $paypalOrderId = Registry::getRequest()->getRequestParameter('orderID');
+        }
         if (
             $success &&
             $paymentService->isPayPalPayment() &&
-            ($capture = $order->getOrderPaymentCapture()) &&
+            ($capture = $order->getOrderPaymentCapture($paypalOrderId)) &&
             (string) $capture->status === 'COMPLETED'
         ) {
             $order->setTransId($capture->id);

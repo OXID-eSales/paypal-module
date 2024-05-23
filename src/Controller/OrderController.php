@@ -296,16 +296,15 @@ class OrderController extends OrderController_parent
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
             $paymentService->removeTemporaryOrder();
             Registry::getSession()->setVariable('sess_challenge', $this->getUtilsObjectInstance()->generateUID());
-            $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
-            Registry::getSession()->setVariable('Sessionapplepay', $sessionOrderId);
 
             $_POST['sDeliveryAddressMD5'] = $this->getDeliveryAddressMD5();
             $status = $this->execute();
+
         } catch (Exception $exception) {
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', $exception->getMessage(), [$exception]);
-            $this->outputJson(['applepayerror' => 'failed to execute shop order']);
+            $this->outputJson(['error' => 'failed to execute shop order'.$exception->getMessage()]);
             return;
         }
 
@@ -313,12 +312,12 @@ class OrderController extends OrderController_parent
             Registry::getSession()->getBasket()
         );
         if (!($paypalOrderId = $response['id'])) {
-            $this->outputJson(['applepayerror' => 'cannot create paypal order']);
+            $this->outputJson(['error' => 'cannot create paypal order']);
             return;
         }
 
         if (!$status ) {
-            $response = ['applepayerror' => 'unexpected order status ' . $status];
+            $response = ['error' => 'unexpected order status ' . $status];
             $paymentService->removeTemporaryOrder();
         } else {
             PayPalSession::storePayPalOrderId($paypalOrderId);
@@ -333,18 +332,27 @@ class OrderController extends OrderController_parent
     }
     public function captureApplePayOrder()
     {
-        Registry::getLogger()->error('inside Capture:');
+        $orderId = (string) Registry::getRequest()->getRequestEscapedParameter('orderID');
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();
-
         $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
         $checkoutOrderId = (string) PayPalSession::getCheckoutOrderId();
-        Registry::getLogger()->error('SessionId:'.print_r($sessionOrderId,true));
-        Registry::getLogger()->error('checkout orderId:'.print_r($checkoutOrderId,true));
-        Registry::getLogger()->error('inside Capture:');
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        /** @var Logger $logger */
+        $request = new OrderCaptureRequest();
         $logger = $this->getServiceFromContainer(Logger::class);
+        try {
+            /** @var $result ApiOrderModel */
+            $result = $orderService->capturePaymentForOrder(
+                '',
+                $orderId,
+                $request,
+                '',
+            );
+        } catch (ApiException $exception) {
 
+            $logger = $this->getServiceFromContainer(Logger::class);
+            $logger->log('error', $exception->getMessage(), [$exception]);
+
+            throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR'.$exception->getMessage());
+        }
 
         try {
             $order = oxNew(EshopModelOrder::class);
@@ -358,7 +366,7 @@ class OrderController extends OrderController_parent
             ];
             //track status in session
             Registry::getSession()->setVariable('Sessionapplepay', $sessionOrderId);
-            Registry::getSession()->setVariable('applepayOrderId', $checkoutOrderId);
+            Registry::getSession()->setVariable('applepayOrderId', $orderId);
         } catch (Exception $exception) {
             $logger->log(
                 'debug',
@@ -374,15 +382,8 @@ class OrderController extends OrderController_parent
     {
         $sessionOrderId = Registry::getSession()->getVariable('Sessionapplepay');
         $sessionGooglePayOrderId = Registry::getSession()->getVariable('applepayOrderId'); // paypal-checkout-session
-
         $forceFetchDetails = (bool) Registry::getRequest()->getRequestParameter('fallbackfinalize');
-        Registry::getLogger()->error('finalizeApplePay');
-        Registry::getLogger()->error('$sessionGooglePayOrderId:');
 
-        Registry::getLogger()->error(print_r($sessionGooglePayOrderId,true));
-        Registry::getLogger()->error('$sessionOrderId:');
-
-        Registry::getLogger()->error(print_r($sessionOrderId,true));
         try {
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
