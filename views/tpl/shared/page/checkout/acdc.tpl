@@ -19,8 +19,10 @@
                 <input type="text" id="card-holder-name" class="form-control" name="card-holder-name" autocomplete="off" placeholder="[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD"}]"/>
             </div>
         </div>
-        <input type="checkbox" id="oscPayPalVaultPaymentCheckbox">
-        <label for="oscPayPalVaultPaymentCheckbox">[{oxmultilang ident="OSC_PAYPAL_VAULTING_SAVE"}]</label>
+        [{if $oscpaypal_isVaultingPossible}]
+            <input type="checkbox" id="oscPayPalVaultPaymentCheckbox">
+            <label for="oscPayPalVaultPaymentCheckbox">[{oxmultilang ident="OSC_PAYPAL_VAULTING_SAVE"}]</label>
+        [{/if}]
         <div class="hidden">
             <input type="hidden" id="card-billing-address-street" name="card-billing-address-street" value="[{if $oxcmp_user->oxuser__oxstreet->value}][{$oxcmp_user->oxuser__oxstreet->value}][{/if}] [{if $oxcmp_user->oxuser__oxstreetnr->value}][{$oxcmp_user->oxuser__oxstreetnr->value}][{/if}]" />
             <input type="hidden" id="card-billing-address-unit" name="card-billing-address-unit" value=""/>

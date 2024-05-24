@@ -57,8 +57,11 @@ class OrderController extends OrderController_parent
 
     public function render()
     {
-        if (Registry::getSession()->getVariable('oscpaypal_payment_redirect')) {
-            Registry::getSession()->deleteVariable('oscpaypal_payment_redirect');
+        $session = Registry::getSession();
+        $lang = Registry::getLang();
+
+        if ($session->getVariable('oscpaypal_payment_redirect')) {
+            $session->deleteVariable('oscpaypal_payment_redirect');
             throw new RedirectWithMessage(
                 Registry::getConfig()->getShopSecureHomeURL() . 'cl=user',
                 'OSC_PAYPAL_LOG_IN_TO_CONTINUE'
@@ -86,16 +89,21 @@ class OrderController extends OrderController_parent
             $paymentService->removeTemporaryOrder();
         }
 
+        $user = $this->getUser();
+        $isVaultingPossible = false;
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        if ($moduleSettings->getIsVaultingActive() && $this->getUser()->oxuser__oxpassword->value) {
-            $this->addTplParam('oscpaypal_payment_saveable', true);
+        if ($moduleSettings->getIsVaultingActive() && $user->getFieldData('oxpassword')) {
+            $isVaultingPossible = true;
         }
 
-        $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
-        $config = Registry::getConfig();
+        $this->addTplParam('oscpaypal_isVaultingPossible', $isVaultingPossible);
+
+        $selectedVaultPaymentSourceIndex = $session->getVariable("selectedVaultPaymentSourceIndex");
+
         if (
+            $isVaultingPossible &&
             !is_null($selectedVaultPaymentSourceIndex) &&
-            $payPalCustomerId = $config->getUser()->getFieldData("oscpaypalcustomerid")
+            $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid")
         ) {
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
 
@@ -109,10 +117,10 @@ class OrderController extends OrderController_parent
 
             $paymentDescription = "";
             if ($paymentType === "card") {
-                $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_ENDING_IN");
+                $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
                 $paymentDescription = $paymentSource["brand"] . " " . $string . $paymentSource["last_digits"];
             } elseif ($paymentType === "paypal") {
-                $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
+                $string = $lang->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
                 $paymentDescription = $string . " " . $paymentSource["email_address"];
             }
 
