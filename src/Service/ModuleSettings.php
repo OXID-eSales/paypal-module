@@ -256,6 +256,10 @@ class ModuleSettings
     {
         return (string)$this->getSettingValue('oscPayPalBannersStartPageSelector');
     }
+    public function getDefaultShippingPriceForExpress(): string
+    {
+        return (string)$this->getSettingValue('oscPayPalDefaultShippingPriceExpress');
+    }
 
     public function showBannersOnCategoryPage(): bool
     {
@@ -351,6 +355,16 @@ class ModuleSettings
     {
         return (bool)$this->getSettingValue('oscPayPalApplePayEligibility');
     }
+    public function isLiveGooglePayEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalGooglePayEligibility');
+    }
+    public function isGooglePayEligibility(): bool
+    {
+        return $this->isSandbox() ?
+            $this->isSandBoxVaultingEligibility() :
+            $this->isLiveVaultingEligibility();
+    }
     public function isSandboxAcdcEligibility(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalSandboxAcdcEligibility');
@@ -368,6 +382,10 @@ class ModuleSettings
     public function isSandboxVaultingEligibility(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalSandboxVaultingEligibility');
+    }
+    public function isSandboxGooglePayEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSandboxGooglePayEligibility');
     }
 
     public function getActivePayments(): array
@@ -491,7 +509,14 @@ class ModuleSettings
     {
         $this->save('oscPayPalActivePayments', $activePayments);
     }
-
+    public function saveGooglePayEligibility(bool $isGooglePayEligibility): void
+    {
+        if ($this->isSandbox()) {
+            $this->save('oscPayPalSandboxGooglePayEligibility', $isGooglePayEligibility);
+        } else {
+            $this->save('oscPayPalGooglePayEligibility', $isGooglePayEligibility);
+        }
+    }
     /**
      * add details controller to requireSession
      */
@@ -592,6 +617,10 @@ class ModuleSettings
     public function getIsVaultingActive(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalSetVaulting');
+    }
+    public function getIsGooglePayDeliveryAddressActive(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalUseGooglePayAddress');
     }
 
     /**

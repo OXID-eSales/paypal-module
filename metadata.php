@@ -5,6 +5,7 @@
  * See LICENSE file for license details.
  */
 
+use OxidEsales\Eshop\Application\Component\BasketComponent;
 use OxidEsales\Eshop\Application\Component\UserComponent;
 use OxidEsales\Eshop\Application\Controller\OrderController;
 use OxidEsales\Eshop\Application\Controller\PaymentController;
@@ -20,6 +21,7 @@ use OxidEsales\Eshop\Application\Model\PaymentGateway;
 use OxidEsales\Eshop\Core\InputValidator;
 use OxidEsales\Eshop\Core\ShopControl;
 use OxidEsales\Eshop\Core\ViewConfig;
+use OxidSolutionCatalysts\PayPal\Component\BasketComponent as PayPalBasketComponent;
 use OxidSolutionCatalysts\PayPal\Component\UserComponent as PayPalUserComponent;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalConfigController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalOrderController;
@@ -76,6 +78,7 @@ $aModule = [
         OrderController::class => PayPalFrontEndOrderController::class,
         PaymentController::class => PayPalPaymentController::class,
         UserComponent::class => PayPalUserComponent::class,
+        BasketComponent::class => PayPalBasketComponent::class,
         OrderMain::class => PayPalOrderMainController::class,
         OrderOverview::class => PayPalOrderOverviewController::class,
         State::class => PayPalState::class
@@ -130,6 +133,9 @@ $aModule = [
 
         // PSPAYPAL-491 Installment banners
         'modules/osc/paypal/installment_banners.tpl' => 'osc/paypal/views/tpl/shared/installment_banners.tpl',
+
+        // PSPAYPAL-685 Installment banners
+        'modules/osc/paypal/googlepay.tpl' => 'osc/paypal/views/tpl/shared/googlepay.tpl',
 
         'modules/osc/paypal/applepay.tpl' => 'osc/paypal/views/tpl/shared/applepay.tpl',
 
@@ -479,6 +485,12 @@ $aModule = [
             'group' => null
         ],
         [
+            'name' => 'oscPayPalGooglePayEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
             'name' => 'oscPayPalSandboxAcdcEligibility',
             'type' => 'bool',
             'value' => false,
@@ -498,6 +510,12 @@ $aModule = [
         ],
         [
             'name' => 'oscPayPalSandboxApplePayEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalSandboxGooglePayEligibility',
             'type' => 'bool',
             'value' => false,
             'group' => null
@@ -537,6 +555,18 @@ $aModule = [
             'name' => 'oscPayPalSetVaulting',
             'type' => 'bool',
             'value' => true,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalUseGooglePayAddress',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalDefaultShippingPriceExpress',
+            'type' => 'str',
+            'value' => 3.5,
             'group' => null
         ],
     ],

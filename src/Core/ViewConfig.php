@@ -174,7 +174,8 @@ class ViewConfig extends ViewConfig_parent
             $params['currency'] = strtoupper($currency->name);
         }
 
-        $params['components'] = 'buttons';
+        $params['components'] = 'buttons,googlepay';
+        $params['merchant-id'] = $moduleSettings->getMerchantId();
         // Available components: enable messages+buttons for PDP
         if ($this->isPayPalBannerActive()) {
             $params['components'] .= ',messages';
@@ -239,10 +240,10 @@ class ViewConfig extends ViewConfig_parent
 
         if ($continueFlow) {
             $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
-            $params['commit'] = 'false';
+            $params['commit'] = 'true';
         }
 
-        $params['components'] = 'buttons,' . $type;
+        $params['components'] = 'buttons,googlepay,' . $type;
 
         if ($this->isPayPalBannerActive()) {
             $params['components'] .= ',messages';

@@ -6,8 +6,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [2.4.1] - 2024-??-??
 
+### FIX
+
+- Fix admin block parent call, thanks to Alpha-Sys
+- Fix Errorlog-Message "Duplicate entry ..." + fix Update send PUI-Bankdata via Webhook
+- Fix PayPalExpress Reauth is necessary if the cart amount (total is greater than before) has changed during the checkout process
+
+### NEW
 - PayPal-Request-Id based on serialized body, no extra PayPal-Request-Id necessary anymore
-- use PayPal-Client v2.0.13
+- Introduce GooglePay-Payment
+- use PayPal-Client v2.0.14
+- add Default-Shippingcosts for PP-Express to prevent overcharge.
 
 ## [2.4.0] - 2024-04-04
 

@@ -20,6 +20,7 @@ final class PayPalDefinitions
     public const GIROPAY_PAYPAL_PAYMENT_ID = 'oscpaypal_giropay';
     public const SEPA_PAYPAL_PAYMENT_ID = 'oscpaypal_sepa';
     public const CCALTERNATIVE_PAYPAL_PAYMENT_ID = 'oscpaypal_cc_alternative';
+    public const GOOGLEPAY_PAYPAL_PAYMENT_ID = 'oscpaypal_googlepay';
     public const APPLEPAY_PAYPAL_PAYMENT_ID = 'oscpaypal_apple_pay';
 
     //vaulting
@@ -71,6 +72,28 @@ final class PayPalDefinitions
             'defaulton' => true
         ],
         //GooglePay
+        self::GOOGLEPAY_PAYPAL_PAYMENT_ID => [
+            'descriptions' => [
+                'de' => [
+                    'desc' => 'GooglePay',
+                    'longdesc' => '',
+                    'longdesc_beta' => 'Bezahlen Sie bequem mit GooglePay. Starten Sie direkt von der Detailsseite oder im Warenkorb.'
+                ],
+                'en' => [
+                    'desc' => 'GooglePay',
+                    'longdesc' => '',
+                    'longdesc_beta' => 'Pay conveniently with GooglePay. Start directly from the details page or in the shopping cart.'
+                ]
+            ],
+            'countries' => [],
+            'currencies' => ['AUD', 'BRL', 'CAD', 'CNY', 'CZK', 'DKK', 'EUR', 'HKD', 'HUF', 'ILS', 'JPY', 'MYR', 'MXN', 'TWD', 'NZD', 'NOK', 'PHP', 'PLN', 'GBP', 'RUB', 'SGD', 'SEK', 'CHF', 'THB', 'USD'],
+            'uapmpaymentsource' => 'googlepay',
+            'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
+            'onlybrutto' => false,
+            'buttonpayment' => false,
+            'defaulton' => true
+        ],
+        //ApplePay
         self::APPLEPAY_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [

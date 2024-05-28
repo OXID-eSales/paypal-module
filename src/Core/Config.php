@@ -132,6 +132,15 @@ class Config
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isLiveApplePayEligibility();
     }
+    public function isLiveGooglePayEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveGooglePayEligibility();
+    }
+    public function isSandboxGooglePayEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxGooglePayEligibility();
+    }
+
     public function isSandboxAcdcEligibility(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxAcdcEligibility();
@@ -253,6 +262,10 @@ class Config
     public function getStartPageBannerSelector(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getStartPageBannerSelector();
+    }
+    public function getDefaultShippingPriceForExpress(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getDefaultShippingPriceForExpress();
     }
 
     public function showBannersOnCategoryPage(): bool
@@ -442,5 +455,10 @@ class Config
     public function getIsVaultingActive(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getIsVaultingActive();
+    }
+
+    public function getIsGooglePayDeliveryAdressActive(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getIsGooglePayDeliveryAddressActive();
     }
 }
