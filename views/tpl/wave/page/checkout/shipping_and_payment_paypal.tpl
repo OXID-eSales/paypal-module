@@ -43,7 +43,7 @@
                 <div class="card-body">
                     [{assign var="payment" value=$oView->getPayment()}]
                     [{$payment->oxpayments__oxdesc->value}]
-                    [{if $oscpaypal_payment_saveable}]
+                    [{if $oscpaypal_isVaultingPossible}]
                         <br>
                         <br>
                         <input type="checkbox" id="oscPayPalVaultPaymentCheckbox" onclick="setVaultingCheckbox()">
@@ -55,6 +55,7 @@
     </div>
 </div>
 
+[{if $oscpaypal_isVaultingPossible}]
 <script>
     function setVaultingCheckbox() {
         let checkbox = document.getElementById("oscPayPalVaultPaymentCheckbox");
@@ -67,3 +68,4 @@
         }
     }
 </script>
+[{/if}]
