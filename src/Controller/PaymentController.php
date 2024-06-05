@@ -56,9 +56,13 @@ class PaymentController extends PaymentController_parent
         ) {
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
             if ($vaultedPaymentTokens = $vaultingService->getVaultPaymentTokens($paypalCustomerId)["payment_tokens"]) {
+                $paymentList = $this->getPaymentList();
                 $vaultedPaymentSources = [];
                 foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
                     foreach ($vaultedPaymentToken["payment_source"] as $paymentType => $paymentSource) {
+                        if (!$this->paymentTypeExists($paymentList, $paymentType)) {
+                            continue;
+                        }
                         if ($paymentType === "card") {
                             $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
                             $vaultedPaymentSources[$paymentType][] = $paymentSource["brand"] . " " .
@@ -80,6 +84,28 @@ class PaymentController extends PaymentController_parent
         return parent::render();
     }
 
+    /**
+     * @param $paymentList
+     * @param $paymentType
+     * @return bool
+     */
+    protected function paymentTypeExists($paymentList, $paymentType): bool
+    {
+        if ($paymentType === 'paypal') {
+            $paymentType = PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
+        } else {
+            $paymentType = PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID.'_'.$paymentType;
+        }
+        if ($paymentType === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID.'_card') {
+            $paymentType = PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID.'_acdc';
+        }
+        foreach ($paymentList as $payment) {
+            if ($payment->getId() === $paymentType || $payment->getId() === "oscpaypal_" . $paymentType) {
+                return true;
+            }
+        }
+        return false;
+    }
     public function getPayPalPuiFraudnetCmId(): string
     {
 
