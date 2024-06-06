@@ -128,6 +128,10 @@ class Config
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isLiveVaultingEligibility();
     }
+    public function isLiveApplePayEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveApplePayEligibility();
+    }
     public function isLiveGooglePayEligibility(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isLiveGooglePayEligibility();
@@ -151,7 +155,10 @@ class Config
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxVaultingEligibility();
     }
-
+    public function isSandboxApplePayEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxApplePayEligibility();
+    }
     public function getLiveClientId(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getLiveClientId();

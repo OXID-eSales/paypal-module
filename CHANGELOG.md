@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.4.1] - 2024-??-??
+## [2.5.0] - 2024-??-??
 
 ### FIX
 
@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### NEW
 - PayPal-Request-Id based on serialized body, no extra PayPal-Request-Id necessary anymore
 - Introduce GooglePay-Payment
+- Introduce ApplePay-Payment
 - use PayPal-Client v2.0.14
 - add Default-Shippingcosts for PP-Express to prevent overcharge.
 
