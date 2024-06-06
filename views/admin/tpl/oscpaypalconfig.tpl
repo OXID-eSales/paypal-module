@@ -513,11 +513,7 @@
                                 <div class="controls">
                                     <div class="checkbox">
                                         <label>
-                                            [{if $isSandBox}]
-                                                <input type="checkbox" name="conf[oscPayPalSetVaulting]" [{if $config->getIsVaultingActive()}]checked[{/if}] value="1" [{if !$config->isVaultingEligibility()}]disabled[{/if}]>
-                                            [{else}]
-                                                <input type="checkbox" name="conf[oscPayPalSetVaulting]" [{if $config->getIsVaultingActive()}]checked[{/if}] value="1" [{if !$config->isLiveVaultingEligibility()}]disabled[{/if}]>
-                                            [{/if}]
+                                            <input type="checkbox" name="conf[oscPayPalSetVaulting]" value="1" [{if $config->getIsVaultingActive()}] checked[{/if}][{if !$config->isVaultingEligibility()}] disabled[{/if}]>
                                             [{oxmultilang ident="OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING"}]
                                         </label>
                                     </div>

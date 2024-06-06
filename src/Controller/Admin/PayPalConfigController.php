@@ -192,7 +192,7 @@ class PayPalConfigController extends AdminController
      * @param $confArr array
      * @throws OnboardingException
      */
-    protected function checkEligibility($confArr): void
+    protected function checkEligibility(array $confArr): void
     {
         $config = new Config();
         /** skip check if no client ID provided */
