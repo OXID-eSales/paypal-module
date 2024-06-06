@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.3.8] - 2024-06-06
+
+- Update Client Version v1.0.10
+
 ## [1.3.7] - 2024-05-10
 
 - [0007577](https://bugs.oxid-esales.com/view.php?id=7577): Declined Credit card orders would be saved as error-order
