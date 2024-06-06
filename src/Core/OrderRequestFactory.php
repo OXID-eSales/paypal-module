@@ -37,6 +37,7 @@ use OxidSolutionCatalysts\PayPalApi\Pui\ExperienceContext;
 use OxidSolutionCatalysts\PayPalApi\Pui\PuiPaymentSource;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use stdClass;
 
 /**
  * Class OrderRequestBuilder
@@ -102,6 +103,9 @@ class OrderRequestFactory
         $paymentId = Registry::getSession()->getVariable('paymentid');
         if ($paymentId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID) {
             $request->payment_source = $this->getGooglePayPaymentSource($basket, 'google_pay');
+        }
+        if ($paymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID) {
+            $request->payment_source = $this->getApplePayPaymentSource($basket, 'apple_pay');
         }
         $request->intent = $intent;
         $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $withArticles);
@@ -170,6 +174,31 @@ class OrderRequestFactory
         }
 
         return $request;
+    }
+    protected function getApplePayPaymentSource($basket, $requestName)
+    {
+
+        $user = $basket->getBasketUser();
+
+        $userName = $user->getFieldData('oxfname') . ' ' . $user->getFieldData('oxlname');
+
+        // get Billing CountryCode
+        $country = oxNew(Country::class);
+        $country->load($user->getFieldData('oxcountryid'));
+
+        // check possible deliveryCountry
+        $deliveryId = Registry::getSession()->getVariable("deladrid");
+        $deliveryAddress = oxNew(Address::class);
+        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
+            $country->load($deliveryAddress->getFieldData('oxcountryid'));
+        }
+        $paymentSource = new PaymentSource([
+            $requestName => [
+                'name' => $userName,
+                'country_code' => $country->getFieldData('oxisoalpha2')
+            ]
+        ]);
+        return $paymentSource;
     }
 
     protected function getGooglePayPaymentSource($basket, $requestName)
