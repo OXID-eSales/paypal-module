@@ -32,14 +32,12 @@ class UserComponent extends UserComponent_parent
 
     public function login_noredirect() //phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps
     {
-        $return = parent::login_noredirect();
+        parent::login_noredirect();
         $redirect = Registry::getSession()->getVariable('paypalRedirect');
         if ($redirect) {
             Registry::getSession()->deleteVariable('paypalRedirect');
             Registry::getUtils()->redirect($redirect, true, 302);
         }
-
-        return $return;
     }
 
     public function createPayPalGuestUser(\OxidSolutionCatalysts\PayPalApi\Model\Orders\Order $response): void
