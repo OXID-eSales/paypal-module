@@ -536,9 +536,7 @@ class Payment
                 $uapmOrderId,
                 PayPalDefinitions::getPaymentSourceRequestName($basket->getPaymentId())
             );
-
         } catch (Exception $exception) {
-
             PayPalSession::unsetPayPalOrderId();
             $this->removeTemporaryOrder();
             //TODO: do we need to log this?

@@ -105,7 +105,7 @@ class OrderRequestFactory
             $request->payment_source = $this->getGooglePayPaymentSource($basket, 'google_pay');
         }
         if ($paymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID) {
-            $request->payment_source = $this->getApplePayPaymentSource($basket,'apple_pay');
+            $request->payment_source = $this->getApplePayPaymentSource($basket, 'apple_pay');
         }
         $request->intent = $intent;
         $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $withArticles);
@@ -175,7 +175,8 @@ class OrderRequestFactory
 
         return $request;
     }
-    protected function getApplePayPaymentSource($basket, $requestName) {
+    protected function getApplePayPaymentSource($basket, $requestName)
+    {
 
         $user = $basket->getBasketUser();
 
