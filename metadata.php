@@ -61,7 +61,7 @@ $aModule = [
         'en' => 'Use of the online payment service from PayPal. Documentation: <a href="https://docs.oxid-esales.com/modules/paypal-checkout/en/latest/" target="_blank">PayPal Checkout</a>'
     ],
     'thumbnail' => 'out/img/paypal.png',
-    'version' => '2.4.1-rc.1',
+    'version' => '2.5.0-rc.1',
     'author' => 'OXID eSales AG',
     'url' => 'https://www.oxid-esales.com',
     'email' => 'info@oxid-esales.com',
@@ -106,6 +106,7 @@ $aModule = [
         'modules/osc/paypal/pui_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/pui.tpl',
         'modules/osc/paypal/pui_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/pui.tpl',
         'modules/osc/paypal/pui_fraudnet.tpl' => 'osc/paypal/views/tpl/shared/page/checkout/pui_fraudnet.tpl',
+        'modules/osc/paypal/apple_pay.tpl' => 'osc/paypal/views/tpl/shared/page/checkout/apple_pay.tpl',
         'modules/osc/paypal/shipping_and_payment_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/shipping_and_payment.tpl',
         'modules/osc/paypal/shipping_and_payment_wave.tpl' => 'osc/paypal/views/tpl/wave/page/checkout/shipping_and_payment.tpl',
         'modules/osc/paypal/shipping_and_payment_paypal_flow.tpl' => 'osc/paypal/views/tpl/flow/page/checkout/shipping_and_payment_paypal.tpl',
@@ -135,6 +136,8 @@ $aModule = [
 
         // PSPAYPAL-685 Installment banners
         'modules/osc/paypal/googlepay.tpl' => 'osc/paypal/views/tpl/shared/googlepay.tpl',
+
+        'modules/osc/paypal/applepay.tpl' => 'osc/paypal/views/tpl/shared/applepay.tpl',
 
         //PSPAYPAL-680 Vaulting
         'modules/osc/paypal/account_vaulting_paypal.tpl'    => 'osc/paypal/views/tpl/shared/page/account/account_vaulting_paypal.tpl',
@@ -476,6 +479,12 @@ $aModule = [
             'group' => null
         ],
         [
+            'name' => 'oscPayPalApplePayEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
             'name' => 'oscPayPalGooglePayEligibility',
             'type' => 'bool',
             'value' => false,
@@ -495,6 +504,12 @@ $aModule = [
         ],
         [
             'name' => 'oscPayPalSandboxVaultingEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalSandboxApplePayEligibility',
             'type' => 'bool',
             'value' => false,
             'group' => null
