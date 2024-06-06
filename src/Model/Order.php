@@ -265,9 +265,6 @@ class Order extends Order_parent
     // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
     protected function _executePayment(Basket $basket, $userpayment)
     {
-        //order number needs to be set before the payment is requested
-        $this->setOrderNumber();
-
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
 
@@ -284,6 +281,10 @@ class Order extends Order_parent
         //catch UAPM, Standard and Pay Later PayPal payments here
         if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater) {
             try {
+
+                //order number needs to be set before the payment is requested
+                $this->setOrderNumber();
+
                 if ($isPayPalUAPM) {
                     $redirectLink = $paymentService->doExecuteUAPMPayment($this, $basket);
                 } else {
