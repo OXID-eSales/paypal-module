@@ -11,7 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix admin block parent call, thanks to Alpha-Sys
 - Fix Errorlog-Message "Duplicate entry ..." + fix Update send PUI-Bankdata via Webhook
 - Fix PayPalExpress Reauth is necessary if the cart amount (total is greater than before) has changed during the checkout process
-- Fix, don't show vaulting-Boxes if it is deactivated in Backend 
+- Fix, don't show vaulting-Boxes if it is deactivated in Backend
+- Fix, incompatibility with Klarna-Module
 
 ### NEW
 - PayPal-Request-Id based on serialized body, no extra PayPal-Request-Id necessary anymore
