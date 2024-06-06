@@ -281,7 +281,6 @@ class Order extends Order_parent
         //catch UAPM, Standard and Pay Later PayPal payments here
         if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater) {
             try {
-
                 //order number needs to be set before the payment is requested
                 $this->setOrderNumber();
 
