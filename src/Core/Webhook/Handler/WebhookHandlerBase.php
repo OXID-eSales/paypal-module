@@ -74,7 +74,6 @@ abstract class WebhookHandlerBase
         }
 
         //Webhook is used to trigger unfinished order cleanup at the end of each webhook handle.
-        //TODO: check if webhook handler really is the place place for this
         $this->cleanUpNotFinishedOrders();
     }
 
