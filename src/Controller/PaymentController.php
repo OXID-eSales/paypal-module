@@ -42,38 +42,42 @@ class PaymentController extends PaymentController_parent
 
         $user = $this->getUser();
 
-        $isVaultingPossible = false;
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        if ($moduleSettings->getIsVaultingActive() && $user->getFieldData('oxpassword')) {
-            $isVaultingPossible = true;
-        }
+        if ($user) {
+            $isVaultingPossible = false;
+            $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+            if ($moduleSettings->getIsVaultingActive() && $user->getFieldData('oxpassword')) {
+                $isVaultingPossible = true;
+            }
 
-        $this->addTplParam('oscpaypal_isVaultingPossible', $isVaultingPossible);
+            $this->addTplParam('oscpaypal_isVaultingPossible', $isVaultingPossible);
 
-        if (
-            $isVaultingPossible &&
-            ($paypalCustomerId = $user->getFieldData("oscpaypalcustomerid"))
-        ) {
-            $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
-            if ($vaultedPaymentTokens = $vaultingService->getVaultPaymentTokens($paypalCustomerId)["payment_tokens"]) {
-                $vaultedPaymentSources = [];
-                foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
-                    foreach ($vaultedPaymentToken["payment_source"] as $paymentType => $paymentSource) {
-                        if (!$this->paymentTypeExists($paymentType)) {
-                            continue;
-                        }
-                        if ($paymentType === "card") {
-                            $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
-                            $vaultedPaymentSources[$paymentType][] = $paymentSource["brand"] . " " .
-                                $string . $paymentSource["last_digits"];
-                        } elseif ($paymentType === "paypal") {
-                            $string = $lang->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
-                            $vaultedPaymentSources[$paymentType][] = $string . " " . $paymentSource["email_address"];
+            if (
+                $isVaultingPossible &&
+                ($paypalCustomerId = $user->getFieldData("oscpaypalcustomerid"))
+            ) {
+                $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+                $vaultedPaymentTokens = $vaultingService->getVaultPaymentTokens($paypalCustomerId)["payment_tokens"];
+                if ($vaultedPaymentTokens) {
+                    $vaultedPaymentSources = [];
+                    foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
+                        foreach ($vaultedPaymentToken["payment_source"] as $paymentType => $paymentSource) {
+                            if (!$this->paymentTypeExists($paymentType)) {
+                                continue;
+                            }
+                            if ($paymentType === "card") {
+                                $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
+                                $vaultedPaymentSources[$paymentType][] = $paymentSource["brand"] . " " .
+                                    $string . $paymentSource["last_digits"];
+                            } elseif ($paymentType === "paypal") {
+                                $string = $lang->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
+                                $vaultedPaymentSources[$paymentType][] =
+                                    $string . " " . $paymentSource["email_address"];
+                            }
                         }
                     }
-                }
 
-                $this->addTplParam("vaultedPaymentSources", $vaultedPaymentSources);
+                    $this->addTplParam("vaultedPaymentSources", $vaultedPaymentSources);
+                }
             }
         }
 
