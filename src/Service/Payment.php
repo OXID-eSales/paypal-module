@@ -149,6 +149,8 @@ class Payment
                 'return=minimal'
             );
         } catch (ApiException $exception) {
+            $this->logger->log('error', 'API Error.', [$exception]);
+
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
             $this->logger->log('error', 'Error on order create call.', [$exception]);
@@ -518,6 +520,7 @@ class Payment
         //We create a fresh paypal order at this point
 
         $uapmOrderId = $this->doCreateUAPMOrder($basket);
+
         if (!$uapmOrderId) {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
             throw PayPalException::createPayPalOrderFail();

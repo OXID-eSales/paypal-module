@@ -150,10 +150,12 @@ class Order extends Order_parent
         $isPayPalACDC = $paymentsId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
         $isPaypalGooglePay = $paymentsId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
+        $isPaypalApplePay = $paymentsId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID;
+
         $transactionId = null;
         $payPalPaymentSuccess = true;
 
-        if ($isPayPalACDC && $forceFetchDetails || $isPaypalGooglePay) {
+        if ($isPayPalACDC && $forceFetchDetails || $isPaypalGooglePay  || $isPaypalApplePay) {
             $payPalApiOrder = $paymentService->fetchOrderFields($payPalOrderId);
             if ($this->isPayPalOrderCompleted($payPalApiOrder)) {
                 $this->markOrderPaid();
@@ -171,7 +173,7 @@ class Order extends Order_parent
             }
         }
 
-        if ($isPayPalACDC || $isPaypalGooglePay) {
+        if ($isPayPalACDC || $isPaypalGooglePay || $isPaypalApplePay) {
             //webhook should kick in and handle order state and we should not call the api too often
             Registry::getSession()->deleteVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
             // remove PayPal order id from session
@@ -263,9 +265,6 @@ class Order extends Order_parent
     // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
     protected function _executePayment(Basket $basket, $userpayment)
     {
-        //order number needs to be set before the payment is requested
-        $this->setOrderNumber();
-
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
 
@@ -276,9 +275,15 @@ class Order extends Order_parent
         if ($sessionPaymentId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID) {
             $isPayPalUAPM = false;
         }
+        if ($sessionPaymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID) {
+            $isPayPalUAPM = false;
+        }
         //catch UAPM, Standard and Pay Later PayPal payments here
         if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater) {
             try {
+                //order number needs to be set before the payment is requested
+                $this->setOrderNumber();
+
                 if ($isPayPalUAPM) {
                     $redirectLink = $paymentService->doExecuteUAPMPayment($this, $basket);
                 } else {

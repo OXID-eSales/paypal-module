@@ -19,6 +19,7 @@ use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
@@ -31,9 +32,9 @@ use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
@@ -58,7 +59,12 @@ class ProxyController extends FrontendController
 
         $config = Registry::getConfig();
         $this->addToBasket();
-        $this->setPayPalPaymentMethod();
+        $paymentId = Registry::getRequest()->getRequestParameter('paymentid');
+        if ($paymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID) {
+            $this->setPayPalPaymentMethod($paymentId);
+        } else {
+            $this->setPayPalPaymentMethod();
+        }
         $basket = Registry::getSession()->getBasket();
         $defaultShippingPriceExpress = (double) $config->getConfigParam('oscPayPalDefaultShippingPriceExpress');
         $calculateDelCostIfNotLoggedIn = (bool) $config->getConfigParam('blCalculateDelCostIfNotLoggedIn');
@@ -333,6 +339,11 @@ class ProxyController extends FrontendController
                 } else {
                     $this->setPayPalPaymentMethod();
                 }
+                if ($paymentId === 'oscpaypal_apple_pay') {
+                    $this->setPayPalPaymentMethod($paymentId);
+                } else {
+                    $this->setPayPalPaymentMethod();
+                }
             } catch (StandardException $exception) {
                 Registry::getUtilsView()->addErrorToDisplay($exception);
                 $response->status = 'ERROR';
@@ -363,10 +374,10 @@ class ProxyController extends FrontendController
     {
         $basket = Registry::getSession()->getBasket();
         $utilsView = Registry::getUtilsView();
-
+        $aSel = Registry::getRequest()->getRequestParameter('sel');
         if ($aid = (string)Registry::getRequest()->getRequestEscapedParameter('aid')) {
             try {
-                $basket->addToBasket($aid, $qty);
+                $basket->addToBasket($aid, $qty, $aSel);
                 // Remove flag of "new item added" to not show "Item added" popup when returning to checkout from paypal
                 $basket->isNewItemAdded();
             } catch (OutOfStockException $exception) {
@@ -379,7 +390,6 @@ class ProxyController extends FrontendController
             $basket->calculateBasket(false);
         }
     }
-
     public function setPayPalPaymentMethod($defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID): void
     {
         $session = Registry::getSession();
@@ -465,5 +475,173 @@ class ProxyController extends FrontendController
         return PayPalDefinitions::isPayPalPayment($paymentId) ?
             $paymentId :
             $defaultPayPalPaymentId;
+    }
+
+    public function getPaymentRequestLines()
+    {
+
+        try {
+            $basket = Registry::getSession()->getBasket();
+            if ($basket->getItemsCount() === 0) {
+                throw new Exception('No Article in the Basket');
+            }
+
+            $deliveryCost = $basket->getDeliveryCost();
+            if (!$deliveryCost) {
+                throw new Exception('Delivery cost calculation failed');
+            }
+            $deliveryBruttoPrice = $deliveryCost->getBruttoPrice();
+
+            $sVat = 0.0;
+            foreach ($basket->getProductVats(false) as $VATitem) {
+                $sVat += $VATitem;
+            }
+
+            $paymentRequest = [
+                'total' => [
+                    'label' => Registry::getConfig()->getActiveShop()->getFieldData('oxname'),
+                    'amount' => (float)$basket->getBruttoSum(),
+                    'type' => 'final'
+                ],
+                'lineItems' => [
+                    [
+                        'label' => 'Subtotal',
+                        'amount' => number_format((double) $basket->getBruttoSum(), 2, '.', ''),
+                        'type' => 'final'
+                    ],
+                    [
+                        'label' => 'Tax',
+                        'amount' => number_format((double) $sVat, 2, '.', ''),
+                        'type' => 'final'
+                    ],
+                    [
+                        'label' => 'Shipping',
+                        'amount' => number_format($deliveryBruttoPrice, 2, '.', ''),
+                        'type' => 'final'
+                    ]
+                ]
+            ];
+            $this->outputJson($paymentRequest);
+        } catch (Exception $e) {
+            $this->outputJson(['ERROR' => $e->getMessage()]);
+        }
+    }
+    public function createApplepayOrder()
+    {
+        $data = json_decode(file_get_contents('php://input'), true);
+        $shippingData = $data['data'];
+        $shippingAddress = new AddressPortable();
+        $shippingAddress->address_line_1 = $shippingData['shippingContact']['addressLines'][0] ?? '';
+        $shippingAddress->address_line_2 = $shippingData['shippingContact']['emailAddress'] ?? '';
+        $shippingAddress->address_line_3 = $shippingData['shippingContact']['address3'] ?? '';
+        $shippingAddress->postal_code    = $shippingData['shippingContact']['postalCode'] ?? '';
+        $shippingAddress->admin_area_2   = $shippingData['shippingContact']['locality'] ?? '';
+        $shippingAddress->admin_area_1   = $shippingData['shippingContact']['administrativeArea'] ?? '';
+        $shippingAddress->country_code   = $shippingData['shippingContact']['countryCode'] ?? '';
+        if (PayPalSession::isPayPalExpressOrderActive()) {
+            //TODO: improve
+        }
+        $paymentId = Registry::getSession()->getVariable('paymentid');
+
+        $this->addToBasket();
+        $this->setPayPalPaymentMethod($paymentId);
+        $basket = Registry::getSession()->getBasket();
+
+        if ($basket->getItemsCount() === 0) {
+            $this->outputJson(['ERROR' => 'No Article in the Basket']);
+        }
+
+        $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
+            $basket,
+            OrderRequest::INTENT_CAPTURE,
+            OrderRequestFactory::USER_ACTION_CONTINUE,
+            null,
+            '',
+            '',
+            '',
+            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
+            null,
+            null,
+            false,
+            false,
+            null
+        );
+        if ($response->id) {
+            PayPalSession::storePayPalOrderId($response->id);
+        }
+
+        if (!$this->getUser()) {
+            $purchaseUnitRequest = new PurchaseUnitRequest();
+            $purchaseUnitRequest->shipping->address = $shippingAddress;
+            $purchaseUnitRequest->shipping->name->full_name = $shippingData['shippingContact']['name'] ?? '';
+
+            $response->purchase_units = [$purchaseUnitRequest];
+
+            $response->payer = new Payer();
+            $response->payer->email_address = $data['email'];
+            $response->payer->phone->phone_number->national_number =
+                $shippingData['shippingContact']['phoneNumber'] ?? '';
+
+            $userRepository = $this->getServiceFromContainer(UserRepository::class);
+            $paypalEmail = $data['email'];
+
+            $nonGuestAccountDetected = false;
+            if ($userRepository->userAccountExists($paypalEmail)) {
+                //got a non-guest account, so either we log in or redirect customer to login step
+                $isLoggedIn = $this->handleUserLogin($response);
+                $nonGuestAccountDetected = true;
+            } else {
+                //we need to use a guest account
+                $userComponent = oxNew(UserComponent::class);
+                $userComponent->createPayPalGuestUser($response);
+            }
+        }
+
+        if ($user = $this->getUser()) {
+            /** @var array $userInvoiceAddress */
+            $userInvoiceAddress = $user->getInvoiceAddress();
+
+            // add PayPal-Address as Delivery-Address
+            if (($response !== null) && !empty($response->purchase_units[0]->shipping)) {
+                $response->purchase_units[0]->shipping->address = $shippingAddress;
+                $response->purchase_units[0]->shipping->name->full_name =
+                    $shippingData['shippingContact']['name'] ?? '';
+                $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
+                if (
+                    $deliveryAddress['oxaddress__oxfname'] !== ''
+                    && $deliveryAddress['oxaddress__oxstreet'] !== ''
+                ) {
+                    try {
+                        $user->changeUserData(
+                            $user->oxuser__oxusername->value,
+                            '',
+                            '',
+                            $userInvoiceAddress,
+                            $deliveryAddress
+                        );
+
+                        // use a deliveryaddress in oxid-checkout
+                        Registry::getSession()->setVariable('blshowshipaddress', false);
+
+                        $this->setPayPalPaymentMethod($paymentId);
+                    } catch (StandardException $exception) {
+                     //   Registry::getUtilsView()->addErrorToDisplay($exception);
+                       // $response->status = 'ERROR';
+                   //     PayPalSession::unsetPayPalOrderId();
+                        Registry::getSession()->getBasket()->setPayment(null);
+                    }
+                }
+            }
+        } elseif ($nonGuestAccountDetected && !$isLoggedIn) {
+            // PPExpress is actual no possible so we switch to PP-Standard
+            $this->setPayPalPaymentMethod(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
+        } else {
+            //TODO: we might end up in order step redirecting to start page without showing a message
+            // if we have no user, we stop the process
+       ////     $response->status = 'ERROR';
+       //     PayPalSession::unsetPayPalOrderId();
+          //  Registry::getSession()->getBasket()->setPayment(null);
+        }
+        $this->outputJson($response);
     }
 }

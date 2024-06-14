@@ -180,7 +180,7 @@ class ViewConfig extends ViewConfig_parent
         if ($this->isPayPalBannerActive()) {
             $params['components'] .= ',messages';
         }
-
+        $params['components'] .= ',applepay';
         if ($moduleSettings->showPayPalPayLaterButton()) {
             $params['enable-funding'] = 'paylater';
         }

@@ -4,18 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.4.1] - 2024-??-??
+## [2.5.0] - 2024-??-??
 
 ### FIX
 
 - Fix admin block parent call, thanks to Alpha-Sys
 - Fix Errorlog-Message "Duplicate entry ..." + fix Update send PUI-Bankdata via Webhook
 - Fix PayPalExpress Reauth is necessary if the cart amount (total is greater than before) has changed during the checkout process
-- Fix, don't show vaulting-Boxes if it is deactivated in Backend 
+- Fix, don't show vaulting-Boxes if it is deactivated in Backend
+- [0007656](https://bugs.oxid-esales.com/view.php?id=7656): Fix incompatibility with Klarna-Module
+- better Vaulting-Check in PaymentController
+- disable Vaulting-Setting if Vaulting not possible
+- [0007666](https://bugs.oxid-esales.com/view.php?id=7666): Fix: Price surcharges on the detail page for selection lists are not taken into account
 
 ### NEW
 - PayPal-Request-Id based on serialized body, no extra PayPal-Request-Id necessary anymore
 - Introduce GooglePay-Payment
+- Introduce ApplePay-Payment
 - use PayPal-Client v2.0.14
 - add Default-Shippingcosts for PP-Express to prevent overcharge.
 
