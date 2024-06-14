@@ -31,7 +31,7 @@ class InputValidator extends InputValidator_parent
                     'OSC_PAYPAL_PAY_EXPRESS_ERROR_DELCOUNTRY'
                 )
             );
-            $this->_addValidationError("oxuser__oxcountryid", $exception);
+            $this->addValidationError("oxuser__oxcountryid", $exception);
         }
     }
 
@@ -50,13 +50,11 @@ class InputValidator extends InputValidator_parent
         if (count($allValidationErrors) && PayPalSession::getCheckoutOrderId()) {
             $this->_aInputValidationErrors = [];
             $validationErrorKey = key($allValidationErrors);
-            $exception = oxNew(InputException::class);
-            $exception->setMessage(
-                Registry::getLang()->translateString(
-                    'OSC_PAYPAL_PAY_EXPRESS_ERROR_INPUTVALIDATION'
-                )
+            $exception = oxNew(
+                InputException::class,
+                Registry::getLang()->translateString('OSC_PAYPAL_PAY_EXPRESS_ERROR_INPUTVALIDATION')
             );
-            $this->_addValidationError($validationErrorKey, $exception);
+            $this->addValidationError($validationErrorKey, $exception);
         }
     }
 }

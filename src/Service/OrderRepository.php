@@ -146,7 +146,6 @@ class OrderRepository
         $queryBuilder = $this->queryBuilderFactory->create();
 
         $parameters = [
-            'oxordernr' => '0',
             'oxtransstatus' => 'NOT_FINISHED',
             'oxpaymenttype' => 'oscpaypal',
             'sessiontime' => $sessiontime,
