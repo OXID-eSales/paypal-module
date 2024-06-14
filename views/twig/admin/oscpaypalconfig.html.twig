@@ -502,7 +502,7 @@
                             <div class="controls">
                                 <label for="shippingExpress">{{ translate({ ident: "OSC_PAYPAL_EXPRESS_SHIPPING_TITLE" }) }}</label>
                                 <div class="controls">
-                                    <input type="text" id="shippingExpress" class="form-control" name="conf[oscPayPalDefaultShippingPriceExpress]" value="{{ $config->getDefaultShippingPriceForExpress()|number_format(2, '.', ' ') }}" />
+                                    <input type="text" id="shippingExpress" class="form-control" name="conf[oscPayPalDefaultShippingPriceExpress]" value="{{ config.getDefaultShippingPriceForExpress()|number_format(2, '.', ' ') }}" />
                                     <span class="help-block">{{ translate({ ident: "OSC_PAYPAL_EXPRESS_SHIPPING_DESC" }) }}</span>
                                 </div>
                             </div>
