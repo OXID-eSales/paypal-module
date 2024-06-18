@@ -100,6 +100,8 @@ class ProxyController extends FrontendController
             $userRepository = $this->getServiceFromContainer(UserRepository::class);
             $paypalEmail = (string) $response->payer->email_address;
 
+            $basket = Registry::getSession()->getBasket();
+
             $nonGuestAccountDetected = false;
             if ($userRepository->userAccountExists($paypalEmail)) {
                 //got a non-guest account, so either we log in or redirect customer to login step
@@ -110,6 +112,8 @@ class ProxyController extends FrontendController
                 $userComponent = oxNew(UserComponent::class);
                 $userComponent->createPayPalGuestUser($response);
             }
+
+            Registry::getSession()->setBasket($basket);
         }
 
         if ($user = $this->getUser()) {
@@ -146,6 +150,7 @@ class ProxyController extends FrontendController
             PayPalSession::unsetPayPalOrderId();
             Registry::getSession()->getBasket()->setPayment(null);
         }
+        $response->sessionId = Registry::getSession()->getId();
         $this->outputJson($response);
     }
 

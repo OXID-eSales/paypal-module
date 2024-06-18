@@ -40,7 +40,11 @@
                             if (data.status == "ERROR") {
                                 location.reload();
                             } else if (data.id && data.status == "APPROVED") {
-                                location.replace('[{$sSelfLink|cat:"cl=order"}]');
+                                if (data.sessionId) {
+                                    location.replace('/?cl=order&force_sid=' + data.sessionId);
+                                } else {
+                                    location.replace('[{$sSelfLink|cat:"cl=order"}]');
+                                }
                             }
                         })
                     },
@@ -91,7 +95,11 @@
                         if (data.status == "ERROR") {
                             location.reload();
                         } else if (data.id && data.status == "APPROVED") {
-                            location.replace('[{$sSelfLink|cat:"cl=order"}]');
+                            if (data.sessionId) {
+                                location.replace('/?cl=order&force_sid=' + data.sessionId);
+                            } else {
+                                location.replace('[{$sSelfLink|cat:"cl=order"}]');
+                            }
                         }
                     })
                 },
