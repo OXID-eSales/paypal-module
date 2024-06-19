@@ -68,7 +68,18 @@
                 },
                 [{/if}]
                 createOrder: function (data, actions) {
-                    return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
+                    let selElements = document.querySelectorAll('input[name^="sel"]');
+                    let params = new URLSearchParams();
+                    if (selElements.length > 0) {
+                        selElements.forEach(function(element) {
+                            if (element && element.value !== undefined && element.value !== null) {
+                                params.append(element.name, element.value);
+                            }
+                        });
+                    }
+                    let baseUrl = '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]';
+                    let url = baseUrl + (params.toString() ? '&' + params.toString() : '');
+                    return fetch(url , {
                         method: 'post',
                         headers: {
                             'content-type': 'application/json'
