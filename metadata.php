@@ -446,7 +446,7 @@ $aModule = [
         ],
         [
             'name' => 'oscPayPalDefaultShippingPriceExpress',
-            'type' => 'str',
+            'type' => 'num',
             'value' => 3.5,
             'group' => null
         ],

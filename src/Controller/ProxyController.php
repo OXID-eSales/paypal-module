@@ -19,6 +19,9 @@ use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Facade\ModuleSettingServiceInterface;
+use OxidSolutionCatalysts\PayPal\Module;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
@@ -33,6 +36,7 @@ use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
+use Symfony\Component\String\UnicodeString;
 
 /**
  * Server side interface for PayPal smart buttons.
@@ -52,7 +56,10 @@ class ProxyController extends FrontendController
         $this->addToBasket();
         $this->setPayPalPaymentMethod();
         $basket = Registry::getSession()->getBasket();
-        $defaultShippingPriceExpress = (double) $config->getConfigParam('oscPayPalDefaultShippingPriceExpress');
+        $moduleSettingService = ContainerFactory::getInstance()
+            ->getContainer()
+            ->get(ModuleSettingServiceInterface::class);
+        $defaultShippingPriceExpress =  $moduleSettingService->getFloat('oscPayPalDefaultShippingPriceExpress', Module::MODULE_ID);
         $calculateDelCostIfNotLoggedIn = (bool) $config->getConfigParam('blCalculateDelCostIfNotLoggedIn');
         if ($basket && $defaultShippingPriceExpress && !$calculateDelCostIfNotLoggedIn) {
             $basket->addShippingPriceForExpress($defaultShippingPriceExpress);
