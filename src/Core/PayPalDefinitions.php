@@ -88,7 +88,8 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
             'buttonpayment' => false,
-            'defaulton' => true
+            'defaulton' => true,
+            'vaultingtype' => 'paypal'
         ],
         //Express PayPal
         self::EXPRESS_PAYPAL_PAYMENT_ID => [
@@ -109,7 +110,8 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
             'buttonpayment' => true,
-            'defaulton' => true
+            'defaulton' => true,
+            'vaultingtype' => 'paypal'
         ],
         self::PUI_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
@@ -153,7 +155,8 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
             'buttonpayment' => true,
-            'defaulton' => true
+            'defaulton' => true,
+            'vaultingtype' => 'paypal'
         ],
         self::CCALTERNATIVE_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
@@ -454,5 +457,12 @@ final class PayPalDefinitions
     public static function isPayPalPayment(string $paymentId): bool
     {
         return (isset(self::PAYPAL_DEFINTIONS[$paymentId]));
+    }
+    public static function isPayPalVaultingPossible(string $paymentId, string $paypalPaymentType): bool
+    {
+        return (
+            isset(self::PAYPAL_DEFINTIONS[$paymentId]['vaultingtype'])
+            && self::PAYPAL_DEFINTIONS[$paymentId]['vaultingtype'] === $paypalPaymentType
+        );
     }
 }

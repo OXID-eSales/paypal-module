@@ -54,9 +54,13 @@ class PaymentController extends PaymentController_parent
         ) {
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
             if ($vaultedPaymentTokens = $vaultingService->getVaultPaymentTokens($paypalCustomerId)["payment_tokens"]) {
+                $paymentList = $this->getPaymentList();
                 $vaultedPaymentSources = [];
                 foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
                     foreach ($vaultedPaymentToken["payment_source"] as $paymentType => $paymentSource) {
+                        if (!$this->paymentTypeExists($paymentList, $paymentType)) {
+                            continue;
+                        }
                         if ($paymentType == "card") {
                             $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
                             $vaultedPaymentSources[$paymentType][] = $paymentSource["brand"] . " " .
@@ -76,6 +80,22 @@ class PaymentController extends PaymentController_parent
         Registry::getSession()->deleteVariable("selectedVaultPaymentSourceIndex");
 
         return parent::render();
+    }
+
+    /**
+     * @param $paymentList
+     * @param $paymentType
+     * @return bool
+     */
+    protected function paymentTypeExists($paymentType): bool
+    {
+        $paymentList = $this->getPaymentList();
+        foreach ($paymentList as $payment) {
+            if (PayPalDefinitions::isPayPalVaultingPossible($payment->getId(), $paymentType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
