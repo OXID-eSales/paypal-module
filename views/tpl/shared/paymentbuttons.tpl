@@ -37,11 +37,11 @@
                         }).then(function (res) {
                             return res.json();
                         }).then(function (data) {
-                            if (data.status == "ERROR") {
+                            if (data.status === "ERROR") {
                                 location.reload();
-                            } else if (data.id && data.status == "APPROVED") {
-                                if (data.sessionId) {
-                                    location.replace('/?cl=order&force_sid=' + data.sessionId);
+                            } else if (data.id && data.status === "APPROVED") {
+                                if (data.newUrl) {
+                                    location.replace(data.newUrl);
                                 } else {
                                     location.replace('[{$sSelfLink|cat:"cl=order"}]');
                                 }
@@ -92,11 +92,11 @@
                     }).then(function (res) {
                         return res.json();
                     }).then(function (data) {
-                        if (data.status == "ERROR") {
+                        if (data.status === "ERROR") {
                             location.reload();
-                        } else if (data.id && data.status == "APPROVED") {
-                            if (data.sessionId) {
-                                location.replace('/?cl=order&force_sid=' + data.sessionId);
+                        } else if (data.id && data.status === "APPROVED") {
+                            if (data.newUrl) {
+                                location.replace(data.newUrl);
                             } else {
                                 location.replace('[{$sSelfLink|cat:"cl=order"}]');
                             }

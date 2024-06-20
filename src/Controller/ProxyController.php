@@ -30,6 +30,7 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use stdClass;
 
 /**
  * Server side interface for PayPal smart buttons.
@@ -150,7 +151,9 @@ class ProxyController extends FrontendController
             PayPalSession::unsetPayPalOrderId();
             Registry::getSession()->getBasket()->setPayment(null);
         }
-        $response->sessionId = Registry::getSession()->getId();
+
+        //$response->newUrl = $this->getNewOrderCtrlUrl();
+        //$response->sessionId = Registry::getSession()->getId();
         $this->outputJson($response);
     }
 
@@ -277,5 +280,24 @@ class ProxyController extends FrontendController
         return PayPalDefinitions::isPayPalPayment($paymentId) ?
             $paymentId :
             $defaultPayPalPaymentId;
+    }
+
+    /*
+     * build a new order-controller-Link if session id is changed
+     */
+    protected function getNewOrderCtrlUrl(): string
+    {
+        $sNewOrderUrl = Registry::getConfig()->getShopSecureHomeURL() . 'cl=order';
+        $sNewOrderUrl = Registry::getUtilsUrl()->cleanUrl(
+            $sNewOrderUrl,
+            ['force_sid']
+        );
+        $sNewOrderUrl .= '&force_sid=' . Registry::getSession()->getId();
+        $sNewOrderUrl = str_replace(
+            '&amp;',
+            '&',
+            $sNewOrderUrl
+        );
+        return $sNewOrderUrl;
     }
 }
