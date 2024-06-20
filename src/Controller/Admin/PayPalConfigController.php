@@ -170,7 +170,7 @@ class PayPalConfigController extends AdminController
 
         $confArr = $this->handleSpecialFields($confArr);
         $this->saveConfig($confArr);
-        $this->checkEligibility();
+        $this->checkEligibility($confArr);
         parent::save();
     }
 
@@ -191,7 +191,7 @@ class PayPalConfigController extends AdminController
      *
      * @throws OnboardingException
      */
-    protected function checkEligibility(): void
+    protected function checkEligibility(array $confArr): void
     {
         $config = new Config();
         /** skip check if no client ID provided */
@@ -208,6 +208,16 @@ class PayPalConfigController extends AdminController
             $onBoardingClient = $handler->getOnboardingClient($config->isSandbox(), true);
             $merchantInformations = $onBoardingClient->getMerchantInformations();
             $handler->saveEligibility($merchantInformations);
+            if (isset($confArr['oscPayPalSetVaulting'])) {
+                $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+                $isEligible = $moduleSettings->isSandbox()
+                    ? $moduleSettings->isSandboxVaultingEligibility()
+                    : $moduleSettings->isLiveVaultingEligibility();
+
+                if (!$isEligible) {
+                    $moduleSettings->save('oscPayPalSetVaulting', false);
+                }
+            }
         } catch (ClientException $exception) {
 
             /** @var Logger $logger */

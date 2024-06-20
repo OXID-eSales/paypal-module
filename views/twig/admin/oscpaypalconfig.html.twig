@@ -512,8 +512,11 @@
                                     <div class="controls">
                                         <div class="checkbox">
                                             <label>
-
-                                                <input type="checkbox" name="conf[oscPayPalSetVaulting]" {% if config.getIsVaultingActive() %}checked{% endif %} value="1">
+                                                {% if config.isSandbox() %}selected
+                                                <input type="checkbox" name="conf[oscPayPalSetVaulting]" {% if config.getIsVaultingActive() %}checked{% endif %} value="1" {% if config.isVaultingEligibility() == false %}disabled{% endif %}>
+                                                {% else %}
+                                                <input type="checkbox" name="conf[oscPayPalSetVaulting]" {% if config.getIsVaultingActive() %}checked{% endif %} value="1" {% if config.isLiveVaultingEligibility() == false %}disabled{% endif %}>
+                                                {% endif %}
                                                 {{ translate({ ident: "OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING" }) }}
                                             </label>
                                         </div>
