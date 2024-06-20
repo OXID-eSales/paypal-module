@@ -58,7 +58,7 @@ class PaymentController extends PaymentController_parent
                 $vaultedPaymentSources = [];
                 foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
                     foreach ($vaultedPaymentToken["payment_source"] as $paymentType => $paymentSource) {
-                        if (!$this->paymentTypeExists($paymentList, $paymentType)) {
+                        if (!$this->paymentTypeExists($paymentList)) {
                             continue;
                         }
                         if ($paymentType == "card") {
