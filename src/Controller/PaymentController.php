@@ -22,6 +22,8 @@ class PaymentController extends PaymentController_parent
 
     public function render()
     {
+        $lang = Registry::getLang();
+
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         if ($paymentService->isOrderExecutionInProgress()) {
             //order execution is already in progress
@@ -38,18 +40,29 @@ class PaymentController extends PaymentController_parent
             $paymentService->removeTemporaryOrder();
         }
 
-        if ($paypalCustomerId = $this->getUser()->getFieldData("oscpaypalcustomerid")) {
+        $user = $this->getUser();
+        $isVaultingPossible = false;
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        if ($moduleSettings->getIsVaultingActive() && $user->getFieldData('oxpassword')) {
+            $isVaultingPossible = true;
+        }
+
+        $this->addTplParam('oscpaypal_isVaultingPossible', $isVaultingPossible);
+
+        if ($isVaultingPossible &&
+            ($paypalCustomerId = $this->getUser()->getFieldData("oscpaypalcustomerid"))
+        ) {
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
             if ($vaultedPaymentTokens = $vaultingService->getVaultPaymentTokens($paypalCustomerId)["payment_tokens"]) {
                 $vaultedPaymentSources = [];
                 foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
                     foreach ($vaultedPaymentToken["payment_source"] as $paymentType => $paymentSource) {
                         if ($paymentType == "card") {
-                            $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_ENDING_IN");
+                            $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
                             $vaultedPaymentSources[$paymentType][] = $paymentSource["brand"] . " " .
                                 $string . $paymentSource["last_digits"];
                         } elseif ($paymentType == "paypal") {
-                            $string = Registry::getLang()->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
+                            $string = $lang->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
                             $vaultedPaymentSources[$paymentType][] = $string . " " . $paymentSource["email_address"];
                         }
                     }

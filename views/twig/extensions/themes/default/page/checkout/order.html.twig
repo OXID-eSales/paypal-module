@@ -92,7 +92,7 @@
             <div class="card-body">
                 {% set payment = oView.getPayment() %}
                 {{ payment.oxpayments__oxdesc.value }}
-                {% if oscpaypal_payment_saveable %}
+                {% if oscpaypal_isVaultingPossible %}
                     <br>
                     <br>
                     <input type="checkbox" id="oscPayPalVaultPaymentCheckbox" onclick="setVaultingCheckbox()">
@@ -100,7 +100,7 @@
                 {% endif %}
             </div>
         </form>
-
+    {% if oscpaypal_isVaultingPossible %}
         <script>
             function setVaultingCheckbox() {
                 let checkbox = document.getElementById("oscPayPalVaultPaymentCheckbox");
@@ -113,6 +113,7 @@
                 }
             }
         </script>
+    {% endif %}
     {% else %}
         {{ parent() }}
     {% endif %}
