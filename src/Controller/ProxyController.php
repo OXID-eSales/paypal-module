@@ -101,7 +101,7 @@ class ProxyController extends FrontendController
             $userRepository = $this->getServiceFromContainer(UserRepository::class);
             $paypalEmail = (string) $response->payer->email_address;
 
-            $basket = Registry::getSession()->getBasket();
+            //$basket = Registry::getSession()->getBasket();
 
             $nonGuestAccountDetected = false;
             if ($userRepository->userAccountExists($paypalEmail)) {
@@ -114,7 +114,7 @@ class ProxyController extends FrontendController
                 $userComponent->createPayPalGuestUser($response);
             }
 
-            Registry::getSession()->setBasket($basket);
+            //Registry::getSession()->setBasket($basket);
         }
 
         if ($user = $this->getUser()) {
