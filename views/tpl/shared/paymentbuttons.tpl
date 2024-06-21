@@ -7,9 +7,9 @@
         [{/if}]
         [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
         [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
-        [{if $buttonId == "oscpaypal_sepa" || $buttonId == "oscpaypal_cc_alternative"}]
+        [{if $buttonId === "oscpaypal_sepa" || $buttonId === "oscpaypal_cc_alternative"}]
             FUNDING_SOURCES = [
-                paypal.FUNDING.[{if $buttonId == "oscpaypal_sepa"}]SEPA[{elseif $buttonId == "oscpaypal_cc_alternative"}]CARD[{/if}]
+                paypal.FUNDING.[{if $buttonId === "oscpaypal_sepa"}]SEPA[{elseif $buttonId === "oscpaypal_cc_alternative"}]CARD[{/if}]
             ];
             // Loop over each funding source/payment method
             FUNDING_SOURCES.forEach(function (fundingSource) {
@@ -37,9 +37,9 @@
                         }).then(function (res) {
                             return res.json();
                         }).then(function (data) {
-                            if (data.status == "ERROR") {
+                            if (data.status === "ERROR") {
                                 location.reload();
-                            } else if (data.id && data.status == "APPROVED") {
+                            } else if (data.id && data.status === "APPROVED") {
                                 location.replace('[{$sSelfLink|cat:"cl=order"}]');
                             }
                         })
@@ -88,9 +88,9 @@
                     }).then(function (res) {
                         return res.json();
                     }).then(function (data) {
-                        if (data.status == "ERROR") {
+                        if (data.status === "ERROR") {
                             location.reload();
-                        } else if (data.id && data.status == "APPROVED") {
+                        } else if (data.id && data.status === "APPROVED") {
                             location.replace('[{$sSelfLink|cat:"cl=order"}]');
                         }
                     })

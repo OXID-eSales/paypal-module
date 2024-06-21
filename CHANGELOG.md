@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.3.9] - 2024-06-18
+
+- [0007661](https://bugs.oxid-esales.com/view.php?id=7661): Error in the order process the total value did not match the total of the items and shipping cost of the order
+
 ## [1.3.8] - 2024-06-06
 
 - Update Client Version v1.0.10
