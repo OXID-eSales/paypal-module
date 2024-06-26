@@ -64,12 +64,22 @@ class ConfirmOrderRequestFactory
             $country->load($deliveryAddress->getFieldData('oxcountryid'));
         }
 
-        $paymentSource = new PaymentSource([
+
+        $paymentSourceData = [
             $requestName => [
                 'name' => $userName,
                 'country_code' => $country->getFieldData('oxisoalpha2')
             ]
-        ]);
+        ];
+
+        //check if this is correct!
+        if ($requestName === "googlepay") {
+            $GooglePayToken = base64_encode(Registry::getSession()->getVariable('GooglePayToken'));
+            $paymentSourceData[$requestName]['token'] = $GooglePayToken;
+        }
+
+
+        $paymentSource = new PaymentSource($paymentSourceData);
 
         return $paymentSource;
     }

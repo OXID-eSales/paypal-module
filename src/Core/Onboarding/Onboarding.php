@@ -138,6 +138,12 @@ class Onboarding
         return $apiClient->getMerchantInformations();
     }
 
+
+    public function haveCapability(string $name, array $caps): bool
+    {
+        return in_array($name, $caps);
+    }
+
     public function saveEligibility(array $merchantInformations): array
     {
         if (!isset($merchantInformations['products'])) {
@@ -146,28 +152,28 @@ class Onboarding
 
         $isPuiEligibility = false;
         $isAcdcEligibility = false;
+        $isGooglePayCapability = false;
 
         foreach ($merchantInformations['products'] as $product) {
-            if (
-                $product['name'] === 'PAYMENT_METHODS' &&
-                in_array('PAY_UPON_INVOICE', $product['capabilities'])
-            ) {
-                $isPuiEligibility = true;
-            } elseif (
-                $product['name'] === 'PPCP_CUSTOM' &&
-                in_array('CUSTOM_CARD_PROCESSING', $product['capabilities'])
-            ) {
-                $isAcdcEligibility = true;
+            if($product['name'] === 'PAYMENT_METHODS'){
+                $isPuiEligibility = $this->haveCapability('GOOGLE_PAY', $product['capabilities']);
+                $isGooglePayCapability = $this->haveCapability('GOOGLE_PAY', $product['capabilities']);
+            }
+
+            if ($product['name'] === 'PPCP_CUSTOM') {
+                $isAcdcEligibility = $this->haveCapability('CUSTOM_CARD_PROCESSING', $product['capabilities']);
             }
         }
 
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $moduleSettings->savePuiEligibility($isPuiEligibility);
         $moduleSettings->saveAcdcEligibility($isAcdcEligibility);
+        $moduleSettings->saveGooglePayEligibility($isGooglePayCapability);
 
         return [
             'acdc' => $isAcdcEligibility,
-            'pui' => $isPuiEligibility
+            'pui' => $isPuiEligibility,
+            'googlepay' => $isGooglePayCapability,
         ];
     }
 }

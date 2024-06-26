@@ -1,5 +1,8 @@
 {% extends "page/checkout/order.html.twig" %}
 
+{% set payment = oView.getPayment() %}
+{% set sPaymentID = payment.getId() %}
+
 {% block shippingAndPayment %}
     {% set payment = oView.getPayment() %}
     {% if payment.getId() == "oscpaypal_acdc" or payment.getId() == "oscpaypal_pui" %}
@@ -50,6 +53,15 @@
                 {% endif %}
             {% endif %}
         </div>
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock %}
+
+{% block checkout_order_next_step_side %}
+    {% if sPaymentID == "oscpaypal_googlepay" %}
+        {% include "@osc_paypal/frontend/googlepay.html.twig" %}
+        <div id="{{ sPaymentID }}" class="paypal-button-container paypal-button-wrapper large"></div>
     {% else %}
         {{ parent() }}
     {% endif %}

@@ -564,4 +564,41 @@ class ModuleSettings
     {
         return isAdmin();
     }
+    public function isLiveVaultingEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalVaultingEligibility');
+    }
+
+    public function isSandboxVaultingEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSandboxVaultingEligibility');
+    }
+    public function isLiveGooglePayEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalGooglePayEligibility');
+    }
+    public function isGooglePayEligibility(): bool
+    {
+        return $this->isSandbox() ?
+            $this->isSandBoxVaultingEligibility() :
+            $this->isLiveVaultingEligibility();
+    }
+
+    public function isSandboxGooglePayEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSandboxGooglePayEligibility');
+    }
+
+    public function saveGooglePayEligibility(bool $isGooglePayEligibility): void
+    {
+        if ($this->isSandbox()) {
+            $this->save('oscPayPalSandboxGooglePayEligibility', $isGooglePayEligibility);
+        } else {
+            $this->save('oscPayPalGooglePayEligibility', $isGooglePayEligibility);
+        }
+    }
+    public function getIsGooglePayDeliveryAddressActive(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalUseGooglePayAddress');
+    }
 }

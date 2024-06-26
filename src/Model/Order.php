@@ -148,11 +148,12 @@ class Order extends Order_parent
         $this->afterOrderCleanUp($basket, $user);
 
         $isPayPalACDC = $paymentsId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
+        $isPaypalGooglePay = $paymentsId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
         $transactionId = null;
         $payPalPaymentSuccess = true;
 
-        if ($isPayPalACDC && $forceFetchDetails) {
+        if ($isPayPalACDC && $forceFetchDetails || $isPaypalGooglePay) {
             $payPalApiOrder = $paymentService->fetchOrderFields($payPalOrderId);
             if ($this->isPayPalOrderCompleted($payPalApiOrder)) {
                 $this->markOrderPaid();
@@ -170,7 +171,7 @@ class Order extends Order_parent
             }
         }
 
-        if ($isPayPalACDC) {
+        if ($isPayPalACDC || $isPaypalGooglePay) {
             //webhook should kick in and handle order state and we should not call the api too often
             Registry::getSession()->deleteVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
             // remove PayPal order id from session
@@ -272,7 +273,9 @@ class Order extends Order_parent
         $isPayPalACDC = $sessionPaymentId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $sessionPaymentId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
         $isPayPalPayLater = $sessionPaymentId === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID;
-
+        if ($sessionPaymentId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID) {
+            $isPayPalUAPM = false;
+        }
         //catch UAPM, Standard and Pay Later PayPal payments here
         if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater) {
             try {

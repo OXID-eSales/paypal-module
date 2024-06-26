@@ -400,4 +400,17 @@ class Config
     {
         return Client::SANDBOX_URL;
     }
+
+    public function isLiveGooglePayEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveGooglePayEligibility();
+    }
+    public function isSandboxGooglePayEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxGooglePayEligibility();
+    }
+    public function getIsGooglePayDeliveryAdressActive(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getIsGooglePayDeliveryAddressActive();
+    }
 }

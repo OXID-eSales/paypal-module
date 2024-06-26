@@ -447,5 +447,25 @@ $aModule = [
             'value' => 3.5,
             'group' => null
         ],
+        [
+            'name' => 'oscPayPalGooglePayEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ]
+        ,
+        [
+            'name' => 'oscPayPalSandboxGooglePayEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ]
+        ,
+        [
+            'name' => 'oscPayPalUseGooglePayAddress',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
     ],
 ];

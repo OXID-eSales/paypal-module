@@ -1,0 +1,330 @@
+{% set sToken = oViewConf.getSessionChallengeToken() %}
+{% set sSelfLink = oViewConf.getSslSelfLink()|replace({"&amp;": "&"}) %}
+{% set oConfig = oViewConf.getPayPalCheckoutConfig() %}
+{% set bGooglePayDelivery = oConfig.getConfigParam('oscPayPalUseGooglePayAddress') %}
+{% set payment = oView.getPayment() %}
+{% set buttonId = payment.getId() %}
+{% set aid = '' %}
+
+<style>
+    #oscpaypal_googlepay {
+        float: right;
+    }
+</style>
+
+<script src="https://pay.google.com/gp/p/js/pay.js"></script>
+<script>
+    //Defaults
+    const isPaypalSandbox = {% if oConfig.isSandbox() %}true{% else %}false{% endif %};
+    const environment = isPaypalSandbox ? 'TEST' : 'PRODUCTION';
+    const selfLink = "{{ sSelfLink|raw }}";
+    const token = "{{ sToken }}";
+    const aid = "{{ aid }}";
+    const getDeliveryAddressMD5 = "{{ oView.getDeliveryAddressMD5() }}";
+
+    const baseRequest = {
+        apiVersion: 2,
+        apiVersionMinor: 0,
+    };
+
+    let paymentsClient = null,
+        allowedPaymentMethods = null,
+        merchantInfo = null;
+
+    /*
+    Process steps:
+        1. Load SDK
+        2. Configure and append button
+        3. Button clicked callback - onGooglePaymentButtonClicked
+        4. Processing payment
+        5. Approve the Order
+            - Create the Order
+            - Capture the Order
+    */
+
+    //General purpose functions
+
+    //Write labeled data onto browsers console if PayPal sandbox mode is enabled
+    function sandboxDebug(label, data){
+        isPaypalSandbox ? console.log(label, data) : false;
+    }
+
+    //create a formData with PayPal orderID for XHR requests
+    function getOrderIdFormData(id) {
+        const formData = new FormData();
+        formData.append('orderID', id);
+        return formData;
+    }
+
+    //Generates Oxid backend url for specific controller and function
+    //Adds basic params to the url
+    function generateOxidBackendUrl(cl, fnc, extra){
+        const selfBaseUrl = selfLink;
+        const controllerParameters = "cl="+cl+"&fnc="+fnc;
+        const otherParameters = "paymentid=oscpaypal_googlepay&context=continue&aid="+aid+"&stoken="+token;
+        const sandbox = isPaypalSandbox ? "XDEBUG_SESSION_START=1" : "";
+
+        return [selfBaseUrl, controllerParameters, otherParameters, extra, sandbox].join("&").replaceAll("&&", "&");
+    }
+
+    // Step 2
+    // Step 3
+    // Configure GooglePay client
+    function getGooglePaymentsClient() {
+        if (paymentsClient === null) {
+            paymentsClient = new google.payments.api.PaymentsClient({
+                environment: environment,
+                paymentDataCallbacks: {
+                    onPaymentAuthorized: onPaymentAuthorized,
+                },
+            });
+        }
+        return paymentsClient;
+    }
+
+    //Step 1 - wait for document to be ready and trigger GooglePay button loading
+    document.addEventListener("DOMContentLoaded", (event) => google && paypal.Googlepay ?
+        loadGooglePayButton().catch(console.log) :
+        false);
+
+    // Step 2
+    // - Configure and append GooglePay button to the site
+    // - Check if Google is ready to process payments requests - getGoogleIsReadyToPayRequest
+    // - Bind googlePay click event callback - onGooglePaymentButtonClicked
+    async function loadGooglePayButton() {
+        const paymentsClient = getGooglePaymentsClient();
+        const {allowedPaymentMethods} = await getGooglePayConfig();
+        paymentsClient
+            .isReadyToPay(getGoogleIsReadyToPayRequest(allowedPaymentMethods))
+            .then(function (response) {
+                {% if oConfig.isSandbox() %} console.log('loadGooglePayButton debug', response); {% endif %}
+                if (response.result) {
+                    const button = paymentsClient.createButton({
+                        buttonType: 'buy',
+                        buttonLocale: '{{ oView.getActiveLangAbbr() }}',
+                        onClick: onGooglePaymentButtonClicked,
+                    });
+                    document.getElementById("{{ buttonId }}").appendChild(button);
+                }
+            })
+            .catch(function (err) {
+                console.error(err);
+            });
+    }
+
+    // Step 2
+    // Fetch Default Config from PayPal via PayPal SDK
+    async function getGooglePayConfig() {
+        if (allowedPaymentMethods == null || merchantInfo == null) {
+            const googlePayConfig = await paypal.Googlepay().config();
+
+            allowedPaymentMethods = googlePayConfig.allowedPaymentMethods;
+            merchantInfo = googlePayConfig.merchantInfo;
+            merchantInfo.merchantName = "{{ oxcmp_shop.oxshops__oxname.value }}";
+        }
+
+        return {
+            allowedPaymentMethods,
+            merchantInfo,
+        };
+    }
+
+    // Step 2
+    // Configure your site's support for payment methods supported by the Google Pay
+    function getGoogleIsReadyToPayRequest(allowedPaymentMethods) {
+        return Object.assign({}, baseRequest, {
+            allowedPaymentMethods: allowedPaymentMethods,
+            billingAddressRequired: true,
+            assuranceDetailsRequired: true,
+            billingAddressParameters: {format: 'FULL'},
+        });
+    }
+
+    // Step 3
+    // Configure support for the Google Pay API
+    async function getGooglePaymentDataRequest() {
+        const paymentDataRequest = Object.assign({}, baseRequest);
+        const {allowedPaymentMethods, merchantInfo} = await getGooglePayConfig();
+
+        paymentDataRequest.allowedPaymentMethods = allowedPaymentMethods;
+        paymentDataRequest.merchantInfo = merchantInfo;
+
+        paymentDataRequest.callbackIntents = ["PAYMENT_AUTHORIZATION"];
+        paymentDataRequest.emailRequired = true;
+        paymentDataRequest.shippingAddressRequired = {% if shippingAddressRequired %}true{% else %}false{% endif %};
+        paymentDataRequest.shippingAddressParameters = {'phoneNumberRequired': true};
+
+        return paymentDataRequest;
+    }
+
+    // Step 3
+    // Click GooglePay button
+    async function onGooglePaymentButtonClicked() {
+        const paymentsClient = getGooglePaymentsClient();
+        const paymentDataRequest = await getGooglePaymentDataRequest();
+
+        try {
+            const basketDetails = await fetch(generateOxidBackendUrl('oscpaypalproxy', 'getGooglepayBasket'));
+            const basket = await basketDetails.json();
+
+            paymentDataRequest.transactionInfo = {
+                displayItems: basket.displayItems,
+                countryCode: basket.countryCode,
+                currencyCode: basket.currencyCode,
+                totalPriceStatus: basket.totalPriceStatus,
+                totalPrice: basket.totalPrice,
+                totalPriceLabel: basket.totalPriceLabel,
+            };
+
+        } catch (error) {
+            console.error(error);
+        }
+
+        sandboxDebug('paymentDataRequest:', paymentDataRequest);
+
+        paymentsClient.loadPaymentData(paymentDataRequest)
+            .catch(err => {
+                if (err.statusCode !== "CANCELED") {
+                    sandboxDebug('paymentsClient.loadPaymentData failed: ', err);
+                }
+            });
+    }
+
+    // Step 4
+    // Operations After GooglePay button is clicked
+    // Processing payment
+    function onPaymentAuthorized(paymentData) {
+        return new Promise(function (resolve, reject) {
+            processPayment(paymentData)
+                .then(function (data) {
+                    sandboxDebug('onPaymentAuthorized:', data);
+                    resolve({transactionState: "SUCCESS"});
+                })
+                .catch(function (errDetails) {
+                    resolve({transactionState: "ERROR"});
+                });
+        });
+    }
+
+    // Step 4
+    // Create PayPal Order
+    async function processPayment(paymentData) {
+        try {
+            const {id} = await fetch(generateOxidBackendUrl('oscpaypalproxy', 'createGooglepayPaypalOrder'), {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(paymentData),
+            }).then((res) => res.json());
+
+            const confirmOrderResponse = await paypal.Googlepay().confirmOrder({
+                orderId: id,
+                paymentMethodData: paymentData.paymentMethodData,
+            });
+
+            sandboxDebug('confirmOrderResponse', confirmOrderResponse);
+
+            if (confirmOrderResponse.status === "PAYER_ACTION_REQUIRED") {
+              sandboxDebug("==== Confirm Payment Completed Payer Action Required =====", []);
+
+              paypal.Googlepay().initiatePayerAction({orderId: id}).then(async () => {
+                  sandboxDebug("===== Payer Action Completed =====", []);
+
+                  await approveGooglePayOrder({id: id});
+              });
+          }
+
+        } catch (err) {
+            return {
+                transactionState: "ERROR",
+                error: {
+                    message: err.message,
+                },
+            };
+        }
+    }
+
+    // Step 5 Approve the Order
+    //  - on APPROVED status :
+    //      - patching the order
+    //      - capturing the order
+    async function approveGooglePayOrder(confirmOrderResponse) {
+        try {
+            await fetch(generateOxidBackendUrl('oscpaypalproxy', 'approveOrder'), {
+                method: "POST",
+                body: getOrderIdFormData(confirmOrderResponse.id)
+            })
+                .then(response => response.text())
+                .then(async (text) => {
+                    let orderResponse = JSON.parse(text);
+                    if (orderResponse.status === "APPROVED") {
+                        sandboxDebug("===== ORDER APPROVED =====", orderResponse);
+
+                        await createPatchedGooglePayOrder(orderResponse);
+                        await captureGooglePayOrder(orderResponse);
+                    }
+                });
+
+        } catch (e) {
+            sandboxDebug('Approve GooglePay Order failed:', e);
+        }
+    }
+
+    // Step 5 Create the Order
+    function createPatchedGooglePayOrder(confirmOrderResponse) {
+        var form = document.createElement("form");
+        form.setAttribute("method", "post");
+        let url = generateOxidBackendUrl(
+            'order',
+            'createPatchedGooglePayOrder',
+            '&sDeliveryAddressMD5=' + getDeliveryAddressMD5
+        );
+        form.setAttribute("action", url);
+
+        var orderIDField = document.createElement("input");
+        orderIDField.setAttribute("type", "hidden");
+        orderIDField.setAttribute("name", "orderID");
+        orderIDField.setAttribute("value", confirmOrderResponse.id);
+        form.appendChild(orderIDField);
+        document.body.appendChild(form);
+        form.submit();
+        form.onsubmit = function (event) {
+            event.preventDefault();
+            fetch(form.action, {
+                method: 'post',
+                body: new FormData(form)
+            }).then(function (res) {
+                return res.json();
+            }).then(function (data) {
+
+                if (data.status === "ERROR") {
+                    location.reload();
+                }
+            });
+        };
+    }
+
+
+    // Step 5 Capture the Order
+    function captureGooglePayOrder(confirmOrderResponse) {
+        const url = generateOxidBackendUrl(
+            'order',
+            'captureGooglePayOrder',
+            '&sDeliveryAddressMD5=' + getDeliveryAddressMD5
+        );
+        return fetch(url, {
+            method: 'post',
+            body: getOrderIdFormData(confirmOrderResponse.id)
+        })
+            .then((res) => res.json())
+            .then(function (data) {
+            var goNext = Array.isArray(data.location) && data.location[0];
+
+            window.location.href = selfLink + goNext;
+
+            if (data.status === "ERROR") {
+                location.reload();
+            }
+        });
+    }
+
+</script>
