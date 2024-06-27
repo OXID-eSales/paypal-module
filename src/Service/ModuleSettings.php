@@ -328,7 +328,6 @@ class ModuleSettings
         return (int)$this->getSettingValue('oscPayPalStartTimeCleanUpOrders');
     }
 
-
     public function isLiveAcdcEligibility(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalAcdcEligibility');
@@ -339,6 +338,11 @@ class ModuleSettings
         return (bool)$this->getSettingValue('oscPayPalPuiEligibility');
     }
 
+    public function isLiveVaultingEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalVaultingEligibility');
+    }
+
     public function isSandboxAcdcEligibility(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalSandboxAcdcEligibility');
@@ -347,6 +351,16 @@ class ModuleSettings
     public function isSandboxPuiEligibility(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalSandboxPuiEligibility');
+    }
+
+    public function isSandboxVaultingEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSandboxVaultingEligibility');
+    }
+
+    public function getIsVaultingActive(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSetVaulting');
     }
 
     public function getActivePayments(): array

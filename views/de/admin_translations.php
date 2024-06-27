@@ -69,6 +69,7 @@ return [
     'OSC_PAYPAL_SPECIAL_PAYMENTS_PUI'             => 'Rechnungskauf',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Kreditkarte',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '(Alternativ zur fehlenden Zahlart wird ein zusätzlicher Button "Kreditkarte" unter den Paypal-Buttons angezeigt.)',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING'        => 'Vaulting',
 
     'OSC_PAYPAL_LOCALISATIONS'                    => 'Spracheinstellungen',
     'OSC_PAYPAL_LOCALES'                          => 'regionale Spracheinstellungen',
@@ -266,4 +267,10 @@ return [
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_COUNTRY'    => 'Versanddienstleister (Land)',
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_PROVIDER'   => 'Versanddienstleister (Anbieter)',
     'OSC_PAYPAL_TRACKCARRIER_GLOBAL'                => 'weltweit',
-];
+
+    'OSC_PAYPAL_VAULTING_TITLE'                     => 'PayPal Vaulting',
+    'OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'         => 'PayPal Vaulting aktivieren',
+    'HELP_OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'    => 'Wiederholungskäufe leicht gemacht: Mit PayPal können Sie die bevorzugten Zahlarten Ihrer Kund:innen sicher speichern und so eine schnelle und einfache
+                                                        Kaufabwicklung ermöglichen. Mit ihren gespeicherten Zahlungsdaten können Kund:innen mit nur wenigen Klicks Wiederholungskäufe tätigen. Dies kann für Sie
+                                                        eine höhere Checkout-Conversion bedeuten.',
+    ];
