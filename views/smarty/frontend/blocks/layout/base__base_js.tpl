@@ -1,5 +1,4 @@
 [{$smarty.block.parent}]
-
 [{if $oViewConf->isPayPalCheckoutActive()}]
     [{assign var="className" value=$oViewConf->getTopActiveClassName()}]
     [{if $oViewConf->isPayPalExpressPaymentEnabled() &&
