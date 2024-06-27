@@ -266,7 +266,7 @@ class PayPalConfigController extends AdminController
         if (!isset($conf['oscPayPalDefaultShippingPriceExpress'])) {
             $conf['oscPayPalDefaultShippingPriceExpress'] = false;
         } else {
-            $dAmount = (string) str_replace(',', '.', $conf['oscPayPalDefaultShippingPriceExpress']);
+            $dAmount = (float) str_replace(',', '.', $conf['oscPayPalDefaultShippingPriceExpress']);
             $conf['oscPayPalDefaultShippingPriceExpress'] = $dAmount;
         }
 
