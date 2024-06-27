@@ -269,6 +269,9 @@ class PayPalConfigController extends AdminController
             $dAmount = (float) str_replace(',', '.', $conf['oscPayPalDefaultShippingPriceExpress']);
             $conf['oscPayPalDefaultShippingPriceExpress'] = $dAmount;
         }
+        if (!isset($conf['oscPayPalUseGooglePayAddress'])) {
+            $conf['oscPayPalUseGooglePayAddress'] = false;
+        }
 
         return $conf;
     }

@@ -393,6 +393,7 @@ class Payment
                 break;
             }
         }
+
         if (!$redirectLink) {
             throw PayPalException::sessionPaymentMissingRedirectLink();
         }
