@@ -9,7 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Core\Onboarding;
 
 use JsonException;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Service\Logger;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
 use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
@@ -19,6 +19,8 @@ use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Onboarding as ApiOnboardingClient;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Filesystem\Exception\IOException;
+use Symfony\Component\Filesystem\Filesystem;
 
 class Onboarding
 {
@@ -109,6 +111,58 @@ class Onboarding
         ];
     }
 
+    /**
+     * @return void
+     */
+    private function downloadAndSaveApplePayCertificate()
+    {
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $isSandbox = $moduleSettings->isSandbox();
+        $filesystem = oxNew(Filesystem::class);
+        $this->ensureDirectoryExists($filesystem);
+        $this->updateCertificateIfChanged($filesystem, $isSandbox);
+    }
+
+    /**
+     * @param Filesystem $filesystem
+     * @return void
+     */
+    private function ensureDirectoryExists(Filesystem $filesystem): void
+    {
+        $directory = getShopBasePath() . '.well-known/';
+        try {
+            $filesystem->mkdir($directory);
+        } catch (IOException $e) {
+            throw new IOException($e->getMessage());
+        }
+    }
+
+    /**
+     * @param Filesystem $filesystem
+     * @param string $environment
+     * @param array $config
+     * @return void
+     */
+    private function updateCertificateIfChanged(Filesystem $filesystem, bool $isSandbox): void
+    {
+        $certificateUrl = $isSandbox ?
+            Constants::PAYPAL_APPLEPAYCERT_SANDBOX_URL :
+            Constants::PAYPAL_APPLEPAYCERT_LIVE_URL;
+        $filename = basename(parse_url($certificateUrl, PHP_URL_PATH));
+        $savePath = getShopBasePath() . '.well-known/' . $filename;
+
+        $currentContent = $filesystem->exists($savePath) ? file_get_contents($savePath) : null;
+
+        $newContent = file_get_contents($certificateUrl);
+
+        if ($newContent !== false && $newContent !== $currentContent) {
+            try {
+                $filesystem->dumpFile($savePath, $newContent);
+            } catch (IOException $e) {
+                throw new IOException($e->getMessage());
+            }
+        }
+    }
     public function getOnboardingClient(bool $isSandbox, bool $withCredentials = false): ApiOnboardingClient
     {
         $paypalConfig = oxNew(PayPalConfig::class);
@@ -201,7 +255,9 @@ class Onboarding
                 $isVaultingEligibility = true;
             }
         }
-
+        if ($isApplePayEligibility) {
+            $this->downloadAndSaveApplePayCertificate();
+        }
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $moduleSettings->savePuiEligibility($isPuiEligibility);
         $moduleSettings->saveAcdcEligibility($isAcdcEligibility);
