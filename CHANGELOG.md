@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - disable Vaulting-Setting if Vaulting not possible
 - [0007666](https://bugs.oxid-esales.com/view.php?id=7666): Fix: Price surcharges on the detail page for selection lists are not taken into account
 - disable Vaulting-Option of Creditcard if Creditcard are not eligible
+- Automatically save Apple Pay certificates during the Apple Pay eligibility check
 
 ### NEW
 - PayPal-Request-Id based on serialized body, no extra PayPal-Request-Id necessary anymore
