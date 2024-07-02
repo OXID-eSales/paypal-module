@@ -8,10 +8,8 @@
 namespace OxidSolutionCatalysts\PayPal\Core\Onboarding;
 
 use JsonException;
-use OxidEsales\Eshop\Core\Exception\FileException;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
-use OxidSolutionCatalysts\PayPal\Service\Logger;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
 use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
@@ -118,23 +116,11 @@ class Onboarding
      */
     private function downloadAndSaveApplePayCertificate()
     {
-        $isSandboxParameter = Registry::getRequest()->getRequestParameter('isSandbox');
-        $conf = Registry::getRequest()->getRequestParameter('conf');
-        $confParameter = $conf['oscPayPalSandboxMode'];
-        $environment = 'sandbox'; // Default to SANDBOX
-        if ($isSandboxParameter === "1" || ($confParameter && $confParameter === 'sandbox')) {
-            $environment = 'sandbox';
-        } elseif ($isSandboxParameter === "0" || ($confParameter && $confParameter === 'live')) {
-            $environment = 'live';
-        }
-
-        $config = PayPalDefinitions::getPayPalDefinitions()[PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID];
-        if (!isset($config[$environment])) {
-            return;
-        }
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $isSandbox = $moduleSettings->isSandbox();
         $filesystem = oxNew(Filesystem::class);
         $this->ensureDirectoryExists($filesystem);
-        $this->updateCertificateIfChanged($filesystem, $environment, $config);
+        $this->updateCertificateIfChanged($filesystem, $isSandbox);
     }
 
     /**
@@ -143,11 +129,11 @@ class Onboarding
      */
     private function ensureDirectoryExists(Filesystem $filesystem): void
     {
-        $directory = getShopBasePath().'.well-known/';
+        $directory = getShopBasePath() . '.well-known/';
         try {
             $filesystem->mkdir($directory);
         } catch (IOException $e) {
-            Throw new IOException($e->getMessage());
+            throw new IOException($e->getMessage());
         }
     }
 
@@ -157,25 +143,23 @@ class Onboarding
      * @param array $config
      * @return void
      */
-    private function updateCertificateIfChanged(Filesystem $filesystem, string $environment, array $config): void
+    private function updateCertificateIfChanged(Filesystem $filesystem, bool $isSandbox): void
     {
-        $filename = basename(parse_url($config[$environment]['url'], PHP_URL_PATH));
-        $certificateUrl = $config[$environment]['url'];
-        $savePath = getShopBasePath().'.well-known/' . $filename;
+        $certificateUrl = $isSandbox ?
+            Constants::PAYPAL_APPLEPAYCERT_SANDBOX_URL :
+            Constants::PAYPAL_APPLEPAYCERT_LIVE_URL;
+        $filename = basename(parse_url($certificateUrl, PHP_URL_PATH));
+        $savePath = getShopBasePath() . '.well-known/' . $filename;
 
         $currentContent = $filesystem->exists($savePath) ? file_get_contents($savePath) : null;
 
-        try {
-            $newContent = file_get_contents($certificateUrl);
-        } catch (FileException $e) {
-            return;
-        }
+        $newContent = file_get_contents($certificateUrl);
 
         if ($newContent !== false && $newContent !== $currentContent) {
             try {
                 $filesystem->dumpFile($savePath, $newContent);
             } catch (IOException $e) {
-                Throw new IOException($e->getMessage());
+                throw new IOException($e->getMessage());
             }
         }
     }
