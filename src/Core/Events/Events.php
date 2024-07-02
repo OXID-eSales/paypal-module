@@ -25,6 +25,7 @@ use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 class Events
@@ -164,8 +165,9 @@ class Events
         $context = $container->get(ContextInterface::class);
         /** @var ModuleConfigurationDaoBridgeInterface $moduleConfigurationDaoBridgeInterface */
         $moduleConfigurationDaoBridgeInterface = $container->get(ModuleConfigurationDaoBridgeInterface::class);
+        $loggerInterface = $container->get(LoggerInterface::class);
         /** @var Logger $logger */
-        $logger = $container->get(Logger::class);
+        $logger = oxNew(Logger::class,$loggerInterface);
         return new ModuleSettings(
             $moduleSettingsBridge,
             $context,
