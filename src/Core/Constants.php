@@ -27,6 +27,12 @@ class Constants
     public const PAYPAL_ONBOARDING_SANDBOX_URL = 'https://www.sandbox.paypal.com/bizsignup/partner/entry';
     public const PAYPAL_ONBOARDING_LIVE_URL = 'https://www.paypal.com/bizsignup/partner/entry';
 
+    public const PAYPAL_APPLEPAYCERT_SANDBOX_URL =
+        'https://paypalobjects.com/devdoc/apple-pay/sandbox/apple-developer-merchantid-domain-association';
+
+    public const PAYPAL_APPLEPAYCERT_LIVE_URL =
+        'https://paypalobjects.com/devdoc/apple-pay/well-known/apple-developer-merchantid-domain-association';
+
     public const PAYPAL_PUI_PROCESSING_INSTRUCTIONS = 'ORDER_COMPLETE_ON_PAYMENT_APPROVAL';
     public const PAYPAL_PUI_FNPARAMS = 'fnparams-dede7cc5-15fd-4c75-a9f4-36c430ee3a99';
     public const PAYPAL_PUI_FLOWID = 'Oxid_PayPal_PUI_Checkout';
