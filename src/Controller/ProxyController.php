@@ -368,7 +368,7 @@ class ProxyController extends FrontendController
         PayPalSession::unsetPayPalOrderId();
         Registry::getSession()->getBasket()->setPayment(null);
         $redirect = Registry::getRequest()->getRequestParameter('redirect');
-        if ($redirect === "1" ) {
+        if ($redirect === "1") {
             Registry::getUtils()->redirect(Registry::getConfig()->getShopSecureHomeURL() . 'cl=payment', false, 301);
         }
         exit;
