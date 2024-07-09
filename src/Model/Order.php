@@ -173,7 +173,7 @@ class Order extends Order_parent
             }
         }
 
-        if ($isPayPalACDC || $isPaypalGooglePay || $isPaypalApplePay) {
+        if ($isPayPalACDC /*|| $isPaypalGooglePay */|| $isPaypalApplePay) {
             //webhook should kick in and handle order state and we should not call the api too often
             Registry::getSession()->deleteVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
             // remove PayPal order id from session
@@ -265,6 +265,11 @@ class Order extends Order_parent
     // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
     protected function _executePayment(Basket $basket, $userpayment)
     {
+        //order number needs to be set before the payment is requested
+        if (!$this->oxorder__oxordernr->value) {
+            $this->setOrderNumber();
+        }
+
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
 
@@ -281,9 +286,6 @@ class Order extends Order_parent
         //catch UAPM, Standard and Pay Later PayPal payments here
         if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater) {
             try {
-                //order number needs to be set before the payment is requested
-                $this->setOrderNumber();
-
                 if ($isPayPalUAPM) {
                     $redirectLink = $paymentService->doExecuteUAPMPayment($this, $basket);
                 } else {
@@ -592,6 +594,12 @@ class Order extends Order_parent
      */
     public function finalizeOrder(Basket $basket, $user, $recalculatingOrder = false)
     {
+        //Googlepay needs its own order handling because of changed order creation order in the payment process
+        $SessionGooglePay = Registry::getSession()->getVariable('SessionGooglePay');
+        if (!empty($SessionGooglePay)){
+            return $this->finalizeGooglePayOrder($basket, $user, $recalculatingOrder);
+        }
+
         //we might have the case that the order is already stored but we are waiting for webhook events
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
@@ -633,6 +641,89 @@ class Order extends Order_parent
 
         return parent::finalizeOrder($basket, $user, $recalculatingOrder);
     }
+
+    public function finalizeGooglePayOrder(\OxidEsales\Eshop\Application\Model\Basket $oBasket, $oUser, $blRecalculatingOrder = false)
+    {
+        $orderId = Registry::getSession()->getVariable('SessionGooglePay');
+
+        // if not recalculating order, use sess_challenge id, else leave old order id
+        if (!$blRecalculatingOrder) {
+            // use this ID
+            $this->setId($orderId);
+
+            // validating various order/basket parameters before finalizing
+            if ($iOrderState = $this->validateOrder($oBasket, $oUser)) {
+                return $iOrderState;
+            }
+        }
+
+        // copies user info
+        $this->_setUser($oUser);
+
+        // copies basket info
+        $this->_loadFromBasket($oBasket);
+
+        // payment information
+        $oUserPayment = $this->_setPayment($oBasket->getPaymentId());
+
+        // set folder information, if order is new
+        // #M575 in recalculating order case folder must be the same as it was
+        if (!$blRecalculatingOrder) {
+            $this->_setFolder();
+        }
+
+        // marking as not finished
+        $this->_setOrderStatus('NOT_FINISHED');
+
+        //saving all order data to DB
+        $this->save();
+
+        // executing payment (on failure deletes order and returns error code)
+        // in case when recalculating order, payment execution is skipped
+        if (!$blRecalculatingOrder) {
+            $blRet = $this->_executePayment($oBasket, $oUserPayment);
+            if ($blRet !== true) {
+                return $blRet;
+            }
+        }
+
+        // deleting remark info only when order is finished
+        \OxidEsales\Eshop\Core\Registry::getSession()->deleteVariable('ordrem');
+
+        //#4005: Order creation time is not updated when order processing is complete
+        if (!$blRecalculatingOrder) {
+            $this->_updateOrderDate();
+        }
+
+        // updating order trans status (success status)
+        $this->_setOrderStatus('OK');
+
+        // store orderid
+        $oBasket->setOrderId($this->getId());
+
+        // updating wish lists
+        $this->_updateWishlist($oBasket->getContents(), $oUser);
+
+        // updating users notice list
+        $this->_updateNoticeList($oBasket->getContents(), $oUser);
+
+        // marking vouchers as used and sets them to $this->_aVoucherList (will be used in order email)
+        // skipping this action in case of order recalculation
+        if (!$blRecalculatingOrder) {
+            $this->_markVouchers($oBasket, $oUser);
+        }
+
+        // send order by email to shop owner and current user
+        // skipping this action in case of order recalculation
+        if (!$blRecalculatingOrder) {
+            $iRet = $this->_sendOrderByEmail($oUser, $oBasket, $oUserPayment);
+        } else {
+            $iRet = self::ORDER_STATE_OK;
+        }
+
+        return $iRet;
+    }
+
 
     public function isPayPalOrderCompleted(PayPalApiOrder $apiOrder): bool
     {
