@@ -227,7 +227,7 @@ class OrderController extends OrderController_parent
 
         $this->outputJson($response);
     }
-    public function preCreateGooglepayOrder(): void
+    public function preCreateGooglePayOrder(): void
     {
         /** @var Order $oOrder */
         $oOrder = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
@@ -237,11 +237,17 @@ class OrderController extends OrderController_parent
         Registry::getSession()->setVariable('sess_challenge', $oOrder->getId());
 
         $response = ['status' => 'created', 'orderId' => $oOrder->getId()];
-//sleep(2);
+
         $this->outputJson($response);
     }
     public function execute()
     {
+        //GooglePay order handling detection
+        $orderOXID = Registry::getConfig()->getRequestParameter("GooglepayOrderOXID");
+        if (empty($orderOXID)){
+            return parent::execute();
+        }
+
         if (!$this->getSession()->checkSessionChallenge()) {
             return;
         }
@@ -264,7 +270,6 @@ class OrderController extends OrderController_parent
             try {
                 //@TODO: Improove
                 $oOrder = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
-                $orderOXID = Registry::getConfig()->getRequestParameter("OrderOXID");
                 Registry::getSession()->setVariable('sess_challenge', $orderOXID);
                 $oOrder->load($orderOXID);
 

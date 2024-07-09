@@ -170,7 +170,7 @@
     async function createEshopOrder(paymentData) {
         try {
             /*** Create oxid Order ***/
-            const createOrderUrl = '[{$sSelfLink|cat:"cl=order&fnc=preCreateGooglepayOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]';
+            const createOrderUrl = '[{$sSelfLink|cat:"cl=order&fnc=preCreateGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]';
             const {orderId} = await fetch(createOrderUrl, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
@@ -243,10 +243,10 @@
                         await onApprove(orderResponse,orderId);
                         await onCreated(orderResponse,orderId);
                     }
-                    function onCreated(confirmOrderResponse, OrderOXID) {
+                    function onCreated(confirmOrderResponse, GooglepayOrderOXID) {
                         captureData = new FormData();
                         captureData.append('orderID', confirmOrderResponse.id);
-                        captureData.append('OrderOXID', OrderOXID);
+                        captureData.append('GooglepayOrderOXID', GooglepayOrderOXID);
                         return fetch('[{$sSelfLink|cat:"cl=order&fnc=captureGooglePayOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken|cat:"&sDeliveryAddressMD5="|cat:$oView->getDeliveryAddressMD5()}]', {
                             method: 'post',
                             body: captureData
@@ -269,7 +269,7 @@
                             }
                         });
                     }
-                    function onApprove(confirmOrderResponse, OrderOXID) {
+                    function onApprove(confirmOrderResponse, GooglepayOrderOXID) {
                         var form = document.createElement("form");
                         form.setAttribute("method", "post");
                         form.setAttribute("action", `[{$sSelfLink|cat:"cl=order&fnc=createGooglePayOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken|cat:"&sDeliveryAddressMD5="|cat:$oView->getDeliveryAddressMD5()}]`);
@@ -282,8 +282,8 @@
 
                         var OXIDField = document.createElement("input");
                         orderIDField.setAttribute("type", "hidden");
-                        orderIDField.setAttribute("name", "OrderOXID");
-                        orderIDField.setAttribute("value", OrderOXID);
+                        orderIDField.setAttribute("name", "GooglepayOrderOXID");
+                        orderIDField.setAttribute("value", GooglepayOrderOXID);
                         form.appendChild(OXIDField);
 
                         document.body.appendChild(form);
