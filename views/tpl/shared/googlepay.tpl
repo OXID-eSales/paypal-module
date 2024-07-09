@@ -68,7 +68,7 @@
 
     function onPaymentAuthorized(paymentData) {
         return new Promise(function (resolve, reject) {
-            processPayment(paymentData)
+            createEshopOrder(paymentData)
                 .then(function (data) {
                     [{if $oPPconfig->isSandbox()}]
                     console.log('onPaymentAuthorized');
@@ -167,7 +167,7 @@
             });
     }
 
-    async function processPayment(paymentData) {
+    async function createEshopOrder(paymentData) {
         try {
             /*** Create oxid Order ***/
             const createOrderUrl = '[{$sSelfLink|cat:"cl=order&fnc=preCreateGooglepayOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]';
@@ -178,8 +178,7 @@
             }).then((res) => res.json());
 
             if (orderId) {
-                debugger
-                processPayment2(paymentData, orderId)
+                processPayment(paymentData, orderId)
             }
         }
         catch (err) {
@@ -192,7 +191,7 @@
         }
     }
 
-    async function processPayment2(paymentData, orderId) {
+    async function processPayment(paymentData, orderId) {
         try {
             /*** Create oxid Order ***/
             const createOrderUrl = '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createGooglepayOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]';
