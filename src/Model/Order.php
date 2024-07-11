@@ -214,6 +214,7 @@ class Order extends Order_parent
         }
 
         //ensure order number
+        //!!!probably redundant with changed order creation mechanism order
         $this->setOrderNumber();
 
         $this->sendPayPalOrderByEmail($user, $basket);
@@ -720,6 +721,8 @@ class Order extends Order_parent
         } else {
             $iRet = self::ORDER_STATE_OK;
         }
+
+        Registry::getSession()->deleteVariable('SessionGooglePay');
 
         return $iRet;
     }
