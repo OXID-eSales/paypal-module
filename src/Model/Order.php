@@ -173,8 +173,8 @@ class Order extends Order_parent
             }
         }
 
-        if ($isPayPalACDC /*|| $isPaypalGooglePay */|| $isPaypalApplePay) {
-            //webhook should kick in and handle order state and we should not call the api too often
+        if ($isPayPalACDC || $isPaypalGooglePay || $isPaypalApplePay) {
+            //webhook should kick in and handle order state, and we should not call the api too often
             Registry::getSession()->deleteVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
             // remove PayPal order id from session
             PayPalSession::unsetPayPalOrderId();
