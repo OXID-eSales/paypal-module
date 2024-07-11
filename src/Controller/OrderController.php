@@ -297,7 +297,6 @@ class OrderController extends OrderController_parent
         try {
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
             $paymentService->removeTemporaryOrder();
-            //Registry::getSession()->setVariable('sess_challenge', $this->getUtilsObjectInstance()->generateUID());
 
             $_POST['sDeliveryAddressMD5'] = $this->getDeliveryAddressMD5();
             $status = $this->execute();
