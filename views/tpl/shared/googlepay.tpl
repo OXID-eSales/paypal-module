@@ -262,19 +262,14 @@
                             console.log('onCreated captureData debugend');
                             [{/if}]
                             var goNext = Array.isArray(data.location) && data.location[0];
-
-                            //alert('goto '+ goNext);
-                            debugger
                             window.location.href = '[{$sSelfLink}]' + goNext;
-                            [{if $oPPconfig->isSandbox()}]
-                            console.log(data);
-                            [{/if}]
+                            [{if $oPPconfig->isSandbox()}]console.log(data);[{/if}]
                             if (data.status === "ERROR") {
                                 location.reload();
                             }
                         });
                     }
-                    function onApprove(confirmOrderResponse, GooglepayOrderOXID){
+                    async function onApprove(confirmOrderResponse, GooglepayOrderOXID){
 
                         const url = '[{$sSelfLink|cat:"cl=order&fnc=createGooglePayOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken|cat:"&sDeliveryAddressMD5="|cat:$oView->getDeliveryAddressMD5()}]';
 
@@ -292,10 +287,8 @@
                         })
                             .then(response => response.json())
                             .then(data => {
-                                console.log('onApprove Success:', data);
                             })
                             .catch((error) => {
-                                console.error('onApprove Error:', error);
                             });
                     }
 
@@ -326,8 +319,6 @@
                             }).then(function (res) {
                                 return res.json();
                             }).then(function (data) {
-
-                                debugger
                                 [{if $oPPconfig->isSandbox()}]console.log(data);[{/if}]
                                 if (data.status === "ERROR") {
                                     location.reload();

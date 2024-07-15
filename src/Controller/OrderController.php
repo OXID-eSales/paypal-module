@@ -295,40 +295,16 @@ class OrderController extends OrderController_parent
     public function createGooglePayOrder(): void
     {
         try {
-            $paymentService = $this->getServiceFromContainer(PaymentService::class);
-            $paymentService->removeTemporaryOrder();
-
             $_POST['sDeliveryAddressMD5'] = $this->getDeliveryAddressMD5();
-            $status = $this->execute();
+            $this->execute();
         } catch (Exception $exception) {
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', $exception->getMessage(), [$exception]);
             $this->outputJson(['googlepayerror' => 'failed to execute shop order']);
-            return;
         }
-
-        $response = $paymentService->doCreatePatchedOrder(
-            Registry::getSession()->getBasket()
-        );
-        if (!($paypalOrderId = $response['id'])) {
-            $this->outputJson(['googlepayerror' => 'cannot create paypal order']);
-            return;
-        }
-
-        if (!$status) {
-            $response = ['googlepayerror' => 'unexpected order status ' . $status];
-            $paymentService->removeTemporaryOrder();
-        } else {
-            PayPalSession::storePayPalOrderId($paypalOrderId);
-            $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
-            $payPalOrder = $paymentService->getPayPalCheckoutOrder($sessionOrderId, $paypalOrderId);
-            $payPalOrder->setStatus($response['status']);
-            $payPalOrder->save();
-        }
-
-        $this->outputJson($response);
     }
+
     public function captureGooglePayOrder(): void
     {
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();
