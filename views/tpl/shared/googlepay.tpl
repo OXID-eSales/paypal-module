@@ -240,7 +240,8 @@
                         console.log("===== ORDER APPROVED =====");
                         console.log(orderResponse);
                         [{/if}]
-                        await onApprove(orderResponse,orderId);
+                        //await onApproveOld(orderResponse,orderId);
+
                         await onCreated(orderResponse,orderId);
                     }
                     function onCreated(confirmOrderResponse, GooglepayOrderOXID) {
@@ -252,7 +253,9 @@
                             body: captureData
                         }).then(function (res) {
                             return res.json();
-                        }).then(function (data) {
+                        }).then(async function (data) {
+                            await onApprove(orderResponse,orderId);
+
                             [{if $oPPconfig->isSandbox()}]
                             console.log('onCreated captureData debug');
                             console.log(data);
@@ -260,6 +263,8 @@
                             [{/if}]
                             var goNext = Array.isArray(data.location) && data.location[0];
 
+                            //alert('goto '+ goNext);
+                            debugger
                             window.location.href = '[{$sSelfLink}]' + goNext;
                             [{if $oPPconfig->isSandbox()}]
                             console.log(data);
@@ -269,7 +274,32 @@
                             }
                         });
                     }
-                    function onApprove(confirmOrderResponse, GooglepayOrderOXID) {
+                    function onApprove(confirmOrderResponse, GooglepayOrderOXID){
+
+                        const url = '[{$sSelfLink|cat:"cl=order&fnc=createGooglePayOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken|cat:"&sDeliveryAddressMD5="|cat:$oView->getDeliveryAddressMD5()}]';
+
+                        const headers = {
+                            'orderID': confirmOrderResponse.id,
+                            'GooglepayOrderOXID': GooglepayOrderOXID,
+                        };
+
+                        let body = {};
+
+                        fetch(url, {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify(body)
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log('onApprove Success:', data);
+                            })
+                            .catch((error) => {
+                                console.error('onApprove Error:', error);
+                            });
+                    }
+
+                    function onApproveOld(confirmOrderResponse, GooglepayOrderOXID) {
                         var form = document.createElement("form");
                         form.setAttribute("method", "post");
                         form.setAttribute("action", `[{$sSelfLink|cat:"cl=order&fnc=createGooglePayOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken|cat:"&sDeliveryAddressMD5="|cat:$oView->getDeliveryAddressMD5()}]`);
@@ -296,9 +326,9 @@
                             }).then(function (res) {
                                 return res.json();
                             }).then(function (data) {
-                                [{if $oPPconfig->isSandbox()}]
-                                console.log(data);
-                                [{/if}]
+
+                                debugger
+                                [{if $oPPconfig->isSandbox()}]console.log(data);[{/if}]
                                 if (data.status === "ERROR") {
                                     location.reload();
                                 }
