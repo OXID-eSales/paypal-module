@@ -62,15 +62,13 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
 
     protected function getPayPalTransactionIdFromResource(array $eventPayload): string
     {
-        $transactionId = isset($eventPayload['payments']['captures'][0]) ?
+        return isset($eventPayload['payments']['captures'][0]) ?
             $eventPayload['payments']['captures'][0]['id'] : '';
-
-        return $transactionId;
     }
 
     protected function getStatusFromResource(array $eventPayload): string
     {
-        return isset($eventPayload['status']) ? $eventPayload['status'] : '';
+        return $eventPayload['status'] ?? '';
     }
 
     /**
@@ -106,11 +104,9 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
 
     private function isCompleted(array $eventPayload): bool
     {
-        return (
-            isset($eventPayload['status']) &&
-            isset($eventPayload['purchase_units'][0]['payments']['captures'][0]['status']) &&
-            $this->getStatusFromResource($eventPayload) == OrderResponse::STATUS_COMPLETED &&
-            $eventPayload['purchase_units'][0]['payments']['captures'][0]['status'] == Capture::STATUS_COMPLETED
-        );
+        $condition1 = isset($eventPayload['status'], $eventPayload['purchase_units'][0]['payments']['captures'][0]['status']);
+        $condition2 = $this->getStatusFromResource($eventPayload) === OrderResponse::STATUS_COMPLETED;
+        $condition3 = $eventPayload['purchase_units'][0]['payments']['captures'][0]['status'] === Capture::STATUS_COMPLETED;
+        return ($condition1 && $condition2 && $condition3);
     }
 }
