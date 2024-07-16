@@ -4,7 +4,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.3.5] - 2024-??-??
+## [2.5.0] - 2024-??-??
+
+### FIX
+
+- Fix admin block parent call, thanks to Alpha-Sys
+- Fix Errorlog-Message "Duplicate entry ..." + fix Update send PUI-Bankdata via Webhook
+- Fix PayPalExpress Reauth is necessary if the cart amount (total is greater than before) has changed during the checkout process
+- Fix, don't show vaulting-Boxes if it is deactivated in Backend
+- [0007656](https://bugs.oxid-esales.com/view.php?id=7656): Fix incompatibility with Klarna-Module
+- better Vaulting-Check in PaymentController
+- disable Vaulting-Setting if Vaulting not possible
+- [0007666](https://bugs.oxid-esales.com/view.php?id=7666): Fix: Price surcharges on the detail page for selection lists are not taken into account
+- disable Vaulting-Option of Creditcard if Creditcard are not eligible
+- Automatically save Apple Pay certificates during the Apple Pay eligibility check
+- [0007681](https://bugs.oxid-esales.com/view.php?id=7681): fix OXID Logger.ERROR: Call to a member function getFieldData() on bool
+- [0007675](https://bugs.oxid-esales.com/view.php?id=7675): fix the possibility to finish order without redirect and login to Paypal
+- [0007676](https://bugs.oxid-esales.com/view.php?id=7676): If we have a corrupted generated_services.yaml and try to deactivate the module via the admin, we will display a more understandable error message about what happened.
+- introduce ActionHash to make the PayPal-Request-ID more unique
+- use PayPal-Client v2.0.15
+
+### NEW
+- PayPal-Request-Id based on serialized body, no extra PayPal-Request-Id necessary anymore
+- Introduce GooglePay-Payment
+- Introduce ApplePay-Payment
+- use PayPal-Client v2.0.14
+- add Default-Shippingcosts for PP-Express to prevent overcharge.
+
+## [2.4.0] - 2024-04-04
 
 ### FIX
 
@@ -18,7 +45,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007666](https://bugs.oxid-esales.com/view.php?id=7666): Fix: Price surcharges on the detail page for selection lists are not taken into account
 - [0007695](https://bugs.oxid-esales.com/view.php?id=7695): Fix: if DeliverySet is set in Frontend, then do not add any PseudoDeliveryCosts for PPExpress
 
-### NEW 
+### NEW
 
 - provide Smarty-Templates again for OXID7.0 - thank you to D3-Team
 - use PayPal-Request-ID in any API-Call (via Client, v3.0.10)
