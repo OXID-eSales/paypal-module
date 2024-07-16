@@ -15,7 +15,6 @@ use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Core\PayPalRequestAmountFactory;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch;
@@ -127,12 +126,15 @@ class PatchRequestFactory
 
     protected function getAmountPatch(): void
     {
-        $patch = new Patch();
-        $patch->op = Patch::OP_REPLACE;
-        $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/amount";
-        $patch->value = (Registry::get(PayPalRequestAmountFactory::class))->getAmount($this->basket);
+        $value = (Registry::get(PayPalRequestAmountFactory::class))->getAmount($this->basket);
+        if ((float)$value->value !== 0.00) {
+            $patch = new Patch();
+            $patch->op = Patch::OP_REPLACE;
+            $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/amount";
+            $patch->value = $value;
 
-        $this->request[] = $patch;
+            $this->request[] = $patch;
+        }
     }
 
     /**
@@ -152,7 +154,7 @@ class PatchRequestFactory
         $item = new Item();
         $item->name = $basketItem->getTitle();
         $itemUnitPrice = $basketItem->getUnitPrice();
-        $item->unit_amount = PriceToMoney::convert((float)$itemUnitPrice->getBruttoPrice(), $currency);
+        $item->unit_amount = PriceToMoney::convert($itemUnitPrice->getBruttoPrice(), $currency);
 
         //Item tax sum - we use 0% and calculate with brutto to avoid rounding errors
         $item->tax = PriceToMoney::convert(0, $currency);
