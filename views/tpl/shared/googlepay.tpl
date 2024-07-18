@@ -244,29 +244,27 @@
                         form.setAttribute("method", "post");
                         form.setAttribute("action", `[{$sSelfLink|cat:"cl=order&fnc=createGooglePayOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken|cat:"&sDeliveryAddressMD5="|cat:$oView->getDeliveryAddressMD5()}]`);
 
-                        var orderIDField = document.createElement("input");
-                        orderIDField.setAttribute("type", "hidden");
-                        orderIDField.setAttribute("name", "orderID");
-                        orderIDField.setAttribute("value", confirmOrderResponse.id);
-                        form.appendChild(orderIDField);
-                        document.body.appendChild(form);
-                        form.submit();
-                        form.onsubmit = function (event) {
-                            event.preventDefault(); // Prevent the form from submitting normally
-                            fetch(form.action, {
-                                method: 'post',
-                                body: new FormData(form)
-                            }).then(function (res) {
-                                return res.json();
-                            }).then(function (data) {
-                                [{if $oPPconfig->isSandbox()}]
-                                console.log(data);
-                                [{/if}]
-                                if (data.status === "ERROR") {
-                                    location.reload();
-                                }
-                            });
+                        const headers = {
+                            'orderID': confirmOrderResponse.id,
+                            'GooglepayOrderOXID': GooglepayOrderOXID,
                         };
+
+                        let body = {};
+
+                        fetch(url, {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify(body)
+                        })
+                            .then(function (response){
+                                return response.json();
+                            })
+                            .then(data => {
+                                debugger
+                            })
+                            .catch((error) => {
+                                debugger
+                            });
                     }
                 });
             }
