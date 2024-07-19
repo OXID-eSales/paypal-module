@@ -248,6 +248,54 @@ class ViewConfig extends ViewConfig_parent
         return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
     }
 
+    public function getUserIdForVaulting(): string
+    {
+        if (!$this->getUser()) {
+            return "";
+        }
+
+        $payPalCustomerId = $this->getUser()->getFieldData("oscpaypalcustomerid");
+
+        if (!$payPalCustomerId) {
+            return "";
+        }
+
+        $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+        $response = $vaultingService->generateUserIdToken($payPalCustomerId);
+
+        return $response["id_token"];
+    }
+
+    /**
+     * get Session Vault Success
+     *
+     * @return bool|null
+     */
+    public function getSessionVaultSuccess()
+    {
+        $session = Registry::getSession();
+        $vaultSuccess = $session->getVariable("vaultSuccess");
+        $session->deleteVariable("vaultSuccess");
+
+        return $vaultSuccess;
+    }
+
+    /**
+     * get Vault Token
+     *
+     * @return string|null
+     */
+    public function getVaultPaymentTokens()
+    {
+        if ($this->getIsVaultingActive() && $customerId = $this->getUser()->getFieldData("oscpaypalcustomerid")) {
+            $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+
+            return $vaultingService->getVaultPaymentTokens($customerId)["payment_tokens"] ?? null;
+        }
+
+        return null;
+    }
+
     public function getDataClientToken(): string
     {
 
