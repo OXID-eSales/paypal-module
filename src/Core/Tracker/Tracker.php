@@ -49,7 +49,7 @@ class Tracker
 
             /** @var GenericService $notificationService */
             $trackerService = Registry::get(ServiceFactory::class)->getTrackerService();
-            $trackerResponse = $trackerService->request('post', $paypload);
+            $trackerResponse = $trackerService->request('POST', $paypload);
 
             $result = $trackerResponse['tracker_identifiers'][0]['tracking_number'] === $trackingNumber;
         } catch (\Exception $exception) {

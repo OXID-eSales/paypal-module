@@ -62,7 +62,7 @@ class EventVerifier
 
         /** @var GenericService $notificationService */
         $notificationService = Registry::get(ServiceFactory::class)->getNotificationService();
-        $response = $notificationService->request('post', $payload);
+        $response = $notificationService->request('POST', $payload);
 
         if (
             !$response['verification_status'] || (
