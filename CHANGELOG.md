@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Introduce ApplePay-Payment
 - use PayPal-Client v2.0.14
 - add Default-Shippingcosts for PP-Express to prevent overcharge.
+- mark GiroPay as deprecated
 
 ## [2.4.0] - 2024-04-04
 

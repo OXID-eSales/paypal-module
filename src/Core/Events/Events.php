@@ -60,7 +60,11 @@ class Events
                 $paymentMethod->load($paymentId) &&
                 $paymentMethod->getFieldData('oxactive')
             ) {
-                $activePayments[] = $paymentId;
+                if (PayPalDefinitions::isDeprecatedPayment($paymentId)) {
+                    //dont set deprecated payments to active payment list
+                } else {
+                    $activePayments[] = $paymentId;
+                }
                 $paymentMethod->assign([
                     'oxactive' => false
                 ]);

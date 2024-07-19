@@ -283,5 +283,8 @@ $aLang = [
     'OSC_PAYPAL_GOOGLEPAY_ADDRESS_ACTIVATE'          => 'Speicherung der Adresse aktivieren',
     'HELP_OSC_OSC_PAYPAL_GOOGLEPAY_ADRESS_ACTIVATE'  => 'Übernahme der Lieferadresse von GooglePay',
 
-    'OSC_PAYPAL_INSTALLPROCESS_FAILED'               => 'Da das Modul nicht korrekt per Composer installiert ist, sind Fehler bei der (De-)Aktivierung des Moduls aufgetreten. Bitte installieren Sie das Modul via Composer frisch und wiederholen den Vorgang.'
+    'OSC_PAYPAL_INSTALLPROCESS_FAILED'               => 'Da das Modul nicht korrekt per Composer installiert ist, sind Fehler bei der (De-)Aktivierung des Moduls aufgetreten. Bitte installieren Sie das Modul via Composer frisch und wiederholen den Vorgang.',
+
+    // PayPal Payment
+    'OSC_PAYPAL_PAYMENT_DEPRECATED'                 => 'Diese PayPal Zahlungsart kann nicht mehr aktiviert werden, da diese demnächst entfernt wird!',
 ];

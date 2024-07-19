@@ -201,6 +201,11 @@ $aModule = [
             'block' => 'dd_layout_page_header_icon_menu_minibasket_functions',
             'file' => '/views/blocks/widget/minibasket/dd_layout_page_header_icon_menu_minibasket_functions.tpl',
         ],
+        [
+            'template' => 'payment_main.tpl',
+            'block' => 'admin_payment_main_form',
+            'file' => '/views/blocks/admin/admin_payment_main_form.tpl',
+        ],
         // @Todo PAYPAL-486: Using the same file, with 2 themes. Should be more generic, if possible.
         [
             'template' => 'page/checkout/payment.tpl',
