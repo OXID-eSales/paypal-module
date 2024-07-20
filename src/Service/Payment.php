@@ -314,14 +314,17 @@ class Payment
             } else {
                 $request = new OrderCaptureRequest();
                 //order number must be resolved before order patching
-                $order->setOrderNumber();
+                $shopOrderId = $order->getFieldData('oxordernr');
+                if(!$shopOrderId){
+                    $order->setOrderNumber();
+                }
 
                 try {
                     //Patching the order with OXID order number as custom value
                     $this->doPatchPayPalOrder(
                         Registry::getSession()->getBasket(),
                         $checkoutOrderId,
-                        $order->getFieldData('oxordernr')
+                        $shopOrderId
                     );
                     /** @var $result ApiOrderModel */
                     $result = $orderService->capturePaymentForOrder(

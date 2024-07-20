@@ -12,6 +12,7 @@ use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Model\Order;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -226,44 +227,84 @@ class OrderController extends OrderController_parent
 
         $this->outputJson($response);
     }
+    public function preCreateGooglePayOrder(): void
+    {
+        /** @var Order $oOrder */
+        $oOrder = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
+        $oOrder->save();
+        $oOrder->setOrderNumber();
+
+        Registry::getSession()->setVariable('sess_challenge', $oOrder->getId());
+
+        $response = ['status' => 'created', 'orderId' => $oOrder->getId()];
+
+        $this->outputJson($response);
+    }
+    public function execute()
+    {
+        //GooglePay order handling detection
+        $orderOXID = Registry::getConfig()->getRequestParameter("GooglepayOrderOXID");
+        if (empty($orderOXID)){
+            return parent::execute();
+        }
+
+        if (!$this->getSession()->checkSessionChallenge()) {
+            return;
+        }
+
+        if (!$this->_validateTermsAndConditions()) {
+            $this->_blConfirmAGBError = 1;
+
+            return;
+        }
+
+        // additional check if we really really have a user now
+        $oUser = $this->getUser();
+        if (!$oUser) {
+            return 'user';
+        }
+
+        // get basket contents
+        $oBasket = $this->getSession()->getBasket();
+        if ($oBasket->getProductsCount()) {
+            try {
+                //@TODO: Improove
+                $oOrder = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
+                Registry::getSession()->setVariable('sess_challenge', $orderOXID);
+                $oOrder->load($orderOXID);
+
+                //finalizing ordering process (validating, storing order into DB, executing payment, setting status ...)
+                $iSuccess = $oOrder->finalizeOrder($oBasket, $oUser);
+
+                // performing special actions after user finishes order (assignment to special user groups)
+                $oUser->onOrderExecute($oBasket, $iSuccess);
+
+                // proceeding to next view
+                return $this->_getNextStep($iSuccess);
+            } catch (\OxidEsales\Eshop\Core\Exception\OutOfStockException $oEx) {
+                $oEx->setDestination('basket');
+                Registry::getUtilsView()->addErrorToDisplay($oEx, false, true, 'basket');
+            } catch (\OxidEsales\Eshop\Core\Exception\NoArticleException $oEx) {
+                Registry::getUtilsView()->addErrorToDisplay($oEx);
+            } catch (\OxidEsales\Eshop\Core\Exception\ArticleInputException $oEx) {
+                Registry::getUtilsView()->addErrorToDisplay($oEx);
+            }
+        }
+    }
+
     public function createGooglePayOrder(): void
     {
         try {
-            $paymentService = $this->getServiceFromContainer(PaymentService::class);
-            $paymentService->removeTemporaryOrder();
-            Registry::getSession()->setVariable('sess_challenge', $this->getUtilsObjectInstance()->generateUID());
-
             $_POST['sDeliveryAddressMD5'] = $this->getDeliveryAddressMD5();
-            $status = $this->execute();
+            $this->execute();
         } catch (Exception $exception) {
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', $exception->getMessage(), [$exception]);
             $this->outputJson(['googlepayerror' => 'failed to execute shop order']);
-            return;
         }
-
-        $response = $paymentService->doCreatePatchedOrder(
-            Registry::getSession()->getBasket()
-        );
-        if (!($paypalOrderId = $response['id'])) {
-            $this->outputJson(['googlepayerror' => 'cannot create paypal order']);
-            return;
-        }
-
-        if (!$status) {
-            $response = ['googlepayerror' => 'unexpected order status ' . $status];
-            $paymentService->removeTemporaryOrder();
-        } else {
-            PayPalSession::storePayPalOrderId($paypalOrderId);
-            $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
-            $payPalOrder = $paymentService->getPayPalCheckoutOrder($sessionOrderId, $paypalOrderId);
-            $payPalOrder->setStatus($response['status']);
-            $payPalOrder->save();
-        }
-
-        $this->outputJson($response);
     }
+
     public function captureGooglePayOrder(): void
     {
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();

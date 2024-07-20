@@ -68,12 +68,12 @@
 
     function onPaymentAuthorized(paymentData) {
         return new Promise(function (resolve, reject) {
-            processPayment(paymentData)
+            createEshopOrder(paymentData)
                 .then(function (data) {
                     [{if $oPPconfig->isSandbox()}]
-                        console.log('onPaymentAuthorized');
-                        console.log(data);
-                        console.log('onPaymentAuthorized End');
+                    console.log('onPaymentAuthorized');
+                    console.log(data);
+                    console.log('onPaymentAuthorized End');
                     [{/if}]
 
                     resolve({transactionState: "SUCCESS"});
@@ -104,9 +104,9 @@
             .isReadyToPay(getGoogleIsReadyToPayRequest(allowedPaymentMethods))
             .then(function (response) {
                 [{if $oPPconfig->isSandbox()}]
-                    console.log('getGoogleIsReadyToPayResponse debug');
-                    console.log(response);
-                    console.log('getGoogleIsReadyToPayResponse debugend');
+                console.log('getGoogleIsReadyToPayResponse debug');
+                console.log(response);
+                console.log('getGoogleIsReadyToPayResponse debugend');
                 [{/if}]
                 if (response.result) {
                     addGooglePayButton();
@@ -150,9 +150,9 @@
 
         const paymentsClient = getGooglePaymentsClient();
         [{if $oPPconfig->isSandbox()}]
-            console.log('paymentDataRequest debug');
-            console.log(paymentDataRequest);
-            console.log('paymentDataRequest debugend');
+        console.log('paymentDataRequest debug');
+        console.log(paymentDataRequest);
+        console.log('paymentDataRequest debugend');
         [{/if}]
         paymentsClient.loadPaymentData(paymentDataRequest)
             .then(function () {
@@ -160,14 +160,38 @@
             })
             .catch(err => {
                 [{if $oPPconfig->isSandbox()}]
-                    if (err.statusCode !== "CANCELED") {
-                        console.log(err);
-                    }
+                if (err.statusCode !== "CANCELED") {
+                    console.log(err);
+                }
                 [{/if}]
             });
     }
 
-    async function processPayment(paymentData) {
+    async function createEshopOrder(paymentData) {
+        try {
+            /*** Create oxid Order ***/
+            const createOrderUrl = '[{$sSelfLink|cat:"cl=order&fnc=preCreateGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]';
+            const {orderId} = await fetch(createOrderUrl, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify(paymentData),
+            }).then((res) => res.json());
+
+            if (orderId) {
+                processPayment(paymentData, orderId)
+            }
+        }
+        catch (err) {
+            return {
+                transactionState: "ERROR",
+                error: {
+                    message: err.message,
+                },
+            };
+        }
+    }
+
+    async function processPayment(paymentData, orderId) {
         try {
             /*** Create oxid Order ***/
             const createOrderUrl = '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createGooglepayOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]';
@@ -177,14 +201,19 @@
                 body: JSON.stringify(paymentData),
             }).then((res) => res.json());
 
+            if (undefined === id ){
+                console.error("Paypal order creation error.")
+                return;
+            }
+
             const confirmOrderResponse = await paypal.Googlepay().confirmOrder({
                 orderId: id,
                 paymentMethodData: paymentData.paymentMethodData,
             });
             [{if $oPPconfig->isSandbox()}]
-                console.log('confirmOrderResponse debug');
-                console.log(confirmOrderResponse);
-                console.log('confirmOrderResponse debugend');
+            console.log('confirmOrderResponse debug');
+            console.log(confirmOrderResponse);
+            console.log('confirmOrderResponse debugend');
             [{/if}]
             if (confirmOrderResponse.status === "PAYER_ACTION_REQUIRED") {
                 [{if $oPPconfig->isSandbox()}]
@@ -211,35 +240,59 @@
                         console.log("===== ORDER APPROVED =====");
                         console.log(orderResponse);
                         [{/if}]
-                        await onApprove(orderResponse);
-                        await onCreated(orderResponse);
+                        //await onApproveOld(orderResponse,orderId);
+
+                        await onCreated(orderResponse,orderId);
                     }
-                    function onCreated(confirmOrderResponse, actions) {
+                    function onCreated(confirmOrderResponse, GooglepayOrderOXID) {
                         captureData = new FormData();
                         captureData.append('orderID', confirmOrderResponse.id);
+                        captureData.append('GooglepayOrderOXID', GooglepayOrderOXID);
                         return fetch('[{$sSelfLink|cat:"cl=order&fnc=captureGooglePayOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken|cat:"&sDeliveryAddressMD5="|cat:$oView->getDeliveryAddressMD5()}]', {
                             method: 'post',
                             body: captureData
                         }).then(function (res) {
                             return res.json();
-                        }).then(function (data) {
+                        }).then(async function (data) {
+                            await onApprove(orderResponse,orderId);
+
                             [{if $oPPconfig->isSandbox()}]
                             console.log('onCreated captureData debug');
                             console.log(data);
                             console.log('onCreated captureData debugend');
                             [{/if}]
                             var goNext = Array.isArray(data.location) && data.location[0];
-
                             window.location.href = '[{$sSelfLink}]' + goNext;
-                            [{if $oPPconfig->isSandbox()}]
-                            console.log(data);
-                            [{/if}]
+                            [{if $oPPconfig->isSandbox()}]console.log(data);[{/if}]
                             if (data.status === "ERROR") {
                                 location.reload();
                             }
                         });
                     }
-                    function onApprove(confirmOrderResponse, actions) {
+                    async function onApprove(confirmOrderResponse, GooglepayOrderOXID){
+
+                        const url = '[{$sSelfLink|cat:"cl=order&fnc=createGooglePayOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken|cat:"&sDeliveryAddressMD5="|cat:$oView->getDeliveryAddressMD5()}]';
+
+                        const headers = {
+                            'orderID': confirmOrderResponse.id,
+                            'GooglepayOrderOXID': GooglepayOrderOXID,
+                        };
+
+                        let body = {};
+
+                        fetch(url, {
+                            method: 'POST',
+                            headers: headers,
+                            body: JSON.stringify(body)
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                            })
+                            .catch((error) => {
+                            });
+                    }
+
+                    function onApproveOld(confirmOrderResponse, GooglepayOrderOXID) {
                         var form = document.createElement("form");
                         form.setAttribute("method", "post");
                         form.setAttribute("action", `[{$sSelfLink|cat:"cl=order&fnc=createGooglePayOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken|cat:"&sDeliveryAddressMD5="|cat:$oView->getDeliveryAddressMD5()}]`);
@@ -249,6 +302,13 @@
                         orderIDField.setAttribute("name", "orderID");
                         orderIDField.setAttribute("value", confirmOrderResponse.id);
                         form.appendChild(orderIDField);
+
+                        var OXIDField = document.createElement("input");
+                        orderIDField.setAttribute("type", "hidden");
+                        orderIDField.setAttribute("name", "GooglepayOrderOXID");
+                        orderIDField.setAttribute("value", GooglepayOrderOXID);
+                        form.appendChild(OXIDField);
+
                         document.body.appendChild(form);
                         form.submit();
                         form.onsubmit = function (event) {
@@ -259,9 +319,7 @@
                             }).then(function (res) {
                                 return res.json();
                             }).then(function (data) {
-                                [{if $oPPconfig->isSandbox()}]
-                                console.log(data);
-                                [{/if}]
+                                [{if $oPPconfig->isSandbox()}]console.log(data);[{/if}]
                                 if (data.status === "ERROR") {
                                     location.reload();
                                 }
@@ -281,6 +339,6 @@
     }
 
     [{if false}]</style>[{/if}]
-[{/capture}]
-[{oxscript include="https://pay.google.com/gp/p/js/pay.js"}]
-[{oxscript add=$smarty.capture.detailsGooglePayScript}]
+        [{/capture}]
+        [{oxscript include="https://pay.google.com/gp/p/js/pay.js"}]
+        [{oxscript add=$smarty.capture.detailsGooglePayScript}]

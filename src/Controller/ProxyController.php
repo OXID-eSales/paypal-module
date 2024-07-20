@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Application\Controller\FrontendController;
 use OxidEsales\Eshop\Application\Model\Address;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\DeliverySetList;
+use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Exception\ArticleInputException;
 use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
@@ -186,7 +187,8 @@ class ProxyController extends FrontendController
         if ($basket->getItemsCount() === 0) {
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
         }
-
+        $order = oxNew(EshopModelOrder::class);
+        $order->load(Registry::getSession()->getVariable('sess_challenge'));
         $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
             $basket,
             OrderRequest::INTENT_CAPTURE,
@@ -200,7 +202,7 @@ class ProxyController extends FrontendController
             null,
             false,
             false,
-            null
+            $order
         );
 
         if ($response->id) {
