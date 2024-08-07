@@ -106,6 +106,9 @@ class Onboarding
     {
         $paypalConfig = oxNew(PayPalConfig::class);
         $partnerConfig = oxNew(PartnerConfig::class);
+        $session = Registry::getSession();
+        $sessionId = $session->getId();
+        $actionHash = md5($sessionId);
 
         $clientId = '';
         $clientSecret = '';
@@ -126,11 +129,18 @@ class Onboarding
             $clientSecret,
             $partnerConfig->getTechnicalPartnerId($isSandbox),
             $merchantId,
-            $paypalConfig->getTokenCacheFileName()
+            $paypalConfig->getTokenCacheFileName(),
+            $actionHash
         );
     }
 
-    public function fetchMerchantInformations()
+    /**
+     * @return array
+     * @throws ApiException
+     * @throws JsonException
+     * @throws OnboardingException
+     */
+    public function fetchMerchantInformations(): array
     {
         $onboardingResponse = $this->getOnboardingPayload();
         /** @var ApiOnboardingClient $apiClient */
