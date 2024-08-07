@@ -224,9 +224,9 @@
                             return res.json();
                         }).then(function (data) {
                             [{if $oPPconfig->isSandbox()}]
-                            console.log('onCreated captureData debug');
+                            console.log('onCreated data debug');
                             console.log(data);
-                            console.log('onCreated captureData debugend');
+                            console.log('onCreated data debugend');
                             [{/if}]
                             var goNext = Array.isArray(data.location) && data.location[0];
 
@@ -239,34 +239,27 @@
                             }
                         });
                     }
-                    function onApprove(confirmOrderResponse, actions) {
-                        var form = document.createElement("form");
-                        form.setAttribute("method", "post");
-                        form.setAttribute("action", `[{$sSelfLink|cat:"cl=order&fnc=createGooglePayOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken|cat:"&sDeliveryAddressMD5="|cat:$oView->getDeliveryAddressMD5()}]`);
 
-                        var orderIDField = document.createElement("input");
-                        orderIDField.setAttribute("type", "hidden");
-                        orderIDField.setAttribute("name", "orderID");
-                        orderIDField.setAttribute("value", confirmOrderResponse.id);
-                        form.appendChild(orderIDField);
-                        document.body.appendChild(form);
-                        form.submit();
-                        form.onsubmit = function (event) {
-                            event.preventDefault(); // Prevent the form from submitting normally
-                            fetch(form.action, {
-                                method: 'post',
-                                body: new FormData(form)
-                            }).then(function (res) {
-                                return res.json();
-                            }).then(function (data) {
-                                [{if $oPPconfig->isSandbox()}]
-                                console.log(data);
-                                [{/if}]
-                                if (data.status === "ERROR") {
-                                    location.reload();
-                                }
-                            });
-                        };
+                    function onApprove(confirmOrderResponse, actions) {
+
+                        const url = '[{$sSelfLink|cat:"cl=order&fnc=createGooglePayOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken|cat:"&sDeliveryAddressMD5="|cat:$oView->getDeliveryAddressMD5()}]';
+                        createData = new FormData();
+                        createData.append('orderID', confirmOrderResponse.id);
+                        fetch(url, {
+                            method: 'POST',
+                            body: createData
+                        }).then(function (res) {
+                            return res.json();
+                        }).then(function (data) {
+                            [{if $oPPconfig->isSandbox()}]
+                            console.log('onApprove data debug');
+                            console.log(data);
+                            console.log('onApprove data debugend');
+                            [{/if}]
+                            if (data.status === "ERROR") {
+                                location.reload();
+                            }
+                        });
                     }
                 });
             }
