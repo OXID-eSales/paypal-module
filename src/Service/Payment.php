@@ -316,6 +316,7 @@ class Payment
                 $shopOrderId = $order->getFieldData('oxordernr');
                 if(!$shopOrderId){
                     $order->setOrderNumber();
+                    $shopOrderId = $order->getFieldData('oxordernr');
                 }
 
                 try {
