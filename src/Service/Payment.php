@@ -304,6 +304,13 @@ class Payment
                 $result = $this->fetchOrderFields($checkoutOrderId);
             } else {
                 $request = new OrderCaptureRequest();
+                //order number must be resolved before order patching
+                $shopOrderId = $order->getFieldData('oxordernr');
+                if(!$shopOrderId){
+                    $order->setOrderNumber();
+                    $shopOrderId = $order->getFieldData('oxordernr');
+                }
+
                 try {
                     /** @var ApiOrderModel */
                     $result = $orderService->capturePaymentForOrder(
