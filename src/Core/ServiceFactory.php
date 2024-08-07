@@ -127,7 +127,8 @@ class ServiceFactory
             $session = Registry::getSession();
             $sessionId = $session->getId();
             $basketId = $session->getVariable('sess_challenge');
-            $actionHash = md5($sessionId . $basketId);
+            $paymentId = $session->getVariable('paymentid');
+            $actionHash = md5($sessionId . $basketId . $paymentId);
 
             $client = new Client(
                 $logger,
