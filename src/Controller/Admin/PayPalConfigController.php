@@ -24,6 +24,7 @@ use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use Throwable;
 
 /**
@@ -219,7 +220,7 @@ class PayPalConfigController extends AdminController
                     $moduleSettings->save('oscPayPalSetVaulting', false);
                 }
             }
-        } catch (ClientException $exception) {
+        } catch (ClientException|ApiException $exception) {
 
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer(Logger::class);
