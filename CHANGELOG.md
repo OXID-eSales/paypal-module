@@ -22,13 +22,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007675](https://bugs.oxid-esales.com/view.php?id=7675): fix the possibility to finish order without redirect and login to Paypal
 - [0007676](https://bugs.oxid-esales.com/view.php?id=7676): If we have a corrupted generated_services.yaml and try to deactivate the module via the admin, we will display a more understandable error message about what happened.
 - introduce ActionHash to make the PayPal-Request-ID more unique
-- use PayPal-Client v2.0.15
 
 ### NEW
 - PayPal-Request-Id based on serialized body, no extra PayPal-Request-Id necessary anymore
 - Introduce GooglePay-Payment
 - Introduce ApplePay-Payment
-- use PayPal-Client v2.0.14
+- use PayPal-Client v2.0.15
 - add Default-Shippingcosts for PP-Express to prevent overcharge.
 - mark GiroPay as deprecated
 
