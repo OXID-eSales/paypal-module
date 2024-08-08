@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
+use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Client;
@@ -132,12 +133,22 @@ class ServiceFactory
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
 
+            $debug = Registry::getConfig()->getConfigParam('sLogLevel') === 'debug';
+
+            // prepare a unique action hash
+            $session = Registry::getSession();
+            $sessionId = $session->getId();
+            $basketId = $session->getVariable('sess_challenge');
+            $paymentId = $session->getVariable('paymentid');
+            $actionHash = md5($sessionId . $basketId . $paymentId);
+
             $client = new Client(
                 $logger,
                 $config->isSandbox() ? Client::SANDBOX_URL : Client::PRODUCTION_URL,
                 $config->getClientId(),
                 $config->getClientSecret(),
                 $config->getTokenCacheFileName(),
+                $actionHash,
                 // must be empty. We do not have the merchant's payerid
                 //and confirmed by paypal we should not use it for auth and
                 //so not ask for it on the configuration page

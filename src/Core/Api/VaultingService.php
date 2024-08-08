@@ -32,9 +32,8 @@ class VaultingService extends BaseService
         }
 
         $path = '/v1/oauth2/token';
-        $method = 'post';
 
-        $response = $this->send($method, $path, $params, $headers);
+        $response = $this->send('POST', $path, $params, $headers);
         $body = $response->getBody();
 
         return json_decode((string)$body, true);
@@ -69,10 +68,9 @@ class VaultingService extends BaseService
         $headers = $this->getVaultingHeaders();
 
         $path = '/v3/vault/setup-tokens';
-        $method = 'post';
 
         $response = $this->send(
-            $method,
+            'POST',
             $path,
             [],
             $headers,
@@ -177,7 +175,6 @@ class VaultingService extends BaseService
         $headers = $this->getVaultingHeaders();
 
         $path = '/v3/vault/payment-tokens';
-        $method = 'post';
 
         $requestBody = [
             "payment_source" => [
@@ -188,7 +185,7 @@ class VaultingService extends BaseService
             ]
         ];
 
-        $response = $this->send($method, $path, [], $headers, json_encode($requestBody));
+        $response = $this->send('POST', $path, [], $headers, json_encode($requestBody));
         $responseBody = $response->getBody();
 
         return json_decode((string)$responseBody, true);
@@ -202,9 +199,8 @@ class VaultingService extends BaseService
         }
 
         $path = '/v3/vault/payment-tokens?customer_id=' . $paypalCustomerId;
-        $method = 'get';
 
-        $response = $this->send($method, $path);
+        $response = $this->send('GET', $path);
         $body = $response->getBody();
 
         return json_decode((string)$body, true);
@@ -224,9 +220,8 @@ class VaultingService extends BaseService
     public function deleteVaultedPayment($paymentTokenId)
     {
         $path = '/v3/vault/payment-tokens/' . $paymentTokenId;
-        $method = 'delete';
 
-        $response = $this->send($method, $path);
+        $response = $this->send('DELETE', $path);
 
         return $response->getStatusCode() == 204;
     }
