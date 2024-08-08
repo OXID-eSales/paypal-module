@@ -314,7 +314,7 @@ class Payment
                 $request = new OrderCaptureRequest();
                 //order number must be resolved before order patching
                 $shopOrderId = $order->getFieldData('oxordernr');
-                if(!$shopOrderId){
+                if (!$shopOrderId) {
                     $order->setOrderNumber();
                     $shopOrderId = $order->getFieldData('oxordernr');
                 }

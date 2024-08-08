@@ -46,7 +46,10 @@ class PaymentGateway extends PaymentGateway_parent
             $success = parent::executePayment($amount, $order);
         }
         $paypalOrderId = '';
-        if ($sessionPaymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID || $sessionPaymentId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID) {
+        if (
+            $sessionPaymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID ||
+            $sessionPaymentId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID
+        ) {
             $paypalOrderId = Registry::getRequest()->getRequestParameter('orderID');
         }
         if (
