@@ -104,9 +104,13 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
 
     private function isCompleted(array $eventPayload): bool
     {
-        $condition1 = isset($eventPayload['status'], $eventPayload['purchase_units'][0]['payments']['captures'][0]['status']);
+        $condition1 = isset(
+            $eventPayload['status'],
+            $eventPayload['purchase_units'][0]['payments']['captures'][0]['status']
+        );
         $condition2 = $this->getStatusFromResource($eventPayload) === OrderResponse::STATUS_COMPLETED;
-        $condition3 = $eventPayload['purchase_units'][0]['payments']['captures'][0]['status'] === Capture::STATUS_COMPLETED;
+        $condition3 = $eventPayload['purchase_units'][0]['payments']['captures'][0]['status'] ===
+            Capture::STATUS_COMPLETED;
         return ($condition1 && $condition2 && $condition3);
     }
 }

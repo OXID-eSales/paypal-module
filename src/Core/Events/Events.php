@@ -145,8 +145,7 @@ class Events
                 $queryBuilderFactory,
                 $moduleSettings
             );
-        }
-        catch (NotFoundExceptionInterface|ContainerExceptionInterface $e) {
+        } catch (NotFoundExceptionInterface | ContainerExceptionInterface $e) {
             Registry::getUtilsView()->addErrorToDisplay('BlaBla');
             return null;
         }
@@ -184,9 +183,7 @@ class Events
                 $moduleConfigurationDaoBridgeInterface,
                 $logger
             );
-        }
-
-        catch (NotFoundExceptionInterface|ContainerExceptionInterface $exception) {
+        } catch (NotFoundExceptionInterface | ContainerExceptionInterface $exception) {
             Registry::getUtilsView()->addErrorToDisplay('OSC_PAYPAL_INSTALLPROCESS_FAILED');
             Registry::getLogger()->error($exception->getMessage(), [$exception]);
             return null;

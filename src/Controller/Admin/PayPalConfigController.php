@@ -220,7 +220,7 @@ class PayPalConfigController extends AdminController
                     $moduleSettings->save('oscPayPalSetVaulting', false);
                 }
             }
-        } catch (ClientException|ApiException $exception) {
+        } catch (ClientException | ApiException $exception) {
 
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer(Logger::class);
