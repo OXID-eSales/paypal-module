@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [1.3.10] - 2024-08-15
+
+- [0007666](https://bugs.oxid-esales.com/view.php?id=7666): Fix: Price surcharges on the detail page for selection lists are not taken into account
+
 ## [1.3.9] - 2024-06-21
 
 - [0007661](https://bugs.oxid-esales.com/view.php?id=7661): Error in the order process the total value did not match the total of the items and shipping cost of the order
