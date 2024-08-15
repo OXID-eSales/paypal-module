@@ -153,8 +153,8 @@ class ProxyController extends FrontendController
 
     public function cancelPayPalPayment()
     {
-        PayPalSession::unsetPayPalOrderId();
-        Registry::getSession()->getBasket()->setPayment(null);
+        PayPalSession::unsetPayPalSession();
+        Registry::getSession()->getBasket()->deleteBasket();
         Registry::getUtils()->redirect(Registry::getConfig()->getShopSecureHomeURL() . 'cl=payment', false, 301);
     }
 
@@ -175,9 +175,10 @@ class ProxyController extends FrontendController
         $basket = Registry::getSession()->getBasket();
         $utilsView = Registry::getUtilsView();
 
+        $aSel = Registry::getRequest()->getRequestParameter('sel');
         if ($aid = (string)Registry::getRequest()->getRequestEscapedParameter('aid')) {
             try {
-                $basket->addToBasket($aid, $qty);
+                $basket->addToBasket($aid, $qty, $aSel);
                 // Remove flag of "new item added" to not show "Item added" popup when returning to checkout from paypal
                 $basket->isNewItemAdded();
             } catch (OutOfStockException $exception) {
