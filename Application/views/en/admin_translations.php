@@ -254,13 +254,13 @@ return [
                                                          With setting "3D Secure for each ACDC transaction" 3D check will be enforced for each transaction.',
 
     'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS_TITLE' => 'Handling not finished orders',
-    'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'       => 'Automatically delete not finished orders?',
+    'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'       => 'Automatically cancel not finished orders?',
     'HELP_OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'  => 'For some PayPal payment methods, an order must be created in advance so that it can be used with PayPal.
                                                         It can happen that customers cancel the process during the payment process and do not return to the shop. In that case stay
-                                                        unfinished orders left that can be automatically deleted. Alternatively, you are welcome to check these orders yourself
-                                                        delete manually.',
-    'OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'           => 'Start time for automatic deletion',
-    'HELP_OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'      => 'How old do not finished orders have to be before they are automatically deleted (in minutes)?',
+                                                        unfinished orders left that can be automatically canceled. Alternatively, you are welcome to check these orders yourself
+                                                        cancel manually.',
+    'OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'           => 'Start time for automatic cancellation',
+    'HELP_OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'      => 'How old do not finished orders have to be before they are automatically canceled (in minutes)?',
     'OSC_PAYPAL_EXPRESS_SHIPPING_TITLE'              => 'Pseudo shipping costs for PayPal Express',
     'OSC_PAYPAL_EXPRESS_SHIPPING_DESC'               => 'The shipping costs entered here are used if the store option "Calculate default Shipping costs when User is not logged in yet” in not activated.',
 
