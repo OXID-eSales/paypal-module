@@ -360,7 +360,8 @@ $aModule = [
             'name' => 'oscPayPalStandardCaptureStrategy',
             'type' => 'select',
             'value' => 'directly',
-            'constraints' => 'directly|delivery|manually'
+            'constraints' => 'directly|delivery|manually',
+            'group' => null
         ],
         [
             'name' => 'oscPayPalSetupFeeFailureAction',
@@ -426,7 +427,8 @@ $aModule = [
         [
             'name' => 'oscPayPalBannersProductDetailsPageSelector',
             'type' => 'str',
-            'value' => '#detailsItemsPager'
+            'value' => '#detailsItemsPager',
+            'group' => null
         ],
         [
             'name' => 'oscPayPalBannersCheckoutPage',
