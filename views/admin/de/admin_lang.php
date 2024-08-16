@@ -260,13 +260,13 @@ $aLang = [
                                                         Die Einstellung "3D Secure Abfrage für jede ACDC Transaktion" erzwingt die 3D Prüfung für jede ACDC Transaktion.',
 
     'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS_TITLE' => 'Behandlung nicht beendeter Bestellungen',
-    'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'       => 'Nicht beendete Bestellungen automatisch löschen?',
+    'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'       => 'Nicht beendete Bestellungen automatisch stornieren?',
     'HELP_OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'  => 'Bei einigen PayPal-Zahlungsarten muss frühzeitig eine Bestellung angelegt werden, damit sie mit PayPal verwendet werden kann.
-                                                        Es kann passieren, das Kunden während des Bezahlvorgangs den Prozess abbrechen und nicht wieder in den Shop zurück kehren. In dem Fall bleiben
-                                                        nicht beendete Bestellungen übrig, die automatisch gelöscht werden können. Sie können alternaitv diese Bestellungen gern selbst kontrollieren und
-                                                        händisch löschen.',
-    'OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'           => 'Startzeit für automatisches Löschen',
-    'HELP_OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'      => 'Wie alt müssen nicht beendete Bestellungen sein, damit sie frühestens automatisch gelöscht werden (in Minuten)?',
+                                                        Es kann passieren, dass Kunden während des Bezahlvorgangs den Prozess abbrechen und nicht wieder in den Shop zurück kehren. In dem Fall bleiben
+                                                        nicht beendete Bestellungen übrig, die automatisch storniert werden können. Sie können alternaitv diese Bestellungen gern selbst kontrollieren und
+                                                        händisch stornieren.',
+    'OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'           => 'Startzeit für automatisches Stornieren',
+    'HELP_OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'      => 'Wie alt müssen nicht beendete Bestellungen sein, damit sie frühestens automatisch storniert werden (in Minuten)?',
 
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_COUNTRY'    => 'Versanddienstleister (Land)',
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_PROVIDER'   => 'Versanddienstleister (Anbieter)',

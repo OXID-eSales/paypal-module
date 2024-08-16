@@ -171,8 +171,6 @@ class OrderRepository
             if ($order->load($id)) {
                 // storno
                 $order->cancelOrder();
-                // delete
-                $order->delete();
             }
         }
     }
