@@ -439,13 +439,16 @@ class Payment
         $orderModel = oxNew(EshopModelOrder::class);
         $orderModel->load($sessionOrderId);
 
-        if ($orderModel->isLoaded()) {
-            if ($orderModel->hasOrderNumber()) {
-                $logger = new PayPalLogger();
-                $logger->info('Cannot delete valid order with id ' . $sessionOrderId);
-            } else {
-                $orderModel->delete();
-            }
+        if (
+            $orderModel->isLoaded() &&
+            !$orderModel->hasOrderNumber()
+        ) {
+            $orderModel->delete();
+            $logger = new PayPalLogger();
+            $logger->info(sprintf(
+                'Temporary order without Order number and with id %s was deleted',
+                $sessionOrderId
+            ));
         }
 
         PayPalSession::unsetPayPalOrderId();
