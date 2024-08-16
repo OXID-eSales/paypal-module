@@ -134,10 +134,10 @@ class OrderRepository
             and oxtransstatus = :oxtransstatus
             and oxpaymenttype LIKE :oxpaymenttype
             and oxshopid = :oxshopid
-            and oxorderdate < now() - interval :sessiontime MINUTE";
+            and oxorderdate + interval :sessiontime MINUTE  > now()";
+
         /** @var \OxidEsales\Eshop\Core\Database\Adapter\Doctrine\ResultSet $result */
         $result = $this->db->select($query, [
-            ':oxordernr' => '0',
             ':oxtransstatus' => 'NOT_FINISHED',
             ':oxpaymenttype' => '%oscpaypal%',
             ':oxshopid' => $shopId,
@@ -150,8 +150,6 @@ class OrderRepository
                 if ($order->load($id)) {
                     // storno
                     $order->cancelOrder();
-                    // delete
-                    $order->delete();
                 }
                 $result->fetchRow();
             }
