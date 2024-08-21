@@ -54,11 +54,10 @@ class PaymentController extends PaymentController_parent
         ) {
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
             if ($vaultedPaymentTokens = $vaultingService->getVaultPaymentTokens($paypalCustomerId)["payment_tokens"]) {
-                $paymentList = $this->getPaymentList();
                 $vaultedPaymentSources = [];
                 foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
                     foreach ($vaultedPaymentToken["payment_source"] as $paymentType => $paymentSource) {
-                        if (!$this->paymentTypeExists($paymentList)) {
+                        if (!$this->paymentTypeExists($paymentType)) {
                             continue;
                         }
                         if ($paymentType == "card") {
