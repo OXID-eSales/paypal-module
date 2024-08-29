@@ -297,7 +297,11 @@ class ProxyController extends FrontendController
         $service = $serviceFactory->getOrderService();
 
         try {
-            $response = $service->showOrderDetails($orderId, '');
+            $response = $service->showOrderDetails(
+                $orderId,
+                '',
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+            );
         } catch (Exception $exception) {
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer(Logger::class);
