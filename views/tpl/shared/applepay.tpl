@@ -11,8 +11,8 @@
         float: right;
     }
 </style>
-[{if $phpstorm}]<script>[{/if}]
-        [{capture name="detailsApplePayScript"}]
+[{capture name="detailsApplePayScript"}]
+    [{if $phpstorm}]<script>[{/if}]
     let order_id;
     let global_apple_pay_config;
     let current_ap_session;
@@ -67,7 +67,8 @@
         [{if $config->isSandbox()}]
         console.log('Payment Request Data:', globalPaymentRequestData);
         console.log('--- End preloadPaymentRequestData ---');
-    }   [{/if}]
+        [{/if}]
+    }
 
     // Function to handle closing alerts
     const handle_close = (event) => {
@@ -330,8 +331,7 @@
         console.log('--- End handle_applepay_clicked ---');
         [{/if}]
     };
-
-    [{/capture}]
-
-        [{oxscript include="https://applepay.cdn-apple.com/jsapi/v1/apple-pay-sdk.js" }]
-        [{oxscript add=$smarty.capture.detailsApplePayScript}]
+    [{if $phpstorm}]</script>[{/if}]
+[{/capture}]
+[{oxscript include="https://applepay.cdn-apple.com/jsapi/v1/apple-pay-sdk.js" }]
+[{oxscript add=$smarty.capture.detailsApplePayScript}]
