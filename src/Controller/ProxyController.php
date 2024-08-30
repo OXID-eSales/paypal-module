@@ -28,6 +28,7 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
@@ -485,7 +486,7 @@ class ProxyController extends FrontendController
 
     public function getPaymentRequestLines()
     {
-
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         try {
             $basket = Registry::getSession()->getBasket();
             if ($basket->getItemsCount() === 0) {
@@ -505,7 +506,7 @@ class ProxyController extends FrontendController
 
             $paymentRequest = [
                 'total' => [
-                    'label' => Registry::getConfig()->getActiveShop()->getFieldData('oxname'),
+                    'label' => $moduleSettings->getShopName(),
                     'amount' => (float)$basket->getBruttoSum(),
                     'type' => 'final'
                 ],

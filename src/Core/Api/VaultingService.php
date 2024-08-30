@@ -13,11 +13,15 @@ use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Service\BaseService;
 
 class VaultingService extends BaseService
 {
+    use ServiceContainer;
+
     public function generateUserIdToken($payPalCustomerId = false): array
     {
         $headers = [];
@@ -87,6 +91,7 @@ class VaultingService extends BaseService
      */
     public function getPaymentSourceForVaulting(bool $card): array
     {
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $viewConf   = Registry::get(ViewConfig::class);
         $config     = Registry::getConfig();
         $user       = $viewConf->getUser();
@@ -100,12 +105,10 @@ class VaultingService extends BaseService
             $user->getFieldData('oxcountryid')
         );
 
-        $shopName = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
+        $shopName = $moduleSettings->getShopName();
         $lang = Registry::getLang();
 
         $description = sprintf($lang->translateString('OSC_PAYPAL_DESCRIPTION'), $shopName);
-
-        $activeShop = Registry::getConfig()->getActiveShop();
 
         $name                   = $user->getFieldData("oxfname");
         $name                   .= $user->getFieldData("oxlname");
@@ -122,7 +125,7 @@ class VaultingService extends BaseService
             . '-'
             . strtoupper($country->oxcountry__oxisoalpha2->value);
         $experience_context     = [
-            "brand_name"          => $activeShop->getFieldData('oxname'),
+            "brand_name"          => $shopName,
             "locale"              => $locale,
             "return_url"          => $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession',
             "cancel_url"          => $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
