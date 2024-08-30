@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.5.1] - 2024-??-??
+
+### FIX
+
+- Temporary orders that are no longer needed and already have an order number will be cancelled. Temporary orders without an order number will still be deleted
+
 ## [2.5.0] - 2024-08-16
 
 ### FIX

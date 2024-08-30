@@ -490,14 +490,20 @@ class Payment
         $orderModel->load($sessionOrderId);
 
         if (
-            $orderModel->isLoaded() &&
-            !$orderModel->hasOrderNumber()
+            $orderModel->isLoaded()
         ) {
-            $orderModel->delete();
+            $orderModel->cancelOrder();
             $this->logger->log('debug', sprintf(
-                'Temporary order without Order number and with id %s was deleted',
+                'Temporary order with id %s was canceled',
                 $sessionOrderId
             ));
+            if (!$orderModel->hasOrderNumber()) {
+                $orderModel->delete();
+                $this->logger->log('debug', sprintf(
+                    'Temporary order without Order number and with id %s was deleted',
+                    $sessionOrderId
+                ));
+            }
         }
 
         PayPalSession::unsetPayPalOrderId();
