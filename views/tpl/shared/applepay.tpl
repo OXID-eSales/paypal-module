@@ -1,3 +1,5 @@
+[{block name="oscpaypal_applepay"}]
+[{oxhasrights ident="PAYWITHAPPLEPAY"}]
 [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
 [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
 [{assign var="config" value=$oViewConf->getPayPalCheckoutConfig()}]
@@ -11,8 +13,8 @@
         float: right;
     }
 </style>
-[{if $phpstorm}]<script>[{/if}]
-        [{capture name="detailsApplePayScript"}]
+[{capture name="detailsApplePayScript"}]
+    [{if $phpstorm}]<script>[{/if}]
     let order_id;
     let global_apple_pay_config;
     let current_ap_session;
@@ -330,8 +332,9 @@
         console.log('--- End handle_applepay_clicked ---');
         [{/if}]
     };
-
-    [{/capture}]
-
-        [{oxscript include="https://applepay.cdn-apple.com/jsapi/v1/apple-pay-sdk.js" }]
-        [{oxscript add=$smarty.capture.detailsApplePayScript}]
+    [{if $phpstorm}]</script>[{/if}]
+[{/capture}]
+[{oxscript include="https://applepay.cdn-apple.com/jsapi/v1/apple-pay-sdk.js" }]
+[{oxscript add=$smarty.capture.detailsApplePayScript}]
+[{/oxhasrights}]
+[{/block}]
