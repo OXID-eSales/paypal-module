@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.5.1] - 2024-??-??
+
+### FIX
+
+- [0007713](https://bugs.oxid-esales.com/view.php?id=7713): Correct SQL for select temporary Orders
+
 ## [2.5.0] - 2024-08-16
 
 ### FIX
