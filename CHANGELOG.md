@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### FIX
 
-- Temporary orders that are no longer needed and already have an order number will be cancelled. Temporary orders without an order number will still be deleted
+- [0007711](https://bugs.oxid-esales.com/view.php?id=7711): Temporary orders that are no longer needed and already have an order number will be cancelled. Temporary orders without an order number will still be deleted
 
 ## [2.5.0] - 2024-08-16
 
