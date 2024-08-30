@@ -46,7 +46,6 @@ class StaticContent
             }
             $paymentMethod = oxNew(EshopModelPayment::class);
             if ($paymentMethod->load($paymentId)) {
-                $this->reActivatePaymentMethod($paymentId);
                 continue;
             }
             $this->createPaymentMethod($paymentId, $paymentDefinitions);
@@ -109,25 +108,9 @@ class StaticContent
         }
     }
 
-    protected function reActivatePaymentMethod(string $paymentId): void
-    {
-        $activePayments = $this->moduleSettings->getActivePayments();
-        if (!in_array($paymentId, $activePayments, true)) {
-            return;
-        }
-
-        /** @var EshopModelPayment $paymentModel */
-        $paymentModel = oxNew(EshopModelPayment::class);
-        $paymentModel->load($paymentId);
-
-        $paymentModel->oxpayments__oxactive = new Field(true);
-
-        $paymentModel->save();
-    }
-
     /**
      * Try to load payment model based on given id an set payment inactive
-     * 
+     *
      * @param string $paymentId
      * @return void
      * @throws \Exception
