@@ -66,7 +66,7 @@ class PayPalRequestAmountFactory
             $breakdown->discount = PriceToMoney::convert($netMode ? $brutDiscountValue : $discount, $currency);
         }
 
-        $breakdown->item_total = PriceToMoney::convert($itemTotal + $itemTotalAdditionalCosts, $currency);
+        $breakdown->item_total = PriceToMoney::convert($total->value, $currency);
         //Item tax sum - we use 0% and calculate with brutto to avoid rounding errors
         $breakdown->tax_total = PriceToMoney::convert(0, $currency);
 
