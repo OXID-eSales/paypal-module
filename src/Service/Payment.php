@@ -332,7 +332,8 @@ class Payment
                         '',
                         $checkoutOrderId,
                         $request,
-                        ''
+                        '',
+                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                     );
                 } catch (ApiException $exception) {
                     $this->handlePayPalApiError($exception);
@@ -741,7 +742,11 @@ class Payment
     {
         return $this->serviceFactory
             ->getOrderService()
-            ->showOrderDetails($paypalOrderId, $fields);
+            ->showOrderDetails(
+                $paypalOrderId,
+                $fields,
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+            );
     }
 
     /**
