@@ -74,24 +74,24 @@ jobs:
 
       - name: Install module
         run: |
-          docker-compose exec -T \
+          docker compose exec -T \
             php composer require symfony/dotenv:^5.1 --no-update
-          docker-compose exec -T \
+          docker compose exec -T \
             php composer require codeception/module-rest:1.4.2 --no-update
-          docker-compose exec -T \
+          docker compose exec -T \
             php composer require codeception/module-phpbrowser:^1.0.2 --no-update
-          docker-compose exec -T \
+          docker compose exec -T \
             php composer config repositories.${{ env.CLIENT_PACKAGE_NAME }} git ${{ env.CLIENT_REPO_NAME }}
-          docker-compose exec -T \
+          docker compose exec -T \
             php composer config repositories.${{ env.PACKAGE_NAME }} \
             --json '{"type":"path", "url":"./test-module", "options": {"symlink": true}}'
-          docker-compose exec -T \
+          docker compose exec -T \
             php composer require ${{ env.PACKAGE_NAME }}:* --no-interaction --no-update
 
       - name: Install dependencies and reset shop
         run: |
-          docker-compose exec -T php composer update --no-interaction
-          docker-compose exec -T php php vendor/bin/reset-shop
+          docker compose exec -T php composer update --no-interaction
+          docker compose exec -T php php vendor/bin/reset-shop
 
       - name: Put module settings
         continue-on-error: true
@@ -99,11 +99,11 @@ jobs:
           mkdir -p source/var/configuration/environment/
           echo "${{ secrets.MODULE_SETTINGS }}" > source/var/configuration/environment/1.yaml
           echo "${{ secrets.MODULE_ENV }}" > source/vendor/${{ env.PACKAGE_NAME }}/tests/.env
-          docker-compose exec -T php php bin/oe-console oe:module:apply-configuration
+          docker compose exec -T php php bin/oe-console oe:module:apply-configuration
 
       - name: Stop containers
         run: |
-          docker-compose down
+          docker compose down
           sleep 2
 
   styles:
@@ -181,7 +181,7 @@ jobs:
 
       - name: Run tests
         run: |
-          docker-compose exec -T \
+          docker compose exec -T \
             -e PARTIAL_MODULE_PATHS=${{ env.MODULE_PATH }} \
             -e ACTIVATE_ALL_MODULES=1 \
             -e RUN_TESTS_FOR_SHOP=0 \
@@ -229,13 +229,13 @@ jobs:
 
       - name: Install codeception dependencies
         run: |
-          docker-compose exec -T php composer require codeception/module-rest:^1.4.2 --dev --no-update
-          docker-compose exec -T php composer require codeception/module-phpbrowser:^1.0.2 --dev --no-update
-          docker-compose exec -T php composer update
+          docker compose exec -T php composer require codeception/module-rest:^1.4.2 --dev --no-update
+          docker compose exec -T php composer require codeception/module-phpbrowser:^1.0.2 --dev --no-update
+          docker compose exec -T php composer update
 
       - name: Run tests
         run: |
-          docker-compose exec -T \
+          docker compose exec -T \
             -e PARTIAL_MODULE_PATHS=${{ env.MODULE_PATH }} \
             -e ACTIVATE_ALL_MODULES=1 \
             -e RUN_TESTS_FOR_SHOP=0 \
@@ -246,7 +246,7 @@ jobs:
       - name: Stop containers
         if: always()
         run: |
-          docker-compose down
+          docker compose down
           sleep 2
       - name: Upload log artifact
         if: always()
