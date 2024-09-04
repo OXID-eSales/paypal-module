@@ -17,8 +17,8 @@ jobs:
         php: [ '7.4', '8.0', '8.1' ]
     runs-on: ubuntu-latest
     steps:
-      - name: Clone testing environment v3.0.0
-        run: git clone https://github.com/OXID-eSales/docker-eshop-sdk.git . && git reset --hard v3.0.0
+      - name: Clone testing environment v4.0.0
+        run: git clone https://github.com/OXID-eSales/docker-eshop-sdk.git . && git reset --hard v4.0.0
 
       - name: Clone the shop
         run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-6.5.x --single-branch source
