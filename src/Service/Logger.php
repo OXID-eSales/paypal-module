@@ -26,7 +26,8 @@ class Logger
         $this->moduleLogger = $moduleLogger;
     }
 
-    private array $possiblePayPalLevels = [
+    /** @var array $possiblePayPalLevels */
+    private $possiblePayPalLevels = [
         'error' => 400,
         'info'  => 200,
         'debug' => 100
