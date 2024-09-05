@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook;
 
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Service\GenericService;
 use OxidSolutionCatalysts\PayPal\Core\Config;
@@ -60,9 +61,12 @@ class EventVerifier
             'webhook_event' => $normalizedBody
         ];
 
+        $headers = [];
+        $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
+
         /** @var GenericService $notificationService */
         $notificationService = Registry::get(ServiceFactory::class)->getNotificationService();
-        $response = $notificationService->request('POST', $payload);
+        $response = $notificationService->request('POST', $payload, [], $headers);
 
         if (
             !$response['verification_status'] || (
