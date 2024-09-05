@@ -53,28 +53,6 @@ class Events
      */
     public static function onDeactivate(): void
     {
-        $activePayments = [];
-        foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
-            $paymentMethod = oxNew(EshopModelPayment::class);
-            if (
-                $paymentMethod->load($paymentId) &&
-                $paymentMethod->getFieldData('oxactive')
-            ) {
-                if (PayPalDefinitions::isDeprecatedPayment($paymentId)) {
-                    //dont set deprecated payments to active payment list
-                } else {
-                    $activePayments[] = $paymentId;
-                }
-                $paymentMethod->assign([
-                    'oxactive' => false
-                ]);
-                $paymentMethod->save();
-            }
-        }
-        $service = self::getModuleSettingsService();
-        if ($service) {
-            $service->saveActivePayments($activePayments);
-        }
     }
 
     /**

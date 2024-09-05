@@ -388,18 +388,6 @@ class ModuleSettings
         return (bool)$this->getSettingValue('oscPayPalSandboxGooglePayEligibility');
     }
 
-    public function getActivePayments(): array
-    {
-        /** @var array|null $activePayments */
-        $activePayments = $this->getSettingValue('oscPayPalActivePayments');
-        return $activePayments ?: [];
-    }
-
-    public function getShopName(): string
-    {
-        return Registry::getConfig()->getActiveShop()->getRawFieldData('oxname');
-    }
-
     /**
      * @throws ModuleSettingNotFountException
      */
@@ -510,10 +498,6 @@ class ModuleSettings
         }
     }
 
-    public function saveActivePayments(array $activePayments): void
-    {
-        $this->save('oscPayPalActivePayments', $activePayments);
-    }
     public function saveGooglePayEligibility(bool $isGooglePayEligibility): void
     {
         if ($this->isSandbox()) {
