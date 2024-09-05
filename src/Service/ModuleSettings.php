@@ -395,6 +395,11 @@ class ModuleSettings
         return $activePayments ?: [];
     }
 
+    public function getShopName(): string
+    {
+        return Registry::getConfig()->getActiveShop()->getRawFieldData('oxname');
+    }
+
     /**
      * @throws ModuleSettingNotFountException
      */
