@@ -142,7 +142,6 @@ class OrderRepository
         $sessiontime = (int)$this->config->getConfigParam('oscPayPalStartTimeCleanUpOrders');
         $shopId = $this->config->getShopId();
 
-        /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->queryBuilderFactory->create();
 
         $parameters = [
@@ -160,11 +159,11 @@ class OrderRepository
                 'oxpaymenttype',
                 $queryBuilder->expr()->literal('%' . $parameters['oxpaymenttype'] . '%')
             ))
-            ->andWhere('oxorderdate + interval :sessiontime MINUTE > now()');
+            ->andWhere('oxorderdate < now() - interval :sessiontime MINUTE');
 
         $ids = $queryBuilder->setParameters($parameters)
             ->execute()
-            ->fetchAll(PDO::FETCH_COLUMN);
+            ->fetchAllAssociative();
 
         foreach ($ids as $id) {
             $order = oxNew(EshopModelOrder::class);
