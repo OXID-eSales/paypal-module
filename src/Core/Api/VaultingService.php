@@ -201,9 +201,13 @@ class VaultingService extends BaseService
             return null;
         }
 
+        $headers = [];
+        $headers['Content-Type'] = 'application/x-www-form-urlencoded';
+        $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
+
         $path = '/v3/vault/payment-tokens?customer_id=' . $paypalCustomerId;
 
-        $response = $this->send('GET', $path);
+        $response = $this->send('GET', $path, [], $headers);
         $body = $response->getBody();
 
         return json_decode((string)$body, true);
@@ -222,11 +226,14 @@ class VaultingService extends BaseService
      */
     public function deleteVaultedPayment($paymentTokenId)
     {
+        $headers = [];
+        $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
+
         $path = '/v3/vault/payment-tokens/' . $paymentTokenId;
 
-        $response = $this->send('DELETE', $path);
+        $response = $this->send('DELETE', $path, [], $headers);
 
-        return $response->getStatusCode() == 204;
+        return $response->getStatusCode() === 204;
     }
 
     /**

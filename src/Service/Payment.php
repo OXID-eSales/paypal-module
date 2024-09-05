@@ -332,7 +332,8 @@ class Payment
                         '',
                         $checkoutOrderId,
                         $request,
-                        ''
+                        '',
+                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                     );
                 } catch (ApiException $exception) {
                     $this->handlePayPalApiError($exception);
@@ -490,14 +491,20 @@ class Payment
         $orderModel->load($sessionOrderId);
 
         if (
-            $orderModel->isLoaded() &&
-            !$orderModel->hasOrderNumber()
+            $orderModel->isLoaded()
         ) {
-            $orderModel->delete();
+            $orderModel->cancelOrder();
             $this->logger->log('debug', sprintf(
-                'Temporary order without Order number and with id %s was deleted',
+                'Temporary order with id %s was canceled',
                 $sessionOrderId
             ));
+            if (!$orderModel->hasOrderNumber()) {
+                $orderModel->delete();
+                $this->logger->log('debug', sprintf(
+                    'Temporary order without Order number and with id %s was deleted',
+                    $sessionOrderId
+                ));
+            }
         }
 
         PayPalSession::unsetPayPalOrderId();
@@ -741,7 +748,11 @@ class Payment
     {
         return $this->serviceFactory
             ->getOrderService()
-            ->showOrderDetails($paypalOrderId, $fields);
+            ->showOrderDetails(
+                $paypalOrderId,
+                $fields,
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+            );
     }
 
     /**
