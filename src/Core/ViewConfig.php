@@ -99,6 +99,11 @@ class ViewConfig extends ViewConfig_parent
         return $this->getServiceFromContainer(ModuleSettings::class)->getIsVaultingActive();
     }
 
+    public function isVaultingEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isVaultingEligibility();
+    }
+
     /**
      * @return Config
      */
@@ -158,12 +163,32 @@ class ViewConfig extends ViewConfig_parent
     {
         $config = Registry::getConfig();
         $lang = Registry::getLang();
+        $params = [];
+        $enableFunding = [];
+        $disableFunding = [
+            'bancontact',
+            'blik',
+            'eps',
+            'giropay',
+            'ideal',
+            'mercadopago',
+            'p24',
+            'venmo',
+        ];
+        $components = [
+            'buttons',
+            'googlepay',
+            'applepay',
+        ];
+
+        if ($this->getTopActiveClassName() !== 'payment') {
+            $disableFunding[] = 'sepa';
+        }
 
         $localeCode = $this->getServiceFromContainer(LanguageLocaleMapper::class)
             ->mapLanguageToLocale($lang->getLanguageAbbr());
 
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $params = [];
 
         $params['client-id'] = $this->getPayPalClientId();
         $params['integration-date'] = Constants::PAYPAL_INTEGRATION_DATE;
@@ -174,88 +199,66 @@ class ViewConfig extends ViewConfig_parent
             $params['currency'] = strtoupper($currency->name);
         }
 
-        $params['components'] = 'buttons,googlepay';
         $params['merchant-id'] = $moduleSettings->getMerchantId();
-        // Available components: enable messages+buttons for PDP
+
         if ($this->isPayPalBannerActive()) {
-            $params['components'] .= ',messages';
-        }
-        $params['components'] .= ',applepay';
-        if ($moduleSettings->showPayPalPayLaterButton()) {
-            $params['enable-funding'] = 'paylater';
+            $components[] = 'messages';
         }
 
-        $params['disable-funding'] = 'sepa,bancontact,blik,eps,giropay,ideal,mercadopago,p24,venmo';
+        if ($moduleSettings->showPayPalPayLaterButton()) {
+            $enableFunding[] = 'paylater';
+        }
 
         if ($moduleSettings->isAcdcEligibility()) {
-            $params['disable-funding'] .= ',card';
+            $components[] = 'hosted-fields';
         } else {
-            if (isset($params['enable-funding'])) {
-                $params['enable-funding'] .= ',card';
-            } else {
-                $params['enable-funding'] = 'card';
-            }
-        }
-        $params['locale'] = $localeCode;
-
-        return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
-    }
-
-    /**
-     * Gets PayPal JS SDK url for ACDC
-     *
-     * @return string
-     */
-    public function getPayPalJsSdkUrlForACDC(): string
-    {
-        return $this->getBasePayPalJsSdkUrl('hosted-fields');
-    }
-
-    /**
-     * Gets PayPal JS SDK url for Button Payments like SEPA and CreditCardFallback
-     *
-     * @return string
-     */
-    public function getPayPalJsSdkUrlForButtonPayments(): string
-    {
-        return $this->getBasePayPalJsSdkUrl('funding-eligibility', true);
-    }
-
-    protected function getBasePayPalJsSdkUrl($type = '', $continueFlow = false): string
-    {
-        $config = Registry::getConfig();
-        $lang = Registry::getLang();
-
-        $localeCode = $this->getServiceFromContainer(LanguageLocaleMapper::class)
-            ->mapLanguageToLocale($lang->getLanguageAbbr());
-
-        $params = [];
-
-        $params['client-id'] = $this->getPayPalClientId();
-        $params['integration-date'] = Constants::PAYPAL_INTEGRATION_DATE;
-
-        if ($currency = $config->getActShopCurrencyObject()) {
-            $params['currency'] = strtoupper($currency->name);
-        }
-
-        if ($continueFlow) {
-            $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
-            $params['commit'] = 'true';
-        }
-
-        $params['components'] = 'buttons,googlepay,' . $type;
-
-        if ($this->isPayPalBannerActive()) {
-            $params['components'] .= ',messages';
+            $enableFunding[] = 'card';
         }
 
         if ($this->getIsVaultingActive()) {
-            $params['components'] .= ',card-fields';
+            $components[] = 'card-fields';
+        }
+
+        if ($components) {
+            $params['components'] = implode(',', $components);
+        }
+        if ($enableFunding) {
+            $params['enable-funding'] = implode(',', $enableFunding);
+        }
+        if ($disableFunding) {
+            $params['disable-funding'] = implode(',', $disableFunding);
         }
 
         $params['locale'] = $localeCode;
 
         return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
+    }
+
+    public function showPayPalExpressInMiniBasket(): bool
+    {
+        $className = $this->getTopActiveClassName();
+        $showButton = false;
+        $payPalConfig = $this->getPayPalCheckoutConfig();
+        $ppActive = $payPalConfig->isActive();
+        $configShowMiniBasketButton = $payPalConfig->showPayPalMiniBasketButton();
+        $ppExpressSessionActive = $this->isPayPalExpressSessionActive();
+        $acdcSessionActive = $this->isPayPalACDCSessionActive();
+        if (
+            $className !== 'payment' &&
+            $ppActive &&
+            $configShowMiniBasketButton &&
+            !$ppExpressSessionActive &&
+            (
+                (
+                    $className === 'order' &&
+                    !$acdcSessionActive
+                ) ||
+                $className !== 'order'
+            )
+        ) {
+            $showButton = true;
+        }
+        return $showButton;
     }
 
     public function getUserIdForVaulting(): string
@@ -332,18 +335,6 @@ class ViewConfig extends ViewConfig_parent
     public function getPayPalClientId(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getClientId();
-    }
-
-    /**
-     * API URL getter for use with the installment banner feature
-     */
-    public function getPayPalApiBannerUrl(): string
-    {
-        $params['client-id'] = $this->getPayPalClientId();
-
-        $params['components'] = 'messages';
-
-        return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
     }
 
     /**

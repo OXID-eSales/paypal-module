@@ -1,29 +1,17 @@
 [{if $oViewConf->isPayPalCheckoutActive()}]
     [{assign var="className" value=$oViewConf->getTopActiveClassName()}]
-    [{if $oViewConf->isPayPalExpressPaymentEnabled() &&
-        (($className == 'order' && !$oViewConf->isPayPalACDCSessionActive()) || ($className !== 'order' && $className !== 'payment')) &&
-        (
-            ($oxcmp_basket->getProductsCount() && $oViewConf->showPayPalMiniBasketButton()) ||
-            ($className == 'details' && $oViewConf->showPayPalProductDetailsButton()) ||
-            ($className == 'basket' && $oViewConf->showPayPalBasketButton())
-        )
-        && ($className !== 'oscaccountvaultcard') && ($className !== 'oscaccountvault')
-    }]
-        <script src="[{$oViewConf->getPayPalJsSdkUrl()}]" data-user-id-token="[{$oViewConf->getUserIdForVaulting()}]" data-partner-attribution-id="[{$oViewConf->getPayPalPartnerAttributionIdForBanner()}]"></script>
-        [{assign var="sCountryRestriction" value=$oViewConf->getCountryRestrictionForPayPalExpress()}]
-        [{if $sCountryRestriction}]
-            <script>
-                const countryRestriction = [[{$sCountryRestriction}]];
-            </script>
+    <script src="[{$oViewConf->getPayPalJsSdkUrl()}]"
+        [{if $oViewConf->isVaultingEligibility()}]
+            data-user-id-token="[{$oViewConf->getUserIdForVaulting()}]"
         [{/if}]
-    [{elseif $className == 'order' && $oViewConf->isPayPalACDCSessionActive()}]
-        <script src="[{$oViewConf->getPayPalJsSdkUrlForACDC()}]" data-client-token="[{$oViewConf->getDataClientToken()}]"></script>
-    [{elseif $className == 'payment' || $className == 'oscaccountvaultcard'}]
-        <script src="[{$oViewConf->getPayPalJsSdkUrlForButtonPayments()}]" data-partner-attribution-id="[{$oViewConf->getPayPalPartnerAttributionIdForBanner()}]"></script>
-    [{elseif $className == 'oscaccountvault'}]
-        <script src="[{$oViewConf->getPayPalJsSdkUrl()}]" data-user-id-token="[{$oViewConf->getUserIdForVaulting()}]"></script>
-    [{elseif $oViewConf->isPayPalBannerActive() && ($className == 'start' || $className == 'search' || $className == 'details' || $className == 'alist' || $className == 'basket')}]
-        <script src="[{$oViewConf->getPayPalApiBannerUrl()}]" data-partner-attribution-id="[{$oViewConf->getPayPalPartnerAttributionIdForBanner()}]"></script>
+        data-partner-attribution-id="[{$oViewConf->getPayPalPartnerAttributionIdForBanner()}]"
+        data-client-token="[{$oViewConf->getDataClientToken()}]"
+        ></script>
+    [{assign var="sCountryRestriction" value=$oViewConf->getCountryRestrictionForPayPalExpress()}]
+    [{if $sCountryRestriction}]
+        <script>
+            const countryRestriction = [[{$sCountryRestriction}]];
+        </script>
     [{/if}]
     [{if $submitCart}]
     <script>
