@@ -583,21 +583,6 @@ class ModuleSettings
     }
 
     /**
-     * Checks and return true if price view mode is netto
-     *
-     * @return bool
-     */
-    public function isPriceViewModeNetto(): bool
-    {
-        $result = (bool)Registry::getConfig()->getConfigParam('blShowNetPrice');
-        $user = oxNew(User::class);
-        if ($user->loadActiveUser()) {
-            $result = $user->isPriceViewModeNetto();
-        }
-        return $result;
-    }
-
-    /**
      * Returns comma seperated String with the Country Restriction for PayPal Express
      */
     public function getCountryRestrictionForPayPalExpress(): string

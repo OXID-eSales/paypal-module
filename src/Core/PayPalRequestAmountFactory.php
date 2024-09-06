@@ -23,7 +23,7 @@ class PayPalRequestAmountFactory
 {
     public function getAmount(Basket $basket): AmountWithBreakdown
     {
-        $netMode = Registry::getConfig()->getConfigParam('blShowNetPrice');
+        $netMode = $basket->isCalculationModeNetto();
         $currency = $basket->getBasketCurrency();
 
         //Discount
