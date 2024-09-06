@@ -69,7 +69,8 @@
         [{if $config->isSandbox()}]
         console.log('Payment Request Data:', globalPaymentRequestData);
         console.log('--- End preloadPaymentRequestData ---');
-    }   [{/if}]
+        [{/if}]
+    }
 
     // Function to handle closing alerts
     const handle_close = (event) => {

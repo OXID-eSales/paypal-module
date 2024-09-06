@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### FIX
 
 - [0007584](https://bugs.oxid-esales.com/view.php?id=7584): Provide additional oxrights-elements for PayPal-Express, ApplePay and GooglePay-Buttons
+- [0007161](https://bugs.oxid-esales.com/view.php?id=7161): Removing payment method deactivation during module deactivation. Merchants must now do this themselves
+- provide correct encoded Shopname to PayPal
+- Fix order of closing brackets in applepay-template
+- [0007711](https://bugs.oxid-esales.com/view.php?id=7711): Temporary orders that are no longer needed and already have an order number will be cancelled. Temporary orders without an order number will still be deleted
+- Provide BN codes even to previously overlooked API calls
 
 ## [2.5.0] - 2024-08-16
 

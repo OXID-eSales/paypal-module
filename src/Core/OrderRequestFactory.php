@@ -122,7 +122,7 @@ class OrderRequestFactory
             );
             //find out which payment token was selected by getting the index via request param
             $paymentType = key($selectedPaymentToken["payment_source"]);
-            $useCard = $paymentType == "card";
+            $useCard = $paymentType === "card";
 
             $this->modifyPaymentSourceForVaulting($request, $useCard);
 
@@ -239,8 +239,9 @@ class OrderRequestFactory
         ?string $cancelUrl,
         ?bool $setProvidedAddress
     ): OrderApplicationContext {
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $context = new OrderApplicationContext();
-        $context->brand_name = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
+        $context->brand_name = $moduleSettings->getShopName();
         $context->shipping_preference = 'GET_FROM_FILE';
         $context->landing_page = 'LOGIN';
         if ($userAction) {
@@ -267,8 +268,9 @@ class OrderRequestFactory
         ?string $invoiceId,
         bool $withArticles = true
     ): array {
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $purchaseUnit = new PurchaseUnitRequest();
-        $shopName = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
+        $shopName = $moduleSettings->getShopName();
         $lang = Registry::getLang();
 
         $purchaseUnit->custom_id = $transactionId;
@@ -622,6 +624,7 @@ class OrderRequestFactory
     protected function getPuiPaymentSource(): array
     {
         $user = $this->basket->getBasketUser();
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
 
         // get Billing CountryCode
         $country = oxNew(Country::class);
@@ -657,11 +660,11 @@ class OrderRequestFactory
 
         $activeShop = Registry::getConfig()->getActiveShop();
         $experienceContext = new ExperienceContext();
-        $experienceContext->brand_name = $activeShop->getFieldData('oxname');
+        $experienceContext->brand_name = $moduleSettings->getShopName();
         $experienceContext->locale = strtolower($payer->address->country_code)
             . '-'
             .  strtoupper($payer->address->country_code);
-        $experienceContext->customer_service_instructions[] = $activeShop->getFieldData('oxinfoemail');
+        $experienceContext->customer_service_instructions[] = $moduleSettings->getInfoEMail();
         $paymentSource->experience_context = $experienceContext;
 
         return [PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME => $paymentSource];
