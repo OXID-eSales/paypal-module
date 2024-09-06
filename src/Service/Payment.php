@@ -115,7 +115,7 @@ class Payment
         string $payPalPartnerAttributionId = '',
         string $returnUrl = null,
         string $cancelUrl = null,
-        bool $withArticles = true,
+        bool $articlesWithTax = false,
         bool $setProvidedAddress = true,
         ?EshopModelOrder $order = null
         #): ?ApiModelOrder
@@ -136,7 +136,7 @@ class Payment
             null,
             $returnUrl,
             $cancelUrl,
-            $withArticles,
+            $articlesWithTax,
             $setProvidedAddress
         );
 

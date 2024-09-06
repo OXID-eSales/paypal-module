@@ -80,98 +80,98 @@ class Basket extends Basket_parent
     }
 
     /**
-     * Returns wrapping Brutto cost
+     * Returns wrapping cost as Price object
      *
-     * @return double
+     * @return null|Price
      */
     public function getPayPalCheckoutWrapping()
     {
-        $amount = 0.0;
-
         $wrappingCost = $this->getCosts('oxwrapping');
-        if ($wrappingCost) {
-            $amount = $wrappingCost->getBruttoPrice();
-        }
-
-        return $amount;
+        return $wrappingCost instanceof Price ? $wrappingCost : null;
     }
 
     /**
-     * Returns greeting card Brutto Costs
+     * Returns greeting card cost as Price object
      *
-     * @return double
+     * @return null|Price
      */
     public function getPayPalCheckoutGiftCard()
     {
-        $amount = 0.0;
-
         $giftCardCost = $this->getCosts('oxgiftcard');
-        if ($giftCardCost) {
-            $amount = $giftCardCost->getBruttoPrice();
-        }
-
-        return $amount;
+        return $giftCardCost instanceof Price ? $giftCardCost : null;
     }
 
     /**
-     * Returns payment costs brutto value.
+     * Returns payment costs as Price object
      *
-     * @return double
-     */
+     * @return null|Price
+ */
     public function getPayPalCheckoutPayment()
     {
-        $amount = 0.0;
-
         $paymentCost = $this->getCosts('oxpayment');
-        if ($paymentCost) {
-            $amount = $paymentCost->getBruttoPrice();
-        }
-
-        return $amount;
+        return $paymentCost instanceof Price ? $paymentCost : null;
     }
 
     /**
-     * Returns delivery costs in Brutto!
+     * Returns delivery costs as Price object
      *
-     * @return double
-     */
+     * @return null|Price
+ */
     public function getPayPalCheckoutDeliveryCosts()
     {
-        $amount = 0.0;
-
         $deliveryCost = $this->getCosts('oxdelivery');
-        if ($deliveryCost) {
-            $amount = $deliveryCost->getBruttoPrice();
-        }
-
-        return $amount;
+        return $deliveryCost instanceof Price ? $deliveryCost : null;
     }
 
     /**
      * Collects all basket discounts (basket, payment and vouchers)
-     * and returns sum of collected discounts brut value.
+     * and returns sum of collected discounts value.
      */
-    public function getPayPalCheckoutDiscount(): float
+    public function getPayPalCheckoutDiscount(bool $netMode): float
     {
         $config = Registry::getConfig();
-        $netMode = $config->getConfigParam('blShowNetPrice');
         $defaultVAT = $config->getConfigParam('dDefaultVAT');
         $discount = 0.0;
 
         $totalDiscount = $this->getTotalDiscount();
 
         if ($totalDiscount) {
-            $discount += $totalDiscount->getBruttoPrice();
+            $discount += $netMode ? $totalDiscount->getNettoPrice() : $totalDiscount->getBruttoPrice();
         }
 
         //vouchers
-        $vouchers = (array)$this->getVouchers();
+        $vouchers = $this->getVouchers();
         foreach ($vouchers as $voucher) {
             $voucherPrice = oxNew(Price::class);
             $voucherPrice->setNettoMode($netMode);
             $voucherPrice->setPrice($voucher->dVoucherdiscount, (float)$defaultVAT);
 
-            $discount += $voucherPrice->getBruttoPrice();
+            $discount += $netMode ? $voucherPrice->getNettoPrice() : $voucherPrice->getBruttoPrice();
+        }
+
+        return $discount;
+    }
+
+    public function getPayPalCheckoutDiscountVat(bool $netMode): float
+    {
+        $config = Registry::getConfig();
+        $defaultVAT = $config->getConfigParam('dDefaultVAT');
+        $discount = 0.0;
+
+        $totalDiscount = $this->getTotalDiscount();
+
+        if ($totalDiscount) {
+            $discount += $totalDiscount->getVatValue();
+        }
+
+        //vouchers
+        $vouchers = $this->getVouchers();
+        foreach ($vouchers as $voucher) {
+            $voucherPrice = oxNew(Price::class);
+            $voucherPrice->setNettoMode($netMode);
+            $voucherPrice->setPrice($voucher->dVoucherdiscount, (float)$defaultVAT);
+
+            $discount += $totalDiscount->getVatValue();
         }
 
         return $discount;
@@ -183,10 +183,9 @@ class Basket extends Basket_parent
     public function getPayPalCheckoutItems(bool $isOxidSum = true): float
     {
         $result = 0;
-        $netMode = Registry::getConfig()->getConfigParam('blShowNetPrice');
 
         if ($isOxidSum) {
-            $result += $netMode ? $this->getProductsPrice()->getSum(false) : $this->getBruttoSum();
+            $result += $this->isCalculationModeNetto() ? $this->getProductsPrice()->getSum(false) : $this->getBruttoSum();
         } else {
             foreach ($this->getContents() as $basketItem) {
                 $itemUnitPrice = $basketItem->getUnitPrice();
@@ -206,7 +205,7 @@ class Basket extends Basket_parent
     {
         $result = 0;
         if ($this->isCalculationModeNetto()) {
-            $result += $this->getPayPalCheckoutItems(true) - $this->getPayPalCheckoutItems(false);
+            $result += $this->getPayPalCheckoutItems() - $this->getPayPalCheckoutItems(false);
         }
         return $result;
     }
@@ -253,11 +252,20 @@ class Basket extends Basket_parent
     public function getAdditionalPayPalCheckoutItemCosts(): float
     {
         $result = 0;
-        $result += $this->getPayPalCheckoutWrapping();
-        $result += $this->getPayPalCheckoutGiftCard();
-        $result += $this->getPayPalCheckoutPayment();
-        $result += $this->getPayPalCheckoutDeliveryCosts();
+        $wrappingCost = $this->getPayPalCheckoutWrapping();
+        $giftCardCost = $this->getPayPalCheckoutGiftCard();
+        $paymentCost = $this->getPayPalCheckoutPayment();
+        $deliveryCost = $this->getPayPalCheckoutDeliveryCosts();
+        $result += $wrappingCost ? $this->getFloatFromPrice($wrappingCost) : 0;
+        $result += $giftCardCost ? $this->getFloatFromPrice($giftCardCost) : 0;
+        $result += $paymentCost ? $this->getFloatFromPrice($paymentCost) : 0;
+        $result += $deliveryCost ? $this->getFloatFromPrice($deliveryCost) : 0;
 
         return $result;
+    }
+
+    private function getFloatFromPrice(Price $price): float
+    {
+        return $this->isCalculationModeNetto() ? $price->getNettoPrice(): $price->getBruttoPrice();
     }
 }

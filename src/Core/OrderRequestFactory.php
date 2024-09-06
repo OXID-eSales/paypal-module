@@ -76,7 +76,7 @@ class OrderRequestFactory
      * @param null|string $invoiceId custom invoice number
      * @param null|string $returnUrl Return Url
      * @param null|string $cancelUrl Cancel Url
-     * @param bool $withArticles Request with article information?
+     * @param bool $articlesWithTax Articles in Request with Tax information?
      * @param bool $setProvidedAddress Address changeable in PayPal?
      *
      * @return OrderRequest
@@ -91,7 +91,7 @@ class OrderRequestFactory
         ?string $invoiceId = null,
         ?string $returnUrl = null,
         ?string $cancelUrl = null,
-        bool $withArticles = true,
+        bool $articlesWithTax = false,
         bool $setProvidedAddress = true
     ): OrderRequest {
         $request = $this->request = new OrderRequest();
@@ -108,7 +108,7 @@ class OrderRequestFactory
             $request->payment_source = $this->getApplePayPaymentSource($basket, 'apple_pay');
         }
         $request->intent = $intent;
-        $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $withArticles);
+        $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $articlesWithTax);
 
         $useVaultedPayment = $setVaulting && !is_null($selectedVaultPaymentSourceIndex);
         if ($useVaultedPayment) {
@@ -122,7 +122,7 @@ class OrderRequestFactory
             );
             //find out which payment token was selected by getting the index via request param
             $paymentType = key($selectedPaymentToken["payment_source"]);
-            $useCard = $paymentType == "card";
+            $useCard = $paymentType === "card";
 
             $this->modifyPaymentSourceForVaulting($request, $useCard);
 
@@ -265,7 +265,7 @@ class OrderRequestFactory
     protected function getPurchaseUnits(
         ?string $transactionId,
         ?string $invoiceId,
-        bool $withArticles = true
+        bool $articlesWithTax = false
     ): array {
         $purchaseUnit = new PurchaseUnitRequest();
         $shopName = Registry::getConfig()->getActiveShop()->getFieldData('oxname');
@@ -279,14 +279,7 @@ class OrderRequestFactory
         $purchaseUnit->amount = $this->getAmount();
         $purchaseUnit->reference_id = Constants::PAYPAL_ORDER_REFERENCE_ID;
 
-        // If it is planned to patch this PayPal order in the further course,
-        // then no items may be given, since PayPal cannot patch any items at the moment
-        // At the moment only the amount and the title of the article
-        // are relevant. However, no inventory.
-        // in this case get the purchase units without articles
-        if ($withArticles) {
-            $purchaseUnit->items = $this->getItems();
-        }
+        $purchaseUnit->items = $this->getItems($articlesWithTax);
 
         if ($this->basket->getBasketUser()) {
             $purchaseUnit->shipping = $this->getShippingAddress();
@@ -307,13 +300,17 @@ class OrderRequestFactory
      * @return array
      * @psalm-suppress UndefinedDocblockClass
      */
-    public function getItems(): array
+    public function getItems(
+        bool $articlesWithTax = false
+    ): array
     {
         $basket = $this->basket;
         $itemCategory = $this->getItemCategoryByBasketContent();
         $currency = $basket->getBasketCurrency();
         $language = Registry::getLang();
         $items = [];
+        $config = Registry::getConfig();
+        $netMode = $basket->isCalculationModeNetto();
 
         /** @var BasketItem $basketItem */
         foreach ($basket->getContents() as $basketItem) {
@@ -327,13 +324,15 @@ class OrderRequestFactory
                 : Item::CATEGORY_PHYSICAL_GOODS;
 
             // no zero price articles in the list
-            if ((float)$itemUnitPrice->getBruttoPrice() > 0) {
-                $item->unit_amount = PriceToMoney::convert((float)$itemUnitPrice->getBruttoPrice(), $currency);
-                // tax - we use 0% and calculate with brutto to avoid rounding errors
-                $item->tax = PriceToMoney::convert((float)0, $currency);
-                $item->tax_rate = '0';
-                // TODO: There are usually still categories for digital products.
-                // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
+            if ($itemUnitPrice && $itemUnitPrice->getBruttoPrice() > 0) {
+                $item->unit_amount = PriceToMoney::convert(
+                    $netMode ? $itemUnitPrice->getNettoPrice() : $itemUnitPrice->getBruttoPrice(),
+                    $currency
+                );
+                if ($articlesWithTax) {
+                    $item->tax = PriceToMoney::convert($itemUnitPrice->getVat(), $currency);
+                    $item->tax_rate = $itemUnitPrice->getVatValue();
+                }
                 $item->category = $articleCategory;
 
                 $item->quantity = (string)$basketItem->getAmount();
@@ -341,48 +340,57 @@ class OrderRequestFactory
             }
         }
 
-        if ($wrapping = $basket->getPayPalCheckoutWrapping()) {
+        $wrapping = $basket->getPayPalCheckoutWrapping();
+        if ($wrapping) {
             $item = new Item();
             $item->name = $language->translateString('GIFT_WRAPPING');
 
-            $item->unit_amount = PriceToMoney::convert((float)$wrapping, $currency);
-            // tax - we use 0% and calculate with brutto to avoid rounding errors
-            $item->tax = PriceToMoney::convert(0, $currency);
-            $item->tax_rate = '0';
-            // TODO: There are usually still categories for digital products.
-            // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
+            $item->unit_amount = PriceToMoney::convert(
+                $netMode ? $wrapping->getNettoPrice() : $wrapping->getBruttoPrice(),
+                $currency
+            );
+            if ($articlesWithTax) {
+                $item->tax = PriceToMoney::convert(0, $currency);
+                $item->tax_rate = '0';
+            }
             $item->category = $itemCategory;
 
             $item->quantity = '1';
             $items[] = $item;
         }
 
-        if ($giftCard = $basket->getPayPalCheckoutGiftCard()) {
+        $giftCard = $basket->getPayPalCheckoutGiftCard();
+        if ($giftCard) {
             $item = new Item();
             $item->name = $language->translateString('GREETING_CARD');
 
-            $item->unit_amount = PriceToMoney::convert((float)$giftCard, $currency);
-            // tax - we use 0% and calculate with brutto to avoid rounding errors
-            $item->tax = PriceToMoney::convert(0, $currency);
-            $item->tax_rate = '0';
-            // TODO: There are usually still categories for digital products.
-            // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
+            $item->unit_amount = PriceToMoney::convert(
+                $netMode ? $giftCard->getNettoPrice() : $giftCard->getBruttoPrice(),
+                $currency
+            );
+            if ($articlesWithTax) {
+                $item->tax = PriceToMoney::convert(0, $currency);
+                $item->tax_rate = '0';
+            }
             $item->category = $itemCategory;
 
             $item->quantity = '1';
             $items[] = $item;
         }
 
-        if ($payment = $basket->getPayPalCheckoutPayment()) {
+        $payment = $basket->getPayPalCheckoutPayment();
+        if ($payment) {
             $item = new Item();
             $item->name = $language->translateString('PAYMENT_METHOD');
 
-            $item->unit_amount = PriceToMoney::convert((float)$payment, $currency);
-            // tax - we use 0% and calculate with brutto to avoid rounding errors
-            $item->tax = PriceToMoney::convert(0, $currency);
-            $item->tax_rate = '0';
-            // TODO: There are usually still categories for digital products.
-            // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
+            $item->unit_amount = PriceToMoney::convert(
+                $netMode ? $payment->getNettoPrice() : $payment->getBruttoPrice(),
+                $currency
+            );
+            if ($articlesWithTax) {
+                $item->tax = PriceToMoney::convert(0, $currency);
+                $item->tax_rate = '0';
+            }
             $item->category = $itemCategory;
 
             $item->quantity = '1';
@@ -390,35 +398,38 @@ class OrderRequestFactory
         }
 
         //Shipping cost
-        if ($delivery = $basket->getPayPalCheckoutDeliveryCosts()) {
+        $delivery = $basket->getPayPalCheckoutDeliveryCosts();
+        if ($delivery) {
             $item = new Item();
             $item->name = $language->translateString('SHIPPING_COST');
 
-            $item->unit_amount = PriceToMoney::convert((float)$delivery, $currency);
-            // tax - we use 0% and calculate with brutto to avoid rounding errors
-            $item->tax = PriceToMoney::convert(0, $currency);
-            $item->tax_rate = '0';
-            // TODO: There are usually still categories for digital products.
-            // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
+            $item->unit_amount = PriceToMoney::convert(
+                $netMode ? $delivery->getNettoPrice() : $delivery->getBruttoPrice(),
+                $currency
+            );
+            if ($articlesWithTax) {
+                $item->tax = PriceToMoney::convert(0, $currency);
+                $item->tax_rate = '0';
+            }
             $item->category = $itemCategory;
 
             $item->quantity = '1';
             $items[] = $item;
         }
 
-        $discount = $basket->getPayPalCheckoutDiscount();
         // possible price surcharge
+        $discount = $basket->getPayPalCheckoutDiscount($netMode);
+
         if ($discount < 0) {
             $discount *= -1;
             $item = new Item();
             $item->name = $language->translateString('SURCHARGE');
 
             $item->unit_amount = PriceToMoney::convert($discount, $currency);
-            // tax - we use 0% and calculate with brutto to avoid rounding errors
-            $item->tax = PriceToMoney::convert(0, $currency);
-            $item->tax_rate = '0';
-            // TODO: There are usually still categories for digital products.
-            // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
+            if ($articlesWithTax) {
+                $item->tax = PriceToMoney::convert($basket->getPayPalCheckoutDiscountVat($netMode), $currency);
+                $item->tax_rate = $config->getConfigParam('dDefaultVAT');
+            }
             $item->category = $itemCategory;
 
             $item->quantity = '1';
@@ -431,12 +442,10 @@ class OrderRequestFactory
             $item->name = $language->translateString('OSC_PAYPAL_VAT_CORRECTION');
 
             $item->unit_amount = PriceToMoney::convert((float)$roundDiff, $currency);
-            // tax - we use 0% and calculate with brutto to avoid rounding errors
-            $item->tax = PriceToMoney::convert(0, $currency);
-            $item->tax_rate = '0';
-
-            // TODO: There are usually still categories for digital products.
-            // But only with PHYSICAL_GOODS, Payments like PUI will work fine.
+            if ($articlesWithTax) {
+                $item->tax = PriceToMoney::convert(0, $currency);
+                $item->tax_rate = '0';
+            }
             $item->category = $itemCategory;
 
             $item->quantity = '1';

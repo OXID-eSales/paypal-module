@@ -46,6 +46,8 @@ class PatchRequestFactory
         string $orderId = ''
     ): array {
         $this->basket = $basket;
+        $netMode = $basket->isCalculationModeNetto();
+        $currency = $basket->getBasketCurrency();
 
         $this->getShippingNamePatch();
         $this->getShippingAddressPatch();
@@ -54,14 +56,11 @@ class PatchRequestFactory
             $this->getCustomIdPatch($orderId);
         }
 
-        /** @var BasketItem $basketItem */
-        // PayPal cannot fully patch the items in the shopping cart.
-        // At the moment only the amount and the title of the article
-        // are relevant. However, no inventory.
-        // So we ignore the Article-Patch
-        //foreach ($this->basket->getContents() as $basketItem) {
-        //    $this->getPurchaseUnitsPatch($basketItem);
-        //}
+        $this->getPurchaseUnitsPatch(
+            $this->basket,
+            $netMode,
+            $currency
+        );
 
         return $this->request;
     }
@@ -138,30 +137,124 @@ class PatchRequestFactory
     }
 
     /**
-     * @param BasketItem $basketItem
-     * @param bool $nettoPrices
+     * @param Basket $basket
+     * @param bool $netMode
      * @param $currency
      */
     protected function getPurchaseUnitsPatch(
-        BasketItem $basketItem
+        Basket $basket,
+        bool $netMode,
+        $currency
     ): void {
-        $currency = $this->basket->getBasketCurrency();
+
+        $basketItems = $basket->getContents();
+        $language = Registry::getLang();
 
         $patch = new Patch();
         $patch->op = Patch::OP_REPLACE;
         $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/items";
+        $patchValues = [];
 
-        $item = new Item();
-        $item->name = $basketItem->getTitle();
-        $itemUnitPrice = $basketItem->getUnitPrice();
-        $item->unit_amount = PriceToMoney::convert($itemUnitPrice->getBruttoPrice(), $currency);
+        /** @var BasketItem $basketItem */
+        foreach ($basketItems as $basketItem) {
+            $item = new Item();
+            $item->name = $basketItem->getTitle();
+            $itemUnitPrice = $basketItem->getUnitPrice();
+            if ($itemUnitPrice) {
+                $item->unit_amount = PriceToMoney::convert(
+                    $netMode ? $itemUnitPrice->getNettoPrice() : $itemUnitPrice->getBruttoPrice(),
+                    $currency
+                );
+                // We provide no tax, because Tax is in 99% not necessary.
+                // Maybe just PUI, but PUI orders will not be patched.
+                $item->quantity = (string) $basketItem->getAmount();
+                $patchValues[] = $item;
+            }
+        }
 
-        //Item tax sum - we use 0% and calculate with brutto to avoid rounding errors
-        $item->tax = PriceToMoney::convert(0, $currency);
+        $wrapping = $basket->getPayPalCheckoutWrapping();
+        if ($wrapping) {
+            $item = new Item();
+            $item->name = $language->translateString('GIFT_WRAPPING');
 
-        $item->quantity = (string) $basketItem->getAmount();
+            $item->unit_amount = PriceToMoney::convert(
+                $netMode ? $wrapping->getNettoPrice() : $wrapping->getBruttoPrice(),
+                $currency
+            );
 
-        $patch->value = $item;
+            $item->quantity = '1';
+            $patchValues[] = $item;
+        }
+
+        $giftCard = $basket->getPayPalCheckoutGiftCard();
+        if ($giftCard) {
+            $item = new Item();
+            $item->name = $language->translateString('GREETING_CARD');
+
+            $item->unit_amount = PriceToMoney::convert(
+                $netMode ? $giftCard->getNettoPrice() : $giftCard->getBruttoPrice(),
+                $currency
+            );
+
+            $item->quantity = '1';
+            $patchValues[] = $item;
+        }
+
+        $payment = $basket->getPayPalCheckoutPayment();
+        if ($payment) {
+            $item = new Item();
+            $item->name = $language->translateString('PAYMENT_METHOD');
+
+            $item->unit_amount = PriceToMoney::convert(
+                $netMode ? $payment->getNettoPrice() : $payment->getBruttoPrice(),
+                $currency
+            );
+
+            $item->quantity = '1';
+            $patchValues[] = $item;
+        }
+
+        //Shipping cost
+        $delivery = $basket->getPayPalCheckoutDeliveryCosts();
+        if ($delivery) {
+            $item = new Item();
+            $item->name = $language->translateString('SHIPPING_COST');
+
+            $item->unit_amount = PriceToMoney::convert(
+                $netMode ? $delivery->getNettoPrice() : $delivery->getBruttoPrice(),
+                $currency
+            );
+
+            $item->quantity = '1';
+            $patchValues[] = $item;
+        }
+
+        // possible price surcharge
+        $discount = $basket->getPayPalCheckoutDiscount($netMode);
+
+        if ($discount < 0) {
+            $discount *= -1;
+            $item = new Item();
+            $item->name = $language->translateString('SURCHARGE');
+
+            $item->unit_amount = PriceToMoney::convert($discount, $currency);
+
+            $item->quantity = '1';
+            $patchValues[] = $item;
+        }
+
+        // Dummy-Article for Rounding-Error
+        if ($roundDiff = $basket->getPayPalCheckoutRoundDiff()) {
+            $item = new Item();
+            $item->name = $language->translateString('OSC_PAYPAL_VAT_CORRECTION');
+
+            $item->unit_amount = PriceToMoney::convert((float)$roundDiff, $currency);
+
+            $item->quantity = '1';
+            $patchValues[] = $item;
+        }
+
+        $patch->value = $patchValues;
 
         $this->request[] = $patch;
     }
