@@ -1,3 +1,5 @@
+[{block name="oscpaypal_applepay"}]
+[{oxhasrights ident="PAYWITHAPPLEPAY"}]
 [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
 [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
 [{assign var="config" value=$oViewConf->getPayPalCheckoutConfig()}]
@@ -335,3 +337,5 @@
 [{/capture}]
 [{oxscript include="https://applepay.cdn-apple.com/jsapi/v1/apple-pay-sdk.js" }]
 [{oxscript add=$smarty.capture.detailsApplePayScript}]
+[{/oxhasrights}]
+[{/block}]
