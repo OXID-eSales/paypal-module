@@ -1,4 +1,5 @@
 [{block name="oscpaypal_paymentbuttons"}]
+    [{oxhasrights ident="PAYWITHPAYPALEXPRESS"}]
     <div id="[{$buttonId}]" class="paypal-button-container [{$buttonClass}]"></div>
     [{if $phpStorm}]<script>[{/if}]
     [{capture assign="paypal_init"}]
@@ -120,4 +121,5 @@
     [{/capture}]
     [{if $phpStorm}]</script>[{/if}]
     [{oxscript add=$paypal_init}]
+    [{/oxhasrights}]
 [{/block}]

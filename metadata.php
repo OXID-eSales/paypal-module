@@ -547,12 +547,6 @@ $aModule = [
             'group' => null
         ],
         [
-            'name' => 'oscPayPalActivePayments',
-            'type' => 'arr',
-            'value' => [],
-            'group' => null
-        ],
-        [
             'group' => null,
             'name' => 'oscPayPalLocales',
             'type' => 'str',
