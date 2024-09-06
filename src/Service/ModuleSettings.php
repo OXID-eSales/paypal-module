@@ -11,6 +11,7 @@ namespace OxidSolutionCatalysts\PayPal\Service;
 
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\Payment;
+use OxidEsales\Eshop\Application\Model\Shop;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleConfigurationDaoBridgeInterface;
@@ -386,6 +387,37 @@ class ModuleSettings
     public function isSandboxGooglePayEligibility(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalSandboxGooglePayEligibility');
+    }
+
+    public function getShopName(): string
+    {
+        $value = '';
+        /** @var Shop $shop */
+        $shop = Registry::getConfig()->getActiveShop();
+        if (isset($shop->oxshops__oxname->rawValue)) {
+            $value = $shop->oxshops__oxname->rawValue;
+        }
+        elseif(isset($shop->oxshops__oxname->value)) {
+            $value = $shop->oxshops__oxname->value;
+        }
+        return $value;
+
+        // method "getRawFieldData" available only with shop v6.5+
+        //return Registry::getConfig()->getActiveShop()->getRawFieldData('oxname');
+    }
+
+    public function getInfoEMail(): string
+    {
+        $value = '';
+        /** @var Shop $shop */
+        $shop = Registry::getConfig()->getActiveShop();
+        if (isset($shop->oxshops__oxinfoemail->rawValue)) {
+            $value = $shop->oxshops__oxinfoemail->rawValue;
+        }
+        elseif(isset($shop->oxshops__oxinfoemail->value)) {
+            $value = $shop->oxshops__oxinfoemail->value;
+        }
+        return $value;
     }
 
     /**

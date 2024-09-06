@@ -664,7 +664,7 @@ class OrderRequestFactory
         $experienceContext->locale = strtolower($payer->address->country_code)
             . '-'
             .  strtoupper($payer->address->country_code);
-        $experienceContext->customer_service_instructions[] = $activeShop->getRawFieldData('oxinfoemail');
+        $experienceContext->customer_service_instructions[] = $moduleSettings->getInfoEMail();
         $paymentSource->experience_context = $experienceContext;
 
         return [PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME => $paymentSource];
