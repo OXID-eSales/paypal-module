@@ -46,7 +46,7 @@ class PatchRequestFactory
         string $orderId = ''
     ): array {
         $this->basket = $basket;
-        $netMode = $basket->isCalculationModeNetto();
+        $withItems = !$this->basket->isCalculationModeNetto();
         $currency = $basket->getBasketCurrency();
 
         $this->getShippingNamePatch();
@@ -55,12 +55,12 @@ class PatchRequestFactory
         if ($orderId) {
             $this->getCustomIdPatch($orderId);
         }
-
-        $this->getPurchaseUnitsPatch(
-            $this->basket,
-            $netMode,
-            $currency
-        );
+        if ($withItems) {
+            $this->getPurchaseUnitsPatch(
+                $this->basket,
+                $currency
+            );
+        }
 
         return $this->request;
     }
@@ -138,12 +138,10 @@ class PatchRequestFactory
 
     /**
      * @param Basket $basket
-     * @param bool $netMode
      * @param $currency
      */
     protected function getPurchaseUnitsPatch(
         Basket $basket,
-        bool $netMode,
         $currency
     ): void {
 
@@ -162,7 +160,7 @@ class PatchRequestFactory
             $itemUnitPrice = $basketItem->getUnitPrice();
             if ($itemUnitPrice) {
                 $item->unit_amount = PriceToMoney::convert(
-                    $netMode ? $itemUnitPrice->getNettoPrice() : $itemUnitPrice->getBruttoPrice(),
+                    $itemUnitPrice->getBruttoPrice(),
                     $currency
                 );
                 // We provide no tax, because Tax is in 99% not necessary.
@@ -178,7 +176,7 @@ class PatchRequestFactory
             $item->name = $language->translateString('GIFT_WRAPPING');
 
             $item->unit_amount = PriceToMoney::convert(
-                $netMode ? $wrapping->getNettoPrice() : $wrapping->getBruttoPrice(),
+                $wrapping->getBruttoPrice(),
                 $currency
             );
 
@@ -192,7 +190,7 @@ class PatchRequestFactory
             $item->name = $language->translateString('GREETING_CARD');
 
             $item->unit_amount = PriceToMoney::convert(
-                $netMode ? $giftCard->getNettoPrice() : $giftCard->getBruttoPrice(),
+                $giftCard->getBruttoPrice(),
                 $currency
             );
 
@@ -206,7 +204,7 @@ class PatchRequestFactory
             $item->name = $language->translateString('PAYMENT_METHOD');
 
             $item->unit_amount = PriceToMoney::convert(
-                $netMode ? $payment->getNettoPrice() : $payment->getBruttoPrice(),
+                $payment->getBruttoPrice(),
                 $currency
             );
 
@@ -221,7 +219,7 @@ class PatchRequestFactory
             $item->name = $language->translateString('SHIPPING_COST');
 
             $item->unit_amount = PriceToMoney::convert(
-                $netMode ? $delivery->getNettoPrice() : $delivery->getBruttoPrice(),
+                $delivery->getBruttoPrice(),
                 $currency
             );
 
@@ -230,7 +228,7 @@ class PatchRequestFactory
         }
 
         // possible price surcharge
-        $discount = $basket->getPayPalCheckoutDiscount($netMode);
+        $discount = $basket->getPayPalCheckoutDiscount();
 
         if ($discount < 0) {
             $discount *= -1;
