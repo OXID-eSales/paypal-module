@@ -60,9 +60,12 @@ class EventVerifier
             'webhook_event' => $normalizedBody
         ];
 
+        $headers = [];
+        $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
+
         /** @var GenericService $notificationService */
         $notificationService = Registry::get(ServiceFactory::class)->getNotificationService();
-        $response = $notificationService->request('post', $payload);
+        $response = $notificationService->request('post', $payload, [], $headers);
 
         if (
             !$response['verification_status'] || (

@@ -24,7 +24,7 @@
         "giggsey/libphonenumber-for-php": "^8.12",
         "viison/address-splitter": "^0.3.4",
         "webmozart/path-util": "^2.3.0",
-        "oxid-solution-catalysts/paypal-client": "v1.0.10"
+        "oxid-solution-catalysts/paypal-client": "v1.0.11"
     },
     "require-dev": {
         "oxid-esales/oxideshop-ce": "^v6.3.0",
