@@ -37,57 +37,82 @@ class VaultingService extends BaseService
 
         $path = '/v1/oauth2/token';
 
-        $response = $this->send('POST', $path, $params, $headers);
-        $body = $response->getBody();
+        $body = '';
+        try {
+            $response = $this->send('POST', $path, $params, $headers);
+            if ($response) {
+                $body = $response->getBody();
+            }
+        } catch (ApiException $e) {
+        }
 
-        return json_decode((string)$body, true);
+        try {
+            $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            $result = [];
+        }
+        return is_array($result) ? $result : [];
     }
 
     /**
      * Request a setup token either for card or for PayPal vaulting
      * @param bool $card
      * @return array
-     * @throws ApiException
      * @throws JsonException
      */
     public function createVaultSetupToken(bool $card = false): array
     {
         if ($card) {
-            $body = [
+            $requestBody = [
                 "payment_source" => [
                     "card" => [],
                 ]
             ];
         } else {
-            $body = $this->getPaymentSourceForVaulting($card);
+            $requestBody = $this->getPaymentSourceForVaulting($card);
         }
 
         //add customerid if there already is one
-        if ($paypalCustomerId = Registry::getConfig()->getUser()->getFieldData("oscpaypalcustomerid")) {
-            $body["customer"] = [
-                "id" => $paypalCustomerId
-            ];
+        $user = Registry::getConfig()->getUser();
+        if ($user) {
+            $paypalCustomerId = $user->getFieldData("oscpaypalcustomerid");
+            if ($paypalCustomerId) {
+                $requestBody["customer"] = [
+                    "id" => $paypalCustomerId
+                ];
+            }
         }
 
         $headers = $this->getVaultingHeaders();
 
         $path = '/v3/vault/setup-tokens';
 
-        $response = $this->send(
-            'POST',
-            $path,
-            [],
-            $headers,
-            json_encode($body, JSON_THROW_ON_ERROR | JSON_FORCE_OBJECT)
-        );
-        $body = $response->getBody();
+        $body = '';
+        try {
+            $response = $this->send(
+                'POST',
+                $path,
+                [],
+                $headers,
+                json_encode($requestBody, JSON_THROW_ON_ERROR | JSON_FORCE_OBJECT)
+            );
+            if ($response) {
+                $body = $response->getBody();
+            }
+        } catch (ApiException $e) {
+        }
 
-        return json_decode((string)$body, true);
+        try {
+            $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            $result = [];
+        }
+        return is_array($result) ? $result : [];
     }
 
     /**
      * @param bool $card
-     * @return array[]
+     * @return array
      */
     public function getPaymentSourceForVaulting(bool $card): array
     {
@@ -173,7 +198,7 @@ class VaultingService extends BaseService
         return $paymentSource;
     }
 
-    public function createVaultPaymentToken($setupToken)
+    public function createVaultPaymentToken(string $setupToken): array
     {
         $headers = $this->getVaultingHeaders();
 
@@ -188,17 +213,29 @@ class VaultingService extends BaseService
             ]
         ];
 
-        $response = $this->send('POST', $path, [], $headers, json_encode($requestBody));
-        $responseBody = $response->getBody();
+        $body = '';
+        try {
+            $response = $this->send('POST', $path, [], $headers, json_encode($requestBody, JSON_THROW_ON_ERROR));
+            if ($response) {
+                $body = $response->getBody();
+            }
+        } catch (ApiException $e) {
 
-        return json_decode((string)$responseBody, true);
+        }
+
+        try {
+            $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            $result = [];
+        }
+        return is_array($result) ? $result : [];
     }
 
-    public function getVaultPaymentTokens($paypalCustomerId)
+    public function getVaultPaymentTokens(string $paypalCustomerId): array
     {
         $viewConf = oxNew(ViewConfig::class);
         if (!$viewConf->getIsVaultingActive()) {
-            return null;
+            return [];
         }
 
         $headers = [];
@@ -207,47 +244,66 @@ class VaultingService extends BaseService
 
         $path = '/v3/vault/payment-tokens?customer_id=' . $paypalCustomerId;
 
-        $response = $this->send('GET', $path, [], $headers);
-        $body = $response->getBody();
+        $body = '';
+        try {
+            $response = $this->send('GET', $path, [], $headers);
+            if ($response) {
+                $body = $response->getBody();
+            }
+        } catch (ApiException $e) {
+        }
 
-        return json_decode((string)$body, true);
+        try {
+            $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            $result = [];
+        }
+        return is_array($result) ? $result : [];
     }
 
-    public function getVaultPaymentTokenByIndex($paypalCustomerId, $index)
+    public function getVaultPaymentTokenByIndex(string $paypalCustomerId, string $index): string
     {
         $paymentTokens = $this->getVaultPaymentTokens($paypalCustomerId);
 
-        return $paymentTokens["payment_tokens"][$index];
+        return $paymentTokens["payment_tokens"][$index] ?: '';
     }
 
     /**
-     * @param $paymentTokenId
+     * @param string $paymentTokenId
      * @return bool
      */
-    public function deleteVaultedPayment($paymentTokenId)
+    public function deleteVaultedPayment(string $paymentTokenId): bool
     {
         $headers = [];
         $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
 
         $path = '/v3/vault/payment-tokens/' . $paymentTokenId;
 
-        $response = $this->send('DELETE', $path, [], $headers);
+        try {
+            $response = $this->send('DELETE', $path, [], $headers);
+            $result = $response && $response->getStatusCode() === 204;
+        } catch (ApiException $e) {
+            $result = false;
+        }
 
-        return $response->getStatusCode() === 204;
+        return $result;
     }
 
     /**
      * @return array
+     * @throws JsonException
      */
     protected function getVaultingHeaders(): array
     {
         $headers = [];
         $headers['Content-Type'] = 'application/json';
         $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
-        $headers = array_merge($headers, $this->getAuthHeaders());
-        return $headers;
+        return array_merge($headers, $this->getAuthHeaders());
     }
 
+    /**
+     * @throws JsonException
+     */
     protected function getAuthHeaders(): array
     {
         if (!$this->client->isAuthenticated()) {
