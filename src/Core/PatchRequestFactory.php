@@ -160,7 +160,7 @@ class PatchRequestFactory
             $itemUnitPrice = $basketItem->getUnitPrice();
             if ($itemUnitPrice) {
                 $item->unit_amount = PriceToMoney::convert(
-                    $itemUnitPrice->getBruttoPrice(),
+                    $itemUnitPrice,
                     $currency
                 );
                 // We provide no tax, because Tax is in 99% not necessary.
@@ -176,7 +176,7 @@ class PatchRequestFactory
             $item->name = $language->translateString('GIFT_WRAPPING');
 
             $item->unit_amount = PriceToMoney::convert(
-                $wrapping->getBruttoPrice(),
+                $wrapping,
                 $currency
             );
 
@@ -190,7 +190,7 @@ class PatchRequestFactory
             $item->name = $language->translateString('GREETING_CARD');
 
             $item->unit_amount = PriceToMoney::convert(
-                $giftCard->getBruttoPrice(),
+                $giftCard,
                 $currency
             );
 
@@ -204,7 +204,7 @@ class PatchRequestFactory
             $item->name = $language->translateString('PAYMENT_METHOD');
 
             $item->unit_amount = PriceToMoney::convert(
-                $payment->getBruttoPrice(),
+                $payment,
                 $currency
             );
 
@@ -219,7 +219,7 @@ class PatchRequestFactory
             $item->name = $language->translateString('SHIPPING_COST');
 
             $item->unit_amount = PriceToMoney::convert(
-                $delivery->getBruttoPrice(),
+                $delivery,
                 $currency
             );
 
