@@ -55,34 +55,34 @@ class Payment
     /**
      * @var string
      */
-    private string $paymentExecutionError = self::PAYMENT_ERROR_NONE;
+    private $paymentExecutionError = self::PAYMENT_ERROR_NONE;
 
     /**
      * @var EshopSession
      */
-    private EshopSession $eshopSession;
+    private $eshopSession;
 
     /**
      * @var OrderRepository
      */
-    private OrderRepository $orderRepository;
+    private $orderRepository;
 
     /** @var ServiceFactory */
-    private ServiceFactory $serviceFactory;
+    private $serviceFactory;
 
     /** @var PatchRequestFactory */
-    private PatchRequestFactory $patchRequestFactory;
+    private $patchRequestFactory;
 
     /** @var OrderRequestFactory */
-    private OrderRequestFactory $orderRequestFactory;
+    private $orderRequestFactory;
 
     /** @var SCAValidatorInterface */
-    private SCAValidatorInterface $scaValidator;
+    private $scaValidator;
 
     /** @var ModuleSettingsService */
-    private ModuleSettings $moduleSettingsService;
+    private $moduleSettingsService;
 
-    private Logger $logger;
+    private $logger;
 
     public function __construct(
         EshopSession $eshopSession,
