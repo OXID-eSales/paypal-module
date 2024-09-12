@@ -170,6 +170,7 @@ class Payment
             OrderRequestFactory::USER_ACTION_CONTINUE,
             null,
             null,
+            '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
             null,
             null,
