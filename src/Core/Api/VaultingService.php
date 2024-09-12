@@ -248,11 +248,11 @@ class VaultingService extends BaseService
         return is_array($result) ? $result : [];
     }
 
-    public function getVaultPaymentTokenByIndex(string $paypalCustomerId, string $index): string
+    public function getVaultPaymentTokenByIndex(string $paypalCustomerId, string $index): array
     {
         $paymentTokens = $this->getVaultPaymentTokens($paypalCustomerId);
 
-        return $paymentTokens["payment_tokens"][$index] ?: '';
+        return $paymentTokens["payment_tokens"][$index] ?: [];
     }
 
     /**
