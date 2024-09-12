@@ -67,36 +67,50 @@ class PatchRequestFactory
 
     protected function getShippingAddressPatch(): void
     {
-        $deliveryId = Registry::getSession()->getVariable("deladrid");
-        $deliveryAddress = oxNew(Address::class);
+        $addressObj = false;
+        $address = new AddressPortable();
+        $session = Registry::getSession();
 
-        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
+        $deliveryId = $session->getVariable("deladrid");
+
+        if ($deliveryId) {
+            $deliveryAddress = oxNew(Address::class);
+            if ($deliveryAddress->load($deliveryId)) {
+                $addressObj = $deliveryAddress;
+            }
+        }
+        else {
+            $user = $this->basket->getUser();
+            if ($user) {
+                $addressObj = $user;
+            }
+        }
+
+        if ($addressObj) {
+            $state = oxNew(State::class);
+            $country = oxNew(Country::class);
+
+            $state->load($addressObj->getFieldData('oxstateid'));
+            $country->load($addressObj->getFieldData('oxcountryid'));
+
+            $addressLine =
+                $addressObj->getFieldData('oxstreet') . " " . $addressObj->getFieldData('oxstreetnr');
+            $address->address_line_1 = $addressLine;
+
+            $addinfoLine = $addressObj->getFieldData('oxcompany') . " " .
+                $addressObj->getFieldData('oxaddinfo');
+            $address->address_line_2 = $addinfoLine;
+
+            $address->admin_area_1 = $state->getFieldData('oxtitle');
+            $address->admin_area_2 = $addressObj->getFieldData('oxcity');
+            $address->country_code = $country->oxcountry__oxisoalpha2->value;
+            $address->postal_code = $addressObj->getFieldData('oxzip');
+
             $patch = new Patch();
             $patch->op = Patch::OP_REPLACE;
             $patch->path = "/purchase_units/@reference_id=='"
                 . Constants::PAYPAL_ORDER_REFERENCE_ID
                 . "'/shipping/address";
-
-            $address = new AddressPortable();
-
-            $state = oxNew(State::class);
-            $state->load($deliveryAddress->getFieldData('oxstateid'));
-
-            $country = oxNew(Country::class);
-            $country->load($deliveryAddress->getFieldData('oxcountryid'));
-
-            $addressLine =
-                $deliveryAddress->getFieldData('oxstreet') . " " . $deliveryAddress->getFieldData('oxstreetnr');
-            $address->address_line_1 = $addressLine;
-
-            $addinfoLine = $deliveryAddress->getFieldData('oxcompany') . " " .
-                $deliveryAddress->getFieldData('oxaddinfo');
-            $address->address_line_2 = $addinfoLine;
-
-            $address->admin_area_1 = $state->getFieldData('oxtitle');
-            $address->admin_area_2 = $deliveryAddress->getFieldData('oxcity');
-            $address->country_code = $country->oxcountry__oxisoalpha2->value;
-            $address->postal_code = $deliveryAddress->getFieldData('oxzip');
 
             $patch->value = $address;
 
