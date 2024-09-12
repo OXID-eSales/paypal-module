@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -106,9 +107,9 @@ class PaymentController extends PaymentController_parent
     public function getPayPalPuiFraudnetCmId(): string
     {
 
-        if (!($cmId = \OxidSolutionCatalysts\PayPal\Core\PayPalSession::getPayPalPuiCmId())) {
+        if (!($cmId = PayPalSession::getPayPalPuiCmId())) {
             $cmId = Registry::getUtilsObject()->generateUId();
-            \OxidSolutionCatalysts\PayPal\Core\PayPalSession::storePayPalPuiCmId($cmId);
+            PayPalSession::storePayPalPuiCmId($cmId);
         }
         return $cmId;
     }
@@ -129,6 +130,8 @@ class PaymentController extends PaymentController_parent
         $paymentListRaw = $paymentList;
         $paymentList = [];
         $payPalHealth = $this->getServiceFromContainer(ModuleSettings::class)->checkHealth();
+        $basket = Registry::getSession()->getBasket();
+        $isCalculationModeNetto = $basket ? $basket->isCalculationModeNetto() : false;
 
         /*
          * check:
@@ -158,7 +161,7 @@ class PaymentController extends PaymentController_parent
                     (
                         $payPalDefinitions[$key]['onlybrutto'] === false ||
                         (
-                        !$this->getServiceFromContainer(ModuleSettings::class)->isPriceViewModeNetto()
+                            !$isCalculationModeNetto
                         )
                     )
                 )

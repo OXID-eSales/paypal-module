@@ -5,6 +5,8 @@
  * See LICENSE file for license details.
  */
 
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+
 $sLangName = 'English';
 
 $aLang = [
@@ -69,7 +71,8 @@ $aLang = [
     'OSC_PAYPAL_SPECIAL_PAYMENTS'                 => 'Activation for special payment methods has taken place',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_PUI'             => 'Pay upon Invoice',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Creditcard',
-    'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '(As an alternative to the missing payment method, an additional "credit card" button is displayed under the Paypal buttons.)',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '<em>- Alternatively, you can activate and use the payment method "PayPal Credit Card Fallback" (id: "' . PayPalDefinitions::CCALTERNATIVE_PAYPAL_PAYMENT_ID . '"). Please use a suitable name for this payment method in this fallback case.</em>',
+
 
     'OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING'        => 'Vaulting',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY'        => 'Applepay',

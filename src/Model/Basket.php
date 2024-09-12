@@ -149,29 +149,29 @@ class Basket extends Basket_parent
 
     /**
      * Collects all basket discounts (basket, payment and vouchers)
-     * and returns sum of collected discounts brut value.
+     * and returns sum of collected discounts value.
      */
     public function getPayPalCheckoutDiscount(): float
     {
         $config = Registry::getConfig();
-        $netMode = $config->getConfigParam('blShowNetPrice');
+        $netMode = $this->isCalculationModeNetto();
         $defaultVAT = $config->getConfigParam('dDefaultVAT');
         $discount = 0.0;
 
         $totalDiscount = $this->getTotalDiscount();
 
         if ($totalDiscount) {
-            $discount += $totalDiscount->getBruttoPrice();
+            $discount += $netMode ? $totalDiscount->getNettoPrice() : $totalDiscount->getBruttoPrice();
         }
 
         //vouchers
-        $vouchers = (array)$this->getVouchers();
+        $vouchers = $this->getVouchers();
         foreach ($vouchers as $voucher) {
             $voucherPrice = oxNew(Price::class);
             $voucherPrice->setNettoMode($netMode);
             $voucherPrice->setPrice($voucher->dVoucherdiscount, (float)$defaultVAT);
 
-            $discount += $voucherPrice->getBruttoPrice();
+            $discount += $netMode ? $voucherPrice->getNettoPrice() : $voucherPrice->getBruttoPrice();
         }
 
         return $discount;
@@ -259,5 +259,10 @@ class Basket extends Basket_parent
         $result += $this->getPayPalCheckoutDeliveryCosts();
 
         return $result;
+    }
+
+    private function getFloatFromPrice(Price $price): float
+    {
+        return $this->isCalculationModeNetto() ? $price->getNettoPrice(): $price->getBruttoPrice();
     }
 }

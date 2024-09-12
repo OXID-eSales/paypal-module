@@ -1,3 +1,5 @@
+[{block name="oscpaypal_googlepay"}]
+[{oxhasrights ident="PAYWITHGOOGLEPAY"}]
 [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
 [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
 [{assign var="oPPconfig" value=$oViewConf->getPayPalCheckoutConfig()}]
@@ -9,7 +11,7 @@
     }
 </style>
 [{capture name="detailsGooglePayScript"}]
-[{if false}]<script>[{/if}]
+    [{if false}]<script>[{/if}]
     document.addEventListener("DOMContentLoaded", (event) => {
         if (google && paypal.Googlepay) {
             onGooglePayLoaded().catch(console.log);
@@ -277,3 +279,6 @@
 [{/capture}]
 [{oxscript include="https://pay.google.com/gp/p/js/pay.js"}]
 [{oxscript add=$smarty.capture.detailsGooglePayScript}]
+[{/oxhasrights}]
+[{/block}]
+

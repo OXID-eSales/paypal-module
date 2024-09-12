@@ -338,7 +338,11 @@ class Order extends Order_parent
         if (!$this->payPalApiOrder) {
             /** @var Orders $orderService */
             $orderService = Registry::get(ServiceFactory::class)->getOrderService();
-            $this->payPalApiOrder = $orderService->showOrderDetails($payPalOrderId, '');
+            $this->payPalApiOrder = $orderService->showOrderDetails(
+                $payPalOrderId,
+                '',
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+            );
         }
 
         return $this->payPalApiOrder;

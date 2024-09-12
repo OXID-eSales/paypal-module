@@ -111,11 +111,9 @@ class Payment
         string $processingInstruction = null,
         string $paymentSource = null,
         string $payPalClientMetadataId = '',
-        string $payPalRequestId = '',
         string $payPalPartnerAttributionId = '',
         string $returnUrl = null,
         string $cancelUrl = null,
-        bool $withArticles = true,
         bool $setProvidedAddress = true,
         ?EshopModelOrder $order = null
         #): ?ApiModelOrder
@@ -136,7 +134,6 @@ class Payment
             null,
             $returnUrl,
             $cancelUrl,
-            $withArticles,
             $setProvidedAddress
         );
 
@@ -173,7 +170,6 @@ class Payment
             OrderRequestFactory::USER_ACTION_CONTINUE,
             null,
             null,
-            '',
             '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
             null,
@@ -332,7 +328,8 @@ class Payment
                         '',
                         $checkoutOrderId,
                         $request,
-                        ''
+                        '',
+                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                     );
                 } catch (ApiException $exception) {
                     $this->handlePayPalApiError($exception);
@@ -490,14 +487,20 @@ class Payment
         $orderModel->load($sessionOrderId);
 
         if (
-            $orderModel->isLoaded() &&
-            !$orderModel->hasOrderNumber()
+            $orderModel->isLoaded()
         ) {
-            $orderModel->delete();
+            $orderModel->cancelOrder();
             $this->logger->log('debug', sprintf(
-                'Temporary order without Order number and with id %s was deleted',
+                'Temporary order with id %s was canceled',
                 $sessionOrderId
             ));
+            if (!$orderModel->hasOrderNumber()) {
+                $orderModel->delete();
+                $this->logger->log('debug', sprintf(
+                    'Temporary order without Order number and with id %s was deleted',
+                    $sessionOrderId
+                ));
+            }
         }
 
         PayPalSession::unsetPayPalOrderId();
@@ -582,7 +585,6 @@ class Payment
             null,
             null,
             '',
-            '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
             $returnUrl,
             $cancelUrl,
@@ -632,7 +634,6 @@ class Payment
             null,
             null,
             '',
-            '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
             null,
             null,
@@ -657,11 +658,9 @@ class Payment
                 Constants::PAYPAL_PUI_PROCESSING_INSTRUCTIONS,
                 PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME,
                 $payPalClientMetadataId,
-                '',
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
                 null,
                 null,
-                true,
                 true,
                 $order
             );
@@ -741,7 +740,11 @@ class Payment
     {
         return $this->serviceFactory
             ->getOrderService()
-            ->showOrderDetails($paypalOrderId, $fields);
+            ->showOrderDetails(
+                $paypalOrderId,
+                $fields,
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+            );
     }
 
     /**

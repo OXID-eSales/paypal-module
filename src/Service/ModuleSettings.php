@@ -11,6 +11,7 @@ namespace OxidSolutionCatalysts\PayPal\Service;
 
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\Payment;
+use OxidEsales\Eshop\Application\Model\Shop;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleConfigurationDaoBridgeInterface;
@@ -388,11 +389,35 @@ class ModuleSettings
         return (bool)$this->getSettingValue('oscPayPalSandboxGooglePayEligibility');
     }
 
-    public function getActivePayments(): array
+    public function getShopName(): string
     {
-        /** @var array|null $activePayments */
-        $activePayments = $this->getSettingValue('oscPayPalActivePayments');
-        return $activePayments ?: [];
+        $value = '';
+        /** @var Shop $shop */
+        $shop = Registry::getConfig()->getActiveShop();
+        if (isset($shop->oxshops__oxname->rawValue)) {
+            $value = $shop->oxshops__oxname->rawValue;
+        }
+        elseif(isset($shop->oxshops__oxname->value)) {
+            $value = $shop->oxshops__oxname->value;
+        }
+        return $value;
+
+        // method "getRawFieldData" available only with shop v6.5+
+        //return Registry::getConfig()->getActiveShop()->getRawFieldData('oxname');
+    }
+
+    public function getInfoEMail(): string
+    {
+        $value = '';
+        /** @var Shop $shop */
+        $shop = Registry::getConfig()->getActiveShop();
+        if (isset($shop->oxshops__oxinfoemail->rawValue)) {
+            $value = $shop->oxshops__oxinfoemail->rawValue;
+        }
+        elseif(isset($shop->oxshops__oxinfoemail->value)) {
+            $value = $shop->oxshops__oxinfoemail->value;
+        }
+        return $value;
     }
 
     /**
@@ -505,10 +530,6 @@ class ModuleSettings
         }
     }
 
-    public function saveActivePayments(array $activePayments): void
-    {
-        $this->save('oscPayPalActivePayments', $activePayments);
-    }
     public function saveGooglePayEligibility(bool $isGooglePayEligibility): void
     {
         if ($this->isSandbox()) {
@@ -559,21 +580,6 @@ class ModuleSettings
             $this->payPalCheckoutExpressPaymentEnabled = $expressEnabled;
         }
         return $this->payPalCheckoutExpressPaymentEnabled;
-    }
-
-    /**
-     * Checks and return true if price view mode is netto
-     *
-     * @return bool
-     */
-    public function isPriceViewModeNetto(): bool
-    {
-        $result = (bool)Registry::getConfig()->getConfigParam('blShowNetPrice');
-        $user = oxNew(User::class);
-        if ($user->loadActiveUser()) {
-            $result = $user->isPriceViewModeNetto();
-        }
-        return $result;
     }
 
     /**
