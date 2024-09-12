@@ -43,14 +43,11 @@ class VaultingService extends BaseService
             if ($response) {
                 $body = $response->getBody();
             }
-        } catch (ApiException $e) {
-        }
-
-        try {
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
+        } catch (ApiException|JsonException $e) {
             $result = [];
         }
+
         return is_array($result) ? $result : [];
     }
 
@@ -99,14 +96,11 @@ class VaultingService extends BaseService
             if ($response) {
                 $body = $response->getBody();
             }
-        } catch (ApiException $e) {
-        }
-
-        try {
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
+        } catch (ApiException|JsonException $e) {
             $result = [];
         }
+
         return is_array($result) ? $result : [];
     }
 
@@ -219,15 +213,11 @@ class VaultingService extends BaseService
             if ($response) {
                 $body = $response->getBody();
             }
-        } catch (ApiException $e) {
-
-        }
-
-        try {
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
+        } catch (ApiException|JsonException $e) {
             $result = [];
         }
+
         return is_array($result) ? $result : [];
     }
 
@@ -250,22 +240,19 @@ class VaultingService extends BaseService
             if ($response) {
                 $body = $response->getBody();
             }
-        } catch (ApiException $e) {
-        }
-
-        try {
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (JsonException $e) {
+        } catch (ApiException|JsonException $e) {
             $result = [];
         }
+
         return is_array($result) ? $result : [];
     }
 
-    public function getVaultPaymentTokenByIndex(string $paypalCustomerId, string $index): string
+    public function getVaultPaymentTokenByIndex(string $paypalCustomerId, string $index): array
     {
         $paymentTokens = $this->getVaultPaymentTokens($paypalCustomerId);
 
-        return $paymentTokens["payment_tokens"][$index] ?: '';
+        return $paymentTokens["payment_tokens"][$index] ?: [];
     }
 
     /**

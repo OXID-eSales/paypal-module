@@ -43,13 +43,6 @@ class VaultingTokenController extends FrontendController
         }
     }
 
-    public function generateAccessTokenFromCustomerId($payPalCustomerId)
-    {
-        $vaultingService = $this->getVaultingService();
-
-        $this->outputJson($vaultingService->generateAccessTokenFromCustomerId($payPalCustomerId));
-    }
-
     protected function getVaultingService()
     {
         if (!$this->vaultingService) {
