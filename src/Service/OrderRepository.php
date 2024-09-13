@@ -167,7 +167,7 @@ class OrderRepository
 
         foreach ($ids as $id) {
             $order = oxNew(EshopModelOrder::class);
-            if ($order->load($id)) {
+            if ($order->load($id['oxid'])) {
                 // storno
                 $order->cancelOrder();
             }
