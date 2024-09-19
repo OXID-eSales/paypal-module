@@ -124,7 +124,7 @@ class Events
                 $moduleSettings
             );
         } catch (NotFoundExceptionInterface | ContainerExceptionInterface $e) {
-            Registry::getUtilsView()->addErrorToDisplay('BlaBla');
+            Registry::getUtilsView()->addErrorToDisplay('OSC_PAYPAL_INSTALLPROCESS_FAILED');
             return null;
         }
     }
