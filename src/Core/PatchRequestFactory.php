@@ -226,21 +226,6 @@ class PatchRequestFactory
             $patchValues[] = $item;
         }
 
-        //Shipping cost
-        $delivery = $basket->getPayPalCheckoutDeliveryCosts();
-        if ($delivery) {
-            $item = new Item();
-            $item->name = $language->translateString('SHIPPING_COST');
-
-            $item->unit_amount = PriceToMoney::convert(
-                $delivery,
-                $currency
-            );
-
-            $item->quantity = '1';
-            $patchValues[] = $item;
-        }
-
         // possible price surcharge
         $discount = $basket->getPayPalCheckoutDiscount();
 
