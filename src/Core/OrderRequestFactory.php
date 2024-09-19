@@ -20,7 +20,6 @@ use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
-use OxidSolutionCatalysts\PayPal\Core\PayPalRequestAmountFactory;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
@@ -76,7 +75,6 @@ class OrderRequestFactory
      * @param null|string $invoiceId custom invoice number
      * @param null|string $returnUrl Return Url
      * @param null|string $cancelUrl Cancel Url
-     * @param bool $articlesWithTax Articles in Request with Tax information?
      * @param bool $setProvidedAddress Address changeable in PayPal?
      *
      * @return OrderRequest
@@ -204,8 +202,6 @@ class OrderRequestFactory
     {
         $user = $basket->getBasketUser();
 
-        $userName = $user->getFieldData('oxfname') . ' ' . $user->getFieldData('oxlname');
-
         // get Billing CountryCode
         $country = oxNew(Country::class);
         $country->load($user->getFieldData('oxcountryid'));
@@ -225,11 +221,14 @@ class OrderRequestFactory
         $paymentSource->$requestName->attributes->verification->method = 'SCA_ALWAYS';
         return $paymentSource;
     }
+
     /**
      * Sets application context
      *
-     * @param string $userAction
-     *
+     * @param string|null $userAction
+     * @param string|null $returnUrl
+     * @param string|null $cancelUrl
+     * @param bool|null $setProvidedAddress
      * @return OrderApplicationContext
      */
     protected function getApplicationContext(
@@ -309,8 +308,6 @@ class OrderRequestFactory
         $itemCategory = $this->getItemCategoryByBasketContent();
         $currency = $basket->getBasketCurrency();
         $language = Registry::getLang();
-        $config = Registry::getConfig();
-        $netMode = $basket->isCalculationModeNetto();
         $items = [];
 
         /** @var BasketItem $basketItem */
@@ -383,25 +380,6 @@ class OrderRequestFactory
 
             $item->unit_amount = PriceToMoney::convert(
                 $payment,
-                $currency
-            );
-            // tax - we use 0% and calculate with brutto to avoid rounding errors
-            $item->tax = PriceToMoney::convert(0.0, $currency);
-            $item->tax_rate = '0';
-            $item->category = $itemCategory;
-
-            $item->quantity = '1';
-            $items[] = $item;
-        }
-
-        //Shipping cost
-        $delivery = $basket->getPayPalCheckoutDeliveryCosts();
-        if ($delivery) {
-            $item = new Item();
-            $item->name = $language->translateString('SHIPPING_COST');
-
-            $item->unit_amount = PriceToMoney::convert(
-                $delivery,
                 $currency
             );
             // tax - we use 0% and calculate with brutto to avoid rounding errors

@@ -248,7 +248,6 @@ class Basket extends Basket_parent
      *  - Wrapping-Costs
      *  - Gift-Cards
      *  - Payment-Costs
-     *  - Delivery-Costs
      */
     public function getAdditionalPayPalCheckoutItemCosts(): float
     {
@@ -256,13 +255,7 @@ class Basket extends Basket_parent
         $result += $this->getPayPalCheckoutWrapping();
         $result += $this->getPayPalCheckoutGiftCard();
         $result += $this->getPayPalCheckoutPayment();
-        $result += $this->getPayPalCheckoutDeliveryCosts();
 
         return $result;
-    }
-
-    private function getFloatFromPrice(Price $price): float
-    {
-        return $this->isCalculationModeNetto() ? $price->getNettoPrice(): $price->getBruttoPrice();
     }
 }
