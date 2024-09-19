@@ -29,10 +29,8 @@ use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
 
 /**
  * Class OrderController
@@ -283,14 +281,26 @@ class OrderController extends OrderController_parent
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
         } catch (ApiException $exception) {
-            $this->handlePayPalApiError($exception);
-
             $issue = $exception->getErrorIssue();
-            $this->displayErrorIfInstrumentDeclined($issue);
+            $languageObject = Registry::getLang();
+            $translatedErrorMessage = $languageObject->translateString(
+                'OSC_PAYPAL_' . $issue,
+                (int)$languageObject->getBaseLanguage(),
+                false
+            );
+            $displayError = oxNew(DisplayError::class);
+            $displayError->setMessage($translatedErrorMessage);
+            Registry::getUtilsView()->addErrorToDisplay($displayError);
+
             $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', $exception->getMessage(), [$exception]);
 
-            throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
+            $result = [
+                'location' => [
+                    'cl=order'
+                ]
+            ];
+            $this->outputJson($result);
         }
 
         try {

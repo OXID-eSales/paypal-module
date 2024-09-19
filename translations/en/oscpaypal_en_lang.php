@@ -36,6 +36,7 @@ $aLang = [
     'PUI_PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED'   => 'The combination of your name and address could not be validated for PayPal Pay Upon Invoice. Please correct your data and try again. You can find further information in the <a href="https://www.ratepay.com/en/ratepay-data-privacy-statement/">Ratepay Data Privacy Statement</a> or you can contact Ratepay using this <a href="https://www.ratepay.com/en/contact/">contact form</a>.',
     'PUI_PAYMENT_SOURCE_DECLINED_BY_PROCESSOR'     => 'It is not possible to use the selected payment method PayPal Pay Upon Invoice. This decision is based on automated data processing. You can find further information in the  <a href="https://www.ratepay.com/en/ratepay-data-privacy-statement/">Ratepay Data Privacy Statement</a> or you can contact Ratepay using this <a href="https://www.ratepay.com/en/contact/">contact form</a>.',
     'PAYMENT_ERROR_INSTRUMENT_DECLINED'            => 'The chosen payment method at PayPal is not available for you.',
+    'OSC_PAYPAL_ORDER_NOT_APPROVED'                => 'The order was not approved. Please try again later or with a different payment method.',
 
     'OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'       => 'Order execution in progress, please wait for approx 60 seconds then press "order now" again.',
     'OSC_PAYPAL_LOG_IN_TO_CONTINUE'                => 'Please log in to continue checking out.',

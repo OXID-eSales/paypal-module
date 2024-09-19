@@ -36,6 +36,7 @@ $aLang = [
     'PUI_PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED'    => 'Die Kombination aus Ihrem Namen und Ihrer Anschrift konnte nicht für  PayPal Rechnungskauf validiert werden. Bitte korrigieren Sie Ihre Daten und versuchen Sie es erneut. Weitere Informationen finden Sie in den <a href="https://www.ratepay.com/legal-payment-dataprivacy/?lang=de">Ratepay Datenschutzbestimmungen</a> oder nutzen Sie das <a href="https://www.ratepay.com/kontakt/">Ratepay Kontaktformular</a>.',
     'PUI_PAYMENT_SOURCE_DECLINED_BY_PROCESSOR'      => 'Die gewählte Zahlungsart  PayPal Rechnungskauf kann nicht genutzt werden. Diese Entscheidung basiert auf einem automatisierten Datenverarbeitungsverfahren. Weitere Informationen finden Sie in den <a href="https://www.ratepay.com/legal-payment-dataprivacy/?lang=de">Ratepay Datenschutzbestimmungen</a> oder nutzen Sie das <a href="https://www.ratepay.com/kontakt/">Ratepay Kontaktformular</a>.',
     'PAYMENT_ERROR_INSTRUMENT_DECLINED'             => 'Die gewählte Zahlart steht Ihnen bei PayPal nicht zur Verfügung.',
+    'OSC_PAYPAL_ORDER_NOT_APPROVED'                 => 'Die Bestellung wurde nicht genehmigt. Bitte versuchen Sie es später oder mit einer anderen Zahlart.',
 
     'OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'        => 'Ihre Bestellung wird geprüft, das kann bis zu 60 Sekunden dauern. Bitte kurz warten und dann erneut auf "zahlungspflichtig bestellen" klicken.',
     'OSC_PAYPAL_LOG_IN_TO_CONTINUE'                 => 'Bitte loggen Sie sich ein, um die Bestellung abzuschliessen.',
