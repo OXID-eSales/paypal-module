@@ -5,9 +5,7 @@
  * See LICENSE file for license details.
  */
 
-$sLangName = 'English';
-
-$aLang = [
+return [
     'charset'                                     => 'UTF-8',
     'paypal'                                      => 'PayPal',
     'tbclorder_oscpaypal'                         => 'PayPal Checkout',
@@ -70,6 +68,7 @@ $aLang = [
     'OSC_PAYPAL_SPECIAL_PAYMENTS_PUI'             => 'Pay upon Invoice',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Creditcard',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '(As an alternative to the missing payment method, an additional "credit card" button is displayed under the Paypal buttons.)',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING'        => 'Vaulting',
 
     'OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING'        => 'Vaulting',
 
@@ -158,21 +157,21 @@ $aLang = [
     'HELP_OSC_PAYPAL_BANNER_SHOP_MODULE_SHOW_ALL'  => 'Check this option to enable the banner feature.',
     'OSC_PAYPAL_BANNER_STARTPAGE'                   => 'Show installment banner on start page',
     'OSC_PAYPAL_BANNER_STARTPAGESELECTOR'           => 'CSS selector of the start page after which the banner is displayed.',
-    'HELP_OSC_PAYPAL_BANNER_STARTPAGESELECTOR'      => 'Default values for Flow and Wave themes are: \'#wrapper .row\' and \'#wrapper .container\' respectively. After these CSS selectors the banner is displayed.',
+    'HELP_OSC_PAYPAL_BANNER_STARTPAGESELECTOR'      => 'Default values for Apex and Wave theme is: \'#wrapper .row\'. After these CSS selectors the banner is displayed.',
     'OSC_PAYPAL_BANNER_CATEGORYPAGE'                => 'Show installment banner on category pages',
     'OSC_PAYPAL_BANNER_CATEGORYPAGESELECTOR'        => 'CSS selector of the category pages after which the banner is displayed.',
-    'HELP_OSC_PAYPAL_BANNER_CATEGORYPAGESELECTOR'   => 'Default values for Flow and Wave themes are: \'.page-header\' and \'.page-header\' respectively. After these CSS selectors the banner is displayed.',
+    'HELP_OSC_PAYPAL_BANNER_CATEGORYPAGESELECTOR'   => 'Default values for Apex theme is: \'.list-header\'. Default values for Wave theme is: \'.page-header\'. After these CSS selectors the banner is displayed.',
     'OSC_PAYPAL_BANNER_SEARCHRESULTSPAGE'           => 'Show installment banner on search results pages',
     'OSC_PAYPAL_BANNER_SEARCHRESULTSPAGESELECTOR'   => 'CSS selector of the search results pages after which the banner is displayed.',
-    'HELP_OSC_PAYPAL_BANNER_SEARCHRESULTSPAGESELECTOR' => 'Default values for Flow and Wave themes are: \'#content .page-header .clearfix\' and \'.page-header\' respectively. After these CSS selectors the banner is displayed.',
+    'HELP_OSC_PAYPAL_BANNER_SEARCHRESULTSPAGESELECTOR' => 'Default values for Apex and Wave theme is: \'.list-header\'. After these CSS selectors the banner is displayed.',
     'OSC_PAYPAL_BANNER_DETAILSPAGE'                 => 'CSS selector of the product detail pages after which the banner is displayed.',
     'OSC_PAYPAL_BANNER_DETAILSPAGESELECTOR'         => 'CSS-Selektor der Detailseiten hinter dem das Banner angezeigt wird.',
-    'HELP_OSC_PAYPAL_BANNER_DETAILSPAGESELECTOR'    => 'Default values for Flow and Wave themes are: \'.detailsParams\' and \'#detailsItemsPager\' respectively. After these CSS selectors the banner is displayed.',
+    'HELP_OSC_PAYPAL_BANNER_DETAILSPAGESELECTOR'    => 'Default values for Apex theme is: \'.breadcrumb-wrapper > .container-xxl\'. Default values for Wave theme is: \'.breadcrumb\'. After these CSS selectors the banner is displayed.',
     'OSC_PAYPAL_BANNER_CHECKOUTPAGE'                => 'Show installment banner on checkout pages',
     'OSC_PAYPAL_BANNER_CARTPAGESELECTOR'            => 'CSS selector of the "Cart" page (checkout step 1) after which the banner is displayed.',
-    'HELP_OSC_PAYPAL_BANNER_CARTPAGESELECTOR'       => 'Default values for Flow and Wave themes are: \'.cart-buttons\' and \'.cart-buttons\' respectively. After these CSS selectors the banner is displayed.',
+    'HELP_OSC_PAYPAL_BANNER_CARTPAGESELECTOR'       => 'Default values for Apex and Wave theme is: \'#basket-paypal-installment-banner\'. After these CSS selectors the banner is displayed.',
     'OSC_PAYPAL_BANNER_PAYMENTPAGESELECTOR'         => 'CSS selector of the "Pay" page (checkout step 3) after which the banner is displayed.',
-    'HELP_OSC_PAYPAL_BANNER_PAYMENTPAGESELECTOR'    => 'Default values for Flow and Wave themes are: \'.checkoutSteps ~ .spacer\' and \'.checkout-steps\' respectively. After these CSS selectors the banner is displayed.',
+    'HELP_OSC_PAYPAL_BANNER_PAYMENTPAGESELECTOR'    => 'Default values for Apex theme is: \'HEADER.header\'. Default values for Apex theme is: \'#shipping\'. After these CSS selectors the banner is displayed.',
     'OSC_PAYPAL_BANNER_COLORSCHEME'                 => 'Select installment banner\'s color',
     'OSC_PAYPAL_BANNER_COLORSCHEMEBLUE'             => 'blue',
     'OSC_PAYPAL_BANNER_COLORSCHEMEBLACK'            => 'black',
@@ -258,13 +257,15 @@ $aLang = [
                                                          With setting "3D Secure for each ACDC transaction" 3D check will be enforced for each transaction.',
 
     'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS_TITLE' => 'Handling not finished orders',
-    'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'       => 'Automatically delete not finished orders?',
+    'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'       => 'Automatically cancel not finished orders?',
     'HELP_OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'  => 'For some PayPal payment methods, an order must be created in advance so that it can be used with PayPal.
                                                         It can happen that customers cancel the process during the payment process and do not return to the shop. In that case stay
-                                                        unfinished orders left that can be automatically deleted. Alternatively, you are welcome to check these orders yourself
-                                                        delete manually.',
-    'OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'           => 'Start time for automatic deletion',
-    'HELP_OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'      => 'How old do not finished orders have to be before they are automatically deleted (in minutes)?',
+                                                        unfinished orders left that can be automatically canceled. Alternatively, you are welcome to check these orders yourself
+                                                        cancel manually.',
+    'OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'           => 'Start time for automatic cancellation',
+    'HELP_OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'      => 'How old do not finished orders have to be before they are automatically canceled (in minutes)?',
+    'OSC_PAYPAL_EXPRESS_SHIPPING_TITLE'              => 'Pseudo shipping costs for PayPal Express',
+    'OSC_PAYPAL_EXPRESS_SHIPPING_DESC'               => 'The shipping costs entered here are used if the store option "Calculate default Shipping costs when User is not logged in yet” in not activated.',
 
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_COUNTRY'    => 'Tracking Carrier (Country)',
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_PROVIDER'   => 'Tracking Carrier (Provider)',

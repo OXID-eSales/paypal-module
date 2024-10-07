@@ -146,7 +146,6 @@ class OrderRepository
         $queryBuilder = $this->queryBuilderFactory->create();
 
         $parameters = [
-            'oxordernr' => '0',
             'oxtransstatus' => 'NOT_FINISHED',
             'oxpaymenttype' => 'oscpaypal',
             'sessiontime' => $sessiontime,
@@ -155,14 +154,13 @@ class OrderRepository
 
         $queryBuilder->select('oxid')
             ->from('oxorder')
-            ->where('oxordernr = :oxordernr')
-            ->andWhere('oxtransstatus = :oxtransstatus')
+            ->where('oxtransstatus = :oxtransstatus')
             ->andWhere('oxshopid = :oxshopid')
             ->andWhere($queryBuilder->expr()->like(
                 'oxpaymenttype',
                 $queryBuilder->expr()->literal('%' . $parameters['oxpaymenttype'] . '%')
             ))
-            ->andWhere('oxorderdate < now() - interval :sessiontime MINUTE');
+            ->andWhere('oxorderdate + interval :sessiontime MINUTE > now()');
 
         $ids = $queryBuilder->setParameters($parameters)
             ->execute()

@@ -57,4 +57,5 @@ $aLang = [
     'OSC_PAYPAL_CARD_ENDING_IN'                     => 'ending in ●●●',
     'OSC_PAYPAL_CARD_PAYPAL_PAYMENT'                => 'PayPal payment with',
     'OSC_PAYPAL_DELETE_FAILED'                      => 'There was an error deleting your payment method.',
+    'OSCPAYPAL_KILL_EXPRESS_SESSION_REASON'        => 'The shopping cart has been changed. For this reason, the active PayPal payment process was automatically canceled. Please restart the payment with PayPal. No money has been collected from PayPal yet.',
 ];

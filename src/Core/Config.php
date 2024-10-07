@@ -124,11 +124,6 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->isLivePuiEligibility();
     }
 
-    public function isLiveVaultingEligibility(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveVaultingEligibility();
-    }
-
     public function isSandboxAcdcEligibility(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxAcdcEligibility();
@@ -288,7 +283,10 @@ class Config
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalCheckoutBannerCartPageSelector();
     }
-
+    public function getDefaultShippingPriceForExpress(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getDefaultShippingPriceForExpress();
+    }
     public function getPayPalCheckoutBannerPaymentPageSelector(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalCheckoutBannerPaymentPageSelector();

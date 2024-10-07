@@ -156,9 +156,9 @@
                         <div class="form-group sandbox">
                             <label for="special-payments-sandbox">{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS", suffix:"COLON" }) }}</label>
                             <div>
-                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_PUI", suffix:"COLON" }) }} {% if config.isPuiEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}<br />
+                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_PUI", suffix:"COLON" }) }} {% if config.isLivePuiEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}<br />
                                 <br>
-                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC", suffix:"COLON" }) }} {% if config.isAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
+                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC", suffix:"COLON" }) }} {% if config.isLiveAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
                                 <br>
                                 {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING", suffix:"COLON" }) }} {% if config.isVaultingEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {% endif %}
                             </div>
@@ -483,13 +483,30 @@
                 <div id="collapse8" class="collapse" aria-labelledby="heading8" data-parent="#accordion">
                     <div class="card-body">
                         <div class="form-group">
+                            <label for="locales">{{ translate({ ident: "OSC_PAYPAL_LOCALES" }) }}</label>
                             <div class="controls">
-                                <div class="form-group">
-                                    <label for="locales">{{ translate({ ident: "OSC_PAYPAL_LOCALES" }) }}</label>
-                                    <div class="controls">
-                                        <input type="text" class="form-control" id="locales" name="conf[oscPayPalLocales]" value="{{ config.getSupportedLocalesCommaSeparated() }}" />
-                                        <span class="help-block">{{ translate({ ident: "HELP_OSC_PAYPAL_LOCALES" }) }}</span>
-                                    </div>
+                                <input type="text" class="form-control" id="locales" name="conf[oscPayPalLocales]" value="{{ config.getSupportedLocalesCommaSeparated() }}" />
+                                <span class="help-block">{{ translate({ ident: "HELP_OSC_PAYPAL_LOCALES" }) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header" id="heading9">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse9" aria-expanded="false" aria-controls="collapse9">
+                        {{ translate({ ident: "OSC_PAYPAL_EXPRESS_SHIPPING_TITLE" }) }}
+                    </h4>
+                </div>
+
+                <div id="collapse9" class="collapse" aria-labelledby="heading9" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="controls">
+                                <label for="shippingExpress">{{ translate({ ident: "OSC_PAYPAL_EXPRESS_SHIPPING_TITLE" }) }}</label>
+                                <div class="controls">
+                                    <input type="text" id="shippingExpress" class="form-control" name="conf[oscPayPalDefaultShippingPriceExpress]" value="{{ config.getDefaultShippingPriceForExpress()|number_format(2, '.', ' ') }}" />
+                                    <span class="help-block">{{ translate({ ident: "OSC_PAYPAL_EXPRESS_SHIPPING_DESC" }) }}</span>
                                 </div>
                             </div>
                         </div>
@@ -497,14 +514,15 @@
                 </div>
             </div>
 
+
             <div class="card">
-                <div class="card-header" id="heading9">
-                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse9" aria-expanded="false" aria-controls="collapse9">
+                <div class="card-header" id="heading10">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse10" aria-expanded="false" aria-controls="collapse10">
                         {{ translate({ ident: "OSC_PAYPAL_VAULTING_TITLE" }) }}
                     </h4>
                 </div>
 
-                <div id="collapse9" class="collapse" aria-labelledby="heading9" data-parent="#accordion">
+                <div id="collapse10" class="collapse" aria-labelledby="heading10" data-parent="#accordion">
                     <div class="card-body">
                         <div class="form-group">
                             <div class="controls">
@@ -513,9 +531,9 @@
                                         <div class="checkbox">
                                             <label>
                                                 {% if config.isSandbox() %}selected
-                                                <input type="checkbox" name="conf[oscPayPalSetVaulting]" {% if config.getIsVaultingActive() %}checked{% endif %} value="1" {% if config.isVaultingEligibility() == false %}disabled{% endif %}>
+                                                    <input type="checkbox" name="conf[oscPayPalSetVaulting]" {% if config.getIsVaultingActive() %}checked{% endif %} value="1" {% if config.isVaultingEligibility() == false %}disabled{% endif %}>
                                                 {% else %}
-                                                <input type="checkbox" name="conf[oscPayPalSetVaulting]" {% if config.getIsVaultingActive() %}checked{% endif %} value="1" {% if config.isLiveVaultingEligibility() == false %}disabled{% endif %}>
+                                                    <input type="checkbox" name="conf[oscPayPalSetVaulting]" {% if config.getIsVaultingActive() %}checked{% endif %} value="1" {% if config.isLiveVaultingEligibility() == false %}disabled{% endif %}>
                                                 {% endif %}
                                                 {{ translate({ ident: "OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING" }) }}
                                             </label>
@@ -528,7 +546,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
         <button type="submit" class="btn btn-primary bottom-space">{{ translate({ ident: "GENERAL_SAVE" }) }}</button>
     </form>

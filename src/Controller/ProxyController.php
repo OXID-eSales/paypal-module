@@ -17,6 +17,9 @@ use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Facade\ModuleSettingServiceInterface;
+use OxidSolutionCatalysts\PayPal\Module;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
@@ -47,10 +50,20 @@ class ProxyController extends FrontendController
             $this->outputJson(['ERROR' => 'PayPal session already started.']);
         }
 
+        $config = Registry::getConfig();
         $this->addToBasket();
         $this->setPayPalPaymentMethod();
-        $basket = Registry::getSession()->getBasket();
-
+        $session = Registry::getSession();
+        $basket = $session->getBasket();
+        $moduleSettingService = ContainerFactory::getInstance()
+            ->getContainer()
+            ->get(ModuleSettingServiceInterface::class);
+        $defaultShippingPriceExpress =  $moduleSettingService->getFloat('oscPayPalDefaultShippingPriceExpress', Module::MODULE_ID);
+        $calculateDelCostIfNotLoggedIn = (bool) $config->getConfigParam('blCalculateDelCostIfNotLoggedIn');
+        $isDeliverySet = (bool) $session->getVariable('sShipSet');
+        if ($basket && $defaultShippingPriceExpress && !$calculateDelCostIfNotLoggedIn && !$isDeliverySet) {
+            $basket->addShippingPriceForExpress($defaultShippingPriceExpress);
+        }
         if ($basket->getItemsCount() === 0) {
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
         }
@@ -164,10 +177,10 @@ class ProxyController extends FrontendController
     {
         $basket = Registry::getSession()->getBasket();
         $utilsView = Registry::getUtilsView();
-
+        $aSel = Registry::getRequest()->getRequestParameter('sel');
         if ($aid = (string)Registry::getRequest()->getRequestEscapedParameter('aid')) {
             try {
-                $basket->addToBasket($aid, $qty);
+                $basket->addToBasket($aid, $qty, $aSel);
                 // Remove flag of "new item added" to not show "Item added" popup when returning to checkout from paypal
                 $basket->isNewItemAdded();
             } catch (OutOfStockException $exception) {
@@ -197,7 +210,7 @@ class ProxyController extends FrontendController
 
             // get the active shippingSetId
             /** @psalm-suppress InvalidArgument */
-            list(, $shippingSetId,) =
+            [, $shippingSetId,] =
                 Registry::get(DeliverySetList::class)->getDeliverySetData('', $user, $basket);
 
             if ($shippingSetId) {

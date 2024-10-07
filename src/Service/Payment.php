@@ -197,14 +197,8 @@ class Payment
                 $order instanceof EshopModelOrder ? $order->getFieldData('oxordernr') : null,
             );
         } catch (ApiException $exception) {
-            $this->logger->log(
-                'error',
-                'Api error on order create call. ' . $exception->getErrorIssue(),
-                [$exception]
-            );
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
-            $this->logger->log('error', 'Error on order create call.', [$exception]);
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
         }
 
@@ -272,7 +266,6 @@ class Payment
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
         } catch (Exception $exception) {
-            $this->logger->log('error', 'Error on order patch call.', [$exception]);
             throw $exception;
         }
     }
@@ -355,7 +348,6 @@ class Payment
 
                     $issue = $exception->getErrorIssue();
                     $this->displayErrorIfInstrumentDeclined($issue);
-                    $this->logger->log('error', $exception->getMessage(), [$exception]);
 
                     throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
                 }
@@ -495,12 +487,15 @@ class Payment
         $orderModel = oxNew(EshopModelOrder::class);
         $orderModel->load($sessionOrderId);
 
-        if ($orderModel->isLoaded()) {
-            if ($orderModel->hasOrderNumber()) {
-                $this->logger->log('debug', 'Cannot delete valid order with id ' . $sessionOrderId);
-            } else {
-                $orderModel->delete();
-            }
+        if (
+            $orderModel->isLoaded() &&
+            !$orderModel->hasOrderNumber()
+        ) {
+            $orderModel->delete();
+            $this->logger->log('debug', sprintf(
+                'Temporary order without Order number and with id %s was deleted',
+                $sessionOrderId
+            ));
         }
 
         PayPalSession::unsetPayPalOrderId();
@@ -559,8 +554,6 @@ class Payment
         } catch (Exception $exception) {
             PayPalSession::unsetPayPalOrderId();
             $this->removeTemporaryOrder();
-            //TODO: do we need to log this?
-            $this->logger->log('error', $exception->getMessage(), [$exception]);
         }
 
         //NOTE: payment not fully executed, we need customer interaction first
@@ -684,7 +677,6 @@ class Payment
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_PHONE);
         } catch (Exception $exception) {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_GENERIC);
-            $this->logger->log('error', 'Error on pui order creation call.', [$exception]);
         }
 
         # TODO: check what we created, ensure it is a pui order

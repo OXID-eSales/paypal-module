@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
@@ -73,7 +74,6 @@ abstract class WebhookHandlerBase
         }
 
         //Webhook is used to trigger unfinished order cleanup at the end of each webhook handle.
-        //TODO: check if webhook handler really is the place place for this
         $this->cleanUpNotFinishedOrders();
     }
 
@@ -180,6 +180,7 @@ abstract class WebhookHandlerBase
             $paypalOrderModel->setPuiAccountHolderName($puiPaymentDetails->account_holder_name);
         }
 
+        $paypalOrderModel->setTransactionType(Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE);
         $paypalOrderModel->setStatus($status);
         $paypalOrderModel->save();
     }

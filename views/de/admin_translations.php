@@ -5,9 +5,7 @@
  * See LICENSE file for license details.
  */
 
-$sLangName = 'Deutsch';
-
-$aLang = [
+return [
     'charset'                                     => 'UTF-8',
     'paypal'                                      => 'PayPal',
     'tbclorder_oscpaypal'                         => 'PayPal Checkout',
@@ -71,6 +69,7 @@ $aLang = [
     'OSC_PAYPAL_SPECIAL_PAYMENTS_PUI'             => 'Rechnungskauf',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Kreditkarte',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '(Alternativ zur fehlenden Zahlart wird ein zusätzlicher Button "Kreditkarte" unter den Paypal-Buttons angezeigt.)',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING'        => 'Vaulting',
 
     'OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING'        => 'Vaulting',
 
@@ -159,21 +158,21 @@ $aLang = [
     'HELP_OSC_PAYPAL_BANNER_SHOP_MODULE_SHOW_ALL'  => 'Aktivieren Sie diese Einstellung, um die Bannerfunktion zuzulassen.',
     'OSC_PAYPAL_BANNER_STARTPAGE'                   => 'Ratenzahlung-Banner auf Startseite anzeigen',
     'OSC_PAYPAL_BANNER_STARTPAGESELECTOR'           => 'CSS-Selektor der Startseite hinter dem das Banner angezeigt wird.',
-    'HELP_OSC_PAYPAL_BANNER_STARTPAGESELECTOR'      => 'Standardwert für das Theme "Apex": \'#wrapper .row\'. Nach diesem CSS-Selektor wird das Banner angezeigt.',
+    'HELP_OSC_PAYPAL_BANNER_STARTPAGESELECTOR'      => 'Standardwert für das Theme "Apex" und "Wave": \'#wrapper .row\'. Nach diesem CSS-Selektor wird das Banner angezeigt.',
     'OSC_PAYPAL_BANNER_CATEGORYPAGE'                => 'Ratenzahlung-Banner auf Kategorieseiten anzeigen',
     'OSC_PAYPAL_BANNER_CATEGORYPAGESELECTOR'        => 'CSS-Selektor der Kategorieseiten hinter dem das Banner angezeigt wird.',
-    'HELP_OSC_PAYPAL_BANNER_CATEGORYPAGESELECTOR'   => 'Standardwert für das Theme "Apex": \'.list-header\'. Nach diesem CSS-Selektor wird das Banner angezeigt.',
+    'HELP_OSC_PAYPAL_BANNER_CATEGORYPAGESELECTOR'   => 'Standardwert für das Theme "Apex": \'.list-header\'. Standardwert für das Theme "Wave": \'.page-header\'. Nach diesem CSS-Selektor wird das Banner angezeigt.',
     'OSC_PAYPAL_BANNER_SEARCHRESULTSPAGE'           => 'Ratenzahlung-Banner bei Suchergebnissen anzeigen',
     'OSC_PAYPAL_BANNER_SEARCHRESULTSPAGESELECTOR'   => 'CSS-Selektor der Suchergebnisse hinter dem das Banner angezeigt wird.',
-    'HELP_OSC_PAYPAL_BANNER_SEARCHRESULTSPAGESELECTOR' => 'Standardwert für das Theme "Apex": \'.list-header\'. Nach diesem CSS-Selektor wird das Banner angezeigt.',
+    'HELP_OSC_PAYPAL_BANNER_SEARCHRESULTSPAGESELECTOR' => 'Standardwert für das Theme "Apex" und "Wave": \'.list-header\'. Nach diesem CSS-Selektor wird das Banner angezeigt.',
     'OSC_PAYPAL_BANNER_DETAILSPAGE'                 => 'Ratenzahlung-Banner auf Detailseiten anzeigen',
     'OSC_PAYPAL_BANNER_DETAILSPAGESELECTOR'         => 'CSS-Selektor der Detailseiten hinter dem das Banner angezeigt wird.',
-    'HELP_OSC_PAYPAL_BANNER_DETAILSPAGESELECTOR'    => 'Standardwert für das Theme "Apex": \'.breadcrumb-wrapper > .container-xxl\'. Nach diesem CSS-Selektor wird das Banner angezeigt.',
+    'HELP_OSC_PAYPAL_BANNER_DETAILSPAGESELECTOR'    => 'Standardwert für das Theme "Apex": \'.breadcrumb-wrapper > .container-xxl\'. Standardwert für das Theme "Wave": \'#breadcrumb\'.Nach diesem CSS-Selektor wird das Banner angezeigt.',
     'OSC_PAYPAL_BANNER_CHECKOUTPAGE'                => 'Ratenzahlung-Banner im Warenkorb anzeigen',
     'OSC_PAYPAL_BANNER_CARTPAGESELECTOR'            => 'CSS-Selektor der Warenkorbübersicht (Bestellschritt 1) hinter dem das Banner angezeigt wird.',
-    'HELP_OSC_PAYPAL_BANNER_CARTPAGESELECTOR'       => 'Standardwert für das Theme "Apex": \'HEADER.header\'. Nach diesem CSS-Selektor wird das Banner angezeigt.',
+    'HELP_OSC_PAYPAL_BANNER_CARTPAGESELECTOR'       => 'Standardwert für das Theme "Apex" und "Wave": \'#basket-paypal-installment-banner\'. Nach diesem CSS-Selektor wird das Banner angezeigt.',
     'OSC_PAYPAL_BANNER_PAYMENTPAGESELECTOR'         => 'CSS-Selektor der Seite "Versand & Zahlungsart" (Bestellschritt 3) hinter dem das Banner angezeigt wird.',
-    'HELP_OSC_PAYPAL_BANNER_PAYMENTPAGESELECTOR'    => 'Standardwert für das Theme "Apex": \'HEADER.header\'. Nach diesem CSS-Selektor wird das Banner angezeigt.',
+    'HELP_OSC_PAYPAL_BANNER_PAYMENTPAGESELECTOR'    => 'Standardwert für das Theme "Apex": \'HEADER.header\'. Standardwert für das Theme "Wave": \'#shipping\'. Nach diesem CSS-Selektor wird das Banner angezeigt.',
     'OSC_PAYPAL_BANNER_COLORSCHEME'                 => 'Farbe des Ratenzahlung-Banners auswählen',
     'OSC_PAYPAL_BANNER_COLORSCHEMEBLUE'             => 'Blau',
     'OSC_PAYPAL_BANNER_COLORSCHEMEBLACK'            => 'Schwarz',
@@ -251,21 +250,22 @@ $aLang = [
     'OSC_PAYPAL_SCA_WHEN_REQUIRED'                  => '3D Secure Abfrage automatisch, Entscheidung liegt beim PayPal System',
     'OSC_PAYPAL_SCA_DISABLED'                       => '3D Secure Ergebnis ignorieren',
     'OSC_PAYPAL_SCA_CONTINGENCY_LABEL'              => 'Kreditkarten Sicherheit',
-    'OSC_PAYPAL_SCA_CONTINGENCY_HELP'               => 'Die 3D Secure-Authentifizierung dient der direkten und sicheren Interaktion zwischen der ausstellenden Bank und dem Verbraucher. 
+    'OSC_PAYPAL_SCA_CONTINGENCY_HELP'               => 'Die 3D Secure-Authentifizierung dient der direkten und sicheren Interaktion zwischen der ausstellenden Bank und dem Verbraucher.
                                                         Hierbei hat PayPal keinen Zugriff auf die Bankdaten des Karteninhabers, ist jedoch für die Herstellung einer sicheren Verbindung zwischen der ausstellenden Bank
-                                                        und dem Kreditkarteninhaber verantwortlich. <br> Mit der Einstellung "3D Secure Abfrage automatisch" wird PayPal wird 3D Secure einführen, 
-                                                        sobald die entsprechenden Vorschriften wirksam werden.  
+                                                        und dem Kreditkarteninhaber verantwortlich. <br> Mit der Einstellung "3D Secure Abfrage automatisch" wird PayPal wird 3D Secure einführen,
+                                                        sobald die entsprechenden Vorschriften wirksam werden.
                                                         Die Einstellung "3D Secure Abfrage für jede ACDC Transaktion" erzwingt die 3D Prüfung für jede ACDC Transaktion.',
 
     'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS_TITLE' => 'Behandlung nicht beendeter Bestellungen',
-    'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'       => 'Nicht beendete Bestellungen automatisch löschen?',
+    'OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'       => 'Nicht beendete Bestellungen automatisch stornieren?',
     'HELP_OSC_PAYPAL_HANDLING_NOT_FINISHED_ORDERS'  => 'Bei einigen PayPal-Zahlungsarten muss frühzeitig eine Bestellung angelegt werden, damit sie mit PayPal verwendet werden kann.
-                                                        Es kann passieren, das Kunden während des Bezahlvorgangs den Prozess abbrechen und nicht wieder in den Shop zurück kehren. In dem Fall bleiben
-                                                        nicht beendete Bestellungen übrig, die automatisch gelöscht werden können. Sie können alternativ diese Bestellungen gern selbst kontrollieren und
-                                                        händisch löschen.',
-    'OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'           => 'Startzeit für automatisches Löschen',
-    'HELP_OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'      => 'Wie alt müssen nicht beendete Bestellungen sein, damit sie frühestens automatisch gelöscht werden (in Minuten)?',
-
+                                                        Es kann passieren, dass Kunden während des Bezahlvorgangs den Prozess abbrechen und nicht wieder in den Shop zurück kehren. In dem Fall bleiben
+                                                        nicht beendete Bestellungen übrig, die automatisch storniert werden können. Sie können alternaitv diese Bestellungen gern selbst kontrollieren und
+                                                        händisch stornieren.',
+    'OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'           => 'Startzeit für automatisches Stornieren',
+    'HELP_OSC_PAYPAL_STARTTIME_CLEANUP_ORDERS'      => 'Wie alt müssen nicht beendete Bestellungen sein, damit sie frühestens automatisch storniert werden (in Minuten)?',
+    'OSC_PAYPAL_EXPRESS_SHIPPING_TITLE'             => 'Pseudoversandkosten für PayPal Express',
+    'OSC_PAYPAL_EXPRESS_SHIPPING_DESC'              => 'Die hier eingegebenen Pseudeversandkosten werden verwendet, wenn die Shopoption “Versandkosten auch dann berechnen, wenn der Kunde noch nicht eingeloggt ist” nicht aktiviert ist.',
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_COUNTRY'    => 'Versanddienstleister (Land)',
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_PROVIDER'   => 'Versanddienstleister (Anbieter)',
     'OSC_PAYPAL_TRACKCARRIER_GLOBAL'                => 'weltweit',

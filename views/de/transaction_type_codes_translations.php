@@ -5,9 +5,7 @@
  * See LICENSE file for license details.
  */
 
-$sLangName = 'English';
-
-$aLang = [
+return [
     'charset' => 'UTF-8',
     'OSC_PAYPAL_TRANSACTION_TYPE_GROUP_T00' => 'PayPal account-to-PayPal account payment',
     'OSC_PAYPAL_TRANSACTION_TYPE_GROUP_T01' => 'Non-payment-related fees',

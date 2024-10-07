@@ -261,7 +261,10 @@ class ModuleSettings
     {
         return (bool)$this->getSettingValue('oscPayPalBannersCategoryPage');
     }
-
+    public function getDefaultShippingPriceForExpress(): string
+    {
+        return (string)$this->getSettingValue('oscPayPalDefaultShippingPriceExpress');
+    }
     public function getCategoryPageBannerSelector(): string
     {
         return (string)$this->getSettingValue('oscPayPalBannersCategoryPageSelector');
@@ -331,7 +334,6 @@ class ModuleSettings
     {
         return (int)$this->getSettingValue('oscPayPalStartTimeCleanUpOrders');
     }
-
 
     public function isLiveAcdcEligibility(): bool
     {
