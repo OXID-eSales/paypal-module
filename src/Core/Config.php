@@ -114,6 +114,16 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->isVaultingEligibility();
     }
 
+    public function isLiveVaultingEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveVaultingEligibility();
+    }
+
+    public function isSandboxVaultingEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxVaultingEligibility();
+    }
+
     public function isLiveAcdcEligibility(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isLiveAcdcEligibility();
@@ -132,11 +142,6 @@ class Config
     public function isSandboxPuiEligibility(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxPuiEligibility();
-    }
-
-    public function isSandboxVaultingEligibility(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxVaultingEligibility();
     }
 
     public function getLiveClientId(): string
