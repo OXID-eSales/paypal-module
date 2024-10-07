@@ -590,4 +590,9 @@ class ViewConfig extends ViewConfig_parent
 
         return $url . $params . '&token=';
     }
+
+    public function isAcdcEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isAcdcEligibility();
+    }
 }

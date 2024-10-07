@@ -107,6 +107,10 @@ $aModule = [
         '@osc_paypal/frontend/paymentbuttons.tpl' => 'views/smarty/frontend/paymentbuttons.tpl',
         '@osc_paypal/frontend/pui_flow.tpl' => 'views/smarty/frontend/pui_flow.tpl',
         '@osc_paypal/frontend/select_payment.tpl' => 'views/smarty/frontend/select_payment.tpl',
+
+        '@osc_paypal/frontend/account_vaulting_paypal.tpl'    => 'views/smarty/frontend/account_vaulting_paypal.tpl',
+        '@osc_paypal/frontend/account_vaulting_card.tpl'      => 'views/smarty/frontend/account_vaulting_card.tpl',
+        '@osc_paypal/frontend/vaultedpaymentsources.tpl'      => 'views/smarty/frontend/vaultedpaymentsources.tpl',
     ],
     'blocks'    => [
         [
@@ -199,6 +203,16 @@ $aModule = [
             'template' => 'widget/minibasket/minibasket.tpl',
             'block' => 'dd_layout_page_header_icon_menu_minibasket_functions',
             'file' => 'views/smarty/frontend/blocks/widget/minibasket/minibasket__dd_layout_page_header_icon_menu_minibasket_functions.tpl',
+        ],
+        [
+            'template' => 'page/account/inc/account_menu.tpl',
+            'block' => 'account_menu',
+            'file' => 'views/smarty/frontend/blocks/page/account/inc/account_menu.tpl',
+        ],
+        [
+            'template' => 'page/checkout/thankyou.tpl',
+            'block' => 'checkout_thankyou_info',
+            'file' => 'views/smarty/frontend/blocks/page/checkout/thankyou.tpl',
         ],
     ],
     'settings' => [
@@ -456,12 +470,6 @@ $aModule = [
             'name' => 'oscPayPalActivePayments',
             'type' => 'arr',
             'value' => [],
-            'group' => null
-        ],
-        [
-            'name' => 'oscPayPalSetVaulting',
-            'type' => 'bool',
-            'value' => true,
             'group' => null
         ],
         [
