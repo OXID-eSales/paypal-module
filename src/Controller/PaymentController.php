@@ -61,6 +61,7 @@ class PaymentController extends PaymentController_parent
          * check:
          * - all none PP-Payments
          * - payPalHealth
+         * - deprecated payment method
          * - currency
          * - country
          * - netto-mode
@@ -71,6 +72,8 @@ class PaymentController extends PaymentController_parent
                 !isset($payPalDefinitions[$key]) ||
                 (
                     $payPalHealth &&
+                    // don't add payment that is deprecated
+                    ( !PayPalDefinitions::isDeprecatedPayment($payment->getId()) ) &&
                     (
                         empty($payPalDefinitions[$key]['currencies']) ||
                         in_array($actShopCurrency->name, $payPalDefinitions[$key]['currencies'], true)

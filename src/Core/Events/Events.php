@@ -60,8 +60,12 @@ class Events
                 $paymentMethod->load($paymentId) &&
                 (bool)$paymentMethod->oxpayments__oxactive->value
             ) {
-                $activePayments[] = $paymentId;
-                $paymentMethod->oxpayments__oxactive = new Field(false);
+                if (!PayPalDefinitions::isDeprecatedPayment($paymentId)) {
+                    $activePayments[] = $paymentId;
+                }
+                $paymentMethod->assign([
+                    'oxactive' => false
+                ]);
                 $paymentMethod->save();
             }
         }

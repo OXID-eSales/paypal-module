@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - use PayPal-Request-ID in any API-Call (via Client, v3.0.10)
 - add Default-Shippingcosts for PP-Express to prevent overcharge.
 - use central logger like in v2 Branch
+- mark GiroPay as deprecated
 
 ## [3.3.4] - 2024-01-26
 

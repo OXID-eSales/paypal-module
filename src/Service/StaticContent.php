@@ -39,6 +39,11 @@ class StaticContent
     public function ensurePayPalPaymentMethods(): void
     {
         foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
+            // skip creation and activation of deprecated payments
+            if (PayPalDefinitions::isDeprecatedPayment($paymentId)) {
+                $this->deactivatePaymentMethod($paymentId);
+                continue;
+            }
             $paymentMethod = oxNew(EshopModelPayment::class);
             if ($paymentMethod->load($paymentId)) {
                 $this->reActivatePaymentMethod($paymentId);
@@ -118,6 +123,21 @@ class StaticContent
         $paymentModel->oxpayments__oxactive = new Field(true);
 
         $paymentModel->save();
+    }
+
+    /**
+     * Try to load payment model based on given id an set payment inactive
+     * 
+     * @param string $paymentId
+     * @return void
+     * @throws \Exception
+     */
+    protected function deactivatePaymentMethod(string $paymentId) : void {
+        $paymentModel = oxNew(EshopModelPayment::class);
+        if ($paymentModel->load($paymentId)) {
+            $paymentModel->oxpayments__oxactive = new Field(false);
+            $paymentModel->save();
+        }
     }
 
     public function ensureStaticContents(): void

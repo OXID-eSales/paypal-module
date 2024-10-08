@@ -273,4 +273,7 @@ return [
     'HELP_OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'    => 'Wiederholungskäufe leicht gemacht: Mit PayPal können Sie die bevorzugten Zahlarten Ihrer Kund:innen sicher speichern und so eine schnelle und einfache
                                                         Kaufabwicklung ermöglichen. Mit ihren gespeicherten Zahlungsdaten können Kund:innen mit nur wenigen Klicks Wiederholungskäufe tätigen. Dies kann für Sie
                                                         eine höhere Checkout-Conversion bedeuten.',
-    ];
+
+    // PayPal Payment
+    'OSC_PAYPAL_PAYMENT_DEPRECATED'                 => 'Diese PayPal Zahlungsart kann nicht mehr aktiviert werden, da diese demnächst entfernt wird!',
+];

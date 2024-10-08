@@ -274,4 +274,7 @@ return [
     'HELP_OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'    => 'Repeat purchases made easy: With PayPal you can securely store your customers preferred payment methods, making it quick and easy
                                                         Enable purchase processing. With their saved payment details, customers can make repeat purchases with just a few clicks. This can be for you
                                                         mean higher checkout conversion.',
-    ];
+
+    // PayPal Payment
+    'OSC_PAYPAL_PAYMENT_DEPRECATED'                 => 'This PayPal payment method can no longer be activated as it will be removed soon!',
+];
