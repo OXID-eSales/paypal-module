@@ -316,8 +316,7 @@ class Payment
                     $this->doPatchPayPalOrder(
                         Registry::getSession()->getBasket(),
                         $checkoutOrderId,
-                        $order->getFieldData('oxordernr'),
-                        $shopOrderId
+                        $order->getFieldData('oxordernr')
                     );
                     /** @var $result ApiOrderModel */
                     $result = $orderService->capturePaymentForOrder(
