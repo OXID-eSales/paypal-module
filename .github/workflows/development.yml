@@ -77,9 +77,9 @@ jobs:
           docker compose exec -T \
             php composer require symfony/dotenv:^5.1 --no-update
           docker compose exec -T \
-            php composer require codeception/module-rest:1.4.2 --no-update
+            php composer require codeception/module-rest:3.3.0 --no-update
           docker compose exec -T \
-            php composer require codeception/module-phpbrowser:^1.0.2 --no-update
+            php composer require codeception/module-phpbrowser:^3.0.0 --no-update
           docker compose exec -T \
             php composer config repositories.${{ env.CLIENT_PACKAGE_NAME }} git ${{ env.CLIENT_REPO_NAME }}
           docker compose exec -T \
