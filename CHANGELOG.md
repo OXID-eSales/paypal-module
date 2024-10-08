@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.5.0] - 2024-??-??
+## [3.3.5] - 2024-??-??
 
 ### FIX
 
@@ -23,18 +23,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007676](https://bugs.oxid-esales.com/view.php?id=7676): If we have a corrupted generated_services.yaml and try to deactivate the module via the admin, we will display a more understandable error message about what happened.
 - introduce ActionHash to make the PayPal-Request-ID more unique
 - use PayPal-Client v2.0.15
-
-### NEW
-- PayPal-Request-Id based on serialized body, no extra PayPal-Request-Id necessary anymore
-- Introduce GooglePay-Payment
-- Introduce ApplePay-Payment
-- use PayPal-Client v2.0.14
-- add Default-Shippingcosts for PP-Express to prevent overcharge.
-
-## [2.4.0] - 2024-04-04
-
-### FIX
-
 - [0007588](https://bugs.oxid-esales.com/view.php?id=7588): Improve Error handling for Capture Order Requests (thanks to mount7)
 - remove Sofort and MyBank, Paymentmethods will soon no longer be accepted via PayPal
 - fix: Refund only with note to Buyer (required)
@@ -46,7 +34,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007695](https://bugs.oxid-esales.com/view.php?id=7695): Fix: if DeliverySet is set in Frontend, then do not add any PseudoDeliveryCosts for PPExpress
 
 ### NEW
-
+- PayPal-Request-Id based on serialized body, no extra PayPal-Request-Id necessary anymore
+- Introduce GooglePay-Payment
+- Introduce ApplePay-Payment
+- use PayPal-Client v2.0.14
+- add Default-Shippingcosts for PP-Express to prevent overcharge.
 - provide Smarty-Templates again for OXID7.0 - thank you to D3-Team
 - use PayPal-Request-ID in any API-Call (via Client, v3.0.10)
 - add Default-Shippingcosts for PP-Express to prevent overcharge.
