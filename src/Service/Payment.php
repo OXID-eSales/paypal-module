@@ -123,39 +123,6 @@ class Payment
         $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
         $order instanceof EshopModelOrder ?? $order->setOrderNumber();
 
-        //save vault to user and set success message
-        $session = Registry::getSession();
-        $vault = null;
-
-        if ($paypal = $result->payment_source->paypal) {
-            $vault = $paypal->attributes->vault;
-        } elseif ($card = $result->payment_source->card) {
-            $vault = $card->attributes->vault;
-        }
-
-        if ($session->getVariable("vaultSuccess") && $vault->status == "VAULTED") {
-            $vaultSuccess = false;
-
-            if ($id = $vault->customer["id"]) {
-                $user = Registry::getConfig()->getUser();
-
-                $user->oxuser__oscpaypalcustomerid = new Field($id);
-
-                if ($user->save()) {
-                    $vaultSuccess = true;
-                }
-            }
-
-            if (!$vaultSuccess) {
-                $this->logger->log('debug', "Vaulting was attempted but didn't succeed.");
-            }
-
-            $session->setVariable("vaultSuccess", $vaultSuccess);
-        } else {
-            $session->deleteVariable("vaultSuccess");
-        }
-
-
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
 
@@ -174,19 +141,6 @@ class Payment
         );
 
         $response = [];
-
-        /*
-         * Set required request id if payer uses vaulted payment.
-         * The OXID order is not created yet, so a random id will be given.
-         */
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $setVaulting = $moduleSettings->getIsVaultingActive();
-        $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
-        $useVaulting = $setVaulting && !is_null($selectedVaultPaymentSourceIndex);
-
-        if ($useVaulting) {
-            $payPalRequestId = time();
-        }
 
         try {
             $response = $orderService->createOrder(
@@ -392,6 +346,38 @@ class Payment
             );
 
             if ($result instanceof Order && $order->isPayPalOrderCompleted($result)) {
+                //save vault to user and set success message
+                $session = Registry::getSession();
+                $vault = null;
+
+                if ($paypal = $result->payment_source->paypal) {
+                    $vault = $paypal->attributes->vault;
+                } elseif ($card = $result->payment_source->card) {
+                    $vault = $card->attributes->vault;
+                }
+
+                if ($session->getVariable("vaultSuccess") && $vault->status === "VAULTED") {
+                    $vaultSuccess = false;
+
+                    if ($id = $vault->customer["id"]) {
+                        $user = Registry::getConfig()->getUser();
+
+                        $user->oxuser__oscpaypalcustomerid = new Field($id);
+
+                        if ($user->save()) {
+                            $vaultSuccess = true;
+                        }
+                    }
+
+                    if (!$vaultSuccess) {
+                        $this->logger->log('debug', "Vaulting was attempted but didn't succeed.");
+                    }
+
+                    $session->setVariable("vaultSuccess", $vaultSuccess);
+                } else {
+                    $session->deleteVariable("vaultSuccess");
+                }
+
                 $order->setOrderNumber();
                 $order->markOrderPaid();
                 $order->setTransId((string)$payPalTransactionId);

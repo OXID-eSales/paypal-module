@@ -19,6 +19,10 @@
                 <input type="text" id="card-holder-name" class="form-control" name="card-holder-name" autocomplete="off" placeholder="[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD"}]"/>
             </div>
         </div>
+        [{if $oscpaypal_isVaultingPossible}]
+            <input type="checkbox" id="oscPayPalVaultPaymentCheckbox">
+            <label for="oscPayPalVaultPaymentCheckbox">[{oxmultilang ident="OSC_PAYPAL_VAULTING_SAVE"}]</label>
+        [{/if}]
         <div class="hidden">
             <input type="hidden" id="card-billing-address-street" name="card-billing-address-street" value="[{if $oxcmp_user->oxuser__oxstreet->value}][{$oxcmp_user->oxuser__oxstreet->value}][{/if}] [{if $oxcmp_user->oxuser__oxstreetnr->value}][{$oxcmp_user->oxuser__oxstreetnr->value}][{/if}]" />
             <input type="hidden" id="card-billing-address-unit" name="card-billing-address-unit" value=""/>
@@ -51,11 +55,14 @@
                     let ordAgb = (document.getElementById('checkAgbTop') && document.getElementById('checkAgbTop').checked) ? 1 : 0;
                     let downloadableProductAgreement = (document.getElementById('oxdownloadableproductsagreement') && document.getElementById('oxdownloadableproductsagreement').checked) ? 1 : 0;
                     let serviceProductAgreement = (document.getElementById('oxserviceproductsagreement') && document.getElementById('oxserviceproductsagreement').checked) ? 1 : 0;
+                    let vaultPayment = document.getElementById("oscPayPalVaultPaymentCheckbox").checked;
                     let url = '[{$sSelfLink}]' + "cl=order&fnc=createAcdcOrder&ord_agb="+
                         ordAgb+"&oxdownloadableproductsagreement=" +downloadableProductAgreement
                         + "&oxserviceproductsagreement="+serviceProductAgreement
                         + "&stoken=" + '[{$oViewConf->getSessionChallengeToken()}]'
                         + '&sDeliveryAddressMD5=' + '[{$oView->getDeliveryAddressMD5()}]'
+                        + '&vaultPayment=' + vaultPayment
+                        + '&oscPayPalPaymentTypeForVaulting=' + 'oscpaypal_acdc'
                     ;
                     return fetch(url, {
                         method: 'post',

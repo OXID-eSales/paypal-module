@@ -180,6 +180,11 @@ $aModule = [
             'file' => 'views/smarty/frontend/blocks/page/checkout/order__shippingAndPayment.tpl',
         ],
         [
+            'template' => 'page/checkout/order.tpl',
+            'block' => 'checkout_order_btn_submit_bottom',
+            'file' => 'views/smarty/frontend/blocks/page/checkout/order__checkout_order_btn_submit_bottom.tpl',
+        ],
+        [
             'template' => 'page/details/inc/productmain.tpl',
             'block' => 'details_productmain_tobasket',
             'file' => 'views/smarty/frontend/blocks/page/details/inc/productmain__details_productmain_tobasket.tpl',
