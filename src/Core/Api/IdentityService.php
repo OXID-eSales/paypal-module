@@ -20,11 +20,10 @@ class IdentityService extends BaseService
         $headers['Content-Type'] = 'application/json';
         $headers = array_merge($headers, $this->getAuthHeaders());
 
-        $path = '/generate-token';
-        $method = 'post';
+        $path = '/v1/identity/generate-token';
 
         /** @var ResponseInterface $response */
-        $response = $this->send($method, $path, [], $headers);
+        $response = $this->send('POST', $path, [], $headers);
         $body = $response->getBody();
 
         return $body ? json_decode((string)$body, true) : [];
