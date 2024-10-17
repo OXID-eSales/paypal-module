@@ -359,7 +359,7 @@ class Payment
                 if ($session->getVariable("vaultSuccess") && $vault->status === "VAULTED") {
                     $vaultSuccess = false;
 
-                    if ($id = $vault->customer["id"]) {
+                    if ($id = $vault->customer["id"] || $id = $vault->id) {
                         $user = Registry::getConfig()->getUser();
 
                         $user->oxuser__oscpaypalcustomerid = new Field($id);

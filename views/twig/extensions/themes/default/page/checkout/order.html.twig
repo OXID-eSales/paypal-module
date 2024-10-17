@@ -126,6 +126,19 @@
         {{ oViewConf.getHiddenSid()|raw }}
         {{ oViewConf.getNavFormParams()|raw }}
         <input type="hidden" name="vaultPayment" id="oscPayPalVaultPayment" value="">
+
+        {% capture assign = "oscpaypal_madClickPrevention" %}
+            const submitButton = document.querySelector('button[onclick*="orderConfirmAgbBottom"]');
+            const orderConfirmAgbBottom = document.getElementById('orderConfirmAgbBottom');
+
+                submitButton.addEventListener('click', function() {
+                event.preventDefault();
+                this.disabled = true;
+                orderConfirmAgbBottom.submit();
+                });
+        {% endcapture %}
+        {{ script({ add: oscpaypal_madClickPrevention, dynamic: __oxid_include_dynamic }) }}
+
         <input type="hidden" name="cl" value="order">
         <input type="hidden" name="fnc" value="{{ oView.getExecuteFnc() }}">
         <input type="hidden" name="challenge" value="{{ challenge }}">
