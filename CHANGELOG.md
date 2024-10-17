@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### FIX 
 
 - Catch possible thrown Error by getting DataClientToken
+- [0007719](https://bugs.oxid-esales.com/view.php?id=7719): Tracking code also be stored in standard DB field for backwards compatibility
 
 ## [2.5.1] - 2024-09-20
 
