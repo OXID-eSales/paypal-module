@@ -663,6 +663,7 @@ class Order extends Order_parent
                 'oxtrackcode' => $trackingCode
             ]
         );
+        $this->save();
         $payPalOrder = $this->getPayPalRepository();
         $payPalOrder->setTrackingCode($trackingCode);
         $payPalOrder->setTrackingCarrier($trackingCarrier);
