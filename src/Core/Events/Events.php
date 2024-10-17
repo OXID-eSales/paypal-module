@@ -10,13 +10,12 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core\Events;
 
 use OxidEsales\DoctrineMigrationWrapper\MigrationsBuilder;
-use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Application\Model\Payment as EshopModelPayment;
+use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleConfigurationDaoBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
-use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -81,8 +80,10 @@ class Events
     private static function addStaticContents(): void
     {
         $service = self::getStaticContentService();
-        $service->ensureStaticContents();
-        $service->ensurePayPalPaymentMethods();
+        if ($service) {
+            $service->ensureStaticContents();
+            $service->ensurePayPalPaymentMethods();
+        }
     }
 
     /**
@@ -91,14 +92,12 @@ class Events
     private static function addRequireSession(): void
     {
         $service = self::getModuleSettingsService();
-        $service->addRequireSession();
+        if ($service) {
+            $service->addRequireSession();
+        }
     }
 
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    private static function getStaticContentService(): StaticContent
+    private static function getStaticContentService(): ?StaticContent
     {
         /*
         Normally I would fetch the StaticContents service like this:
@@ -111,24 +110,25 @@ class Events
         That's why I build the containers by hand as an exception.:
         */
 
-        /** @var ContainerInterface $container */
-        $container = ContainerFactory::getInstance()
-            ->getContainer();
-        /** @var QueryBuilderFactoryInterface $queryBuilderFactory */
-        $queryBuilderFactory = $container->get(QueryBuilderFactoryInterface::class);
-        $moduleSettings = self::getModuleSettingsService();
+        try {
+            /** @var ContainerInterface $container */
+            $container = ContainerFactory::getInstance()
+                ->getContainer();
+            /** @var QueryBuilderFactoryInterface $queryBuilderFactory */
+            $queryBuilderFactory = $container->get(QueryBuilderFactoryInterface::class);
+            $moduleSettings = self::getModuleSettingsService();
 
-        return new StaticContent(
-            $queryBuilderFactory,
-            $moduleSettings
-        );
+            return new StaticContent(
+                $queryBuilderFactory,
+                $moduleSettings
+            );
+        } catch (NotFoundExceptionInterface | ContainerExceptionInterface $e) {
+            Registry::getUtilsView()->addErrorToDisplay('OSC_PAYPAL_INSTALLPROCESS_FAILED');
+            return null;
+        }
     }
 
-    /**
-     * @throws ContainerExceptionInterface
-     * @throws NotFoundExceptionInterface
-     */
-    private static function getModuleSettingsService(): ModuleSettings
+    private static function getModuleSettingsService(): ?ModuleSettings
     {
         /*
         Normally I would fetch the StaticContents service like this:
@@ -141,22 +141,29 @@ class Events
         That's why I build the containers by hand as an exception.:
         */
 
-        /** @var ContainerInterface $container */
-        $container = ContainerFactory::getInstance()
-            ->getContainer();
-        /** @var ModuleSettingBridgeInterface $moduleSettingsBridge */
-        $moduleSettingsBridge = $container->get(ModuleSettingBridgeInterface::class);
-        /** @var ContextInterface $context */
-        $context = $container->get(ContextInterface::class);
-        /** @var ModuleConfigurationDaoBridgeInterface $moduleConfigurationDaoBridgeInterface */
-        $moduleConfigurationDaoBridgeInterface = $container->get(ModuleConfigurationDaoBridgeInterface::class);
-        /** @var Logger $logger */
-        $logger = $container->get(Logger::class);
-        return new ModuleSettings(
-            $moduleSettingsBridge,
-            $context,
-            $moduleConfigurationDaoBridgeInterface,
-            $logger
-        );
+        try {
+            /** @var ContainerInterface $container */
+            $container = ContainerFactory::getInstance()
+                ->getContainer();
+            /** @var ModuleSettingBridgeInterface $moduleSettingsBridge */
+            $moduleSettingsBridge = $container->get(ModuleSettingBridgeInterface::class);
+            /** @var ContextInterface $context */
+            $context = $container->get(ContextInterface::class);
+            /** @var ModuleConfigurationDaoBridgeInterface $moduleConfigurationDaoBridgeInterface */
+            $moduleConfigurationDaoBridgeInterface = $container->get(ModuleConfigurationDaoBridgeInterface::class);
+            /** @var Logger $logger */
+            $logger = $container->get(Logger::class);
+
+            return new ModuleSettings(
+                $moduleSettingsBridge,
+                $context,
+                $moduleConfigurationDaoBridgeInterface,
+                $logger
+            );
+        } catch (NotFoundExceptionInterface | ContainerExceptionInterface $exception) {
+            Registry::getUtilsView()->addErrorToDisplay('OSC_PAYPAL_INSTALLPROCESS_FAILED');
+            Registry::getLogger()->error($exception->getMessage(), [$exception]);
+            return null;
+        }
     }
 }
