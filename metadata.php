@@ -452,12 +452,6 @@ $aModule = [
             'group' => null
         ],
         [
-            'name' => 'oscPayPalActivePayments',
-            'type' => 'arr',
-            'value' => [],
-            'group' => null
-        ],
-        [
             'name' => 'oscPayPalSetVaulting',
             'type' => 'bool',
             'value' => true,

@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - add Default-Shippingcosts for PP-Express to prevent overcharge.
 - use central logger like in v2 Branch
 - mark GiroPay as deprecated
+- [0007161](https://bugs.oxid-esales.com/view.php?id=7161): Removing payment method deactivation during module deactivation. Merchants must now do this themselves
+
 
 ## [3.3.4] - 2024-01-26
 
