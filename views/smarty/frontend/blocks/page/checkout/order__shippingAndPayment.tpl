@@ -1,6 +1,6 @@
 [{assign var="payment" value=$oView->getPayment()}]
 
-[{if "oscpaypal_acdc" == $payment->getId() || "oscpaypal_pui" == $payment->getId()}]
+[{if "oscpaypal_acdc" == $payment->getId() || "oscpaypal_pui" == $payment->getId() || $vaultedPaymentDescription}]
     [{assign var="sPaymentID" value=$payment->getId()}]
     [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
     <div class="row">
@@ -44,12 +44,14 @@
                         </h3>
                     </div>
                     <div class="card-body">
-                        [{if !$oscpaypal_executing_order}]
-                            [{$payment->oxpayments__oxdesc->value}]
+                            [{if $vaultedPaymentDescription}]
+                                [{$vaultedPaymentDescription}]
+                                [{elseif !$oscpaypal_executing_order}]
+                                [{$payment->oxpayments__oxdesc->value}]
                             [{if $sPaymentID == "oscpaypal_acdc"}]
-                                [{include file="@osc_paypal/frontend/acdc.tpl"}]
+                                [{include file="modules/osc/paypal/acdc.tpl"}]
                             [{elseif $sPaymentID == "oscpaypal_pui"}]
-                                [{include file="@osc_paypal/frontend/pui_flow.tpl"}]
+                                [{include file="modules/osc/paypal/pui_wave.tpl"}]
                             [{/if}]
                         [{/if}]
                     </div>
