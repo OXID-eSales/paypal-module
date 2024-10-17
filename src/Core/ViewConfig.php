@@ -7,8 +7,10 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
+use Exception;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Service\LanguageLocaleMapper;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 
@@ -311,13 +313,21 @@ class ViewConfig extends ViewConfig_parent
 
     public function getDataClientToken(): string
     {
+        $result = '';
 
-        /** @var \OxidSolutionCatalysts\PayPal\Core\Api\IdentityService $identityService */
-        $identityService = Registry::get(ServiceFactory::class)->getIdentityService();
+        try {
+            /** @var \OxidSolutionCatalysts\PayPal\Core\Api\IdentityService $identityService */
+            $identityService = Registry::get(ServiceFactory::class)->getIdentityService();
 
-        $response = $identityService->requestClientToken();
+            $response = $identityService->requestClientToken();
+            $result = $response['client_token'] ?? '';
+        } catch (Exception $exception) {
+            /** @var Logger $logger */
+            $logger = $this->getServiceFromContainer(Logger::class);
+            $logger->log('error', $exception->getMessage(), [$exception]);
+        }
 
-        return $response['client_token'] ?? '';
+        return $result;
     }
 
     /**
