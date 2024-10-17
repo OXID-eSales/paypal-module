@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix PayPalExpress Reauth is necessary if the cart amount (total is greater than before) has changed during the checkout process
 - [0007666](https://bugs.oxid-esales.com/view.php?id=7666): Fix: Price surcharges on the detail page for selection lists are not taken into account
 - [0007695](https://bugs.oxid-esales.com/view.php?id=7695): Fix: if DeliverySet is set in Frontend, then do not add any PseudoDeliveryCosts for PPExpress
+- [0007676](https://bugs.oxid-esales.com/view.php?id=7676): If we have a corrupted generated_services.yaml and try to deactivate the module via the admin, we will display a more understandable error message about what happened.
 
 ### NEW 
 
