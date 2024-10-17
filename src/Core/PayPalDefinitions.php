@@ -322,7 +322,8 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,
             'onlybrutto' => false,
             'buttonpayment' => false,
-            'defaulton' => true
+            'defaulton' => false,
+            'deprecated' => true,
         ],
         // uAPM iDEAL
         'oscpaypal_ideal' => [
@@ -446,5 +447,19 @@ final class PayPalDefinitions
     public static function isPayPalPayment(string $paymentId): bool
     {
         return (isset(self::PAYPAL_DEFINTIONS[$paymentId]));
+    }
+
+    /**
+     * Check if payment is deprecated
+     *
+     * @param string $paymentId
+     * @return bool
+     */
+    public static function isDeprecatedPayment(string $paymentId): bool
+    {
+        if ( isset(self::PAYPAL_DEFINTIONS[$paymentId]['deprecated']) && self::PAYPAL_DEFINTIONS[$paymentId]['deprecated'] === true ) {
+            return true;
+        }
+        return false;
     }
 }

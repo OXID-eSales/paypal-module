@@ -20,4 +20,24 @@ class Payment extends Payment_parent
     {
         return PayPalDefinitions::isUAPMPayment($this->getId());
     }
+
+    /**
+     * Check if payment method is PayPal payment
+     *
+     * @return bool
+     */
+    public function isPayPalPayment(): bool
+    {
+        return PayPalDefinitions::isPayPalPayment($this->getId());
+    }
+
+    /**
+     * Check if payment method is deprecated
+     *
+     * @return bool
+     */
+    public function isDeprecatedPayment(): bool
+    {
+        return PayPalDefinitions::isDeprecatedPayment($this->getId());
+    }
 }

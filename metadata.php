@@ -150,6 +150,11 @@ $aModule = [
             'file' => 'views/smarty/frontend/blocks/page/checkout/basket__checkout_basket_emptyshippingcart.tpl',
         ],
         [
+            'template' => 'payment_main.tpl',
+            'block' => 'admin_payment_main_form',
+            'file' => '/views/blocks/admin/admin_payment_main_form.tpl',
+        ],
+        [
             'template' => 'page/checkout/payment.tpl',
             'block' => 'select_payment',
             'file' => 'views/smarty/frontend/blocks/page/checkout/payment__select_payment.tpl',
@@ -444,12 +449,6 @@ $aModule = [
             'name' => 'oscPayPalStartTimeCleanUpOrders',
             'type' => 'num',
             'value' => 60,
-            'group' => null
-        ],
-        [
-            'name' => 'oscPayPalActivePayments',
-            'type' => 'arr',
-            'value' => [],
             'group' => null
         ],
         [
