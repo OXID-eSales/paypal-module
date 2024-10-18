@@ -71,7 +71,7 @@ class Webhook
 
             /** @var GenericService $notificationService */
             $webhookService = Registry::get(ServiceFactory::class)->getWebhookService();
-            $webHookResponse = $webhookService->request('post', $paypload);
+            $webHookResponse = $webhookService->request('POST', $paypload);
 
             $webhookId = $webHookResponse['id'] ?? '';
         } catch (Exception $exception) {
@@ -119,7 +119,7 @@ class Webhook
     {
         /** @var GenericService $notificationService */
         $webhookService = Registry::get(ServiceFactory::class)->getWebhookService();
-        $result = $webhookService->request('get');
+        $result = $webhookService->request('GET');
 
         return $result['webhooks'] ?? [];
     }

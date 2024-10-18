@@ -275,4 +275,5 @@ return [
     'HELP_OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'    => 'Wiederholungskäufe leicht gemacht: Mit PayPal können Sie die bevorzugten Zahlarten Ihrer Kund:innen sicher speichern und so eine schnelle und einfache
                                                         Kaufabwicklung ermöglichen. Mit ihren gespeicherten Zahlungsdaten können Kund:innen mit nur wenigen Klicks Wiederholungskäufe tätigen. Dies kann für Sie
                                                         eine höhere Checkout-Conversion bedeuten.',
+'OSC_PAYPAL_INSTALLPROCESS_FAILED'               => 'Da das Modul nicht korrekt per Composer installiert ist, sind Fehler bei der (De-)Aktivierung des Moduls aufgetreten. Bitte installieren Sie das Modul via Composer frisch und wiederholen den Vorgang.',
 ];

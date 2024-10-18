@@ -25,23 +25,22 @@ class StaticContent
     /** @var QueryBuilderFactoryInterface */
     private $queryBuilderFactory;
 
-    /** @var ModuleSettings */
-    private $moduleSettings;
-
     public function __construct(
-        QueryBuilderFactoryInterface $queryBuilderFactory,
-        ModuleSettings $moduleSettings
+        QueryBuilderFactoryInterface $queryBuilderFactory
     ) {
         $this->queryBuilderFactory = $queryBuilderFactory;
-        $this->moduleSettings = $moduleSettings;
     }
 
     public function ensurePayPalPaymentMethods(): void
     {
         foreach (PayPalDefinitions::getPayPalDefinitions() as $paymentId => $paymentDefinitions) {
+            // skip creation and activation of deprecated payments
+            if (PayPalDefinitions::isDeprecatedPayment($paymentId)) {
+                $this->deactivatePaymentMethod($paymentId);
+                continue;
+            }
             $paymentMethod = oxNew(EshopModelPayment::class);
             if ($paymentMethod->load($paymentId)) {
-                $this->reActivatePaymentMethod($paymentId);
                 continue;
             }
             $this->createPaymentMethod($paymentId, $paymentDefinitions);
@@ -104,20 +103,19 @@ class StaticContent
         }
     }
 
-    protected function reActivatePaymentMethod(string $paymentId): void
-    {
-        $activePayments = $this->moduleSettings->getActivePayments();
-        if (!in_array($paymentId, $activePayments, true)) {
-            return;
-        }
-
-        /** @var EshopModelPayment $paymentModel */
+    /**
+     * Try to load payment model based on given id an set payment inactive
+     *
+     * @param string $paymentId
+     * @return void
+     * @throws \Exception
+     */
+    protected function deactivatePaymentMethod(string $paymentId) : void {
         $paymentModel = oxNew(EshopModelPayment::class);
-        $paymentModel->load($paymentId);
-
-        $paymentModel->oxpayments__oxactive = new Field(true);
-
-        $paymentModel->save();
+        if ($paymentModel->load($paymentId)) {
+            $paymentModel->oxpayments__oxactive = new Field(false);
+            $paymentModel->save();
+        }
     }
 
     public function ensureStaticContents(): void

@@ -32,6 +32,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiModelOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as OrderResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderAuthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\CaptureRequest;
@@ -232,9 +233,9 @@ class Payment
     ): ApiOrderModel {
 
         /** @var ApiOrderModel $payPalOrder */
-        $payPalOrder = is_null($payPalOrder) || !isset($payPalOrder->payment_source) ?
-            $this->fetchOrderFields($checkoutOrderId, 'payment_source') :
-            $payPalOrder;
+        if (is_null($payPalOrder) || !isset($payPalOrder->payment_source)) {
+            $payPalOrder = $this->fetchOrderFields($checkoutOrderId);
+        }
 
         //Verify 3D result if acdc payment
         if (!$this->verify3D($paymentId, $payPalOrder)) {
@@ -310,10 +311,23 @@ class Payment
             } elseif (Registry::getRequest()->getRequestParameter("vaulting")) {
                 //when a vaulted payment is used, the order is already finished.
                 $result = $this->fetchOrderFields($checkoutOrderId);
-            } else {
+            } elseif ($payPalOrder->status !== Constants::PAYPAL_STATUS_COMPLETED) {
                 $request = new OrderCaptureRequest();
+                //order number must be resolved before order patching
+                $shopOrderId = $order->getFieldData('oxordernr');
+                if (!$shopOrderId) {
+                    $order->setOrderNumber();
+                    $shopOrderId = $order->getFieldData('oxordernr');
+                }
+
                 try {
-                    /** @var ApiOrderModel */
+                    //Patching the order with OXID order number as custom value
+                    $this->doPatchPayPalOrder(
+                        Registry::getSession()->getBasket(),
+                        $checkoutOrderId,
+                        $shopOrderId
+                    );
+                    /** @var $result ApiOrderModel */
                     $result = $orderService->capturePaymentForOrder(
                         '',
                         $checkoutOrderId,
@@ -328,7 +342,11 @@ class Payment
                     $this->logger->log('debug', $exception->getMessage(), [$exception]);
                     throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
                 }
+            } else {
+                // Order is captured, so we set the provided payPalOrder as result
+                $result = $payPalOrder;
             }
+
 
             $payPalTransactionId = $result && isset($result->purchase_units[0]->payments->captures[0]->id) ?
                 $result->purchase_units[0]->payments->captures[0]->id : '';
@@ -766,13 +784,13 @@ class Payment
     private function handlePayPalApiError(ApiException $exception): void
     {
         $issue = $exception->getErrorIssue();
-        if (self::PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED == 'PUI_' . $issue) {
+        if (self::PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED === 'PUI_' . $issue) {
             $this->setPaymentExecutionError(self::PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED);
-        } elseif (self::PAYMENT_SOURCE_DECLINED_BY_PROCESSOR == 'PUI_' . $issue) {
+        } elseif (self::PAYMENT_SOURCE_DECLINED_BY_PROCESSOR === 'PUI_' . $issue) {
             $this->setPaymentExecutionError(self::PAYMENT_SOURCE_DECLINED_BY_PROCESSOR);
-        } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID == $this->getSessionPaymentId()) {
+        } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID === $this->getSessionPaymentId()) {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_GENERIC);
-        } elseif (self::PAYMENT_ERROR_INSTRUMENT_DECLINED == 'PAYPAL_ERROR_' . $issue) {
+        } elseif (self::PAYMENT_ERROR_INSTRUMENT_DECLINED === 'PAYPAL_ERROR_' . $issue) {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_INSTRUMENT_DECLINED);
         } else {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);

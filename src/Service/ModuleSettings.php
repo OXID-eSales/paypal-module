@@ -372,6 +372,11 @@ class ModuleSettings
         return $activePayments ?: [];
     }
 
+    public function getIsVaultingActive(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSetVaulting');
+    }
+
     /**
      * @throws ModuleSettingNotFountException
      */
@@ -473,11 +478,6 @@ class ModuleSettings
         } else {
             $this->save('oscPayPalWebhookId', $webhookId);
         }
-    }
-
-    public function saveActivePayments(array $activePayments): void
-    {
-        $this->save('oscPayPalActivePayments', $activePayments);
     }
 
     /**
