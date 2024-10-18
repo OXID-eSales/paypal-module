@@ -93,6 +93,7 @@ class OrderController extends OrderController_parent
 
         $selectedVaultPaymentSourceIndex = $session->getVariable("selectedVaultPaymentSourceIndex");
         if (
+            $isVaultingPossible &&
             !is_null($selectedVaultPaymentSourceIndex) &&
             $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid")
         ) {

@@ -55,7 +55,7 @@
                     let ordAgb = (document.getElementById('checkAgbTop') && document.getElementById('checkAgbTop').checked) ? 1 : 0;
                     let downloadableProductAgreement = (document.getElementById('oxdownloadableproductsagreement') && document.getElementById('oxdownloadableproductsagreement').checked) ? 1 : 0;
                     let serviceProductAgreement = (document.getElementById('oxserviceproductsagreement') && document.getElementById('oxserviceproductsagreement').checked) ? 1 : 0;
-                    let vaultPayment = document.getElementById("oscPayPalVaultPaymentCheckbox").checked;
+                    let vaultPayment = document.getElementById("oscPayPalVaultPaymentCheckbox")?.checked ?? false;
                     let url = '[{$sSelfLink}]' + "cl=order&fnc=createAcdcOrder&ord_agb="+
                         ordAgb+"&oxdownloadableproductsagreement=" +downloadableProductAgreement
                         + "&oxserviceproductsagreement="+serviceProductAgreement
