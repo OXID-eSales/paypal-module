@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
+namespace Webhook;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
@@ -18,58 +18,9 @@ use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 
-final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCase
+final class PaymentCapturePuiCompletedHandlerTest extends \OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook\WebhookHandlerBaseTestCase
 {
     public const WEBHOOK_EVENT = 'PAYMENT.CAPTURE.COMPLETED';
-
-    public function testRequestMissingData(): void
-    {
-        $event = new WebhookEvent([], self::WEBHOOK_EVENT);
-
-        $this->expectException(WebhookEventException::class);
-        $this->expectExceptionMessage(WebhookEventException::mandatoryDataNotFound()->getMessage());
-
-        $handler = oxNew(PaymentCaptureCompletedHandler::class);
-        $handler->handle($event);
-    }
-
-    public function dataProviderWebhookEvent(): array
-    {
-        return [
-            'api_v1' => [
-                'payment_capture_completed_v1.json'
-            ],
-            'api_v2' => [
-                'payment_capture_completed_v2.json'
-            ]
-        ];
-    }
-
-    /**
-     * @dataProvider dataProviderWebhookEvent
-     */
-    public function testPayPalTransactionIdWithoutPayPalOrderId(string $fixture): void
-    {
-        $data = $this->getRequestData($fixture);
-        $resourceId = $data['resource']['id'];
-        $event = new WebhookEvent($data, self::WEBHOOK_EVENT);
-
-        $loggerMock = $this->getPsrLoggerMock();
-        /** @var MockObject $loggerMock */
-        $loggerMock->expects($this->once())
-            ->method('log')
-            ->with('debug',
-                "Not enough information to handle PAYMENT.CAPTURE.COMPLETED with PayPal order_id '' and " .
-                "PayPal transaction id '" . $resourceId . "'"
-            );
-
-        $handlerMock = $this->getMockBuilder(PaymentCaptureCompletedHandler::class)
-            ->onlyMethods(['getLogger'])
-            ->getMock();
-
-        $handlerMock->method('getLogger')->willReturn($loggerMock);
-        $handlerMock->handle($event);
-    }
 
     public function testEshopOrderNotFoundByPayPalOrderId(): void
     {

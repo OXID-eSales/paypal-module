@@ -31,12 +31,16 @@ final class OnboardingTest extends BaseTestCase
 
         PayPalSession::storeOnboardingPayload($response);
 
+        $partnerConfig = oxNew(PartnerConfig::class);
+        $nonce = $partnerConfig->createNonce();
+        Registry::getSession()->setVariable('PAYPAL_MODULE_NONCE', $nonce);
+
         $apiClient = $this->getMockBuilder(ApiOnboardingClient::class)
             ->disableOriginalConstructor()
             ->getMock();
         $apiClient->expects($this->once())
             ->method('authAfterWebLogin')
-            ->with($expected['authCode'], $expected['sharedId']);
+            ->with($expected['authCode'], $expected['sharedId'], $nonce);
         $apiClient->expects($this->once())
             ->method("getMerchantInformations")
             ->willReturn($expectedMaerchant);

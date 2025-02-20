@@ -515,7 +515,7 @@ class OrderController extends OrderController_parent
             $deliveryAddress = PayPalAddressResponseToOxidAddress::mapOrderDeliveryAddress($payPalOrder);
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
-            $paymentsId = $order->getFieldData('oxpaymenttype');
+            $paymentsId = $order->getFieldData('oxpaymenttype') ?? '';
             $isButtonPayment = PayPalDefinitions::isButtonPayment($paymentsId);
             if ($isButtonPayment) {
                 $order->assign($deliveryAddress);

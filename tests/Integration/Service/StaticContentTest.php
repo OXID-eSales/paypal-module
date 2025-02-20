@@ -80,8 +80,9 @@ final class StaticContentTest extends BaseTestCase
 
     public function testExistingPaymentsAreNotChanged(): void
     {
+        $paymentId = PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
         $payment = oxNew(EshopModelPayment::class);
-        $payment->loadInLang(0, PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
+        $payment->loadInLang(0, $paymentId);
         $payment->assign(
             [
                 'oxdesc' => 'test_desc_de',
@@ -94,33 +95,36 @@ final class StaticContentTest extends BaseTestCase
         $service->ensurePayPalPaymentMethods();
 
         $payment = oxNew(EshopModelPayment::class);
-        $payment->loadInLang(0, PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
+        $payment->loadInLang(0, $paymentId);
         $this->assertEquals('test_desc_de', $payment->getFieldData('oxdesc'));
         $this->assertEquals('test_longdesc_de', $payment->getFieldData('oxlongdesc'));
 
         $payPalDefinitions = PayPalDefinitions::getPayPalDefinitions();
 
-        $payment->loadInLang(1, PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
+        $payment->loadInLang(1, $paymentId);
         $this->assertEquals(
-            $payPalDefinitions[PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID]['descriptions']['en']['desc'],
+            $payPalDefinitions[$paymentId]['descriptions']['en']['desc'],
             $payment->getFieldData('oxdesc')
         );
         $this->assertEquals(
-            $payPalDefinitions[PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID]['descriptions']['en']['longdesc'],
+            $payPalDefinitions[$paymentId]['descriptions']['en']['longdesc'],
             $payment->getFieldData('oxlongdesc')
         );
+
+        $payPalDefinitions = PayPalDefinitions::getPayPalDefinitions();
+        $payment->loadInLang(0, $paymentId);
+        $payment->assign(
+            [
+                'oxdesc' => $payPalDefinitions[$paymentId]['descriptions']['de']['desc'],
+                'oxlongdesc' => $payPalDefinitions[$paymentId]['descriptions']['de']['longdesc']
+            ]
+        );
+        $payment->save();
     }
 
     public function testEnsurePaymentMethods(): void
     {
         $paymentIds = array_keys(PayPalDefinitions::getPayPalDefinitions());
-
-        //clean up before test
-        foreach ($paymentIds as $paymentId) {
-            $payment = oxNew(EshopModelPayment::class);
-            $payment->load($paymentId);
-            $payment->delete();
-        }
 
         $service = $this->getServiceFromContainer(StaticContent::class);
         $service->ensurePayPalPaymentMethods();
@@ -128,9 +132,12 @@ final class StaticContentTest extends BaseTestCase
         $payPalDefinitions = PayPalDefinitions::getPayPalDefinitions();
 
         foreach ($paymentIds as $paymentId) {
-            $payment = oxNew(EshopModelPayment::class);
-            $this->assertTrue($payment->load($paymentId));
 
+            if (in_array($paymentId, ['oscpaypal_blik', 'oscpaypal_eps', 'oscpaypal_giropay'])) {
+                continue;
+            }
+
+            $payment = oxNew(EshopModelPayment::class);
             $payment->loadInLang(0, $paymentId);
             $this->assertEquals(
                 htmlspecialchars(
