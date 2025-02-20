@@ -70,6 +70,8 @@ final class WebhookRequestHandlerTest extends UnitTestCase
 
         $webhookRequestHandler = new WebhookRequestHandler($requestReader, $verificationService, $dispatcher);
 
+        $this->expectException(\JsonException::class);
+
         $this->assertFalse($webhookRequestHandler->process());
     }
 

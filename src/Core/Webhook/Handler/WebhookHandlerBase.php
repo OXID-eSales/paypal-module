@@ -20,6 +20,7 @@ use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
+use Psr\Log\LoggerInterface;
 
 abstract class WebhookHandlerBase
 {
@@ -41,7 +42,7 @@ abstract class WebhookHandlerBase
         //Depending on payment method, there might not be an order id in that result
         $payPalOrderId = $this->getPayPalOrderIdFromResource($eventPayload);
 
-        if ($payPalOrderId) {
+        if ($payPalOrderId !== '') {
             /** @var EshopModelOrder $order */
             $order = $this->getOrderByPayPalOrderId($payPalOrderId);
 
@@ -60,9 +61,7 @@ abstract class WebhookHandlerBase
                 $order
             );
         } else {
-            /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer(Logger::class);
-            $logger->log(
+            $this->getLogger()->log(
                 'debug',
                 sprintf(
                     "Not enough information to handle %s with PayPal order_id '%s' and PayPal transaction id '%s'",
@@ -189,6 +188,11 @@ abstract class WebhookHandlerBase
     {
         $order->markOrderPaid();
         $order->setTransId($payPalTransactionId);
+    }
+
+    protected function getLogger(): LoggerInterface
+    {
+        return $this->getServiceFromContainer(Logger::class);
     }
 
     abstract protected function getPayPalTransactionIdFromResource(array $eventPayload): string;

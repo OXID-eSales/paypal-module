@@ -9,13 +9,10 @@ namespace OxidSolutionCatalysts\PayPal\Core\Webhook;
 
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException;
 
-/**
- * Delivers events to appropriate handlers
- */
 class EventDispatcher
 {
     /**
-     * @param Event $event
+     * @throws \OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException
      */
     public function dispatch(Event $event)
     {
@@ -23,10 +20,20 @@ class EventDispatcher
         $eventType = $event->getEventType();
 
         if (isset($handlers[$eventType])) {
-            $handler = oxNew($handlers[$eventType]);
+            $handler = $this->oxNew($handlers[$eventType]);
             $handler->handle($event);
         } else {
             throw WebhookEventTypeException::handlerNotFound($eventType);
         }
+    }
+
+    /**
+     * We need this method for proper mocking in tests
+     * @param string $class
+     * @return string
+     */
+    protected function oxNew(string $class)
+    {
+        return oxNew($class);
     }
 }

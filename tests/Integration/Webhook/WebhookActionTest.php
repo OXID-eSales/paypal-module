@@ -9,10 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
-use OxidEsales\Eshop\Core\Registry as EshopRegistry;
-use OxidEsales\TestingLibrary\UnitTestCase;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutOrderCompletedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException;
-use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher as PayPalWebhookActions;
 
@@ -45,17 +43,27 @@ final class WebhookActionTest extends WebhookHandlerBaseTestCase
     {
         $webhookEvent = new WebhookEvent(['resource' => ['bla' => 'foo']], 'CHECKOUT.ORDER.COMPLETED');
 
-        $handler = oxNew(PayPalWebhookActions::class);
-
         $loggerMock = $this->getPsrLoggerMock();
         $loggerMock->expects($this->once())
-            ->method('debug')
+            ->method('log')
             ->with(
+                'debug',
                 "Not enough information to handle CHECKOUT.ORDER.COMPLETED with PayPal order_id '' and " .
                 "PayPal transaction id ''"
             );
-        EshopRegistry::set('logger', $loggerMock);
 
-        $handler->dispatch($webhookEvent);
+        $handlerMock = $this->getMockBuilder(PayPalWebhookActions::class)
+            ->onlyMethods(['oxNew'])
+            ->getMock();
+
+        $checkoutOrderCompletedHook = $this->getMockBuilder(CheckoutOrderCompletedHandler::class)
+            ->onlyMethods(['getLogger'])
+            ->getMock();
+
+        $checkoutOrderCompletedHook->method('getLogger')->willReturn($loggerMock);
+
+        $handlerMock->method('oxNew')->willReturn($checkoutOrderCompletedHook);
+
+        $handlerMock->dispatch($webhookEvent);
     }
 }

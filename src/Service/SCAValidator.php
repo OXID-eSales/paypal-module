@@ -7,8 +7,6 @@
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPal\Exception\CardValidation;

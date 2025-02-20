@@ -88,7 +88,7 @@ class Payment
         SCAValidatorInterface $scaValidator,
         ModuleSettings $moduleSettingsService,
         Logger $logger,
-        ServiceFactory $serviceFactory = null,
+        ?ServiceFactory $serviceFactory = null,
         PatchRequestFactory $patchRequestFactory = null,
         OrderRequestFactory $orderRequestFactory = null
     ) {
@@ -113,7 +113,7 @@ class Payment
         string $returnUrl = null,
         string $cancelUrl = null,
         bool $setProvidedAddress = true
-    ) {
+    ): Order {
         //TODO return value
         $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
 
@@ -143,11 +143,10 @@ class Payment
                 'return=minimal'
             );
         } catch (ApiException $exception) {
-            $this->logger->log('error', 'API Error.', [$exception]);
-
+            $this->logger->log('error', 'API Error.', [$exception->getMessage()]);
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
-            $this->logger->log('error', 'Error on order create call.', [$exception]);
+            $this->logger->log('error', 'Error on order create call.', [$exception->getMessage()]);
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
         }
 
@@ -390,8 +389,7 @@ class Payment
                 $order->setTransId((string)$payPalTransactionId);
             }
         } catch (Exception $exception) {
-            //Webhook might try to capture already captured order
-            $this->logger->log('debug', 'Warning on order capture call.', [$exception]);
+            $this->logger->log('debug', 'Warning on order capture call.', [$exception->getMessage()]);
             throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
         }
 
@@ -734,9 +732,6 @@ class Payment
             );
     }
 
-    /**
-     * @throws StandardException
-     */
     public function verify3D(string $paymentId, Order $payPalOrder): bool
     {
         //no ACDC payment
@@ -806,8 +801,7 @@ class Payment
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $module = oxNew(\OxidEsales\Eshop\Core\Module\Module::class);
         $module->load(Module::MODULE_ID);
-        $orderNumber = $order instanceof EshopModelOrder ? $order->getFieldData('oxordernr') : null;
-
+        $orderNumber = $order instanceof EshopModelOrder ? $order->getFieldData('oxordernr') : '';
         if ($moduleSettings->isCustomIdSchemaStructural()) {
             $customID = [
                 'oxordernr' => $orderNumber,

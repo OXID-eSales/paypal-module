@@ -315,7 +315,7 @@ final class PayPalDefinitions
             'buttonpayment' => false,
             'defaulton' => true
         ],
-        // uAPM EPS
+//         uAPM EPS
         'oscpaypal_eps' => [
             'descriptions' => [
                 'de' => [
