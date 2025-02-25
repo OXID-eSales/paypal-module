@@ -201,7 +201,7 @@ jobs:
             source/coverage.xml
             source/phpunit.xml
 
-  codeception_tests:
+  cypress_tests:
     strategy:
       fail-fast: false
       matrix:
@@ -220,20 +220,9 @@ jobs:
           restore-keys: |
             moduleDevelopmentInstallation-${{ matrix.php }}-${{ github.sha }}
 
-      - name: Start containers
-        run: |
-          docker compose up -d
-          sleep 2
-
-      - name: Install codeception dependencies
-        run: |
-          docker compose exec -T php composer require codeception/module-rest:^1.4.2 --dev --no-update
-          docker compose exec -T php composer require codeception/module-phpbrowser:^1.0.2 --dev --no-update
-          docker compose exec -T php composer update
-
       - name: Run tests
         run: |
-          source/vendor/${{ env.PACKAGE_NAME }}/.github/cypress/cypress.sh --no_make_up=true
+          ./source/vendor/${{ env.PACKAGE_NAME }}/.github/cypress/cypress.sh --no_make_up=true
 
       - name: Upload log artifact
         if: always()

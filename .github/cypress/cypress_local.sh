@@ -23,7 +23,6 @@ check_docker_compose() {
     fi
 }
 
-
 "$SCRIPT_DIR/set_shop_url.sh" https://apache
 
 echo -n "Locating oe-console ... "
@@ -39,6 +38,8 @@ else
 fi
 cd ..
 echo "OK, using '${OE_CONSOLE}'"
+
+#docker compose exec -T php php ${OE_CONSOLE} oe:module:apply-configuration
 
 echo "Stopping running containers..."
 docker compose down --remove-orphans || {
@@ -96,6 +97,30 @@ fi
 echo "Cleaning up existing network..."
 docker network rm $NETWORK_NAME || echo "Network not found, continuing..."
 
+
+echo "Starting MySQL service..."
+docker compose up -d mysql || {
+    echo "Failed to start MySQL. Exiting..."
+    exit 1
+}
+
+
+echo "Waiting for MySQL to be healthy..."
+docker compose exec mysql sh -c 'until mysqladmin ping --silent; do sleep 2; done'
+
+
+echo "Running database scripts..."
+chmod +x "$SCRIPT_DIR/db_backup.sh"
+"$SCRIPT_DIR/db_backup.sh" backup
+"$SCRIPT_DIR/db_backup.sh" import_test_db
+
+echo "Validating docker-compose.yml..."
+docker compose config || {
+    echo "Invalid docker-compose.yml. Restoring backup..."
+    mv docker-compose.yml.backup docker-compose.yml
+    exit 1
+}
+
 echo "Adding Cypress service..."
 cat <<EOF >> docker-compose.yml
 
@@ -131,7 +156,7 @@ docker compose up -d || {
 echo "Waiting for services to stabilize..."
 sleep 60
 
-#"$SCRIPT_DIR/db_backup.sh" restore
+"$SCRIPT_DIR/db_backup.sh" restore
 "$SCRIPT_DIR/set_shop_url.sh" https://oxideshop.local
 
 echo "Displaying Cypress logs..."
