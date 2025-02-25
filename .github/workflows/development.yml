@@ -233,26 +233,15 @@ jobs:
 
       - name: Run tests
         run: |
-          docker compose exec -T \
-            -e PARTIAL_MODULE_PATHS=${{ env.MODULE_PATH }} \
-            -e ACTIVATE_ALL_MODULES=1 \
-            -e RUN_TESTS_FOR_SHOP=0 \
-            -e RUN_TESTS_FOR_MODULES=0 \
-            -e ADDITIONAL_TEST_PATHS='/var/www/vendor/${{ env.PACKAGE_NAME }}/tests' \
-            php php vendor/bin/runtests-codeception
+          source/vendor/${{ env.PACKAGE_NAME }}/.github/cypress/cypress.sh --no_make_up=true
 
-      - name: Stop containers
-        if: always()
-        run: |
-          docker compose down
-          sleep 2
       - name: Upload log artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: CodeceptionTestsLog-${{ matrix.php }}
           path: |
-            source/vendor/${{ env.PACKAGE_NAME }}/tests/Codeception/_output/
+            source/vendor/${{ env.PACKAGE_NAME }}/tests/e2e/cypress/_generated
             source/source/log/oxideshop.log
             source/data/php/logs/error_log.txt
 
