@@ -2,7 +2,7 @@ const { defineConfig } = require('cypress');
 
 module.exports = defineConfig({
     e2e: {
-        baseUrl: 'https://oxideshop.local', // Replace with your actual base URL
+        baseUrl: 'https://apache', // Replace with your actual base URL
         specPattern: 'cypress/frontend_tests/**/*.cy.js', // Test file pattern
         supportFile: false, // Disable the default support file
         video: true,

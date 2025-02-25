@@ -73,11 +73,11 @@ class PaymentController extends PaymentController_parent
                                 $email = $paymentSource["email_address"];
                                 $payer_id = $paymentSource["payer_id"];
 
-                                if(!isset($uniquePaypalVaultedPaymentSources[$email])) {
+                                if (!isset($uniquePaypalVaultedPaymentSources[$email])) {
                                     $uniquePaypalVaultedPaymentSources[$email] = [];
                                 }
 
-                                if( in_array($payer_id, $uniquePaypalVaultedPaymentSources[$email])) {
+                                if (in_array($payer_id, $uniquePaypalVaultedPaymentSources[$email])) {
                                     continue;
                                 }
 
