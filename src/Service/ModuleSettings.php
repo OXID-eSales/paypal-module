@@ -449,9 +449,9 @@ class ModuleSettings
 
         if ($moduleSetting->getType() === 'str') {
             $value = trim($value);
-        } else if ($moduleSetting->getType() === 'bool') {
+        } elseif ($moduleSetting->getType() === 'bool') {
             $value = (bool)$value;
-        } else if ($moduleSetting->getType() === 'num') {
+        } elseif ($moduleSetting->getType() === 'num') {
             $value = (float)$value;
         }
 

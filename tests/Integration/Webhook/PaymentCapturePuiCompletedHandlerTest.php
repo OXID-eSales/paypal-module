@@ -16,9 +16,10 @@ use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureCompletedHan
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
+use OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook\WebhookHandlerBaseTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
 
-final class PaymentCapturePuiCompletedHandlerTest extends \OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook\WebhookHandlerBaseTestCase
+final class PaymentCapturePuiCompletedHandlerTest extends WebhookHandlerBaseTestCase
 {
     public const WEBHOOK_EVENT = 'PAYMENT.CAPTURE.COMPLETED';
 

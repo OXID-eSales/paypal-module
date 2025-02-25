@@ -58,7 +58,8 @@ final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCas
         /** @var MockObject $loggerMock */
         $loggerMock->expects($this->once())
             ->method('log')
-            ->with('debug',
+            ->with(
+                'debug',
                 "Not enough information to handle PAYMENT.CAPTURE.COMPLETED with PayPal order_id '' and " .
                 "PayPal transaction id '" . $resourceId . "'"
             );
