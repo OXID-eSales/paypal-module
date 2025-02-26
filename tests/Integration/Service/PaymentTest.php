@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Service;
 
+use OxidEsales\Eshop\Application\Model\Article;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
@@ -34,8 +35,8 @@ final class PaymentTest extends BaseTestCase
 {
     use TestProductTrait;
 
-    protected const TEST_USER_ID = '06823b68-e4c3-4da8-b011-147195d9';
-    protected string $testProductOxid;
+    protected const TEST_USER_ID = 'testuser';
+
     private string $success3DCard;
     private string $failedAuthentication;
     private string $missingCardAuthentication;
@@ -44,7 +45,6 @@ final class PaymentTest extends BaseTestCase
     {
         parent::setUp();
 
-        $this->testProductOxid = $this->getTestProductOxid();
         $this->success3DCard = serialize($this->createSuccess3DCardOrder());
         $this->failedAuthentication = serialize($this->createFailedAuthenticationOrder());
         $this->missingCardAuthentication = serialize($this->createMissingCardAuthenticationOrder());
@@ -133,6 +133,10 @@ final class PaymentTest extends BaseTestCase
     {
         $user = oxNew(EshopModelUser::class);
         $user->load(self::TEST_USER_ID);
+
+        $oProduct = oxNew(Article::class);
+        $isLoaded = $oProduct->load($this->testProductOxid);
+        $this->assertTrue($isLoaded);
 
         $basket = oxNew(EshopModelBasket::class);
         $basket->addToBasket($this->testProductOxid, 1);

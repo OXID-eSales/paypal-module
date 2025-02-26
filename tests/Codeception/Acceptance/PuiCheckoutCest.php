@@ -30,7 +30,7 @@ final class PuiCheckoutCest extends BaseCest
         $I->updateInDatabase(
             'oxuser',
             [
-                'oxfon' => '040111222333',
+                'oxfon' => '+4940111222333',
                 'oxbirthdate' => '2000-04-01',
                 'oxusername' => Fixtures::get('userName')
             ],

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 - Cypress e2e tests
 - Support PayPal-Client v3.0.15
+- Support brick/phonenumber ^0.7.0
 
 ### Fixed
 - set connect-timeout for 5 Seconds and request-timeout for 30 seconds
@@ -18,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Dropped
 - Codeception tests
+- library giggsey/libphonenumber-for-php
 
 
 ## [3.4.0] - 2025-02-06

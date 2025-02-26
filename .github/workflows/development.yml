@@ -39,7 +39,7 @@ jobs:
         run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-7.0.x --single-branch source
 
       - name: Cache current installation
-        uses: actions/cache@v4.1.1
+        uses: actions/cache@v4
         with:
           path: |
             ./*
@@ -100,13 +100,18 @@ jobs:
             php composer config repositories.oxid-esales/oxideshop-demodata-ce \
             --json '{"type":"git", "url":"https://github.com/OXID-eSales/oxideshop_demodata_ce"}'
           docker compose exec -T php composer require oxid-esales/oxideshop-demodata-ce:dev-master --no-update
+          docker compose exec -T php composer require oxid-esales/apex-theme:dev-b-7.0.x --no-update
 
       - name: Install dependencies and reset shop
         run: |
           docker compose exec -T php composer update --no-interaction
           docker compose exec -T php bin/oe-console oe:database:reset \
             --db-host=mysql --db-port=3306 --db-name=example --db-user=root --db-password=root --force
+          docker compose exec -T php bin/oe-console oe:setup:demodata
+          docker compose exec -T php bin/oe-console oe:theme:activate apex
           docker compose exec -T php bin/oe-console oe:module:activate osc_paypal
+          ls -la
+          ls -la source
 
       - name: Put module settings
         continue-on-error: true
@@ -201,7 +206,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Load current installation from cache
-        uses: actions/cache@v4.1.1
+        uses: actions/cache@v4
         with:
           path: |
             ./*
@@ -245,17 +250,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Load current installation from cache
-        uses: actions/cache@v4.1.1
+        uses: actions/cache@v4
         with:
           path: |
             ./*
-          key: moduleDevelopmentInstallation-${{ matrix.php }}-${{ github.sha }}
+          key: installation-${{ env.PHP_VERSION }}-${{ env.MYSQL_VERSION }}-${{ env.TEMPLATE_ENGINE }}-${{ github.run_number }}-${{ github.run_attempt }}
           restore-keys: |
-            moduleDevelopmentInstallation-${{ matrix.php }}-${{ github.sha }}
+            installation-${{ env.PHP_VERSION }}-${{ env.MYSQL_VERSION }}-${{ env.TEMPLATE_ENGINE }}-${{ github.run_number }}-${{ github.run_attempt }}
+
+      - name: Start containers
+        run: |
+          make up
+          sleep 2
 
       - name: Run tests
         run: |
-          ./source/vendor/${{ env.PACKAGE_NAME }}/.github/cypress/cypress.sh --no_make_up=true
+          ls -la
+          ls -la source
+          chmod +x ./source/test-module/.github/cypress/cypress.sh
+          ./source/test-module/.github/cypress/cypress.sh --no_make_up=true
 
       - name: Upload log artifact
         if: always()
@@ -276,53 +289,3 @@ jobs:
             source/vendor/${{ env.PACKAGE_NAME }}/tests/e2e/cypress/_generated
             source/source/log/oxideshop.log
             source/data/php/logs/error_log.txt
-
-#  sonarcloud:
-#    needs: [ styles, unit_tests ]
-#    if: always()
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Checkout current module
-#        uses: actions/checkout@v4
-#
-#      - name: Download phpunit artifacts
-#        continue-on-error: true
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: TestsLog-7.4
-#          path: ./tests/
-#
-#      - name: Fix paths in unit logs
-#        continue-on-error: true
-#        run: |
-#          sed -i 's+/var/www/test-module/++' tests/coverage.xml
-#          sed -i 's+/var/www/test-module/++' tests/phpunit.xml
-#
-#      - name: Download styles artifacts
-#        uses: actions/download-artifact@v4
-#        with:
-#          name: StylesLog-8.0
-#          path: ./styles/
-#
-#      - name: Fix paths in styles logs
-#        continue-on-error: true
-#        run: |
-#          sed -i 's+\/home\/runner\/work\/.*?\/.*?\/source\/test-module\/++' styles/phpstan.report.json
-#
-#      - name: SonarCloud Scan
-#        uses: sonarsource/sonarcloud-github-action@master
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-#        with:
-#          args: >
-#            -Dsonar.organization=${{ env.SONARCLOUD_ORGANIZATION }}
-#            -Dsonar.projectKey=${{ env.SONARCLOUD_PROJECT_KEY }}
-#            -Dsonar.sources=src
-#            -Dsonar.tests=tests
-#            -Dsonar.sourceEncoding=UTF-8
-#            -Dsonar.php.coverage.reportPaths=tests/coverage.xml
-#            -Dsonar.php.phpstan.reportPaths=styles/phpstan.report.json
-#            -Dsonar.php.phpmd.reportPaths=styles/phpmd.report.json
-#            -Dsonar.cpd.php.minimumTokens=25
-#            -Dsonar.cpd.php.minimumLines=5

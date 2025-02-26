@@ -8,8 +8,8 @@
 namespace OxidSolutionCatalysts\PayPal\Model;
 
 use DateTimeImmutable;
-use libphonenumber\NumberParseException;
-use libphonenumber\PhoneNumberUtil;
+use Brick\PhoneNumber\PhoneNumber;
+use Brick\PhoneNumber\PhoneNumberParseException;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Application\Model\RequiredAddressFields;
@@ -73,21 +73,28 @@ class User extends User_parent
     public function getPhoneNumberForPuiRequest(): ?ApiModelPhone
     {
         $result = null;
-        $rawNumber = EshopRegistry::getRequest()->getRequestParameter('pui_required')['phonenumber'];
+        $rawNumber = trim(
+            str_replace(
+                ['+', '-', '(', ')', ' '],
+                '',
+                EshopRegistry::getRequest()->getRequestParameter('pui_required')['phonenumber']
+            )
+        );
 
         $country = oxNew(EshopModelCountry::class);
         $country->load($this->getFieldData('oxcountryId'));
         $countryCode = $country->getFieldData('oxisoalpha2');
-        $phoneUtils = PhoneNumberUtil::getInstance();
+
+        if (empty($countryCode) || strlen($countryCode) !== 2) {
+            $countryCode = 'DE';
+        }
 
         try {
-            $phoneNumber = $phoneUtils->parse($rawNumber, $countryCode);
-            if ($phoneUtils->isValidNumber($phoneNumber)) {
-                $result = new ApiModelPhone();
-                $result->country_code = (string)$phoneNumber->getCountryCode();
-                $result->national_number = $phoneNumber->getNationalNumber();
-            }
-        } catch (NumberParseException $exception) {
+            $phoneNumber = PhoneNumber::parse($rawNumber, $countryCode);
+            $result = new ApiModelPhone();
+            $result->country_code = $phoneNumber->getCountryCode();
+            $result->national_number = $phoneNumber->getNationalNumber();
+        } catch (PhoneNumberParseException $exception) {
             throw UserPhone::byRequestData();
         }
 

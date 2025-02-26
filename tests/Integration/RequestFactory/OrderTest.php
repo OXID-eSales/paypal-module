@@ -25,22 +25,17 @@ final class OrderTest extends BaseTestCase
 {
     use TestProductTrait;
 
-    protected const TEST_USER_ID = '06823b68-e4c3-4da8-b011-147195d9';
-
-    protected string $testProductOxid;
+    protected const TEST_USER_ID = 'testuser';
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->testProductOxid = $this->getTestProductOxid();
     }
 
     /**
      * @throws \OxidEsales\Eshop\Core\Exception\OutOfStockException
      * @throws \OxidEsales\Eshop\Core\Exception\NoArticleException
      * @throws \OxidEsales\Eshop\Core\Exception\ArticleInputException
-     * @throws \Doctrine\DBAL\Driver\Exception
-     * @throws \Doctrine\DBAL\Exception
      */
     public function testCreatePuiPayPalOrderRequestWithPuiRequiredFields(): void
     {
