@@ -10,13 +10,11 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
-use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureDeniedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
-use PHPUnit\Framework\MockObject\MockObject;
 
 final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
 {
@@ -54,19 +52,23 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
     {
         $data = $this->getRequestData($fixture);
         $resourceId = $data['resource']['id'];
-        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
+        $event = new WebhookEvent($data, self::WEBHOOK_EVENT);
 
         $loggerMock = $this->getPsrLoggerMock();
         $loggerMock->expects($this->once())
-            ->method('debug')
+            ->method('log')
             ->with(
+                'debug',
                 "Not enough information to handle PAYMENT.CAPTURE.DENIED with PayPal order_id '' and " .
                 "PayPal transaction id '" . $resourceId . "'"
             );
 
-        $handler = oxNew(static::HANDLER_CLASS);
-        $handler->addServiceMock('OxidSolutionCatalysts\PayPal\Logger', $loggerMock);
-        $handler->handle($event);
+        $handlerMock = $this->getMockBuilder(self::HANDLER_CLASS)
+            ->onlyMethods(['getLogger'])
+            ->getMock();
+
+        $handlerMock->method('getLogger')->willReturn($loggerMock);
+        $handlerMock->handle($event);
     }
 
     public function testEshopOrderNotFoundByPayPalOrderId(): void
@@ -74,7 +76,7 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
         $data = $this->getRequestData('payment_capture_denied_pui_v1.json');
         $payPalOrderId = $data['resource']['supplementary_data']['related_ids']['order_id'];
 
-        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
+        $event = new WebhookEvent($data, self::WEBHOOK_EVENT);
 
         $this->expectException(WebhookEventException::class);
         $this->expectExceptionMessage(
@@ -94,7 +96,7 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
         // this state is when the order is created by oxid but PayPal not yet acknowledged completed order
         $this->prepareTestData($payPalOrderId);
 
-        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
+        $event = new WebhookEvent($data, self::WEBHOOK_EVENT);
 
         // this state is when PayPal send the order completed webhook
         $handler = oxNew(static::HANDLER_CLASS);

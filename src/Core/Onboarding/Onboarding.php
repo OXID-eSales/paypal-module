@@ -43,7 +43,6 @@ class Onboarding
             // fetch and save Eligibility
             $merchantInformations = $this->fetchMerchantInformations();
             $this->saveEligibility($merchantInformations);
-
         } catch (\Exception $exception) {
             throw OnboardingException::autoConfiguration($exception->getMessage());
         }
@@ -65,11 +64,10 @@ class Onboarding
 
         $credentials = [];
         try {
-        $apiClient = $this->getOnboardingClient($onboardingResponse['isSandBox']);
-        $apiClient->authAfterWebLogin($onboardingResponse['authCode'], $onboardingResponse['sharedId'], $nonce);
+            $apiClient = $this->getOnboardingClient($onboardingResponse['isSandBox']);
+            $apiClient->authAfterWebLogin($onboardingResponse['authCode'], $onboardingResponse['sharedId'], $nonce);
 
             $credentials = $apiClient->getCredentials();
-
         } catch (ApiException $exception) {
             /**
              * @var Logger $logger

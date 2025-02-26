@@ -115,7 +115,8 @@ class StaticContent
      * @return void
      * @throws \Exception
      */
-    protected function deactivatePaymentMethod(string $paymentId) : void {
+    protected function deactivatePaymentMethod(string $paymentId): void
+    {
         $paymentModel = oxNew(EshopModelPayment::class);
         if ($paymentModel->load($paymentId)) {
             $paymentModel->oxpayments__oxactive = new Field(false);

@@ -37,6 +37,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Payments\CaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\ReauthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
 use OxidSolutionCatalysts\PayPalApi\Service\Payments as ApiPaymentService;
+use Psr\Log\LoggerInterface;
 
 class Payment
 {
@@ -87,7 +88,7 @@ class Payment
         OrderRepository $orderRepository,
         SCAValidatorInterface $scaValidator,
         ModuleSettings $moduleSettingsService,
-        Logger $logger,
+        LoggerInterface $logger,
         ServiceFactory $serviceFactory = null,
         PatchRequestFactory $patchRequestFactory = null,
         OrderRequestFactory $orderRequestFactory = null
@@ -305,7 +306,7 @@ class Payment
             } elseif ($payPalOrder->status !== Constants::PAYPAL_STATUS_COMPLETED) {
                 $request = new OrderCaptureRequest();
                 //order number must be resolved before order patching
-                if (!$order->hasOrderNumber()){
+                if (!$order->hasOrderNumber()) {
                     $order->setOrderNumber();
                 }
 
@@ -808,7 +809,7 @@ class Payment
         $module->load(Module::MODULE_ID);
         $orderNumber = $order instanceof EshopModelOrder ? $order->getFieldData('oxordernr') : null;
 
-        if($moduleSettings->isCustomIdSchemaStructural()){
+        if ($moduleSettings->isCustomIdSchemaStructural()) {
             $customID = [
                 'oxordernr' => $orderNumber,
                 'moduleVersion' => $module->getInfo('version'),
