@@ -1,0 +1,371 @@
+modules:
+  osc_paypal:
+    id: osc_paypal
+    path: osc/paypal
+    version: 2.5.3-rc.1
+    configured: true
+    title:
+      de: 'PayPal Checkout für OXID'
+      en: 'PayPal Checkout for OXID'
+    description:
+      de: 'Nutzung des Online-Bezahldienstes von PayPal. Dokumentation: <a href="https://docs.oxid-esales.com/modules/paypal-checkout/de/latest/" target="_blank">PayPal Checkout</a>'
+      en: 'Use of the online payment service from PayPal. Documentation: <a href="https://docs.oxid-esales.com/modules/paypal-checkout/en/latest/" target="_blank">PayPal Checkout</a>'
+    lang: ''
+    thumbnail: out/img/paypal.png
+    author: 'OXID eSales AG'
+    url: 'https://www.oxid-esales.com'
+    email: info@oxid-esales.com
+    classExtensions:
+      OxidEsales\Eshop\Core\InputValidator: OxidSolutionCatalysts\PayPal\Core\InputValidator
+      OxidEsales\Eshop\Core\ShopControl: OxidSolutionCatalysts\PayPal\Core\ShopControl
+      OxidEsales\Eshop\Core\ViewConfig: OxidSolutionCatalysts\PayPal\Core\ViewConfig
+      OxidEsales\Eshop\Application\Model\Order: OxidSolutionCatalysts\PayPal\Model\Order
+      OxidEsales\Eshop\Application\Model\User: OxidSolutionCatalysts\PayPal\Model\User
+      OxidEsales\Eshop\Application\Model\Basket: OxidSolutionCatalysts\PayPal\Model\Basket
+      OxidEsales\Eshop\Application\Model\Article: OxidSolutionCatalysts\PayPal\Model\Article
+      OxidEsales\Eshop\Application\Model\Payment: OxidSolutionCatalysts\PayPal\Model\Payment
+      OxidEsales\Eshop\Application\Model\PaymentGateway: OxidSolutionCatalysts\PayPal\Model\PaymentGateway
+      OxidEsales\Eshop\Application\Controller\OrderController: OxidSolutionCatalysts\PayPal\Controller\OrderController
+      OxidEsales\Eshop\Application\Controller\PaymentController: OxidSolutionCatalysts\PayPal\Controller\PaymentController
+      OxidEsales\Eshop\Application\Component\UserComponent: OxidSolutionCatalysts\PayPal\Component\UserComponent
+      OxidEsales\Eshop\Application\Component\BasketComponent: OxidSolutionCatalysts\PayPal\Component\BasketComponent
+      OxidEsales\Eshop\Application\Controller\Admin\OrderMain: OxidSolutionCatalysts\PayPal\Controller\Admin\OrderMain
+      OxidEsales\Eshop\Application\Controller\Admin\OrderOverview: OxidSolutionCatalysts\PayPal\Controller\Admin\OrderOverview
+      OxidEsales\Eshop\Application\Model\State: OxidSolutionCatalysts\PayPal\Model\State
+    controllers:
+      oscpaypalconfig: OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalConfigController
+      oscpaypalwebhook: OxidSolutionCatalysts\PayPal\Controller\WebhookController
+      oscpaypalproxy: OxidSolutionCatalysts\PayPal\Controller\ProxyController
+      oscpaypalorder: OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalOrderController
+      oscaccountvault: OxidSolutionCatalysts\PayPal\Controller\PayPalVaultingController
+      oscaccountvaultcard: OxidSolutionCatalysts\PayPal\Controller\PayPalVaultingCardController
+      osctokencontroller: OxidSolutionCatalysts\PayPal\Controller\VaultingTokenController
+    events:
+      onActivate: '\OxidSolutionCatalysts\PayPal\Core\Events\Events::onActivate'
+      onDeactivate: '\OxidSolutionCatalysts\PayPal\Core\Events\Events::onDeactivate'
+    moduleSettings:
+      oscPayPalSandboxMode:
+        type: bool
+        value: true
+      oscPayPalClientId:
+        type: str
+        value: ''
+      oscPayPalClientSecret:
+        type: str
+        value: ''
+      oscPayPalClientMerchantId:
+        type: str
+        value: ''
+      oscPayPalWebhookId:
+        type: str
+        value: ''
+      oscPayPalSandboxClientId:
+        type: str
+        value: BAA7hWRIZU4JUdxGPgkVHzQPMh4zCRcJR25HYjSi0fZTqlKoZ9OAX0iDdij4KI4IA2qlH60FFHFjGUYuCE
+      oscPayPalSandboxClientSecret:
+        type: str
+        value: EBQw3aP23P2KRRZwGHx2G3JR7OoT9iY6aVlr6cFoHyLin2__4pUP67RMKTBUzCkK0HrzMlpxnAmwSh5Z
+      oscPayPalSandboxClientMerchantId:
+        type: str
+        value: ''
+      oscPayPalSandboxWebhookId:
+        type: str
+        value: 1NH5400465671892N
+      oscPayPalShowProductDetailsButton:
+        type: bool
+        value: true
+      oscPayPalShowBasketButton:
+        type: bool
+        value: true
+      oscPayPalShowMiniBasketButton:
+        type: bool
+        value: true
+      oscPayPalShowPayLaterButton:
+        type: bool
+        value: true
+      oscPayPalAutoBillOutstanding:
+        type: bool
+        value: true
+      oscPayPalStandardCaptureStrategy:
+        type: select
+        value: directly
+        constraints:
+          - directly
+          - delivery
+          - manually
+      oscPayPalSetupFeeFailureAction:
+        type: select
+        value: CONTINUE
+        constraints:
+          - CONTINUE
+          - CANCEL
+      oscPayPalPaymentFailureThreshold:
+        type: str
+        value: ''
+      oscPayPalBannersShowAll:
+        type: bool
+        value: false
+      oscPayPalBannersStartPage:
+        type: bool
+        value: false
+      oscPayPalBannersStartPageSelector:
+        type: str
+        value: '#wrapper .row'
+      oscPayPalBannersCategoryPage:
+        type: bool
+        value: false
+      oscPayPalBannersCategoryPageSelector:
+        type: str
+        value: .page-header
+      oscPayPalBannersSearchResultsPage:
+        type: bool
+        value: false
+      oscPayPalBannersSearchResultsPageSelector:
+        type: str
+        value: '#content .page-header .clearfix'
+      oscPayPalBannersProductDetailsPage:
+        type: bool
+        value: false
+      oscPayPalBannersProductDetailsPageSelector:
+        type: str
+        value: '#detailsItemsPager'
+      oscPayPalBannersCheckoutPage:
+        type: bool
+        value: false
+      oscPayPalBannersCartPageSelector:
+        type: str
+        value: .cart-buttons
+      oscPayPalBannersPaymentPageSelector:
+        type: str
+        value: '.checkoutSteps ~ .spacer'
+      oscPayPalBannersColorScheme:
+        type: select
+        value: blue
+        constraints:
+          - blue
+          - black
+          - white
+          - gray
+          - monochrome
+          - grayscale
+      oscPayPalLegacySettingsTransferred:
+        type: bool
+        value: false
+      oscPayPalLoginWithPayPalEMail:
+        type: bool
+        value: false
+      oscPayPalAcdcEligibility:
+        type: bool
+        value: false
+      oscPayPalPuiEligibility:
+        type: bool
+        value: false
+      oscPayPalVaultingEligibility:
+        type: bool
+        value: false
+      oscPayPalApplePayEligibility:
+        type: bool
+        value: false
+      oscPayPalGooglePayEligibility:
+        type: bool
+        value: false
+      oscPayPalSandboxAcdcEligibility:
+        type: bool
+        value: true
+      oscPayPalSandboxPuiEligibility:
+        type: bool
+        value: true
+      oscPayPalSandboxVaultingEligibility:
+        type: bool
+        value: false
+      oscPayPalSandboxApplePayEligibility:
+        type: bool
+        value: false
+      oscPayPalSandboxGooglePayEligibility:
+        type: bool
+        value: false
+      oscPayPalSCAContingency:
+        type: select
+        value: SCA_ALWAYS
+        constraints:
+          - SCA_ALWAYS
+          - SCA_WHEN_REQUIRED
+          - SCA_DISABLED
+      oscPayPalCleanUpNotFinishedOrdersAutomaticlly:
+        type: bool
+        value: false
+      oscPayPalStartTimeCleanUpOrders:
+        type: num
+        value: 60
+      oscPayPalLocales:
+        type: str
+        value: 'de_DE,en_US'
+      oscPayPalSetVaulting:
+        type: bool
+        value: true
+      oscPayPalUseGooglePayAddress:
+        type: bool
+        value: false
+      oscPayPalDefaultShippingPriceExpress:
+        type: str
+        value: '3.5'
+      oscPayPalUseStructuralCustomIdSchema:
+        type: bool
+        value: false
+    templateBlocks:
+      -
+        template: headitem.tpl
+        block: admin_headitem_inccss
+        file: views/blocks/admin/admin_headitem_inccss.tpl
+      -
+        template: headitem.tpl
+        block: admin_headitem_incjs
+        file: views/blocks/admin/admin_headitem_incjs.tpl
+      -
+        template: order_main.tpl
+        block: admin_order_main_form_shipping
+        file: views/blocks/admin/admin_order_main_form_shipping.tpl
+      -
+        template: order_main.tpl
+        block: admin_order_main_send_order
+        file: views/blocks/admin/admin_order_main_send_order.tpl
+      -
+        template: layout/base.tpl
+        block: base_js
+        file: views/blocks/layout/base_js.tpl
+      -
+        template: layout/base.tpl
+        block: base_style
+        file: views/blocks/layout/base_style.tpl
+      -
+        template: page/account/inc/account_menu.tpl
+        block: account_menu
+        file: /views/blocks/page/account/inc/account_menu.tpl
+      -
+        template: page/checkout/basket.tpl
+        block: basket_btn_next_bottom
+        file: /views/blocks/page/checkout/basket_btn_next_bottom.tpl
+      -
+        template: page/checkout/basket.tpl
+        block: checkout_basket_next_step_top
+        file: /views/blocks/page/checkout/basket_installment_banner_after.tpl
+      -
+        template: page/checkout/basket.tpl
+        block: checkout_basket_emptyshippingcart
+        file: /views/blocks/page/checkout/basket_installment_banner_before.tpl
+      -
+        template: page/checkout/order.tpl
+        block: checkout_order_btn_submit_bottom
+        file: views/blocks/page/checkout/checkout_order_btn_submit_bottom.tpl
+      -
+        template: page/checkout/order.tpl
+        block: shippingAndPayment
+        file: views/blocks/page/checkout/shipping_and_payment.tpl
+      -
+        template: page/checkout/payment.tpl
+        block: change_payment
+        file: /views/blocks/page/checkout/change_payment.tpl
+      -
+        template: page/checkout/payment.tpl
+        block: checkout_payment_main
+        file: /views/blocks/page/checkout/basket_installment_banner_before.tpl
+      -
+        template: page/checkout/payment.tpl
+        block: select_payment
+        file: /views/blocks/page/checkout/select_payment.tpl
+      -
+        template: page/checkout/thankyou.tpl
+        block: checkout_thankyou_info
+        file: /views/blocks/page/checkout/thankyou.tpl
+      -
+        template: page/details/inc/productmain.tpl
+        block: details_productmain_price_value
+        file: /views/blocks/page/details/inc/productmain.tpl
+      -
+        template: page/details/inc/productmain.tpl
+        block: details_productmain_tobasket
+        file: /views/blocks/page/details/inc/details_productmain_tobasket.tpl
+      -
+        template: page/list/list.tpl
+        block: page_list_listhead
+        file: /views/blocks/page/list/list.tpl
+      -
+        template: page/search/search.tpl
+        block: search_header
+        file: /views/blocks/page/search/search.tpl
+      -
+        template: page/shop/start.tpl
+        block: start_welcome_text
+        file: /views/blocks/page/shop/start.tpl
+      -
+        template: widget/minibasket/minibasket.tpl
+        block: dd_layout_page_header_icon_menu_minibasket_functions
+        file: /views/blocks/widget/minibasket/dd_layout_page_header_icon_menu_minibasket_functions.tpl
+    templates:
+      oscpaypalconfig.tpl: osc/paypal/views/admin/tpl/oscpaypalconfig.tpl
+      oscpaypalorder.tpl: osc/paypal/views/admin/tpl/oscpaypalorder.tpl
+      oscpaypalorder_ppplus.tpl: osc/paypal/views/admin/tpl/oscpaypalorder_ppplus.tpl
+      oscpaypalorder_pp.tpl: osc/paypal/views/admin/tpl/oscpaypalorder_pp.tpl
+      modules/osc/paypal/paymentbuttons.tpl: osc/paypal/views/tpl/shared/paymentbuttons.tpl
+      modules/osc/paypal/pui_flow.tpl: osc/paypal/views/tpl/flow/page/checkout/pui.tpl
+      modules/osc/paypal/pui_wave.tpl: osc/paypal/views/tpl/wave/page/checkout/pui.tpl
+      modules/osc/paypal/pui_fraudnet.tpl: osc/paypal/views/tpl/shared/page/checkout/pui_fraudnet.tpl
+      modules/osc/paypal/apple_pay.tpl: osc/paypal/views/tpl/shared/page/checkout/apple_pay.tpl
+      modules/osc/paypal/shipping_and_payment_flow.tpl: osc/paypal/views/tpl/flow/page/checkout/shipping_and_payment.tpl
+      modules/osc/paypal/shipping_and_payment_wave.tpl: osc/paypal/views/tpl/wave/page/checkout/shipping_and_payment.tpl
+      modules/osc/paypal/shipping_and_payment_paypal_flow.tpl: osc/paypal/views/tpl/flow/page/checkout/shipping_and_payment_paypal.tpl
+      modules/osc/paypal/shipping_and_payment_paypal_wave.tpl: osc/paypal/views/tpl/wave/page/checkout/shipping_and_payment_paypal.tpl
+      modules/osc/paypal/checkout_order_btn_submit_bottom_flow.tpl: osc/paypal/views/tpl/flow/page/checkout/checkout_order_btn_submit_bottom.tpl
+      modules/osc/paypal/checkout_order_btn_submit_bottom_wave.tpl: osc/paypal/views/tpl/wave/page/checkout/checkout_order_btn_submit_bottom.tpl
+      modules/osc/paypal/acdc.tpl: osc/paypal/views/tpl/shared/page/checkout/acdc.tpl
+      modules/osc/paypal/sepa_cc_alternative.tpl: osc/paypal/views/tpl/shared/page/checkout/sepa_cc_alternative.tpl
+      modules/osc/paypal/base_js.tpl: osc/paypal/views/tpl/shared/layout/base_js.tpl
+      modules/osc/paypal/base_style.tpl: osc/paypal/views/tpl/shared/layout/base_style.tpl
+      modules/osc/paypal/basket_btn_next_bottom.tpl: osc/paypal/views/tpl/shared/page/checkout/basket_btn_next_bottom.tpl
+      modules/osc/paypal/select_payment.tpl: osc/paypal/views/tpl/shared/page/checkout/select_payment.tpl
+      modules/osc/paypal/details_productmain_tobasket.tpl: osc/paypal/views/tpl/shared/page/details/inc/details_productmain_tobasket.tpl
+      modules/osc/paypal/dd_layout_page_header_icon_menu_minibasket_functions.tpl: osc/paypal/views/tpl/shared/widget/minibasket/dd_layout_page_header_icon_menu_minibasket_functions.tpl
+      modules/osc/paypal/change_payment_flow.tpl: osc/paypal/views/tpl/flow/page/checkout/change_payment.tpl
+      modules/osc/paypal/change_payment_wave.tpl: osc/paypal/views/tpl/wave/page/checkout/change_payment.tpl
+      modules/osc/paypal/installment_banners.tpl: osc/paypal/views/tpl/shared/installment_banners.tpl
+      modules/osc/paypal/googlepay.tpl: osc/paypal/views/tpl/shared/googlepay.tpl
+      modules/osc/paypal/applepay.tpl: osc/paypal/views/tpl/shared/applepay.tpl
+      modules/osc/paypal/account_vaulting_paypal.tpl: osc/paypal/views/tpl/shared/page/account/account_vaulting_paypal.tpl
+      modules/osc/paypal/account_vaulting_card.tpl: osc/paypal/views/tpl/shared/page/account/account_vaulting_card.tpl
+      modules/osc/paypal/vaultedpaymentsources.tpl: osc/paypal/views/tpl/shared/vaultedpaymentsources.tpl
+      modules/osc/paypal/vaultedpaymentsources_flow.tpl: osc/paypal/views/tpl/flow/vaulting/vaultedpaymentsources.tpl
+      modules/osc/paypal/vaultedpaymentsources_wave.tpl: osc/paypal/views/tpl/wave/vaulting/vaultedpaymentsources.tpl
+moduleChains:
+  classExtensions:
+    OxidEsales\Eshop\Core\InputValidator:
+      - OxidSolutionCatalysts\PayPal\Core\InputValidator
+    OxidEsales\Eshop\Core\ShopControl:
+      - OxidSolutionCatalysts\PayPal\Core\ShopControl
+    OxidEsales\Eshop\Core\ViewConfig:
+      - OxidSolutionCatalysts\PayPal\Core\ViewConfig
+    OxidEsales\Eshop\Application\Model\Order:
+      - OxidSolutionCatalysts\PayPal\Model\Order
+    OxidEsales\Eshop\Application\Model\User:
+      - OxidSolutionCatalysts\PayPal\Model\User
+    OxidEsales\Eshop\Application\Model\Basket:
+      - OxidSolutionCatalysts\PayPal\Model\Basket
+    OxidEsales\Eshop\Application\Model\Article:
+      - OxidSolutionCatalysts\PayPal\Model\Article
+    OxidEsales\Eshop\Application\Model\Payment:
+      - OxidSolutionCatalysts\PayPal\Model\Payment
+    OxidEsales\Eshop\Application\Model\PaymentGateway:
+      - OxidSolutionCatalysts\PayPal\Model\PaymentGateway
+    OxidEsales\Eshop\Application\Controller\OrderController:
+      - OxidSolutionCatalysts\PayPal\Controller\OrderController
+    OxidEsales\Eshop\Application\Controller\PaymentController:
+      - OxidSolutionCatalysts\PayPal\Controller\PaymentController
+    OxidEsales\Eshop\Application\Component\UserComponent:
+      - OxidSolutionCatalysts\PayPal\Component\UserComponent
+    OxidEsales\Eshop\Application\Component\BasketComponent:
+      - OxidSolutionCatalysts\PayPal\Component\BasketComponent
+    OxidEsales\Eshop\Application\Controller\Admin\OrderMain:
+      - OxidSolutionCatalysts\PayPal\Controller\Admin\OrderMain
+    OxidEsales\Eshop\Application\Controller\Admin\OrderOverview:
+      - OxidSolutionCatalysts\PayPal\Controller\Admin\OrderOverview
+    OxidEsales\Eshop\Application\Model\State:
+      - OxidSolutionCatalysts\PayPal\Model\State
