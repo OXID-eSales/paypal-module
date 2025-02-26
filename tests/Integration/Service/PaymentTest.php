@@ -145,14 +145,12 @@ final class PaymentTest extends BaseTestCase
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
-
         try {
             $result = $paymentService->doCreatePayPalOrder($basket, OrderRequest::INTENT_CAPTURE);
         } catch (TypeError $e) {
             var_dump($e->getMessage());
             $this->fail('Expected ApiException, got TypeError');
         }
-
 
         $this->assertNotEmpty($result->id);
     }

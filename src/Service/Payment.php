@@ -145,7 +145,6 @@ class Payment
             );
         } catch (ApiException $exception) {
             $this->logger->log('error', 'API Error.', [$exception]);
-
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
             $this->logger->log('error', 'Error on order create call.', [$exception]);

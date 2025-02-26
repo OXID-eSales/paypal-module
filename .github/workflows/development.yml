@@ -233,6 +233,8 @@ jobs:
           path: |
             source/coverage.xml
             source/phpunit.xml
+            source/source/log/oxideshop.log
+            source/data/php/logs/error_log.txt
 
   cypress_tests:
     strategy:
