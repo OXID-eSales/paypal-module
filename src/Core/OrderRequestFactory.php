@@ -93,7 +93,9 @@ class OrderRequestFactory
     ): OrderRequest {
         $request = $this->request = new OrderRequest();
         $this->basket = $basket;
-        $withItems = !$this->basket->isCalculationModeNetto();
+        $currency = Registry::getConfig()->getActShopCurrencyObject();
+        //we can't sent basket items along with order request when precision level is above 2
+        $withItems = !$this->basket->isCalculationModeNetto() && !($currency->decimal > 2);
 
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $setVaulting = $moduleSettings->getIsVaultingActive();
@@ -307,6 +309,8 @@ class OrderRequestFactory
         $basket = $this->basket;
         $itemCategory = $this->getItemCategoryByBasketContent();
         $currency = $basket->getBasketCurrency();
+        //only two decimal place precision is supported in PayPal
+        $currency->decimal = 2;
         $language = Registry::getLang();
         $items = [];
 
