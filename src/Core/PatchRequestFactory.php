@@ -46,7 +46,9 @@ class PatchRequestFactory
         string $orderId = ''
     ): array {
         $this->basket = $basket;
-        $withItems = !$this->basket->isCalculationModeNetto();
+        $currency = Registry::getConfig()->getActShopCurrencyObject();
+        //we can't sent basket items along with order request when precision level is above 2
+        $withItems = !$this->basket->isCalculationModeNetto() && !($currency->decimal > 2);
         $currency = $basket->getBasketCurrency();
 
         $this->getShippingNamePatch();

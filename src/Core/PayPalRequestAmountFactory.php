@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Application\Model\Basket;
+use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
@@ -20,10 +21,16 @@ use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
  */
 class PayPalRequestAmountFactory
 {
+
     public function getAmount(Basket $basket): AmountWithBreakdown
     {
+        $enteredNetPrice = Registry::getConfig()->getConfigParam('blEnterNetPrice');
         $netMode = $basket->isCalculationModeNetto();
         $currency = $basket->getBasketCurrency();
+        //only two decimal place precision is supported in PayPal
+        $isPrecisionAboveLimit = $currency->decimal > 2;
+        //hardcode precision limit for other processes that uses currency object
+        $currency->decimal = 2;
 
         //Discount
         $discount = $basket->getPayPalCheckoutDiscount();
@@ -46,17 +53,12 @@ class PayPalRequestAmountFactory
             $discount = 0;
         }
 
-        if ($netMode) {
-            $total = $itemTotal - $shipping;
-        } else {
-            $total = $itemTotal - $discount + $itemTotalAdditionalCosts;
-        }
-
+        $total = $netMode ? $itemTotal : ($itemTotal - $discount + $itemTotalAdditionalCosts);
         $total = PriceToMoney::convert($total, $currency);
 
         //Total amount
         $amount = new AmountWithBreakdown();
-        $amount->value = $brutBasketTotal;
+        $amount->value = (float)number_format($brutBasketTotal, 2, '.', '');
         $amount->currency_code = $total->currency_code;
 
         //Cost breakdown
@@ -78,6 +80,17 @@ class PayPalRequestAmountFactory
                 $delivery,
                 $currency
             );
+        }
+
+        //For prices entered in net and precision limit above 2
+        //the shipping should be combined with basket total because of the rounding errors
+        if (
+            ($enteredNetPrice && !$netMode)
+            || ($netMode && $isPrecisionAboveLimit)
+        ){
+            $breakdown->shipping = null;
+            $breakDownItemTotal = $itemTotal + $shipping;
+            $breakdown->item_total = PriceToMoney::convert($breakDownItemTotal, $currency);
         }
 
         return $amount;
