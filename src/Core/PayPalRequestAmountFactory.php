@@ -49,10 +49,8 @@ class PayPalRequestAmountFactory
     {
         $this->basket = $basket;
         $this->collectPriceData();
-        $amount = $this->createAmountWithBreakdown();
-        $amount->breakdown = $this->calculateBreakdown();
 
-        return $amount;
+        return $this->createAmountWithBreakdown();
     }
 
     /**
@@ -85,6 +83,7 @@ class PayPalRequestAmountFactory
         $amount = new AmountWithBreakdown();
         $amount->value = (float)number_format($this->brutBasketTotal, 2, '.', '');
         $amount->currency_code = $this->currency->name;
+        $amount->breakdown = $this->calculateBreakdown();
 
         return $amount;
     }
@@ -118,11 +117,7 @@ class PayPalRequestAmountFactory
     protected function processDiscount(AmountBreakdown $breakdown): void
     {
         $discount = (!$this->netMode && $this->discount < 0) ? 0 : $this->discount;
-        $itemTotal = $this->itemTotal;
-        $itemTotalAdditionalCosts = $this->itemTotalAdditionalCosts;
-        $brutBasketTotal = $this->brutBasketTotal;
-
-        $brutDiscountValue = $itemTotal + $itemTotalAdditionalCosts - $brutBasketTotal;
+        $brutDiscountValue = $this->itemTotal + $this->itemTotalAdditionalCosts - $this->brutBasketTotal;
 
         // Possible price surcharge
         if ($this->netMode && $brutDiscountValue < 0) {
@@ -146,7 +141,7 @@ class PayPalRequestAmountFactory
         $discount = $this->discount;
         $itemTotalAdditionalCosts = $this->itemTotalAdditionalCosts;
 
-        return $this->netMode ? $itemTotal : $itemTotal - $discount + $itemTotalAdditionalCosts;
+        return $this->netMode ? $itemTotal : $itemTotal /*- $discount*/ + $itemTotalAdditionalCosts;
     }
 
     /**
@@ -154,21 +149,20 @@ class PayPalRequestAmountFactory
      */
     protected function processShipping(AmountBreakdown $breakdown): void
     {
-        $shipping = $this->shipping;
-
         // Add shipping when available
-        if ($shipping) {
-            $breakdown->shipping = PriceToMoney::convert($shipping, $this->currency);
+        if ($this->shipping) {
+            $breakdown->shipping = PriceToMoney::convert($this->shipping, $this->currency);
         }
 
-        $shouldCombineShippingWithItems = ($this->enteredNetPrice && !$this->netMode) ||
+        $shouldCombineShippingWithItems =
+            (!$this->netMode && $this->enteredNetPrice) ||
             ($this->netMode && $this->isPrecisionAboveLimit());
 
         // For prices entered in net and precision limit above 2
         // the shipping should be combined with basket total because of the rounding errors
         if ($shouldCombineShippingWithItems) {
             $breakdown->shipping = null;
-            $combinedTotal = $this->itemTotal + $shipping;
+            $combinedTotal = $this->itemTotal + $this->shipping;
             $breakdown->item_total = PriceToMoney::convert($combinedTotal, $this->currency);
         }
     }
@@ -183,12 +177,14 @@ class PayPalRequestAmountFactory
 
     public function getCurrency(): stdClass
     {
-        return $this->currency;
+        $currency = clone $this->currency;
+        $currency->decimal = 2;
+
+        return $currency;
     }
 
     public function setCurrency(stdClass $currency): void
     {
-        $currency->decimal = 2;
         $this->currency = $currency;
     }
 }
