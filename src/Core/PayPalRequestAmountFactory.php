@@ -82,7 +82,7 @@ class PayPalRequestAmountFactory
     {
         $amount = new AmountWithBreakdown();
         $amount->value = (float)number_format($this->brutBasketTotal, 2, '.', '');
-        $amount->currency_code = $this->currency->name;
+        $amount->currency_code = $this->getCurrency()->name;
         $amount->breakdown = $this->calculateBreakdown();
 
         return $amount;
@@ -100,10 +100,10 @@ class PayPalRequestAmountFactory
 
         // Calculate item total
         $breakDownItemTotal = $this->calculateBreakdownItemTotal();
-        $breakdown->item_total = PriceToMoney::convert($breakDownItemTotal, $this->currency);
+        $breakdown->item_total = PriceToMoney::convert($breakDownItemTotal, $this->getCurrency());
 
         // Add tax total
-        $breakdown->tax_total = PriceToMoney::convert(0, $this->currency);
+        $breakdown->tax_total = PriceToMoney::convert(0, $this->getCurrency());
 
         // Process shipping
         $this->processShipping($breakdown);
@@ -127,7 +127,7 @@ class PayPalRequestAmountFactory
         if ($discount) {
             $breakdown->discount = PriceToMoney::convert(
                 $this->netMode ? $brutDiscountValue : $discount,
-                $this->currency
+                $this->getCurrency()
             );
         }
     }
@@ -151,7 +151,7 @@ class PayPalRequestAmountFactory
     {
         // Add shipping when available
         if ($this->shipping) {
-            $breakdown->shipping = PriceToMoney::convert($this->shipping, $this->currency);
+            $breakdown->shipping = PriceToMoney::convert($this->shipping, $this->getCurrency());
         }
 
         $shouldCombineShippingWithItems =
@@ -163,7 +163,7 @@ class PayPalRequestAmountFactory
         if ($shouldCombineShippingWithItems) {
             $breakdown->shipping = null;
             $combinedTotal = $this->itemTotal + $this->shipping;
-            $breakdown->item_total = PriceToMoney::convert($combinedTotal, $this->currency);
+            $breakdown->item_total = PriceToMoney::convert($combinedTotal, $this->getCurrency());
         }
     }
 
