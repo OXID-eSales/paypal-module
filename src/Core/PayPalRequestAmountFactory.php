@@ -14,6 +14,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
+use stdClass;
 
 /**
  * Class PayPalRequestFactory
@@ -21,78 +22,173 @@ use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
  */
 class PayPalRequestAmountFactory
 {
+    /**
+     * @var \OxidEsales\Eshop\Application\Model\Basket
+     */
+    private Basket $basket;
+    /**
+     * @var \OxidEsales\Eshop\Core\Config
+     */
+    private $config;
+    private bool $enteredNetPrice = false;
+    private bool $netMode = false;
+    private stdClass $currency;
+    private $discount;
+    private $itemTotal;
+    private $itemTotalAdditionalCosts;
+    private $brutBasketTotal;
+    private $shipping;
+
+    public function __construct()
+    {
+        $this->config = Registry::getConfig();
+        $this->enteredNetPrice = $this->getConfig()->getConfigParam('blEnterNetPrice');
+    }
 
     public function getAmount(Basket $basket): AmountWithBreakdown
     {
-        $enteredNetPrice = Registry::getConfig()->getConfigParam('blEnterNetPrice');
-        $netMode = $basket->isCalculationModeNetto();
-        $currency = $basket->getBasketCurrency();
-        //only two decimal place precision is supported in PayPal
-        $isPrecisionAboveLimit = $currency->decimal > 2;
-        //hardcode precision limit for other processes that uses currency object
-        $currency->decimal = 2;
+        $this->basket = $basket;
+        $this->collectPriceData();
+        $amount = $this->createAmountWithBreakdown();
+        $amount->breakdown = $this->calculateBreakdown();
 
-        //Discount
-        $discount = $basket->getPayPalCheckoutDiscount();
-        //Item total cost
-        $itemTotal = $basket->getPayPalCheckoutItems();
+        return $amount;
+    }
 
-        $itemTotalAdditionalCosts = $basket->getAdditionalPayPalCheckoutItemCosts();
+    /**
+     * Collects all price data needed for calculation
+     */
+    protected function collectPriceData(): void
+    {
+        $this->setCurrency($this->basket->getBasketCurrency());
+        $this->netMode = $this->basket->isCalculationModeNetto();
+        $this->discount = $this->basket->getPayPalCheckoutDiscount();
+        $this->itemTotal = $this->basket->getPayPalCheckoutItems();
+        $this->itemTotalAdditionalCosts = $this->basket->getAdditionalPayPalCheckoutItemCosts();
+        $this->brutBasketTotal = $this->basket->getPrice()->getBruttoPrice();
+        $this->shipping = $this->basket->getPayPalCheckoutDeliveryCosts();
+    }
 
-        $brutBasketTotal = $basket->getPrice()->getBruttoPrice();
+    /**
+     * Checks if the currency precision is above PayPal's limit
+     */
+    protected function isPrecisionAboveLimit(): bool
+    {
+        return $this->currency->decimal > 2;
+    }
+
+    /**
+     * Creates the base amount object with total value
+     */
+    protected function createAmountWithBreakdown(): AmountWithBreakdown
+    {
+        $amount = new AmountWithBreakdown();
+        $amount->value = (float)number_format($this->brutBasketTotal, 2, '.', '');
+        $amount->currency_code = $this->currency->name;
+
+        return $amount;
+    }
+
+    /**
+     * Calculates the breakdown components of the amount
+     */
+    protected function calculateBreakdown(): AmountBreakdown
+    {
+        $breakdown = new AmountBreakdown();
+
+        // Process discount
+        $this->processDiscount($breakdown);
+
+        // Calculate item total
+        $breakDownItemTotal = $this->calculateBreakdownItemTotal();
+        $breakdown->item_total = PriceToMoney::convert($breakDownItemTotal, $this->currency);
+
+        // Add tax total
+        $breakdown->tax_total = PriceToMoney::convert(0, $this->currency);
+
+        // Process shipping
+        $this->processShipping($breakdown);
+
+        return $breakdown;
+    }
+
+    /**
+     * Processes discount for the breakdown
+     */
+    protected function processDiscount(AmountBreakdown $breakdown): void
+    {
+        $discount = (!$this->netMode && $this->discount < 0) ? 0 : $this->discount;
+        $itemTotal = $this->itemTotal;
+        $itemTotalAdditionalCosts = $this->itemTotalAdditionalCosts;
+        $brutBasketTotal = $this->brutBasketTotal;
+
         $brutDiscountValue = $itemTotal + $itemTotalAdditionalCosts - $brutBasketTotal;
-        $shipping = $basket->getPayPalCheckoutDeliveryCosts();
 
-        // possible price surcharge
-        if ($netMode && $brutDiscountValue < 0) {
+        // Possible price surcharge
+        if ($this->netMode && $brutDiscountValue < 0) {
             $brutDiscountValue = 0;
         }
 
-        if (!$netMode && $discount < 0) {
-            $itemTotal -= $discount;
-            $discount = 0;
-        }
-
-        $total = $netMode ? $itemTotal : ($itemTotal - $discount + $itemTotalAdditionalCosts);
-        $total = PriceToMoney::convert($total, $currency);
-
-        //Total amount
-        $amount = new AmountWithBreakdown();
-        $amount->value = (float)number_format($brutBasketTotal, 2, '.', '');
-        $amount->currency_code = $total->currency_code;
-
-        //Cost breakdown
-        $breakdown = $amount->breakdown = new AmountBreakdown();
-
         if ($discount) {
-            $breakdown->discount = PriceToMoney::convert($netMode ? $brutDiscountValue : $discount, $currency);
-        }
-
-        $breakDownItemTotal = $netMode ? $total->value : $itemTotal;
-        $breakdown->item_total = PriceToMoney::convert($breakDownItemTotal, $currency);
-        //Item tax sum - we use 0% and calculate with brutto to avoid rounding errors
-        $breakdown->tax_total = PriceToMoney::convert(0, $currency);
-
-        //Shipping cost
-        $delivery = $basket->getPayPalCheckoutDeliveryCosts();
-        if ($delivery) {
-            $breakdown->shipping = PriceToMoney::convert(
-                $delivery,
-                $currency
+            $breakdown->discount = PriceToMoney::convert(
+                $this->netMode ? $brutDiscountValue : $discount,
+                $this->currency
             );
         }
+    }
 
-        //For prices entered in net and precision limit above 2
-        //the shipping should be combined with basket total because of the rounding errors
-        if (
-            ($enteredNetPrice && !$netMode)
-            || ($netMode && $isPrecisionAboveLimit)
-        ){
-            $breakdown->shipping = null;
-            $breakDownItemTotal = $itemTotal + $shipping;
-            $breakdown->item_total = PriceToMoney::convert($breakDownItemTotal, $currency);
+    /**
+     * Calculates the item total for the breakdown
+     */
+    protected function calculateBreakdownItemTotal(): float
+    {
+        $itemTotal = $this->itemTotal;
+        $discount = $this->discount;
+        $itemTotalAdditionalCosts = $this->itemTotalAdditionalCosts;
+
+        return $this->netMode ? $itemTotal : $itemTotal - $discount + $itemTotalAdditionalCosts;
+    }
+
+    /**
+     * Processes shipping for the breakdown
+     */
+    protected function processShipping(AmountBreakdown $breakdown): void
+    {
+        $shipping = $this->shipping;
+
+        // Add shipping when available
+        if ($shipping) {
+            $breakdown->shipping = PriceToMoney::convert($shipping, $this->currency);
         }
 
-        return $amount;
+        $shouldCombineShippingWithItems = ($this->enteredNetPrice && !$this->netMode) ||
+            ($this->netMode && $this->isPrecisionAboveLimit());
+
+        // For prices entered in net and precision limit above 2
+        // the shipping should be combined with basket total because of the rounding errors
+        if ($shouldCombineShippingWithItems) {
+            $breakdown->shipping = null;
+            $combinedTotal = $this->itemTotal + $shipping;
+            $breakdown->item_total = PriceToMoney::convert($combinedTotal, $this->currency);
+        }
+    }
+
+    /**
+     * @return object|\OxidEsales\Eshop\Core\Config
+     */
+    public function getConfig()
+    {
+        return $this->config;
+    }
+
+    public function getCurrency(): stdClass
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(stdClass $currency): void
+    {
+        $currency->decimal = 2;
+        $this->currency = $currency;
     }
 }
