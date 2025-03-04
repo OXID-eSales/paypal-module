@@ -14,13 +14,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 - set connect-timeout for 5 Seconds and request-timeout for 30 seconds
 - [0007769](https://bugs.oxid-esales.com/view.php?id=7769): Performance: Cache the Data-Client-Token for 24h & load SDK only if necessary
-
-### Deprecated
+- use PayPal-Client v3.0.15
+- set connect-timeout for 5 Seconds and request-timeout for 30 seconds
 
 ### Dropped
 - Codeception tests
 - library giggsey/libphonenumber-for-php
 
+### Deprecated
+- set Smarty-Tpl-Check-Methods as deprecated
 
 ## [3.4.0] - 2025-02-06
 
