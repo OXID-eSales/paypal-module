@@ -421,8 +421,7 @@ class ModuleSettings
         $shop = Registry::getConfig()->getActiveShop();
         if (isset($shop->oxshops__oxname->rawValue)) {
             $value = $shop->oxshops__oxname->rawValue;
-        }
-        elseif(isset($shop->oxshops__oxname->value)) {
+        } elseif (isset($shop->oxshops__oxname->value)) {
             $value = $shop->oxshops__oxname->value;
         }
         return $value;
@@ -438,8 +437,7 @@ class ModuleSettings
         $shop = Registry::getConfig()->getActiveShop();
         if (isset($shop->oxshops__oxinfoemail->rawValue)) {
             $value = $shop->oxshops__oxinfoemail->rawValue;
-        }
-        elseif(isset($shop->oxshops__oxinfoemail->value)) {
+        } elseif (isset($shop->oxshops__oxinfoemail->value)) {
             $value = $shop->oxshops__oxinfoemail->value;
         }
         return $value;
@@ -457,9 +455,9 @@ class ModuleSettings
 
         if ($moduleSetting->getType() === 'str') {
             $value = trim($value);
-        } else if ($moduleSetting->getType() === 'bool') {
+        } elseif ($moduleSetting->getType() === 'bool') {
             $value = (bool)$value;
-        } else if ($moduleSetting->getType() === 'num') {
+        } elseif ($moduleSetting->getType() === 'num') {
             $value = (float)$value;
         }
 
@@ -638,7 +636,7 @@ class ModuleSettings
         $paymentEnabled = (bool)$payment->oxpayments__oxactive->value;
         $paymentType = PayPalDefinitions::getPayPalDefinitions()[$paymentId]["vaultingtype"];
 
-        $session =  Registry::getSession();
+        $session = Registry::getSession();
         $actShipSet = $session->getVariable('sShipSet');
         $basket = $session->getBasket();
         $user = $session->getUser();

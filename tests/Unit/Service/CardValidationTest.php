@@ -1,10 +1,5 @@
 <?php
 
-/**
- * Copyright © OXID eSales AG. All rights reserved.
- * See LICENSE file for license details.
- */
-
 declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Service;
@@ -13,40 +8,376 @@ use PHPUnit\Framework\TestCase;
 use OxidSolutionCatalysts\PayPal\Service\SCAValidator;
 use OxidSolutionCatalysts\PayPal\Exception\CardValidation as CardValidationException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\ThreeDSecureAuthenticationResponse;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Giropay;
 
 class CardValidationTest extends TestCase
 {
-    private $missingCardAuthentication = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";N;s:14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";O:57:"OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse":11:{s:2:"id";N;s:4:"name";N;s:15:"billing_address";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"9760";s:5:"brand";s:4:"VISA";s:4:"type";s:6:"CREDIT";s:6:"issuer";N;s:3:"bin";N;s:21:"authentication_result";N;s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
+    private string $missingCardAuthentication;
+    private string $nonCardPaymentSource;
+    private string $standardCard3D;
+    private string $success3DCard;
+    private string $failedSignature;
+    private string $failedAuthentication;
+    private string $noPrompt;
+    private string $timeout;
+    private string $notEnrolled;
+    private string $systemNotAvailable;
+    private string $merchantNotActive;
+    private string $failedSignature3DS1;
+    private string $cmpiLookupError;
+    private string $cmpiAuthError;
+    private string $unavailableAuth;
+    private string $bypassedAuth;
 
-    private $nonCardPaymentSource = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";N;s:14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";N;s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";O:52:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Giropay":3:{s:4:"name";s:11:"Marc Muster";s:12:"country_code";s:2:"DE";s:3:"bic";N;}s:5:"ideal";N;s:10:"multibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
+    protected function setUp(): void
+    {
+        $this->initSerializedVariables();
+    }
 
-    private $standardCard3D = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";N;s:14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";O:57:"OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse":11:{s:2:"id";N;s:4:"name";N;s:15:"billing_address";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"9760";s:5:"brand";s:4:"VISA";s:4:"type";s:6:"CREDIT";s:6:"issuer";N;s:3:"bin";N;s:21:"authentication_result";O:67:"OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse":2:{s:15:"liability_shift";s:2:"NO";s:14:"three_d_secure";O:79:"OxidSolutionCatalysts\PayPalApi\Model\Orders\ThreeDSecureAuthenticationResponse":2:{s:21:"authentication_status";N;s:17:"enrollment_status";s:1:"U";}}s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
+    private function initSerializedVariables(): void
+    {
+        $this->missingCardAuthentication = $this->getSerializedMissingCardAuthObject();
+        $this->nonCardPaymentSource       = $this->getSerializedNonCardPaymentSourceObject();
+        $this->standardCard3D             = $this->getSerializedStandardCard3DObject();
+        $this->success3DCard              = $this->getSerializedSuccess3DCardObject();
+        $this->failedSignature            = $this->getSerializedFailedSignatureObject();
+        $this->failedAuthentication       = $this->getSerializedFailedAuthenticationObject();
+        $this->noPrompt                   = $this->getSerializedNoPromptObject();
+        $this->timeout                    = $this->getSerializedTimeoutObject();
+        $this->notEnrolled                = $this->getSerializedNotEnrolledObject();
+        $this->systemNotAvailable         = $this->getSerializedSystemNotAvailableObject();
+        $this->merchantNotActive          = $this->getSerializedMerchantNotActiveObject();
+        $this->failedSignature3DS1        = $this->getSerializedFailedSignature3DS1Object();
+        $this->cmpiLookupError            = $this->getSerializedCmpiLookupErrorObject();
+        $this->cmpiAuthError              = $this->getSerializedCmpiAuthErrorObject();
+        $this->unavailableAuth            = $this->getSerializedUnavailableAuthObject();
+        $this->bypassedAuth               = $this->getSerializedBypassedAuthObject();
+    }
 
-    private $success3DCard = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";N;s:14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";O:57:"OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse":11:{s:2:"id";N;s:4:"name";N;s:15:"billing_address";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"7704";s:5:"brand";s:4:"VISA";s:4:"type";s:6:"CREDIT";s:6:"issuer";N;s:3:"bin";N;s:21:"authentication_result";O:67:"OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse":2:{s:15:"liability_shift";s:8:"POSSIBLE";s:14:"three_d_secure";O:79:"OxidSolutionCatalysts\PayPalApi\Model\Orders\ThreeDSecureAuthenticationResponse":2:{s:21:"authentication_status";s:1:"Y";s:17:"enrollment_status";s:1:"Y";}}s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
+    // Each of the following private methods builds a PayPalApiOrder with the desired properties and then serializes it.
 
-    private $failedSignature = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";N;s:14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";O:57:"OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse":11:{s:2:"id";N;s:4:"name";N;s:15:"billing_address";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"4992";s:5:"brand";s:4:"VISA";s:4:"type";s:6:"CREDIT";s:6:"issuer";N;s:3:"bin";N;s:21:"authentication_result";O:67:"OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse":2:{s:15:"liability_shift";s:7:"UNKNOWN";s:14:"three_d_secure";O:79:"OxidSolutionCatalysts\PayPalApi\Model\Orders\ThreeDSecureAuthenticationResponse":2:{s:21:"authentication_status";s:1:"U";s:17:"enrollment_status";s:1:"Y";}}s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
+    private function getSerializedMissingCardAuthObject(): string
+    {
+        $order = new PayPalApiOrder();
+        $paymentSource = $order->initPaymentSource();
 
-    private $failedAuthentication = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";N;s:14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";O:57:"OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse":11:{s:2:"id";N;s:4:"name";N;s:15:"billing_address";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"2421";s:5:"brand";s:4:"VISA";s:4:"type";s:6:"CREDIT";s:6:"issuer";N;s:3:"bin";N;s:21:"authentication_result";O:67:"OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse":2:{s:15:"liability_shift";s:2:"NO";s:14:"three_d_secure";O:79:"OxidSolutionCatalysts\PayPalApi\Model\Orders\ThreeDSecureAuthenticationResponse":2:{s:21:"authentication_status";s:1:"N";s:17:"enrollment_status";s:1:"Y";}}s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
+        $card = new CardResponse();
+        $card->last_digits = '9760';
+        $card->brand = 'VISA';
+        $card->type = 'CREDIT';
+        // authentication_result remains null
 
-    private $noPrompt = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";N;s:14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";O:57:"OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse":11:{s:2:"id";N;s:4:"name";N;s:15:"billing_address";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"5422";s:5:"brand";s:4:"VISA";s:4:"type";s:6:"CREDIT";s:6:"issuer";N;s:3:"bin";N;s:21:"authentication_result";O:67:"OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse":2:{s:15:"liability_shift";s:8:"POSSIBLE";s:14:"three_d_secure";O:79:"OxidSolutionCatalysts\PayPalApi\Model\Orders\ThreeDSecureAuthenticationResponse":2:{s:21:"authentication_status";s:1:"A";s:17:"enrollment_status";s:1:"Y";}}s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
+        $paymentSource->card = $card;
+        return serialize($order);
+    }
 
-    private $timeout = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";N;s:14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";O:57:"OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse":11:{s:2:"id";N;s:4:"name";N;s:15:"billing_address";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"7210";s:5:"brand";s:4:"VISA";s:4:"type";s:6:"CREDIT";s:6:"issuer";N;s:3:"bin";N;s:21:"authentication_result";O:67:"OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse":2:{s:15:"liability_shift";s:2:"NO";s:14:"three_d_secure";N;}s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
+    private function getSerializedNonCardPaymentSourceObject(): string
+    {
+        $order = new PayPalApiOrder();
+        $paymentSource = $order->initPaymentSource();
 
-    private $notEnrolled = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";N;s:14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";O:57:"OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse":11:{s:2:"id";N;s:4:"name";N;s:15:"billing_address";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"8803";s:5:"brand";s:4:"VISA";s:4:"type";s:6:"CREDIT";s:6:"issuer";N;s:3:"bin";N;s:21:"authentication_result";O:67:"OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse":2:{s:15:"liability_shift";s:2:"NO";s:14:"three_d_secure";O:79:"OxidSolutionCatalysts\PayPalApi\Model\Orders\ThreeDSecureAuthenticationResponse":2:{s:21:"authentication_status";N;s:17:"enrollment_status";s:1:"U";}}s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
+        // For non-card payments, set card to null...
+        $paymentSource->card = null;
+        // ...but provide a Giropay instance (as in your original string)
+        $giropay = new Giropay();
+        $giropay->name = 'Marc Muster';
+        $giropay->country_code = 'DE';
+        $giropay->bic = null;
+        $paymentSource->giropay = $giropay;
 
-    private $systemNotAvailable = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";N;s:14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";O:57:"OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse":11:{s:2:"id";N;s:4:"name";N;s:15:"billing_address";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"8803";s:5:"brand";s:4:"VISA";s:4:"type";s:6:"CREDIT";s:6:"issuer";N;s:3:"bin";N;s:21:"authentication_result";O:67:"OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse":2:{s:15:"liability_shift";s:2:"NO";s:14:"three_d_secure";O:79:"OxidSolutionCatalysts\PayPalApi\Model\Orders\ThreeDSecureAuthenticationResponse":2:{s:21:"authentication_status";N;s:17:"enrollment_status";s:1:"U";}}s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
+        return serialize($order);
+    }
 
-    private $merchantNotActive = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";N;s:14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";O:57:"OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse":11:{s:2:"id";N;s:4:"name";N;s:15:"billing_address";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"6405";s:5:"brand";s:4:"VISA";s:4:"type";s:6:"CREDIT";s:6:"issuer";N;s:3:"bin";N;s:21:"authentication_result";O:67:"OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse":2:{s:15:"liability_shift";s:2:"NO";s:14:"three_d_secure";N;}s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
+    private function getSerializedStandardCard3DObject(): string
+    {
+        $order = new PayPalApiOrder();
+        $paymentSource = $order->initPaymentSource();
 
-    private $failedSignature3DS1 = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";N;s:14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";O:57:"OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse":11:{s:2:"id";N;s:4:"name";N;s:15:"billing_address";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"0010";s:5:"brand";s:4:"VISA";s:4:"type";s:7:"UNKNOWN";s:6:"issuer";N;s:3:"bin";N;s:21:"authentication_result";O:67:"OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse":2:{s:15:"liability_shift";s:2:"NO";s:14:"three_d_secure";N;}s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
+        $card = new CardResponse();
+        $card->last_digits = '9760';
+        $card->brand = 'VISA';
+        $card->type = 'CREDIT';
 
-    private $cmpiLookupError = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";N;s:14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";O:57:"OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse":11:{s:2:"id";N;s:4:"name";N;s:15:"billing_address";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"3346";s:5:"brand";s:4:"VISA";s:4:"type";s:6:"CREDIT";s:6:"issuer";N;s:3:"bin";N;s:21:"authentication_result";O:67:"OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse":2:{s:15:"liability_shift";s:2:"NO";s:14:"three_d_secure";N;}s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
+        $authResponse = new AuthenticationResponse();
+        $authResponse->liability_shift = 'NO';
+        $threeDS = new ThreeDSecureAuthenticationResponse();
+        $threeDS->authentication_status = null;
+        $threeDS->enrollment_status = 'U';
+        $authResponse->three_d_secure = $threeDS;
+        $card->authentication_result = $authResponse;
 
-    private $cmpiAuthError = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";N;s:14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";O:57:"OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse":11:{s:2:"id";N;s:4:"name";N;s:15:"billing_address";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"4542";s:5:"brand";s:4:"VISA";s:4:"type";s:6:"CREDIT";s:6:"issuer";N;s:3:"bin";N;s:21:"authentication_result";O:67:"OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse":2:{s:15:"liability_shift";s:2:"NO";s:14:"three_d_secure";O:79:"OxidSolutionCatalysts\PayPalApi\Model\Orders\ThreeDSecureAuthenticationResponse":2:{s:21:"authentication_status";N;s:17:"enrollment_status";s:1:"Y";}}s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
+        $paymentSource->card = $card;
+        return serialize($order);
+    }
 
-    private $unavailableAuth = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";N;s:14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";O:57:"OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse":11:{s:2:"id";N;s:4:"name";N;s:15:"billing_address";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"8815";s:5:"brand";s:4:"VISA";s:4:"type";s:6:"CREDIT";s:6:"issuer";N;s:3:"bin";N;s:21:"authentication_result";O:67:"OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse":2:{s:15:"liability_shift";s:7:"UNKNOWN";s:14:"three_d_secure";O:79:"OxidSolutionCatalysts\PayPalApi\Model\Orders\ThreeDSecureAuthenticationResponse":2:{s:21:"authentication_status";s:1:"U";s:17:"enrollment_status";s:1:"Y";}}s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
+    private function getSerializedSuccess3DCardObject(): string
+    {
+        $order = new PayPalApiOrder();
+        $paymentSource = $order->initPaymentSource();
 
-    private $bypassedAuth = 'O:50:"OxidSolutionCatalysts\PayPalApi\Model\Orders\Order":13:{s:2:"id";N;s:14:"payment_source";O:66:"OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse":24:{s:4:"card";O:57:"OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse":11:{s:2:"id";N;s:4:"name";N;s:15:"billing_address";N;s:12:"last_n_chars";N;s:11:"last_digits";s:4:"8584";s:5:"brand";s:4:"VISA";s:4:"type";s:6:"CREDIT";s:6:"issuer";N;s:3:"bin";N;s:21:"authentication_result";O:67:"OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse":2:{s:15:"liability_shift";s:2:"NO";s:14:"three_d_secure";O:79:"OxidSolutionCatalysts\PayPalApi\Model\Orders\ThreeDSecureAuthenticationResponse":2:{s:21:"authentication_status";N;s:17:"enrollment_status";s:1:"B";}}s:10:"attributes";N;}s:6:"paypal";N;s:6:"wallet";N;s:4:"bank";N;s:6:"alipay";N;s:10:"bancontact";N;s:4:"blik";N;s:14:"boletobancario";N;s:3:"eps";N;s:7:"giropay";N;s:5:"ideal";N;s:10:"multibanco";N;s:4:"oxxo";N;s:4:"payu";N;s:3:"p24";N;s:16:"pay_upon_invoice";N;s:9:"safetypay";N;s:8:"satispay";N;s:7:"trustly";N;s:12:"verkkopankki";N;s:9:"wechatpay";N;s:9:"apple_pay";N;}s:6:"intent";N;s:22:"processing_instruction";s:14:"NO_INSTRUCTION";s:5:"payer";N;s:15:"expiration_time";N;s:14:"purchase_units";a:0:{}s:6:"status";N;s:5:"links";N;s:22:"credit_financing_offer";N;s:19:"application_context";N;s:11:"create_time";N;s:11:"update_time";N;}';
+        $card = new CardResponse();
+        $card->last_digits = '7704';
+        $card->brand = 'VISA';
+        $card->type = 'CREDIT';
+
+        $authResponse = new AuthenticationResponse();
+        $authResponse->liability_shift = 'POSSIBLE';
+        $threeDS = new ThreeDSecureAuthenticationResponse();
+        $threeDS->authentication_status = 'Y';
+        $threeDS->enrollment_status = 'Y';
+        $authResponse->three_d_secure = $threeDS;
+        $card->authentication_result = $authResponse;
+
+        $paymentSource->card = $card;
+        return serialize($order);
+    }
+
+    private function getSerializedFailedSignatureObject(): string
+    {
+        $order = new PayPalApiOrder();
+        $paymentSource = $order->initPaymentSource();
+
+        $card = new CardResponse();
+        $card->last_digits = '4992';
+        $card->brand = 'VISA';
+        $card->type = 'CREDIT';
+
+        $authResponse = new AuthenticationResponse();
+        $authResponse->liability_shift = 'UNKNOWN';
+        $threeDS = new ThreeDSecureAuthenticationResponse();
+        $threeDS->authentication_status = 'U';
+        $threeDS->enrollment_status = 'Y';
+        $authResponse->three_d_secure = $threeDS;
+        $card->authentication_result = $authResponse;
+
+        $paymentSource->card = $card;
+        return serialize($order);
+    }
+
+    private function getSerializedFailedAuthenticationObject(): string
+    {
+        $order = new PayPalApiOrder();
+        $paymentSource = $order->initPaymentSource();
+
+        $card = new CardResponse();
+        $card->last_digits = '2421';
+        $card->brand = 'VISA';
+        $card->type = 'CREDIT';
+
+        $authResponse = new AuthenticationResponse();
+        $authResponse->liability_shift = 'NO';
+        $threeDS = new ThreeDSecureAuthenticationResponse();
+        $threeDS->authentication_status = 'N';
+        $threeDS->enrollment_status = 'Y';
+        $authResponse->three_d_secure = $threeDS;
+        $card->authentication_result = $authResponse;
+
+        $paymentSource->card = $card;
+        return serialize($order);
+    }
+
+    private function getSerializedNoPromptObject(): string
+    {
+        $order = new PayPalApiOrder();
+        $paymentSource = $order->initPaymentSource();
+
+        $card = new CardResponse();
+        $card->last_digits = '5422';
+        $card->brand = 'VISA';
+        $card->type = 'CREDIT';
+
+        $authResponse = new AuthenticationResponse();
+        $authResponse->liability_shift = 'POSSIBLE';
+        $threeDS = new ThreeDSecureAuthenticationResponse();
+        $threeDS->authentication_status = 'A';
+        $threeDS->enrollment_status = 'Y';
+        $authResponse->three_d_secure = $threeDS;
+        $card->authentication_result = $authResponse;
+
+        $paymentSource->card = $card;
+        return serialize($order);
+    }
+
+    private function getSerializedTimeoutObject(): string
+    {
+        $order = new PayPalApiOrder();
+        $paymentSource = $order->initPaymentSource();
+
+        $card = new CardResponse();
+        $card->last_digits = '7210';
+        $card->brand = 'VISA';
+        $card->type = 'CREDIT';
+
+        $authResponse = new AuthenticationResponse();
+        $authResponse->liability_shift = 'NO';
+        // Simulate a timeout by leaving three_d_secure as null
+        $authResponse->three_d_secure = null;
+        $card->authentication_result = $authResponse;
+
+        $paymentSource->card = $card;
+        return serialize($order);
+    }
+
+    private function getSerializedNotEnrolledObject(): string
+    {
+        $order = new PayPalApiOrder();
+        $paymentSource = $order->initPaymentSource();
+
+        $card = new CardResponse();
+        $card->last_digits = '8803';
+        $card->brand = 'VISA';
+        $card->type = 'CREDIT';
+
+        $authResponse = new AuthenticationResponse();
+        $authResponse->liability_shift = 'NO';
+        $threeDS = new ThreeDSecureAuthenticationResponse();
+        $threeDS->authentication_status = null;
+        $threeDS->enrollment_status = 'U';
+        $authResponse->three_d_secure = $threeDS;
+        $card->authentication_result = $authResponse;
+
+        $paymentSource->card = $card;
+        return serialize($order);
+    }
+
+    private function getSerializedSystemNotAvailableObject(): string
+    {
+        // In this simulation, system not available mirrors the not-enrolled state.
+        return $this->getSerializedNotEnrolledObject();
+    }
+
+    private function getSerializedMerchantNotActiveObject(): string
+    {
+        $order = new PayPalApiOrder();
+        $paymentSource = $order->initPaymentSource();
+
+        $card = new CardResponse();
+        $card->last_digits = '6405';
+        $card->brand = 'VISA';
+        $card->type = 'CREDIT';
+
+        $authResponse = new AuthenticationResponse();
+        $authResponse->liability_shift = 'NO';
+        // No three_d_secure information provided
+        $authResponse->three_d_secure = null;
+        $card->authentication_result = $authResponse;
+
+        $paymentSource->card = $card;
+        return serialize($order);
+    }
+
+    private function getSerializedFailedSignature3DS1Object(): string
+    {
+        $order = new PayPalApiOrder();
+        $paymentSource = $order->initPaymentSource();
+
+        $card = new CardResponse();
+        $card->last_digits = '0010';
+        $card->brand = 'VISA';
+        $card->type = 'UNKNOWN';
+
+        $authResponse = new AuthenticationResponse();
+        $authResponse->liability_shift = 'NO';
+        // No 3DS data provided
+        $authResponse->three_d_secure = null;
+        $card->authentication_result = $authResponse;
+
+        $paymentSource->card = $card;
+        return serialize($order);
+    }
+
+    private function getSerializedCmpiLookupErrorObject(): string
+    {
+        $order = new PayPalApiOrder();
+        $paymentSource = $order->initPaymentSource();
+
+        $card = new CardResponse();
+        $card->last_digits = '3346';
+        $card->brand = 'VISA';
+        $card->type = 'CREDIT';
+
+        $authResponse = new AuthenticationResponse();
+        $authResponse->liability_shift = 'NO';
+        $authResponse->three_d_secure = null;
+        $card->authentication_result = $authResponse;
+
+        $paymentSource->card = $card;
+        return serialize($order);
+    }
+
+    private function getSerializedCmpiAuthErrorObject(): string
+    {
+        $order = new PayPalApiOrder();
+        $paymentSource = $order->initPaymentSource();
+
+        $card = new CardResponse();
+        $card->last_digits = '4542';
+        $card->brand = 'VISA';
+        $card->type = 'CREDIT';
+
+        $authResponse = new AuthenticationResponse();
+        $authResponse->liability_shift = 'NO';
+        $threeDS = new ThreeDSecureAuthenticationResponse();
+        $threeDS->authentication_status = null;
+        $threeDS->enrollment_status = 'Y';
+        $authResponse->three_d_secure = $threeDS;
+        $card->authentication_result = $authResponse;
+
+        $paymentSource->card = $card;
+        return serialize($order);
+    }
+
+    private function getSerializedUnavailableAuthObject(): string
+    {
+        $order = new PayPalApiOrder();
+        $paymentSource = $order->initPaymentSource();
+
+        $card = new CardResponse();
+        $card->last_digits = '8815';
+        $card->brand = 'VISA';
+        $card->type = 'CREDIT';
+
+        $authResponse = new AuthenticationResponse();
+        $authResponse->liability_shift = 'UNKNOWN';
+        $threeDS = new ThreeDSecureAuthenticationResponse();
+        $threeDS->authentication_status = 'U';
+        $threeDS->enrollment_status = 'Y';
+        $authResponse->three_d_secure = $threeDS;
+        $card->authentication_result = $authResponse;
+
+        $paymentSource->card = $card;
+        return serialize($order);
+    }
+
+    private function getSerializedBypassedAuthObject(): string
+    {
+        $order = new PayPalApiOrder();
+        $paymentSource = $order->initPaymentSource();
+
+        $card = new CardResponse();
+        $card->last_digits = '8584';
+        $card->brand = 'VISA';
+        $card->type = 'CREDIT';
+
+        $authResponse = new AuthenticationResponse();
+        $authResponse->liability_shift = 'NO';
+        $threeDS = new ThreeDSecureAuthenticationResponse();
+        $threeDS->authentication_status = null;
+        $threeDS->enrollment_status = 'B';
+        $authResponse->three_d_secure = $threeDS;
+        $card->authentication_result = $authResponse;
+
+        $paymentSource->card = $card;
+        return serialize($order);
+    }
+
+    // ----------------------------------------------------------------
+    // Tests using the serialized objects
+    // ----------------------------------------------------------------
 
     public function testMissingPaymentSource(): void
     {
@@ -72,24 +403,19 @@ class CardValidationTest extends TestCase
     {
         $validator = new SCAValidator();
 
-        $this->assertNull($validator->getCardAuthenticationResult(unserialize($this->missingCardAuthentication)));
+        $order = unserialize($this->missingCardAuthentication);
+        $this->assertNull($validator->getCardAuthenticationResult($order));
     }
 
     public function testAuthenticationResultSuccess()
     {
         $validator = new SCAValidator();
 
-        $validationResult = $validator->getCardAuthenticationResult(unserialize($this->success3DCard));
+        $order = unserialize($this->success3DCard);
+        $validationResult = $validator->getCardAuthenticationResult($order);
         $this->assertSame(SCAValidator::LIABILITY_SHIFT_POSSIBLE, $validationResult->liability_shift);
         $this->assertSame(SCAValidator::AUTH_STATUS_SUCCESS, $validationResult->three_d_secure->authentication_status);
         $this->assertSame(SCAValidator::ENROLLMENT_STATUS_YES, $validationResult->three_d_secure->enrollment_status);
-    }
-
-    public function testIsCardSafeToUseFail()
-    {
-        $validator = new SCAValidator();
-
-        $this->assertFalse($validator->isCardUsableForPayment(unserialize($this->missingCardAuthentication)));
     }
 
     /**
@@ -98,69 +424,33 @@ class CardValidationTest extends TestCase
     public function testIsCardSafeToUse(string $serializedOrder, string $assertMethod)
     {
         $validator = new SCAValidator();
-
-        $this->$assertMethod($validator->isCardUsableForPayment(unserialize($serializedOrder)));
+        $this->{$assertMethod}($validator->isCardUsableForPayment(unserialize($serializedOrder)));
     }
 
     public function providerPayPalApiOrderResults(): array
     {
+        $this->initSerializedVariables();
         return [
-            'success' => [
-                'success' => $this->success3DCard,
-                'method' => 'assertTrue'
-            ],
-            'standardcard' => [
-                'success' => $this->standardCard3D,
-                'method' => 'assertTrue'
-            ],
-            'failesignature' => [
-                'success' => $this->failedSignature,
-                'method' => 'assertFalse'
-            ],
-            'failedauth' => [
-                'success' => $this->failedAuthentication,
-                'method' => 'assertFalse'
-            ],
-            'no_credemtial_prompt' => [
-                'success' => $this->noPrompt,
-                'method' => 'assertTrue'
-            ],
-            'timeout' => [
-                'success' => $this->timeout,
-                'method' => 'assertFalse'
-            ],
-            'not_enrolled' => [
-                'success' => $this->notEnrolled,
-                'method' => 'assertTrue'
-            ],
-            'system_not_available' => [
-                'success' => $this->systemNotAvailable,
-                'method' => 'assertTrue'
-            ],
-            'merchant_not_active' => [
-                'success' => $this->merchantNotActive,
-                'method' => 'assertFalse'
-            ],
-            'failed_3Ds1' => [
-                'success' => $this->failedSignature3DS1,
-                'method' => 'assertFalse'
-            ],
-            'cmpiLookupError' => [
-                'success' => $this->cmpiLookupError,
-                'method' => 'assertFalse'
-            ],
-            'cmpiAuthError' => [
-                'success' => $this->cmpiAuthError,
-                'method' => 'assertFalse'
-            ],
-            'unavailableAuth' => [
-                'success' => $this->unavailableAuth,
-                'method' => 'assertFalse'
-            ],
-            'bypassedAuth' => [
-                'success' => $this->bypassedAuth,
-                'method' => 'assertTrue'
-            ],
+            'success'            => ['success' => $this->success3DCard,       'method' => 'assertTrue'],
+            'standardcard'       => ['success' => $this->standardCard3D,       'method' => 'assertTrue'],
+            'failesignature'     => ['success' => $this->failedSignature,      'method' => 'assertFalse'],
+            'failedauth'         => ['success' => $this->failedAuthentication, 'method' => 'assertFalse'],
+            'no_credemtial_prompt' => ['success' => $this->noPrompt,            'method' => 'assertTrue'],
+            'timeout'            => ['success' => $this->timeout,             'method' => 'assertFalse'],
+            'not_enrolled'       => ['success' => $this->notEnrolled,         'method' => 'assertTrue'],
+            'system_not_available' => ['success' => $this->systemNotAvailable,  'method' => 'assertTrue'],
+            'merchant_not_active' => ['success' => $this->merchantNotActive,   'method' => 'assertFalse'],
+            'failed_3Ds1'        => ['success' => $this->failedSignature3DS1,   'method' => 'assertFalse'],
+            'cmpiLookupError'    => ['success' => $this->cmpiLookupError,       'method' => 'assertFalse'],
+            'cmpiAuthError'      => ['success' => $this->cmpiAuthError,         'method' => 'assertFalse'],
+            'unavailableAuth'    => ['success' => $this->unavailableAuth,       'method' => 'assertFalse'],
+            'bypassedAuth'       => ['success' => $this->bypassedAuth,          'method' => 'assertTrue'],
         ];
+    }
+
+    public function testIsCardSafeToUseFail()
+    {
+        $validator = new SCAValidator();
+        $this->assertFalse($validator->isCardUsableForPayment(unserialize($this->missingCardAuthentication)));
     }
 }

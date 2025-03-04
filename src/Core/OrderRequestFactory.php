@@ -637,7 +637,6 @@ class OrderRequestFactory
             $paymentSource->birth_date = $birthdate;
         }
 
-        $activeShop = Registry::getConfig()->getActiveShop();
         $experienceContext = new ExperienceContext();
         $experienceContext->brand_name = $moduleSettings->getShopName();
         $experienceContext->locale = strtolower($payer->address->country_code)

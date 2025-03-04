@@ -6,8 +6,6 @@ name: Docker
 # documentation.
 
 on:
-  schedule:
-    - cron: '16 6 * * *'
   push:
     branches: [ b-6.3.x ]
   repository_dispatch:
@@ -41,7 +39,7 @@ jobs:
 
       - name: move dockerfiles to root folder
         run: mv dockerfiles/paypal/* .
-        
+
       - name: downcase REPO
         run: |
           echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}

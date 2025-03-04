@@ -350,7 +350,7 @@ class ViewConfig extends ViewConfig_parent
             $identityService = Registry::get(ServiceFactory::class)->getIdentityService();
 
             $result = $identityService->requestClientToken();
-        } catch (GuzzleException|Exception $exception) {
+        } catch (GuzzleException | Exception $exception) {
             /** @var Logger $logger */
             $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', $exception->getMessage(), [$exception]);

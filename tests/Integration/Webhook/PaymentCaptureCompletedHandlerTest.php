@@ -24,7 +24,7 @@ final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCas
 
     public function testRequestMissingData(): void
     {
-        $event = new WebhookEvent([], static::WEBHOOK_EVENT);
+        $event = new WebhookEvent([], self::WEBHOOK_EVENT);
 
         $this->expectException(WebhookEventException::class);
         $this->expectExceptionMessage(WebhookEventException::mandatoryDataNotFound()->getMessage());
@@ -52,21 +52,24 @@ final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCas
     {
         $data = $this->getRequestData($fixture);
         $resourceId = $data['resource']['id'];
-        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
+        $event = new WebhookEvent($data, self::WEBHOOK_EVENT);
 
         $loggerMock = $this->getPsrLoggerMock();
+        /** @var MockObject $loggerMock */
         $loggerMock->expects($this->once())
-            ->method('debug')
+            ->method('log')
             ->with(
+                'debug',
                 "Not enough information to handle PAYMENT.CAPTURE.COMPLETED with PayPal order_id '' and " .
                 "PayPal transaction id '" . $resourceId . "'"
             );
 
-        EshopRegistry::set('logger', $loggerMock);
+        $handlerMock = $this->getMockBuilder(PaymentCaptureCompletedHandler::class)
+            ->onlyMethods(['getLogger'])
+            ->getMock();
 
-        $handler = oxNew(PaymentCaptureCompletedHandler::class);
-        $handler->addServiceMock('OxidSolutionCatalysts\PayPal\Logger', $loggerMock);
-        $handler->handle($event);
+        $handlerMock->method('getLogger')->willReturn($loggerMock);
+        $handlerMock->handle($event);
     }
 
     public function testEshopOrderNotFoundByPayPalOrderId(): void
@@ -74,14 +77,14 @@ final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCas
         $data = $this->getRequestData('payment_capture_completed_pui_v1.json');
         $payPalOrderId = $data['resource']['supplementary_data']['related_ids']['order_id'];
 
-        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
+        $event = new WebhookEvent($data, self::WEBHOOK_EVENT);
 
         $this->expectException(WebhookEventException::class);
         $this->expectExceptionMessage(
             WebhookEventException::byPayPalOrderId($payPalOrderId)->getMessage()
         );
 
-        $handler = oxNew(PaymentCaptureCompletedHandler::class);
+        $handler = \oxNew(PaymentCaptureCompletedHandler::class);
         $handler->handle($event);
     }
 
@@ -91,19 +94,19 @@ final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCas
         $payPalOrderId = $data['resource']['supplementary_data']['related_ids']['order_id'];
         $transactionId = $data['resource']['id'];
 
-        $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
+        $event = new WebhookEvent($data, self::WEBHOOK_EVENT);
 
         // this state is when the order is created by oxid but PayPal not yet acknowledged completed order
         $this->prepareTestData($payPalOrderId);
 
         // this state is when PayPal send the order completed webhook
-        $handler = oxNew(PaymentCaptureCompletedHandler::class);
+        $handler = \oxNew(PaymentCaptureCompletedHandler::class);
         $handler->handle($event);
 
         // we now have two PayPal order entries
         $this->assertPayPalOrderCount($payPalOrderId, 2);
 
-        $payPalOrder = oxNew(PayPalOrder::class);
+        $payPalOrder = \oxNew(PayPalOrder::class);
         $payPalOrder->load(self::PAYPAL_OXID);
 
         // after CheckoutOrderCompletedHandler::handle there's one paypal order entry with status null
@@ -119,7 +122,7 @@ final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCas
         $this->assertSame('COMPLETED', $payPalOrder->getStatus());
         $this->assertSame($transactionId, $payPalOrder->getTransactionId());
 
-        $order = oxNew(EshopModelOrder::class);
+        $order = \oxNew(EshopModelOrder::class);
         $order->load(self::SHOP_ORDER_ID);
         $this->assertSame('OK', $order->getFieldData('OXTRANSSTATUS'));
         $this->assertSame($transactionId, $order->getFieldData('OXTRANSID'));

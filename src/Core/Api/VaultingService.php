@@ -45,7 +45,7 @@ class VaultingService extends BaseService
                 $body = $response->getBody();
             }
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (ApiException|JsonException $e) {
+        } catch (ApiException | JsonException $e) {
             $result = [];
         }
 
@@ -98,7 +98,7 @@ class VaultingService extends BaseService
                 $body = $response->getBody();
             }
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (ApiException|JsonException $e) {
+        } catch (ApiException | JsonException $e) {
             $result = [];
         }
 
@@ -215,7 +215,7 @@ class VaultingService extends BaseService
                 $body = $response->getBody();
             }
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (ApiException|JsonException $e) {
+        } catch (ApiException | JsonException $e) {
             $result = [];
         }
 
@@ -242,7 +242,7 @@ class VaultingService extends BaseService
                 $body = $response->getBody();
             }
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (ApiException|JsonException $e) {
+        } catch (ApiException | JsonException $e) {
             $this->getServiceFromContainer(Logger::class)
                 ->log('error', __CLASS__ . ' ' . __FUNCTION__ . ' : ' . $e->getMessage());
             $result = [];
