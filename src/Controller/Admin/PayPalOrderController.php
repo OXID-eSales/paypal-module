@@ -187,14 +187,15 @@ class PayPalOrderController extends AdminDetailsController
     public function refund(): void
     {
         $request = Registry::getRequest();
-        $refundAmount = $request->getRequestEscapedParameter('refundAmount');
-        $refundAmount = str_replace(",", ".", $refundAmount);
-        $refundAmount = preg_replace("/[\,\.](\d{3})/", "$1", $refundAmount);
+        $order = $this->getOrder();
+        $currency = Registry::getConfig()->getCurrencyObject($order->oxorder__oxcurrency->value);
+        $currency->decimal = 2; //PayPal requires decimal precision of 2
+        $refundAmount = str_replace(",", ".", $request->getRequestEscapedParameter('refundAmount'));
+        $refundAmount = number_format($refundAmount, $currency->decimal, $currency->dec, $currency->thousand);
         $invoiceId = $request->getRequestEscapedParameter('invoiceId');
         $refundAll = $request->getRequestEscapedParameter('refundAll');
         $noteToPayer = $request->getRequestEscapedParameter('noteToPayer');
 
-        $order = $this->getOrder();
 
         $capture = $order->getOrderPaymentCapture();
         if ($capture instanceof Capture) {
@@ -366,7 +367,11 @@ class PayPalOrderController extends AdminDetailsController
      */
     public function formatPrice($price)
     {
-        return Registry::getLang()->formatCurrency($price);
+        $currency = Registry::getConfig()->getActShopCurrencyObject();
+        //only two decimal place precision is supported in PayPal
+        $currency->decimal= 2;
+
+        return Registry::getLang()->formatCurrency($price, $currency);
     }
 
     /**
