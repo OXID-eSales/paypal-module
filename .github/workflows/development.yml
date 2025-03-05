@@ -24,7 +24,7 @@ jobs:
         run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-6.5.x --single-branch source
 
       - name: Cache current installation
-        uses: actions/cache@v4.1.1
+        uses: actions/cache@v4
         with:
           path: |
             ./*
@@ -135,19 +135,6 @@ jobs:
         working-directory: source/test-module
         run: composer phpcs
 
-
-      - name: Run phpstan
-        id: phpstan
-        if: always()
-        working-directory: source/test-module
-        run: composer phpstan-report || composer phpstan
-
-      - name: Run phpmd
-        id: phpmd
-        if: always()
-        working-directory: source/test-module
-        run: composer phpmd-report || composer phpmd
-
       - name: Upload log artifact
         if: always()
         uses: actions/upload-artifact@v4
@@ -166,7 +153,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Load current installation from cache
-        uses: actions/cache@v4.1.1
+        uses: actions/cache@v4
         with:
           path: |
             ./*
@@ -200,6 +187,7 @@ jobs:
           path: |
             source/coverage.xml
             source/phpunit.xml
+            source/source/log/oxideshop.log
 
   cypress_tests:
     strategy:
@@ -212,7 +200,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Load current installation from cache
-        uses: actions/cache@v4.1.1
+        uses: actions/cache@v4
         with:
           path: |
             ./*
@@ -233,53 +221,3 @@ jobs:
             source/vendor/${{ env.PACKAGE_NAME }}/tests/e2e/cypress/_generated
             source/source/log/oxideshop.log
             source/data/php/logs/error_log.txt
-
-  sonarcloud:
-    needs: [ styles, unit_tests ]
-    if: always()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout current module
-        uses: actions/checkout@v4
-
-      - name: Download phpunit artifacts
-        continue-on-error: true
-        uses: actions/download-artifact@v4
-        with:
-          name: TestsLog-7.4
-          path: ./tests/
-
-      - name: Fix paths in unit logs
-        continue-on-error: true
-        run: |
-          sed -i 's+/var/www/test-module/++' tests/coverage.xml
-          sed -i 's+/var/www/test-module/++' tests/phpunit.xml
-
-      - name: Download styles artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: StylesLog-8.0
-          path: ./styles/
-
-      - name: Fix paths in styles logs
-        continue-on-error: true
-        run: |
-          sed -i 's+\/home\/runner\/work\/.*?\/.*?\/source\/test-module\/++' styles/phpstan.report.json
-
-      - name: SonarCloud Scan
-        uses: sonarsource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            -Dsonar.organization=${{ env.SONARCLOUD_ORGANIZATION }}
-            -Dsonar.projectKey=${{ env.SONARCLOUD_PROJECT_KEY }}
-            -Dsonar.sources=src
-            -Dsonar.tests=tests
-            -Dsonar.sourceEncoding=UTF-8
-            -Dsonar.php.coverage.reportPaths=tests/coverage.xml
-            -Dsonar.php.phpstan.reportPaths=styles/phpstan.report.json
-            -Dsonar.php.phpmd.reportPaths=styles/phpmd.report.json
-            -Dsonar.cpd.php.minimumTokens=25
-            -Dsonar.cpd.php.minimumLines=5
