@@ -46,28 +46,35 @@ class PatchRequestFactory
         string $orderId = ''
     ): array {
         $this->basket = $basket;
-        $currency = Registry::getConfig()->getActShopCurrencyObject();
-        //we can't sent basket items along with order request when precision level is above 2
-        $withItems = !$this->basket->isCalculationModeNetto() && !($currency->decimal > 2);
-        $currency = $basket->getBasketCurrency();
 
-        $this->getShippingNamePatch();
-        $this->getShippingAddressPatch();
-        $this->getAmountPatch();
-        if ($orderId) {
-            $this->getCustomIdPatch($orderId);
+        $shippingNamePatch = $this->getShippingNamePatch();
+        if ($shippingNamePatch) {
+            $this->request[] = $shippingNamePatch;
         }
-        if ($withItems) {
-            $this->getPurchaseUnitsPatch(
-                $this->basket,
-                $currency
-            );
+
+        $shippingAddressPatch = $this->getShippingAddressPatch();
+        if($shippingAddressPatch) {
+            $this->request[] = $shippingAddressPatch;
+        }
+
+        $amountPatch = $this->getAmountPatch();
+        if ($amountPatch) {
+            $this->request[] = $amountPatch;
+        }
+
+        if ($orderId) {
+            $this->request[] = $this->getCustomIdPatch($orderId);
+        }
+
+        $purchaseUnitsPatch = $this->getPurchaseUnitsPatch();
+        if ($purchaseUnitsPatch) {
+            $this->request[] = $purchaseUnitsPatch;
         }
 
         return $this->request;
     }
 
-    protected function getShippingAddressPatch(): void
+    protected function getShippingAddressPatch(): ?Patch
     {
         $deliveryId = Registry::getSession()->getVariable("deladrid");
         $deliveryAddress = oxNew(Address::class);
@@ -102,11 +109,13 @@ class PatchRequestFactory
 
             $patch->value = $address;
 
-            $this->request[] = $patch;
+            return $patch;
         }
+
+        return null;
     }
 
-    protected function getShippingNamePatch(): void
+    protected function getShippingNamePatch(): ?Patch
     {
         $deliveryId = Registry::getSession()->getVariable("deladrid");
         $deliveryAddress = oxNew(Address::class);
@@ -121,11 +130,13 @@ class PatchRequestFactory
             $patch->value = new \stdClass();
             $patch->value->full_name = $fullName;
 
-            $this->request[] = $patch;
+            return $patch;
         }
+
+        return null;
     }
 
-    protected function getAmountPatch(): void
+    protected function getAmountPatch(): ?Patch
     {
         $value = (Registry::get(PayPalRequestAmountFactory::class))->getAmount($this->basket);
         if ((float)$value->value !== 0.00) {
@@ -134,20 +145,24 @@ class PatchRequestFactory
             $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/amount";
             $patch->value = $value;
 
-            $this->request[] = $patch;
+            return $patch;
         }
+
+        return null;
     }
 
     /**
-     * @param Basket $basket
-     * @param $currency
+     * @return \OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch|null
      */
-    protected function getPurchaseUnitsPatch(
-        Basket $basket,
-        $currency
-    ): void {
-
-        $basketItems = $basket->getContents();
+    protected function getPurchaseUnitsPatch(): ?Patch
+    {
+        $currency = $this->basket->getBasketCurrency();
+        $withItems = !$this->basket->isCalculationModeNetto() && !($currency->decimal > 2);
+        //we can't send basket items along with order request when precision level is above 2
+        if(!$withItems){
+            return null;
+        }
+        $basketItems = $this->basket->getContents();
         $language = Registry::getLang();
 
         $patch = new Patch();
@@ -172,7 +187,7 @@ class PatchRequestFactory
             }
         }
 
-        $wrapping = $basket->getPayPalCheckoutWrapping();
+        $wrapping = $this->basket->getPayPalCheckoutWrapping();
         if ($wrapping) {
             $item = new Item();
             $item->name = $language->translateString('GIFT_WRAPPING');
@@ -186,7 +201,7 @@ class PatchRequestFactory
             $patchValues[] = $item;
         }
 
-        $giftCard = $basket->getPayPalCheckoutGiftCard();
+        $giftCard = $this->basket->getPayPalCheckoutGiftCard();
         if ($giftCard) {
             $item = new Item();
             $item->name = $language->translateString('GREETING_CARD');
@@ -200,7 +215,7 @@ class PatchRequestFactory
             $patchValues[] = $item;
         }
 
-        $payment = $basket->getPayPalCheckoutPayment();
+        $payment = $this->basket->getPayPalCheckoutPayment();
         if ($payment) {
             $item = new Item();
             $item->name = $language->translateString('PAYMENT_METHOD');
@@ -215,7 +230,7 @@ class PatchRequestFactory
         }
 
         // possible price surcharge
-        $discount = $basket->getPayPalCheckoutDiscount();
+        $discount = $this->basket->getPayPalCheckoutDiscount();
 
         if ($discount < 0) {
             $discount *= -1;
@@ -229,7 +244,7 @@ class PatchRequestFactory
         }
 
         // Dummy-Article for Rounding-Error
-        if ($roundDiff = $basket->getPayPalCheckoutRoundDiff()) {
+        if ($roundDiff = $this->basket->getPayPalCheckoutRoundDiff()) {
             $item = new Item();
             $item->name = $language->translateString('OSC_PAYPAL_VAT_CORRECTION');
 
@@ -241,16 +256,17 @@ class PatchRequestFactory
 
         $patch->value = $patchValues;
 
-        $this->request[] = $patch;
+        return $patch;
     }
 
-    protected function getCustomIdPatch(string $shopOrderId): void
+    protected function getCustomIdPatch(string $shopOrderId): Patch
     {
         $patch = new Patch();
         $patch->op = Patch::OP_ADD;
         $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/custom_id";
         $patch->value = $shopOrderId;
 
-        $this->request[] = $patch;
+        return $patch;
     }
+
 }
