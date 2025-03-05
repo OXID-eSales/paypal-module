@@ -14,19 +14,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 trait ServiceContainer
 {
-    protected $serviceArray = [];
-    /**
-     * Used in Unit-Tests to mock services
-     * There might be a cleaner way, but haven't found it yet
-     *
-     * @param  string     $serviceName
-     * @param  MockObject $serviceMock
-     * @return void
-     */
-    public function addServiceMock(string $serviceName, MockObject $serviceMock)
-    {
-        $this->serviceArray[$serviceName] = $serviceMock;
-    }
+    protected array $serviceArray = [];
+
     /**
      * @template T
      * @psalm-param class-string<T> $serviceName

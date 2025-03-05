@@ -369,7 +369,7 @@ class PayPalOrderController extends AdminDetailsController
     {
         $currency = Registry::getConfig()->getActShopCurrencyObject();
         //only two decimal place precision is supported in PayPal
-        $currency->decimal= 2;
+        $currency->decimal = 2;
 
         return Registry::getLang()->formatCurrency($price, $currency);
     }
