@@ -41,8 +41,7 @@ class PatchRequestFactory
     public function getOrderPatches(
         Basket $basket,
         string $orderId = ''
-    ): array
-    {
+    ): array {
         $this->basket = $basket;
         $deliveryId = Registry::getSession()->getVariable("deladrid");
         $deliveryAddress = oxNew(Address::class);
@@ -55,7 +54,7 @@ class PatchRequestFactory
             ])
         );
 
-        if ($deliveryId && $deliveryAddress->load($deliveryId)){
+        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
             $patches[] = $this->getShippingNamePatch($deliveryAddress);
             $patches[] = $this->getShippingAddressPatch($deliveryAddress);
         }
@@ -243,5 +242,4 @@ class PatchRequestFactory
 
         return $patch;
     }
-
 }
