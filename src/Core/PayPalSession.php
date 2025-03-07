@@ -81,18 +81,13 @@ class PayPalSession
         );
     }
 
-    /**
-     * Checks if active PayPal Order exists
-     *
-     * @return bool
-     */
     public static function isPayPalExpressOrderActive(): bool
     {
         if (!self::getCheckoutOrderId()) {
             return false;
         }
 
-        $paymentId = (string) Registry::getSession()->getBasket()->getPaymentId();
+        $paymentId = Registry::getSession()->getBasket()->getPaymentId();
         return PayPalDefinitions::isPayPalPayment($paymentId);
     }
 
