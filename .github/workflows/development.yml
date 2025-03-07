@@ -116,6 +116,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: source/test-module
+          fetch-depth: 0  # Fetch all commits for accurate diff
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -129,11 +130,60 @@ jobs:
         working-directory: source/test-module
         run: composer install
 
+      - name: Get changed PHP files
+        id: changed-files
+        working-directory: source/test-module
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            BASE_SHA=${{ github.event.pull_request.base.sha }}
+            HEAD_SHA=${{ github.sha }}
+          else
+            BASE_SHA=${{ github.event.before }}
+            HEAD_SHA=${{ github.event.after }}
+          fi
+
+          # Handle invalid base SHA (e.g., initial commit)
+          if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            # Get all files in the current commit (initial commit)
+            CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r $HEAD_SHA | grep -E '\.php$' | tr '\n' ' ' || echo "")
+          else
+            # Get changed files between base and head
+            CHANGED_FILES=$(git diff --name-only $BASE_SHA $HEAD_SHA --diff-filter=ACMR | grep -E '\.php$' | tr '\n' ' ' || echo "")
+          fi
+
+          echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_ENV
+          echo "Changed files: $CHANGED_FILES"
+
       - name: Run phpcs
         id: phpcs
         if: always()
         working-directory: source/test-module
-        run: composer phpcs
+        run: composer phpcs  # Runs on all files as before
+
+      - name: Run phpstan
+        id: phpstan
+        if: always() && env.CHANGED_FILES != ''
+        working-directory: source/test-module
+        run: |
+          # Use specific PHPStan config for your project
+          vendor/bin/phpstan analyse \
+            -c source/test-module/tests/PhpStan/phpstan.neon \
+            --level=max \
+            --paths-file=<(echo "${{ env.CHANGED_FILES }}") \
+            --memory-limit=1G
+
+      - name: Run phpmd
+        id: phpmd
+        if: always() && env.CHANGED_FILES != ''
+        working-directory: source/test-module
+        run: |
+          vendor/bin/phpmd "${{ env.CHANGED_FILES }}" \
+            text \
+            source/test-module/tests/PhpMd/phpmd.baseline.xml \
+            --exclude tests/ \
+            --suffixes php \
+            --strict
+      
 
       - name: Upload log artifact
         if: always()
