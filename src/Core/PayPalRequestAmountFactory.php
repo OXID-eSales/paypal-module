@@ -160,25 +160,4 @@ class PayPalRequestAmountFactory
             $breakdown->item_total = PriceToMoney::convert($combinedTotal, $this->getCurrency());
         }
     }
-
-    /**
-     * @return object|\OxidEsales\Eshop\Core\Config
-     */
-    public function getConfig()
-    {
-        return $this->config;
-    }
-
-    public function getCurrency(): stdClass
-    {
-        $currency = clone $this->currency;
-        $currency->decimal = 2;
-
-        return $currency;
-    }
-
-    public function setCurrency(stdClass $currency): void
-    {
-        $this->currency = $currency;
-    }
 }
