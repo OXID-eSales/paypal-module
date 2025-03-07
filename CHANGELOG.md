@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - set connect-timeout for 5 Seconds and request-timeout for 30 seconds
 - [0007771](https://bugs.oxid-esales.com/view.php?id=7771): Paypal can only work with two decimal places. For shops with configured additional decimal places, the corresponding rounding takes place
 - [0007772](https://bugs.oxid-esales.com/view.php?id=7772): Fix pay in nettomode
+- Fix line item amounts in case of discounts (Discussion here https://forum.oxid-esales.com/t/paypal-modul-2-5-1-fehler-bei-rabatten-fehler-die-1223354igste/99472)
 
 ## [2.5.2] - 2025-02-06
 
