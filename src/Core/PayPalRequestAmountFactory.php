@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Application\Model\Basket;
-use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
@@ -22,29 +21,6 @@ use stdClass;
  */
 class PayPalRequestAmountFactory
 {
-    /**
-     * @var \OxidEsales\Eshop\Application\Model\Basket
-     */
-    private Basket $basket;
-    /**
-     * @var \OxidEsales\Eshop\Core\Config
-     */
-    private $config;
-    private bool $enteredNetPrice = false;
-    private bool $netMode = false;
-    private stdClass $currency;
-    private $discount;
-    private $itemTotal;
-    private $itemTotalAdditionalCosts;
-    private $brutBasketTotal;
-    private $shipping;
-
-    public function __construct()
-    {
-        $this->config = Registry::getConfig();
-        $this->enteredNetPrice = $this->getConfig()->getConfigParam('blEnterNetPrice');
-    }
-
     public function getAmount(Basket $basket): AmountWithBreakdown
     {
         $this->basket = $basket;
@@ -86,6 +62,24 @@ class PayPalRequestAmountFactory
         $amount->breakdown = $this->calculateBreakdown();
 
         return $amount;
+    }
+    /**
+     * @return object|\OxidEsales\Eshop\Core\Config
+     */
+    public function getConfig()
+    {
+        return $this->config;
+    }
+
+    public function getCurrency(): stdClass
+    {
+        return $this->currency;
+    }
+
+    public function setCurrency(stdClass $currency): void
+    {
+        $currency->decimal = 2;
+        $this->currency = $currency;
     }
 
     /**
