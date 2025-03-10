@@ -17,7 +17,7 @@
                 // Initialize the buttons
                 let button = paypal.Buttons({
                     fundingSource: fundingSource,
-                    createOrder: async function (data, actions) {
+                    createOrder: function (data, actions) {
                         return await fetch(selfLink + "cl=oscpaypalproxy&fnc=createOrder&paymentid={{ buttonId }}&context=continue&stoken={{ sToken }}", {
                             method: 'post',
                             headers: {
@@ -29,10 +29,10 @@
                             return data.id;
                         })
                     },
-                    onApprove: async function (data, actions) {
+                    onApprove: function (data, actions) {
                         captureData = new FormData();
                         captureData.append('orderID', data.orderID);
-                        return await fetch(selfLink + "cl=oscpaypalproxy&fnc=approveOrder&paymentid={{ buttonId }}&context=continue&stoken={{ sToken }}", {
+                        return fetch(selfLink + "cl=oscpaypalproxy&fnc=approveOrder&paymentid={{ buttonId }}&context=continue&stoken={{ sToken }}", {
                             method: 'post',
                             body: captureData
                         }).then(function (res) {
@@ -56,8 +56,7 @@
                 if (button.isEligible()) {
                     // Render the standalone button for that funding source
                     button.render('#{{ buttonId }}');
-                }
-                else {
+                } else {
                     //remove SEPA option from payments methods
                     document.querySelector('.paypal-button-wrapper-oscpaypal_sepa')
                         .closest('.payment-option')
@@ -74,7 +73,7 @@
                     return actions.resolve();
                 },
                 {% endif %}
-                createOrder: async function (data, actions) {
+                createOrder: function (data, actions) {
                     let selElements = document.querySelectorAll('select[name^="sel"]');
                     let params = new URLSearchParams();
                     if (selElements.length > 0) {
@@ -86,7 +85,7 @@
                     }
                     let baseUrl = selfLink + "cl=oscpaypalproxy&fnc=createOrder&aid={{ aid }}&context=continue&stoken={{ sToken }}";
                     let url = baseUrl + (params.toString() ? '&' + params.toString() : '');
-                    return await fetch(url , {
+                    return fetch(url , {
                         method: 'post',
                         headers: {
                             'content-type': 'application/json'

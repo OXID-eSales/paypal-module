@@ -12,6 +12,7 @@ use JsonException;
 use OxidEsales\Eshop\Application\Component\UserComponent;
 use OxidEsales\Eshop\Application\Controller\FrontendController;
 use OxidEsales\Eshop\Application\Model\Address;
+use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\DeliverySetList;
 use OxidEsales\Eshop\Core\Exception\ArticleInputException;
 use OxidEsales\Eshop\Core\Exception\NoArticleException;
@@ -335,9 +336,11 @@ class ProxyController extends FrontendController
         $aSel = Registry::getRequest()->getRequestParameter('sel');
         if ($aid = (string)Registry::getRequest()->getRequestEscapedParameter('aid')) {
             try {
-                $basket->addToBasket($aid, $qty, $aSel);
+                if (!$this->itemExists($basket, $aid)) {
+                    $basket->addToBasket($aid, $qty, $aSel);
+                    $basket->isNewItemAdded();
+                }
                 // Remove flag of "new item added" to not show "Item added" popup when returning to checkout from paypal
-                $basket->isNewItemAdded();
             } catch (OutOfStockException $exception) {
                 $utilsView->addErrorToDisplay($exception);
             } catch (ArticleInputException $exception) {
@@ -604,5 +607,21 @@ class ProxyController extends FrontendController
             //  Registry::getSession()->getBasket()->setPayment(null);
         }
         $this->outputJson($response);
+    }
+
+    private function itemExists(?Basket $basket, ?string $articleOxid): bool
+    {
+        if ($basket === null) {
+            return false;
+        }
+
+        $basketContents = $basket->getContents();
+        foreach ($basketContents as $basketItem) {
+            if ($basketItem->getProductId() === $articleOxid) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
