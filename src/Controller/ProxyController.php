@@ -324,14 +324,15 @@ class ProxyController extends FrontendController
         exit;
     }
 
-    protected function addToBasket($qty = 1): void
+    protected function addToBasket(): void
     {
         $basket = Registry::getSession()->getBasket();
         $utilsView = Registry::getUtilsView();
         $aSel = Registry::getRequest()->getRequestParameter('sel');
+        $qty = (double)Registry::getRequest()->getRequestParameter('amountToBasket') ?? 0;
         if ($aid = (string)Registry::getRequest()->getRequestEscapedParameter('aid')) {
             try {
-                if (!$this->itemExists($basket, $aid)) {
+                if (!$this->itemExists($basket, $aid, $qty)) {
                     $basket->addToBasket($aid, $qty, $aSel);
                     $basket->isNewItemAdded();
                 }
@@ -605,7 +606,7 @@ class ProxyController extends FrontendController
         $this->outputJson($response);
     }
 
-    private function itemExists(?Basket $basket, ?string $articleOxid): bool
+    private function itemExists(?Basket $basket, ?string $articleOxid, ?int $amountToBasket): bool
     {
         if ($basket === null) {
             return false;
@@ -613,7 +614,7 @@ class ProxyController extends FrontendController
 
         $basketContents = $basket->getContents();
         foreach ($basketContents as $basketItem) {
-            if ($basketItem->getProductId() === $articleOxid) {
+            if ($basketItem->getProductId() === $articleOxid && $basketItem->getAmount() === $amountToBasket) {
                 return true;
             }
         }
