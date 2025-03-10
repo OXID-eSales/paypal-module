@@ -321,7 +321,6 @@ class ProxyController extends FrontendController
     public function cancelPayPalPayment()
     {
         PayPalSession::unsetPayPalSession();
-        Registry::getSession()->getBasket()->deleteBasket();
         $redirect = Registry::getRequest()->getRequestParameter('redirect');
         if ($redirect === "1") {
             Registry::getUtils()->redirect(Registry::getConfig()->getShopSecureHomeURL() . 'cl=payment', false, 301);
@@ -349,6 +348,7 @@ class ProxyController extends FrontendController
             $basket->calculateBasket(false);
         }
     }
+
     public function setPayPalPaymentMethod($defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID): void
     {
         $session = Registry::getSession();

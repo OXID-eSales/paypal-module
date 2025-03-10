@@ -17,8 +17,8 @@
                 // Initialize the buttons
                 let button = paypal.Buttons({
                     fundingSource: fundingSource,
-                    createOrder: function (data, actions) {
-                        return fetch(selfLink + "cl=oscpaypalproxy&fnc=createOrder&paymentid={{ buttonId }}&context=continue&stoken={{ sToken }}", {
+                    createOrder: async function (data, actions) {
+                        return await fetch(selfLink + "cl=oscpaypalproxy&fnc=createOrder&paymentid={{ buttonId }}&context=continue&stoken={{ sToken }}", {
                             method: 'post',
                             headers: {
                                 'content-type': 'application/json'
@@ -29,10 +29,10 @@
                             return data.id;
                         })
                     },
-                    onApprove: function (data, actions) {
+                    onApprove: async function (data, actions) {
                         captureData = new FormData();
                         captureData.append('orderID', data.orderID);
-                        return fetch(selfLink + "cl=oscpaypalproxy&fnc=approveOrder&paymentid={{ buttonId }}&context=continue&stoken={{ sToken }}", {
+                        return await fetch(selfLink + "cl=oscpaypalproxy&fnc=approveOrder&paymentid={{ buttonId }}&context=continue&stoken={{ sToken }}", {
                             method: 'post',
                             body: captureData
                         }).then(function (res) {
@@ -45,11 +45,11 @@
                             }
                         })
                     },
-                    onCancel: function (data, actions) {
-                        fetch(selfLink + "cl=oscpaypalproxy&fnc=cancelPayPalPayment");
+                    onCancel: async function (data, actions) {
+                        await fetch(selfLink + "cl=oscpaypalproxy&fnc=cancelPayPalPayment");
                     },
-                    onError: function (data) {
-                        fetch(selfLink + "cl=oscpaypalproxy&fnc=cancelPayPalPayment");
+                    onError: async function (data) {
+                        await fetch(selfLink + "cl=oscpaypalproxy&fnc=cancelPayPalPayment");
                     }
                 })
                 // Check if the button is eligible
@@ -74,7 +74,7 @@
                     return actions.resolve();
                 },
                 {% endif %}
-                createOrder: function (data, actions) {
+                createOrder: async function (data, actions) {
                     let selElements = document.querySelectorAll('select[name^="sel"]');
                     let params = new URLSearchParams();
                     if (selElements.length > 0) {
@@ -86,7 +86,7 @@
                     }
                     let baseUrl = selfLink + "cl=oscpaypalproxy&fnc=createOrder&aid={{ aid }}&context=continue&stoken={{ sToken }}";
                     let url = baseUrl + (params.toString() ? '&' + params.toString() : '');
-                    return fetch(url , {
+                    return await fetch(url , {
                         method: 'post',
                         headers: {
                             'content-type': 'application/json'
@@ -97,10 +97,10 @@
                         return data.id;
                     })
                 },
-                onApprove: function (data, actions) {
+                onApprove: async function (data, actions) {
                     captureData = new FormData();
                     captureData.append('orderID', data.orderID);
-                    return fetch(selfLink + "cl=oscpaypalproxy&fnc=approveOrder&context=continue&aid={{ aid }}&context=continue&stoken={{ sToken }}", {
+                    return await fetch(selfLink + "cl=oscpaypalproxy&fnc=approveOrder&context=continue&aid={{ aid }}&context=continue&stoken={{ sToken }}", {
                         method: 'post',
                         body: captureData
                     }).then(function (res) {
@@ -113,11 +113,11 @@
                         }
                     })
                 },
-                onCancel: function (data, actions) {
-                    fetch(selfLink + "cl=oscpaypalproxy&fnc=cancelPayPalPayment");
+                onCancel: async function (data, actions) {
+                    await fetch(selfLink + "cl=oscpaypalproxy&fnc=cancelPayPalPayment");
                 },
-                onError: function (data) {
-                    fetch(selfLink + "cl=oscpaypalproxy&fnc=cancelPayPalPayment");
+                onError: async function (data) {
+                    await fetch(selfLink + "cl=oscpaypalproxy&fnc=cancelPayPalPayment");
                 }
             })
             if (button.isEligible()) {
