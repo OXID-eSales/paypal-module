@@ -46,11 +46,11 @@
                                 }
                             })
                         },
-                        onCancel: function (data, actions) {
-                            fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
+                        onCancel: async function (data, actions) {
+                            await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
                         },
-                        onError: function (data) {
-                            fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
+                        onError: async function (data) {
+                            await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
                         }
                     })
                     // Check if the button is eligible
@@ -114,11 +114,11 @@
                             }
                         })
                     },
-                    onCancel: function (data, actions) {
-                        fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
+                    onCancel: async function (data, actions) {
+                        await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
                     },
-                    onError: function (data) {
-                        fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
+                    onError: async function (data) {
+                        await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
                     }
                 })
                 if (button.isEligible()) {
