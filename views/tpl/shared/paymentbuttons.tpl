@@ -18,8 +18,8 @@
                     // Initialize the buttons
                     let button = paypal.Buttons({
                         fundingSource: fundingSource,
-                        createOrder: async function (data, actions) {
-                            return await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&paymentid="|cat:$buttonId|cat:"&context=continue&stoken="|cat:$sToken}]', {
+                        createOrder: function (data, actions) {
+                            return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&paymentid="|cat:$buttonId|cat:"&context=continue&stoken="|cat:$sToken}]', {
                                 method: 'post',
                                 headers: {
                                     'content-type': 'application/json'
@@ -88,7 +88,7 @@
                         return actions.resolve();
                     },
                     [{/if}]
-                    createOrder: async function (data, actions) {
+                    createOrder: function (data, actions) {
                         let selElements = document.querySelectorAll('input[name^="sel"]');
                         let params = new URLSearchParams();
                         if (selElements.length > 0) {
@@ -100,7 +100,7 @@
                         }
                         let baseUrl = '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]';
                         let url = baseUrl + (params.toString() ? '&' + params.toString() : '');
-                        return await fetch(url , {
+                        return fetch(url , {
                                 method: 'post',
                                 headers: {
                                     'content-type': 'application/json'
