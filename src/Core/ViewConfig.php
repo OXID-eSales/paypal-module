@@ -86,8 +86,7 @@ class ViewConfig extends ViewConfig_parent
      */
     public function isPayPalExpressSessionActive(): bool
     {
-        $f = PayPalSession::isPayPalExpressOrderActive();
-        return $f;
+        return PayPalSession::isPayPalExpressOrderActive();
     }
 
     /**
