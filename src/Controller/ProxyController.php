@@ -41,6 +41,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
+
 /**
  * Server side interface for PayPal smart buttons.
  */
