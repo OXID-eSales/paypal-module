@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007769](https://bugs.oxid-esales.com/view.php?id=7769): Performance: Cache the Data-Client-Token for 24h & load SDK only if necessary
 - use PayPal-Client v3.0.15
 - set connect-timeout for 5 Seconds and request-timeout for 30 seconds
+- Settings for automatic cleanup unfinished orders are read via ModuleSettings
 
 ### Dropped
 - Codeception tests
