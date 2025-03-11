@@ -133,7 +133,6 @@ class PatchRequestFactory
         $withItems = !$this->basket->isCalculationModeNetto();
         //update currency object with decimal precision restricted version
         $currency = $this->basket->getBasketCurrency();
-        $currency->decimal = 2;
 
         if (!$withItems) {
             return null;
