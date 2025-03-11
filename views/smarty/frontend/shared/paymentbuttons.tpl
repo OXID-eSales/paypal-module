@@ -85,6 +85,9 @@
                                 }
                             });
                         }
+                        let amountElement = document.getElementById("amountToBasket");
+                        let amount = amountElement ? amountElement.value : 0;
+                        params.append('amountToBasket', amount);
                         let baseUrl = '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]';
                         let url = baseUrl + (params.toString() ? '&' + params.toString() : '');
                         return fetch(url , {
