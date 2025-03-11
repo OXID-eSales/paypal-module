@@ -26,11 +26,16 @@ class OrderRepository
     /** @var EshopCoreConfig */
     private $config;
 
+    /** @var ModuleSettings */
+    private $moduleSettingsService;
+
     public function __construct(
         QueryBuilderFactoryInterface $queryBuilderFactory,
+        ModuleSettings $moduleSettingsService,
         EshopCoreConfig $config
     ) {
         $this->queryBuilderFactory = $queryBuilderFactory;
+        $this->moduleSettingsService = $moduleSettingsService;
         $this->config = $config;
     }
 
@@ -135,11 +140,11 @@ class OrderRepository
 
     public function cleanUpNotFinishedOrders(): void
     {
-        if (!$this->config->getConfigParam('oscPayPalCleanUpNotFinishedOrdersAutomaticlly')) {
+        if (!$this->moduleSettingsService->cleanUpNotFinishedOrdersAutomaticlly()) {
             return;
         }
 
-        $sessiontime = (int)$this->config->getConfigParam('oscPayPalStartTimeCleanUpOrders');
+        $sessiontime = $this->moduleSettingsService->getStartTimeCleanUpOrders();
         $shopId = $this->config->getShopId();
 
         $queryBuilder = $this->queryBuilderFactory->create();
