@@ -37,10 +37,10 @@
                                 return data.id;
                             })
                         },
-                        onApprove: async function (data, actions) {
+                        onApprove: function (data, actions) {
                             captureData = new FormData();
                             captureData.append('orderID', data.orderID);
-                            return await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&paymentid="|cat:$buttonId|cat:"&context=continue&stoken="|cat:$sToken}]', {
+                            return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&paymentid="|cat:$buttonId|cat:"&context=continue&stoken="|cat:$sToken}]', {
                                 method: 'post',
                                 body: captureData
                             }).then(function (res) {
@@ -53,25 +53,11 @@
                                 }
                             })
                         },
-                        onCancel: async function (data, actions) {
-                            try {
-                                const response = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
-                                if (!response.ok) {
-                                    console.error('Failed to cancel PayPal payment:', response.statusText);
-                                }
-                            } catch (error) {
-                                console.error('Error occurred while canceling PayPal payment:', error);
-                            }
+                        onCancel: function (data, actions) {
+                            fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
                         },
-                        onError: async function (data) {
-                            try {
-                                const response = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
-                                if (!response.ok) {
-                                    console.error('Failed to cancel PayPal payment:', response.statusText);
-                                }
-                            } catch (error) {
-                                console.error('Error occurred while canceling PayPal payment:', error);
-                            }
+                        onError: function (data) {
+                            fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
                         }
                     })
                     // Check if the button is eligible
@@ -111,54 +97,40 @@
                                 }
                             });
                         }
-                        let amountElement = document.getElementById("amountToBasket");
-                        let amount = amountElement ? amountElement.value : 0;
-                        params.append('amountToBasket', amount);
-                        let baseUrl = '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]';
-                        let url = baseUrl + (params.toString() ? '&' + params.toString() : '');
-                        return fetch(url , {
+
+                        debugger
+                        return actions.order.create({
+                            purchase_units: [
+                                [{$purchaseUnits}]
+                            ]
+                        });
+
+                    },
+                    onApprove: function (data, actions) {
+                        // Capture the funds from the transaction
+                        return actions.order.capture().then(function(details) {
+                            // Show a success message to your buyer
+                            alert('Transaction completed by ' + details.payer.name.given_name);
+debugger
+                            // Call your server to save the transaction
+                            return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
                                 method: 'post',
                                 headers: {
                                     'content-type': 'application/json'
-                                }
-                            }).then(function (res) {
-                            return res.json();
-                        }).then(function (data) {
-                            return data.id;
-                        })
+                                },
+                                body: JSON.stringify({
+                                    orderID: data.orderID,
+                                    payerID: data.payerID,
+                                    paymentDetails: details
+                                })
+                            });
+                        });
                     },
-                    onApprove: async function (data, actions) {
-                        captureData = new FormData();
-                        captureData.append('orderID', data.orderID);
-                        return await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
-                            method: 'post',
-                            body: captureData
-                        }).then(function (res) {
-                            return res.json();
-                        }).then(function (data) {
-                            if (data.status == "ERROR") {
-                                location.reload();
-                            } else if (data.id && data.status == "APPROVED") {
-                                location.replace('[{$sSelfLink|cat:"cl=order"}]');
-                            }
-                        })
+                    onCancel: function (data, actions) {
+                        fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
                     },
-                    onCancel: async function (data, actions) {
-                        try {
-                            const response = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
-                            if (!response.ok) {
-                                console.error('Failed to cancel PayPal payment:', response.statusText);
-                            }
-                        } catch (error) {
-                            console.error('Error occurred while canceling PayPal payment:', error);
-                        }
-                    },
-                    onError: async function (data) {
-                        try {
-                            const response = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
-                        } catch (error) {
-                            console.error('Error occurred while canceling PayPal payment:', error);
-                        }
+                    onError: function (data) {
+                        fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
                     }
                 })
                 if (button.isEligible()) {
