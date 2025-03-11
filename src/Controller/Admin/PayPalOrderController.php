@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Helper\Str2Float;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalModelPayPalOrder;
 use OxidSolutionCatalysts\PayPal\Model\PayPalPlusOrder;
 use OxidSolutionCatalysts\PayPal\Model\PayPalSoapOrder;
@@ -187,9 +188,8 @@ class PayPalOrderController extends AdminDetailsController
     public function refund(): void
     {
         $request = Registry::getRequest();
-        $refundAmount = $request->getRequestEscapedParameter('refundAmount');
-        $refundAmount = str_replace(",", ".", $refundAmount);
-        $refundAmount = preg_replace("/[\,\.](\d{3})/", "$1", $refundAmount);
+        $refundAmountRaw = $request->getRequestEscapedParameter('refundAmount');
+        $refundAmount = (new Str2Float())->autoParse($refundAmountRaw);
         $invoiceId = $request->getRequestEscapedParameter('invoiceId');
         $refundAll = $request->getRequestEscapedParameter('refundAll');
         $noteToPayer = $request->getRequestEscapedParameter('noteToPayer');
