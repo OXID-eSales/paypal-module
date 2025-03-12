@@ -85,6 +85,8 @@ class PayPalRequestAmountFactory
         $amount->currency_code = $this->getCurrency()->name;
         $amount->breakdown = $this->calculateBreakdown();
 
+        $this->roundingIssueSolutionHandling($amount);
+
         return $amount;
     }
 
@@ -137,11 +139,7 @@ class PayPalRequestAmountFactory
      */
     protected function calculateBreakdownItemTotal(): float
     {
-        $itemTotal = $this->itemTotal;
-        $discount = $this->discount;
-        $itemTotalAdditionalCosts = $this->itemTotalAdditionalCosts;
-
-        return $this->netMode ? $itemTotal : $itemTotal /*- $discount*/ + $itemTotalAdditionalCosts;
+        return $this->netMode ? $this->itemTotal : $this->itemTotal + $this->itemTotalAdditionalCosts;
     }
 
     /**
@@ -162,8 +160,6 @@ class PayPalRequestAmountFactory
         // the shipping should be combined with basket total because of the rounding errors
         if ($shouldCombineShippingWithItems) {
             $breakdown->shipping = null;
-            $combinedTotal = $this->itemTotal + $this->shipping;
-            $breakdown->item_total = PriceToMoney::convert($combinedTotal, $this->getCurrency());
         }
     }
 
@@ -186,5 +182,34 @@ class PayPalRequestAmountFactory
     public function setCurrency(stdClass $currency): void
     {
         $this->currency = $currency;
+    }
+
+    /**
+     * @param \OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown $amount
+     * @return void
+     */
+    public function roundingIssueSolutionHandling(AmountWithBreakdown $amount): void
+    {
+        $amountBreakdownValueCheck =
+            (float)number_format(
+                (float)$amount->breakdown->item_total->value
+                    - $amount->breakdown->discount->value
+                    - $this->shipping,
+                2, '.', '');
+
+        if ($amount->value < $amountBreakdownValueCheck) {
+            if ($this->isPrecisionAboveLimit()) {
+                if ($amountBreakdownValueCheck > $amount->value) {
+                    $amount->breakdown->initShippingDiscount();
+                    $amountDiff = (float)number_format(
+                        $amountBreakdownValueCheck - $amount->value,
+                        2,
+                        '.',
+                        ''); //should be 0.01
+                    $amount->breakdown->shipping_discount->value = $amountDiff;
+                    $amount->breakdown->shipping_discount->currency_code = $amount->currency_code;
+                }
+            }
+        }
     }
 }
