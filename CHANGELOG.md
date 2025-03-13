@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Cypress e2e tests
 - Support PayPal-Client v3.0.15
 - Support brick/phonenumber ^0.7.0
+- Add stronger indication of required domain registration for Apple Pay
 
 ### Fixed
 - set connect-timeout for 5 Seconds and request-timeout for 30 seconds

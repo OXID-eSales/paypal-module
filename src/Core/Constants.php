@@ -28,6 +28,9 @@ class Constants
     public const PAYPAL_ONBOARDING_SANDBOX_URL = 'https://www.sandbox.paypal.com/bizsignup/partner/entry';
     public const PAYPAL_ONBOARDING_LIVE_URL = 'https://www.paypal.com/bizsignup/partner/entry';
 
+    public const PAYPAL_DOCUMENTATION_DE = 'https://docs.oxid-esales.com/modules/paypal-checkout/de/latest/';
+    public const PAYPAL_DOCUMENTATION_EN = 'https://docs.oxid-esales.com/modules/paypal-checkout/en/latest/';
+
     public const PAYPAL_APPLEPAYCERT_SANDBOX_URL =
         'https://paypalobjects.com/devdoc/apple-pay/sandbox/apple-developer-merchantid-domain-association';
 
