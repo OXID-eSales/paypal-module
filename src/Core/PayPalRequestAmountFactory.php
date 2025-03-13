@@ -11,6 +11,7 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Model\Article;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
@@ -81,9 +82,13 @@ class PayPalRequestAmountFactory
     protected function createAmountWithBreakdown(): AmountWithBreakdown
     {
         $amount = new AmountWithBreakdown();
+        //https://developer.paypal.com/docs/api/orders/v2/
+        //the amount = item_total + tax_total + shipping + handling + insurance - shipping_discount - discount.
         $amount->value = (float)number_format($this->brutBasketTotal, 2, '.', '');
         $amount->currency_code = $this->getCurrency()->name;
-        $amount->breakdown = $this->calculateBreakdown();
+        //Breakdown provides details such as:
+        //total item amount, total tax amount, shipping, handling, insurance, and discounts, if any.
+        $amount->breakdown = $this->calculateBreakdown($amount->value);
 
         $this->roundingIssueSolutionHandling($amount);
 
@@ -93,22 +98,22 @@ class PayPalRequestAmountFactory
     /**
      * Calculates the breakdown components of the amount
      */
-    protected function calculateBreakdown(): AmountBreakdown
+    protected function calculateBreakdown(float $amount): AmountBreakdown
     {
         $breakdown = new AmountBreakdown();
 
-        // Process discount
-        $this->processDiscount($breakdown);
+        $breakdown->shipping =
+            PriceToMoney::convert($this->basket->getPayPalCheckoutDeliveryCosts(), $this->getCurrency());
+        $breakdown->discount =
+            PriceToMoney::convert($this->basket->getPayPalCheckoutDiscount(), $this->getCurrency());
 
-        // Calculate item total
-        $breakDownItemTotal = $this->calculateBreakdownItemTotal();
-        $breakdown->item_total = PriceToMoney::convert($breakDownItemTotal, $this->getCurrency());
+        $breakdown->tax_total =
+            PriceToMoney::convert(0, $this->getCurrency());
 
-        // Add tax total
-        $breakdown->tax_total = PriceToMoney::convert(0, $this->getCurrency());
-
-        // Process shipping
-        $this->processShipping($breakdown);
+        $breakdown->item_total = PriceToMoney::convert(
+            $amount +
+            (float)$breakdown->discount->value -
+            (float)$breakdown->shipping->value, $this->getCurrency());
 
         return $breakdown;
     }
@@ -139,30 +144,7 @@ class PayPalRequestAmountFactory
      */
     protected function calculateBreakdownItemTotal(): float
     {
-        return $this->netMode ? $this->itemTotal : $this->itemTotal + $this->itemTotalAdditionalCosts;
-    }
-
-    /**
-     * Processes shipping for the breakdown
-     */
-    protected function processShipping(AmountBreakdown $breakdown): void
-    {
-        // Add shipping when available
-        if ($this->shipping) {
-            $breakdown->shipping = PriceToMoney::convert($this->shipping, $this->getCurrency());
-        }
-
-        $shouldCombineShippingWithItems =
-            (!$this->netMode && $this->enteredNetPrice) /*||
-            ($this->netMode && $this->isPrecisionAboveLimit())*/;
-
-        // For prices entered in net and precision limit above 2
-        // the shipping should be combined with basket total because of the rounding errors
-        if ($shouldCombineShippingWithItems) {
-            $breakdown->shipping = null;
-            $combinedTotal = $this->itemTotal + $this->shipping;
-            $breakdown->item_total = PriceToMoney::convert($combinedTotal, $this->getCurrency());
-        }
+        return $this->basket->getPayPalCheckoutItems();
     }
 
     /**
