@@ -153,8 +153,8 @@ class PayPalRequestAmountFactory
         }
 
         $shouldCombineShippingWithItems =
-            (!$this->netMode && $this->enteredNetPrice) ||
-            ($this->netMode && $this->isPrecisionAboveLimit());
+            (!$this->netMode && $this->enteredNetPrice) /*||
+            ($this->netMode && $this->isPrecisionAboveLimit())*/;
 
         // For prices entered in net and precision limit above 2
         // the shipping should be combined with basket total because of the rounding errors
@@ -196,24 +196,30 @@ class PayPalRequestAmountFactory
             (float)number_format(
                 (float)$amount->breakdown->item_total->value
                     - $amount->breakdown->discount->value
-                    - $this->shipping,
+                    + $this->shipping,
                 2,
                 '.',
                 ''
             );
 
-        if ($amount->value < $amountBreakdownValueCheck) {
+        $amountDiff = (float)number_format(
+            $amountBreakdownValueCheck - $amount->value,
+            2,
+            '.',
+            ''
+        );
+
+        if ($amount->value != $amountBreakdownValueCheck) {
             if ($this->isPrecisionAboveLimit()) {
                 if ($amountBreakdownValueCheck > $amount->value) {
                     $amount->breakdown->initShippingDiscount();
-                    $amountDiff = (float)number_format(
-                        $amountBreakdownValueCheck - $amount->value,
-                        2,
-                        '.',
-                        ''
-                    ); //should be 0.01
                     $amount->breakdown->shipping_discount->value = $amountDiff;
                     $amount->breakdown->shipping_discount->currency_code = $amount->currency_code;
+                }
+                if ($amountBreakdownValueCheck < $amount->value) {
+                    $amount->breakdown->initHandling();
+                    $amount->breakdown->handling->value = $amountDiff;
+                    $amount->breakdown->handling->currency_code = $amount->currency_code;
                 }
             }
         }
