@@ -73,6 +73,7 @@ $aLang = [
     'OSC_PAYPAL_SPECIAL_PAYMENTS_PUI'             => 'Rechnungskauf',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Kreditkarte',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '<em>- Alternativ können Sie die Zahlart "PayPal Kreditkarte Fallback" (id: "' . PayPalDefinitions::CCALTERNATIVE_PAYPAL_PAYMENT_ID . '") aktivieren und nutzen. Bitte verwenden Sie für diesen Falback-Fall einen passenden Namen für diese Zahlart.</em>',
+    'OSC_PAYPAL_INSTALL_NOTE_APPLEPAY'            => '<em>- Wenn Sie vorhaben ApplePay einzusetzen, müssen Sie abschließend die Domain dieses Shops, in Ihrem PayPal-Konto (Kontoeinstellungen > Zahlungsquellen > ApplePay) hinterlegen. Eine genaue Anleitung finden Sie in unserer Modul-Dokumentation im Bereich <a href="' . Constants::PAYPAL_DOCUMENTATION_DE . '" target="_blank">Konfiguration > Apple Pay als Zahlungsart aktivieren</a>.</em>',
 
     'OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING'        => 'Vaulting',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY'        => 'Applepay',

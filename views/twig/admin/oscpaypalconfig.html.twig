@@ -107,7 +107,7 @@
                                 <br>
                                 {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY", suffix: "COLON" }) }} {% if config.isLiveGooglePayEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
                                 <br>
-                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY", suffix: "COLON" }) }} {% if config.isLiveApplePayEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY", suffix: "COLON" }) }} {% if config.isLiveApplePayEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }} {{ translate({ ident: "OSC_PAYPAL_INSTALL_NOTE_APPLEPAY" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
                             </div>
                         </div>
 
@@ -165,9 +165,8 @@
                                 {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING", suffix: "COLON" }) }} {% if config.isSandboxVaultingEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
                                 <br>
                                 {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY", suffix: "COLON" }) }} {% if config.isSandboxGooglePayEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
-
                                 <br>
-                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY", suffix: "COLON" }) }} {% if config.isSandboxApplePayEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY", suffix: "COLON" }) }} {% if config.isSandboxApplePayEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }} {{ translate({ ident: "OSC_PAYPAL_INSTALL_NOTE_APPLEPAY" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
 
                             </div>
                         </div>
