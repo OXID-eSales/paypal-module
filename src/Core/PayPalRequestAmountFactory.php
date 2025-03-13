@@ -160,6 +160,8 @@ class PayPalRequestAmountFactory
         // the shipping should be combined with basket total because of the rounding errors
         if ($shouldCombineShippingWithItems) {
             $breakdown->shipping = null;
+            $combinedTotal = $this->itemTotal + $this->shipping;
+            $breakdown->item_total = PriceToMoney::convert($combinedTotal, $this->getCurrency());
         }
     }
 
