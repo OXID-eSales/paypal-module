@@ -93,9 +93,7 @@ class OrderRequestFactory
     ): OrderRequest {
         $request = $this->request = new OrderRequest();
         $this->basket = $basket;
-        $currency = Registry::getConfig()->getActShopCurrencyObject();
-        //we can't sent basket items along with order request when precision level is above 2
-        $withItems = !$this->basket->isCalculationModeNetto() && !($currency->decimal > 2);
+        $withItems = !$this->basket->isCalculationModeNetto();
 
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $setVaulting = $moduleSettings->getIsVaultingActive();
