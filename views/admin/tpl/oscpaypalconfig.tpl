@@ -109,7 +109,7 @@
                                 <br>
                                 [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY" suffix="COLON"}] [{if $config->isLiveGooglePayEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
                                 <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY" suffix="COLON"}] [{if $config->isLiveApplePayEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY" suffix="COLON"}] [{if $config->isLiveApplePayEligibility()}][{oxmultilang ident="GENERAL_YES"}] [{oxmultilang ident="OSC_PAYPAL_INSTALL_NOTE_APPLEPAY"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
                             </div>
                         </div>
 
@@ -167,9 +167,8 @@
                                 [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING" suffix="COLON"}] [{if $config->isSandboxVaultingEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
                                 <br>
                                 [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY" suffix="COLON"}] [{if $config->isSandboxGooglePayEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
-
                                 <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY" suffix="COLON"}] [{if $config->isSandboxApplePayEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY" suffix="COLON"}] [{if $config->isSandboxApplePayEligibility()}][{oxmultilang ident="GENERAL_YES"}] [{oxmultilang ident="OSC_PAYPAL_INSTALL_NOTE_APPLEPAY"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
 
                             </div>
                         </div>
