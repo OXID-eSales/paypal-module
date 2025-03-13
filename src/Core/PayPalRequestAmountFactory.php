@@ -113,7 +113,9 @@ class PayPalRequestAmountFactory
         $breakdown->item_total = PriceToMoney::convert(
             $amount +
             (float)$breakdown->discount->value -
-            (float)$breakdown->shipping->value, $this->getCurrency());
+            (float)$breakdown->shipping->value,
+            $this->getCurrency()
+        );
 
         return $breakdown;
     }
