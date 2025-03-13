@@ -197,7 +197,10 @@ class PayPalRequestAmountFactory
                 (float)$amount->breakdown->item_total->value
                     - $amount->breakdown->discount->value
                     - $this->shipping,
-                2, '.', '');
+                2,
+                '.',
+                ''
+            );
 
         if ($amount->value < $amountBreakdownValueCheck) {
             if ($this->isPrecisionAboveLimit()) {
@@ -207,7 +210,8 @@ class PayPalRequestAmountFactory
                         $amountBreakdownValueCheck - $amount->value,
                         2,
                         '.',
-                        ''); //should be 0.01
+                        ''
+                    ); //should be 0.01
                     $amount->breakdown->shipping_discount->value = $amountDiff;
                     $amount->breakdown->shipping_discount->currency_code = $amount->currency_code;
                 }
