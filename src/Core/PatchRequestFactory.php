@@ -130,12 +130,10 @@ class PatchRequestFactory
      */
     public function getPurchaseUnitsPatch(): ?Patch
     {
-        //get shop currency with master settings decimal level
-        $currency = Registry::getConfig()->getActShopCurrencyObject();
-        //we can't send basket items along with order request when precision level is above 2
-        $withItems = !$this->basket->isCalculationModeNetto() && !($currency->decimal > 2);
+        $withItems = !$this->basket->isCalculationModeNetto();
         //update currency object with decimal precision restricted version
         $currency = $this->basket->getBasketCurrency();
+        $currency->decimal = 2;
 
         if (!$withItems) {
             return null;

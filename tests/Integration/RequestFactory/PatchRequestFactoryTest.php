@@ -17,6 +17,7 @@ use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
+use stdClass;
 
 class PatchRequestFactoryTest extends BaseTestCase
 {
@@ -97,7 +98,10 @@ class PatchRequestFactoryTest extends BaseTestCase
 
     public function testGetAmountPatch(): void
     {
+        $currency = Registry::getConfig()->getCurrencyObject('EUR');
+
         $basketMock = $this->createMock(Basket::class);
+        $basketMock->method('getBasketCurrency')->willReturn($currency);
         $amountWithBreakdown = new AmountWithBreakdown();
         $amountWithBreakdown->value = 1.00;
         $amountFactoryMock = $this->createMock(PayPalRequestAmountFactory::class);
