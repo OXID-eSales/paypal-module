@@ -23,6 +23,11 @@ class_alias(
 );
 
 class_alias(
+    \OxidEsales\Eshop\Application\Controller\Admin\PaymentMain::class,
+    \OxidEsales\Eshop\Application\Controller\Admin\PaymentMain_parent::class
+);
+
+class_alias(
     \OxidEsales\Eshop\Application\Controller\Admin\OrderOverview::class,
     \OxidEsales\Eshop\Application\Controller\Admin\OrderOverview_parent::class
 );

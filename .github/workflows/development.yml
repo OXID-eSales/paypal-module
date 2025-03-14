@@ -142,12 +142,9 @@ jobs:
             HEAD_SHA=${{ github.event.after }}
           fi
 
-          # Handle invalid base SHA (e.g., initial commit)
           if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
-            # Get all files in the current commit (initial commit)
             CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r $HEAD_SHA | grep -E '\.php$' | tr '\n' ' ' || echo "")
           else
-            # Get changed files between base and head
             CHANGED_FILES=$(git diff --name-only $BASE_SHA $HEAD_SHA --diff-filter=ACMR | grep -E '\.php$' | tr '\n' ' ' || echo "")
           fi
 
@@ -156,37 +153,32 @@ jobs:
 
       - name: Run phpcs
         id: phpcs
-        if: always()
-        continue-on-error: true
         working-directory: source/test-module
-        run: |
-          composer phpcs  # Runs on all files as before
+        run: composer phpcs  # Runs on all files as before
 
       - name: Run phpstan
         id: phpstan
         if: always() && env.CHANGED_FILES != ''
-        continue-on-error: true
         working-directory: source/test-module
         run: |
-          vendor/bin/phpstan analyse \
-            -c tests/PhpStan/phpstan.neon \
-            --level=max \
-            $(echo "$(pwd)/${{ env.CHANGED_FILES }}") \
-            --memory-limit=1G
-  
+          phpstan_files=""
+          for file in $CHANGED_FILES; do
+            phpstan_files="$phpstan_files $(pwd)/$file"
+          done
+          echo "Running PHPStan on files: $phpstan_files"
+          vendor/bin/phpstan analyse -c tests/PhpStan/phpstan.neon --level=max $phpstan_files --memory-limit=1G
 
       - name: Run phpmd
         id: phpmd
         if: always() && env.CHANGED_FILES != ''
-        continue-on-error: true
         working-directory: source/test-module
         run: |
-          vendor/bin/phpmd $(echo "$(pwd)/${{ env.CHANGED_FILES }}") \
-            text \
-            tests/PhpMd/phpmd.baseline.xml \
-            --exclude tests/ \
-            --suffixes php \
-            --strict
+          phpmd_files=""
+          for file in $CHANGED_FILES; do
+            phpmd_files="$phpmd_files $(pwd)/$file"
+          done
+          echo "Running PHPMD on files: $phpmd_files"
+          vendor/bin/phpmd $phpmd_files text tests/PhpMd/phpmd.baseline.xml --exclude tests/ --suffixes php --strict
 
       - name: Upload log artifact
         if: always()
@@ -196,7 +188,6 @@ jobs:
           path: |
             source/test-module/tests/reports/phpstan.report.json
             source/test-module/tests/reports/phpmd.report.json
-
   unit_tests:
     strategy:
       fail-fast: false

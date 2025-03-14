@@ -161,7 +161,12 @@ class PaymentController extends PaymentController_parent
                     )
                 )
             ) {
-                $paymentList[$key] = $payment;
+                if (
+                    $key !== PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
+                    || PayPalSession::isPayPalExpressOrderActive()
+                ) {
+                    $paymentList[$key] = $payment;
+                }
             }
         }
 
