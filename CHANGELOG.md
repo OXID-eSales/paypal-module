@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [2.5.3] - 2025-??-??
 
+### FIX
+
 - [0007769](https://bugs.oxid-esales.com/view.php?id=7769): Performance: Cache the Data-Client-Token for 24h & load SDK only if necessary
 - use PayPal-Client v2.0.19
 - set connect-timeout for 5 Seconds and request-timeout for 30 seconds
@@ -14,6 +16,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007772](https://bugs.oxid-esales.com/view.php?id=7772): Fix pay in nettomode
 - Fix line item amounts in case of discounts (Discussion here https://forum.oxid-esales.com/t/paypal-modul-2-5-1-fehler-bei-rabatten-fehler-die-1223354igste/99472)
 - Add stronger indication of required domain registration for Apple Pay
+- [0007775](https://bugs.oxid-esales.com/view.php?id=7775):  Fix Re-starting the PayPal checkout process on the product page duplicates the cart's items
+- Fix Issues with refunding in different Currencies
+- Fix Losing connection/page refreshing during the PayPal checkout process results in the PayPal option disappearing
+- Fix The quantity is overlooked during PayPal checkout initiation from the product page
+- Fix Cancellation of PayPal Express Checkout deletes items stored in Cart
+
+### NEW
+
+- Stronger indication of required domain registration for Apple Pay
 
 ## [2.5.2] - 2025-02-06
 
