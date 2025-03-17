@@ -200,14 +200,11 @@ class Payment
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
 
-        $request = $this->patchRequestFactory
-            ->getRequest($basket, $shopOrderId);
-
         // Update Order
         try {
             $orderService->updateOrder(
                 $checkoutOrderId,
-                $request,
+                $this->patchRequestFactory->getOrderPatches($basket, $shopOrderId),
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
         } catch (Exception $exception) {

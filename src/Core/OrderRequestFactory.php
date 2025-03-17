@@ -307,6 +307,8 @@ class OrderRequestFactory
         $basket = $this->basket;
         $itemCategory = $this->getItemCategoryByBasketContent();
         $currency = $basket->getBasketCurrency();
+        //only two decimal place precision is supported in PayPal
+        $currency->decimal = 2;
         $language = Registry::getLang();
         $items = [];
 
@@ -637,6 +639,7 @@ class OrderRequestFactory
             $paymentSource->birth_date = $birthdate;
         }
 
+        $activeShop = Registry::getConfig()->getActiveShop();
         $experienceContext = new ExperienceContext();
         $experienceContext->brand_name = $moduleSettings->getShopName();
         $experienceContext->locale = strtolower($payer->address->country_code)
