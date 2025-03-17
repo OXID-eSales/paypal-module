@@ -16,34 +16,34 @@
     <script>
         window.onload = function () {
             paypal.Buttons({
-                               createVaultSetupToken: async () => {
-                                   const result = await fetch(
-                                       "[{oxgetseourl ident=$oViewConf->getGenerateSetupTokenLink()}]",
-                                       { method: "POST"
-                                       })
-                                   const { id } = await result.json();
-                                   return id;
-                               },
-                               onApprove: async ({ vaultSetupToken }) => {
-                                   const result = await fetch(
-                                       "[{oxgetseourl ident=$oViewConf->getGeneratePaymentTokenLink()}]"+vaultSetupToken,
-                                       {method: 'POST'
-                                       })
-                                   const status = await result.json();
+                   createVaultSetupToken: async () => {
+                       const result = await fetch(
+                           "[{oxgetseourl ident=$oViewConf->getGenerateSetupTokenLink()}]",
+                           { method: "POST"
+                           })
+                       const { id } = await result.json();
+                       return id;
+                   },
+                   onApprove: async ({ vaultSetupToken }) => {
+                       const result = await fetch(
+                           "[{oxgetseourl ident=$oViewConf->getGeneratePaymentTokenLink()}]"+vaultSetupToken,
+                           {method: 'POST'
+                           })
+                       const status = await result.json();
 
-                                   if(status.state === "SUCCESS") {
-                                       showSuccessMessage();
-                                   }else {
-                                       showFailureMessage();
-                                   }
-                               },
-                               onError: (error) => {
-                                   //TODO
-                               },
-                               style: {
-                                   label: 'checkout'
-                               }
-                           }).render("#PayPalButtonVaulting");
+                       if (status.state === "SUCCESS") {
+                           showSuccessMessage();
+                       } else {
+                           showFailureMessage();
+                       }
+                   },
+                   onError: (error) => {
+                       console.log(error);
+                   },
+                   style: {
+                       label: 'checkout'
+                   }
+               }).render("#PayPalButtonVaulting");
 
             function showSuccessMessage() {
                 $('#PayPalButtonVaulting').hide();

@@ -22,7 +22,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
 /**
  * PayPal oxOrder class
  *
- * @mixin \OxidEsales\Eshop\Application\Model\Order
+ * @mixin \OxidEsales\Eshop\Application\Model\User
  */
 class User extends User_parent
 {

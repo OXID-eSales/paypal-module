@@ -334,7 +334,6 @@ class ProxyController extends FrontendController
             try {
                 if (!$this->itemExists($basket, $aid, $qty)) {
                     $basket->addToBasket($aid, $qty, $aSel);
-                    $basket->isNewItemAdded();
                 }
                 // Remove flag of "new item added" to not show "Item added" popup when returning to checkout from paypal
                 $basket->isNewItemAdded();
@@ -614,7 +613,7 @@ class ProxyController extends FrontendController
 
         $basketContents = $basket->getContents();
         foreach ($basketContents as $basketItem) {
-            if ($basketItem->getProductId() === $articleOxid && $basketItem->getAmount() === $amountToBasket) {
+            if ($basketItem->getProductId() === $articleOxid && $basketItem->getAmount() == $amountToBasket) {
                 return true;
             }
         }
