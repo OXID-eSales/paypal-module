@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\RequestFactory;
 
 use OxidEsales\Eshop\Application\Model\Address;
-use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
@@ -17,7 +16,7 @@ use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
-use stdClass;
+use OxidSolutionCatalysts\PayPal\Model\Basket as PayPalBasket;
 
 class PatchRequestFactoryTest extends BaseTestCase
 {
@@ -37,7 +36,7 @@ class PatchRequestFactoryTest extends BaseTestCase
 
         //Currency object
         $currency = \OxidEsales\EshopCommunity\Core\Registry::getConfig()->getCurrencyObject('EUR');
-        $basketMock = $this->createMock(Basket::class);
+        $basketMock = $this->createMock(PayPalBasket::class);
         $basketMock->method('getBasketCurrency')->willReturn($currency);
         $basketMock->method('isCalculationModeNetto')->willReturn(false);
         $basketMock->method('getPrice')->willReturn($priceMock);
@@ -100,7 +99,7 @@ class PatchRequestFactoryTest extends BaseTestCase
     {
         $currency = Registry::getConfig()->getCurrencyObject('EUR');
 
-        $basketMock = $this->createMock(Basket::class);
+        $basketMock = $this->createMock(PayPalBasket::class);
         $basketMock->method('getBasketCurrency')->willReturn($currency);
         $amountWithBreakdown = new AmountWithBreakdown();
         $amountWithBreakdown->value = 1.00;
@@ -123,7 +122,7 @@ class PatchRequestFactoryTest extends BaseTestCase
         $priceMock = $this->createMock(Price::class);
         $priceMock->method('getBruttoPrice')->willReturn(10.00);
 
-        $basketMock = $this->createMock(Basket::class);
+        $basketMock = $this->createMock(PayPalBasket::class);
         $basketMock->method('getPrice')->willReturn($priceMock);
 
         $basketMock->method('isCalculationModeNetto')->willReturn(false);

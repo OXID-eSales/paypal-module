@@ -57,7 +57,7 @@ class PayPalRequestAmountFactoryTest extends BaseTestCase
         $priceMock = $this->createMock(Price::class);
         $priceMock->method('getBruttoPrice')->willReturn(34.0);
 
-        $basketMock = $this->createMock(Basket::class);
+        $basketMock = $this->createMock(PayPalBasket::class);
         // Set up the basket mock expectations
         $basketMock->method('getBasketCurrency')->willReturn($currency);
         $basketMock->method('isCalculationModeNetto')->willReturn(false);
@@ -101,7 +101,7 @@ class PayPalRequestAmountFactoryTest extends BaseTestCase
         $priceMock = $this->createMock(Price::class);
         $priceMock->method('getBruttoPrice')->willReturn(34.0);
 
-        $basketMock = $this->createMock(Basket::class);
+        $basketMock = $this->createMock(PayPalBasket::class);
         // Set up the basket mock expectations
         $basketMock->method('getBasketCurrency')->willReturn($currency);
         $basketMock->method('isCalculationModeNetto')->willReturn(false);
@@ -145,7 +145,7 @@ class PayPalRequestAmountFactoryTest extends BaseTestCase
         $priceMock = $this->createMock(Price::class);
         $priceMock->method('getBruttoPrice')->willReturn(34.2469);
 
-        $basketMock = $this->createMock(Basket::class);
+        $basketMock = $this->createMock(PayPalBasket::class);
         // Set up the basket mock expectations
         $basketMock->method('getBasketCurrency')->willReturn($currency);
         $basketMock->method('isCalculationModeNetto')->willReturn(false);
@@ -189,7 +189,7 @@ class PayPalRequestAmountFactoryTest extends BaseTestCase
         $priceMock = $this->createMock(Price::class);
         $priceMock->method('getBruttoPrice')->willReturn(24.0);
 
-        $basketMock = $this->createMock(Basket::class);
+        $basketMock = $this->createMock(PayPalBasket::class);
         // Set up the basket mock expectations
         $basketMock->method('getBasketCurrency')->willReturn($currency);
         $basketMock->method('isCalculationModeNetto')->willReturn(false);
@@ -267,7 +267,7 @@ class PayPalRequestAmountFactoryTest extends BaseTestCase
     public function testNegativeDiscountHandling(): void
     {
         // Create mock for Basket
-        $basketMock = $this->createMock(Basket::class);
+        $basketMock = $this->createMock(PayPalBasket::class);
 
         // Create currency object
         $currency = new stdClass();
