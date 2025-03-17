@@ -27,103 +27,90 @@ use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
 class PatchRequestFactory
 {
     /**
-     * @var array
-     */
-    private $request = [];
-
-    /**
      * @var Basket
      */
     private $basket;
 
     /**
-     * @param Basket $basket
+     * Returns array of patches that will be applied to an Order
      *
+     * @param Basket $basket
+     * @param string $orderId
      * @return array
      */
-    public function getRequest(
+    public function getOrderPatches(
         Basket $basket,
         string $orderId = ''
     ): array {
         $this->basket = $basket;
-        $withItems = !$this->basket->isCalculationModeNetto();
-        $currency = $basket->getBasketCurrency();
-
-        $this->getShippingNamePatch();
-        $this->getShippingAddressPatch();
-        $this->getAmountPatch();
-        if ($orderId) {
-            $this->getCustomIdPatch($orderId);
-        }
-        if ($withItems) {
-            $this->getPurchaseUnitsPatch(
-                $this->basket,
-                $currency
-            );
-        }
-
-        return $this->request;
-    }
-
-    protected function getShippingAddressPatch(): void
-    {
         $deliveryId = Registry::getSession()->getVariable("deladrid");
         $deliveryAddress = oxNew(Address::class);
 
+        $patches = array_values(
+            array_filter([
+                $this->getAmountPatch(),
+                $orderId ? $this->getCustomIdPatch($orderId) : null,
+                $this->getPurchaseUnitsPatch()
+            ])
+        );
+
         if ($deliveryId && $deliveryAddress->load($deliveryId)) {
-            $patch = new Patch();
-            $patch->op = Patch::OP_REPLACE;
-            $patch->path = "/purchase_units/@reference_id=='"
-                . Constants::PAYPAL_ORDER_REFERENCE_ID
-                . "'/shipping/address";
-
-            $address = new AddressPortable();
-
-            $state = oxNew(State::class);
-            $state->load($deliveryAddress->getFieldData('oxstateid'));
-
-            $country = oxNew(Country::class);
-            $country->load($deliveryAddress->getFieldData('oxcountryid'));
-
-            $addressLine =
-                $deliveryAddress->getFieldData('oxstreet') . " " . $deliveryAddress->getFieldData('oxstreetnr');
-            $address->address_line_1 = $addressLine;
-
-            $addinfoLine = $deliveryAddress->getFieldData('oxcompany') . " " .
-                $deliveryAddress->getFieldData('oxaddinfo');
-            $address->address_line_2 = $addinfoLine;
-
-            $address->admin_area_1 = $state->getFieldData('oxtitle');
-            $address->admin_area_2 = $deliveryAddress->getFieldData('oxcity');
-            $address->country_code = $country->oxcountry__oxisoalpha2->value;
-            $address->postal_code = $deliveryAddress->getFieldData('oxzip');
-
-            $patch->value = $address;
-
-            $this->request[] = $patch;
+            $patches[] = $this->getShippingNamePatch($deliveryAddress);
+            $patches[] = $this->getShippingAddressPatch($deliveryAddress);
         }
+
+        return $patches;
     }
 
-    protected function getShippingNamePatch(): void
+    public function getShippingAddressPatch(Address $deliveryAddress): Patch
     {
-        $deliveryId = Registry::getSession()->getVariable("deladrid");
-        $deliveryAddress = oxNew(Address::class);
+        $patch = new Patch();
+        $patch->op = Patch::OP_REPLACE;
+        $patch->path = "/purchase_units/@reference_id=='"
+            . Constants::PAYPAL_ORDER_REFERENCE_ID
+            . "'/shipping/address";
 
-        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
-            $fullName = $deliveryAddress->oxaddress__oxfname->value . " " . $deliveryAddress->oxaddress__oxlname->value;
-            $patch = new Patch();
-            $patch->op = Patch::OP_REPLACE;
-            $patch->path = "/purchase_units/@reference_id=='"
-                . Constants::PAYPAL_ORDER_REFERENCE_ID
-                . "'/shipping/name";
-            $patch->value = new \stdClass();
-            $patch->value->full_name = $fullName;
+        $address = new AddressPortable();
 
-            $this->request[] = $patch;
-        }
+        $state = oxNew(State::class);
+        $state->load($deliveryAddress->getFieldData('oxstateid'));
+
+        $country = oxNew(Country::class);
+        $country->load($deliveryAddress->getFieldData('oxcountryid'));
+
+        $addressLine =
+            $deliveryAddress->getFieldData('oxstreet') . " " . $deliveryAddress->getFieldData('oxstreetnr');
+        $address->address_line_1 = $addressLine;
+
+        $addinfoLine = $deliveryAddress->getFieldData('oxcompany') . " " .
+            $deliveryAddress->getFieldData('oxaddinfo');
+        $address->address_line_2 = $addinfoLine;
+
+        $address->admin_area_1 = $state->getFieldData('oxtitle');
+        $address->admin_area_2 = $deliveryAddress->getFieldData('oxcity');
+        $address->country_code = $country->oxcountry__oxisoalpha2->value;
+        $address->postal_code = $deliveryAddress->getFieldData('oxzip');
+
+        $patch->value = $address;
+
+        return $patch;
     }
 
-    protected function getAmountPatch(): void
+    public function getShippingNamePatch(Address $deliveryAddress): ?Patch
+    {
+        $fullName = $deliveryAddress->oxaddress__oxfname->value . " " . $deliveryAddress->oxaddress__oxlname->value;
+        $patch = new Patch();
+        $patch->op = Patch::OP_REPLACE;
+        $patch->path = "/purchase_units/@reference_id=='"
+            . Constants::PAYPAL_ORDER_REFERENCE_ID
+            . "'/shipping/name";
+        $patch->value = new \stdClass();
+        $patch->value->full_name = $fullName;
+
+        return $patch;
+    }
+
+    public function getAmountPatch(): ?Patch
     {
         $value = (Registry::get(PayPalRequestAmountFactory::class))->getAmount($this->basket);
         if ((float)$value->value !== 0.00) {
@@ -132,20 +119,27 @@ class PatchRequestFactory
             $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/amount";
             $patch->value = $value;
 
-            $this->request[] = $patch;
+            return $patch;
         }
+
+        return null;
     }
 
     /**
-     * @param Basket $basket
-     * @param $currency
+     * @return \OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch|null
      */
-    protected function getPurchaseUnitsPatch(
-        Basket $basket,
-        $currency
-    ): void {
+    public function getPurchaseUnitsPatch(): ?Patch
+    {
+        $withItems = !$this->basket->isCalculationModeNetto();
+        //update currency object with decimal precision restricted version
+        $currency = $this->basket->getBasketCurrency();
+        $currency->decimal = 2;
 
-        $basketItems = $basket->getContents();
+        if (!$withItems) {
+            return null;
+        }
+
+        $basketItems = $this->basket->getContents();
         $language = Registry::getLang();
 
         $patch = new Patch();
@@ -165,12 +159,12 @@ class PatchRequestFactory
                 );
                 // We provide no tax, because Tax is in 99% not necessary.
                 // Maybe just PUI, but PUI orders will not be patched.
-                $item->quantity = (string) $basketItem->getAmount();
+                $item->quantity = (string)$basketItem->getAmount();
                 $patchValues[] = $item;
             }
         }
 
-        $wrapping = $basket->getPayPalCheckoutWrapping();
+        $wrapping = $this->basket->getPayPalCheckoutWrapping();
         if ($wrapping) {
             $item = new Item();
             $item->name = $language->translateString('GIFT_WRAPPING');
@@ -184,7 +178,7 @@ class PatchRequestFactory
             $patchValues[] = $item;
         }
 
-        $giftCard = $basket->getPayPalCheckoutGiftCard();
+        $giftCard = $this->basket->getPayPalCheckoutGiftCard();
         if ($giftCard) {
             $item = new Item();
             $item->name = $language->translateString('GREETING_CARD');
@@ -198,7 +192,7 @@ class PatchRequestFactory
             $patchValues[] = $item;
         }
 
-        $payment = $basket->getPayPalCheckoutPayment();
+        $payment = $this->basket->getPayPalCheckoutPayment();
         if ($payment) {
             $item = new Item();
             $item->name = $language->translateString('PAYMENT_METHOD');
@@ -213,7 +207,7 @@ class PatchRequestFactory
         }
 
         // possible price surcharge
-        $discount = $basket->getPayPalCheckoutDiscount();
+        $discount = $this->basket->getPayPalCheckoutDiscount();
 
         if ($discount < 0) {
             $discount *= -1;
@@ -227,7 +221,7 @@ class PatchRequestFactory
         }
 
         // Dummy-Article for Rounding-Error
-        if ($roundDiff = $basket->getPayPalCheckoutRoundDiff()) {
+        if ($roundDiff = $this->basket->getPayPalCheckoutRoundDiff()) {
             $item = new Item();
             $item->name = $language->translateString('OSC_PAYPAL_VAT_CORRECTION');
 
@@ -239,16 +233,16 @@ class PatchRequestFactory
 
         $patch->value = $patchValues;
 
-        $this->request[] = $patch;
+        return $patch;
     }
 
-    protected function getCustomIdPatch(string $shopOrderId): void
+    public function getCustomIdPatch(string $shopOrderId): Patch
     {
         $patch = new Patch();
         $patch->op = Patch::OP_ADD;
         $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/custom_id";
         $patch->value = $shopOrderId;
 
-        $this->request[] = $patch;
+        return $patch;
     }
 }
