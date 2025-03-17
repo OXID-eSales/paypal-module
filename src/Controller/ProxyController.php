@@ -618,7 +618,7 @@ class ProxyController extends FrontendController
 
         $basketContents = $basket->getContents();
         foreach ($basketContents as $basketItem) {
-            if ($basketItem->getProductId() === $articleOxid && $basketItem->getAmount() === $amountToBasket) {
+            if ($basketItem->getProductId() === $articleOxid && $basketItem->getAmount() == $amountToBasket) {
                 return true;
             }
         }
