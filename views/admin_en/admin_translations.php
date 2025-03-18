@@ -5,6 +5,7 @@
  * See LICENSE file for license details.
  */
 
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 
 $sLangName = 'English';
