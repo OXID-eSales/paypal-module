@@ -18,6 +18,10 @@ class PayPalVaultingCardController extends AccountController
 
     public function render()
     {
+        if (!$this->getUser()) {
+            return parent::render();
+        }
+
         $this->_aViewData['vaultingUserId'] = oxNew(Config::class)->getUserIdForVaulting();
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
 
