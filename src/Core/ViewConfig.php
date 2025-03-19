@@ -73,25 +73,22 @@ class ViewConfig extends ViewConfig_parent
         return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalProductDetailsButton();
     }
 
-    /**
-     * @return bool
-     */
     public function isPayPalSandbox(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isSandbox();
     }
 
-    /**
-     * @return bool
-     */
     public function isPayPalExpressSessionActive(): bool
     {
         return PayPalSession::isPayPalExpressOrderActive();
     }
 
-    /**
-     * @return bool
-     */
+    public function unsetPaypalSessionAndOrderId(): void
+    {
+        PayPalSession::unsetPayPalSession();
+        PaypalSession::unsetPayPalOrderId();
+    }
+
     public function isPayPalACDCSessionActive(): bool
     {
         return PayPalSession::isPayPalACDCOrderActive();
