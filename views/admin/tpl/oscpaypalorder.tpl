@@ -219,7 +219,9 @@
                         <td><input type="checkbox" id="refundAll" name="refundAll"></td>
                     </tr>
                     <tr>
-                        <td><input type="submit" value="[{oxmultilang ident="OSC_PAYPAL_REFUND"}]"></td>
+                        <td><input type="submit"
+                                   onclick="return confirm('[{oxmultilang ident="OSC_PAYPAL_CONFIRM_REFUND"}]');"
+                                   value="[{oxmultilang ident="OSC_PAYPAL_REFUND"}]"></td>
                     </tr>
                 </table>
             </form>
