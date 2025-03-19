@@ -5,7 +5,7 @@
  * See LICENSE file for license details.
  */
 
-declare(strict_types = 1);
+declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
 
