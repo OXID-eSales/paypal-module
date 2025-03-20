@@ -220,7 +220,7 @@
                     </tr>
                     <tr>
                         <td><input type="submit"
-                                   onclick="return confirm('[{oxmultilang ident="OSC_PAYPAL_CONFIRM_REFUND"}]');"
+                                   onclick="var really = confirm('[{oxmultilang ident="OSC_PAYPAL_CONFIRM_REFUND"}]'); if (really)  { this.setAttribute('disabled', true); this.form.submit();} else { return false;}"
                                    value="[{oxmultilang ident="OSC_PAYPAL_REFUND"}]"></td>
                     </tr>
                 </table>
