@@ -106,6 +106,7 @@ class PatchRequestFactoryTest extends BaseTestCase
         $amountFactoryMock = $this->createMock(PayPalRequestAmountFactory::class);
         $amountFactoryMock->method('getAmount')->willReturn($amountWithBreakdown);
 
+        $PayPalRequestAmountFactoryBackup = Registry::get(PayPalRequestAmountFactory::class);
         Registry::set(PayPalRequestAmountFactory::class, $amountFactoryMock);
 
         $this->patchRequestFactory->getOrderPatches($basketMock);
@@ -114,6 +115,9 @@ class PatchRequestFactoryTest extends BaseTestCase
 
         $this->assertInstanceOf(Patch::class, $patch);
         $this->assertEquals(Patch::OP_REPLACE, $patch->op);
+
+        //restoring globally changed object in the registry
+        Registry::set(PayPalRequestAmountFactory::class, $PayPalRequestAmountFactoryBackup);
     }
 
     public function testGetPurchaseUnitsPatch(): void
