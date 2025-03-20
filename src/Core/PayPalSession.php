@@ -87,7 +87,7 @@ class PayPalSession
             return false;
         }
 
-        $paymentId = Registry::getSession()->getBasket()->getPaymentId();
+        $paymentId = (string) Registry::getSession()->getBasket()->getPaymentId();
         return PayPalDefinitions::isPayPalPayment($paymentId);
     }
 

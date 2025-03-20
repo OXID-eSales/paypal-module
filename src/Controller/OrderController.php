@@ -58,6 +58,21 @@ class OrderController extends OrderController_parent
         'puiretry'  => 'OSC_PAYPAL_PUI_PLEASE_RETRY'
     ];
 
+    public function init()
+    {
+        $session = Registry::getSession();
+        if (
+            $session->getVariable(Constants::SESSION_PSEUDODELIVERYCOSTUSED) &&
+            $oBasket = $this->getBasket()
+        ) {
+            // set deliveryprice to null to force recalculation of deliveryprice
+            $oBasket->setDeliveryPrice();
+            $session->deleteVariable(Constants::SESSION_PSEUDODELIVERYCOSTUSED);
+        }
+
+        parent::init();
+    }
+
     public function render()
     {
         $session = Registry::getSession();

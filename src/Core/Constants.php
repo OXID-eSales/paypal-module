@@ -18,6 +18,7 @@ class Constants
     public const PAYPAL_ORDER_INTENT_AUTHORIZE = 'AUTHORIZE';
     public const SESSION_CHECKOUT_ORDER_ID = 'paypal-checkout-session';
     public const SESSION_REDIRECTLINK = 'paypal-session-checkout-redirect';
+    public const SESSION_PSEUDODELIVERYCOSTUSED = 'paypal-pseudodeliverycost-used';
 
     public const SESSION_ONBOARDING_PAYLOAD = 'paypal-onboarding-payload';
     public const SESSION_PUI_CMID = 'paypal-pui-cmid';
