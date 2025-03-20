@@ -72,3 +72,30 @@ in OXID 6.3 and above:
 ```
 SELENIUM_SERVER_HOST=seleniumchrome BROWSER_NAME=chrome vendor/bin/runtests-codeception --group=examplegroup
 ```
+
+## CodeStyle commands ##
+The following Composer commands are available for checking and maintaining code quality:
+### PHP Mess Detector (PHPMD)
+- `composer md` - Run PHPMD checks on locally modified files
+- `composer md:commit` - Run PHPMD checks on files changed in the last commit
+
+### PHPStan
+- `composer stan` - Run static analysis checks on locally modified files
+- `composer stan:commit` - Run static analysis checks on files changed in the last commit
+
+### PHP CodeSniffer (PHPCS)
+- `composer cs` - Run coding standards checks on locally modified files
+- `composer cs:commit` - Run coding standards checks on files changed in the last commit
+
+### Combined Checks
+- `composer style` - Run all code quality checks (PHPMD, PHPStan, and PHPCS) on locally modified files
+- `composer style:commit` - Run all code quality checks on files changed in the last commit
+
+Each command has two variants:
+- Default version checks files that have local modifications but haven't been committed
+- `:commit` suffix version checks only the files that were changed in the most recent commit
+
+These commands help maintain consistent code quality by checking:
+- Code style and formatting (PHPCS)
+- Potential problems and complexity issues (PHPMD)
+- Type safety and potential bugs (PHPStan)
