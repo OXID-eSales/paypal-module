@@ -13,19 +13,19 @@
 
         //https://developer.paypal.com/sdk/js/reference/#createorder
 
-
         window.addEventListener('PayPalSDKLoadedEvent', (event) => {
             button = paypal.Buttons({
 
                 createOrder: async function (data, actions) {
-                    debugger
 
-                    let shopOrderCreationStatus = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM', {
+                    let shopOrderCreationStatus1 = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM', {
                         method: 'post',
                         headers: {
-                            'content-type': 'application/json'
+                            'content-type': 'application/json',
                         },
-                        body: ""
+                        body: JSON.stringify({
+                            'deladrid': '[{$oView->getDeliveryAddressMD5()}]'
+                        })
                     });
                     debugger
 
