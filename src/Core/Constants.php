@@ -22,6 +22,7 @@ class Constants
     public const SESSION_ONBOARDING_PAYLOAD = 'paypal-onboarding-payload';
     public const SESSION_PUI_CMID = 'paypal-pui-cmid';
     public const SESSION_ACDC_PAYPALORDER_STATUS = 'oscpaypal-acdcorder-status';
+    public const SESSION_PSEUDODELIVERYCOSTUSED = 'paypal-pseudodeliverycost-used';
 
     public const PAYPAL_ORDER_REFERENCE_ID = 'OXID_REFERENCE';
 
