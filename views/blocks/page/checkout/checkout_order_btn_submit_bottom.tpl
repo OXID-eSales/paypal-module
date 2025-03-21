@@ -1,5 +1,6 @@
 [{assign var="payment" value=$oView->getPayment()}]
 [{assign var="paymentId" value=$payment->getId()}]
+[{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
 [{assign var="purchaseUnits" value=$oView->getPurchaseUnits()}]
 
 [{if "oscpaypal" == $payment->getId()}]
@@ -16,9 +17,18 @@
         window.addEventListener('PayPalSDKLoadedEvent', (event) => {
             button = paypal.Buttons({
 
-                createOrder: function (data, actions) {
+                createOrder: async function (data, actions) {
                     debugger
-                    alert(2132423423);
+
+                    let shopOrderCreationStatus = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM', {
+                        method: 'post',
+                        headers: {
+                            'content-type': 'application/json'
+                        },
+                        body: ""
+                    });
+                    debugger
+
                     return actions.order.create({
                         purchase_units: [
                             [{$purchaseUnits}]

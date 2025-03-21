@@ -50,6 +50,20 @@ class ProxyController extends FrontendController
     public function createShopOrder()
     {
         $r=1;
+        $oUser = oxNew(\OxidEsales\Eshop\Application\Model\User::class);
+        $oUser->loadActiveUser();
+        $oBasket = $this->getSession()->getBasket();
+        $oOrder = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
+
+        //finalizing ordering process (validating, storing order into DB, executing payment, setting status ...)
+        $iSuccess = $oOrder->finalizeOrder($oBasket, $oUser);
+
+        // performing special actions after user finishes order (assignment to special user groups)
+        $oUser->onOrderExecute($oBasket, $iSuccess);
+
+        return json_encode([
+            'status' => 'created',
+        ]);
     }
 
     public function createOrder()
