@@ -9,14 +9,9 @@ declare(strict_types=1);
 
 namespace OxidEsales\EshopCommunity\modules\osc\paypal\src\Core;
 
-use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalRequestAmountFactory;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
-use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
-use stdClass;
 
 /**
  * Used to generate purchase_units that are transfered in JS request to create PayPal Order
@@ -27,13 +22,25 @@ use stdClass;
 class PayPalPurchaseUnitsFactory
 {
 
+    /**
+     * @var object|\OxidEsales\Eshop\Application\Model\Basket|null
+     */
+    private $basket;
+
     public function getPurchaseUnits(): string
     {
-        $basket = Registry::getSession()->getBasket();
-        $purchaseUnitsPatch = (Registry::get(PatchRequestFactory::class))->getPurchaseUnitsPatch($basket);
-        $currency = Registry::getConfig()->getActShopCurrencyObject();
-        $withItems = !$basket->isCalculationModeNetto() && !($currency->decimal > 2);
-        $amount = (Registry::get(PayPalRequestAmountFactory::class))->getAmount($basket);
+        $this->basket = Registry::getSession()->getBasket();
+
+        if (null === $this->basket){
+            return '';
+        }
+
+        $patchRequestFactory = Registry::get(PatchRequestFactory::class);
+        $patchRequestFactory->setBasket($this->basket);
+        $purchaseUnitsPatch = ($patchRequestFactory)->getPurchaseUnitsPatch();
+
+        $withItems = !$this->basket->isCalculationModeNetto();
+        $amount = (Registry::get(PayPalRequestAmountFactory::class))->getAmount($this->basket);
 
         $purchaseUnits = [
             "invoice_id" => "",
@@ -47,19 +54,29 @@ class PayPalPurchaseUnitsFactory
         if($withItems){
             $items = [];
 
-            foreach ($purchaseUnitsPatch->value as $orderItem){
+            foreach ($purchaseUnitsPatch->value as $orderItem) {
                 $orderItem = (array)$orderItem;
-                $items[] = [
+
+                $item = [
                     "name" => $orderItem["name"],
-                    "unit_amount" => (array)$orderItem["unit_amount"],
-                    "quantity" => (int)$orderItem["quantity"] ?? 1,
-                    "description" => $orderItem["description"] ?? "",
-                    "category" => $orderItem["category"] ?? "",
-                    "sku" => $orderItem["sku"] ?? "",
+                    "quantity" => (string)($orderItem["quantity"] ?? 1),
+                    "unit_amount" => (array)$orderItem["unit_amount"]
                 ];
+
+                if (!empty($orderItem["description"])) {
+                    $item['description'] = $orderItem["description"];
+                }
+                if (!empty($orderItem["category"])) {
+                    $item['category'] = $orderItem["category"];
+                }
+                if (!empty($orderItem["sku"])) {
+                    $item['sku'] = $orderItem["sku"];
+                }
+
+                $items[] = $item;
             }
 
-         //   $purchaseUnits['items'] = $items;
+            $purchaseUnits['items'] = $items;
         }
 
         return json_encode($purchaseUnits);

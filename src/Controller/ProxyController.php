@@ -47,6 +47,11 @@ class ProxyController extends FrontendController
     use JsonTrait;
     use ServiceContainer;
 
+    public function createShopOrder()
+    {
+        $r=1;
+    }
+
     public function createOrder()
     {
         if (PayPalSession::isPayPalExpressOrderActive()) {

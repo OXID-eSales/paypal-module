@@ -133,6 +133,7 @@ class PatchRequestFactory
         $withItems = !$this->basket->isCalculationModeNetto();
         //update currency object with decimal precision restricted version
         $currency = $this->basket->getBasketCurrency();
+        $currency->decimal = 2;
 
         if (!$withItems) {
             return null;
@@ -243,5 +244,13 @@ class PatchRequestFactory
         $patch->value = $shopOrderId;
 
         return $patch;
+    }
+
+    /**
+     * @param \OxidEsales\Eshop\Application\Model\Basket $basket
+     */
+    public function setBasket(Basket $basket): void
+    {
+        $this->basket = $basket;
     }
 }
