@@ -26,7 +26,6 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
-use OxidSolutionCatalysts\PayPal\Helper\Str2Float;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -58,25 +57,20 @@ class ProxyController extends FrontendController
         $config = Registry::getConfig();
         $this->addToBasket();
         $paymentId = Registry::getRequest()->getRequestParameter('paymentid');
-
         if ($paymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID) {
             $this->setPayPalPaymentMethod($paymentId);
         } else {
             $this->setPayPalPaymentMethod();
         }
-
         $session = Registry::getSession();
         $basket = $session->getBasket();
-        $configParam = $config->getConfigParam('oscPayPalDefaultShippingPriceExpress');
-        $defaultShippingPriceExpress = (new Str2Float())->autoParse($configParam) ?? 0.0;
-        $calculateDelCostIfNotLoggedIn = (bool)$config->getConfigParam('blCalculateDelCostIfNotLoggedIn');
-        $isDeliverySet = (bool)$session->getVariable('sShipSet');
-
-        if ($defaultShippingPriceExpress && !$calculateDelCostIfNotLoggedIn && !$isDeliverySet) {
+        $defaultShippingPriceExpress = (double) $config->getConfigParam('oscPayPalDefaultShippingPriceExpress');
+        $calculateDelCostIfNotLoggedIn = (bool) $config->getConfigParam('blCalculateDelCostIfNotLoggedIn');
+        $isDeliverySet = (bool) $session->getVariable('sShipSet');
+        if ($basket && $defaultShippingPriceExpress && !$calculateDelCostIfNotLoggedIn && !$isDeliverySet) {
             $basket->addShippingPriceForExpress($defaultShippingPriceExpress);
         }
-
-        if ($basket->getItemsCount() == 0) {
+        if ($basket->getItemsCount() === 0) {
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
         }
 
@@ -93,7 +87,7 @@ class ProxyController extends FrontendController
             false
         );
 
-        if ($response && $response->id) {
+        if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);
         }
 
@@ -103,21 +97,9 @@ class ProxyController extends FrontendController
     /**
      * @throws JsonException
      */
-    public function createGooglePayOrder(): void
+    public function createGooglePayOrder()
     {
-        $string = file_get_contents('php://input');
-
-        if (!$string) {
-            $this->outputJson(['ERROR' => 'No data found in request.']);
-            return;
-        }
-
-        $data = json_decode($string, true, 512, JSON_THROW_ON_ERROR);
-
-        if (!is_array($data)) {
-            $this->outputJson(['ERROR' => 'No data found in request.']);
-            return;
-        }
+        $data = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
 
         $shippingAddress = new AddressPortable();
         $shippingAddress->address_line_1 = $data['shippingAddress']['address1'] ?? '';
@@ -142,7 +124,7 @@ class ProxyController extends FrontendController
         $this->setPayPalPaymentMethod($paymentId);
         $basket = Registry::getSession()->getBasket();
 
-        if ($basket->getItemsCount() == 0) {
+        if ($basket->getItemsCount() === 0) {
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
         }
 
@@ -165,9 +147,6 @@ class ProxyController extends FrontendController
             false
         );
 
-        if (!$response) {
-            return;
-        }
         if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);
         }
@@ -201,7 +180,7 @@ class ProxyController extends FrontendController
             /** @var array $userInvoiceAddress */
             $userInvoiceAddress = $user->getInvoiceAddress();
             // add PayPal-Address as Delivery-Address
-            if (!empty($response->purchase_units[0]->shipping)) {
+            if (($response !== null) && !empty($response->purchase_units[0]->shipping)) {
                 $response->purchase_units[0]->shipping->address = $shippingAddress;
                 $response->purchase_units[0]->shipping->name->full_name = $data['shippingAddress']['name'] ?? '';
                 $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
@@ -350,12 +329,12 @@ class ProxyController extends FrontendController
         $basket = Registry::getSession()->getBasket();
         $utilsView = Registry::getUtilsView();
         $aSel = Registry::getRequest()->getRequestParameter('sel');
-        $amount = Registry::getRequest()->getRequestParameter('amountToBasket');
-        $qty = (new Str2Float())->autoParse($amount) ?? 0.0;
+        $qty = (double)Registry::getRequest()->getRequestParameter('amountToBasket') ?? 0;
         if ($aid = (string)Registry::getRequest()->getRequestEscapedParameter('aid')) {
             try {
                 if (!$this->itemExists($basket, $aid, $qty)) {
                     $basket->addToBasket($aid, $qty, $aSel);
+                    $basket->isNewItemAdded();
                 }
                 // Remove flag of "new item added" to not show "Item added" popup when returning to checkout from paypal
                 $basket->isNewItemAdded();
@@ -390,10 +369,9 @@ class ProxyController extends FrontendController
 
     private function getActiveShippingSetId($session, $user, $basket): void
     {
-        $sShipSet = $session->getVariable('sShipSet');
         /** @psalm-suppress InvalidArgument */
         [, $shippingSetId,] =
-            Registry::get(DeliverySetList::class)->getDeliverySetData($sShipSet, $user, $basket);
+            Registry::get(DeliverySetList::class)->getDeliverySetData('', $user, $basket);
 
         if ($shippingSetId) {
             $basket->setShipping($shippingSetId);
@@ -510,7 +488,6 @@ class ProxyController extends FrontendController
             $this->outputJson(['ERROR' => $e->getMessage()]);
         }
     }
-
     public function createApplepayOrder()
     {
         $data = json_decode(file_get_contents('php://input'), true);
@@ -550,11 +527,6 @@ class ProxyController extends FrontendController
             null,
             false
         );
-
-        if (!$response) {
-            return;
-        }
-
         if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);
         }
@@ -642,7 +614,7 @@ class ProxyController extends FrontendController
 
         $basketContents = $basket->getContents();
         foreach ($basketContents as $basketItem) {
-            if ($basketItem->getProductId() === $articleOxid && $basketItem->getAmount() == $amountToBasket) {
+            if ($basketItem->getProductId() === $articleOxid && $basketItem->getAmount() === $amountToBasket) {
                 return true;
             }
         }

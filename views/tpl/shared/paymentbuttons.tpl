@@ -1,8 +1,13 @@
 [{assign var="config" value=$oViewConf->getPayPalCheckoutConfig()}]
 [{block name="oscpaypal_paymentbuttons"}]
     [{oxhasrights ident="PAYWITHPAYPALEXPRESS"}]
+    [{assign var="purchaseUnits" value=$oView->getPurchaseUnits()}]
+
     [{$oViewConf->setSDKIsNecessary()}]
-        <div id="[{$buttonId}]" class="paypal-button-container [{$buttonClass}]"></div>
+        <div id="[{$buttonId}]" class="paypal-button-container [{$buttonClass}]">PP button wrapper</div>
+
+<h1>here you are 123</h1>
+
         [{if $phpStorm}]<script>[{/if}]
         [{capture assign="paypal_init"}]
             [{if !$aid}]
@@ -26,19 +31,17 @@
                         },
                         fundingSource: fundingSource,
                         createOrder: function (data, actions) {
-                            return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&paymentid="|cat:$buttonId|cat:"&context=continue&stoken="|cat:$sToken}]', {
-                                method: 'post',
-                                headers: {
-                                    'content-type': 'application/json'
-                                }
-                            }).then(function (res) {
-                                return res.json();
-                            }).then(function (data) {
-                                return data.id;
-                            })
+                            debugger
+                            return actions.order.create({
+                                purchase_units: [
+                                    [{$purchaseUnits}]
+                                ]
+                            });
                         },
                         onApprove: function (data, actions) {
-                            captureData = new FormData();
+
+                            debugger
+                            /*captureData = new FormData();
                             captureData.append('orderID', data.orderID);
                             return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&paymentid="|cat:$buttonId|cat:"&context=continue&stoken="|cat:$sToken}]', {
                                 method: 'post',
@@ -51,7 +54,7 @@
                                 } else if (data.id && data.status == "APPROVED") {
                                     location.replace('[{$sSelfLink|cat:"cl=order"}]');
                                 }
-                            })
+                            })*/
                         },
                         onCancel: function (data, actions) {
                             fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
@@ -110,20 +113,10 @@
                         // Capture the funds from the transaction
                         return actions.order.capture().then(function(details) {
                             // Show a success message to your buyer
-                            alert('Transaction completed by ' + details.payer.name.given_name);
+                            alert('Create Transaction completed by ' + details.payer.name.given_name);
 debugger
                             // Call your server to save the transaction
-                            return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
-                                method: 'post',
-                                headers: {
-                                    'content-type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    orderID: data.orderID,
-                                    payerID: data.payerID,
-                                    paymentDetails: details
-                                })
-                            });
+
                         });
                     },
                     onCancel: function (data, actions) {
