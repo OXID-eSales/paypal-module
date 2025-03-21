@@ -49,7 +49,10 @@ class ProxyController extends FrontendController
 
     public function createShopOrder()
     {
-        $r=1;
+        $data = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
+        $_POST['deladrid'] = $data['deladrid'];
+        $_POST['sDeliveryAddressMD5'] = $data['deladrid'];
+
         $oUser = oxNew(\OxidEsales\Eshop\Application\Model\User::class);
         $oUser->loadActiveUser();
         $oBasket = $this->getSession()->getBasket();
