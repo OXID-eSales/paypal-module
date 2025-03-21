@@ -1,6 +1,10 @@
 [{assign var="config" value=$oViewConf->getPayPalCheckoutConfig()}]
-[{$oViewConf->unsetPaypalSessionAndOrderId()}]
-[{if $blCanBuy && !$oDetailsProduct->isNotBuyable() && $config->isActive() && $config->showPayPalProductDetailsButton()}]
+[{if $blCanBuy && !$oDetailsProduct->isNotBuyable() && $config->isActive() && !$oViewConf->isPayPalExpressSessionActive() && $config->showPayPalProductDetailsButton() }]
     [{include file="modules/osc/paypal/paymentbuttons.tpl" buttonId="PayPalButtonProductMain" buttonClass="paypal-button-wrapper large" aid=$oDetailsProduct->oxarticles__oxid->value}]
     [{*include file="modules/osc/paypal/googlepay.tpl" buttonId="PayPalButtonProductMain" buttonClass="paypal-button-wrapper large" aid=$oDetailsProduct->oxarticles__oxid->value*}]
+[{/if}]
+[{if $oViewConf->isPayPalExpressSessionActive() }]
+    [{oxmultilang ident="OSC_PAYPAL_RUNNING_EXPRESS_CHECKOUT_SESSION_HINT"}]
+    [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
+    <p><a href="[{$sSelfLink|cat:"cl=order"}]">[{oxmultilang ident="OSC_PAYPAL_RUNNING_EXPRESS_CHECKOUT_SESSION_HINT_AFREF"}]</a></p>
 [{/if}]

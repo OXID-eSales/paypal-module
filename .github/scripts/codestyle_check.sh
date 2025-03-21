@@ -32,7 +32,7 @@ get_changed_files() {
 # Function to run PHPCS
 run_phpcs() {
     echo "Running PHP CodeSniffer..."
-    composer phpcs
+    phpcs --standard=tests/phpcs.xml
 }
 
 # Function to run PHPStan

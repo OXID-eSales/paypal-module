@@ -83,12 +83,6 @@ class ViewConfig extends ViewConfig_parent
         return PayPalSession::isPayPalExpressOrderActive();
     }
 
-    public function unsetPaypalSessionAndOrderId(): void
-    {
-        PayPalSession::unsetPayPalSession();
-        PaypalSession::unsetPayPalOrderId();
-    }
-
     public function isPayPalACDCSessionActive(): bool
     {
         return PayPalSession::isPayPalACDCOrderActive();

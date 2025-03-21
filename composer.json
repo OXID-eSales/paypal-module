@@ -48,26 +48,15 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "scripts": {
-        "md": "./.github/scripts/codestyle_check.sh phpmd",
-        "md:commit": "./.github/scripts/codestyle_check.sh phpmd commit",
-        "stan": "./.github/scripts/codestyle_check.sh phpstan",
-        "stan:commit": "./.github/scripts/codestyle_check.sh phpstan commit",
-        "cs": "./.github/scripts/codestyle_check.sh phpcs",
-        "cs:commit": "./.github/scripts/codestyle_check.sh phpcs commit",
+        "phpmd": "./.github/scripts/codestyle_check.sh phpmd",
+        "phpmd:commit": "./.github/scripts/codestyle_check.sh phpmd commit",
+        "phpstan": "./.github/scripts/codestyle_check.sh phpstan",
+        "phpstan:commit": "./.github/scripts/codestyle_check.sh phpstan commit",
+        "phpcs": "./.github/scripts/codestyle_check.sh phpcs",
+        "phpcs:commit": "./.github/scripts/codestyle_check.sh phpcs commit",
         "style": "./.github/scripts/codestyle_check.sh all",
         "style:commit": "./.github/scripts/codestyle_check.sh all commit",
-
-        "phpcs": "phpcs --standard=tests/phpcs.xml",
         "phpcbf": "phpcbf --standard=tests/phpcs.xml",
-
-        "phpstan": "phpstan -ctests/PhpStan/phpstan.neon analyse src/",
-        "phpstan-generate-baseline": "phpstan -ctests/PhpStan/phpstan.neon analyse src/ --generate-baseline tests/PhpStan/phpstan-baseline.neon",
-        "phpstan-report": "phpstan -ctests/PhpStan/phpstan.neon analyse src/ --error-format=json > tests/reports/phpstan.report.json",
-
-        "phpmd": "phpmd src ansi tests/PhpMd/standard.xml",
-
-        "phpmd-generate-baseline": "phpmd src ansi tests/PhpMd/standard.xml --generate-baseline",
-        "phpmd-report": "phpmd src json tests/PhpMd/standard.xml --reportfile tests/reports/phpmd.report.json --baseline tests/PhpMd/phpmd.baseline.xml",
 
         "static": [
             "@phpcs",
