@@ -641,6 +641,10 @@ class ModuleSettings
                 $basket
             );
 
+        if ($paymentList === null) {
+            $paymentList = [];
+        }
+
         return $paymentEnabled &&
             $this->getIsVaultingActive() &&
             $vaultingType &&
