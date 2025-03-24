@@ -28,7 +28,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix The quantity is overlooked during PayPal checkout initiation from the product page
 - Fix Cancellation of PayPal Express Checkout deletes items stored in Cart
 - Fix Processes Duplicate Refunds on Rapid Refund Button Clicks
-
+- [0007776](https://bugs.oxid-esales.com/view.php?id=7776): Fix GooglePay and ApplePay always use first shipping method
+- 
 ### Dropped
 - Codeception tests
 - library giggsey/libphonenumber-for-php
