@@ -7,69 +7,26 @@
 
 {*check if this vaulting is needed*}
 <input type="hidden" name="vaultPayment" id="oscPayPalVaultPayment" value="">
-
+    {*<button id="PayWithPayPalProxyButton" >Mój Paypal button</button>*}
     <div id="[{$paymentId}]" class="paypal-button-container [{$buttonClass}]"></div>
-    <script>
 
+    <script>
+        window.PP_DATA_12321 = {
+            shopOrderCreationStatusUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
+            shopOrderPatchingStatus: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
+            deladrid: '[{$oView->getDeliveryAddressMD5()}]',
+            shopOrderOnCancelUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]',
+            shopOrderOnErrorUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]',
+            purchaseUnits: [{$purchaseUnits}],
+            buttonSelector: '#[{$paymentId}]',
+
+            shopButtonSelector: 'PayWithPayPalProxyButton'
+        }
         //https://developer.paypal.com/sdk/js/reference/#createorder
 
-        window.addEventListener('PayPalSDKLoadedEvent', (event) => {
-            button = paypal.Buttons({
-
-                createOrder: async function (data, actions) {
-
-                    let shopOrderCreationStatus1 = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM', {
-                        method: 'post',
-                        headers: {
-                            'content-type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            'deladrid': '[{$oView->getDeliveryAddressMD5()}]'
-                        })
-                    });
-                    debugger
-
-                    return actions.order.create({
-                        purchase_units: [
-                            [{$purchaseUnits}]
-                        ]
-                    });
-
-                },
-                onApprove: function (data, actions) {
-                    // Capture the funds from the transaction
-                    return actions.order.capture().then(function (details) {
-                        // Show a success message to your buyer
-                        alert('Transaction completed by ' + details.payer.name.given_name);
-                        debugger
-                        // Call your server to save the transaction
-                        return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
-                            method: 'post',
-                            headers: {
-                                'content-type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                orderID: data.orderID,
-                                payerID: data.payerID,
-                                paymentDetails: details
-                            })
-                        });
-                    });
-                },
-                onCancel: function (data, actions) {
-                    fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
-                },
-                onError: function (data) {
-                    fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
-                }
-            })
-            if (button.isEligible()) {
-                button.render('#[{$paymentId}]');
-            }
-        });
-
-
     </script>
+    [{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','out/src/js/paypal-dev.js')|filemtime}]
+    <script id="dev_scripts23432" src="[{$oViewConf->getModuleUrl('osc_paypal', 'out/src/js/paypal-dev.js')|cat:"?"|cat:$sFileMTime}]"></script>
 
 
     [{/if}]
