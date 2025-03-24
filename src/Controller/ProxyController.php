@@ -47,10 +47,28 @@ class ProxyController extends FrontendController
     use JsonTrait;
     use ServiceContainer;
 
+    public function patchShopOrder()
+    {
+        $body = file_get_contents('php://input');
+        $data = [];
+        if(!empty($body)){
+            $data = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+        }
+
+        $r=1;
+
+        return $this->outputJson([
+            'status' => 'success'
+        ]);
+    }
+
     public function createShopOrder()
     {
-        $data = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
-        $_POST['deladrid'] = $data['deladrid'];
+        $body = file_get_contents('php://input');
+        $data = [];
+        if(!empty($body)){
+            $data = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+        }
         $_POST['sDeliveryAddressMD5'] = $data['deladrid'];
 
         $oUser = oxNew(\OxidEsales\Eshop\Application\Model\User::class);
@@ -59,13 +77,16 @@ class ProxyController extends FrontendController
         $oOrder = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
 
         //finalizing ordering process (validating, storing order into DB, executing payment, setting status ...)
-        $iSuccess = $oOrder->finalizeOrder($oBasket, $oUser);
+        $iSuccess = $oOrder->finalizePayPalOrder($oBasket, $oUser, false);
+//here getNextStep is executed, it should give thankYo Page if everything is ok
 
         // performing special actions after user finishes order (assignment to special user groups)
         $oUser->onOrderExecute($oBasket, $iSuccess);
 
-        return json_encode([
-            'status' => 'created',
+        return $this->outputJson([
+            'status' => 'success',
+            'oxid' => $oOrder->oxorder__oxid->value,
+            'oxordernr' => $oOrder->oxorder__oxordernr->value,
         ]);
     }
 
