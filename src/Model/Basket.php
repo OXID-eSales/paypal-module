@@ -9,6 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 
 use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 
 /**
  * PayPal basket class
@@ -241,6 +242,9 @@ class Basket extends Basket_parent
         $oPrice->setPrice($defaultShippingPriceExpress);
         $this->setDeliveryPrice($oPrice);
         $this->calculateBasket(true);
+
+        $session = Registry::getSession();
+        $session->setVariable(Constants::SESSION_PSEUDODELIVERYCOSTUSED, true);
     }
 
     /**
