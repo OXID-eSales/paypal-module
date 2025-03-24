@@ -18,6 +18,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - use PayPal-Client v3.0.15
 - set connect-timeout for 5 Seconds and request-timeout for 30 seconds
 - Settings for automatic cleanup unfinished orders are read via ModuleSettings
+- [0007771](https://bugs.oxid-esales.com/view.php?id=7771): Paypal can only work with two decimal places. For shops with configured additional decimal places, the corresponding rounding takes place
+- [0007772](https://bugs.oxid-esales.com/view.php?id=7772): Fix pay in nettomode
+- Fix line item amounts in case of discounts (Discussion here https://forum.oxid-esales.com/t/paypal-modul-2-5-1-fehler-bei-rabatten-fehler-die-1223354igste/99472)
+- Add stronger indication of required domain registration for Apple Pay
+- [0007775](https://bugs.oxid-esales.com/view.php?id=7775): Fix Re-starting the PayPal checkout process on the product page duplicates the cart's items
+- Fix Issues with refunding in different Currencies
+- Fix Losing connection/page refreshing during the PayPal checkout process results in the PayPal option disappearing
+- Fix The quantity is overlooked during PayPal checkout initiation from the product page
+- Fix Cancellation of PayPal Express Checkout deletes items stored in Cart
+- Fix Processes Duplicate Refunds on Rapid Refund Button Clicks
 
 ### Dropped
 - Codeception tests
