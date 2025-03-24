@@ -210,7 +210,6 @@ class PaymentController extends PaymentController_parent
             Registry::getSession()->setVariable("selectedVaultPaymentSourceIndex", $paymentSourceIndex);
         }
 
-
         return parent::validatePayment();
     }
 
