@@ -89,25 +89,16 @@ class ViewConfig extends ViewConfig_parent
         return $this->getServiceFromContainer(ModuleSettings::class)->isSandbox();
     }
 
-    /**
-     * @return bool
-     */
     public function isPayPalExpressSessionActive(): bool
     {
         return PayPalSession::isPayPalExpressOrderActive();
     }
 
-    /**
-     * @return bool
-     */
     public function isPayPalACDCSessionActive(): bool
     {
         return PayPalSession::isPayPalACDCOrderActive();
     }
 
-    /**
-     * @return bool
-     */
     public function isPayPalExpressPaymentEnabled(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isPayPalCheckoutExpressPaymentEnabled();

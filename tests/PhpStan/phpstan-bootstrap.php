@@ -17,6 +17,11 @@ class_alias(
 );
 
 class_alias(
+    \OxidEsales\Eshop\Application\Controller\Admin\PaymentMain::class,
+    \OxidEsales\Eshop\Application\Controller\Admin\PaymentMain_parent::class
+);
+
+class_alias(
     \OxidEsales\Eshop\Application\Controller\Admin\OrderMain::class,
     \OxidSolutionCatalysts\PayPal\Controller\Admin\OrderMain_parent::class
 );

@@ -58,4 +58,6 @@ $aLang = [
     'OSC_PAYPAL_CARD_ENDING_IN'                     => 'endet mit ●●●',
     'OSC_PAYPAL_CARD_PAYPAL_PAYMENT'                => 'PayPal Zahlung mit',
     'OSC_PAYPAL_DELETE_FAILED'                      => 'Beim Löschen Ihrer Zahlart ist etwas schiefgelaufen.',
+    'OSC_PAYPAL_RUNNING_EXPRESS_CHECKOUT_SESSION_HINT' => 'Zahlung erfolgt mit PayPal-Express.',
+    'OSC_PAYPAL_RUNNING_EXPRESS_CHECKOUT_SESSION_HINT_AFREF' => 'Hier zum Bestellabschluss.',
 ];
