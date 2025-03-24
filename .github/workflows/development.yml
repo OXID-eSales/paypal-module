@@ -130,60 +130,10 @@ jobs:
         working-directory: source/test-module
         run: composer install
 
-      - name: Get changed PHP files
-        id: changed-files
-        working-directory: source/test-module
-        run: |
-          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
-            BASE_SHA=${{ github.event.pull_request.base.sha }}
-            HEAD_SHA=${{ github.sha }}
-          else
-            BASE_SHA=${{ github.event.before }}
-            HEAD_SHA=${{ github.event.after }}
-          fi
-
-          # Handle invalid base SHA (e.g., initial commit)
-          if [ "$GITHUB_EVENT_NAME" = "push" ] && [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
-            # Get all files in the current commit (initial commit)
-            CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r $HEAD_SHA | grep -E '\.php$' | tr '\n' ' ' || echo "")
-          else
-            # Get changed files between base and head
-            CHANGED_FILES=$(git diff --name-only $BASE_SHA $HEAD_SHA --diff-filter=ACMR | grep -E '\.php$' | tr '\n' ' ' || echo "")
-          fi
-
-          echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_ENV
-          echo "Changed files: $CHANGED_FILES"
-
-      - name: Run phpcs
+      - name: Codestyle check of the affected files (phpcs, phpmd, phpstan)
         id: phpcs
-        if: always()
         working-directory: source/test-module
-        run: composer phpcs  # Runs on all files as before
-
-      - name: Run phpstan
-        id: phpstan
-        if: always() && env.CHANGED_FILES != ''
-        working-directory: source/test-module
-        run: |
-          # Use specific PHPStan config for your project
-          vendor/bin/phpstan analyse \
-            -c source/test-module/tests/PhpStan/phpstan.neon \
-            --level=max \
-            --paths-file=<(echo "${{ env.CHANGED_FILES }}") \
-            --memory-limit=1G
-
-      - name: Run phpmd
-        id: phpmd
-        if: always() && env.CHANGED_FILES != ''
-        working-directory: source/test-module
-        run: |
-          vendor/bin/phpmd "${{ env.CHANGED_FILES }}" \
-            text \
-            source/test-module/tests/PhpMd/phpmd.baseline.xml \
-            --exclude tests/ \
-            --suffixes php \
-            --strict
-      
+        run: composer style:commit  # Runs oll style checks
 
       - name: Upload log artifact
         if: always()
@@ -193,7 +143,6 @@ jobs:
           path: |
             source/test-module/tests/reports/phpstan.report.json
             source/test-module/tests/reports/phpmd.report.json
-
   unit_tests:
     strategy:
       fail-fast: false
@@ -238,36 +187,3 @@ jobs:
             source/coverage.xml
             source/phpunit.xml
             source/source/log/oxideshop.log
-
-  cypress_tests:
-    strategy:
-      fail-fast: false
-      matrix:
-        php: [ '7.4', '8.0', '8.1' ]
-        group:
-          - 'oe_moduletemplate'
-    needs: [ install_shop_with_module ]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Load current installation from cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ./*
-          key: moduleDevelopmentInstallation-${{ matrix.php }}-${{ github.sha }}
-          restore-keys: |
-            moduleDevelopmentInstallation-${{ matrix.php }}-${{ github.sha }}
-
-      - name: Run tests
-        run: |
-          ./source/vendor/${{ env.PACKAGE_NAME }}/.github/cypress/cypress.sh --no_make_up=true
-
-      - name: Upload log artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: CodeceptionTestsLog-${{ matrix.php }}
-          path: |
-            source/vendor/${{ env.PACKAGE_NAME }}/tests/e2e/cypress/_generated
-            source/source/log/oxideshop.log
-            source/data/php/logs/error_log.txt

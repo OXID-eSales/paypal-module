@@ -23,6 +23,11 @@ class_alias(
 );
 
 class_alias(
+    \OxidEsales\Eshop\Application\Controller\Admin\PaymentMain::class,
+    \OxidEsales\Eshop\Application\Controller\Admin\PaymentMain_parent::class
+);
+
+class_alias(
     \OxidEsales\Eshop\Application\Controller\Admin\OrderOverview::class,
     \OxidEsales\Eshop\Application\Controller\Admin\OrderOverview_parent::class
 );
@@ -58,26 +63,22 @@ class_alias(
 );
 
 class_alias(
-    \OxidEsales\EshopCommunity\Application\Model\User::class,
-    \OxidEsales\EshopCommunity\Application\Model\User_parent::class
+    \OxidEsales\Eshop\Application\Model\User::class,
+    \OxidEsales\Eshop\Application\Model\User_parent::class
 );
 
 class_alias(
-    \OxidEsales\EshopCommunity\Application\Controller\OrderController::class,
-    \OxidEsales\EshopCommunity\Application\Controller\OrderController_parent::class
+    \OxidEsales\Eshop\Application\Controller\OrderController::class,
+    \OxidEsales\Eshop\Application\Controller\OrderController_parent::class
 );
 
 class_alias(
-    \OxidEsales\EshopCommunity\Application\Model\Article::class,
-    \OxidEsales\EshopCommunity\Application\Model\Article_parent::class,
+    \OxidEsales\Eshop\Application\Model\Article::class,
+    \OxidEsales\Eshop\Application\Model\Article_parent::class,
 );
 
-class_alias(
-    \OxidEsales\EshopCommunity\Application\Controller\OrderController::class,
-    \OxidEsales\EshopCommunity\Application\Controller\OrderController_parent::class,
-);
 
 class_alias(
-    \OxidEsales\EshopCommunity\Application\Model\Order::class,
-    \OxidEsales\EshopCommunity\Application\Model\Order_parent::class
+    \OxidEsales\Eshop\Application\Model\Order::class,
+    \OxidEsales\Eshop\Application\Model\Order_parent::class
 );

@@ -642,7 +642,7 @@ class ModuleSettings
             );
 
         if ($paymentList === null) {
-            $paymentList = [];
+            return false;
         }
 
         return $paymentEnabled &&

@@ -14,15 +14,20 @@ use OxidEsales\Eshop\Core\Registry;
 trait JsonTrait
 {
     /**
-     * Encodes and sends response as json
-     *
-     * @param $response
+     * @param mixed $response
+     * @return void
      */
-    protected function outputJson($response)
+    protected function outputJson($response): void
     {
         $utils = Registry::getUtils();
         $utils->setHeader('Content-Type: application/json');
 
-        $utils->showMessageAndExit(json_encode($response));
+        // json_encode can return false on error, so we should handle that case
+        $message = json_encode($response);
+        if ($message === false) {
+            $message = 'wrong response';
+        }
+
+        $utils->showMessageAndExit($message);
     }
 }

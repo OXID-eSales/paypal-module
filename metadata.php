@@ -7,6 +7,7 @@
 
 use OxidEsales\Eshop\Application\Component\BasketComponent;
 use OxidEsales\Eshop\Application\Component\UserComponent;
+use OxidEsales\Eshop\Application\Controller\Admin\PaymentMain;
 use OxidEsales\Eshop\Application\Controller\OrderController;
 use OxidEsales\Eshop\Application\Controller\PaymentController;
 use OxidEsales\Eshop\Application\Controller\Admin\OrderMain;
@@ -26,6 +27,7 @@ use OxidSolutionCatalysts\PayPal\Component\UserComponent as PayPalUserComponent;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalConfigController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalOrderController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderMain as PayPalOrderMainController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\PaymentMain as PayPalPaymentMainController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderOverview as PayPalOrderOverviewController;
 use OxidSolutionCatalysts\PayPal\Controller\OrderController as PayPalFrontEndOrderController;
 use OxidSolutionCatalysts\PayPal\Controller\PaymentController as PayPalPaymentController;
@@ -80,6 +82,7 @@ $aModule = [
         UserComponent::class => PayPalUserComponent::class,
         BasketComponent::class => PayPalBasketComponent::class,
         OrderMain::class => PayPalOrderMainController::class,
+        PaymentMain::class => PayPalPaymentMainController::class,
         OrderOverview::class => PayPalOrderOverviewController::class,
         State::class => PayPalState::class
     ],

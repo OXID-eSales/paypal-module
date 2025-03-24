@@ -295,4 +295,6 @@ $aLang = [
 
     'OSC_PAYPAL_CUSTOM_ID_CONTENTS_TITLE'           => 'PayPal custom id field contents',
     'OSC_PAYPAL_CUSTOM_ID_CONTENTS_DESC'            => 'PayPal custom id field will be JSON encoded string with order number, shop version and the PayPal module version.',
+
+    'OSC_PAYPAL_PAYMENT_METHOD_CANNOT_BE_DEFAULT'   => 'This payment method cannot be set as default',
 ];

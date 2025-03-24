@@ -43,8 +43,6 @@ $aLang = [
 
     'OSC_PAYPAL_3DSECURITY_ERROR'                  => 'Security check failed, please retry.',
     'OSC_PAYPAL_ORDEREXECUTION_ERROR'              => 'Payment process could not be completed.',
-    'OSCPAYPAL_KILL_EXPRESS_SESSION_REASON'        => 'The shopping cart has been changed. For this reason, the active PayPal payment process was automatically canceled. Please restart the payment with PayPal. No money has been collected from PayPal yet.',
-    'OSC_PAYPAL_ORDEREXECUTION_ERROR'              => 'Payment process could not be completed.',
 
     'OSC_PAYPAL_VAULTING_MENU'                      => 'Save PayPal payment method',
     'OSC_PAYPAL_VAULTING_MENU_CARD'                 => 'Save PayPal card',
@@ -61,4 +59,6 @@ $aLang = [
     'OSC_PAYPAL_CARD_PAYPAL_PAYMENT'                => 'PayPal payment with',
     'OSC_PAYPAL_DELETE_FAILED'                      => 'There was an error deleting your payment method.',
     'OSCPAYPAL_KILL_EXPRESS_SESSION_REASON'         => 'The shopping cart has been changed. For this reason, the active PayPal payment process was automatically canceled. Please restart the payment with PayPal. No money has been collected from PayPal yet.',
+    'OSC_PAYPAL_RUNNING_EXPRESS_CHECKOUT_SESSION_HINT' => 'You have started payment via PayPal Express.',
+    'OSC_PAYPAL_RUNNING_EXPRESS_CHECKOUT_SESSION_HINT_AFREF' => 'Click here to complete your order.',
 ];

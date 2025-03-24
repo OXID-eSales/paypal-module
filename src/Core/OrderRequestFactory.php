@@ -173,7 +173,8 @@ class OrderRequestFactory
 
         return $request;
     }
-    protected function getApplePayPaymentSource($basket, $requestName)
+
+    protected function getApplePayPaymentSource($basket, $requestName): PaymentSource
     {
         $user = $basket->getBasketUser();
 
