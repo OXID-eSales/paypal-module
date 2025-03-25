@@ -1,5 +1,5 @@
 {% hasrights { ident: "PAYWITHGOOGLEPAY" } %}
-    {{ oViewConf.setSDKIsNecessary() }}
+    {{ oViewConf.setSDKIsNecessary(true) }}
     {% set sToken = oViewConf.getSessionChallengeToken() %}
     {% set sSelfLink = oViewConf.getSslSelfLink()|replace({'&amp;': '&'})|raw %}
     {% set oPPconfig = oViewConf.getPayPalCheckoutConfig() %}

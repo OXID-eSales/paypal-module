@@ -3,8 +3,4 @@
 [{if $blCanBuy && !$oDetailsProduct->isNotBuyable() && $config->isActive() && $config->showPayPalProductDetailsButton()}]
     [{include file="@osc_paypal/frontend/shared/paymentbuttons.tpl" buttonId="PayPalButtonProductMain" buttonClass="paypal-button-wrapper large" aid=$oDetailsProduct->oxarticles__oxid->value}]
 [{/if}]
-[{if $oViewConf->isPayPalExpressSessionActive() }]
-    [{oxmultilang ident="OSC_PAYPAL_RUNNING_EXPRESS_CHECKOUT_SESSION_HINT"}]
-    [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
-    <p><a href="[{$sSelfLink|cat:"cl=order"}]">[{oxmultilang ident="OSC_PAYPAL_RUNNING_EXPRESS_CHECKOUT_SESSION_HINT_AFREF"}]</a></p>
-[{/if}]
+[{include file="@osc_paypal/frontend/shared/paypalexpresshint.tpl" withBreak=false}]

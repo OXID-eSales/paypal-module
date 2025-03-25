@@ -1,7 +1,7 @@
 {% set vaultedPaymentSources = oViewConf.getVaultPaymentTokens() %}
 
 {% if vaultedPaymentSources %}
-    {{ oViewConf.setSDKIsNecessary() }}
+    {{ oViewConf.setSDKIsNecessary(true) }}
     <div class="card">
         <div class="card-header">
             <h3 id="paymentHeader" class="card-title">{{ translate({ ident: "OSC_PAYPAL_VAULTING_VAULTED_PAYMENTS" }) }}</h3>

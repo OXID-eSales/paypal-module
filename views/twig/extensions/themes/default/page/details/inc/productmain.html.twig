@@ -3,13 +3,10 @@
 {% block details_productmain_tobasket %}
     {{ parent() }}
     {% set config = oViewConf.getPayPalCheckoutConfig() %}
-    {% if blCanBuy and not oDetailsProduct.isNotBuyable() and config.isActive() and not oViewConf.isPayPalExpressSessionActive() and config.showPayPalProductDetailsButton() %}
+    {% if blCanBuy and not oDetailsProduct.isNotBuyable() and config.isActive() and config.showPayPalProductDetailsButton() %}
         {% include "@osc_paypal/frontend/paymentbuttons.html.twig" with {buttonId: "PayPalButtonProductMain", buttonClass: "paypal-button-wrapper", aid: oDetailsProduct.oxarticles__oxid.value} %}
     {% endif %}
-    {% if oViewConf.isPayPalExpressSessionActive() %}
-        {{ translate({ ident: "OSC_PAYPAL_RUNNING_EXPRESS_CHECKOUT_SESSION_HINT" }) }}
-        <p><a href="{{ oViewConf.getSslSelfLink() }}/cl=order"> {{ translate({ ident: "OSC_PAYPAL_RUNNING_EXPRESS_CHECKOUT_SESSION_HINT_AFREF" }) }}</a></p>
-    {% endif %}
+    {% include "@osc_paypal/frontend/paypalexpresshint.html.twig" with {withBreak: false} %}
 {% endblock %}
 
 {% block details_productmain_price_value %}

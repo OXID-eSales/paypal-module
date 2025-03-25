@@ -139,18 +139,31 @@ class ViewConfig extends ViewConfig_parent
     }
 
     /**
+     * @param bool $sessionBased
      * @return void
      */
-    public function setSDKIsNecessary(): void
+    public function setSDKIsNecessary(bool $sessionBased = false): void
     {
+        // Twig-Templates needs the session-solution
+        if ($sessionBased) {
+            PayPalSession::setSDKIsNecessary();
+            return;
+        }
+
         $this->isSDKNecessary = true;
     }
 
     /**
+     * @param bool $sessionBased
      * @return bool
      */
-    public function isSDKNecessary(): bool
+    public function isSDKNecessary(bool $sessionBased = false): bool
     {
+        // Twig-Templates needs the session-solution
+        if ($sessionBased) {
+            return PayPalSession::isSDKNecessary();
+        }
+
         return $this->isSDKNecessary;
     }
 
