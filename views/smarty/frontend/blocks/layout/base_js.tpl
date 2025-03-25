@@ -1,6 +1,5 @@
 [{$smarty.block.parent}]
 [{if $oViewConf->isPayPalCheckoutActive() && $oViewConf->isSDKNecessary()}]
-    [{assign var="className" value=$oViewConf->getTopActiveClassName()}]
     [{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','js/paypal-frontend.min.js')|filemtime}]
         <script src="[{$oViewConf->getModuleUrl('osc_paypal','js/paypal-frontend.min.js')|cat:"?"|cat:$sFileMTime}]"></script>
         <script src="[{$oViewConf->getPayPalJsSdkUrl()}]"

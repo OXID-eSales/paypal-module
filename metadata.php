@@ -109,6 +109,7 @@ $aModule = [
         '@osc_paypal/admin/oscpaypalorder_ppplus.tpl' => 'views/smarty/admin/oscpaypalorder_ppplus.tpl',
 
         '@osc_paypal/frontend/shared/paymentbuttons.tpl' => 'views/smarty/frontend/shared/paymentbuttons.tpl',
+        '@osc_paypal/frontend/shared/paypalexpresshint.tpl' => 'views/smarty/frontend/shared/paypalexpresshint.tpl',
 
         '@osc_paypal/frontend/flow/pui.tpl' => 'views/smarty/frontend/flow/page/checkout/pui.tpl',
         '@osc_paypal/frontend/wave/pui.tpl' => 'views/smarty/frontend/wave/page/checkout/pui.tpl',
@@ -192,6 +193,11 @@ $aModule = [
             'template' => 'page/checkout/basket.tpl',
             'block' => 'checkout_basket_next_step_top',
             'file' => 'views/smarty/frontend/blocks/page/checkout/basket_installment_banner_after.tpl',
+        ],
+        [
+            'template' => 'page/checkout/basket.tpl',
+            'block' => 'checkout_basket_backtoshop_bottom',
+            'file' => 'views/smarty/frontend/blocks/page/checkout/checkout_basket_backtoshop_bottom.tpl'
         ],
         [
             'template' => 'page/checkout/basket.tpl',

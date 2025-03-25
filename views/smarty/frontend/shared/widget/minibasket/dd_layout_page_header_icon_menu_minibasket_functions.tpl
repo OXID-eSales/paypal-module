@@ -4,8 +4,4 @@
         [{"OR"|oxmultilangassign|oxupper}]
     </div>
 [{/if}]
-[{if $oViewConf->isPayPalExpressSessionActive() }]
-    [{oxmultilang ident="OSC_PAYPAL_RUNNING_EXPRESS_CHECKOUT_SESSION_HINT"}]
-    [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
-    <p><a href="[{$sSelfLink|cat:"cl=order"}]">[{oxmultilang ident="OSC_PAYPAL_RUNNING_EXPRESS_CHECKOUT_SESSION_HINT_AFREF"}]</a></p>
-[{/if}]
+[{include file="@osc_paypal/frontend/shared/paypalexpresshint.tpl" withBreak=true}]

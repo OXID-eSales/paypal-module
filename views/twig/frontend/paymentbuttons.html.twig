@@ -1,5 +1,5 @@
 {% block oscpaypal_paymentbuttons %}
-    {{ oViewConf.setSDKIsNecessary() }}
+    {{ oViewConf.setSDKIsNecessary(true) }}
     <div id="{{ buttonId }}" class="paypal-button-container {{ buttonClass }}"></div>
     {% if phpStorm %}<script>{% endif %}
     {% set paypal_init %}

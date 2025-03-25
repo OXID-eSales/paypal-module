@@ -1,5 +1,5 @@
 {% if oViewConf.enablePayPalBanners() and oViewConf.getPayPalClientId() %}
-    {{ oViewConf.setSDKIsNecessary() }}
+    {{ oViewConf.setSDKIsNecessary(true) }}
     {% if size is not defined %}
         {% set size = "20x1" %}
     {% endif %}
