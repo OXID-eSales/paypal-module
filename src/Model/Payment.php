@@ -7,6 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Model;
 
+use OxidEsales\Eshop\Core\Field;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 
 class Payment extends Payment_parent
@@ -39,5 +40,19 @@ class Payment extends Payment_parent
     public function isDeprecatedPayment(): bool
     {
         return PayPalDefinitions::isDeprecatedPayment($this->getId());
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @return string|bool
+     */
+    public function save()
+    {
+        // PayPalExpress could not be a default Payment
+        if ($this->getId() === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID) {
+            $this->oxpayments__oxchecked = new Field(0);
+        }
+        return parent::save();
     }
 }
