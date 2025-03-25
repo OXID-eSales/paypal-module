@@ -20,6 +20,7 @@ use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\Application\Model\User;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
@@ -36,6 +37,7 @@ use OxidSolutionCatalysts\PayPal\Service\PayPalUrlService;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
@@ -56,16 +58,47 @@ class ProxyController extends FrontendController
         if(!empty($body)){
             $data = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
         }
+        $sessionShopOrderId = Registry::getSession()->getVariable('sess_challenge');
+        $shopOrderId = $data['shopOrderId'];
+        $payPalOrderId = $data['payPalOrderId'];
+        $cancelSession = !$sessionShopOrderId || $shopOrderId !== $sessionShopOrderId;
 
-        $oUser = oxNew(\OxidEsales\Eshop\Application\Model\User::class);
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+
+        /** @var \OxidEsales\EshopCommunity\Application\Model\User $oUser */
+        $oUser = oxNew(User::class);
         $oUser->loadActiveUser();
 
         /** @var PayPalOrder $oOrder */
         $oOrder = oxNew(Order::class);
-        $oOrder->load($data['oxid']);
+        $oOrder->load($shopOrderId);
 
-        $oOrder->markOrderPaid();
-        $r=1;
+        if($cancelSession){
+            $this->outputJson([
+                'status' => 'error',
+                'message' => 'Order id mismatch error.', //@TODO improve errors messages
+            ]);
+        }
+        $paymentsId = (string) $oOrder->getFieldData('oxpaymenttype');
+        /** @var PayPalApiModelOrder $payPalOrder */
+        $payPalOrder = $paymentService->fetchOrderFields($payPalOrderId, '');
+        if ($oOrder->isPayPalOrderCompleted($payPalOrder)) {
+            $oOrder->markOrderPaid();
+            $transactionId = (string)$payPalOrder->purchase_units[0]->payments->captures[0]->id;
+            $oOrder->setTransId($transactionId);
+            $paymentService->trackPayPalOrder(
+                $shopOrderId,
+                $payPalOrderId,
+                $paymentsId,
+                PayPalApiOrder::STATUS_COMPLETED,
+                $transactionId
+            );
+        } else {
+            $this->outputJson([
+                'status' => 'error',
+                'message' => 'Order completion error.', //@TODO improve errors messages
+            ]);
+        }
 
         $this->outputJson([
             'status' => 'success',
@@ -94,12 +127,10 @@ class ProxyController extends FrontendController
         // performing special actions after user finishes order (assignment to special user groups)
         $oUser->onOrderExecute($oBasket, $iSuccess);
 
-        $orderNr = $oOrder->oxorder__oxordernr->value;
-
         $this->outputJson([
             'status' => 'success',
-            'oxid' => $oOrder->oxorder__oxid->value,
-            'oxordernr' => $orderNr,
+            'shopOrderId' => $oOrder->oxorder__oxid->value,
+            'shopOrderNumber' => $oOrder->oxorder__oxordernr->value,
         ]);
     }
 
