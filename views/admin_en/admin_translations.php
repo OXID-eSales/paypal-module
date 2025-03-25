@@ -101,6 +101,7 @@ $aLang = [
     'OSC_PAYPAL_MONEY_REFUND'                     => 'Money refund',
     'OSC_PAYPAL_CAPTURE'                          => 'Capture',
     'OSC_PAYPAL_REFUND'                           => 'Refund',
+    'OSC_PAYPAL_CONFIRM_REFUND'                   => 'Do you really want to request a refund?',
     'OSC_PAYPAL_DETAILS'                          => 'Details',
     'OSC_PAYPAL_AUTHORIZATION'                    => 'Authorization',
     'OSC_PAYPAL_CANCEL_AUTHORIZATION'             => 'Void',
