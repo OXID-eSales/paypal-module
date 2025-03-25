@@ -14,6 +14,7 @@ use OxidEsales\Eshop\Application\Controller\FrontendController;
 use OxidEsales\Eshop\Application\Model\Address;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\DeliverySetList;
+use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Exception\ArticleInputException;
 use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
@@ -26,6 +27,7 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
+use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -47,7 +49,7 @@ class ProxyController extends FrontendController
     use JsonTrait;
     use ServiceContainer;
 
-    public function patchShopOrder()
+    public function patchShopOrder(): void
     {
         $body = file_get_contents('php://input');
         $data = [];
@@ -55,14 +57,23 @@ class ProxyController extends FrontendController
             $data = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
         }
 
+        $oUser = oxNew(\OxidEsales\Eshop\Application\Model\User::class);
+        $oUser->loadActiveUser();
+
+        /** @var PayPalOrder $oOrder */
+        $oOrder = oxNew(Order::class);
+        $oOrder->load($data['oxid']);
+
+        $oOrder->markOrderPaid();
         $r=1;
 
-        return $this->outputJson([
-            'status' => 'success'
+        $this->outputJson([
+            'status' => 'success',
+            'oxid' => $oOrder->oxorder__oxid->value,
         ]);
     }
 
-    public function createShopOrder()
+    public function createShopOrder(): void
     {
         $body = file_get_contents('php://input');
         $data = [];
@@ -74,7 +85,7 @@ class ProxyController extends FrontendController
         $oUser = oxNew(\OxidEsales\Eshop\Application\Model\User::class);
         $oUser->loadActiveUser();
         $oBasket = $this->getSession()->getBasket();
-        $oOrder = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
+        $oOrder = oxNew(Order::class);
 
         //finalizing ordering process (validating, storing order into DB, executing payment, setting status ...)
         $iSuccess = $oOrder->finalizePayPalOrder($oBasket, $oUser, false);
@@ -83,10 +94,12 @@ class ProxyController extends FrontendController
         // performing special actions after user finishes order (assignment to special user groups)
         $oUser->onOrderExecute($oBasket, $iSuccess);
 
-        return $this->outputJson([
+        $orderNr = $oOrder->oxorder__oxordernr->value;
+
+        $this->outputJson([
             'status' => 'success',
             'oxid' => $oOrder->oxorder__oxid->value,
-            'oxordernr' => $oOrder->oxorder__oxordernr->value,
+            'oxordernr' => $orderNr,
         ]);
     }
 
