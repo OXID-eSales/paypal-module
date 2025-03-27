@@ -612,6 +612,11 @@ class OrderController extends OrderController_parent
         return $cmId;
     }
 
+    public function getThankYouPageUrl(): string
+    {
+        return $this->_getNextStep(1);
+    }
+
     protected function _getNextStep($success) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
     {
         if (

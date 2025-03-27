@@ -2,6 +2,7 @@
 [{assign var="paymentId" value=$payment->getId()}]
 [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
 [{assign var="purchaseUnits" value=$oView->getPurchaseUnits()}]
+[{assign var="thankYou" value=$oView->getThankYouPageUrl()}]
 
 [{if "oscpaypal" == $payment->getId()}]
 
@@ -13,7 +14,8 @@
     <script>
         window.PP_DATA_12321 = {
             shopOrderCreationStatusUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
-            shopOrderPatchingStatus: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
+            shopOrderPatchingStatusUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
+            shopThankYouPageUrl: 'thankyou&XDEBUG_SESSION=PHPSTORM',
             deladrid: '[{$oView->getDeliveryAddressMD5()}]',
             shopOrderOnCancelUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]',
             shopOrderOnErrorUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]',

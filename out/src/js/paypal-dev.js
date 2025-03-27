@@ -89,7 +89,7 @@
                 window.PayPalPaymentController.setCreatePayPalOrderResponse(data);
 
                 return actions.order.capture().then(async function (details) {
-                    let shopOrderPatchingStatus = await fetch(window.PP_DATA_12321.shopOrderPatchingStatus, {
+                    let shopOrderPatchingStatus = await fetch(window.PP_DATA_12321.shopOrderPatchingStatusUrl, {
                         method: 'post',
                         headers: {
                             'content-type': 'application/json',
