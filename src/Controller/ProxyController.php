@@ -51,6 +51,25 @@ class ProxyController extends FrontendController
     use JsonTrait;
     use ServiceContainer;
 
+    public function cancelShopOrder(): void
+    {
+        $body = file_get_contents('php://input');
+        $data = [];
+        if (!empty($body)) {
+            $data = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
+        }
+
+        $shopOrderId = $data['shopOrderId'];
+        /** @var PayPalOrder $oOrder */
+        $oOrder = oxNew(Order::class);
+        $oOrder->load($shopOrderId);
+        $oOrder->delete();
+
+        $this->outputJson([
+            'status' => 'success'
+        ]);
+    }
+
     public function patchShopOrder(): void
     {
         $body = file_get_contents('php://input');
