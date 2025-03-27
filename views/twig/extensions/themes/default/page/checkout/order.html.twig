@@ -81,7 +81,7 @@
             submitButton.addEventListener('click', function(event) {
             event.preventDefault();
             this.disabled = true;
-            orderConfirmAgbBottom.submit();
+            orderConfirmAgbBottom.dispatchEvent(new CustomEvent('submit', {cancelable: true}));
             });
         {% endcapture %}
         {{ script({ add: oscpaypal_madClickPrevention, dynamic: __oxid_include_dynamic }) }}

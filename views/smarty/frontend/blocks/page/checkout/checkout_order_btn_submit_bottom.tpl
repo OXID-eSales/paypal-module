@@ -8,7 +8,7 @@
     submitButton.addEventListener('click', function() {
     event.preventDefault();
     this.disabled = true;
-    orderConfirmAgbBottom.submit();
+    orderConfirmAgbBottom.dispatchEvent(new CustomEvent('submit', {cancelable: true}));
     });
     [{/capture}]
     [{oxscript add=$smarty.capture.oscpaypal_madClickPrevention}]
