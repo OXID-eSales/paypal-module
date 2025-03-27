@@ -1,13 +1,27 @@
-(function(){
+(function () {
 
-    let PayPalPaymentController = function(){
+    let PayPalPaymentController = function () {
         this.currentOrder = {
             shop: null,
             paypal: null
         };
 
-        this.setCreatePayPalOrderResponse = function(response){
-            if (null !== this.currentOrder.paypal){
+        this.currentOrderDefaults = {
+            shop: null,
+            paypal: null
+        };
+
+        this.reportError = function (message) {
+            console.log(message);
+            debugger
+        }
+
+        this.resetCurrentOrder = function (response) {
+            this.currentOrder = this.currentOrderDefaults;
+        }
+
+        this.setCreatePayPalOrderResponse = function (response) {
+            if (null !== this.currentOrder.paypal) {
                 //some order is currently ...
                 debugger
             }
@@ -16,9 +30,9 @@
         }
 
         //@TODO this name is not accurate, change it
-        this.setCreateShopOrderResponse = function(response, orderType){
-            if(response.status === 'success'){
-                if (null !== this.currentOrder.shop){
+        this.setCreateShopOrderResponse = function (response, orderType) {
+            if (response.status === 'success') {
+                if (null !== this.currentOrder.shop) {
                     //some order is currently
                     debugger
                 }
@@ -27,32 +41,31 @@
             }
         }
 
-        this.getCurrentOrderData = function (name, orderType){
-            if (null == this.currentOrder){
+        this.getCurrentOrderData = function (name, orderType) {
+            if (null == this.currentOrder) {
                 console.error('No current order.');
                 return;
             }
 
-            if (undefined === this.currentOrder[orderType][name]){
-                console.error('Current order do not have detail named '+ name +'.');
+            if (undefined === this.currentOrder[orderType][name]) {
+                console.error('Current order do not have detail named ' + name + '.');
                 return;
             }
 
             return this.currentOrder[orderType][name];
         }
 
-        this.getCurrentOrderOxid = function (){
+        this.getCurrentOrderOxid = function () {
             return this.getCurrentOrderData('shopOrderId', 'shop');
         }
 
-        this.getCurrentOrderNumber = function (){
+        this.getCurrentOrderNumber = function () {
             return this.getCurrentOrderData('shopOrderNumber', 'shop');
         }
 
-        this.getCurrentPayPalOrderId = function (){
+        this.getCurrentPayPalOrderId = function () {
             return this.getCurrentOrderData('orderID', 'paypal');
         }
-
     }
 
     window.PayPalPaymentController = new PayPalPaymentController();
@@ -78,7 +91,7 @@
 
                 let purchaseUnits = {
                     purchase_units: [
-                        { ...window.PP_DATA_12321.purchaseUnits }
+                        {...window.PP_DATA_12321.purchaseUnits}
                     ]
                 }
 
@@ -101,15 +114,33 @@
                     });
 
                     let response = await shopOrderPatchingStatus.json();
-                    if(response.status === 'success'){
-                        alert('payment Completed successfully: redirect to thankYou page')
+                    if (response.status === 'success') {
+                        window.location = window.PP_DATA_12321.shopThankYouPageUrl;
                     }
                 });
             },
 
-            onCancel: function (data, actions) {
-                debugger
-                //fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
+            onCancel: async function (data, actions) {
+                let shopOrderCancelStatus = await fetch(window.PP_DATA_12321.shopOrderCancelStatusUrl, {
+                    method: 'post',
+                    headers: {
+                        'content-type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        'shopOrderId': window.PayPalPaymentController.getCurrentOrderOxid()
+                    })
+                });
+
+                let response = await shopOrderCancelStatus.json();
+                window.PayPalPaymentController.resetCurrentOrder();
+
+                //@TODO remove if not used
+                if (response.status === 'success') {
+                }
+
+                if (response.status === 'error') {
+                    window.PayPalPaymentController.reportError('cancel error'); //@TODO improve error handling
+                }
             },
 
             onError: function (data) {

@@ -2,27 +2,23 @@
 [{assign var="paymentId" value=$payment->getId()}]
 [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
 [{assign var="purchaseUnits" value=$oView->getPurchaseUnits()}]
-[{assign var="thankYou" value=$oView->getThankYouPageUrl()}]
 
 [{if "oscpaypal" == $payment->getId()}]
-
-{*check if this vaulting is needed*}
-<input type="hidden" name="vaultPayment" id="oscPayPalVaultPayment" value="">
-    {*<button id="PayWithPayPalProxyButton" >Mój Paypal button</button>*}
+    <input type="hidden" name="vaultPayment" id="oscPayPalVaultPayment" value="">
     <div id="[{$paymentId}]" class="paypal-button-container [{$buttonClass}]"></div>
 
     <script>
         window.PP_DATA_12321 = {
             shopOrderCreationStatusUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
             shopOrderPatchingStatusUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
-            shopThankYouPageUrl: 'thankyou&XDEBUG_SESSION=PHPSTORM',
-            deladrid: '[{$oView->getDeliveryAddressMD5()}]',
-            shopOrderOnCancelUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]',
-            shopOrderOnErrorUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]',
-            purchaseUnits: [{$purchaseUnits}],
-            buttonSelector: '#[{$paymentId}]',
+            shopOrderCancelStatusUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
 
-            shopButtonSelector: 'PayWithPayPalProxyButton'
+            shopThankYouPageUrl: '[{$sSelfLink|cat:"cl=thankyou&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
+            deladrid: '[{$oView->getDeliveryAddressMD5()}]',
+
+shopOrderOnErrorUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]',
+            purchaseUnits: [{$purchaseUnits}],
+            buttonSelector: '#[{$paymentId}]'
         }
         //https://developer.paypal.com/sdk/js/reference/#createorder
 
