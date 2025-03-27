@@ -3,7 +3,9 @@
 [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
 [{assign var="purchaseUnits" value=$oView->getPurchaseUnits()}]
 
-[{if "oscpaypal" == $payment->getId()}]
+
+
+[{if "oscpaypal" == $paymentId}]
     <input type="hidden" name="vaultPayment" id="oscPayPalVaultPayment" value="">
     <div id="[{$paymentId}]" class="paypal-button-container [{$buttonClass}]"></div>
 
@@ -28,19 +30,23 @@ shopOrderOnErrorUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPaymen
 
 
     [{/if}]
-[{if "oscpaypal_pui" == $payment->getId()}]
+
+[{if "oscpaypal_pui" == $paymentId}]
     [{if $oViewConf->isFlowCompatibleTheme()}]
     [{include file="modules/osc/paypal/checkout_order_btn_submit_bottom_flow.tpl"}]
     [{else}]
     [{include file="modules/osc/paypal/checkout_order_btn_submit_bottom_wave.tpl"}]
     [{/if}]
     [{/if}]
-[{if "oscpaypal_googlepay" == $payment->getId()}]
+
+[{if "oscpaypal_googlepay" == $paymentId}]
     [{include file="modules/osc/paypal/googlepay.tpl" buttonClass="paypal-button-wrapper large"}]
-    [{elseif "oscpaypal_applepay" == $payment->getId()}]
-    [{include file="modules/osc/paypal/applepay.tpl" paymentId=$payment->getId() buttonClass="paypal-button-wrapper large"}]
+    [{elseif "oscpaypal_applepay" == $paymentId}]
+    [{include file="modules/osc/paypal/applepay.tpl" paymentId=$paymentId buttonClass="paypal-button-wrapper large"}]
     <div id="applepay-container" class="paypal-button-container paypal-button-wrapper paypal-button-right large"></div>
-    [{/if}]
+[{elseif "oscpaypal" != $paymentId}]
+    [{$smarty.block.parent}]
+[{/if}]
 
 
 
