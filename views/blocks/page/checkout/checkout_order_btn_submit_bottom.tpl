@@ -3,31 +3,25 @@
 [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
 [{assign var="purchaseUnits" value=$oView->getPurchaseUnits()}]
 
-
-
 [{if "oscpaypal" == $paymentId}]
     <input type="hidden" name="vaultPayment" id="oscPayPalVaultPayment" value="">
     <div id="[{$paymentId}]" class="paypal-button-container [{$buttonClass}]"></div>
-
     <script>
-        window.PP_DATA_12321 = {
-            shopOrderCreationStatusUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
-            shopOrderPatchingStatusUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
-            shopOrderCancelStatusUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
-
-            shopThankYouPageUrl: '[{$sSelfLink|cat:"cl=thankyou&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
-            deladrid: '[{$oView->getDeliveryAddressMD5()}]',
-
-shopOrderOnErrorUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]',
-            purchaseUnits: [{$purchaseUnits}],
-            buttonSelector: '#[{$paymentId}]'
-        }
-        //https://developer.paypal.com/sdk/js/reference/#createorder
-
+        const PayPalPaymentControllerConfigurator = function () {
+            return {
+                shopOrderCreationStatusUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
+                shopOrderPatchingStatusUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
+                shopOrderCancelStatusUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
+                shopOrderErrorUrl: '[{$sSelfLink|cat:"cl=payment&payerror=2&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
+                shopThankYouPageUrl: '[{$sSelfLink|cat:"cl=thankyou&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&XDEBUG_SESSION=PHPSTORM',
+                deladrid: '[{$oView->getDeliveryAddressMD5()}]',
+                purchaseUnits: [{$purchaseUnits}],
+                buttonSelector: '#[{$paymentId}]'
+            }
+        };
     </script>
     [{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','out/src/js/paypal-dev.js')|filemtime}]
     <script id="dev_scripts23432" src="[{$oViewConf->getModuleUrl('osc_paypal', 'out/src/js/paypal-dev.js')|cat:"?"|cat:$sFileMTime}]"></script>
-
 
     [{/if}]
 
