@@ -23,14 +23,13 @@
         this.setCreatePayPalOrderResponse = function (response) {
             if (null !== this.currentOrder.paypal) {
                 //some order is currently ...
-                //@TODO check if this part is needded. Its the case that pay button is clicked twice (maybe its impossibble)
+                //@TODO check if this part is needed. Its the case that pay button is clicked twice (maybe its impossible)
                 debugger
             }
 
             this.currentOrder.paypal = response;
         }
 
-        //@TODO this name is not accurate, change it
         this.setShopOrderData = function (response, orderType) {
             if (response.status === 'success') {
                 if (null !== this.currentOrder.shop) {
@@ -58,11 +57,29 @@
         }
 
         this.getPurchaseUnits = function () {
-            return {
-                purchase_units: [
+            let purchaseUnits = {
+                "purchase_units": [
                     {...this.config.purchaseUnits}
-                ]
-            }
+                ],
+                "payment_source": {
+                    "paypal": {
+                        "attributes": {
+                            "vault": {
+                                "store_in_vault": "ON_SUCCESS",
+                                "usage_type": "MERCHANT",
+                                "customer_type": "CONSUMER",
+                                "permit_multiple_payment_tokens": false
+                            }
+                        },
+                    }
+                },
+                application_context: {
+                    return_url: PayPalPayment.getConfigValue('vaultTokenStoreUrl'),
+                    cancel_url: PayPalPayment.getConfigValue('shopOrderCancelStatusUrl')
+                }
+            };
+            //@TODO inline this variable after development
+            return purchaseUnits;
         }
 
         this.getCurrentOrderOxid = function () {
@@ -103,21 +120,52 @@
             return actions.order.create(PayPalPayment.getPurchaseUnits());
         }
 
+        this.vaultPayment = async function (details) {
+            try {
+                const vaultToken = details.payment_source?.paypal?.attributes?.vault?.id;
+
+                if (!vaultToken) {
+                    debugger
+                    console.warn('No vault token found in order details');
+                    return;
+                }
+
+                // Send to your backend for storage
+                const result = await PayPalPayment.backendRequest('vaultTokenStoreUrl', {}, {
+                    'shopOrderId': PayPalPayment.getCurrentOrderOxid(),
+                    'vaultToken': vaultToken,
+                    'payerId': details.payer.payer_id,
+                    'email': details.payer.email_address
+                });
+
+                if (result.status !== 'success') {
+                    console.error('Failed to store vault token:', result.message);
+                }
+            } catch (error) {
+                console.error('Error processing vault token:', error);
+            }
+        }
+
         this.patchOrder = async function (details) {
-            let result = await PayPalPayment.backendRequest('shopOrderPatchingStatusUrl', {}, {
+            return await PayPalPayment.backendRequest('shopOrderPatchingStatusUrl', {}, {
                 'shopOrderId': PayPalPayment.getCurrentOrderOxid(),
                 'payPalOrderId': PayPalPayment.getCurrentPayPalOrderId()
             });
+        }
 
-            if (result.status === 'success') {
-                window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+        this.afterCaptureOrder = async function (details) {
+            const orderDetails = await PayPalPayment.patchOrder(details);
+
+            if (orderDetails.payment_source) {
+                await PayPalPayment.vaultPayment(orderDetails.paypalOrderDetails);
             }
+
+            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
         }
 
         this.captureOrder = async function (data, actions) {
             PayPalPayment.setCreatePayPalOrderResponse(data);
-
-            return actions.order.capture().then(PayPalPayment.patchOrder);
+            return actions.order.capture().then(await PayPalPayment.afterCaptureOrder);
         }
 
         this.cancelOrder = async function (data, actions) {
@@ -158,6 +206,7 @@
     window.addEventListener('PayPalSDKLoadedEvent', (event) => {
 
         let button = paypal.Buttons({
+            displayOnly: ["vaultable"],
             createOrder: PayPalPayment.createOrder,
             onApprove: PayPalPayment.captureOrder,
             onCancel: PayPalPayment.cancelOrder,

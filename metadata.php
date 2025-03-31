@@ -31,6 +31,7 @@ use OxidSolutionCatalysts\PayPal\Controller\OrderController as PayPalFrontEndOrd
 use OxidSolutionCatalysts\PayPal\Controller\PaymentController as PayPalPaymentController;
 use OxidSolutionCatalysts\PayPal\Controller\PayPalVaultingCardController;
 use OxidSolutionCatalysts\PayPal\Controller\ProxyController;
+use OxidSolutionCatalysts\PayPal\Controller\AjaxPaymentController;
 use OxidSolutionCatalysts\PayPal\Controller\VaultingTokenController;
 use OxidSolutionCatalysts\PayPal\Controller\WebhookController;
 use OxidSolutionCatalysts\PayPal\Controller\PayPalVaultingController;
@@ -87,6 +88,7 @@ $aModule = [
         'oscpaypalconfig'       => PayPalConfigController::class,
         'oscpaypalwebhook'      => WebhookController::class,
         'oscpaypalproxy'        => ProxyController::class,
+        'ajaxpay'               => AjaxPaymentController::class,
         'oscpaypalorder'        => PayPalOrderController::class,
         'oscaccountvault'       => PayPalVaultingController::class,
         'oscaccountvaultcard'   => PayPalVaultingCardController::class,
