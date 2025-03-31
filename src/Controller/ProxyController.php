@@ -51,108 +51,6 @@ class ProxyController extends FrontendController
     use JsonTrait;
     use ServiceContainer;
 
-    public function cancelShopOrder(): void
-    {
-        $body = file_get_contents('php://input');
-        $data = [];
-        if (!empty($body)) {
-            $data = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
-        }
-
-        $shopOrderId = $data['shopOrderId'];
-        /** @var PayPalOrder $oOrder */
-        $oOrder = oxNew(Order::class);
-        $oOrder->load($shopOrderId);
-        $oOrder->delete();
-
-        $this->outputJson([
-            'status' => 'success'
-        ]);
-    }
-
-    public function patchShopOrder(): void
-    {
-        $body = file_get_contents('php://input');
-        $data = [];
-        if(!empty($body)){
-            $data = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
-        }
-        $sessionShopOrderId = Registry::getSession()->getVariable('sess_challenge');
-        $shopOrderId = $data['shopOrderId'];
-        $payPalOrderId = $data['payPalOrderId'];
-        $cancelSession = !$sessionShopOrderId || $shopOrderId !== $sessionShopOrderId;
-
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
-
-        /** @var \OxidEsales\EshopCommunity\Application\Model\User $oUser */
-        $oUser = oxNew(User::class);
-        $oUser->loadActiveUser();
-
-        /** @var PayPalOrder $oOrder */
-        $oOrder = oxNew(Order::class);
-        $oOrder->load($shopOrderId);
-
-        if($cancelSession){
-            $this->outputJson([
-                'status' => 'error',
-                'message' => 'Order id mismatch error.', //@TODO improve errors messages
-            ]);
-        }
-        $paymentsId = (string) $oOrder->getFieldData('oxpaymenttype');
-        /** @var PayPalApiModelOrder $payPalOrder */
-        $payPalOrder = $paymentService->fetchOrderFields($payPalOrderId, '');
-        if ($oOrder->isPayPalOrderCompleted($payPalOrder)) {
-            $oOrder->markOrderPaid();
-            $transactionId = (string)$payPalOrder->purchase_units[0]->payments->captures[0]->id;
-            $oOrder->setTransId($transactionId);
-            $paymentService->trackPayPalOrder(
-                $shopOrderId,
-                $payPalOrderId,
-                $paymentsId,
-                PayPalApiOrder::STATUS_COMPLETED,
-                $transactionId
-            );
-        } else {
-            $this->outputJson([
-                'status' => 'error',
-                'message' => 'Order completion error.', //@TODO improve errors messages
-            ]);
-        }
-
-        $this->outputJson([
-            'status' => 'success',
-            'oxid' => $oOrder->oxorder__oxid->value,
-        ]);
-    }
-
-    public function createShopOrder(): void
-    {
-        $body = file_get_contents('php://input');
-        $data = [];
-        if(!empty($body)){
-            $data = json_decode($body, true, 512, JSON_THROW_ON_ERROR);
-        }
-        $_POST['sDeliveryAddressMD5'] = $data['deladrid'];
-
-        $oUser = oxNew(\OxidEsales\Eshop\Application\Model\User::class);
-        $oUser->loadActiveUser();
-        $oBasket = $this->getSession()->getBasket();
-        $oOrder = oxNew(Order::class);
-
-        //finalizing ordering process (validating, storing order into DB, executing payment, setting status ...)
-        $iSuccess = $oOrder->finalizePayPalOrder($oBasket, $oUser, false);
-//here getNextStep is executed, it should give thankYo Page if everything is ok
-
-        // performing special actions after user finishes order (assignment to special user groups)
-        $oUser->onOrderExecute($oBasket, $iSuccess);
-
-        $this->outputJson([
-            'status' => 'success',
-            'shopOrderId' => $oOrder->oxorder__oxid->value,
-            'shopOrderNumber' => $oOrder->oxorder__oxordernr->value,
-        ]);
-    }
-
     public function createOrder()
     {
         if (PayPalSession::isPayPalExpressOrderActive()) {
@@ -712,7 +610,7 @@ class ProxyController extends FrontendController
         $this->outputJson($response);
     }
 
-    private function itemExists(?Basket $basket, ?string $articleOxid, ?int $amountToBasket): bool
+    protected function itemExists(?Basket $basket, ?string $articleOxid, ?int $amountToBasket): bool
     {
         if ($basket === null) {
             return false;
