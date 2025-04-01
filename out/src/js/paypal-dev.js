@@ -6,7 +6,8 @@
 
         this.currentOrderDefaults = {
             shop: null,
-            paypal: null
+            paypal: null,
+            vaultPayment: false
         };
 
         this.currentOrder = null;
@@ -53,7 +54,7 @@
         }
 
         this.getPaymentSource = function () {
-            let paymentSource = {
+            return {
                 "paypal": {
                     "attributes": {
                         "vault": {
@@ -64,22 +65,25 @@
                         }
                     },
                 }
-            }
-
-            return paymentSource;
+            };
         }
 
         this.getPurchaseUnits = function () {
-            return {
+            let purchaseUnits = {
                 purchase_units: [
                     {...this.config.purchaseUnits}
                 ],
-                payment_source: this.getPaymentSource(),
                 application_context: {
                     return_url: PayPalPayment.getConfigValue('updateOxUserWithPayPalCustomerIdUrl'),
                     cancel_url: PayPalPayment.getConfigValue('shopOrderCancelStatusUrl')
                 }
             };
+
+            if(PayPalPayment.currentOrder.vaultPayment){
+                purchaseUnits.payment_source = this.getPaymentSource();
+            }
+
+            return purchaseUnits;
         }
 
         this.getCurrentOrderOxid = function () {
@@ -98,8 +102,19 @@
             PayPalPayment.setShopOrderData(data.detail, 'shop');
         }
 
+        this.vaultingSettingSwitch = function (e) {
+            e.stopPropagation()
+
+            PayPalPayment.currentOrder.vaultPayment = e.currentTarget.checked;
+        }
+
         this.init = function () {
             this.resetCurrentOrder();
+
+            window.onload= function (e){
+                const savePaymentChackbox = document.getElementById('oscPayPalVaultPaymentCheckbox');
+                savePaymentChackbox.onclick = PayPalPayment.vaultingSettingSwitch;
+            };
 
             document.addEventListener('shopOrderCreated', this.onShopOrderCreated);
 
