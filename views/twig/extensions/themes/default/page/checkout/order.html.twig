@@ -79,10 +79,18 @@
             const orderConfirmAgbBottom = document.getElementById('orderConfirmAgbBottom');
 
             submitButton.addEventListener('click', function(event) {
-            event.preventDefault();
-            this.disabled = true;
-            orderConfirmAgbBottom.dispatchEvent(new CustomEvent('submit', {cancelable: true}));
+                event.preventDefault();
+
+                // Create CustomEvent and check if it was canceled
+                const submitEvent = new CustomEvent('submit', {cancelable: true});
+                const eventNotCancelled = orderConfirmAgbBottom.dispatchEvent(submitEvent);
+
+                // Only deactivate the button if the validation was successful (event not canceled)
+                if (eventNotCancelled) {
+                    this.disabled = true;
+                }
             });
+
         {% endcapture %}
         {{ script({ add: oscpaypal_madClickPrevention, dynamic: __oxid_include_dynamic }) }}
 
