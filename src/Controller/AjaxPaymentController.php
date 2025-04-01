@@ -114,12 +114,14 @@ class AjaxPaymentController extends ProxyController
 
     public function createShopOrder(): void
     {
+        /** @var \OxidSolutionCatalysts\PayPal\Service\Payment $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $data = $this->getRequestParameters();
         $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'];
 
         $oUser = oxNew(\OxidEsales\Eshop\Application\Model\User::class);
         $oUser->loadActiveUser();
-        $oBasket = $this->getSession()->getBasket();
+        $oBasket = Registry::getSession()->getBasket();
         $oOrder = oxNew(Order::class);
 
         //finalizing ordering process (validating, storing order into DB, setting status)
@@ -131,7 +133,7 @@ class AjaxPaymentController extends ProxyController
         $this->outputJson([
             'status' => 'success',
             'shopOrderId' => $oOrder->oxorder__oxid->value,
-            'shopOrderNumber' => $oOrder->oxorder__oxordernr->value,
+            'customId' => $paymentService->getCustomIdParameter($oOrder)
         ]);
     }
 

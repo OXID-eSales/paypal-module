@@ -34,7 +34,7 @@
                 }
 
                 this.currentOrder[orderType] = response;
-                this.config.purchaseUnits.custom_id = response.shopOrderNumber;
+                this.config.purchaseUnits.custom_id = response.customId;
             }
         }
 
