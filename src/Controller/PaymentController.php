@@ -8,7 +8,6 @@
 namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\EshopCommunity\modules\osc\paypal\src\Core\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
@@ -222,10 +221,5 @@ class PaymentController extends PaymentController_parent
             (int)Registry::getLang()->getBaseLanguage(),
             false
         );
-    }
-
-    public function getPurchaseUnits()
-    {
-        return \OxidEsales\EshopCommunity\Core\Registry::get(PayPalPurchaseUnitsFactory::class)->getPurchaseUnits();
     }
 }

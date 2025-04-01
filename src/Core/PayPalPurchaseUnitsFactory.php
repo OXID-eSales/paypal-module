@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidEsales\EshopCommunity\modules\osc\paypal\src\Core;
 
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Controller\PaymentController;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalRequestAmountFactory;
 

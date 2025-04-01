@@ -11,11 +11,6 @@
 
         this.currentOrder = null;
 
-        this.reportError = function (message) {
-            console.log(message);
-            debugger
-        }
-
         this.resetCurrentOrder = function (response) {
             this.currentOrder = {...this.currentOrderDefaults};
         }
@@ -33,11 +28,12 @@
         this.setShopOrderData = function (response, orderType) {
             if (response.status === 'success') {
                 if (null !== this.currentOrder.shop) {
-                    //some order is currently
-                    debugger
+                    //Todo Probably the current order will not be finished and it need to be erased from backend
+                    this.resetCurrentOrder();
+                    //TODO maybe console.log here if sandbox mode on ?
                 }
 
-                this.currentOrder[orderType] = response
+                this.currentOrder[orderType] = response;
                 this.config.purchaseUnits.custom_id = response.shopOrderNumber;
             }
         }
@@ -56,38 +52,38 @@
             return this.currentOrder[orderType][name];
         }
 
+        this.getPaymentSource = function () {
+            let paymentSource = {
+                "paypal": {
+                    "attributes": {
+                        "vault": {
+                            "store_in_vault": "ON_SUCCESS",
+                            "usage_type": "MERCHANT",
+                            "customer_type": "CONSUMER",
+                            "permit_multiple_payment_tokens": true
+                        }
+                    },
+                }
+            }
+
+            return paymentSource;
+        }
+
         this.getPurchaseUnits = function () {
-            let purchaseUnits = {
-                "purchase_units": [
+            return {
+                purchase_units: [
                     {...this.config.purchaseUnits}
                 ],
-                "payment_source": {
-                    "paypal": {
-                        "attributes": {
-                            "vault": {
-                                "store_in_vault": "ON_SUCCESS",
-                                "usage_type": "MERCHANT",
-                                "customer_type": "CONSUMER",
-                                "permit_multiple_payment_tokens": false
-                            }
-                        },
-                    }
-                },
+                payment_source: this.getPaymentSource(),
                 application_context: {
-                    return_url: PayPalPayment.getConfigValue('vaultTokenStoreUrl'),
+                    return_url: PayPalPayment.getConfigValue('updateOxUserWithPayPalCustomerIdUrl'),
                     cancel_url: PayPalPayment.getConfigValue('shopOrderCancelStatusUrl')
                 }
             };
-            //@TODO inline this variable after development
-            return purchaseUnits;
         }
 
         this.getCurrentOrderOxid = function () {
             return this.getCurrentOrderData('shopOrderId', 'shop');
-        }
-
-        this.getCurrentOrderNumber = function () {
-            return this.getCurrentOrderData('shopOrderNumber', 'shop');
         }
 
         this.getCurrentPayPalOrderId = function () {
@@ -107,12 +103,12 @@
 
             document.addEventListener('shopOrderCreated', this.onShopOrderCreated);
 
-            return this
+            return this;
         }
 
         this.createOrder = async function (data, actions) {
             let result = await PayPalPayment.backendRequest('shopOrderCreationStatusUrl', {}, {
-                'deladrid': PayPalPayment.getConfigValue('deladrid')
+                'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId')
             });
 
             document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...result}})));
@@ -125,17 +121,12 @@
                 const vaultToken = details.payment_source?.paypal?.attributes?.vault?.id;
 
                 if (!vaultToken) {
-                    debugger
                     console.warn('No vault token found in order details');
                     return;
                 }
 
-                // Send to your backend for storage
-                const result = await PayPalPayment.backendRequest('vaultTokenStoreUrl', {}, {
-                    'shopOrderId': PayPalPayment.getCurrentOrderOxid(),
-                    'vaultToken': vaultToken,
-                    'payerId': details.payer.payer_id,
-                    'email': details.payer.email_address
+                const result = await PayPalPayment.backendRequest('updateOxUserWithPayPalCustomerIdUrl', {}, {
+                    'payPalCustomerId': details.payment_source?.paypal?.attributes?.vault?.customer?.id,
                 });
 
                 if (result.status !== 'success') {
@@ -154,10 +145,10 @@
         }
 
         this.afterCaptureOrder = async function (details) {
-            const orderDetails = await PayPalPayment.patchOrder(details);
+            const {paypalOrderDetails} = await PayPalPayment.patchOrder(details);
 
-            if (orderDetails.payment_source) {
-                await PayPalPayment.vaultPayment(orderDetails.paypalOrderDetails);
+            if (paypalOrderDetails?.payment_source) {
+                await PayPalPayment.vaultPayment(paypalOrderDetails);
             }
 
             window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
@@ -177,6 +168,7 @@
         }
 
         this.handleError = function () {
+            debugger
             window.location = PayPalPayment.getConfigValue('shopOrderErrorUrl');
         }
 

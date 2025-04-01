@@ -11,6 +11,7 @@ use JsonException;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Application\Model\User;
+use OxidEsales\EshopCommunity\Core\Field;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
@@ -23,39 +24,8 @@ class AjaxPaymentController extends ProxyController
     use ServiceContainer;
 
     /**
-     * @throws JsonException
-     */
-    public function saveVaultedPayment(): void
-    {
-        $data = $this->getRequestParameters();
-
-        file_put_contents('/var/www/source/.VAULT.txt', json_decode($data));
-
-        $shopOrderId = $data['shopOrderId'];
-        /** @var PayPalOrder $oOrder */
-        $oOrder = oxNew(Order::class);
-        $oOrder->load($shopOrderId);
-
-        $this->outputJson([
-            'status' => 'success'
-        ]);
-    }
-
-    /**
-     * @throws JsonException
-     */
-    public function fetchPayPalOrderDetails(): void
-    {
-        $data = $this->getRequestParameters();
-        $payPalOrderId = $data['payPalOrderId'];
-
-        $r=1;
-        $this->outputJson([
-            'status' => 'success'
-        ]);
-    }
-
-    /**
+     *
+     * TODO implement error reporting from front to log file
      * @throws JsonException
      */
     public function shopOrderError(): void
@@ -145,7 +115,7 @@ class AjaxPaymentController extends ProxyController
     public function createShopOrder(): void
     {
         $data = $this->getRequestParameters();
-        $_POST['sDeliveryAddressMD5'] = $data['deladrid'];
+        $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'];
 
         $oUser = oxNew(\OxidEsales\Eshop\Application\Model\User::class);
         $oUser->loadActiveUser();
@@ -181,4 +151,19 @@ class AjaxPaymentController extends ProxyController
         return $data;
     }
 
+    /**
+     * @throws JsonException
+     */
+    public function updateOxUserWithPayPalCustomerId(): void
+    {
+        $data = $this->getRequestParameters();
+        $user = $this->getUser();
+        $user->oxuser__oscpaypalcustomerid = new Field($data['payPalCustomerId']);
+
+        $user->save();
+
+        $this->outputJson([
+            'status' => 'success'
+        ]);
+    }
 }

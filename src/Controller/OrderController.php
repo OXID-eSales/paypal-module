@@ -12,6 +12,7 @@ use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\modules\osc\paypal\src\Core\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
@@ -657,5 +658,10 @@ class OrderController extends OrderController_parent
         }
 
         return parent::_getNextStep($success);
+    }
+
+    public function getPurchaseUnits()
+    {
+        return \OxidEsales\EshopCommunity\Core\Registry::get(PayPalPurchaseUnitsFactory::class)->getPurchaseUnits();
     }
 }
