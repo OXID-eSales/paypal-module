@@ -2,14 +2,21 @@
 [{if "oscpaypal" == $payment->getId()}]
     <input type="hidden" name="vaultPayment" id="oscPayPalVaultPayment" value="">
     [{capture name="oscpaypal_madClickPrevention"}]
-    const submitButton = document.querySelector('#orderConfirmAgbBottom .submitButton');
-    const orderConfirmAgbBottom = document.getElementById('orderConfirmAgbBottom');
+        const submitButton = document.querySelector('#orderConfirmAgbBottom .submitButton');
+        const orderConfirmAgbBottom = document.getElementById('orderConfirmAgbBottom');
 
-    submitButton.addEventListener('click', function() {
-    event.preventDefault();
-    this.disabled = true;
-    orderConfirmAgbBottom.submit();
-    });
+        submitButton.addEventListener('click', function(event) {
+            event.preventDefault();
+
+            // Create CustomEvent and check if it was canceled
+            const submitEvent = new CustomEvent('submit', {cancelable: true});
+            const eventNotCancelled = orderConfirmAgbBottom.dispatchEvent(submitEvent);
+
+            // Only deactivate the button if the validation was successful (event not canceled)
+            if (eventNotCancelled) {
+                this.disabled = true;
+            }
+        });
     [{/capture}]
     [{oxscript add=$smarty.capture.oscpaypal_madClickPrevention}]
 [{/if}]
