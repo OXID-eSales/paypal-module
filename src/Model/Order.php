@@ -634,17 +634,6 @@ class Order extends Order_parent
         //saving all order data to DB
         $this->save();
 
-        // The Order is created in frontend and paid on frontend
-
-        //// executing payment (on failure deletes order and returns error code)
-        //// in case when recalculating order, payment execution is skipped
-        //if (!$blRecalculatingOrder) {
-        //    $blRet = $this->_executePayment($oBasket, $oUserPayment);
-        //    if ($blRet !== true) {
-        //        return $blRet;
-        //    }
-        //}
-
         if (!$this->oxorder__oxordernr->value) {
             $this->_setNumber();
         } else {
