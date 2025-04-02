@@ -232,6 +232,98 @@
             </div>
 
             <div class="card">
+                <div class="card-header" id="heading5">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse_button_style" aria-expanded="false" aria-controls="collapse_button_style">
+                        [{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_TITLE"}]
+                    </h4>
+                </div>
+
+                <div id="collapse_button_style" class="collapse" aria-labelledby="heading5" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="style-button-layout">[{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_LAYOUT"}]</label>
+                            <div class="controls">
+                                <select name="conf[oscPayPalButtonStyleLayout]" id="style-button-layout" class="form-control">
+                                    <option value="horizontal" [{if $config->getPayPalButtonStyleLayout() == 'horizontal'}]selected[{/if}]>
+                                        horizontal
+                                    </option>
+                                    <option value="vertical" [{if $config->getPayPalButtonStyleLayout() == 'vertical'}]selected[{/if}]>
+                                        vertical
+                                    </option>
+                                </select>
+                            </div>
+                            <span class="help-block">[{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_LAYOUT_HELP"}]</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="style-button-color">[{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_COLOR"}]</label>
+                            <div class="controls">
+                                <select name="conf[oscPayPalButtonStyleColor]" id="style-button-color" class="form-control">
+                                    <option value="gold" [{if $config->getPayPalButtonStyleColor() == 'gold'}]selected[{/if}]>
+                                        gold
+                                    </option>
+                                    <option value="blue" [{if $config->getPayPalButtonStyleColor() == 'blue'}]selected[{/if}]>
+                                        blue
+                                    </option>
+                                    <option value="silver" [{if $config->getPayPalButtonStyleColor() == 'silver'}]selected[{/if}]>
+                                        silver
+                                    </option>
+                                    <option value="white" [{if $config->getPayPalButtonStyleColor() == 'white'}]selected[{/if}]>
+                                        white
+                                    </option>
+                                    <option value="black" [{if $config->getPayPalButtonStyleColor() == 'black'}]selected[{/if}]>
+                                        black
+                                    </option>
+                                </select>
+                            </div>
+                            <span class="help-block">[{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_COLOR_HELP"}]</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="style-button-shape">[{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_SHAPE"}]</label>
+                            <div class="controls">
+                                <select name="conf[oscPayPalButtonStyleShape]" id="style-button-shape" class="form-control">
+                                    <option value="rect" [{if $config->getPayPalButtonStyleShape() == 'rect'}]selected[{/if}]>
+                                        rect
+                                    </option>
+                                    <option value="sharp" [{if $config->getPayPalButtonStyleShape() == 'sharp'}]selected[{/if}]>
+                                        sharp
+                                    </option>
+                                    <option value="pill" [{if $config->getPayPalButtonStyleShape() == 'pill'}]selected[{/if}]>
+                                        pill
+                                    </option>
+                                </select>
+                            </div>
+                            <span class="help-block">[{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_SHAPE_HELP"}]</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="style-button-label">[{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_LABEL"}]</label>
+                            <div class="controls">
+                                <select name="conf[oscPayPalButtonStyleLabel]" id="style-button-label" class="form-control">
+                                    <option value="paypal" [{if $config->getPayPalButtonStyleLabel() == 'paypal'}]selected[{/if}]>
+                                        paypal
+                                    </option>
+                                    <option value="checkout" [{if $config->getPayPalButtonStyleLabel() == 'checkout'}]selected[{/if}]>
+                                        checkout
+                                    </option>
+                                    <option value="buynow" [{if $config->getPayPalButtonStyleLabel() == 'buynow'}]selected[{/if}]>
+                                        buynow
+                                    </option>
+                                    <option value="pay" [{if $config->getPayPalButtonStyleLabel() == 'pay'}]selected[{/if}]>
+                                        pay
+                                    </option>
+                                    <option value="installment" [{if $config->getPayPalButtonStyleLabel() == 'installment'}]selected[{/if}]>
+                                        installment
+                                    </option>
+                                </select>
+
+                            </div>
+                            <span class="help-block">[{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_LABEL_HELP"}]</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="card">
                 <div class="card-header" id="heading3">
                     <h4 class="collapsed" data-toggle="collapse" data-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
                         [{oxmultilang ident="OSC_PAYPAL_EXPRESS_LOGIN_TITLE"}]
