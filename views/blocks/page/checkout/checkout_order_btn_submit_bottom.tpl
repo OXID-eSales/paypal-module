@@ -4,6 +4,7 @@
 [{assign var="purchaseUnits" value=$oView->getPurchaseUnits()}]
 [{assign var="oPPconfig" value=$oViewConf->getPayPalCheckoutConfig()}]
 [{assign var="isSandBox" value=$oPPconfig->isSandbox()}]
+[{assign var="captureStrategy" value=$oPPconfig->getPayPalStandardCaptureStrategy()}]
 
 [{if "oscpaypal" == $paymentId}]
     <div id="[{$paymentId}]" class="paypal-button-container [{$buttonClass}]"></div>
@@ -19,7 +20,8 @@
                 shopThankYouPageUrl: '[{$sSelfLink|cat:"cl=thankyou&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
                 deliveryAddressId: '[{$oView->getDeliveryAddressMD5()}]',
                 purchaseUnits: [{$purchaseUnits}],
-                buttonSelector: '#[{$paymentId}]'
+                buttonSelector: '#[{$paymentId}]',
+                captureStrategy: '[{if $captureStrategy == 'directly'}]CAPTURE[{else}]AUTHORIZE[{/if}]'
             }
         };
     </script>
