@@ -17,6 +17,7 @@
         }
 
         this.setCreatePayPalOrderResponse = function (response) {
+            debugger
             if (null !== this.currentOrder.paypal) {
                 //some order is currently ...
                 //@TODO check if this part is needed. Its the case that pay button is clicked twice (maybe its impossible)
@@ -70,6 +71,7 @@
 
         this.getPurchaseUnits = function () {
             let purchaseUnits = {
+                intent: PayPalPayment.getConfigValue('captureStrategy'),
                 purchase_units: [
                     {...this.config.purchaseUnits}
                 ],
@@ -187,6 +189,34 @@
             window.location = PayPalPayment.getConfigValue('shopOrderErrorUrl');
         }
 
+        this.handlePaymentAuthorization = function (details) {
+            debugger
+        }
+
+        this.renderButton = function () {
+            let button = paypal.Buttons(PayPalPayment.getPayButtonSettings());
+
+            if (button.isEligible()) {
+                button.render(PayPalPayment.getConfigValue('buttonSelector'));
+            }
+        }
+
+        this.getPayButtonSettings = function () {
+            const buttonSettings = {
+                displayOnly: ["vaultable"],
+                createOrder: PayPalPayment.createOrder,
+                onApprove: PayPalPayment.handlePaymentAuthorization,
+                onCancel: PayPalPayment.cancelOrder,
+                onError: PayPalPayment.handleError
+            };
+
+            if (PayPalPayment.config.captureStrategy === 'directly'){
+                buttonSettings.onApprove = PayPalPayment.captureOrder;
+            }
+
+            return buttonSettings;
+        }
+
         this.backendRequest = async function (url, headers, body) {
             let response = await fetch(PayPalPayment.getConfigValue(url), {
                 method: 'post',
@@ -210,19 +240,5 @@
 
     let PayPalPayment = new PayPalPaymentController(new PayPalPaymentControllerConfigurator());
 
-    window.addEventListener('PayPalSDKLoadedEvent', (event) => {
-
-        let button = paypal.Buttons({
-            displayOnly: ["vaultable"],
-            createOrder: PayPalPayment.createOrder,
-            onApprove: PayPalPayment.captureOrder,
-            onCancel: PayPalPayment.cancelOrder,
-            onError: PayPalPayment.handleError
-        })
-
-        if (button.isEligible()) {
-            button.render(PayPalPayment.getConfigValue('buttonSelector'));
-        }
-    });
-
+    window.addEventListener('PayPalSDKLoadedEvent', PayPalPayment.renderButton);
 })()

@@ -206,11 +206,16 @@ class ViewConfig extends ViewConfig_parent
         $localeCode = $this->getServiceFromContainer(LanguageLocaleMapper::class)
             ->mapLanguageToLocale($lang->getLanguageAbbr());
 
+        /** @var ModuleSettings $moduleSettings */
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
 
         $params['client-id'] = $this->getPayPalClientId();
         $params['integration-date'] = Constants::PAYPAL_INTEGRATION_DATE;
-        $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
+        $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_AUTHORIZE);
+        if ('directly' === $captureStrategy) {
+            $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
+        }
         $params['commit'] = 'false';
 
         if ($currency = $config->getActShopCurrencyObject()) {
