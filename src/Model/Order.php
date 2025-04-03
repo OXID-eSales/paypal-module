@@ -564,6 +564,11 @@ class Order extends Order_parent
         }
     }
 
+    public function setOrderStatus($sStatus): void
+    {
+        $this->_setOrderStatus($sStatus);
+    }
+
     public function isOrderFinished(): bool
     {
         return 'OK' === $this->getFieldData('oxtransstatus');
