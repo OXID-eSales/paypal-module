@@ -1,3 +1,4 @@
+[{assign var="config" value=$oViewConf->getPayPalCheckoutConfig()}]
 [{capture append="oxidBlock_content"}]
     [{assign var="template_title" value="OSC_PAYPAL_VAULTING_MENU"|oxmultilangassign}]
 
@@ -16,6 +17,12 @@
     <script>
         window.onload = function () {
             paypal.Buttons({
+                   style: {
+                       layout: '[{$config->getPayPalButtonStyleLayout()}]',
+                       color:  '[{$config->getPayPalButtonStyleColor()}]',
+                       shape:  '[{$config->getPayPalButtonStyleShape()}]',
+                       label:  '[{$config->getPayPalButtonStyleLabel()}]'
+                   },
                    createVaultSetupToken: async () => {
                        const result = await fetch(
                            "[{oxgetseourl ident=$oViewConf->getGenerateSetupTokenLink()}]",
