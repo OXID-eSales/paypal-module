@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Application\Model\User;
 use OxidEsales\EshopCommunity\Core\Field;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -69,6 +70,7 @@ class AjaxPaymentController extends ProxyController
         $cancelSession = !$sessionShopOrderId || $shopOrderId !== $sessionShopOrderId;
 
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
 
         /** @var \OxidEsales\EshopCommunity\Application\Model\User $oUser */
         $oUser = oxNew(User::class);
@@ -87,18 +89,36 @@ class AjaxPaymentController extends ProxyController
         $paymentsId = (string) $oOrder->getFieldData('oxpaymenttype');
         /** @var PayPalApiOrder $payPalOrder */
         $payPalOrder = $paymentService->fetchOrderFields($payPalOrderId, '');
-        if ($oOrder->isPayPalOrderCompleted($payPalOrder)) {
-            $oOrder->markOrderPaid();
-            $transactionId = (string)$payPalOrder->purchase_units[0]->payments->captures[0]->id;
-            $oOrder->setTransId($transactionId);
-            $paymentService->trackPayPalOrder(
-                $shopOrderId,
-                $payPalOrderId,
-                $paymentsId,
-                PayPalApiOrder::STATUS_COMPLETED,
-                $transactionId
-            );
-        } else {
+        $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
+
+        try {
+            if ($captureStrategy === 'directly'){
+                if ($oOrder->isPayPalOrderCompleted($payPalOrder)) {
+                    $oOrder->markOrderPaid();
+                    $transactionId = (string)$payPalOrder->purchase_units[0]->payments->captures[0]->id;
+                    $oOrder->setTransId($transactionId);
+                    $paymentService->trackPayPalOrder(
+                        $shopOrderId,
+                        $payPalOrderId,
+                        $paymentsId,
+                        PayPalApiOrder::STATUS_COMPLETED,
+                        $transactionId
+                    );
+                }
+            }
+
+            //capture after shipment or manual
+            if ($captureStrategy !== 'directly'){
+                $oOrder->setOrderStatus('NOT_FINISHED');
+                //prepare capture tracking
+                $paymentService->trackPayPalOrder(
+                    $oOrder->getId(),
+                    $payPalOrderId,
+                    $paymentsId,
+                    PayPalApiOrder::STATUS_APPROVED
+                );
+            }
+        } catch (\Exception $e){
             $this->outputJson([
                 'status' => 'error',
                 'message' => 'Order completion error.', //@TODO improve errors messages

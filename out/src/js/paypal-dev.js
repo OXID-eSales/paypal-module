@@ -17,7 +17,6 @@
         }
 
         this.setCreatePayPalOrderResponse = function (response) {
-            debugger
             if (null !== this.currentOrder.paypal) {
                 //some order is currently ...
                 //@TODO check if this part is needed. Its the case that pay button is clicked twice (maybe its impossible)
@@ -171,6 +170,17 @@
             window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
         }
 
+        this.handlePaymentAuthorization = async function (details) {
+            PayPalPayment.setCreatePayPalOrderResponse(details);
+            const {paypalOrderDetails} = await PayPalPayment.patchOrder(details);
+
+            if (paypalOrderDetails?.payment_source) {
+                await PayPalPayment.vaultPayment(paypalOrderDetails);
+            }
+
+            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+        }
+
         this.captureOrder = async function (data, actions) {
             PayPalPayment.setCreatePayPalOrderResponse(data);
             return actions.order.capture().then(await PayPalPayment.afterCaptureOrder);
@@ -187,10 +197,6 @@
         this.handleError = function () {
             debugger
             window.location = PayPalPayment.getConfigValue('shopOrderErrorUrl');
-        }
-
-        this.handlePaymentAuthorization = function (details) {
-            debugger
         }
 
         this.renderButton = function () {
@@ -210,15 +216,15 @@
                 onError: PayPalPayment.handleError
             };
 
-            if (PayPalPayment.config.captureStrategy === 'directly'){
+            if (PayPalPayment.config.captureStrategy === 'CAPTURE'){
                 buttonSettings.onApprove = PayPalPayment.captureOrder;
             }
 
             return buttonSettings;
         }
 
-        this.backendRequest = async function (url, headers, body) {
-            let response = await fetch(PayPalPayment.getConfigValue(url), {
+        this.backendRequest = async function (urlSlug, headers, body) {
+            let response = await fetch(PayPalPayment.getConfigValue(urlSlug), {
                 method: 'post',
                 headers: Object.assign({
                     'content-type': 'application/json',
