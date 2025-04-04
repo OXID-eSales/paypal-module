@@ -216,7 +216,7 @@
                 onError: PayPalPayment.handleError
             };
 
-            if (PayPalPayment.config.captureStrategy === 'CAPTURE') {
+            if (PayPalPayment.config.captureStrategy === 'CAPTURE'){
                 buttonSettings.onApprove = PayPalPayment.captureOrder;
             }
 
