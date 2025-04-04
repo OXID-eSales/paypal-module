@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.6.0] - 2025-??-??
+
+### NEW
+
+- PayPal-Buttons are configurable
 
 ## [2.5.3] - 2025-04-04
 
