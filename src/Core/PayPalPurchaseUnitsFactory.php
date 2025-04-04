@@ -22,7 +22,6 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalRequestAmountFactory;
  */
 class PayPalPurchaseUnitsFactory
 {
-
     /**
      * @var object|\OxidEsales\Eshop\Application\Model\Basket|null
      */
@@ -32,7 +31,7 @@ class PayPalPurchaseUnitsFactory
     {
         $this->basket = Registry::getSession()->getBasket();
 
-        if (null === $this->basket){
+        if (null === $this->basket) {
             return '';
         }
 
@@ -52,7 +51,7 @@ class PayPalPurchaseUnitsFactory
             ],
         ];
 
-        if($withItems){
+        if ($withItems) {
             $items = [];
 
             foreach ($purchaseUnitsPatch->value as $orderItem) {
