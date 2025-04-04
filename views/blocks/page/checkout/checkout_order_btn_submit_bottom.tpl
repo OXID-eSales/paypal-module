@@ -11,12 +11,13 @@
     <script>
         const PayPalPaymentControllerConfigurator = function () {
             return {
+                shopOrderErrorUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=logError&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
                 shopOrderCreationStatusUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
                 shopOrderPatchingStatusUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
-                shopOrderCancelStatusUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=cancelShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
+                shopOrderDeleteUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=deleteShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
                 payPalOrderDetailsUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=fetchPayPalOrderDetails&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
                 updateOxUserWithPayPalCustomerIdUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=updateOxUserWithPayPalCustomerId&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
-                shopOrderErrorUrl: '[{$sSelfLink|cat:"cl=payment&payerror=2&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
+                errorLogUrl: '[{$sSelfLink|cat:"cl=payment&payerror=2&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
                 shopThankYouPageUrl: '[{$sSelfLink|cat:"cl=thankyou&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
                 deliveryAddressId: '[{$oView->getDeliveryAddressMD5()}]',
                 purchaseUnits: [{$purchaseUnits}],
