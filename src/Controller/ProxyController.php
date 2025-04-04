@@ -93,7 +93,7 @@ class ProxyController extends FrontendController
             false
         );
 
-        if ($response->id) {
+        if ($response && $response->id) {
             PayPalSession::storePayPalOrderId($response->id);
         }
 
@@ -154,6 +154,10 @@ class ProxyController extends FrontendController
             false
         );
 
+        if (!$response) {
+            return;
+        }
+
         if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);
         }
@@ -187,7 +191,7 @@ class ProxyController extends FrontendController
             /** @var array $userInvoiceAddress */
             $userInvoiceAddress = $user->getInvoiceAddress();
             // add PayPal-Address as Delivery-Address
-            if (($response !== null) && !empty($response->purchase_units[0]->shipping)) {
+            if (!empty($response->purchase_units[0]->shipping)) {
                 $response->purchase_units[0]->shipping->address = $shippingAddress;
                 $response->purchase_units[0]->shipping->name->full_name = $data['shippingAddress']['name'] ?? '';
                 $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
@@ -334,7 +338,7 @@ class ProxyController extends FrontendController
         $basket = Registry::getSession()->getBasket();
         $utilsView = Registry::getUtilsView();
         $aSel = Registry::getRequest()->getRequestParameter('sel');
-        $qty = (double)Registry::getRequest()->getRequestParameter('amountToBasket') ?? 0;
+        $qty = (double)(Registry::getRequest()->getRequestParameter('amountToBasket') ?? 0);
         if ($aid = (string)Registry::getRequest()->getRequestEscapedParameter('aid')) {
             try {
                 if (!$this->itemExists($basket, $aid, $qty)) {
@@ -532,6 +536,11 @@ class ProxyController extends FrontendController
             null,
             false
         );
+
+        if (!$response) {
+            return;
+        }
+
         if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);
         }
