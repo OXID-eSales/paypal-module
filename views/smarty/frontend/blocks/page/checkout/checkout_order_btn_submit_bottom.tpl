@@ -15,6 +15,7 @@
             // Only deactivate the button if the validation was successful (event not canceled)
             if (eventNotCancelled) {
                 this.disabled = true;
+                orderConfirmAgbBottom.submit();
             }
         });
     [{/capture}]
@@ -35,7 +36,3 @@
 [{else}]
     [{$smarty.block.parent}]
 [{/if}]
-
-
-
-
