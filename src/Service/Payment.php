@@ -114,8 +114,7 @@ class Payment
         string $returnUrl = null,
         string $cancelUrl = null,
         bool $setProvidedAddress = true
-    ) {
-        //TODO return value
+    ): ?Order {
         $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
 
         /** @var ApiOrderService $orderService */
@@ -134,7 +133,7 @@ class Payment
             $setProvidedAddress
         );
 
-        $response = [];
+        $response = null;
 
         try {
             $response = $orderService->createOrder(
@@ -173,8 +172,13 @@ class Payment
             false
         );
 
-        $paypalOrderId = $response->id ?: '';
-        $status = $response->status ?: '';
+        $paypalOrderId = '';
+        $status = '';
+
+        if ($response) {
+            $paypalOrderId = $response->id ?: '';
+            $status = $response->status ?: '';
+        }
 
         // patch the order only if paypalOrderId exists
         if ($paypalOrderId) {
@@ -582,7 +586,10 @@ class Payment
             false
         );
 
-        $orderId = $response->id ?: '';
+        $orderId = '';
+        if ($response) {
+            $orderId = $response->id ?: '';
+        }
 
         if (!$orderId) {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
@@ -631,7 +638,11 @@ class Payment
             false
         );
 
-        return $response->id ?: '';
+        $result = '';
+        if ($response) {
+            $result = $response->id ?: '';
+        }
+        return $result;
     }
 
     public function doExecutePuiPayment(
