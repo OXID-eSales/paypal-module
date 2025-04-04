@@ -12,30 +12,24 @@
 
         this.currentOrder = null;
 
-        this.resetCurrentOrder = function (response) {
+        this.resetCurrentOrder = function () {
             this.currentOrder = {...this.currentOrderDefaults};
         }
 
         this.setCreatePayPalOrderResponse = function (response) {
-            if (null !== this.currentOrder.paypal) {
-                //some order is currently ...
-                //@TODO check if this part is needed. Its the case that pay button is clicked twice (maybe its impossible)
-                debugger
-            }
-
             this.currentOrder.paypal = response;
         }
 
-        this.setShopOrderData = function (response, orderType) {
+        this.setShopOrderData = async function (response, orderType) {
             if (response.status === 'success') {
                 if (null !== this.currentOrder.shop) {
-                    //Todo Probably the current order will not be finished and it need to be erased from backend
-                    this.resetCurrentOrder();
-                    //TODO maybe console.log here if sandbox mode on ?
+                    await PayPalPayment.deleteOrder().then(function (data){
+                        PayPalPayment.resetCurrentOrder();
+                    });
                 }
 
-                this.currentOrder[orderType] = response;
-                this.config.purchaseUnits.custom_id = response.customId;
+                PayPalPayment.currentOrder[orderType] = response;
+                PayPalPayment.config.purchaseUnits.custom_id = response.customId;
             }
         }
 
@@ -104,8 +98,6 @@
         }
 
         this.vaultingSettingSwitch = function (e) {
-            e.stopPropagation()
-
             PayPalPayment.currentOrder.vaultPayment = e.currentTarget.checked;
         }
 
@@ -186,16 +178,26 @@
             return actions.order.capture().then(await PayPalPayment.afterCaptureOrder);
         }
 
-        this.cancelOrder = async function (data, actions) {
-            await PayPalPayment.backendRequest('shopOrderCancelStatusUrl', {}, {
+        this.deleteOrder = async function () {
+            await PayPalPayment.backendRequest('shopOrderDeleteUrl', {}, {
                 'shopOrderId': PayPalPayment.getCurrentOrderOxid()
             });
 
             PayPalPayment.resetCurrentOrder();
         }
 
-        this.handleError = function () {
-            debugger
+        this.handleError = async function (data) {
+            await PayPalPayment.backendRequest('shopOrderErrorUrl', {}, {
+                'shopOrderId': PayPalPayment.getCurrentOrderOxid()
+            });
+            await PayPalPayment.deleteOrder().then(function (response){
+                debugger
+                if (response.status === 'success') {
+                    PayPalPayment.resetCurrentOrder();
+                    debugger
+                }
+            });
+
             window.location = PayPalPayment.getConfigValue('shopOrderErrorUrl');
         }
 
@@ -212,7 +214,7 @@
                 displayOnly: ["vaultable"],
                 createOrder: PayPalPayment.createOrder,
                 onApprove: PayPalPayment.handlePaymentAuthorization,
-                onCancel: PayPalPayment.cancelOrder,
+                onCancel: PayPalPayment.deleteOrder,
                 onError: PayPalPayment.handleError
             };
 
