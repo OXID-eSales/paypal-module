@@ -475,7 +475,7 @@ class OrderController extends OrderController_parent
 
         $this->outputJson($result);
     }
-    public function finalizeApplePay(): string
+    public function finalizeapplepay(): string
     {
         $sessionOrderId = Registry::getSession()->getVariable('Sessionapplepay');
         $sessionGooglePayOrderId = Registry::getSession()->getVariable('applepayOrderId'); // paypal-checkout-session
