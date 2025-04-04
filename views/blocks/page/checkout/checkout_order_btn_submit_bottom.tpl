@@ -26,9 +26,6 @@
             }
         };
     </script>
-    [{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','out/src/js/paypal-dev.js')|filemtime}]
-    <script id="dev_scripts23432" src="[{$oViewConf->getModuleUrl('osc_paypal', 'out/src/js/paypal-dev.js')|cat:"?"|cat:$sFileMTime}]"></script>
-
     [{/if}]
 
 [{if "oscpaypal_pui" == $paymentId}]
