@@ -318,6 +318,26 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalCheckoutBannerColorScheme();
     }
 
+    public function getPayPalButtonStyleLayout(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalButtonStyleLayout();
+    }
+
+    public function getPayPalButtonStyleColor(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalButtonStyleColor();
+    }
+
+    public function getPayPalButtonStyleShape(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalButtonStyleShape();
+    }
+
+    public function getPayPalButtonStyleLabel(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalButtonStyleLabel();
+    }
+
     public function getPayPalStandardCaptureStrategy(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalStandardCaptureStrategy();

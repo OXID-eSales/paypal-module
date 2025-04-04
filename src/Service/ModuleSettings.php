@@ -341,6 +341,26 @@ class ModuleSettings
         return (string)$this->getSettingValue('oscPayPalBannersColorScheme');
     }
 
+    public function getPayPalButtonStyleLayout(): string
+    {
+        return (string)$this->getSettingValue('oscPayPalButtonStyleLayout');
+    }
+
+    public function getPayPalButtonStyleColor(): string
+    {
+        return (string)$this->getSettingValue('oscPayPalButtonStyleColor');
+    }
+
+    public function getPayPalButtonStyleShape(): string
+    {
+        return (string)$this->getSettingValue('oscPayPalButtonStyleShape');
+    }
+
+    public function getPayPalButtonStyleLabel(): string
+    {
+        return (string)$this->getSettingValue('oscPayPalButtonStyleLabel');
+    }
+
     public function loginWithPayPalEMail(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalLoginWithPayPalEMail');
