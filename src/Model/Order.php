@@ -221,7 +221,9 @@ class Order extends Order_parent
         //ensure order number
         $this->setOrderNumber();
 
-        $this->sendPayPalOrderByEmail($user, $basket);
+        if (!$isPaypalGooglePay && !$isPaypalApplePay) {
+            $this->sendPayPalOrderByEmail($user, $basket);
+        }
     }
 
     /** @inheritDoc */

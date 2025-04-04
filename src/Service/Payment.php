@@ -113,7 +113,7 @@ class Payment
         string $returnUrl = null,
         string $cancelUrl = null,
         bool $setProvidedAddress = true
-    ): Order {
+    ): ?Order {
         //TODO return value
         $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
 
@@ -133,7 +133,7 @@ class Payment
             $setProvidedAddress
         );
 
-        $response = [];
+        $response = null;
 
         try {
             $response = $orderService->createOrder(
@@ -172,8 +172,13 @@ class Payment
             false
         );
 
-        $paypalOrderId = $response->id ?: '';
-        $status = $response->status ?: '';
+        $paypalOrderId = '';
+        $status = '';
+
+        if ($response) {
+            $paypalOrderId = $response->id ?: '';
+            $status = $response->status ?: '';
+        }
 
         // patch the order only if paypalOrderId exists
         if ($paypalOrderId) {
@@ -583,7 +588,10 @@ class Payment
             false
         );
 
-        $orderId = $response->id ?: '';
+        $orderId = '';
+        if ($response) {
+            $orderId = $response->id ?: '';
+        }
 
         if (!$orderId) {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
@@ -632,7 +640,11 @@ class Payment
             false
         );
 
-        return $response->id ?: '';
+        $result = '';
+        if ($response) {
+            $result = $response->id ?: '';
+        }
+        return $result;
     }
 
     public function doExecutePuiPayment(
@@ -642,6 +654,7 @@ class Payment
     ): bool {
         $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
 
+        $payPalOrderId = '';
         try {
             $result = $this->doCreatePayPalOrder(
                 $basket,
@@ -652,7 +665,9 @@ class Payment
                 $payPalClientMetadataId,
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
-            $payPalOrderId = $result->id;
+            if ($result) {
+                $payPalOrderId = $result->id;
+            }
         } catch (Exception $exception) {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_GENERIC);
             $this->logger->log('error', 'Error on pui order creation call.', [$exception]);
