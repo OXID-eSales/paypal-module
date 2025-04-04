@@ -48,7 +48,8 @@ class AjaxPaymentController extends ProxyController
 
         $this->logger->log('debug', sprintf(
             'Order with id %s error: %s',
-            $shopOrderId, $errorMessage
+            $shopOrderId,
+            $errorMessage
         ));
 
         $this->outputJson([
@@ -59,12 +60,11 @@ class AjaxPaymentController extends ProxyController
     public function permissionsCheck(
         ?string $shopOrderId = null,
         ?string $message = 'Operation not permitted'
-    ): void
-    {
+    ): void {
         $user = oxNew(User::class);
         $user->loadActiveUser();
 
-        if (null == $shopOrderId){
+        if (null == $shopOrderId) {
             $this->logger->log('error', sprintf($message));
             $this->outputJson([
                 'status' => 'error'
@@ -77,7 +77,7 @@ class AjaxPaymentController extends ProxyController
         $order->load($shopOrderId);
 
 
-        if ($order->oxorder__oxuserid->value !== $user->getId()){
+        if ($order->oxorder__oxuserid->value !== $user->getId()) {
             $this->logger->log('error', sprintf($message));
             $this->outputJson([
                 'status' => 'error'
@@ -95,11 +95,13 @@ class AjaxPaymentController extends ProxyController
 
         $shopOrderId = $data['shopOrderId'];
         if (empty($shopOrderId)) {
-            $this->logger->log('error', __CLASS__ . '::'. __FUNCTION__.'(): Shop order id is empty');
+            $this->logger->log('error', __CLASS__ . '::' . __FUNCTION__ . '(): Shop order id is empty');
         }
 
         $this->permissionsCheck(
-            $shopOrderId, 'Current user do not have permission to delete referenced order');
+            $shopOrderId,
+            'Current user do not have permission to delete referenced order'
+        );
 
         /** @var PayPalOrder $order */
         $order = oxNew(Order::class);
@@ -108,7 +110,8 @@ class AjaxPaymentController extends ProxyController
         $orderNumberPart = !$order->hasOrderNumber() ? 'without Order number and' : '';
         $this->logger->log('debug', sprintf(
             'Temporary order %s with id %s was deleted',
-            $shopOrderId, $orderNumberPart
+            $shopOrderId,
+            $orderNumberPart
         ));
 
         $order->delete();
@@ -135,7 +138,7 @@ class AjaxPaymentController extends ProxyController
         $oOrder = oxNew(Order::class);
         $oOrder->load($shopOrderId);
 
-        if($cancelSession){
+        if ($cancelSession) {
             $this->outputJson([
                 'status' => 'error',
                 'message' => 'Order id mismatch error.', //@TODO improve errors messages
@@ -147,7 +150,7 @@ class AjaxPaymentController extends ProxyController
         $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
 
         try {
-            if ($captureStrategy === 'directly'){
+            if ($captureStrategy === 'directly') {
                 if ($oOrder->isPayPalOrderCompleted($payPalOrder)) {
                     $oOrder->markOrderPaid();
                     $transactionId = (string)$payPalOrder->purchase_units[0]->payments->captures[0]->id;
@@ -163,7 +166,7 @@ class AjaxPaymentController extends ProxyController
             }
 
             //capture after shipment or manual
-            if ($captureStrategy !== 'directly'){
+            if ($captureStrategy !== 'directly') {
                 $oOrder->setOrderStatus('NOT_FINISHED');
                 //prepare capture tracking
                 $paymentService->trackPayPalOrder(
@@ -173,7 +176,7 @@ class AjaxPaymentController extends ProxyController
                     PayPalApiOrder::STATUS_APPROVED
                 );
             }
-        } catch (\Exception $e){
+        } catch (\Exception $e) {
             $this->outputJson([
                 'status' => 'error',
                 'message' => 'Order completion error.', //@TODO improve errors messages
@@ -195,7 +198,7 @@ class AjaxPaymentController extends ProxyController
         $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'];
 
         $user = oxNew(User::class);
-        if (! $user->loadActiveUser()){
+        if (! $user->loadActiveUser()) {
             $this->permissionsCheck();
         }
 
@@ -239,7 +242,7 @@ class AjaxPaymentController extends ProxyController
         $data = $this->getRequestParameters();
         $user = $this->getUser();
 
-        if (! $user->loadActiveUser()){
+        if (! $user->loadActiveUser()) {
             $this->permissionsCheck();
         }
 

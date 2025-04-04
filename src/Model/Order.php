@@ -600,7 +600,10 @@ class Order extends Order_parent
         // check if this order is already stored
         $orderId = \OxidEsales\Eshop\Core\Registry::getSession()->getVariable('sess_challenge');
         if ($this->_checkOrderExist($orderId)) {
-            \OxidEsales\Eshop\Core\Registry::getLogger()->debug('finalizeOrder: Order already exists: ' . $orderId, [$oBasket, $oUser]);
+            \OxidEsales\Eshop\Core\Registry::getLogger()->debug(
+                'finalizeOrder: Order already exists: ' . $orderId,
+                [$oBasket, $oUser]
+            );
             // we might use this later, this means that somebody clicked like mad on order button
             return self::ORDER_STATE_ORDEREXISTS;
         }
@@ -640,7 +643,8 @@ class Order extends Order_parent
         if (!$this->oxorder__oxordernr->value) {
             $this->_setNumber();
         } else {
-            oxNew(\OxidEsales\Eshop\Core\Counter::class)->update($this->_getCounterIdent(), $this->oxorder__oxordernr->value);
+            oxNew(\OxidEsales\Eshop\Core\Counter::class)
+                ->update($this->_getCounterIdent(), $this->oxorder__oxordernr->value);
         }
 
         // deleting remark info only when order is finished
