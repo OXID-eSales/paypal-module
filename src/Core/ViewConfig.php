@@ -249,10 +249,6 @@ class ViewConfig extends ViewConfig_parent
 
         if ($this->getIsVaultingActive()) {
             $components[] = 'card-fields';
-
-            // check if this is correctly used parameter
-            // reference: https://developer.paypal.com/sdk/js/configuration/#vault
-            $params['vault'] = 'true';
         }
 
         if ($components) {
