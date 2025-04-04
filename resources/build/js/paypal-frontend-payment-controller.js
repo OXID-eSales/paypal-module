@@ -244,8 +244,10 @@
         return this.init();
     };
 
-    if (undefined !== PayPalPaymentControllerConfigurator) {
-        let PayPalPayment = new PayPalPaymentController(new PayPalPaymentControllerConfigurator());
-        window.addEventListener('PayPalSDKLoadedEvent', PayPalPayment.renderButton);
-    }
+    window.onload = function (e) {
+        if (undefined !==  PayPalPaymentControllerConfigurator) {
+            window.PayPalPayment = new PayPalPaymentController(new PayPalPaymentControllerConfigurator());
+            window.PayPalPayment.renderButton();
+        }
+    };
 })();
