@@ -2,7 +2,7 @@
 
     let PayPalPaymentController = function (config) {
 
-        this.config = config
+        this.config = config;
 
         this.currentOrderDefaults = {
             shop: null,
@@ -14,16 +14,16 @@
 
         this.resetCurrentOrder = function () {
             this.currentOrder = {...this.currentOrderDefaults};
-        }
+        };
 
         this.setCreatePayPalOrderResponse = function (response) {
             this.currentOrder.paypal = response;
-        }
+        };
 
         this.setShopOrderData = async function (response, orderType) {
             if (response.status === 'success') {
                 if (null !== this.currentOrder.shop) {
-                    await PayPalPayment.deleteOrder().then(function (data){
+                    await PayPalPayment.deleteOrder().then(function (data) {
                         PayPalPayment.resetCurrentOrder();
                     });
                 }
@@ -31,7 +31,7 @@
                 PayPalPayment.currentOrder[orderType] = response;
                 PayPalPayment.config.purchaseUnits.custom_id = response.customId;
             }
-        }
+        };
 
         this.getCurrentOrderData = function (name, orderType) {
             if (null == this.currentOrder) {
@@ -45,7 +45,7 @@
             }
 
             return this.currentOrder[orderType][name];
-        }
+        };
 
         this.getPaymentSource = function () {
             return {
@@ -60,7 +60,7 @@
                     },
                 }
             };
-        }
+        };
 
         this.getPurchaseUnits = function () {
             let purchaseUnits = {
@@ -74,37 +74,37 @@
                 }
             };
 
-            if(PayPalPayment.currentOrder.vaultPayment){
+            if (PayPalPayment.currentOrder.vaultPayment) {
                 purchaseUnits.payment_source = this.getPaymentSource();
             }
 
             return purchaseUnits;
-        }
+        };
 
         this.getCurrentOrderOxid = function () {
             return this.getCurrentOrderData('shopOrderId', 'shop');
-        }
+        };
 
         this.getCurrentPayPalOrderId = function () {
             return this.getCurrentOrderData('orderID', 'paypal');
-        }
+        };
 
         this.getConfigValue = function (name) {
             return undefined !== this.config[name] ? this.config[name] : null;
-        }
+        };
 
         this.onShopOrderCreated = function (data) {
             PayPalPayment.setShopOrderData(data.detail, 'shop');
-        }
+        };
 
         this.vaultingSettingSwitch = function (e) {
             PayPalPayment.currentOrder.vaultPayment = e.currentTarget.checked;
-        }
+        };
 
         this.init = function () {
             this.resetCurrentOrder();
 
-            window.onload= function (e){
+            window.onload = function (e) {
                 const savePaymentChackbox = document.getElementById('oscPayPalVaultPaymentCheckbox');
                 savePaymentChackbox.onclick = PayPalPayment.vaultingSettingSwitch;
             };
@@ -112,7 +112,7 @@
             document.addEventListener('shopOrderCreated', this.onShopOrderCreated);
 
             return this;
-        }
+        };
 
         this.createOrder = async function (data, actions) {
             let result = await PayPalPayment.backendRequest('shopOrderCreationStatusUrl', {}, {
@@ -122,11 +122,11 @@
             document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...result}})));
 
             return actions.order.create(PayPalPayment.getPurchaseUnits());
-        }
+        };
 
         this.vaultPayment = async function (details) {
             try {
-                const vaultToken = details.payment_source?.paypal?.attributes?.vault?.id;
+                const vaultToken = details.payment_source.paypal.attributes.vault.id;
 
                 if (!vaultToken) {
                     console.warn('No vault token found in order details');
@@ -134,7 +134,7 @@
                 }
 
                 const result = await PayPalPayment.backendRequest('updateOxUserWithPayPalCustomerIdUrl', {}, {
-                    'payPalCustomerId': details.payment_source?.paypal?.attributes?.vault?.customer?.id,
+                    'payPalCustomerId': details.payment_source.paypal.attributes.vault.customer.id,
                 });
 
                 if (result.status !== 'success') {
@@ -143,40 +143,40 @@
             } catch (error) {
                 console.error('Error processing vault token:', error);
             }
-        }
+        };
 
         this.patchOrder = async function (details) {
             return await PayPalPayment.backendRequest('shopOrderPatchingStatusUrl', {}, {
                 'shopOrderId': PayPalPayment.getCurrentOrderOxid(),
                 'payPalOrderId': PayPalPayment.getCurrentPayPalOrderId()
             });
-        }
+        };
 
         this.afterCaptureOrder = async function (details) {
             const {paypalOrderDetails} = await PayPalPayment.patchOrder(details);
 
-            if (paypalOrderDetails?.payment_source) {
+            if (paypalOrderDetails && paypalOrderDetails.payment_source) {
                 await PayPalPayment.vaultPayment(paypalOrderDetails);
             }
 
             window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
-        }
+        };
 
         this.handlePaymentAuthorization = async function (details) {
             PayPalPayment.setCreatePayPalOrderResponse(details);
             const {paypalOrderDetails} = await PayPalPayment.patchOrder(details);
 
-            if (paypalOrderDetails?.payment_source) {
+            if (paypalOrderDetails && paypalOrderDetails.payment_source) {
                 await PayPalPayment.vaultPayment(paypalOrderDetails);
             }
 
             window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
-        }
+        };
 
         this.captureOrder = async function (data, actions) {
             PayPalPayment.setCreatePayPalOrderResponse(data);
             return actions.order.capture().then(await PayPalPayment.afterCaptureOrder);
-        }
+        };
 
         this.deleteOrder = async function () {
             await PayPalPayment.backendRequest('shopOrderDeleteUrl', {}, {
@@ -184,22 +184,20 @@
             });
 
             PayPalPayment.resetCurrentOrder();
-        }
+        };
 
         this.handleError = async function (data) {
             await PayPalPayment.backendRequest('shopOrderErrorUrl', {}, {
                 'shopOrderId': PayPalPayment.getCurrentOrderOxid()
             });
-            await PayPalPayment.deleteOrder().then(function (response){
-                debugger
+            await PayPalPayment.deleteOrder().then(function (response) {
                 if (response.status === 'success') {
                     PayPalPayment.resetCurrentOrder();
-                    debugger
                 }
             });
 
             window.location = PayPalPayment.getConfigValue('shopOrderErrorUrl');
-        }
+        };
 
         this.renderButton = function () {
             let button = paypal.Buttons(PayPalPayment.getPayButtonSettings());
@@ -207,7 +205,7 @@
             if (button.isEligible()) {
                 button.render(PayPalPayment.getConfigValue('buttonSelector'));
             }
-        }
+        };
 
         this.getPayButtonSettings = function () {
             const buttonSettings = {
@@ -218,12 +216,12 @@
                 onError: PayPalPayment.handleError
             };
 
-            if (PayPalPayment.config.captureStrategy === 'CAPTURE'){
+            if (PayPalPayment.config.captureStrategy === 'CAPTURE') {
                 buttonSettings.onApprove = PayPalPayment.captureOrder;
             }
 
             return buttonSettings;
-        }
+        };
 
         this.backendRequest = async function (urlSlug, headers, body) {
             let response = await fetch(PayPalPayment.getConfigValue(urlSlug), {
@@ -237,16 +235,17 @@
             const result = await response.json();
 
             if (result.status !== 'success') {
-                PayPalPayment.handleError()
+                PayPalPayment.handleError();
             }
 
             return result;
-        }
+        };
 
         return this.init();
+    };
+
+    if (undefined !== PayPalPaymentControllerConfigurator) {
+        let PayPalPayment = new PayPalPaymentController(new PayPalPaymentControllerConfigurator());
+        window.addEventListener('PayPalSDKLoadedEvent', PayPalPayment.renderButton);
     }
-
-    let PayPalPayment = new PayPalPaymentController(new PayPalPaymentControllerConfigurator());
-
-    window.addEventListener('PayPalSDKLoadedEvent', PayPalPayment.renderButton);
-})()
+})();
