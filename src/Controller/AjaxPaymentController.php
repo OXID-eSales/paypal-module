@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Application\Model\User;
 use OxidEsales\EshopCommunity\Core\Field;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
@@ -24,37 +25,93 @@ class AjaxPaymentController extends ProxyController
     use JsonTrait;
     use ServiceContainer;
 
+    private Logger $logger;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->logger = $this->getServiceFromContainer(Logger::class);
+    }
+
     /**
      *
      * TODO implement error reporting from front to log file
      * @throws JsonException
      */
-    public function shopOrderError(): void
+    public function logError(): void
     {
         $data = $this->getRequestParameters();
 
         $shopOrderId = $data['shopOrderId'];
-        /** @var PayPalOrder $oOrder */
-        $oOrder = oxNew(Order::class);
-        $oOrder->load($shopOrderId);
+        $errorMessage = $data['errorMessage'];
+
+        $this->logger->log('debug', sprintf(
+            'Order with id %s error: %s',
+            $shopOrderId, $errorMessage
+        ));
 
         $this->outputJson([
             'status' => 'success'
         ]);
     }
 
+    public function permissionsCheck(
+        ?string $shopOrderId = null,
+        ?string $message = 'Operation not permitted'
+    ): void
+    {
+        $user = oxNew(User::class);
+        $user->loadActiveUser();
+
+        if (null == $shopOrderId){
+            $this->logger->log('error', sprintf($message));
+            $this->outputJson([
+                'status' => 'error'
+            ]);
+            return;
+        }
+
+        /** @var PayPalOrder $order */
+        $order = oxNew(Order::class);
+        $order->load($shopOrderId);
+
+
+        if ($order->oxorder__oxuserid->value !== $user->getId()){
+            $this->logger->log('error', sprintf($message));
+            $this->outputJson([
+                'status' => 'error'
+            ]);
+            return;
+        }
+    }
+
     /**
      * @throws JsonException
      */
-    public function cancelShopOrder(): void
+    public function deleteShopOrder(): void
     {
         $data = $this->getRequestParameters();
 
         $shopOrderId = $data['shopOrderId'];
-        /** @var PayPalOrder $oOrder */
-        $oOrder = oxNew(Order::class);
-        $oOrder->load($shopOrderId);
-        $oOrder->delete();
+        if (empty($shopOrderId)) {
+            $this->logger->log('error', __CLASS__ . '::'. __FUNCTION__.'(): Shop order id is empty');
+        }
+
+        $this->permissionsCheck(
+            $shopOrderId, 'Current user do not have permission to delete referenced order');
+
+        /** @var PayPalOrder $order */
+        $order = oxNew(Order::class);
+        $order->load($shopOrderId);
+
+        $orderNumberPart = !$order->hasOrderNumber() ? 'without Order number and' : '';
+        $this->logger->log('debug', sprintf(
+            'Temporary order %s with id %s was deleted',
+            $shopOrderId, $orderNumberPart
+        ));
+
+        $order->delete();
 
         $this->outputJson([
             'status' => 'success'
@@ -64,17 +121,15 @@ class AjaxPaymentController extends ProxyController
     public function patchShopOrder(): void
     {
         $data = $this->getRequestParameters();
-        $sessionShopOrderId = Registry::getSession()->getVariable('sess_challenge');
         $shopOrderId = $data['shopOrderId'];
+        $this->permissionsCheck($shopOrderId);
+
+        $sessionShopOrderId = Registry::getSession()->getVariable('sess_challenge');
         $payPalOrderId = $data['payPalOrderId'];
         $cancelSession = !$sessionShopOrderId || $shopOrderId !== $sessionShopOrderId;
 
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-
-        /** @var \OxidEsales\EshopCommunity\Application\Model\User $oUser */
-        $oUser = oxNew(User::class);
-        $oUser->loadActiveUser();
 
         /** @var PayPalOrder $oOrder */
         $oOrder = oxNew(Order::class);
@@ -139,21 +194,24 @@ class AjaxPaymentController extends ProxyController
         $data = $this->getRequestParameters();
         $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'];
 
-        $oUser = oxNew(\OxidEsales\Eshop\Application\Model\User::class);
-        $oUser->loadActiveUser();
-        $oBasket = Registry::getSession()->getBasket();
-        $oOrder = oxNew(Order::class);
+        $user = oxNew(User::class);
+        if (! $user->loadActiveUser()){
+            $this->permissionsCheck();
+        }
+
+        $basket = Registry::getSession()->getBasket();
+        $order = oxNew(Order::class);
 
         //finalizing ordering process (validating, storing order into DB, setting status)
-        $iSuccess = $oOrder->finalizePayPalOrder($oBasket, $oUser, false);
+        $success = $order->finalizePayPalOrder($basket, $user, false);
 
         // performing special actions after user finishes order (assignment to special user groups)
-        $oUser->onOrderExecute($oBasket, $iSuccess);
+        $user->onOrderExecute($basket, $success);
 
         $this->outputJson([
             'status' => 'success',
-            'shopOrderId' => $oOrder->oxorder__oxid->value,
-            'customId' => $paymentService->getCustomIdParameter($oOrder)
+            'shopOrderId' => $order->oxorder__oxid->value,
+            'customId' => $paymentService->getCustomIdParameter($order)
         ]);
     }
 
@@ -180,6 +238,11 @@ class AjaxPaymentController extends ProxyController
     {
         $data = $this->getRequestParameters();
         $user = $this->getUser();
+
+        if (! $user->loadActiveUser()){
+            $this->permissionsCheck();
+        }
+
         $user->oxuser__oscpaypalcustomerid = new Field($data['payPalCustomerId']);
 
         $user->save();
