@@ -253,9 +253,7 @@
     window.onload = function (e) {
         if (typeof PayPalPaymentControllerConfigurator === 'function') {
             window.PayPalPayment = new PayPalPaymentController(new PayPalPaymentControllerConfigurator());
-            window.PayPalPayment.renderButton(
-                typeof PayPalButtonStyleConfigurator === 'object' ? PayPalButtonStyleConfigurator.getButtonStyle() : {}
-            );
+            window.PayPalPayment.renderButton(typeof PayPalButtonStyle === 'object' ? PayPalButtonStyle : {});
         }
     };
 })();

@@ -18,7 +18,7 @@
         window.onload = function () {
             paypal.Buttons({
                    style: Object.assign(
-                       PayPalButtonStyleConfigurator.getButtonStyle(),
+                       PayPalButtonStyle,
                        {
                            label: 'checkout'
                        }

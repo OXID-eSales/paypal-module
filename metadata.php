@@ -122,6 +122,7 @@ $aModule = [
         'modules/osc/paypal/sepa_cc_alternative.tpl' => 'osc/paypal/views/tpl/shared/page/checkout/sepa_cc_alternative.tpl',
         'modules/osc/paypal/base_js.tpl' => 'osc/paypal/views/tpl/shared/layout/base_js.tpl',
         'modules/osc/paypal/base_paypal_button_config.tpl' => 'osc/paypal/views/tpl/shared/layout/base_paypal_button_config.tpl',
+        'modules/osc/paypal/base_paypal_payment_controller_config.tpl' => 'osc/paypal/views/tpl/shared/layout/base_paypal_payment_controller_config.tpl',
         'modules/osc/paypal/base_style.tpl' => 'osc/paypal/views/tpl/shared/layout/base_style.tpl',
         'modules/osc/paypal/basket_btn_next_bottom.tpl' =>
             'osc/paypal/views/tpl/shared/page/checkout/basket_btn_next_bottom.tpl',

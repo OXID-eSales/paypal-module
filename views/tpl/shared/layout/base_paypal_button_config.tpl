@@ -3,19 +3,16 @@
 [{if $oViewConf->isPayPalCheckoutActive()}]
     <script>
         (function (){
-            let PayPalButtonStyleConfigurator = function(){
-
-                this.getButtonStyle = function (){
-                    return {
-                        layout: '[{$config->getPayPalButtonStyleLayout()}]',
-                        color:  '[{$config->getPayPalButtonStyleColor()}]',
-                        shape:  '[{$config->getPayPalButtonStyleShape()}]',
-                        label:  '[{$config->getPayPalButtonStyleLabel()}]'
-                    }
+            const PayPalButtonStyleConfigurator = function(){
+                return {
+                    layout: '[{$config->getPayPalButtonStyleLayout()}]',
+                    color:  '[{$config->getPayPalButtonStyleColor()}]',
+                    shape:  '[{$config->getPayPalButtonStyleShape()}]',
+                    label:  '[{$config->getPayPalButtonStyleLabel()}]'
                 }
             }
 
-            window.PayPalButtonStyleConfigurator = new PayPalButtonStyleConfigurator();
+            window.PayPalButtonStyle = new PayPalButtonStyleConfigurator();
         })();
     </script>
 [{/if}]
