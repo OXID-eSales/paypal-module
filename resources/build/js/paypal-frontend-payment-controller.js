@@ -199,8 +199,14 @@
             window.location = PayPalPayment.getConfigValue('shopOrderErrorUrl');
         };
 
-        this.renderButton = function () {
-            let button = paypal.Buttons(PayPalPayment.getPayButtonSettings());
+        this.renderButton = function (style) {
+            const buttonSettings = Object.assign(
+                PayPalPayment.getPayButtonSettings(),
+                {
+                    style: typeof style == 'object' ? style : {}
+                }
+            );
+            let button = paypal.Buttons(buttonSettings);
 
             if (button.isEligible()) {
                 button.render(PayPalPayment.getConfigValue('buttonSelector'));
@@ -245,9 +251,11 @@
     };
 
     window.onload = function (e) {
-        if (undefined !==  PayPalPaymentControllerConfigurator) {
+        if (typeof PayPalPaymentControllerConfigurator === 'function') {
             window.PayPalPayment = new PayPalPaymentController(new PayPalPaymentControllerConfigurator());
-            window.PayPalPayment.renderButton();
+            window.PayPalPayment.renderButton(
+                typeof PayPalButtonStyleConfigurator === 'object' ? PayPalButtonStyleConfigurator.getButtonStyle() : {}
+            );
         }
     };
 })();
