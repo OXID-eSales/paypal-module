@@ -1,0 +1,18 @@
+[{assign var="config" value=$oViewConf->getPayPalCheckoutConfig()}]
+
+[{if $oViewConf->isPayPalCheckoutActive()}]
+    <script>
+        (function (){
+            const PayPalButtonStyleConfigurator = function(){
+                return {
+                    layout: '[{$config->getPayPalButtonStyleLayout()}]',
+                    color:  '[{$config->getPayPalButtonStyleColor()}]',
+                    shape:  '[{$config->getPayPalButtonStyleShape()}]',
+                    label:  '[{$config->getPayPalButtonStyleLabel()}]'
+                }
+            }
+
+            window.PayPalButtonStyle = new PayPalButtonStyleConfigurator();
+        })();
+    </script>
+[{/if}]

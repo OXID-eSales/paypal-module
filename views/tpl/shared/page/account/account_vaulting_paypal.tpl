@@ -17,12 +17,12 @@
     <script>
         window.onload = function () {
             paypal.Buttons({
-                   style: {
-                       layout: '[{$config->getPayPalButtonStyleLayout()}]',
-                       color:  '[{$config->getPayPalButtonStyleColor()}]',
-                       shape:  '[{$config->getPayPalButtonStyleShape()}]',
-                       label:  '[{$config->getPayPalButtonStyleLabel()}]'
-                   },
+                   style: Object.assign(
+                       PayPalButtonStyle,
+                       {
+                           label: 'checkout'
+                       }
+                   ),
                    createVaultSetupToken: async () => {
                        const result = await fetch(
                            "[{oxgetseourl ident=$oViewConf->getGenerateSetupTokenLink()}]",
@@ -47,9 +47,6 @@
                    onError: (error) => {
                        console.log(error);
                    },
-                   style: {
-                       label: 'checkout'
-                   }
                }).render("#PayPalButtonVaulting");
 
             function showSuccessMessage() {
