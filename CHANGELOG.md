@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### NEW
 
 - PayPal-Buttons are configurable
+- Use PayPal-Button also on Checkout-Page for PayPal-Standard, this Button triggers a popUp instead of a page redirect 
 
 ## [2.5.3] - 2025-04-04
 
