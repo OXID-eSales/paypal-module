@@ -1,5 +1,5 @@
-[{if method_exists($oView, 'isPayPalCheckoutPayment') && $oView->isPayPalCheckoutPayment()}]
-    [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
+[{if isset($oView) && isset($oViewConf)}]
+    [{if method_exists($oView, 'getPayment') && method_exists($oViewConf, 'getPayPalCheckoutConfig')}]
     [{assign var="payment" value=$oView->getPayment()}]
     [{assign var="paymentId" value=$payment->getId()}]
     [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
@@ -11,8 +11,6 @@
     <script>
         const PayPalPaymentControllerConfigurator = function () {
             return {
-                shopACDCOrderCaptureStatusUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=captureOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
-                shopACDCOrderCreationStatusUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createAcdcOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
                 shopOrderErrorUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=logError&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
                 shopOrderCreationStatusUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
                 shopOrderPatchingStatusUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
@@ -35,4 +33,6 @@
             new CustomEvent('PayPalPaymentControllerConfigCreated', { detail: window.PayPalPaymentControllerConfig })
         );
     </script>
-[{/if}]
+
+    [{/if}]
+    [{/if}]

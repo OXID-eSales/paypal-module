@@ -16,6 +16,20 @@
     </script>
 [{/if}]
 
+[{if "oscpaypal_acdc" == $paymentId}]
+    <button id="[{$paymentId}]"
+            class="btn btn-lg btn-primary pull-right submitButton nextStep largeButton"
+            type="button">Pay now with Card Fields (TODO: change this label)</button>
+
+    <script>
+        document.addEventListener('PayPalPaymentControllerConfigCreated', function(e){
+            e.detail.cardFields = true;
+            e.detail.paymentId = '[{$paymentId}]';
+            e.detail.buttonSelector = 'button#[{$paymentId}]';
+        });
+    </script>
+[{/if}]
+
 [{if "oscpaypal" == $paymentId}]
     <div id="[{$paymentId}]" class="paypal-button-container [{$buttonClass}]"></div>
     <script>

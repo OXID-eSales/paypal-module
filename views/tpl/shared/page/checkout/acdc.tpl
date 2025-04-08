@@ -2,19 +2,19 @@
 <div id="card_container" class="card_container">
     <div id="card_form">
         <div class="form-group">
-            <span class="control-label">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_NUMBER"}]</span>
+            <label for="card-number" class="control-label">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_NUMBER"}]</label>
             <div id="card-number-field-container"></div>
         </div>
         <div class="form-group">
-            <span class="control-label">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_EXDATE"}]</span>
+            <label for="expiration-date" class="control-label">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_EXDATE"}]</label>
             <div id="card-expiry-field-container"></div>
         </div>
         <div class="form-group">
-            <span class="control-label-field-container">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_CVV"}]</span>
+            <label for="cvv" class="control-label">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_CVV"}]</label>
             <div id="card-cvv-field-container"></div>
         </div>
         <div class="form-group">
-            <span class="control-label">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD"}]</span>
+            <label for="card-holder-name" class="control-label">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD"}]</label>
             <div id="card-name-field-container"></div>
         </div>
         [{if $oscpaypal_isVaultingPossible}]
