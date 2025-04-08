@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.4.1] - 2025-??-??
+## [3.4.1] - 2025-04-08
 
 ### Added
 - Cypress e2e tests
