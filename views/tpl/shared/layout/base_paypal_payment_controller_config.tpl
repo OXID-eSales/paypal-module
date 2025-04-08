@@ -21,8 +21,15 @@
                 deliveryAddressId: '[{$oView->getDeliveryAddressMD5()}]',
                 purchaseUnits: [{$purchaseUnits}],
                 buttonSelector: '#[{$paymentId}]',
-                captureStrategy: '[{if $captureStrategy == 'directly'}]CAPTURE[{else}]AUTHORIZE[{/if}]'
+                captureStrategy: '[{if $captureStrategy == 'directly'}]CAPTURE[{else}]AUTHORIZE[{/if}]',
+                paymentId: 'oscpaypal', //this part is changed in the template via event:
+                cardFields: false
             }
         };
+
+        window.PayPalPaymentControllerConfig = new PayPalPaymentControllerConfigurator();
+        document.dispatchEvent(
+            new CustomEvent('PayPalPaymentControllerConfigCreated', { detail: window.PayPalPaymentControllerConfig })
+        );
     </script>
 [{/if}]

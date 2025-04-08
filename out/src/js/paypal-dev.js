@@ -2,7 +2,7 @@
 
     let PayPalPaymentController = function (config) {
 
-        this.config = config;
+        this.config = Object.assign(PayPalPaymentControllerConfig, typeof config === 'object' ? config : {});
 
         this.currentOrderDefaults = {
             shop: null,
@@ -48,6 +48,23 @@
         };
 
         this.getPaymentSource = function () {
+
+            const paymentId = PayPalPayment.getConfigValue('paymentId');
+            if (paymentId === 'oscpaypal_acdc'){
+                return {
+                    "card": {
+                        "attributes": {
+                            "vault": {
+                                "store_in_vault": "ON_SUCCESS",
+                                "usage_type": "MERCHANT",
+                                "customer_type": "CONSUMER",
+                                "permit_multiple_payment_tokens": true
+                            }
+                        }
+                    }
+                }
+            }
+
             return {
                 "paypal": {
                     "attributes": {
@@ -58,16 +75,6 @@
                             "permit_multiple_payment_tokens": true
                         }
                     },
-                },
-                "card": {
-                    "attributes": {
-                        "vault": {
-                            "store_in_vault": "ON_SUCCESS",
-                            "usage_type": "MERCHANT",
-                            "customer_type": "CONSUMER",
-                            "permit_multiple_payment_tokens": true
-                        }
-                    }
                 }
             };
         };
@@ -131,26 +138,31 @@
 
             document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...result}})));
 
+            const paymentId = PayPalPayment.getConfigValue('paymentId');
+            if (paymentId === 'oscpaypal_acdc'){
+                debugger
+            }
+
             return actions.order.create(PayPalPayment.getPurchaseUnits());
         };
 
         this.vaultPayment = async function (details) {
             try {
                 if (details.payment_source.paypal) {
-                const vaultToken = details.payment_source.paypal.attributes.vault.id;
+                    const vaultToken = details.payment_source.paypal.attributes.vault.id;
 
-                if (!vaultToken) {
+                    if (!vaultToken) {
                         console.warn('No PayPal vault token found in order details');
-                    return;
-                }
+                        return;
+                    }
 
-                const result = await PayPalPayment.backendRequest('updateOxUserWithPayPalCustomerIdUrl', {}, {
-                    'payPalCustomerId': details.payment_source.paypal.attributes.vault.customer.id,
-                });
+                    const result = await PayPalPayment.backendRequest('updateOxUserWithPayPalCustomerIdUrl', {}, {
+                        'payPalCustomerId': details.payment_source.paypal.attributes.vault.customer.id,
+                    });
 
-                if (result.status !== 'success') {
+                    if (result.status !== 'success') {
                         console.error('Failed to store PayPal vault token:', result.message);
-                }
+                    }
                 } else if (details.payment_source.card) {
                     const cardToken = details.payment_source.card.attributes.vault.id;
                     if (!cardToken) {
@@ -246,18 +258,21 @@
                 return;
             }
 
-            const cardFields = paypal.CardFields({
+            const cardField = paypal.CardFields({
                 style: {
-                    input: {
-                        color: '#333',
-                        fontSize: '16px',
-                        fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif'
-                    },
-                    '.invalid': {
-                        color: '#dc3545'
+                    'input': {
+                        'color': '#3A3A3A',
+                        'transition': 'color 160ms linear',
+                        '-webkit-transition': 'color 160ms linear'
                     },
                     ':focus': {
-                        color: '#495057'
+                        'color': '#333333'
+                    },
+                    '.valid': {
+                        'color': 'green'
+                    },
+                    '.invalid': {
+                        'color': 'red'
                     }
                 },
                 createOrder: PayPalPayment.createOrder,
@@ -265,8 +280,36 @@
                 onError: PayPalPayment.handleError
             });
 
-            if (cardFields.isEligible()) {
-                cardFields.render('#card-fields-container');
+            if (cardField.isEligible()) {
+                const cardNameContainer = document.getElementById("card-name-field-container"); // Optional field
+                const cardNumberContainer = document.getElementById("card-number-field-container");
+                const cardCvvContainer = document.getElementById("card-cvv-field-container");
+                const cardExpiryContainer = document.getElementById("card-expiry-field-container");
+                const multiCardFieldButton = document.getElementById(
+                    PayPalPayment.getConfigValue('buttonSelector').split('#').reverse()[0]
+                );
+
+                const nameField = cardField.NameField();
+                nameField.render(cardNameContainer);
+                const numberField = cardField.NumberField();
+                numberField.render(cardNumberContainer);
+                const cvvField = cardField.CVVField();
+                cvvField.render(cardCvvContainer);
+                const expiryField = cardField.ExpiryField();
+                expiryField.render(cardExpiryContainer);
+                // Add click listener to the submit button and call the submit function on the CardField component
+                multiCardFieldButton.addEventListener("click", () => {
+                    cardField
+                        .submit()
+                        .then(() => {
+                            debugger
+                            // Handle a successful payment
+                        })
+                        .catch((err) => {
+                            debugger
+                            // Handle an unsuccessful payment
+                        });
+                });
             }
         };
 
@@ -308,15 +351,15 @@
     };
 
     window.onload = function (e) {
-        if (typeof PayPalPaymentControllerConfigurator === 'function') {
-            window.PayPalPayment = new PayPalPaymentController(new PayPalPaymentControllerConfigurator());
+        if (typeof PayPalPaymentControllerConfig === 'object') {
+            window.PayPalPayment = new PayPalPaymentController();
 
-            // Check if we should render card fields or button
-            if (document.getElementById('card-fields-container')) {
+            // Check if we should render card fields or PayPal standard button
+            if (true === window.PayPalPayment.getConfigValue('cardFields')) {
                 window.PayPalPayment.renderCardFields();
             } else {
-            window.PayPalPayment.renderButton(typeof PayPalButtonStyle === 'object' ? PayPalButtonStyle : {});
-        }
+                window.PayPalPayment.renderButton(typeof PayPalButtonStyle === 'object' ? PayPalButtonStyle : {});
+            }
         }
     };
 })();
