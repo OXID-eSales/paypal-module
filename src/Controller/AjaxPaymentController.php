@@ -15,16 +15,14 @@ use OxidEsales\EshopCommunity\Application\Model\User;
 use OxidEsales\EshopCommunity\Core\Field;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
-use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 
 class AjaxPaymentController extends ProxyController
 {
@@ -38,44 +36,6 @@ class AjaxPaymentController extends ProxyController
         parent::__construct();
 
         $this->logger = $this->getServiceFromContainer(Logger::class);
-    }
-
-    public function captureOrder(): void
-    {
-        $data = $this->getRequestParameters();
-        $payPalOrderId = $data['orderId'];
-
-        $this->logger->log('debug', sprintf('Order with id %s capture', $payPalOrderId));
-
-        $orderService = Registry::get(ServiceFactory::class)->getOrderService();
-        $request = new OrderCaptureRequest();
-        try {
-            $orderService->capturePaymentForOrder(
-                '',
-                $payPalOrderId,
-                $request,
-                '',
-                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
-            );
-        } catch (ApiException $exception) {
-            $issue = $exception->getErrorIssue();
-            $languageObject = Registry::getLang();
-            $translatedErrorMessage = $languageObject->translateString(
-                'OSC_PAYPAL_' . $issue,
-                (int)$languageObject->getBaseLanguage(),
-                false
-            );
-            $this->logger->log('error', $exception->getMessage(), [$exception]);
-
-            $this->outputJson([
-                'status' => 'error',
-                'error' => $translatedErrorMessage
-            ]);
-        }
-
-        $this->outputJson([
-            'status' => 'success'
-        ]);
     }
 
 
@@ -106,7 +66,7 @@ class AjaxPaymentController extends ProxyController
             $user->onOrderExecute($basket, $iSuccess);
         } catch (Exception $exception) {
             $logger->log('error', $exception->getMessage(), [$exception]);
-            $this->outputJson(['error' => 'failed to execute shop order']);
+            $this->outputJson(['acdcerror' => 'failed to execute shop order']);
             return;
         }
 
@@ -115,7 +75,7 @@ class AjaxPaymentController extends ProxyController
         );
 
         if (!($paypalOrderId = $response['id'])) {
-            $this->outputJson(['error' => 'cannot create paypal order']);
+            $this->outputJson(['acdcerror' => 'cannot create paypal order']);
             return;
         }
 
@@ -189,6 +149,7 @@ class AjaxPaymentController extends ProxyController
             $this->outputJson([
                 'status' => 'error'
             ]);
+            return;
         }
     }
 
