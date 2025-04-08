@@ -1,6 +1,5 @@
-[{assign var="config" value=$oViewConf->getPayPalCheckoutConfig()}]
-
-[{if $oViewConf->isPayPalCheckoutActive()}]
+[{if $oViewConf->isPayPalCheckoutActive() && $oViewConf->isSDKNecessary()}]
+    [{assign var="config" value=$oViewConf->getPayPalCheckoutConfig()}]
     <script>
         (function (){
             const PayPalButtonStyleConfigurator = function(){
