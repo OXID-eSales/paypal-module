@@ -7,11 +7,15 @@
 
 namespace OxidSolutionCatalysts\PayPal\Controller;
 
+use Exception;
 use JsonException;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Application\Model\User;
 use OxidEsales\EshopCommunity\Core\Field;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -32,6 +36,66 @@ class AjaxPaymentController extends ProxyController
         parent::__construct();
 
         $this->logger = $this->getServiceFromContainer(Logger::class);
+    }
+
+
+    /**
+     * @psalm-suppress InternalMethod
+     */
+    public function createAcdcOrder(): void
+    {
+        $data = $this->getRequestParameters();
+        $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'];
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        /** @var Logger $logger */
+        $logger = $this->getServiceFromContainer(Logger::class);
+        $order = oxNew(Order::class);
+        $user = oxNew(User::class);
+        $basket = Registry::getSession()->getBasket();
+
+        if (!$user->loadActiveUser()) {
+            $this->permissionsCheck();
+        }
+
+        Registry::getSession()->setVariable('sess_challenge', Registry::getUtilsObject()->generateUID());
+        try {
+            //finalizing ordering process (validating, storing order into DB, executing payment, setting status ...)
+            $iSuccess = $order->finalizePayPalOrder($basket, $user);
+
+            // performing special actions after user finishes order (assignment to special user groups)
+            $user->onOrderExecute($basket, $iSuccess);
+        } catch (Exception $exception) {
+            $logger->log('error', $exception->getMessage(), [$exception]);
+            $this->outputJson(['acdcerror' => 'failed to execute shop order']);
+            return;
+        }
+
+        $response = $paymentService->doCreatePatchedOrder(
+            Registry::getSession()->getBasket()
+        );
+
+        if (!($paypalOrderId = $response['id'])) {
+            $this->outputJson(['acdcerror' => 'cannot create paypal order']);
+            return;
+        }
+
+        $sessionOrderId = (string)Registry::getSession()->getVariable('sess_challenge');
+        $payPalOrder = $paymentService->getPayPalCheckoutOrder($sessionOrderId, $paypalOrderId);
+        $payPalOrder->setStatus($response['status']);
+        $payPalOrder->save();
+
+        //currently needed for dev, IDK if that necessary at the end
+        PayPalSession::unsetPayPalOrderId();
+        Registry::getSession()->setVariable('sess_challenge', null);
+
+        $this->outputJson([
+            'status' => 'success',
+            'shopOrder' => [
+                'shopOrderId' => $order->oxorder__oxid->value,
+                'customId' => $paymentService->getCustomIdParameter($order)
+            ],
+            'payPalOrder' => $response,
+        ]);
     }
 
     /**
@@ -60,7 +124,10 @@ class AjaxPaymentController extends ProxyController
     public function permissionsCheck(
         ?string $shopOrderId = null,
         ?string $message = 'Operation not permitted'
-    ): void {
+    ): void
+    {
+        //@TODO ad session challenge somewhere
+
         $user = oxNew(User::class);
         $user->loadActiveUser();
 
@@ -144,7 +211,7 @@ class AjaxPaymentController extends ProxyController
                 'message' => 'Order id mismatch error.', //@TODO improve errors messages
             ]);
         }
-        $paymentsId = (string) $oOrder->getFieldData('oxpaymenttype');
+        $paymentsId = (string)$oOrder->getFieldData('oxpaymenttype');
         /** @var PayPalApiOrder $payPalOrder */
         $payPalOrder = $paymentService->fetchOrderFields($payPalOrderId, '');
         $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
@@ -242,7 +309,7 @@ class AjaxPaymentController extends ProxyController
         $data = $this->getRequestParameters();
         $user = $this->getUser();
 
-        if (! $user->loadActiveUser()) {
+        if (!$user->loadActiveUser()) {
             $this->permissionsCheck();
         }
 
