@@ -21,16 +21,14 @@
         };
 
         this.setShopOrderData = async function (response, orderType) {
-            if (response.status === 'success') {
-                if (null !== this.currentOrder.shop) {
-                    await PayPalPayment.deleteOrder().then(function (data) {
-                        PayPalPayment.resetCurrentOrder();
-                    });
-                }
-
-                PayPalPayment.currentOrder[orderType] = response;
-                PayPalPayment.config.purchaseUnits.custom_id = response.customId;
+            if (null !== this.currentOrder.shop) {
+                await PayPalPayment.deleteOrder().then(function (data) {
+                    PayPalPayment.resetCurrentOrder();
+                });
             }
+
+            PayPalPayment.currentOrder[orderType] = response;
+            PayPalPayment.config.purchaseUnits.custom_id = response.customId;
         };
 
         this.getCurrentOrderData = function (name, orderType) {
@@ -114,6 +112,10 @@
             PayPalPayment.setShopOrderData(data.detail, 'shop');
         };
 
+        this.onPayPalOrderCreated = function (data) {
+            PayPalPayment.setCreatePayPalOrderResponse(data.detail);
+        };
+
         this.vaultingSettingSwitch = function (e) {
             PayPalPayment.currentOrder.vaultPayment = e.currentTarget.checked;
         };
@@ -123,13 +125,35 @@
 
             window.onload = function (e) {
                 const savePaymentChackbox = document.getElementById('oscPayPalVaultPaymentCheckbox');
+                if (savePaymentChackbox) {
                 savePaymentChackbox.onclick = PayPalPayment.vaultingSettingSwitch;
+                }
             };
 
             document.addEventListener('shopOrderCreated', this.onShopOrderCreated);
+            document.addEventListener('payPalOrderCreated', this.onPayPalOrderCreated);
 
             return this;
         };
+
+        this.createACDCOrder = async function (data, actions) {
+            let result = await PayPalPayment.backendRequest('shopACDCOrderCreationStatusUrl', {}, {
+                'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId')
+            });
+
+            document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...result.shopOrder}})));
+            document.dispatchEvent(new CustomEvent('payPalOrderCreated', new Object({detail: {...result.payPalOrder}})));
+
+            return result.payPalOrder.id
+        }
+
+        this.captureACDCOrder = async function (data, actions) {
+            debugger
+
+            const capture = await actions.order.capture();
+            debugger
+            PayPalPayment.afterCaptureACDCOrder();
+        }
 
         this.createOrder = async function (data, actions) {
             let result = await PayPalPayment.backendRequest('shopOrderCreationStatusUrl', {}, {
@@ -137,11 +161,6 @@
             });
 
             document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...result}})));
-
-            const paymentId = PayPalPayment.getConfigValue('paymentId');
-            if (paymentId === 'oscpaypal_acdc'){
-                debugger
-            }
 
             return actions.order.create(PayPalPayment.getPurchaseUnits());
         };
@@ -191,6 +210,11 @@
             });
         };
 
+        this.afterCaptureACDCOrder = function (details) {
+           debugger
+            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+        };
+
         this.afterCaptureOrder = async function (details) {
             const {paypalOrderDetails} = await PayPalPayment.patchOrder(details);
 
@@ -202,6 +226,7 @@
         };
 
         this.handlePaymentAuthorization = async function (details) {
+            debugger
             PayPalPayment.setCreatePayPalOrderResponse(details);
             const {paypalOrderDetails} = await PayPalPayment.patchOrder(details);
 
@@ -258,7 +283,7 @@
                 return;
             }
 
-            const cardField = paypal.CardFields({
+            const cardFields = paypal.CardFields({
                 style: {
                     'input': {
                         'color': '#3A3A3A',
@@ -275,47 +300,44 @@
                         'color': 'red'
                     }
                 },
-                createOrder: PayPalPayment.createOrder,
-                onApprove: PayPalPayment.handlePaymentAuthorization,
+                createOrder: PayPalPayment.createACDCOrder,
+                onApprove: PayPalPayment.captureACDCOrder,
                 onError: PayPalPayment.handleError
             });
 
-            if (cardField.isEligible()) {
-                const cardNameContainer = document.getElementById("card-name-field-container"); // Optional field
+            if (cardFields.isEligible()) {
+                const cardNameContainer = document.getElementById("card-name-field-container");
                 const cardNumberContainer = document.getElementById("card-number-field-container");
                 const cardCvvContainer = document.getElementById("card-cvv-field-container");
                 const cardExpiryContainer = document.getElementById("card-expiry-field-container");
-                const multiCardFieldButton = document.getElementById(
+                const submitButton = document.getElementById(
                     PayPalPayment.getConfigValue('buttonSelector').split('#').reverse()[0]
                 );
 
-                const nameField = cardField.NameField();
-                nameField.render(cardNameContainer);
-                const numberField = cardField.NumberField();
-                numberField.render(cardNumberContainer);
-                const cvvField = cardField.CVVField();
-                cvvField.render(cardCvvContainer);
-                const expiryField = cardField.ExpiryField();
-                expiryField.render(cardExpiryContainer);
-                // Add click listener to the submit button and call the submit function on the CardField component
-                multiCardFieldButton.addEventListener("click", () => {
-                    cardField
-                        .submit()
-                        .then(() => {
-                            debugger
-                            // Handle a successful payment
-                        })
-                        .catch((err) => {
-                            debugger
-                            // Handle an unsuccessful payment
+                if (cardNameContainer) {
+                    cardFields.NameField().render(cardNameContainer);
+                }
+                if (cardNumberContainer) {
+                    cardFields.NumberField().render(cardNumberContainer);
+                }
+                if (cardCvvContainer) {
+                    cardFields.CVVField().render(cardCvvContainer);
+                }
+                if (cardExpiryContainer) {
+                    cardFields.ExpiryField().render(cardExpiryContainer);
+                }
+                if (submitButton) {
+                    submitButton.addEventListener("click", () => {
+                        cardFields.submit().catch(err => {
+                            console.error('Error submitting card fields:', err);
                         });
                 });
+            }
             }
         };
 
         this.getPayButtonSettings = function () {
             const buttonSettings = {
-                displayOnly: ["vaultable", "card"],
                 createOrder: PayPalPayment.createOrder,
                 onApprove: PayPalPayment.handlePaymentAuthorization,
                 onCancel: PayPalPayment.deleteOrder,
