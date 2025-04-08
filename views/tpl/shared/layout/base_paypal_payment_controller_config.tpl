@@ -1,4 +1,5 @@
 [{if method_exists($oView, 'isPayPalCheckoutPayment') && $oView->isPayPalCheckoutPayment()}]
+    [{if method_exists($oView, 'isPayPalCheckoutPayment') && $oView->isPayPalCheckoutPayment()}]
     [{assign var="payment" value=$oView->getPayment()}]
     [{assign var="paymentId" value=$payment->getId()}]
     [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
