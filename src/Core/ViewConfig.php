@@ -40,7 +40,7 @@ class ViewConfig extends ViewConfig_parent
      * is this SDK necessary?
      * @var boolean
      */
-    protected $isSDKNecessary = true;
+    protected $isSDKNecessary = false;
 
     /**
      * @return bool
