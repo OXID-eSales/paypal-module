@@ -390,6 +390,13 @@ class OrderController extends OrderController_parent
 
         $this->outputJson($result);
     }
+
+    public function isPayPalCheckoutPayment(): bool
+    {
+        $payment = $this->getPayment();
+        return $payment && PayPalDefinitions::isPayPalPayment($payment->getId());
+    }
+
     public function createApplePayOrder(): void
     {
         try {

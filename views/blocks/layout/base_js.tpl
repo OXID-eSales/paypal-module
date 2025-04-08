@@ -1,4 +1,6 @@
 [{$smarty.block.parent}]
-[{include file='modules/osc/paypal/base_paypal_payment_controller_config.tpl'}]
-[{include file='modules/osc/paypal/base_paypal_button_config.tpl'}]
 [{include file='modules/osc/paypal/base_js.tpl'}]
+[{if method_exists($oView, 'getPayment') && $oView->isPayPalCheckoutPayment()}]
+    [{include file='modules/osc/paypal/base_paypal_payment_controller_config.tpl'}]
+    [{include file='modules/osc/paypal/base_paypal_button_config.tpl'}]
+[{/if}]
