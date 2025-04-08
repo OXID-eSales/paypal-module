@@ -1,8 +1,29 @@
 [{assign var="payment" value=$oView->getPayment()}]
 [{assign var="paymentId" value=$payment->getId()}]
 
+[{if "oscpaypal_acdc" == $paymentId}]
+    <button id="[{$paymentId}]"
+            class="btn btn-lg btn-primary pull-right submitButton nextStep largeButton"
+            type="button">Pay now with Card Fields (TODO: change this label)</button>
+
+    <script>
+        document.addEventListener('PayPalPaymentControllerConfigCreated', function(e){
+            e.detail.cardFields = true;
+            e.detail.paymentId = '[{$paymentId}]';
+            e.detail.buttonSelector = 'button#[{$paymentId}]';
+        });
+    </script>
+[{/if}]
+
 [{if "oscpaypal" == $paymentId}]
     <div id="[{$paymentId}]" class="paypal-button-container [{$buttonClass}]"></div>
+    <script>
+        document.addEventListener('PayPalPaymentControllerConfigCreated', function(e){
+            e.detail.cardFields = false;
+            e.detail.paymentId = '[{$paymentId}]';
+            e.detail.buttonSelector = 'div#[{$paymentId}]';
+        });
+    </script>
 [{/if}]
 
 [{if "oscpaypal_pui" == $paymentId}]
@@ -18,6 +39,9 @@
     [{elseif "oscpaypal_applepay" == $paymentId}]
     [{include file="modules/osc/paypal/applepay.tpl" paymentId=$paymentId buttonClass="paypal-button-wrapper large"}]
     <div id="applepay-container" class="paypal-button-container paypal-button-wrapper paypal-button-right large"></div>
-[{elseif "oscpaypal" != $paymentId}]
+[{elseif
+    "oscpaypal" != $paymentId &&
+    "oscpaypal_acdc" != $paymentId
+}]
     [{$smarty.block.parent}]
 [{/if}]
