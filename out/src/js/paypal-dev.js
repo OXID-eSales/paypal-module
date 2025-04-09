@@ -141,10 +141,6 @@
                 'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId')
             });
 
-            if (undefined !== result['error']){
-                throw new Error(result['error']);
-            }
-
             document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...result.shopOrder}})));
             document.dispatchEvent(new CustomEvent('payPalOrderCreated', new Object({detail: {...result.payPalOrder}})));
 

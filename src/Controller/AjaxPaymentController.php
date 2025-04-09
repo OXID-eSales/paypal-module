@@ -7,7 +7,6 @@
 
 namespace OxidSolutionCatalysts\PayPal\Controller;
 
-use Exception;
 use JsonException;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Registry;
@@ -22,9 +21,7 @@ use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
-use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 
 class AjaxPaymentController extends ProxyController
 {
@@ -164,10 +161,7 @@ class AjaxPaymentController extends ProxyController
     public function permissionsCheck(
         ?string $shopOrderId = null,
         ?string $message = 'Operation not permitted'
-    ): void
-    {
-        //@TODO ad session challenge somewhere
-
+    ): void {
         $user = oxNew(User::class);
         $user->loadActiveUser();
 
@@ -189,6 +183,7 @@ class AjaxPaymentController extends ProxyController
             $this->outputJson([
                 'status' => 'error'
             ]);
+            return;
         }
     }
 
@@ -250,7 +245,7 @@ class AjaxPaymentController extends ProxyController
                 'message' => 'Order id mismatch error.', //@TODO improve errors messages
             ]);
         }
-        $paymentsId = (string)$oOrder->getFieldData('oxpaymenttype');
+        $paymentsId = (string) $oOrder->getFieldData('oxpaymenttype');
         /** @var PayPalApiOrder $payPalOrder */
         $payPalOrder = $paymentService->fetchOrderFields($payPalOrderId, '');
         $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
@@ -348,7 +343,7 @@ class AjaxPaymentController extends ProxyController
         $data = $this->getRequestParameters();
         $user = $this->getUser();
 
-        if (!$user->loadActiveUser()) {
+        if (! $user->loadActiveUser()) {
             $this->permissionsCheck();
         }
 
