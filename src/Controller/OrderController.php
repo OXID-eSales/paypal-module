@@ -12,8 +12,8 @@ use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\EshopCommunity\modules\osc\paypal\src\Core\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
@@ -483,7 +483,8 @@ class OrderController extends OrderController_parent
 
         $this->outputJson($result);
     }
-    public function finalizeApplePay(): string
+
+    public function finalizeapplepay(): string
     {
         $sessionOrderId = Registry::getSession()->getVariable('Sessionapplepay');
         $sessionGooglePayOrderId = Registry::getSession()->getVariable('applepayOrderId'); // paypal-checkout-session
