@@ -78,7 +78,6 @@ class AjaxPaymentController extends ProxyController
         ]);
     }
 
-
     /**
      * @psalm-suppress InternalMethod
      */
