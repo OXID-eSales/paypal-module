@@ -32,4 +32,3 @@
         <div id="[{$payment->getId()}]" class="paypal-button-container paypal-button-wrapper paypal-button-right large"></div>
     [{/oxhasrights}]
 [{/block}]
-
