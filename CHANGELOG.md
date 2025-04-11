@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - PayPal-Buttons are configurable
 - Use PayPal-Button also on Checkout-Page for PayPal-Standard, this Button triggers a popUp instead of a page redirect 
 
+### FIX
+
+- Fix: Locales for PP-Buttons are editable again
+
 ## [2.5.3] - 2025-04-04
 
 ### FIX
