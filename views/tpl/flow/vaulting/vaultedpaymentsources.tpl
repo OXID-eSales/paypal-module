@@ -5,7 +5,7 @@
         <div class="panel-heading">
             <h3 id="paymentHeader" class="card-title">[{oxmultilang ident="OSC_PAYPAL_VAULTING_VAULTED_PAYMENTS"}]</h3>
         </div>
-        <div class="panel-body">
+        <div class="panel-body" id="savedPaymentCards">
             <ul>
                 [{foreach from=$vaultedPaymentSources item=paymentToken}]
                     <li class="mt-3">
