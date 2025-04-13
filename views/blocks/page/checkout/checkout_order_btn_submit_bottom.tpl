@@ -12,6 +12,10 @@
     <div id="[{$paymentId}]" class="paypal-button-container [{$buttonClass}] float-right pull-right"></div>
 [{/if}]
 
+[{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','out/src/js/paypal-dev.js')|filemtime}]
+<script id="dev_scripts23433" src="[{$oViewConf->getModuleUrl('osc_paypal', 'out/src/js/paypal-dev.js')|cat:"?"|cat:$sFileMTime}]"></script>
+
+
 [{if "oscpaypal_pui" == $paymentId}]
     [{if $oViewConf->isFlowCompatibleTheme()}]
         [{include file="modules/osc/paypal/checkout_order_btn_submit_bottom_flow.tpl"}]

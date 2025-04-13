@@ -85,6 +85,7 @@ class AjaxPaymentController extends ProxyController
     {
         $data = $this->getRequestParameters();
         $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'];
+        $_POST['vaultPayment'] = $data['vaultPayment'] ? "true" : "false";
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         /** @var Logger $logger */
         $logger = $this->getServiceFromContainer(Logger::class);
