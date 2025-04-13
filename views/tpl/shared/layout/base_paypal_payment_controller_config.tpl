@@ -26,10 +26,10 @@
         }
 
         [{if $paymentId == 'oscpaypal'}]
-            const PayPalPaymentControllerConfigurator = function () {
+                window.PayPalPaymentControllerConfigurator = function () {
                 return Object.assign (PayPalPaymentControllerConfiguratorDefaults, {
-                    shopOrderCreationStatusUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
-                    shopOrderPatchingStatusUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    shopOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    shopOrderPatchingUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                     updateOxUserWithPayPalCustomerIdUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=updateOxUserWithPayPalCustomerId&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                     buttonSelector: 'div#[{$paymentId}]',
                     captureStrategy: '[{if $captureStrategy == 'directly'}]CAPTURE[{else}]AUTHORIZE[{/if}]',
@@ -39,10 +39,10 @@
     [{/if}]
 
     [{if $paymentId == 'oscpaypal_acdc'}]
-            const PayPalPaymentControllerConfigurator = function () {
+                window.PayPalPaymentControllerConfigurator = function () {
                 return Object.assign (PayPalPaymentControllerConfiguratorDefaults, {
-                    shopACDCOrderCaptureStatusUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=captureOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
-                    shopACDCOrderCreationStatusUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createAcdcOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    shopOrderCaptureUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=captureOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    shopOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createAcdcOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                     cardFields: true, //probably not needed when payment controller will be split
                     paymentId: '[{$paymentId}]', //probably not needed when payment controller will be split
                     buttonSelector: 'button#[{$paymentId}]'

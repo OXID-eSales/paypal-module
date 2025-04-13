@@ -18,7 +18,7 @@
                 ],
                 application_context: {
                     return_url: PayPalPayment.getConfigValue('updateOxUserWithPayPalCustomerIdUrl'),
-                    cancel_url: PayPalPayment.getConfigValue('shopOrderCancelStatusUrl')
+                    cancel_url: PayPalPayment.getConfigValue('shopOrderDeleteUrl')
                 }
             };
 
@@ -90,7 +90,7 @@
 
         // Common order processing methods
         this.patchOrder = async function (details) {
-            return await PayPalPayment.backendRequest('shopOrderPatchingStatusUrl', {}, {
+            return await PayPalPayment.backendRequest('shopOrderPatchingUrl', {}, {
                 'shopOrderId': PayPalPayment.getCurrentOrderOxid(),
                 'payPalOrderId': PayPalPayment.getCurrentPayPalOrderId()
             });
@@ -199,12 +199,10 @@
         this.init = function () {
             this.resetCurrentOrder();
 
-            window.onload = function (e) {
-                const savePaymentChackbox = document.getElementById('oscPayPalVaultPaymentCheckbox');
-                if (savePaymentChackbox) {
-                    savePaymentChackbox.onclick = PayPalPayment.vaultingSettingSwitch;
-                }
-            };
+            const savePaymentChackbox = document.getElementById('oscPayPalVaultPaymentCheckbox');
+            if (savePaymentChackbox) {
+                savePaymentChackbox.onclick = this.vaultingSettingSwitch;
+            }
 
             document.addEventListener('shopOrderCreated', this.onShopOrderCreated);
             document.addEventListener('payPalOrderCreated', this.onPayPalOrderCreated);
