@@ -5,8 +5,9 @@
 
 
         this.createOrder = async function (data, actions) {
-            let result = await PayPalPayment.backendRequest('shopACDCOrderCreationStatusUrl', {}, {
-                'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId')
+            let result = await PayPalPayment.backendRequest('shopOrderCreateUrl', {}, {
+                'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId'),
+                'vaultPayment': PayPalPayment.currentOrder.vaultPayment
             });
 
             document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...result.shopOrder}})));
@@ -16,17 +17,16 @@
         }
 
         this.captureOrder = async function (data, actions) {
-            let result = await PayPalPayment.backendRequest('shopACDCOrderCaptureStatusUrl', {}, {
+            let result = await PayPalPayment.backendRequest('shopOrderCaptureUrl', {}, {
                 'orderId': data.orderID
             });
-            debugger
+
             if(result['status'] === 'success'){
-                PayPalPayment.afterCaptureACDCOrder();
+                PayPalPayment.afterCaptureOrder();
             }
         }
 
-        this.afterCaptureACDCOrder = function (details) {
-            debugger
+        this.afterCaptureOrder = function (details) {
             window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
         };
 

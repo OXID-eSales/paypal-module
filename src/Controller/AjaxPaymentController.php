@@ -125,7 +125,6 @@ class AjaxPaymentController extends ProxyController
 
         //currently needed for dev, IDK if that necessary at the end
         PayPalSession::unsetPayPalOrderId();
-        Registry::getSession()->setVariable('sess_challenge', null);
 
         $this->outputJson([
             'status' => 'success',
@@ -185,7 +184,6 @@ class AjaxPaymentController extends ProxyController
             $this->outputJson([
                 'status' => 'error'
             ]);
-            return;
         }
     }
 

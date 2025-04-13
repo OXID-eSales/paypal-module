@@ -21,7 +21,7 @@
 
         // PayPal-specific order creation
         this.createOrder = async function (data, actions) {
-            let result = await PayPalPayment.backendRequest('shopOrderCreationStatusUrl', {}, {
+            let result = await PayPalPayment.backendRequest('shopOrderCreateUrl', {}, {
                 'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId')
             });
 
