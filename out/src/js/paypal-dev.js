@@ -30,7 +30,22 @@
             window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
         };
 
+        this.renderButtonForVaultedPayment = function() {
+            const submitButton = document.querySelector(PayPalPayment.config.buttonSelector);
+            submitButton.addEventListener('click', function (){
+                debugger
+                PayPalPayment.captureOrder({
+                    orderID: PayPalPayment.createOrder()
+                });
+            });
+        }
+
         this.renderCardFields = function() {
+            if (null !== this.config.vaultedPaymentSource) {
+                this.renderButtonForVaultedPayment();
+                return;
+            }
+
             if (!paypal.CardFields) {
                 console.error('Card Fields not available in this version of PayPal SDK');
                 return;

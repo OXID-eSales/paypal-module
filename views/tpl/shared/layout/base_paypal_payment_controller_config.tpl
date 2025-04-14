@@ -4,6 +4,7 @@
     [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
     [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
     [{assign var="purchaseUnits" value=$oView->getPurchaseUnits()}]
+    [{assign var="vaultedPaymentSource" value=$oView->getVaultedPaymentSource()}]
     [{assign var="oPPconfig" value=$oViewConf->getPayPalCheckoutConfig()}]
     [{assign var="isSandBox" value=$oPPconfig->isSandbox()}]
     [{assign var="captureStrategy" value=$oPPconfig->getPayPalStandardCaptureStrategy()}]
@@ -23,6 +24,7 @@
             shopThankYouPageUrl: '[{$sSelfLink|cat:"cl=thankyou&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             deliveryAddressId: '[{$oView->getDeliveryAddressMD5()}]',
             purchaseUnits: [{$purchaseUnits}],
+            vaultedPaymentSource: [{$vaultedPaymentSource}],
         }
 
         [{if $paymentId == 'oscpaypal'}]
