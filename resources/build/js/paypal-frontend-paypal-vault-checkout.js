@@ -1,3 +1,4 @@
+//enable vaulted payment 'Continue with saved payment method'button
 function registerClickListenerForSavedVaultRadioButtons() {
     const vaultingPaymentsourceRadioButtons = document.querySelectorAll(".vaulting_paymentsource");
     if (vaultingPaymentsourceRadioButtons && vaultingPaymentsourceRadioButtons.length > 0) {
@@ -20,7 +21,9 @@ function registerClickListenerForTheVaultCheckoutButton() {
             if (vaultingPaymentsourceRadioButtons && vaultingPaymentsourceRadioButtons.length > 0) {
                 vaultingPaymentsourceRadioButtons.forEach(function (paymentsource) {
                     if (paymentsource.checked) {
-                        document.getElementById("payment_oscpaypal").click();
+                        const paymenttype = paymentsource.dataset.paymenttype;
+                        const paymentSourceId = paymenttype === 'card' ? "payment_oscpaypal_acdc" : "payment_oscpaypal";
+                        document.getElementById(paymentSourceId).click();
 
                         let input = document.createElement("input");
                         input.type = "hidden";
