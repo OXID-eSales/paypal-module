@@ -22,18 +22,18 @@
             document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...result.shopOrder}})));
             document.dispatchEvent(new CustomEvent('payPalOrderCreated', new Object({detail: {...result.payPalOrder}})));
 
-            return result.payPalOrder.id
-        }
+            return result.payPalOrder.id;
+        };
 
         this.captureOrder = async function (data, actions) {
             let result = await PayPalPayment.backendRequest('shopOrderCaptureUrl', {}, {
                 'orderId': data.orderID
             });
 
-            if(result['status'] === 'success'){
+            if(result.status === 'success'){
                 PayPalPayment.afterCaptureOrder();
             }
-        }
+        };
 
         this.afterCaptureOrder = function (details) {
             window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
@@ -45,7 +45,7 @@
                 PayPalPayment.createOrder();
                 //order finalization will be handled in OrderController::finalizeacdc
             });
-        }
+        };
 
         this.renderCardFields = function() {
             if (null !== this.config.vaultedPaymentSource) {
@@ -109,7 +109,7 @@
                     });
                 }
             }
-        }
+        };
 
         return this.init();
     };

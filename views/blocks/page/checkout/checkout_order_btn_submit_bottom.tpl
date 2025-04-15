@@ -12,8 +12,8 @@
     <div id="[{$paymentId}]" class="paypal-button-container [{$buttonClass}] float-right pull-right"></div>
 [{/if}]
 
-[{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','out/src/js/paypal-dev.js')|filemtime}]
-<script id="dev_scripts23433" src="[{$oViewConf->getModuleUrl('osc_paypal', 'out/src/js/paypal-dev.js')|cat:"?"|cat:$sFileMTime}]"></script>
+[{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','out/src/js/paypal-frontend-acdc-payment-controller.js')|filemtime}]
+<script id="dev_scripts23433" src="[{$oViewConf->getModuleUrl('osc_paypal', 'out/src/js/paypal-frontend-acdc-payment-controller.js')|cat:"?"|cat:$sFileMTime}]"></script>
 
 
 [{if "oscpaypal_pui" == $paymentId}]
