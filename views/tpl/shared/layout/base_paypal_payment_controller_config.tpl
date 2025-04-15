@@ -1,28 +1,62 @@
 [{if method_exists($oView, 'isPayPalCheckoutPayment') && $oView->isPayPalCheckoutPayment()}]
     [{assign var="payment" value=$oView->getPayment()}]
     [{assign var="paymentId" value=$payment->getId()}]
+    [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
     [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
     [{assign var="purchaseUnits" value=$oView->getPurchaseUnits()}]
+    [{assign var="vaultedPaymentSource" value=$oView->getVaultedPaymentSource()}]
     [{assign var="oPPconfig" value=$oViewConf->getPayPalCheckoutConfig()}]
     [{assign var="isSandBox" value=$oPPconfig->isSandbox()}]
     [{assign var="captureStrategy" value=$oPPconfig->getPayPalStandardCaptureStrategy()}]
 
+    [{if $isSandBox}]
+        [{assign var="debug" value="&XDEBUG_SESSION=PHPSTORM"}]
+        [{else}]
+        [{assign var="debug" value=""}]
+    [{/if}]
+
     <script>
-        const PayPalPaymentControllerConfigurator = function () {
-            return {
-                shopOrderErrorUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=logError&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
-                shopOrderCreationStatusUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
-                shopOrderPatchingStatusUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
-                shopOrderDeleteUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=deleteShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
-                payPalOrderDetailsUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=fetchPayPalOrderDetails&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
-                updateOxUserWithPayPalCustomerIdUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=updateOxUserWithPayPalCustomerId&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
-                errorLogUrl: '[{$sSelfLink|cat:"cl=payment&payerror=2&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
-                shopThankYouPageUrl: '[{$sSelfLink|cat:"cl=thankyou&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{if $isSandBox}]&XDEBUG_SESSION=PHPSTORM[{/if}]',
-                deliveryAddressId: '[{$oView->getDeliveryAddressMD5()}]',
-                purchaseUnits: [{$purchaseUnits}],
-                buttonSelector: '#[{$paymentId}]',
-                captureStrategy: '[{if $captureStrategy == 'directly'}]CAPTURE[{else}]AUTHORIZE[{/if}]'
-            }
-        };
+        const PayPalPaymentControllerConfiguratorDefaults = {
+            shopOrderErrorUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=logError&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+            shopOrderDeleteUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=deleteShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+            payPalOrderDetailsUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=fetchPayPalOrderDetails&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+            errorLogUrl: '[{$sSelfLink|cat:"cl=payment&payerror=2&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+            shopThankYouPageUrl: '[{$sSelfLink|cat:"cl=thankyou&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+            deliveryAddressId: '[{$oView->getDeliveryAddressMD5()}]',
+            purchaseUnits: [{$purchaseUnits}],
+            vaultedPaymentSource: [{$vaultedPaymentSource}],
+        }
+
+        [{if $paymentId == 'oscpaypal'}]
+                window.PayPalPaymentControllerConfigurator = function () {
+                return Object.assign (PayPalPaymentControllerConfiguratorDefaults, {
+                    shopOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    shopOrderPatchingUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    updateOxUserWithPayPalCustomerIdUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=updateOxUserWithPayPalCustomerId&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    buttonSelector: 'div#[{$paymentId}]',
+                    captureStrategy: '[{if $captureStrategy == 'directly'}]CAPTURE[{else}]AUTHORIZE[{/if}]',
+                    paymentId: 'oscpaypal',
+                });
+            };
+    [{/if}]
+
+    [{if $paymentId == 'oscpaypal_acdc'}]
+                window.PayPalPaymentControllerConfigurator = function () {
+                return Object.assign (PayPalPaymentControllerConfiguratorDefaults, {
+                    shopOrderCaptureUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=captureOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    shopOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createAcdcOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    cardFields: true, //probably not needed when payment controller will be split
+                    paymentId: '[{$paymentId}]', //probably not needed when payment controller will be split
+                    buttonSelector: 'button#[{$paymentId}]'
+                });
+            };
+
+    [{/if}]
+
+        window.PayPalPaymentControllerConfig = new PayPalPaymentControllerConfigurator();
+        document.dispatchEvent(
+            new CustomEvent('PayPalPaymentControllerConfigCreated', { detail: window.PayPalPaymentControllerConfig })
+        );
     </script>
+
 [{/if}]

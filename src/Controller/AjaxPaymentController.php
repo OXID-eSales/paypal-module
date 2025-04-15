@@ -7,18 +7,25 @@
 
 namespace OxidSolutionCatalysts\PayPal\Controller;
 
+use Exception;
 use JsonException;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\EshopCommunity\Application\Model\User;
-use OxidEsales\EshopCommunity\Core\Field;
+use OxidEsales\Eshop\Application\Model\User;
+use OxidEsales\Eshop\Core\Field;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 
 class AjaxPaymentController extends ProxyController
 {
@@ -32,6 +39,119 @@ class AjaxPaymentController extends ProxyController
         parent::__construct();
 
         $this->logger = $this->getServiceFromContainer(Logger::class);
+    }
+
+
+    public function dummyReturnMethod(): void
+    {
+        $data = $this->getRequestParameters();
+
+        file_put_contents('/var/www/'.__FUNCTION__.'.json', json_encode($data));
+        $r=1;
+    }
+    public function dummyReturnMethod2(): void
+    {
+        $data = $this->getRequestParameters();
+
+        file_put_contents('/var/www/'.__FUNCTION__.'.json', json_encode($data));
+        $r=1;
+    }
+
+    public function captureOrder(): void
+    {
+        $data = $this->getRequestParameters();
+        $payPalOrderId = $data['orderId'];
+
+        $this->logger->log('debug', sprintf('Order with id %s capture', $payPalOrderId));
+
+        $orderService = Registry::get(ServiceFactory::class)->getOrderService();
+        $request = new OrderCaptureRequest();
+        try {
+            $orderService->capturePaymentForOrder(
+                '',
+                $payPalOrderId,
+                $request,
+                '',
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+            );
+        } catch (ApiException $exception) {
+            $issue = $exception->getErrorIssue();
+            $languageObject = Registry::getLang();
+            $translatedErrorMessage = $languageObject->translateString(
+                'OSC_PAYPAL_' . $issue,
+                (int)$languageObject->getBaseLanguage(),
+                false
+            );
+            $this->logger->log('error', $exception->getMessage(), [$exception]);
+
+            $this->outputJson([
+                'status' => 'error',
+                'error' => $translatedErrorMessage
+            ]);
+        }
+
+        $this->outputJson([
+            'status' => 'success'
+        ]);
+    }
+
+    /**
+     * @psalm-suppress InternalMethod
+     */
+    public function createAcdcOrder(): void
+    {
+        $data = $this->getRequestParameters();
+        $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'];
+        $_POST['vaultPayment'] = $data['vaultPayment'] ? "true" : "false";
+        $_POST['oscPayPalPaymentTypeForVaulting'] = PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        /** @var Logger $logger */
+        $logger = $this->getServiceFromContainer(Logger::class);
+        $order = oxNew(Order::class);
+        $user = oxNew(User::class);
+        $basket = Registry::getSession()->getBasket();
+
+        if (!$user->loadActiveUser()) {
+            $this->permissionsCheck();
+        }
+
+        Registry::getSession()->setVariable('sess_challenge', Registry::getUtilsObject()->generateUID());
+        try {
+            //finalizing ordering process (validating, storing order into DB, executing payment, setting status ...)
+            $iSuccess = $order->finalizePayPalOrder($basket, $user);
+
+            // performing special actions after user finishes order (assignment to special user groups)
+            $user->onOrderExecute($basket, $iSuccess);
+        } catch (Exception $exception) {
+            $logger->log('error', $exception->getMessage(), [$exception]);
+            $this->outputJson(['error' => 'failed to execute shop order']);
+            return;
+        }
+
+        $response = $paymentService->doCreatePatchedOrder(
+            Registry::getSession()->getBasket()
+        );
+
+        if (!($paypalOrderId = $response['id'])) {
+            $this->outputJson(['error' => 'cannot create paypal order']);
+            return;
+        }
+
+        $sessionOrderId = (string)Registry::getSession()->getVariable('sess_challenge');
+        $payPalOrder = $paymentService->getPayPalCheckoutOrder($sessionOrderId, $paypalOrderId);
+        $payPalOrder->setStatus($response['status']);
+        $payPalOrder->save();
+
+        PayPalSession::storePayPalOrderId($paypalOrderId);
+
+        $this->outputJson([
+            'status' => 'success',
+            'shopOrder' => [
+                'shopOrderId' => $order->oxorder__oxid->value,
+                'customId' => $paymentService->getCustomIdParameter($order)
+            ],
+            'payPalOrder' => $response,
+        ]);
     }
 
     /**
@@ -82,7 +202,6 @@ class AjaxPaymentController extends ProxyController
             $this->outputJson([
                 'status' => 'error'
             ]);
-            return;
         }
     }
 

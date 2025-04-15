@@ -33,6 +33,7 @@ use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 
 /**
@@ -208,13 +209,24 @@ class Order extends Order_parent
         //TODO: reduce calls to api, see above
         if (is_null($transactionId)) {
             $capture = $this->getOrderPaymentCapture($payPalOrderId);
-            if (!$payPalPaymentSuccess || is_null($capture) || $capture->status === 'DECLINED') {
-                // We don't have a capture but the order has already been created with the order number.
-                // so we set the order to "oxtransstatus" = ERROR
-                // The Merchant has the opportunity to see what is going on and can contact the customer if necessary
-                $this->_setOrderStatus('ERROR');
-                throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
+            $orderService = Registry::get(ServiceFactory::class)->getOrderService();
+            if($payPalPaymentSuccess){
+                $request = new OrderCaptureRequest();
+                try {
+                    $capture = $orderService->capturePaymentForOrder(
+                        '',
+                        $payPalOrderId,
+                        $request,
+                        '',
+                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+                    );
+                } catch (ApiException $exception) {
+                    $this->_setOrderStatus('ERROR');
+                    throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
+                }
+
             }
+
             $this->setTransId($capture->id);
         }
 

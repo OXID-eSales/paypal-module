@@ -42,11 +42,7 @@ $aLang = [
     'OSC_PAYPAL_LOG_IN_TO_CONTINUE'                 => 'Bitte loggen Sie sich ein, um die Bestellung abzuschliessen.',
     'OSC_PAYPAL_3DSECURITY_ERROR'                   => 'Die Sicherheitsüberprüfung ist fehlgeschlagen, bitte erneut versuchen.',
     'OSC_PAYPAL_ORDEREXECUTION_ERROR'               => 'Der Bezahlvorgang wurde abgebrochen.',
-    'OSCPAYPAL_KILL_EXPRESS_SESSION_REASON'        => 'Der Warenkorb wurde geändert. Aus diesem Grund wurde der aktive PayPal-Zahlvorgang automatisch abgebrochen. Bitte starten Sie die Zahlung mit PayPal erneut. Es wurde noch kein Geld von PayPal eingezogen.',
-    'OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'        => 'Ihre Bestellung wird geprüft, das kann bis zu 60 Sekunden dauern. Bitte kurz warten und dann erneut auf "zahlungspflichtig bestellen" klicken.',
-    'OSC_PAYPAL_LOG_IN_TO_CONTINUE'                 => 'Bitte loggen Sie sich ein, um die Bestellung abzuschliessen.',
-    'OSC_PAYPAL_3DSECURITY_ERROR'                   => 'Die Sicherheitsüberprüfung ist fehlgeschlagen, bitte erneut versuchen.',
-    'OSC_PAYPAL_ORDEREXECUTION_ERROR'               => 'Der Bezahlvorgang wurde abgebrochen.',
+    'OSCPAYPAL_KILL_EXPRESS_SESSION_REASON'         => 'Der Warenkorb wurde geändert. Aus diesem Grund wurde der aktive PayPal-Zahlvorgang automatisch abgebrochen. Bitte starten Sie die Zahlung mit PayPal erneut. Es wurde noch kein Geld von PayPal eingezogen.',
 
     'OSC_PAYPAL_VAULTING_MENU'                      => 'PayPal Zahlart speichern',
     'OSC_PAYPAL_VAULTING_MENU_CARD'                 => 'Kredit- oder Debitkarte speichern',
@@ -62,7 +58,6 @@ $aLang = [
     'OSC_PAYPAL_CARD_ENDING_IN'                     => 'endet mit ●●●',
     'OSC_PAYPAL_CARD_PAYPAL_PAYMENT'                => 'PayPal Zahlung mit',
     'OSC_PAYPAL_DELETE_FAILED'                      => 'Beim Löschen Ihrer Zahlart ist etwas schiefgelaufen.',
-    'OSCPAYPAL_KILL_EXPRESS_SESSION_REASON'         => 'Der Warenkorb wurde geändert. Aus diesem Grund wurde der aktive PayPal-Zahlvorgang automatisch abgebrochen. Bitte starten Sie die Zahlung mit PayPal erneut. Es wurde noch kein Geld von PayPal eingezogen.',
-    'OSC_PAYPAL_RUNNING_EXPRESS_CHECKOUT_SESSION_HINT' => 'Zahlung erfolgt mit PayPal-Express.',
-    'OSC_PAYPAL_RUNNING_EXPRESS_CHECKOUT_SESSION_HINT_AFREF' => 'Hier zum Bestellabschluss.',
+    'OSC_RUNNING_PAYPAL_CHECKOUT_SESSION_HINT' => 'Zahlung erfolgt mit PayPal-Zahlart.',
+    'OSC_RUNNING_PAYPAL_CHECKOUT_SESSION_HINT_AFREF' => 'Hier zum Bestellabschluss.',
 ];

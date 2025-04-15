@@ -1,34 +1,64 @@
+function deselectRadioButtons(selector) {
+    const radioButtons = document.querySelectorAll(selector);
+    radioButtons.forEach(item => {
+        item.checked = false;
+    });
+}
+
+function registerClickListenerForPaymentMethodsRadioButtons() {
+    const paymentMethodsRadioButtons = document.getElementById('payment').querySelectorAll('[type="radio"]');
+    paymentMethodsRadioButtons.forEach(function(paymentMethod) {
+        paymentMethod.onclick = function() {
+            if (paymentMethod.checked) {
+                document.getElementById("paypalVaultCheckoutButton").disabled = true;
+                document.getElementById("paymentNextStepBottom").disabled = false;
+                deselectRadioButtons(".vaulting_paymentsource");
+            }
+        };
+    });
+}
+
 function registerClickListenerForSavedVaultRadioButtons() {
-    const vaultingPaymentsourceRadioButtons = document.querySelectorAll(".vaulting_paymentsource");
-    if (vaultingPaymentsourceRadioButtons && vaultingPaymentsourceRadioButtons.length > 0) {
-        vaultingPaymentsourceRadioButtons.forEach(function (paymentsource) {
-            paymentsource.onclick = function () {
+    const vaultingPaymentSourceRadioButtons = document.querySelectorAll(".vaulting_paymentsource");
+    if (vaultingPaymentSourceRadioButtons && vaultingPaymentSourceRadioButtons.length > 0) {
+        vaultingPaymentSourceRadioButtons.forEach(function(paymentsource) {
+            paymentsource.onclick = function() {
                 if (paymentsource.checked) {
                     document.getElementById("paypalVaultCheckoutButton").disabled = false;
+                    document.getElementById("paymentNextStepBottom").disabled = true;
+                    deselectRadioButtons('#payment [type="radio"]');
                 }
             };
         });
     }
 }
 
-// clicking the vault checkout button will submit the form for payment
 function registerClickListenerForTheVaultCheckoutButton() {
     const paypalVaultCheckoutButton = document.getElementById("paypalVaultCheckoutButton");
     if (paypalVaultCheckoutButton) {
-        paypalVaultCheckoutButton.onclick = function () {
-            const vaultingPaymentsourceRadioButtons = document.querySelectorAll(".vaulting_paymentsource");
-            if (vaultingPaymentsourceRadioButtons && vaultingPaymentsourceRadioButtons.length > 0) {
-                vaultingPaymentsourceRadioButtons.forEach(function (paymentsource) {
+        paypalVaultCheckoutButton.onclick = function() {
+            const vaultingPaymentSourceRadioButtons = document.querySelectorAll(".vaulting_paymentsource");
+            if (vaultingPaymentSourceRadioButtons && vaultingPaymentSourceRadioButtons.length > 0) {
+                vaultingPaymentSourceRadioButtons.forEach(function(paymentsource) {
                     if (paymentsource.checked) {
-                        document.getElementById("payment_oscpaypal").click();
+                        const paymenttype = paymentsource.dataset.paymenttype;
+                        const paymentId = paymenttype === 'card' ? "oscpaypal_acdc" : "oscpaypal";
 
-                        let input = document.createElement("input");
-                        input.type = "hidden";
-                        input.name = "vaultingpaymentsource";
-                        input.value = paymentsource.dataset.index;
-                        document.getElementById("payment").appendChild(input);
+                        let vaultedPaymentInput = document.createElement("input");
+                        vaultedPaymentInput.type = "hidden";
+                        vaultedPaymentInput.name = "vaultingpaymentsource";
+                        vaultedPaymentInput.value = paymentsource.dataset.index;
+                        document.getElementById("payment").appendChild(vaultedPaymentInput);
 
+                        let paymentIdInput = document.createElement("input");
+                        paymentIdInput.type = "hidden";
+                        paymentIdInput.name = "paymentid";
+                        paymentIdInput.value = paymentId;
+                        document.getElementById("payment").appendChild(paymentIdInput);
+
+                        document.getElementById("paymentNextStepBottom").disabled = false;
                         document.getElementById("paymentNextStepBottom").click();
+                        document.getElementById("paymentNextStepBottom").disabled = true;
                     }
                 });
             }
@@ -37,6 +67,7 @@ function registerClickListenerForTheVaultCheckoutButton() {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
+    registerClickListenerForPaymentMethodsRadioButtons();
     registerClickListenerForSavedVaultRadioButtons();
     registerClickListenerForTheVaultCheckoutButton();
 });

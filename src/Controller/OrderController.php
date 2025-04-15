@@ -685,6 +685,31 @@ class OrderController extends OrderController_parent
 
     public function getPurchaseUnits()
     {
-        return \OxidEsales\EshopCommunity\Core\Registry::get(PayPalPurchaseUnitsFactory::class)->getPurchaseUnits();
+        return Registry::get(PayPalPurchaseUnitsFactory::class)->getPurchaseUnits();
+    }
+
+    public function getVaultedPaymentSource(): string
+    {
+        $user = $this->getUser();
+        $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
+        $session = Registry::getSession();
+        $selectedVaultPaymentSourceIndex = $session->getVariable("selectedVaultPaymentSourceIndex");
+        $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+
+        if (null === $selectedVaultPaymentSourceIndex){
+            return 'null';
+        }
+
+        $selectedPaymentToken = $vaultingService->getVaultPaymentTokenByIndex(
+            $payPalCustomerId,
+            $selectedVaultPaymentSourceIndex
+        );
+
+        return !empty($selectedPaymentToken) ? json_encode([
+            "token" => [
+                "id"    => $selectedPaymentToken['id'],
+                "type"  => "SETUP_TOKEN",
+            ]
+        ]) : 'null';
     }
 }
