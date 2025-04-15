@@ -76,12 +76,12 @@ final class PayPalDefinitions
         self::GOOGLEPAY_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
-                    'desc' => 'GooglePay',
+                    'desc' => 'PayPal GooglePay',
                     'longdesc' => '',
                     'longdesc_beta' => 'Bezahlen Sie bequem mit GooglePay. Starten Sie direkt von der Detailsseite oder im Warenkorb.'
                 ],
                 'en' => [
-                    'desc' => 'GooglePay',
+                    'desc' => 'PayPal GooglePay',
                     'longdesc' => '',
                     'longdesc_beta' => 'Pay conveniently with GooglePay. Start directly from the details page or in the shopping cart.'
                 ]
@@ -97,12 +97,12 @@ final class PayPalDefinitions
         self::APPLEPAY_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
-                    'desc' => 'ApplePay',
+                    'desc' => 'PayPal ApplePay',
                     'longdesc' => '',
                     'longdesc_beta' => 'Bezahlen Sie bequem mit ApplePay. Starten Sie direkt von der Detailsseite oder im Warenkorb.'
                 ],
                 'en' => [
-                    'desc' => 'ApplePay',
+                    'desc' => 'PayPal ApplePay',
                     'longdesc' => '',
                     'longdesc_beta' => 'Pay conveniently with ApplePay. Start directly from the details page or in the shopping cart.'
                 ]
@@ -159,13 +159,13 @@ final class PayPalDefinitions
         self::PUI_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
-                    'desc' => 'Rechnungskauf',
+                    'desc' => 'PayPal Rechnungskauf',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="" title="Rechnungskauf" style="float: left;margin-right: 10px;" />
                         Bezahlen Sie bequem mit PayPal'
                 ],
                 'en' => [
-                    'desc' => 'Pay upon Invoice',
+                    'desc' => 'PayPal Pay upon Invoice',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="" title="Pay upon Invoice" style="float: left;margin-right: 10px;" />
                         Pay conveniently with PayPal'
@@ -181,13 +181,13 @@ final class PayPalDefinitions
         self::SEPA_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
-                    'desc' => 'SEPA Bankeinzug',
+                    'desc' => 'PayPal SEPA Bankeinzug',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="" title="SEPA Bankeinzug" style="float: left;margin-right: 10px;" />
                         Bezahlen Sie bequem mit SEPA Bankeinzug'
                 ],
                 'en' => [
-                    'desc' => 'SEPA direct debit',
+                    'desc' => 'PayPal SEPA direct debit',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="" title="SEPA direct debit" style="float: left;margin-right: 10px;" />
                         Pay conveniently with SEPA direct debit'
@@ -225,13 +225,13 @@ final class PayPalDefinitions
         self::ACDC_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
-                    'desc' => 'Kreditkarte',
+                    'desc' => 'PayPal Kreditkarte',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="" title="Kreditkarte" style="float: left;margin-right: 10px;" />
                         Bezahlen Sie bequem mit Kreditkarte'
                 ],
                 'en' => [
-                    'desc' => 'Creditcard',
+                    'desc' => 'PayPal Creditcard',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="" title="Creditcard" style="float: left;margin-right: 10px;" />
                         Pay conveniently with Creditcard'
@@ -249,7 +249,7 @@ final class PayPalDefinitions
         'oscpaypal_bancontact' => [
             'descriptions' => [
                 'de' => [
-                    'desc' => 'Bancontact',
+                    'desc' => 'PayPal Bancontact',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_bancontact_color.svg" title="Bancontact" style="float: left;margin-right: 10px;" />
                         Bancontact ist die am weitesten verbreitete, akzeptierte und vertrauenswürdigste
@@ -260,7 +260,7 @@ final class PayPalDefinitions
                         als 20 belgische Banken ausgestellt und existiert ausschließlich in Belgien.'
                 ],
                 'en' => [
-                    'desc' => 'Bancontact',
+                    'desc' => 'PayPal Bancontact',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_bancontact_color.svg" title="Bancontact" style="float: left;margin-right: 10px;" />
                         Bancontact is the most widely used, accepted and trusted electronic payment
@@ -283,7 +283,7 @@ final class PayPalDefinitions
         'oscpaypal_blik' => [
             'descriptions' => [
                 'de' => [
-                    'desc' => 'BLIK',
+                    'desc' => 'PayPal BLIK',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_blik_color.svg" title="BLIK" style="float: left;margin-right: 10px;" />
                         BLIK wurde 2015 in Polen gegründet, eingeführt und entwickelt und ist ein Muss für
@@ -295,7 +295,7 @@ final class PayPalDefinitions
                         OneClick ist eine nahtlose Flow-Integration, die eine großartiges Verbrauchererlebnis bietet.'
                 ],
                 'en' => [
-                    'desc' => 'BLIK',
+                    'desc' => 'PayPal BLIK',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_blik_color.svg" title="BLIK" style="float: left;margin-right: 10px;" />
                         Introduced in 2015, and created and developed in Poland, BLIK is a must-have local
@@ -319,7 +319,7 @@ final class PayPalDefinitions
         'oscpaypal_eps' => [
             'descriptions' => [
                 'de' => [
-                    'desc' => 'EPS',
+                    'desc' => 'PayPal EPS',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_eps_color.svg" title="eps" style="float: left;margin-right: 10px;" />
                         eps ist die wichtigste Zahlungsmethode für Banküberweisungen in Österreich,
@@ -329,7 +329,7 @@ final class PayPalDefinitions
                         wird von eps garantiert.'
                 ],
                 'en' => [
-                    'desc' => 'EPS',
+                    'desc' => 'PayPal EPS',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_eps_color.svg" title="eps" style="float: left;margin-right: 10px;" />
                         eps is the main bank transfer payment method in Austria, built by Austrian banks:
@@ -350,7 +350,7 @@ final class PayPalDefinitions
         self::GIROPAY_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
-                    'desc' => 'GiroPay',
+                    'desc' => 'PayPal GiroPay',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_giropay_color.svg" title="Giropay" style="float: left;margin-right: 10px;" />
                          Mit Giropay nutzen Verbraucher das sichere Online-Banking ihrer Bank:
@@ -360,7 +360,7 @@ final class PayPalDefinitions
                          Kunden, die Giropay verwenden (54 % der Gesamtbevölkerung).'
                 ],
                 'en' => [
-                    'desc' => 'GiroPay',
+                    'desc' => 'PayPal GiroPay',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_giropay_color.svg" title="Giropay" style="float: left;margin-right: 10px;" />
                         With Giropay, consumers are using their bank’s secure online banking:
@@ -383,7 +383,7 @@ final class PayPalDefinitions
         'oscpaypal_ideal' => [
             'descriptions' => [
                 'de' => [
-                    'desc' => 'iDEAL',
+                    'desc' => 'PayPal iDEAL',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_ideal_color.svg" title="iDEAL" style="float: left;margin-right: 10px;" />
                         iDEAL ist eine der beliebtesten Zahlungsmethoden in den Niederlanden.
@@ -395,7 +395,7 @@ final class PayPalDefinitions
                          integriert ist, die von allen Banken angeboten werden.'
                 ],
                 'en' => [
-                    'desc' => 'iDEAL',
+                    'desc' => 'PayPal iDEAL',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_ideal_color.svg" title="iDEAL" style="float: left;margin-right: 10px;" />
                         iDEAL is one of the most popular payment method in the Netherlands,
@@ -418,7 +418,7 @@ final class PayPalDefinitions
         'oscpaypal_przelewy24' => [
             'descriptions' => [
                 'de' => [
-                    'desc' => 'Przelewy24',
+                    'desc' => 'PayPal Przelewy24',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_przelewy24_color.svg" title="Przelewy24" style="float: left;margin-right: 10px;" />
                         Przelewy24, oft auch als P24 bezeichnet, ist eine der wichtigsten Online-Zahlungs-
@@ -426,7 +426,7 @@ final class PayPalDefinitions
                         fast 10.000 online Händler bieten diese Zahlungsmethode in ihren Online-Shops an.'
                 ],
                 'en' => [
-                    'desc' => 'Przelewy24',
+                    'desc' => 'PayPal Przelewy24',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_przelewy24_color.svg" title="Przelewy24" style="float: left;margin-right: 10px;" />
                         Przelewy24, often referred to as P24, is one of Poland’s primary online payment
