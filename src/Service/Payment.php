@@ -180,11 +180,15 @@ class Payment
             $status = $response->status ?: '';
         }
 
+        $order = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
+        $order->load($basket->getOrderId());
+
         // patch the order only if paypalOrderId exists
         if ($paypalOrderId) {
             $this->doPatchPayPalOrder(
                 $basket,
-                $paypalOrderId
+                $paypalOrderId,
+                $this->getCustomIdParameter($order)
             );
         }
 
@@ -201,8 +205,8 @@ class Payment
      */
     public function doPatchPayPalOrder(
         EshopModelBasket $basket,
-        string $checkoutOrderId,
-        string $shopOrderId = ''
+        string           $payPalOrderId,
+        string           $shopOrderId = ''
     ): void {
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
@@ -210,7 +214,7 @@ class Payment
         // Update Order
         try {
             $orderService->updateOrder(
-                $checkoutOrderId,
+                $payPalOrderId,
                 $this->patchRequestFactory->getOrderPatches($basket, $shopOrderId),
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
