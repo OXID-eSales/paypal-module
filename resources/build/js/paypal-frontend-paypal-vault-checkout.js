@@ -21,6 +21,7 @@ function registerClickListenerForTheVaultCheckoutButton() {
             if (vaultingPaymentsourceRadioButtons && vaultingPaymentsourceRadioButtons.length > 0) {
                 vaultingPaymentsourceRadioButtons.forEach(function (paymentsource) {
                     if (paymentsource.checked) {
+//@TODO: selection shoyuld be removed and force user to select manually
                         const paymenttype = paymentsource.dataset.paymenttype;
                         const paymentSourceId = paymenttype === 'card' ? "payment_oscpaypal_acdc" : "payment_oscpaypal";
                         document.getElementById(paymentSourceId).click();

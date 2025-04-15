@@ -41,6 +41,22 @@ class AjaxPaymentController extends ProxyController
         $this->logger = $this->getServiceFromContainer(Logger::class);
     }
 
+
+    public function dummyReturnMethod(): void
+    {
+        $data = $this->getRequestParameters();
+
+        file_put_contents('/var/www/'.__FUNCTION__.'.json', json_encode($data));
+        $r=1;
+    }
+    public function dummyReturnMethod2(): void
+    {
+        $data = $this->getRequestParameters();
+
+        file_put_contents('/var/www/'.__FUNCTION__.'.json', json_encode($data));
+        $r=1;
+    }
+
     public function captureOrder(): void
     {
         $data = $this->getRequestParameters();
@@ -126,8 +142,7 @@ class AjaxPaymentController extends ProxyController
         $payPalOrder->setStatus($response['status']);
         $payPalOrder->save();
 
-        //currently needed for dev, IDK if that necessary at the end
-        PayPalSession::unsetPayPalOrderId();
+        PayPalSession::storePayPalOrderId($paypalOrderId);
 
         $this->outputJson([
             'status' => 'success',

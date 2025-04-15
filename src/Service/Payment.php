@@ -156,6 +156,11 @@ class Payment
     public function doCreatePatchedOrder(
         EshopModelBasket $basket
     ): array {
+        $config = Registry::getConfig();
+//remove debug part after dev!!!
+        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc&XDEBUG_SESSION=PHPSTORM';
+        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=ajaxpay&fnc=deleteShopOrder&XDEBUG_SESSION=PHPSTORM';
+        
         // PatchOrders access an OrderCall that has taken place before.
         // For this reason, the payPalPartnerAttributionId does not have
         // to be transmitted again in the case of a PatchCall
@@ -167,8 +172,8 @@ class Payment
             null,
             '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-            null,
-            null,
+            $returnUrl,
+            $cancelUrl,
             false
         );
 
@@ -196,6 +201,10 @@ class Payment
             'id' => $paypalOrderId,
             'status' => $status
         ];
+
+        if($status === 'PAYER_ACTION_REQUIRED') {
+            $return['links'] = $response->links;
+        }
 
         return $return;
     }

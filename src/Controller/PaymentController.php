@@ -67,23 +67,6 @@ class PaymentController extends PaymentController_parent
                                 $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
                                 $vaultedPaymentSources[$paymentType][] = $paymentSource["brand"] . " " .
                                     $string . $paymentSource["last_digits"];
-                            } elseif ($paymentType === "paypal" && $moduleSettings->isVaultingAllowedForPayPal()) {
-                                $string = $lang->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
-
-                                $email = $paymentSource["email_address"];
-                                $payer_id = $paymentSource["payer_id"];
-
-                                if (!isset($uniquePaypalVaultedPaymentSources[$email])) {
-                                    $uniquePaypalVaultedPaymentSources[$email] = [];
-                                }
-
-                                if (in_array($payer_id, $uniquePaypalVaultedPaymentSources[$email])) {
-                                    continue;
-                                }
-
-                                $uniquePaypalVaultedPaymentSources[$email][] = $payer_id;
-                                $vaultedPaymentSources[$paymentType][] =
-                                    $string . " " . $email;
                             }
                         }
                     }
