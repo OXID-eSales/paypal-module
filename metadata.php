@@ -12,6 +12,7 @@ use OxidEsales\Eshop\Application\Controller\PaymentController;
 use OxidEsales\Eshop\Application\Controller\Admin\OrderMain;
 use OxidEsales\Eshop\Application\Controller\Admin\OrderArticle;
 use OxidEsales\Eshop\Application\Controller\Admin\OrderOverview;
+use OxidEsales\Eshop\Application\Controller\Admin\ModuleConfiguration;
 use OxidEsales\Eshop\Application\Model\Article;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\Order;
@@ -24,7 +25,7 @@ use OxidEsales\Eshop\Core\ShopControl;
 use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Component\BasketComponent as PayPalBasketComponent;
 use OxidSolutionCatalysts\PayPal\Component\UserComponent as PayPalUserComponent;
-use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalConfigController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\ModuleConfiguration as PaypalModuleConfiguration;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalOrderController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderMain as PayPalOrderMainController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderArticle as PayPalOrderArticleController;
@@ -48,6 +49,7 @@ use OxidSolutionCatalysts\PayPal\Model\User as PayPalUser;
 use OxidSolutionCatalysts\PayPal\Model\Payment as PayPalPayment;
 use OxidSolutionCatalysts\PayPal\Model\PaymentGateway as PayPalPaymentGateway;
 
+
 $sMetadataVersion = '2.1';
 
 /**
@@ -69,6 +71,7 @@ $aModule = [
     'url' => 'https://www.oxid-esales.com',
     'email' => 'info@oxid-esales.com',
     'extend' => [
+        ModuleConfiguration::class => PaypalModuleConfiguration::class,
         InputValidator::class => PayPalInputValidator::class,
         ShopControl::class => PayPalShopControl::class,
         ViewConfig::class => PayPalViewConfig::class,
@@ -88,7 +91,7 @@ $aModule = [
         State::class => PayPalState::class
     ],
     'controllers' => [
-        'oscpaypalconfig'       => PayPalConfigController::class,
+        'oscpaypalconfig'       => PaypalModuleConfiguration::class,
         'oscpaypalwebhook'      => WebhookController::class,
         'oscpaypalproxy'        => ProxyController::class,
         'ajaxpay'               => AjaxPaymentController::class,
@@ -158,6 +161,7 @@ $aModule = [
         'onDeactivate' => '\OxidSolutionCatalysts\PayPal\Core\Events\Events::onDeactivate'
     ],
     'blocks' => [
+        //admin
         [
             'template' => 'headitem.tpl',
             'block' => 'admin_headitem_inccss',
