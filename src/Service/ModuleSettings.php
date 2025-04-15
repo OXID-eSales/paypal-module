@@ -130,11 +130,31 @@ class ModuleSettings
             $this->getLiveClientId();
     }
 
+    public function getLiveClientId(): string
+    {
+        return (string)$this->getSettingValue('oscPayPalClientId');
+    }
+
+    public function getSandboxClientId(): string
+    {
+        return (string)$this->getSettingValue('oscPayPalSandboxClientId');
+    }
+
     public function getClientSecret(): string
     {
         return $this->isSandbox() ?
             $this->getSandboxClientSecret() :
             $this->getLiveClientSecret();
+    }
+
+    public function getLiveClientSecret(): string
+    {
+        return (string)$this->getSettingValue('oscPayPalClientSecret');
+    }
+
+    public function getSandboxClientSecret(): string
+    {
+        return (string)$this->getSettingValue('oscPayPalSandboxClientSecret');
     }
 
     public function getMerchantId(): string
@@ -144,11 +164,31 @@ class ModuleSettings
             $this->getLiveMerchantId();
     }
 
+    public function getLiveMerchantId(): string
+    {
+        return (string)$this->getSettingValue('oscPayPalClientMerchantId');
+    }
+
+    public function getSandboxMerchantId(): string
+    {
+        return (string)$this->getSettingValue('oscPayPalSandboxClientMerchantId');
+    }
+
     public function getWebhookId(): string
     {
         return $this->isSandbox() ?
             $this->getSandboxWebhookId() :
             $this->getLiveWebhookId();
+    }
+
+    public function getLiveWebhookId(): string
+    {
+        return (string)$this->getSettingValue('oscPayPalWebhookId');
+    }
+
+    public function getSandboxWebhookId(): string
+    {
+        return (string)$this->getSettingValue('oscPayPalSandboxWebhookId');
     }
 
     public function getSupportedLocales(): array
@@ -163,68 +203,6 @@ class ModuleSettings
         return $this->getSettingValue('oscPayPalLocales');
     }
 
-    public function isAcdcEligibility(): bool
-    {
-        return $this->isSandbox() ?
-            $this->isSandboxAcdcEligibility() :
-            $this->isLiveAcdcEligibility();
-    }
-
-
-    public function isPuiEligibility(): bool
-    {
-        return $this->isSandbox() ?
-            $this->isSandboxPuiEligibility() :
-            $this->isLivePuiEligibility();
-    }
-
-    public function isVaultingEligibility(): bool
-    {
-        return $this->isSandbox() ?
-            $this->isSandBoxVaultingEligibility() :
-            $this->isLiveVaultingEligibility();
-    }
-
-    public function getLiveClientId(): string
-    {
-        return (string)$this->getSettingValue('oscPayPalClientId');
-    }
-
-    public function getLiveClientSecret(): string
-    {
-        return (string)$this->getSettingValue('oscPayPalClientSecret');
-    }
-
-    public function getLiveMerchantId(): string
-    {
-        return (string)$this->getSettingValue('oscPayPalClientMerchantId');
-    }
-
-    public function getLiveWebhookId(): string
-    {
-        return (string)$this->getSettingValue('oscPayPalWebhookId');
-    }
-
-    public function getSandboxClientId(): string
-    {
-        return (string)$this->getSettingValue('oscPayPalSandboxClientId');
-    }
-
-    public function getSandboxClientSecret(): string
-    {
-        return (string)$this->getSettingValue('oscPayPalSandboxClientSecret');
-    }
-
-    public function getSandboxMerchantId(): string
-    {
-        return (string)$this->getSettingValue('oscPayPalSandboxClientMerchantId');
-    }
-
-    public function getSandboxWebhookId(): string
-    {
-        return (string)$this->getSettingValue('oscPayPalSandboxWebhookId');
-    }
-
     public function showPayPalBasketButton(): bool
     {
         return $this->getSettingValue('oscPayPalShowBasketButton') &&
@@ -233,7 +211,6 @@ class ModuleSettings
 
     public function showPayPalMiniBasketButton(): bool
     {
-
         return
             $this->getSettingValue('oscPayPalShowMiniBasketButton') &&
             ($this->isPayPalCheckoutExpressPaymentEnabled() || $this->isAdmin());
@@ -376,10 +353,28 @@ class ModuleSettings
         return (int)$this->getSettingValue('oscPayPalStartTimeCleanUpOrders');
     }
 
+    public function isAcdcEligibility(): bool
+    {
+        return $this->isSandbox() ?
+            $this->isSandboxAcdcEligibility() :
+            $this->isLiveAcdcEligibility();
+    }
 
     public function isLiveAcdcEligibility(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalAcdcEligibility');
+    }
+
+    public function isSandboxAcdcEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSandboxAcdcEligibility');
+    }
+
+    public function isPuiEligibility(): bool
+    {
+        return $this->isSandbox() ?
+            $this->isSandboxPuiEligibility() :
+            $this->isLivePuiEligibility();
     }
 
     public function isLivePuiEligibility(): bool
@@ -387,45 +382,162 @@ class ModuleSettings
         return (bool)$this->getSettingValue('oscPayPalPuiEligibility');
     }
 
-    public function isLiveVaultingEligibility(): bool
-    {
-        return (bool)$this->getSettingValue('oscPayPalVaultingEligibility');
-    }
-    public function isLiveApplePayEligibility(): bool
-    {
-        return (bool)$this->getSettingValue('oscPayPalApplePayEligibility');
-    }
-    public function isLiveGooglePayEligibility(): bool
-    {
-        return (bool)$this->getSettingValue('oscPayPalGooglePayEligibility');
-    }
-    public function isGooglePayEligibility(): bool
-    {
-        return $this->isSandbox() ?
-            $this->isSandboxGooglePayEligibility() :
-            $this->isLiveGooglePayEligibility();
-    }
-    public function isSandboxAcdcEligibility(): bool
-    {
-        return (bool)$this->getSettingValue('oscPayPalSandboxAcdcEligibility');
-    }
-    public function isSandboxApplePayEligibility(): bool
-    {
-        return (bool)$this->getSettingValue('oscPayPalSandboxApplePayEligibility');
-    }
-
     public function isSandboxPuiEligibility(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalSandboxPuiEligibility');
+    }
+
+    public function isVaultingEligibility(): bool
+    {
+        return $this->isSandbox() ?
+            $this->isSandBoxVaultingEligibility() :
+            $this->isLiveVaultingEligibility();
+    }
+
+    public function isLiveVaultingEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalVaultingEligibility');
     }
 
     public function isSandboxVaultingEligibility(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalSandboxVaultingEligibility');
     }
+
+    public function isApplePayEligibility(): bool
+    {
+        return $this->isSandbox() ?
+            $this->isSandboxApplePayEligibility() :
+            $this->isLiveApplePayEligibility();
+    }
+
+    public function isLiveApplePayEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalApplePayEligibility');
+    }
+
+    public function isSandboxApplePayEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSandboxApplePayEligibility');
+    }
+
+    public function isGooglePayEligibility(): bool
+    {
+        return $this->isSandbox() ?
+            $this->isSandboxGooglePayEligibility() :
+            $this->isLiveGooglePayEligibility();
+    }
+
+    public function isLiveGooglePayEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalGooglePayEligibility');
+    }
+
     public function isSandboxGooglePayEligibility(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalSandboxGooglePayEligibility');
+    }
+
+    public function isEpsEligibility(): bool
+    {
+        return $this->isSandbox() ?
+            $this->isSandboxEpsEligibility() :
+            $this->isLiveEpsEligibility();
+    }
+
+    public function isLiveEpsEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalEpsEligibility');
+    }
+
+    public function isSandboxEpsEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSandboxEpsEligibility');
+    }
+
+    public function isPrzelewy24Eligibility(): bool
+    {
+        return $this->isSandbox() ?
+            $this->isSandboxPrzelewy24Eligibility() :
+            $this->isLivePrzelewy24Eligibility();
+    }
+
+    public function isLivePrzelewy24Eligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalPrzelewy24Eligibility');
+    }
+
+    public function isSandboxPrzelewy24Eligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSandboxPrzelewy24Eligibility');
+    }
+
+    public function isSepaEligibility(): bool
+    {
+        return $this->isSandbox() ?
+            $this->isSandboxSepaEligibility() :
+            $this->isLiveSepaEligibility();
+    }
+
+    public function isLiveSepaEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSepaEligibility');
+    }
+
+    public function isSandboxSepaEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSandboxSepaEligibility');
+    }
+
+    public function isBlikEligibility(): bool
+    {
+        return $this->isSandbox() ?
+            $this->isSandboxBlikEligibility() :
+            $this->isLiveBlikEligibility();
+    }
+
+    public function isLiveBlikEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalBlikEligibility');
+    }
+
+    public function isSandboxBlikEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSandboxBlikEligibility');
+    }
+
+    public function isBanContactEligibility(): bool
+    {
+        return $this->isSandbox() ?
+            $this->isSandboxBanContactEligibility() :
+            $this->isLiveBanContactEligibility();
+    }
+
+    public function isLiveBanContactEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalBanContactEligibility');
+    }
+
+    public function isSandboxBanContactEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSandboxBanContactEligibility');
+    }
+
+    public function isIDealEligibility(): bool
+    {
+        return $this->isSandbox() ?
+            $this->isSandboxIDealEligibility() :
+            $this->isLiveIDealEligibility();
+    }
+
+    public function isLiveIDealEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalIDealEligibility');
+    }
+
+    public function isSandboxIDealEligibility(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalSandboxIDealEligibility');
     }
 
     public function getShopName(): string
@@ -554,6 +666,60 @@ class ModuleSettings
             $this->save('oscPayPalSandboxApplePayEligibility', $eligibility);
         } else {
             $this->save('oscPayPalApplePayEligibility', $eligibility);
+        }
+    }
+
+    public function saveEpsEligibility(bool $eligibility): void
+    {
+        if ($this->isSandbox()) {
+            $this->save('oscPayPalSandboxEpsEligibility', $eligibility);
+        } else {
+            $this->save('oscPayPalEpsEligibility', $eligibility);
+        }
+    }
+
+    public function savePrzelewy24Eligibility(bool $eligibility): void
+    {
+        if ($this->isSandbox()) {
+            $this->save('oscPayPalSandboxPrzelewy24Eligibility', $eligibility);
+        } else {
+            $this->save('oscPayPalPrzelewy24Eligibility', $eligibility);
+        }
+    }
+
+    public function saveBlikEligibility(bool $eligibility): void
+    {
+        if ($this->isSandbox()) {
+            $this->save('oscPayPalSandboxBlikEligibility', $eligibility);
+        } else {
+            $this->save('oscPayPalBlikEligibility', $eligibility);
+        }
+    }
+
+    public function saveSepaEligibility(bool $eligibility): void
+    {
+        if ($this->isSandbox()) {
+            $this->save('oscPayPalSandboxSepaEligibility', $eligibility);
+        } else {
+            $this->save('oscPayPalSepaEligibility', $eligibility);
+        }
+    }
+
+    public function saveBanContactEligibility(bool $eligibility): void
+    {
+        if ($this->isSandbox()) {
+            $this->save('oscPayPalSandboxBanContactEligibility', $eligibility);
+        } else {
+            $this->save('oscPayPalBanContactEligibility', $eligibility);
+        }
+    }
+
+    public function saveIDealEligibility(bool $eligibility): void
+    {
+        if ($this->isSandbox()) {
+            $this->save('oscPayPalSandboxIDealEligibility', $eligibility);
+        } else {
+            $this->save('oscPayPalIDealEligibility', $eligibility);
         }
     }
 
