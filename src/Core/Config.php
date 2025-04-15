@@ -63,105 +63,28 @@ class Config
 
     /**
      * Get client id based on set active mode
-     *
-     * @return string
      */
     public function getClientId(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getClientId();
     }
 
+    public function getLiveClientId(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getLiveClientId();
+    }
+
+    public function getSandboxClientId(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxClientId();
+    }
+
     /**
      * Get client secret based on active mode
-     *
-     * @return string
      */
     public function getClientSecret(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getClientSecret();
-    }
-
-    /**
-     * Get merchantId based on active mode
-     *
-     * @return string
-     */
-    public function getMerchantId(): string
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getMerchantId();
-    }
-
-    /**
-     * @return string
-     */
-    public function getWebhookId()
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getWebhookId();
-    }
-
-    public function isAcdcEligibility(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isAcdcEligibility();
-    }
-
-    public function isPuiEligibility(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isPuiEligibility();
-    }
-
-    public function isVaultingEligibility(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isVaultingEligibility();
-    }
-
-    public function isLiveAcdcEligibility(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveAcdcEligibility();
-    }
-
-    public function isLivePuiEligibility(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isLivePuiEligibility();
-    }
-
-    public function isLiveVaultingEligibility(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveVaultingEligibility();
-    }
-    public function isLiveApplePayEligibility(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveApplePayEligibility();
-    }
-    public function isLiveGooglePayEligibility(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveGooglePayEligibility();
-    }
-    public function isSandboxGooglePayEligibility(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxGooglePayEligibility();
-    }
-
-    public function isSandboxAcdcEligibility(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxAcdcEligibility();
-    }
-
-    public function isSandboxPuiEligibility(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxPuiEligibility();
-    }
-
-    public function isSandboxVaultingEligibility(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxVaultingEligibility();
-    }
-    public function isSandboxApplePayEligibility(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxApplePayEligibility();
-    }
-    public function getLiveClientId(): string
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getLiveClientId();
     }
 
     public function getLiveClientSecret(): string
@@ -169,14 +92,170 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->getLiveClientSecret();
     }
 
+    public function getSandboxClientSecret(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxClientSecret();
+    }
+
+    /**
+     * Get merchantId based on active mode
+     */
+    public function getMerchantId(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getMerchantId();
+    }
+
     public function getLiveMerchantId(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getLiveMerchantId();
     }
 
+    public function getSandboxMerchantId(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxMerchantId();
+    }
+
+    public function getWebhookId(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getWebhookId();
+    }
+
     public function getLiveWebhookId(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getLiveWebhookId();
+    }
+
+        public function getSandboxWebhookId(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxWebhookId();
+    }
+
+    /**
+     * Get Eligibility
+     */
+    public function isAcdcEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isAcdcEligibility();
+    }
+
+    public function isLiveAcdcEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveAcdcEligibility();
+    }
+
+    public function isSandboxAcdcEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxAcdcEligibility();
+    }
+
+    public function isPuiEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isPuiEligibility();
+    }
+
+    public function isLivePuiEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isLivePuiEligibility();
+    }
+
+    public function isSandboxPuiEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxPuiEligibility();
+    }
+
+    public function isVaultingEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isVaultingEligibility();
+    }
+
+    public function isLiveVaultingEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveVaultingEligibility();
+    }
+
+    public function isSandboxVaultingEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxVaultingEligibility();
+    }
+
+    public function isLiveApplePayEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveApplePayEligibility();
+    }
+
+    public function isSandboxApplePayEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxApplePayEligibility();
+    }
+
+    public function isLiveGooglePayEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveGooglePayEligibility();
+    }
+
+    public function isSandboxGooglePayEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxGooglePayEligibility();
+    }
+
+    public function isLiveEpsEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveEpsEligibility();
+    }
+
+    public function isSandboxEpsEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxEpsEligibility();
+    }
+
+    public function isLivePrzelewy24Eligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isLivePrzelewy24Eligibility();
+    }
+
+    public function isSandboxPrzelewy24Eligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxPrzelewy24Eligibility();
+    }
+
+    public function isLiveSepaEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveSepaEligibility();
+    }
+
+    public function isSandboxSepaEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxSepaEligibility();
+    }
+
+    public function isLiveBlikEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveBlikEligibility();
+    }
+
+    public function isSandboxBlikEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxBlikEligibility();
+    }
+
+    public function isLiveBanContactEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveBanContactEligibility();
+    }
+
+    public function isSandboxBanContactEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxBanContactEligibility();
+    }
+
+    public function isLiveIDealEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveIDealEligibility();
+    }
+
+    public function isSandboxIDealEligibility(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxIDealEligibility();
     }
 
     public function getSupportedLocales(): array
@@ -189,25 +268,6 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->getSupportedLocalesCommaSeparated();
     }
 
-    public function getSandboxClientId(): string
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxClientId();
-    }
-
-    public function getSandboxClientSecret(): string
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxClientSecret();
-    }
-
-    public function getSandboxMerchantId(): string
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxMerchantId();
-    }
-
-    public function getSandboxWebhookId(): string
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxWebhookId();
-    }
 
     public function showPayPalBasketButton(): bool
     {
@@ -224,14 +284,15 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalPayLaterButton();
     }
 
-    public function loginWithPayPalEMail(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->loginWithPayPalEMail();
-    }
 
     public function showPayPalProductDetailsButton(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalProductDetailsButton();
+    }
+
+    public function loginWithPayPalEMail(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->loginWithPayPalEMail();
     }
 
     public function getAutoBillOutstanding(): bool

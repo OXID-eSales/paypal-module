@@ -22,6 +22,11 @@ final class PayPalDefinitions
     public const CCALTERNATIVE_PAYPAL_PAYMENT_ID = 'oscpaypal_cc_alternative';
     public const APPLEPAY_PAYPAL_PAYMENT_ID = 'oscpaypal_applepay';
     public const GOOGLEPAY_PAYPAL_PAYMENT_ID = 'oscpaypal_googlepay';
+    public const EPS_PAYPAL_PAYMENT_ID = 'oscpaypal_eps';
+    public const BLIK_PAYPAL_PAYMENT_ID = 'oscpaypal_blik';
+    public const IDEAL_PAYPAL_PAYMENT_ID = 'oscpaypal_ideal';
+    public const PRZELEWY24_PAYPAL_PAYMENT_ID = 'oscpaypal_przelewy24';
+    public const BANCONTACT_PAYPAL_PAYMENT_ID = 'oscpaypal_bancontact';
 
     //vaulting
     public const PAYMENT_VAULTING = [
@@ -246,7 +251,7 @@ final class PayPalDefinitions
             'vaultingtype' => 'card'
         ],
         // uAPM Bancontact
-        'oscpaypal_bancontact' => [
+        self::BANCONTACT_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
                     'desc' => 'PayPal Bancontact',
@@ -280,7 +285,7 @@ final class PayPalDefinitions
             'defaulton' => true
         ],
         // uAPM BLIK
-        'oscpaypal_blik' => [
+        self::BLIK_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
                     'desc' => 'BLIK',
@@ -315,8 +320,8 @@ final class PayPalDefinitions
             'buttonpayment' => false,
             'defaulton' => true
         ],
-//         uAPM EPS
-        'oscpaypal_eps' => [
+        // uAPM EPS
+        self::EPS_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
                     'desc' => 'PayPal EPS',
@@ -380,7 +385,7 @@ final class PayPalDefinitions
             'deprecated' => true,
         ],
         // uAPM iDEAL
-        'oscpaypal_ideal' => [
+        self::IDEAL_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
                     'desc' => 'PayPal iDEAL',
@@ -415,7 +420,7 @@ final class PayPalDefinitions
             'defaulton' => true
         ],
         // uAPM Przelewy24
-        'oscpaypal_przelewy24' => [
+        self::PRZELEWY24_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
                     'desc' => 'PayPal Przelewy24',

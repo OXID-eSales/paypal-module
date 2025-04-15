@@ -100,17 +100,53 @@
 
                         <div class="form-group live">
                             <label for="special-payments">[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS" suffix="COLON"}]</label>
-                            <div>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_PUI" suffix="COLON"}] [{if $config->isLivePuiEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
-                                <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC" suffix="COLON"}] [{if $config->isLiveAcdcEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}] [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK"}][{/if}]
-                                <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING" suffix="COLON"}] [{if $config->isLiveVaultingEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
-                                <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY" suffix="COLON"}] [{if $config->isLiveGooglePayEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
-                                <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY" suffix="COLON"}] [{if $config->isLiveApplePayEligibility()}][{oxmultilang ident="GENERAL_YES"}] [{oxmultilang ident="OSC_PAYPAL_INSTALL_NOTE_APPLEPAY"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
-                            </div>
+                            <ul>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_PUI" suffix="COLON"}]</b>
+                                    [{if $config->isLivePuiEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC" suffix="COLON"}]</b>
+                                    [{if $config->isLiveAcdcEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}] [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK"}][{/if}]</li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING" suffix="COLON"}]</b>
+                                    [{if $config->isLiveVaultingEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY" suffix="COLON"}]</b>
+                                    [{if $config->isLiveGooglePayEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY" suffix="COLON"}]</b>
+                                    [{if $config->isLiveApplePayEligibility()}][{oxmultilang ident="GENERAL_YES"}] [{oxmultilang ident="OSC_PAYPAL_INSTALL_NOTE_APPLEPAY"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_EPS" suffix="COLON"}]</b>
+                                    [{if $config->isLiveEpsEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_PRZELEWY24" suffix="COLON"}]</b>
+                                    [{if $config->isLivePrzelewy24Eligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_BLIK" suffix="COLON"}]</b>
+                                    [{if $config->isLiveBlikEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_BANCONTACT" suffix="COLON"}]</b>
+                                    [{if $config->isLiveBanContactEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_IDEAL" suffix="COLON"}]</b>
+                                    [{if $config->isLiveIDealEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                [{* SEPA unbranded comming soon
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_SEPA" suffix="COLON"}]</b>
+                                    [{if $config->isLiveSepaEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                *}]
+                            </ul>
                         </div>
 
                         <p class="sandbox"><a target="_blank"
@@ -159,18 +195,53 @@
 
                         <div class="form-group sandbox">
                             <label for="special-payments-sandbox">[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS" suffix="COLON"}]</label>
-                            <div>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_PUI" suffix="COLON"}] [{if $config->isSandboxPuiEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
-                                <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC" suffix="COLON"}] [{if $config->isSandboxAcdcEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}] [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK"}][{/if}]
-                                <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING" suffix="COLON"}] [{if $config->isSandboxVaultingEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
-                                <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY" suffix="COLON"}] [{if $config->isSandboxGooglePayEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
-                                <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY" suffix="COLON"}] [{if $config->isSandboxApplePayEligibility()}][{oxmultilang ident="GENERAL_YES"}] [{oxmultilang ident="OSC_PAYPAL_INSTALL_NOTE_APPLEPAY"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
-
-                            </div>
+                            <ul>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_PUI" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxPuiEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxAcdcEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}] [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK"}][{/if}]</li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxVaultingEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxGooglePayEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxApplePayEligibility()}][{oxmultilang ident="GENERAL_YES"}] [{oxmultilang ident="OSC_PAYPAL_INSTALL_NOTE_APPLEPAY"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_EPS" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxEpsEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_PRZELEWY24" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxPrzelewy24Eligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_BLIK" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxBlikEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_BANCONTACT" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxBanContactEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_IDEAL" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxIDealEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                [{* SEPA unbranded comming soon
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_SEPA" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxSepaEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                *}]
+                            </ul>
                         </div>
 
                     </div>

@@ -501,6 +501,42 @@ $aModule = [
             'group' => null
         ],
         [
+            'name' => 'oscPayPalEpsEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalPrzelewy24Eligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalSepaEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalBlikEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalBanContactEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalIDealEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
             'name' => 'oscPayPalSandboxAcdcEligibility',
             'type' => 'bool',
             'value' => false,
@@ -526,6 +562,42 @@ $aModule = [
         ],
         [
             'name' => 'oscPayPalSandboxGooglePayEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalSandboxEpsEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalSandboxPrzelewy24Eligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalSandboxSepaEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalSandboxBlikEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalSandboxBanContactEligibility',
+            'type' => 'bool',
+            'value' => false,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalSandboxIDealEligibility',
             'type' => 'bool',
             'value' => false,
             'group' => null
