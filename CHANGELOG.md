@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [3.5.0] - 2025-??-??
 
+### NEW
+
+- All PayPal payment methods have "PayPal" as a prefix in a fresh installation to better identify them in the admin panel. When setting up payment methods, the merchant can decide which name best fits their needs.
+
 ### FIX
 
 - Fix: Locales for PP-Buttons are editable again
