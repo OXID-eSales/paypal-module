@@ -7,7 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
-use OxidEsales\EshopCommunity\Core\Registry;
+use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;

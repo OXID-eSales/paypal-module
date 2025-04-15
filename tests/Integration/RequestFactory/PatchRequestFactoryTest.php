@@ -36,7 +36,7 @@ class PatchRequestFactoryTest extends BaseTestCase
         $priceMock->method('getBruttoPrice')->willReturn(10.00);
 
         //Currency object
-        $currency = \OxidEsales\EshopCommunity\Core\Registry::getConfig()->getCurrencyObject('EUR');
+        $currency = Registry::getConfig()->getCurrencyObject('EUR');
         $basketMock = $this->createMock(Basket::class);
         $basketMock->method('getBasketCurrency')->willReturn($currency);
         $basketMock->method('isCalculationModeNetto')->willReturn(false);

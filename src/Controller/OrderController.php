@@ -685,7 +685,7 @@ class OrderController extends OrderController_parent
 
     public function getPurchaseUnits()
     {
-        return \OxidEsales\EshopCommunity\Core\Registry::get(PayPalPurchaseUnitsFactory::class)->getPurchaseUnits();
+        return Registry::get(PayPalPurchaseUnitsFactory::class)->getPurchaseUnits();
     }
 
     public function getVaultedPaymentSource(): string
