@@ -53,10 +53,21 @@
 
     [{/if}]
 
-        window.PayPalPaymentControllerConfig = new PayPalPaymentControllerConfigurator();
-        document.dispatchEvent(
-            new CustomEvent('PayPalPaymentControllerConfigCreated', { detail: window.PayPalPaymentControllerConfig })
-        );
+    [{if $paymentId == 'oscpaypal_googlepay'}]
+                window.PayPalPaymentControllerConfigurator = function () {
+                return Object.assign (PayPalPaymentControllerConfiguratorDefaults, {
+                    shopOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    paymentId: '[{$paymentId}]'
+                });
+            };
+    [{/if}]
+
+        if ('undefined' !== typeof PayPalPaymentControllerConfigurator) {
+            window.PayPalPaymentControllerConfig = new PayPalPaymentControllerConfigurator();
+            document.dispatchEvent(
+                new CustomEvent('PayPalPaymentControllerConfigCreated', {detail: window.PayPalPaymentControllerConfig})
+            );
+        }
     </script>
 
 [{/if}]

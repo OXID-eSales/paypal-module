@@ -26,6 +26,7 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Module;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthorizationWithAdditionalData;
@@ -119,12 +120,13 @@ class Payment
 
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
+        $customId = $this->getCurrentOrderNumber($basket);
 
         $request = $this->orderRequestFactory->getRequest(
             $basket,
             $intent,
             $userAction,
-            null, //customId is patched in doCapturePayPalOrder (ordernr is unavailable at this point)
+            $customId,
             $processingInstruction,
             $paymentSource,
             null,
@@ -841,5 +843,26 @@ class Payment
         }
 
         return $orderNumber;
+    }
+
+    /**
+     * @param $basket
+     * @return array
+     */
+    public function getCurrentOrderNumber(EshopModelBasket $basket): array
+    {
+        $customId = null;
+        /** @var \OxidSolutionCatalysts\PayPal\Service\Payment $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $basket = Registry::getSession()->getBasket();
+        /** @var EshopModelOrder $order */
+        $order = oxNew(EshopModelOrder::class);
+        $shopOrderOxid = $basket->getOrderId();
+        if (!empty($shopOrderOxid)) {
+            $order->load($shopOrderOxid);
+            $customId = $paymentService->getCustomIdParameter($order);
+        }
+
+        return $customId;
     }
 }

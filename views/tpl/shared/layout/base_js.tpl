@@ -7,7 +7,7 @@
         [{/if}]
         data-partner-attribution-id="[{$oViewConf->getPayPalPartnerAttributionIdForBanner()}]"
         data-client-token="[{$oViewConf->getDataClientToken()}]"
-        onload="window.OxidPayPal.onSDKLoaded()"
+        onload="undefined === window.OxidPayPal ? null : window.OxidPayPal.onSDKLoaded()"
         ></script>
     [{assign var="sCountryRestriction" value=$oViewConf->getCountryRestrictionForPayPalExpress()}]
     [{if $sCountryRestriction}]
@@ -20,4 +20,7 @@
         document.getElementById('orderConfirmAgbBottom').submit();
     </script>
     [{/if}]
+
+    [{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','out/src/js/paypal-dev.js')|filemtime}]
+    <script id="dev_scripts23433" src="[{$oViewConf->getModuleUrl('osc_paypal', 'out/src/js/paypal-dev.js')|cat:"?"|cat:$sFileMTime}]"></script>
 [{/if}]
