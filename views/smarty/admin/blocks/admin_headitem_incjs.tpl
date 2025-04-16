@@ -1,10 +1,14 @@
 [{if
+    $oViewConf->getTopActiveClassName()|lower=="module_config" ||
     $oViewConf->getTopActiveClassName()|lower=="oscpaypalconfig" ||
     $oViewConf->getTopActiveClassName()|lower=="oscpaypalorder"
 }]
     [{oxscript include="js/libs/jquery.min.js" priority=1}]
     [{oxscript add="$.noConflict();" priority=10}]
-    [{if $oViewConf->getTopActiveClassName()|lower == "oscpaypalconfig"}]
+    [{if
+        $oViewConf->getTopActiveClassName()|lower=="module_config" ||
+        $oViewConf->getTopActiveClassName()|lower == "oscpaypalconfig"
+    }]
         [{oxscript include="js/libs/jquery-ui.min.js"}]
         [{oxscript include="js/widgets/oxmoduleconfiguration.js"}]
 

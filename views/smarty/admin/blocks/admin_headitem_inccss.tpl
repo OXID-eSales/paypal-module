@@ -1,4 +1,5 @@
 [{if
+    $oViewConf->getTopActiveClassName()|lower=="module_config" ||
     $oViewConf->getTopActiveClassName()|lower=="oscpaypalconfig" ||
     $oViewConf->getTopActiveClassName()|lower=="oscpaypalorder"
 }]

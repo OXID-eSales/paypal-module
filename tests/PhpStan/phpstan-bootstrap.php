@@ -95,3 +95,13 @@ class_alias(
     \OxidEsales\EshopCommunity\Application\Model\Basket::class,
     \OxidSolutionCatalysts\PayPal\Core\Onboarding\Logger\Basket_parent::class
 );
+
+class_alias(
+    \OxidEsales\Eshop\Application\Controller\Admin\ModuleConfiguration::class,
+    OxidSolutionCatalysts\PayPal\Controller\Admin\ModuleConfiguration_parent::class
+);
+
+class_alias(
+    \OxidEsales\Eshop\Application\Controller\Admin\ModuleConfiguration::class,
+    \OxidSolutionCatalysts\PayPal\Controller\Admin\ModuleConfiguration_parent::class
+);
