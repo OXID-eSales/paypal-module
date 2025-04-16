@@ -1,0 +1,24 @@
+{
+
+  "admin": {
+    "email": "oxid",
+    "password": "45cb69911fe7"
+  },
+
+  "user": {
+    "email": "oxid",
+    "password": "45cb69911fe7"
+  },
+  "products": {
+    "belt": {
+      "id": "Kuyichi-Lederguertel-JEVER",
+      "price": 39.99,
+      "name": "Kuyichi Ledergürtel JEVER"
+    }
+  },
+  "testEnvironments": {
+    "development": "https://dev.your-site.com",
+    "staging": "https://staging.your-site.com",
+    "production": "https://your-site.com"
+  }
+}
