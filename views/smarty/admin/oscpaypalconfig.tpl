@@ -13,8 +13,8 @@
 
 <form name="transfer" id="transfer" action="[{$oViewConf->getSelfLink()}]" method="post">
     [{$oViewConf->getHiddenSid()}]
-    <input type="hidden" name="oxid" value="osc_paypal">
-    <input type="hidden" name="cl" value="oscpaypalconfig">
+    <input type="hidden" name="oxid" value="[{$oModule->getInfo('id')}]">
+    <input type="hidden" name="cl" value="[{$oViewConf->getActiveClassName()}]">
     <input type="hidden" name="fnc" value="">
     <input type="hidden" name="actshop" value="[{$oViewConf->getActiveShopId()}]">
     <input type="hidden" name="updatenav" value="">
@@ -34,7 +34,7 @@
         [{$oViewConf->getHiddenSid()}]
         <input type="hidden" name="cl" value="[{$oViewConf->getActiveClassName()}]">
         <input type="hidden" name="fnc" value="save">
-        <input type="hidden" name="oxid" value="osc_paypal">
+        <input type="hidden" name="oxid" value="[{$oModule->getInfo('id')}]">
 
         <div id="accordion">
             <div class="card">
@@ -110,17 +110,53 @@
 
                         <div class="form-group live">
                             <label for="special-payments">[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS" suffix="COLON"}]</label>
-                            <div>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_PUI" suffix="COLON"}] [{if $config->isLivePuiEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
-                                <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC" suffix="COLON"}] [{if $config->isLiveAcdcEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}] [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK"}][{/if}]
-                                <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING" suffix="COLON"}] [{if $config->isLiveVaultingEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
-                                <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY" suffix="COLON"}] [{if $config->isLiveGooglePayEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
-                                <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY" suffix="COLON"}] [{if $config->isLiveApplePayEligibility()}][{oxmultilang ident="GENERAL_YES"}]  [{oxmultilang ident="OSC_PAYPAL_INSTALL_NOTE_APPLEPAY"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
-                            </div>
+                            <ul>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_PUI" suffix="COLON"}]</b>
+                                    [{if $config->isLivePuiEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC" suffix="COLON"}]</b>
+                                    [{if $config->isLiveAcdcEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}] [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK"}][{/if}]</li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING" suffix="COLON"}]</b>
+                                    [{if $config->isLiveVaultingEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY" suffix="COLON"}]</b>
+                                    [{if $config->isLiveGooglePayEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY" suffix="COLON"}]</b>
+                                    [{if $config->isLiveApplePayEligibility()}][{oxmultilang ident="GENERAL_YES"}] [{oxmultilang ident="OSC_PAYPAL_INSTALL_NOTE_APPLEPAY"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_EPS" suffix="COLON"}]</b>
+                                    [{if $config->isLiveEpsEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_PRZELEWY24" suffix="COLON"}]</b>
+                                    [{if $config->isLivePrzelewy24Eligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_BLIK" suffix="COLON"}]</b>
+                                    [{if $config->isLiveBlikEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_BANCONTACT" suffix="COLON"}]</b>
+                                    [{if $config->isLiveBanContactEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_IDEAL" suffix="COLON"}]</b>
+                                    [{if $config->isLiveIDealEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                [{* SEPA unbranded comming soon
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_SEPA" suffix="COLON"}]</b>
+                                    [{if $config->isLiveSepaEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                *}]
+                            </ul>
                         </div>
 
                         <p class="sandbox"><a target="_blank"
@@ -169,18 +205,53 @@
 
                         <div class="form-group sandbox">
                             <label for="special-payments-sandbox">[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS" suffix="COLON"}]</label>
-                            <div>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_PUI" suffix="COLON"}] [{if $config->isSandboxPuiEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
-                                <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC" suffix="COLON"}] [{if $config->isSandboxAcdcEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}] [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK"}][{/if}]
-                                <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING" suffix="COLON"}] [{if $config->isSandboxVaultingEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
-                                <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY" suffix="COLON"}] [{if $config->isSandboxGooglePayEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
-                                <br>
-                                [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY" suffix="COLON"}] [{if $config->isSandboxApplePayEligibility()}][{oxmultilang ident="GENERAL_YES"}] [{oxmultilang ident="OSC_PAYPAL_INSTALL_NOTE_APPLEPAY"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
-
-                            </div>
+                            <ul>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_PUI" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxPuiEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxAcdcEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}] [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK"}][{/if}]</li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxVaultingEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxGooglePayEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxApplePayEligibility()}][{oxmultilang ident="GENERAL_YES"}] [{oxmultilang ident="OSC_PAYPAL_INSTALL_NOTE_APPLEPAY"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_EPS" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxEpsEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_PRZELEWY24" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxPrzelewy24Eligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_BLIK" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxBlikEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_BANCONTACT" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxBanContactEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_IDEAL" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxIDealEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                [{* SEPA unbranded comming soon
+                                <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_SEPA" suffix="COLON"}]</b>
+                                    [{if $config->isSandboxSepaEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
+                                </li>
+                                *}]
+                            </ul>
                         </div>
 
                     </div>
@@ -233,6 +304,100 @@
                     </div>
                 </div>
             </div>
+
+            <div class="card">
+                <div class="card-header" id="heading10">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse_button_style" aria-expanded="false" aria-controls="collapse_button_style">
+                        [{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_TITLE"}]
+                    </h4>
+                </div>
+
+                <div id="collapse_button_style" class="collapse" aria-labelledby="heading10" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="style-button-layout">[{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_LAYOUT"}]</label>
+                            <div class="controls">
+                                <select name="conf[oscPayPalButtonStyleLayout]" id="style-button-layout" class="form-control">
+                                    <option value="horizontal" [{if $config->getPayPalButtonStyleLayout() == 'horizontal'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_LAYOUT_HORIZONTAL"}]
+                                    </option>
+                                    <option value="vertical" [{if $config->getPayPalButtonStyleLayout() == 'vertical'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_LAYOUT_VERTICAL"}]
+                                    </option>
+                                </select>
+                            </div>
+                            <span class="help-block">[{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_LAYOUT_HELP"}]</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="style-button-color">[{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_COLOR"}]</label>
+                            <div class="controls">
+                                <select name="conf[oscPayPalButtonStyleColor]" id="style-button-color" class="form-control">
+                                    <option value="gold" [{if $config->getPayPalButtonStyleColor() == 'gold'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_COLOR_GOLD"}]
+                                    </option>
+                                    <option value="blue" [{if $config->getPayPalButtonStyleColor() == 'blue'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_COLOR_BLUE"}]
+                                    </option>
+                                    <option value="silver" [{if $config->getPayPalButtonStyleColor() == 'silver'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_COLOR_SILVER"}]
+                                    </option>
+                                    <option value="white" [{if $config->getPayPalButtonStyleColor() == 'white'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_COLOR_WHITE"}]
+                                    </option>
+                                    <option value="black" [{if $config->getPayPalButtonStyleColor() == 'black'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_COLOR_BLACK"}]
+                                    </option>
+                                </select>
+                            </div>
+                            <span class="help-block">[{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_COLOR_HELP"}]</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="style-button-shape">[{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_SHAPE"}]</label>
+                            <div class="controls">
+                                <select name="conf[oscPayPalButtonStyleShape]" id="style-button-shape" class="form-control">
+                                    <option value="rect" [{if $config->getPayPalButtonStyleShape() == 'rect'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_SHAPE_RECT"}]
+                                    </option>
+                                    <option value="sharp" [{if $config->getPayPalButtonStyleShape() == 'sharp'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_SHAPE_SHARP"}]
+                                    </option>
+                                    <option value="pill" [{if $config->getPayPalButtonStyleShape() == 'pill'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_SHAPE_PILL"}]
+                                    </option>
+                                </select>
+                            </div>
+                            <span class="help-block">[{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_SHAPE_HELP"}]</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="style-button-label">[{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_LABEL"}]</label>
+                            <div class="controls">
+                                <select name="conf[oscPayPalButtonStyleLabel]" id="style-button-label" class="form-control">
+                                    <option value="paypal" [{if $config->getPayPalButtonStyleLabel() == 'paypal'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_LABEL_PAYPAL"}]
+                                    </option>
+                                    <option value="checkout" [{if $config->getPayPalButtonStyleLabel() == 'checkout'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_LABEL_CHECKOUT"}]
+                                    </option>
+                                    <option value="buynow" [{if $config->getPayPalButtonStyleLabel() == 'buynow'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_LABEL_BUYNOW"}]
+                                    </option>
+                                    <option value="pay" [{if $config->getPayPalButtonStyleLabel() == 'pay'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_LABEL_PAY"}]
+                                    </option>
+                                    [{*
+                                    <option value="installment" [{if $config->getPayPalButtonStyleLabel() == 'installment'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_LABEL_INSTALLMENT"}]
+                                    </option>
+                                    *}]
+                                </select>
+
+                            </div>
+                            <span class="help-block">[{oxmultilang ident="OSC_PAYPAL_STYLE_BUTTON_LABEL_HELP"}]</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
             <div class="card">
                 <div class="card-header" id="heading3">

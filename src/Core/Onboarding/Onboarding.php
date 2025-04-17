@@ -115,7 +115,6 @@ class Onboarding
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $moduleSettings->saveClientId($credentials['client_id']);
         $moduleSettings->saveClientSecret($credentials['client_secret']);
-
         $moduleSettings->saveMerchantId($credentials['payer_id']);
     }
 
@@ -221,71 +220,88 @@ class Onboarding
             throw OnboardingException::merchantInformationsNotFound();
         }
 
-        $isPuiEligibility = false;
-        $isAcdcEligibility = false;
-        $isVaultingEligibility = false;
+        $isPuiCapability = false;
+        $isAcdcCapability = false;
         $isVaultingCapability = false;
-        $isApplePayEligibility = false;
         $isGooglePayCapability = false;
+        $isEpsCapability = false;
+        $isPrzelewy24Capability = false;
+        $isSepaCapability = false;
+        $isBlikCapability = false;
+        $isBanContactCapability = false;
+        $isIDealCapability = false;
 
         foreach ($merchantInformations['capabilities'] as $capability) {
-            if (
-                $capability['name'] === 'PAYPAL_WALLET_VAULTING_ADVANCED' &&
-                $capability['status'] === 'ACTIVE'
-            ) {
-                $isVaultingCapability = true;
-            }
-            if (
-                $capability['name'] === 'APPLE_PAY' &&
-                $capability['status'] === 'ACTIVE'
-            ) {
-                $isApplePayEligibility = true;
-            }
-            if (
-                $capability['name'] === 'GOOGLE_PAY' &&
-                $capability['status'] === 'ACTIVE'
-            ) {
-                $isGooglePayCapability = true;
-            }
+            $isVaultingCapability = $this->checkCapability($capability, 'PAYPAL_WALLET_VAULTING_ADVANCED') ?
+                true :
+                $isVaultingCapability;
+            $isApplePayCapability = $this->checkCapability($capability, 'APPLE_PAY') ?
+                true :
+                $isApplePayCapability;
+            $isGooglePayCapability = $this->checkCapability($capability, 'GOOGLE_PAY') ?
+                true :
+                $isGooglePayCapability;
+            $isPuiCapability = $this->checkCapability($capability, 'PAY_UPON_INVOICE') ?
+                true :
+                $isPuiCapability;
+            $isAcdcCapability = $this->checkCapability($capability, 'CUSTOM_CARD_PROCESSING') ?
+                true :
+                $isAcdcCapability;
+            $isEpsCapability = $this->checkCapability($capability, 'EPS') ?
+                true :
+                $isEpsCapability;
+            $isPrzelewy24Capability = $this->checkCapability($capability, 'PRZELEWY24') ?
+                true :
+                $isPrzelewy24Capability;
+            $isSepaCapability = $this->checkCapability($capability, 'SEPA') ?
+                true :
+                $isSepaCapability;
+            $isBlikCapability = $this->checkCapability($capability, 'BLIK') ?
+                true :
+                $isBlikCapability;
+            $isBanContactCapability = $this->checkCapability($capability, 'BANCONTACT') ?
+                true :
+                $isBanContactCapability;
+            $isIDealCapability = $this->checkCapability($capability, 'IDEAL') ?
+                true :
+                $isIDealCapability;
         }
 
-        foreach ($merchantInformations['products'] as $product) {
-            if (
-                $product['name'] === 'PAYMENT_METHODS' &&
-                in_array('PAY_UPON_INVOICE', $product['capabilities'], true)
-            ) {
-                $isPuiEligibility = true;
-            } elseif (
-                $product['name'] === 'PPCP_CUSTOM' &&
-                in_array('CUSTOM_CARD_PROCESSING', $product['capabilities'], true)
-            ) {
-                $isAcdcEligibility = true;
-            }
-
-            if (
-                $isVaultingCapability &&
-                $product['name'] === 'PPCP_CUSTOM' &&
-                in_array('PAYPAL_WALLET_VAULTING_ADVANCED', $product['capabilities'], true)
-            ) {
-                $isVaultingEligibility = true;
-            }
-        }
-        if ($isApplePayEligibility) {
+        if ($isApplePayCapability) {
             $this->downloadAndSaveApplePayCertificate();
         }
+
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $moduleSettings->savePuiEligibility($isPuiEligibility);
-        $moduleSettings->saveAcdcEligibility($isAcdcEligibility);
-        $moduleSettings->saveVaultingEligibility($isVaultingEligibility);
+        $moduleSettings->savePuiEligibility($isPuiCapability);
+        $moduleSettings->saveAcdcEligibility($isAcdcCapability);
+        $moduleSettings->saveVaultingEligibility($isVaultingCapability);
         $moduleSettings->saveGooglePayEligibility($isGooglePayCapability);
-        $moduleSettings->saveApplePayEligibility($isApplePayEligibility);
+        $moduleSettings->saveApplePayEligibility($isApplePayCapability);
+        $moduleSettings->saveEpsEligibility($isEpsCapability);
+        $moduleSettings->savePrzelewy24Eligibility($isPrzelewy24Capability);
+        $moduleSettings->saveSepaEligibility($isSepaCapability);
+        $moduleSettings->saveBlikEligibility($isBlikCapability);
+        $moduleSettings->saveBanContactEligibility($isBanContactCapability);
+        $moduleSettings->saveIDealEligibility($isIDealCapability);
 
         return [
-            'acdc' => $isAcdcEligibility,
-            'pui' => $isPuiEligibility,
-            'vaulting' => $isVaultingEligibility,
-            'googlepay' => $isGooglePayCapability,
-            'applepay' => $isApplePayEligibility,
+            'acdc'        => $isAcdcCapability,
+            'pui'         => $isPuiCapability,
+            'vaulting'    => $isVaultingCapability,
+            'googlepay'   => $isGooglePayCapability,
+            'applepay'    => $isApplePayCapability,
+            'eps'         => $isEpsCapability,
+            'przelewy24'  => $isPrzelewy24Capability,
+            'sepa'        => $isSepaCapability,
+            'blik'        => $isBlikCapability,
+            'bancontact'  => $isBanContactCapability,
+            'ideal'       => $isIDealCapability
         ];
+    }
+
+    private function checkCapability(array $capability, string $name): bool
+    {
+        return $capability['name'] === $name &&
+            $capability['status'] === 'ACTIVE';
     }
 }

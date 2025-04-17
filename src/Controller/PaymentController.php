@@ -161,7 +161,10 @@ class PaymentController extends PaymentController_parent
                     )
                 )
             ) {
-                if ($key !== PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID || PayPalSession::isPayPalExpressOrderActive()) {
+                if (
+                    $key !== PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
+                    || PayPalSession::isPayPalExpressOrderActive()
+                ) {
                     $paymentList[$key] = $payment;
                 }
             }
@@ -175,6 +178,34 @@ class PaymentController extends PaymentController_parent
         // check Pui Eligibility
         if (!$this->getServiceFromContainer(ModuleSettings::class)->isPuiEligibility()) {
             unset($paymentList[PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID]);
+        }
+        // check GooglePay Eligibility
+        if (!$this->getServiceFromContainer(ModuleSettings::class)->isGooglePayEligibility()) {
+            unset($paymentList[PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID]);
+        }
+        // check ApplePay Eligibility
+        if (!$this->getServiceFromContainer(ModuleSettings::class)->isApplePayEligibility()) {
+            unset($paymentList[PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID]);
+        }
+        // check Eps Eligibility
+        if (!$this->getServiceFromContainer(ModuleSettings::class)->isEpsEligibility()) {
+            unset($paymentList[PayPalDefinitions::EPS_PAYPAL_PAYMENT_ID]);
+        }
+        // check Przelewy24 Eligibility
+        if (!$this->getServiceFromContainer(ModuleSettings::class)->isPrzelewy24Eligibility()) {
+            unset($paymentList[PayPalDefinitions::PRZELEWY24_PAYPAL_PAYMENT_ID]);
+        }
+        // check Blik Eligibility
+        if (!$this->getServiceFromContainer(ModuleSettings::class)->isBlikEligibility()) {
+            unset($paymentList[PayPalDefinitions::BLIK_PAYPAL_PAYMENT_ID]);
+        }
+        // check BanContact Eligibility
+        if (!$this->getServiceFromContainer(ModuleSettings::class)->isBanContactEligibility()) {
+            unset($paymentList[PayPalDefinitions::BANCONTACT_PAYPAL_PAYMENT_ID]);
+        }
+        // check iDeal Eligibility
+        if (!$this->getServiceFromContainer(ModuleSettings::class)->isIDealEligibility()) {
+            unset($paymentList[PayPalDefinitions::IDEAL_PAYPAL_PAYMENT_ID]);
         }
 
         return $paymentList;
