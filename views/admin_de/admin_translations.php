@@ -79,6 +79,12 @@ $aLang = [
     'OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING'        => 'Vaulting',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY'        => 'Applepay',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY'       => 'GooglePay',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_BANCONTACT'      => 'BanContact',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_EPS'             => 'Eps',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_PRZELEWY24'      => 'Przelewy24',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_BLIK'            => 'Blik',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_SEPA'            => 'SEPA',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_IDEAL'           => 'iDeal',
 
     'OSC_PAYPAL_LOCALISATIONS'                    => 'Spracheinstellungen',
     'OSC_PAYPAL_LOCALES'                          => 'regionale Spracheinstellungen',

@@ -75,10 +75,15 @@ $aLang = [
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '<em>- Alternatively, you can activate and use the payment method "PayPal Credit Card Fallback" (id: "' . PayPalDefinitions::CCALTERNATIVE_PAYPAL_PAYMENT_ID . '"). Please use a suitable name for this payment method in this fallback case.</em>',
     'OSC_PAYPAL_INSTALL_NOTE_APPLEPAY'            => '<em>- If you plan to use Apple Pay, you must finally add this shops domain to your PayPal account (Account Settings > Payment Sources > Apple Pay). Detailed instructions can be found in our module documentation under <a href="' . Constants::PAYPAL_DOCUMENTATION_EN . '" target="_blank">Configuration > Enable Apple Pay as a Payment Method</a>.</em>',
 
-
     'OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING'        => 'Vaulting',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY'        => 'Applepay',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY'       => 'GooglePay',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_BANCONTACT'      => 'BanContact',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_EPS'             => 'Eps',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_PRZELEWY24'      => 'Przelewy24',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_BLIK'            => 'Blik',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_SEPA'            => 'SEPA',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_IDEAL'           => 'iDeal',
 
     'OSC_PAYPAL_LOCALISATIONS'                    => 'Locals',
     'OSC_PAYPAL_LOCALES'                          => 'regional language settings',

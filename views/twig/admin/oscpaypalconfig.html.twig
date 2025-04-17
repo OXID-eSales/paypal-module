@@ -9,16 +9,15 @@
 {% endset %}
 {{ script({ add: sPayPalJS.__toString(), priority: 10, dynamic: __oxid_include_dynamic }) }}
 
-<form name="transfer" id="transfer" action="[{$oViewConf->getSelfLink()}]" method="post">
+<form name="transfer" id="transfer" action="{{ oViewConf.getSelfLink()|raw }}" method="post">
     {{ oViewConf.getHiddenSid()|raw }}
-    <input type="hidden" name="oxid" value="osc_paypal">
-    <input type="hidden" name="cl" value="oscpaypalconfig">
+    <input type="hidden" name="oxid" value="{{ oModule.getInfo('id') }}">
+    <input type="hidden" name="cl" value="{{ oViewConf.getActiveClassName() }}">
     <input type="hidden" name="fnc" value="">
-    <input type="hidden" name="actshop" value="[{$oViewConf->getActiveShopId()}]">
+    <input type="hidden" name="actshop" value="{{ oViewConf.getActiveShopId() }}">
     <input type="hidden" name="updatenav" value="">
-    <input type="hidden" name="editlanguage" value="[{$editlanguage}]">
+    <input type="hidden" name="editlanguage" value="{{ editlanguage }}">
 </form>
-
 
 <div id="content" class="paypal-config">
     <div class="alert alert-{% if Errors.paypal_error %}danger{% else %}success{% endif %}" role="alert">
@@ -33,7 +32,7 @@
         {{ oViewConf.getHiddenSid()|raw }}
         <input type="hidden" name="cl" value="{{ oViewConf.getActiveClassName() }}">
         <input type="hidden" name="fnc" value="save">
-        <input type="hidden" name="oxid" value="osc_paypal">
+        <input type="hidden" name="oxid" value="{{ oModule.getInfo('id') }}">
 
         <div id="accordion">
             <div class="card">
@@ -109,17 +108,54 @@
 
                         <div class="form-group live">
                             <label for="special-payments">{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS", suffix: "COLON" }) }}</label>
-                            <div>
-                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_PUI", suffix: "COLON" }) }} {% if config.isLivePuiEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
-                                <br>
-                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC", suffix: "COLON" }) }} {% if config.isLiveAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
-                                <br>
-                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING", suffix: "COLON" }) }} {% if config.isLiveVaultingEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
-                                <br>
-                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY", suffix: "COLON" }) }} {% if config.isLiveGooglePayEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
-                                <br>
-                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY", suffix: "COLON" }) }} {% if config.isLiveApplePayEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }} {{ translate({ ident: "OSC_PAYPAL_INSTALL_NOTE_APPLEPAY" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
-                            </div>
+                            <ul>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_PUI", suffix: "COLON" }) }}</b>
+                                    {% if config.isLivePuiEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC", suffix: "COLON" }) }}</b>
+                                    {% if config.isLiveAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING", suffix: "COLON" }) }}</b>
+                                    {% if config.isLiveVaultingEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY", suffix: "COLON" }) }}</b>
+                                    {% if config.isLiveGooglePayEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY", suffix: "COLON" }) }}</b>
+                                    {% if config.isLiveApplePayEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }} {{ translate({ ident: "OSC_PAYPAL_INSTALL_NOTE_APPLEPAY" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_EPS", suffix: "COLON" }) }}</b>
+                                    {% if config.isLiveEpsEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_PRZELEWY24", suffix: "COLON" }) }}</b>
+                                    {% if config.isLivePrzelewy24Eligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_BLIK", suffix: "COLON" }) }}</b>
+                                    {% if config.isLiveBlikEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_BANCONTACT", suffix: "COLON" }) }}</b>
+                                    {% if config.isLiveBanContactEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_IDEAL", suffix: "COLON" }) }}</b>
+                                    {% if config.isLiveIDealEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                {# SEPA unbranded comming soon
+                                    <li>
+                                        <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_SEPA", suffix: "COLON" }) }}</b>
+                                        {% if config.isLiveSepaEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                    </li>
+                                #}
+                            </ul>
                         </div>
 
                         <p class="sandbox"><a target="_blank"
@@ -168,18 +204,54 @@
 
                         <div class="form-group sandbox">
                             <label for="special-payments-sandbox">{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS", suffix: "COLON" }) }}</label>
-                            <div>
-                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_PUI", suffix: "COLON" }) }} {% if config.isSandboxPuiEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
-                                <br>
-                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC", suffix: "COLON" }) }} {% if config.isSandboxAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
-                                <br>
-                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING", suffix: "COLON" }) }} {% if config.isSandboxVaultingEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
-                                <br>
-                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY", suffix: "COLON" }) }} {% if config.isSandboxGooglePayEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
-                                <br>
-                                {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY", suffix: "COLON" }) }} {% if config.isSandboxApplePayEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }} {{ translate({ ident: "OSC_PAYPAL_INSTALL_NOTE_APPLEPAY" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
-
-                            </div>
+                            <ul>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_PUI", suffix: "COLON" }) }}</b>
+                                    {% if config.isSandboxPuiEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC", suffix: "COLON" }) }}</b>
+                                    {% if config.isSandboxAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING", suffix: "COLON" }) }}</b>
+                                    {% if config.isSandboxVaultingEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_GOOGLEPAY", suffix: "COLON" }) }}</b>
+                                    {% if config.isSandboxGooglePayEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_APPLEPAY", suffix: "COLON" }) }}</b>
+                                    {% if config.isSandboxApplePayEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }} {{ translate({ ident: "OSC_PAYPAL_INSTALL_NOTE_APPLEPAY" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_EPS", suffix: "COLON" }) }}</b>
+                                    {% if config.isSandboxEpsEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_PRZELEWY24", suffix: "COLON" }) }}</b>
+                                    {% if config.isSandboxPrzelewy24Eligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_BLIK", suffix: "COLON" }) }}</b>
+                                    {% if config.isSandboxBlikEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_BANCONTACT", suffix: "COLON" }) }}</b>
+                                    {% if config.isSandboxBanContactEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_IDEAL", suffix: "COLON" }) }}</b>
+                                    {% if config.isSandboxIDealEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                </li>
+                                {# SEPA unbranded comming soon
+                                    <li>
+                                        <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_SEPA", suffix: "COLON" }) }}</b>
+                                        {% if config.isSandboxSepaEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
+                                    </li>
+                                #}
+                            </ul>
                         </div>
 
                     </div>
