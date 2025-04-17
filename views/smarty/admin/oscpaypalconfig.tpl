@@ -11,8 +11,17 @@
 
 [{oxscript add=$sPayPalJS}]
 
+<form name="transfer" id="transfer" action="[{$oViewConf->getSelfLink()}]" method="post">
+    [{$oViewConf->getHiddenSid()}]
+    <input type="hidden" name="oxid" value="osc_paypal">
+    <input type="hidden" name="cl" value="oscpaypalconfig">
+    <input type="hidden" name="fnc" value="">
+    <input type="hidden" name="actshop" value="[{$oViewConf->getActiveShopId()}]">
+    <input type="hidden" name="updatenav" value="">
+    <input type="hidden" name="editlanguage" value="[{$editlanguage}]">
+</form>
+
 <div id="content" class="paypal-config">
-    <h1>[{oxmultilang ident="paypal"}] [{oxmultilang ident="OSC_PAYPAL_CONFIG"}]</h1>
     <div class="alert alert-[{if $Errors.paypal_error}]danger[{else}]success[{/if}]" role="alert">
         [{if $Errors.paypal_error}]
         [{oxmultilang ident="OSC_PAYPAL_ERR_CONF_INVALID"}]
@@ -25,6 +34,7 @@
         [{$oViewConf->getHiddenSid()}]
         <input type="hidden" name="cl" value="[{$oViewConf->getActiveClassName()}]">
         <input type="hidden" name="fnc" value="save">
+        <input type="hidden" name="oxid" value="osc_paypal">
 
         <div id="accordion">
             <div class="card">
