@@ -1,6 +1,8 @@
 [{if
-    $oViewConf->getTopActiveClassName()|lower=="module_config" ||
-    $oViewConf->getTopActiveClassName()|lower=="oscpaypalconfig" ||
+    (
+        $oViewConf->getTopActiveClassName()|lower == "module_config" &&
+        $oModule->getInfo('id') == "osc_paypal"
+    ) ||
     $oViewConf->getTopActiveClassName()|lower=="oscpaypalorder"
 }]
     [{oxstyle include=$oViewConf->getModuleUrl('osc_paypal','css/bootstrap.min.css') priority=10}]
