@@ -288,7 +288,7 @@ final class PayPalDefinitions
         self::BLIK_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
-                    'desc' => 'BLIK',
+                    'desc' => 'PayPal BLIK',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_blik_color.svg" title="BLIK" style="float: left;margin-right: 10px;" />
                         BLIK wurde 2015 in Polen gegründet, eingeführt und entwickelt und ist ein Muss für
@@ -300,7 +300,7 @@ final class PayPalDefinitions
                         OneClick ist eine nahtlose Flow-Integration, die eine großartiges Verbrauchererlebnis bietet.'
                 ],
                 'en' => [
-                    'desc' => 'BLIK',
+                    'desc' => 'PayPal BLIK',
                     'longdesc' => '',
                     'longdesc_beta' => '<img src="https://www.paypalobjects.com/images/checkout/alternative_payments/paypal_blik_color.svg" title="BLIK" style="float: left;margin-right: 10px;" />
                         Introduced in 2015, and created and developed in Poland, BLIK is a must-have local
