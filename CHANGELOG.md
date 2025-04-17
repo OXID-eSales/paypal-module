@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### FIX
 
 - Fix: Locales for PP-Buttons are editable again
+- Fix: captured order could not be changed in the backend
 
 ## [2.5.3] - 2025-04-04
 
