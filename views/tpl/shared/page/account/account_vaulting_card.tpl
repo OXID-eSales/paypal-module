@@ -80,8 +80,12 @@
             });
 
             function showSuccessMessage() {
-                $('#payPalVaultingCardContainer').hide();
-                $('#PayPalVaultingSuccess').show();
+                document.getElementById('payPalVaultingCardContainer').style.display = 'none';
+                document.getElementById('PayPalVaultingSuccess').style.display = 'block';
+
+                setTimeout(function() {
+                    location.reload();
+                }, 30000);
             }
 
             function showFailureMessage() {
