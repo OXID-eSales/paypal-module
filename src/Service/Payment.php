@@ -849,9 +849,9 @@ class Payment
      * @param $basket
      * @return array
      */
-    public function getCurrentOrderNumber(EshopModelBasket $basket): array
+    public function getCurrentOrderNumber(EshopModelBasket $basket): string
     {
-        $customId = null;
+        $customId = '';
         /** @var \OxidSolutionCatalysts\PayPal\Service\Payment $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $basket = Registry::getSession()->getBasket();

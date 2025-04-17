@@ -25,6 +25,8 @@
             deliveryAddressId: '[{$oView->getDeliveryAddressMD5()}]',
             purchaseUnits: [{$purchaseUnits}],
             vaultedPaymentSource: [{$vaultedPaymentSource}],
+            language: '[{$oView->getActiveLangAbbr()|lower}]',
+            currency: '[{$currency->name}]'
         }
 
         [{if $paymentId == 'oscpaypal'}]
@@ -50,16 +52,28 @@
                     buttonSelector: 'button#[{$paymentId}]'
                 });
             };
-
     [{/if}]
 
     [{if $paymentId == 'oscpaypal_googlepay'}]
-                window.PayPalPaymentControllerConfigurator = function () {
-                return Object.assign (PayPalPaymentControllerConfiguratorDefaults, {
-                    shopOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
-                    paymentId: '[{$paymentId}]'
-                });
-            };
+        [{assign var="bGooglePayDelivery" value=$oConfig->getConfigParam('oscPayPalUseGooglePayAddress')}]
+
+        window.PayPalPaymentControllerConfigurator = function () {
+            return Object.assign (PayPalPaymentControllerConfiguratorDefaults, {
+                finalizeGooglePayOrder: '[{$sSelfLink|cat:"cl=order&fnc=finalizeGooglePay&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                executeGooglePayOrder: '[{$sSelfLink|cat:"cl=order&fnc=executeGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                captureGooglePayOrder: '[{$sSelfLink|cat:"cl=order&fnc=captureGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]&sDeliveryAddressMD5=[{$oView->getDeliveryAddressMD5()}][{$debug}]',
+                googlePayOrderCreateUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                shopOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+
+                isSandbox: !![{$isSandBox}],
+                useGooglePayAddress: !!'[{$bGooglePayDelivery}]',
+                merchantName: '[{$oxcmp_shop->oxshops__oxname->value|oxescape}]',
+                totalPrice: '[{$oxcmp_basket->getPriceForPayment()}]',
+                paymentId: '[{$paymentId}]',
+                loadingContainer: 'google-pay-loading-container',
+                buttonSelector: 'div#[{$paymentId}]'
+            });
+        };
     [{/if}]
 
         if ('undefined' !== typeof PayPalPaymentControllerConfigurator) {

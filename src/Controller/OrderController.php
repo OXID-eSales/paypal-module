@@ -308,9 +308,7 @@ class OrderController extends OrderController_parent
             $logger->log('error', $exception->getMessage(), [$exception]);
         }
         $result = [
-            'location' => [
-                'cl=order&fnc=finalizeGooglePay&token=' . $orderId
-            ]
+            'token' => $orderId
         ];
 
         $this->outputJson($result);
