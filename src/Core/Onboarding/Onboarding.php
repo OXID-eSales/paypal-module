@@ -18,7 +18,6 @@ use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\Blik;
 use OxidSolutionCatalysts\PayPalApi\Onboarding as ApiOnboardingClient;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Exception\IOException;
