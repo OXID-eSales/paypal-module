@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - CreditCard (ACDC) and Vaulting works now internally with card-fields-component. Fewer PayPal SDK resources are needed
 - Move PayPal-Config to Config-Section in Admin > Module-List > Module > Options
 - provide orderNumber also for GooglePay
+- Better handling when storing credit card data in the customer account
 
 ### FIX
 
