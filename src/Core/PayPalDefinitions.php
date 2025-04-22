@@ -208,15 +208,15 @@ final class PayPalDefinitions
         self::CCALTERNATIVE_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
-                    'desc' => 'PayPal Kreditkarte Fallback',
+                    'desc' => 'PayPal Kredit- oder Debitkarte Fallback',
                     'longdesc' => '',
-                    'longdesc_beta' => '<img src="" title="PayPal Kreditkarte" style="float: left;margin-right: 10px;" />
+                    'longdesc_beta' => '<img src="" title="PayPal Kredit- oder Debitkarte Fallback" style="float: left;margin-right: 10px;" />
                         Bezahlen Sie bequem mit PayPal Kreditkarte'
                 ],
                 'en' => [
-                    'desc' => 'PayPal Credit Card Fallback',
+                    'desc' => 'PayPal Credit or Debit Card Fallback',
                     'longdesc' => '',
-                    'longdesc_beta' => '<img src="" title="PayPal CreditCard" style="float: left;margin-right: 10px;" />
+                    'longdesc_beta' => '<img src="" title="PayPal Credit or Debit Card Fallback" style="float: left;margin-right: 10px;" />
                         Pay conveniently with PayPal CreditCard'
                 ]
             ],
@@ -230,15 +230,15 @@ final class PayPalDefinitions
         self::ACDC_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
                 'de' => [
-                    'desc' => 'PayPal Kreditkarte',
+                    'desc' => 'PayPal Kredit- oder Debitkarte',
                     'longdesc' => '',
-                    'longdesc_beta' => '<img src="" title="Kreditkarte" style="float: left;margin-right: 10px;" />
+                    'longdesc_beta' => '<img src="" title="PayPal Kredit- oder Debitkarte" style="float: left;margin-right: 10px;" />
                         Bezahlen Sie bequem mit Kreditkarte'
                 ],
                 'en' => [
-                    'desc' => 'PayPal Creditcard',
+                    'desc' => 'PayPal Credit or Debit Card',
                     'longdesc' => '',
-                    'longdesc_beta' => '<img src="" title="Creditcard" style="float: left;margin-right: 10px;" />
+                    'longdesc_beta' => '<img src="" title="PayPal Credit or Debit Card" style="float: left;margin-right: 10px;" />
                         Pay conveniently with Creditcard'
                 ]
             ],
