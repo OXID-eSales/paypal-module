@@ -207,6 +207,8 @@
             document.addEventListener('shopOrderCreated', this.onShopOrderCreated);
             document.addEventListener('payPalOrderCreated', this.onPayPalOrderCreated);
 
+            document.dispatchEvent(new CustomEvent('PayPalPaymentControllerInitialized', new Object({detail: this})));
+
             return this;
         };
 

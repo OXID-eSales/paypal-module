@@ -16,6 +16,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidEsales\Eshop\Core\ShopVersion;
 use OxidSolutionCatalysts\PayPal\Controller\PaymentController;
+use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
@@ -26,6 +27,7 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Module;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthorizationWithAdditionalData;
@@ -119,12 +121,13 @@ class Payment
 
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
+        $customId = $this->getCurrentOrderNumber($basket);
 
         $request = $this->orderRequestFactory->getRequest(
             $basket,
             $intent,
             $userAction,
-            null, //customId is patched in doCapturePayPalOrder (ordernr is unavailable at this point)
+            $customId,
             $processingInstruction,
             $paymentSource,
             null,
@@ -157,9 +160,13 @@ class Payment
         EshopModelBasket $basket
     ): array {
         $config = Registry::getConfig();
-//remove debug part after dev!!!
-        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc&XDEBUG_SESSION=PHPSTORM';
-        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=ajaxpay&fnc=deleteShopOrder&XDEBUG_SESSION=PHPSTORM';
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $debug = '';
+        if ($moduleSettings->isSandbox()) {
+            $debug = '&XDEBUG_SESSION_START=1';
+        }
+        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc'.$debug;
+        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=ajaxpay&fnc=cancelShopOrder'.$debug;
         
         // PatchOrders access an OrderCall that has taken place before.
         // For this reason, the payPalPartnerAttributionId does not have
@@ -841,5 +848,26 @@ class Payment
         }
 
         return $orderNumber;
+    }
+
+    /**
+     * @param $basket
+     * @return array
+     */
+    public function getCurrentOrderNumber(EshopModelBasket $basket): string
+    {
+        $customId = '';
+        /** @var \OxidSolutionCatalysts\PayPal\Service\Payment $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $basket = Registry::getSession()->getBasket();
+        /** @var EshopModelOrder $order */
+        $order = oxNew(EshopModelOrder::class);
+        $shopOrderOxid = $basket->getOrderId();
+        if (!empty($shopOrderOxid)) {
+            $order->load($shopOrderOxid);
+            $customId = $paymentService->getCustomIdParameter($order);
+        }
+
+        return $customId;
     }
 }
