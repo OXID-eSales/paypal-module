@@ -13,10 +13,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - All PayPal payment methods have "PayPal" as a prefix in a fresh installation to better identify them in the admin panel. When setting up payment methods, the merchant can decide which name best fits their needs.
 - Additional check of eligibility for unbranded payments
 - CreditCard (ACDC) and Vaulting works now internally with card-fields-component. Fewer PayPal SDK resources are needed
+- Move PayPal-Config to Config-Section in Admin > Module-List > Module > Options
 
 ### FIX
 
 - Fix: Locales for PP-Buttons are editable again
+- Fix: captured order could not be changed in the backend
 
 ## [2.5.3] - 2025-04-04
 

@@ -82,3 +82,8 @@ class_alias(
     \OxidEsales\Eshop\Application\Model\Order::class,
     \OxidEsales\Eshop\Application\Model\Order_parent::class
 );
+
+class_alias(
+    \OxidEsales\Eshop\Application\Controller\Admin\ModuleConfiguration::class,
+    \OxidSolutionCatalysts\PayPal\Controller\Admin\ModuleConfiguration_parent::class
+);

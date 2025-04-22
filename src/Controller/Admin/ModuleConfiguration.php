@@ -10,7 +10,6 @@ namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
 use Exception;
 use GuzzleHttp\Exception\ClientException;
 use JsonException;
-use OxidEsales\Eshop\Application\Controller\Admin\AdminController;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
@@ -28,18 +27,11 @@ use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use Throwable;
 
-/**
- * Controller for admin > PayPal/Configuration page
- */
-class PayPalConfigController extends AdminController
+class ModuleConfiguration extends ModuleConfiguration_parent
 {
     use ServiceContainer;
 
-    /**
-     * @var string Current class template name.
-     */
-    // phpcs:ignore PSR2.Classes.PropertyDeclaration
-    protected $_sThisTemplate = 'oscpaypalconfig.tpl';
+    protected string $_sModuleId = ''; // phpcs:ignore PSR2.Classes.PropertyDeclaration.Underscore
 
     /**
      * @return string
@@ -47,13 +39,17 @@ class PayPalConfigController extends AdminController
     public function render()
     {
         $thisTemplate = parent::render();
-        $config = new Config();
-        $this->addTplParam('config', $config);
 
-        try {
-            $config->checkHealth();
-        } catch (StandardException $e) {
-            Registry::getUtilsView()->addErrorToDisplay($e, false, true, 'paypal_error');
+        if ($this->_sModuleId === 'osc_paypal') {
+            $config = new Config();
+            $thisTemplate = 'oscpaypalconfig.tpl';
+            $this->addTplParam('config', $config);
+
+            try {
+                $config->checkHealth();
+            } catch (StandardException $e) {
+                Registry::getUtilsView()->addErrorToDisplay($e, false, true, 'paypal_error');
+            }
         }
 
         return $thisTemplate;
@@ -95,13 +91,6 @@ class PayPalConfigController extends AdminController
         );
     }
 
-    /**
-     * Maps arguments and constants to request parameters, generates a sign up url
-     *
-     * @param string $partnerId
-     *
-     * @return string
-     */
     private function buildSignUpLink(
         string $partnerClientId,
         string $partnerId,
@@ -159,23 +148,21 @@ class PayPalConfigController extends AdminController
 
 
     /**
-     * Saves configuration values
+     * @throws \OxidSolutionCatalysts\PayPal\Exception\OnboardingException
+     * @throws \OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Exception\ModuleSettingNotFountException
      */
     public function save()
     {
         $confArr = Registry::getRequest()->getRequestEscapedParameter('conf');
+        if (is_array($confArr)) {
+            $confArr = $this->handleSpecialFields($confArr);
+            $this->saveConfig($confArr);
+            $this->checkEligibility($confArr);
+        }
 
-        $confArr = $this->handleSpecialFields($confArr);
-        $this->saveConfig($confArr);
-        $this->checkEligibility($confArr);
         parent::save();
     }
 
-    /**
-     * Saves configuration values
-     *
-     * @param array $conf
-     */
     protected function saveConfig(array $conf): void
     {
         foreach ($conf as $confName => $value) {
@@ -187,7 +174,7 @@ class PayPalConfigController extends AdminController
      * check Eligibility if config would be changed
      *
      * @param $confArr array
-     * @throws OnboardingException
+     * @throws OnboardingException|\OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Exception\ModuleSettingNotFountException
      */
     protected function checkEligibility(array $confArr): void
     {
@@ -408,14 +395,10 @@ class PayPalConfigController extends AdminController
     /**
      * webhook registration
      */
-    protected function registerWebhooks(): string
+    public function registerWebhooks(): void
     {
-        $webhookId = '';
-
         try {
-            /** @var Webhook $handler */
-            $handler = oxNew(Webhook::class);
-            $webhookId = $handler->ensureWebhook();
+            (oxNew(Webhook::class))->ensureWebhook();
         } catch (OnboardingException $exception) {
             Registry::getUtilsView()->addErrorToDisplay($exception->getMessage());
         } catch (Exception $exception) {
@@ -423,7 +406,5 @@ class PayPalConfigController extends AdminController
             $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', $exception->getMessage(), [$exception]);
         }
-
-        return $webhookId;
     }
 }
