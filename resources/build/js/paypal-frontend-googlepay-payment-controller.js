@@ -67,7 +67,7 @@
             const paymentsClient = PayPalPayment.getGooglePaymentsClient();
             const paymentDataRequest = await PayPalPayment.getGooglePaymentDataRequest();
             paymentDataRequest.transactionInfo = PayPalPayment.getGoogleTransactionInfo();
-            if ('function' === typeof paymentsClient['loadPaymentData']) {
+            if ('function' === typeof paymentsClient.loadPaymentData) {
                 paymentsClient.loadPaymentData(paymentDataRequest);
             }
         };
@@ -117,7 +117,7 @@
             return Object.assign({}, this.baseRequest, {
                 allowedPaymentMethods: allowedPaymentMethods
             });
-        },
+        };
 
         this.onShopOrderCreated = function (data) {
             PayPalPayment.setShopOrderData(data.detail, 'shop');
@@ -239,7 +239,7 @@
         };
 
         this.captureOrder = async function (orderId) {
-            const url = PayPalPayment.getConfigValue('captureGooglePayOrder');;
+            const url = PayPalPayment.getConfigValue('captureGooglePayOrder');
             captureData = new FormData();
             captureData.append('orderID', orderId);
             await fetch(url, {
