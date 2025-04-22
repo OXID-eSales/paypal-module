@@ -16,6 +16,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidEsales\Eshop\Core\ShopVersion;
 use OxidSolutionCatalysts\PayPal\Controller\PaymentController;
+use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
@@ -159,9 +160,13 @@ class Payment
         EshopModelBasket $basket
     ): array {
         $config = Registry::getConfig();
-//remove debug part after dev!!!
-        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc&XDEBUG_SESSION=PHPSTORM';
-        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=ajaxpay&fnc=cancelShopOrder&XDEBUG_SESSION=PHPSTORM';
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $debug = '';
+        if ($moduleSettings->isSandbox()) {
+            $debug = '&XDEBUG_SESSION_START=1';
+        }
+        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc'.$debug;
+        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=ajaxpay&fnc=cancelShopOrder'.$debug;
         
         // PatchOrders access an OrderCall that has taken place before.
         // For this reason, the payPalPartnerAttributionId does not have
