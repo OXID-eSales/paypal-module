@@ -13,6 +13,8 @@
                 FUNDING_SOURCES = [
                     paypal.FUNDING.[{if $buttonId == "oscpaypal_sepa"}]SEPA[{elseif $buttonId == "oscpaypal_cc_alternative"}]CARD[{/if}]
                 ];
+                // delete the color option, because the SEPA and CC-Alternative has some problems with PayPal-Button colors like gold. So we use the defaults of the special buttons
+                delete window.PayPalButtonStyle.color;
                 // Loop over each funding source/payment method
                 FUNDING_SOURCES.forEach(function (fundingSource) {
                     // Initialize the buttons
