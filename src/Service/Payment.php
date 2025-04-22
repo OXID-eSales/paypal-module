@@ -161,7 +161,7 @@ class Payment
         $config = Registry::getConfig();
 //remove debug part after dev!!!
         $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc&XDEBUG_SESSION=PHPSTORM';
-        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=ajaxpay&fnc=deleteShopOrder&XDEBUG_SESSION=PHPSTORM';
+        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=ajaxpay&fnc=cancelShopOrder&XDEBUG_SESSION=PHPSTORM';
         
         // PatchOrders access an OrderCall that has taken place before.
         // For this reason, the payPalPartnerAttributionId does not have
