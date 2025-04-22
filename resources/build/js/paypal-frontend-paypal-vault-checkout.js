@@ -72,6 +72,11 @@ function registerClickListenerForTheVaultCheckoutButton() {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
+    const paymentIdForm = document.getElementById('payment');
+    if (null === paymentIdForm) {
+        return;
+    }
+
     registerClickListenerForPaymentMethodsRadioButtons();
     registerClickListenerForSavedVaultRadioButtons();
     registerClickListenerForTheVaultCheckoutButton();

@@ -41,22 +41,6 @@ class AjaxPaymentController extends ProxyController
         $this->logger = $this->getServiceFromContainer(Logger::class);
     }
 
-
-    public function dummyReturnMethod(): void
-    {
-        $data = $this->getRequestParameters();
-
-        file_put_contents('/var/www/'.__FUNCTION__.'.json', json_encode($data));
-        $r=1;
-    }
-    public function dummyReturnMethod2(): void
-    {
-        $data = $this->getRequestParameters();
-
-        file_put_contents('/var/www/'.__FUNCTION__.'.json', json_encode($data));
-        $r=1;
-    }
-
     public function captureOrder(): void
     {
         $data = $this->getRequestParameters();
@@ -208,7 +192,7 @@ class AjaxPaymentController extends ProxyController
     /**
      * @throws JsonException
      */
-    public function deleteShopOrder(): void
+    public function cancelShopOrder(): void
     {
         $data = $this->getRequestParameters();
 
@@ -219,7 +203,7 @@ class AjaxPaymentController extends ProxyController
 
         $this->permissionsCheck(
             $shopOrderId,
-            'Current user do not have permission to delete referenced order'
+            'Current user do not have permission to cancel referenced order'
         );
 
         /** @var PayPalOrder $order */
@@ -228,12 +212,12 @@ class AjaxPaymentController extends ProxyController
 
         $orderNumberPart = !$order->hasOrderNumber() ? 'without Order number and' : '';
         $this->logger->log('debug', sprintf(
-            'Temporary order %s with id %s was deleted',
+            'Temporary order %s with id %s was canceled',
             $shopOrderId,
             $orderNumberPart
         ));
 
-        $order->delete();
+        $order->cancelOrder();
 
         $this->outputJson([
             'status' => 'success'
@@ -301,6 +285,8 @@ class AjaxPaymentController extends ProxyController
                 'message' => 'Order completion error.', //@TODO improve errors messages
             ]);
         }
+
+        Registry::getSession()->setVariable("vaultSuccess", true);
 
         $this->outputJson([
             'status' => 'success',

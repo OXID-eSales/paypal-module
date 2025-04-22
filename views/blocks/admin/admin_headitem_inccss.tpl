@@ -1,6 +1,8 @@
 [{if
-    $oViewConf->getTopActiveClassName()|lower=="module_config" ||
-    $oViewConf->getTopActiveClassName()|lower=="oscpaypalconfig" ||
+    (
+        $oViewConf->getTopActiveClassName()|lower == "module_config" &&
+        $oModule->getInfo('id') == "osc_paypal"
+    ) ||
     $oViewConf->getTopActiveClassName()|lower=="oscpaypalorder"
 }]
     [{assign var="sFileMTimeBootstrap" value=$oViewConf->getModulePath('osc_paypal','out/src/css/bootstrap.min.css')|filemtime}]

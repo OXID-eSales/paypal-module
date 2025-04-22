@@ -14,7 +14,7 @@
 <form name="transfer" id="transfer" action="[{$oViewConf->getSelfLink()}]" method="post">
     [{$oViewConf->getHiddenSid()}]
     <input type="hidden" name="oxid" value="[{$oModule->getInfo('id')}]">
-    <input type="hidden" name="cl" value="oscpaypalconfig">
+    <input type="hidden" name="cl" value="[{$oViewConf->getActiveClassName()}]">
     <input type="hidden" name="fnc" value="">
     <input type="hidden" name="actshop" value="[{$oViewConf->getActiveShopId()}]">
     <input type="hidden" name="updatenav" value="">
@@ -32,7 +32,7 @@
     <div id="overlay"><div class="loader"></div></div>
     <form id="configForm" name="configForm" action="[{$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]" method="post" autocomplete="off">
         [{$oViewConf->getHiddenSid()}]
-        <input type="hidden" name="cl" value="oscpaypalconfig">
+        <input type="hidden" name="cl" value="[{$oViewConf->getActiveClassName()}]">
         <input type="hidden" name="fnc" value="save">
         <input type="hidden" name="oxid" value="[{$oModule->getInfo('id')}]">
         <div id="accordion">
