@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Additional check of eligibility for unbranded payments
 - CreditCard (ACDC) and Vaulting works now internally with card-fields-component. Fewer PayPal SDK resources are needed
 - Move PayPal-Config to Config-Section in Admin > Module-List > Module > Options
+- provide orderNumber also for GooglePay
 
 ### FIX
 
