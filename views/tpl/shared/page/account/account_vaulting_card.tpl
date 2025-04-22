@@ -10,12 +10,12 @@
         <div class="card-body">
             <p id="PayPalVaultingSuccess" class="alert alert-success" style="display: none">[{oxmultilang ident="OSC_PAYPAL_VAULTING_SUCCESS"}]</p>
             <p id="PayPalVaultingFailure" class="alert alert-danger" style="display: none">[{oxmultilang ident="OSC_PAYPAL_VAULTING_ERROR"}]</p>
-            <div class='card_container' id="payPalVaultingCardContainer">
-                <div id='card-holder-name'></div>
-                <div id='card-number'></div>
-                <div id='expiration-date'></div>
-                <div id='cvv'></div>
-                <button value='submit' id='submit' class="btn btn-primary">[{oxmultilang ident="OSC_PAYPAL_VAULTING_CARD_SAVE"}]</button>
+            <div class="card_container" id="payPalVaultingCardContainer">
+                <div id="card-holder-name"></div>
+                <div id="card-number"></div>
+                <div id="expiration-date"></div>
+                <div id="cvv"></div>
+                <button value="submit" id="submit" class="btn btn-primary">[{oxmultilang ident="OSC_PAYPAL_VAULTING_CARD_SAVE"}]</button>
             </div>
         </div>
     </div>
@@ -54,7 +54,7 @@
             },
             onError: (error) =>
                 console.error('Something went wrong:', error)
-            })
+            });
 
 
             // Check eligibility and display advanced credit and debit card payments
@@ -81,10 +81,12 @@
 
             function showSuccessMessage() {
                 $('#payPalVaultingCardContainer').hide();
+                $('#PayPalVaultingFailure').hide();
                 $('#PayPalVaultingSuccess').show();
             }
 
             function showFailureMessage() {
+                $('#PayPalVaultingSuccess').hide();
                 $('#PayPalVaultingFailure').show();
             }
         }

@@ -51,10 +51,12 @@
 
             function showSuccessMessage() {
                 $('#PayPalButtonVaulting').hide();
+                $('#PayPalVaultingFailure').hide();
                 $('#PayPalVaultingSuccess').show();
             }
 
             function showFailureMessage() {
+                $('#PayPalVaultingSuccess').hide();
                 $('#PayPalVaultingFailure').show();
             }
         };

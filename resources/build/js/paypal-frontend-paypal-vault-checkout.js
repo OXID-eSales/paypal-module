@@ -6,7 +6,12 @@ function deselectRadioButtons(selector) {
 }
 
 function registerClickListenerForPaymentMethodsRadioButtons() {
-    const paymentMethodsRadioButtons = document.getElementById('payment').querySelectorAll('[type="radio"]');
+    const paymentMethodsRadioButtons = document.querySelectorAll(".vaulting_paymentsource");
+
+    if (!paymentMethodsRadioButtons) {
+        return;
+    }
+
     paymentMethodsRadioButtons.forEach(function(paymentMethod) {
         paymentMethod.onclick = function() {
             if (paymentMethod.checked) {
