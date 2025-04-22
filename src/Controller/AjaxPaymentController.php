@@ -330,13 +330,11 @@ class AjaxPaymentController extends ProxyController
         // performing special actions after user finishes order (assignment to special user groups)
         $user->onOrderExecute($basket, $success);
 
-        $response = [
+        $this->outputJson([
             'status' => 'success',
             'shopOrderId' => $order->oxorder__oxid->value,
             'customId' => $paymentService->getCustomIdParameter($order)
-        ];
-
-        $this->outputJson($response);
+        ]);
     }
 
     /**
