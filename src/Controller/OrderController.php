@@ -307,11 +307,10 @@ class OrderController extends OrderController_parent
             $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', $exception->getMessage(), [$exception]);
         }
-        $result = [
-            'token' => $orderId
-        ];
 
-        $this->outputJson($result);
+        $this->outputJson([
+            'token' => $orderId
+        ]);
     }
 
     public function captureAcdcOrder(): void
