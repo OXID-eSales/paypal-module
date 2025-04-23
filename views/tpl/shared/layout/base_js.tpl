@@ -21,6 +21,4 @@
     </script>
     [{/if}]
 
-    [{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','out/src/js/paypal-dev.js')|filemtime}]
-    <script id="dev_scripts23433" src="[{$oViewConf->getModuleUrl('osc_paypal', 'out/src/js/paypal-dev.js')|cat:"?"|cat:$sFileMTime}]"></script>
 [{/if}]
