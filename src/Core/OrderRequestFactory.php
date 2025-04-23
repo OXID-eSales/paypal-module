@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use DateTime;
+use JsonSerializable;
 use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
@@ -99,9 +100,11 @@ class OrderRequestFactory
         $setVaulting = $moduleSettings->getIsVaultingActive();
         $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
         $paymentId = Registry::getSession()->getVariable('paymentid');
+
         if ($paymentId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID) {
             $request->payment_source = $this->getGooglePayPaymentSource($basket, 'google_pay');
         }
+
         if ($paymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID) {
             $request->payment_source = $this->getApplePayPaymentSource($basket, 'apple_pay');
         }
@@ -130,12 +133,13 @@ class OrderRequestFactory
                 $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc';
             }
 
-            $request->application_context = $this->getApplicationContext(
+            $request->payment_source->experience_context = $this->getExperienceContext(
                 "",
                 $returnUrl,
                 $cancelUrl,
                 false
             );
+
             return $request;
         } elseif (Registry::getRequest()->getRequestParameter("vaultPayment") === "true") {
             $paymentType = Registry::getRequest()->getRequestParameter("oscPayPalPaymentTypeForVaulting");
@@ -153,11 +157,11 @@ class OrderRequestFactory
         }
 
         if ($userAction || $returnUrl || $cancelUrl) {
-            $request->application_context = $this->getApplicationContext(
-                $userAction,
+            $request->payment_source->experience_context = $this->getExperienceContext(
+                "",
                 $returnUrl,
                 $cancelUrl,
-                $setProvidedAddress
+                false
             );
         }
 
@@ -223,23 +227,25 @@ class OrderRequestFactory
         return $paymentSource;
     }
 
-    /**
-     * Sets application context
-     *
-     * @param string|null $userAction
-     * @param string|null $returnUrl
-     * @param string|null $cancelUrl
-     * @param bool|null $setProvidedAddress
-     * @return OrderApplicationContext
-     */
-    protected function getApplicationContext(
+    protected function getExperienceContext(
         ?string $userAction,
         ?string $returnUrl,
         ?string $cancelUrl,
         ?bool $setProvidedAddress
-    ): OrderApplicationContext {
+    ): JsonSerializable {
+        $context = new ExperienceContext();
+        $context = $this->populateContext($context, $userAction, $returnUrl, $cancelUrl, $setProvidedAddress);;
+        return $context;
+    }
+
+    protected function populateContext(
+        JsonSerializable $context,
+        ?string $userAction,
+        ?string $returnUrl,
+        ?string $cancelUrl,
+        ?bool $setProvidedAddress
+    ): \JsonSerializable {
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $context = new OrderApplicationContext();
         $context->brand_name = $moduleSettings->getShopName();
         $context->shipping_preference = 'GET_FROM_FILE';
         $context->landing_page = 'LOGIN';
@@ -736,5 +742,10 @@ class OrderRequestFactory
     {
         $user = Registry::getConfig()->getUser();
         return $user ? $user->getFieldData("oscpaypalcustomerid") : '';
+    }
+
+    protected function hasExperienceContext(?PaymentSource $paymentSource, string $paymentId): bool
+    {
+        return property_exists($paymentSource->$paymentId, 'experience_context');
     }
 }

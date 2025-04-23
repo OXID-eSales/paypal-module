@@ -11,8 +11,8 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Core;
 
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\TestingLibrary\UnitTestCase;
-use OxidSolutionCatalysts\PayPal\Api\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use PHPUnit\Framework\MockObject\MockBuilder;
 
 class OrderRequestFactoryTest extends UnitTestCase
@@ -27,7 +27,7 @@ class OrderRequestFactoryTest extends UnitTestCase
         $orderMock = $orderMockBuilder->getMock();
 
         $orderMock->method('getId')->willReturn('123');
-        $currency = new stdClass();
+        $currency = new \stdClass();
         $currency->name = 'USD';
         $orderMock->method('getOrderCurrency')->willReturn($currency);
         $orderMock->method('getTotalOrderSum')->willReturn('123.00');
