@@ -59,7 +59,8 @@ function callConfigControllerAutoConfigurationFromCallback(authCode, sharedId, i
     .then(
         function (response) {
             if (response.status === 200) {
-                window.location.reload();
+                // Search for the form named "transfer" and submit it
+                document.forms.transfer.submit();
             }
         }
     )
