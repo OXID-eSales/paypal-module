@@ -5,7 +5,6 @@
 {% set sPayPalJS %}
     window.isSandBox = '{{ isSandBox }}';
     window.selfLink = '{{ sSelfLink|raw }}';
-    window.selfControl = window.selfLink + 'cl=oscpaypalconfig';
 {% endset %}
 {{ script({ add: sPayPalJS.__toString(), priority: 10, dynamic: __oxid_include_dynamic }) }}
 
@@ -524,7 +523,7 @@
                 <div id="collapse7" class="collapse" aria-labelledby="heading7" data-parent="#accordion">
                     <div class="card-body">
                         {% if oView.showTransferLegacySettingsButton() %}
-                        <a class="btn btn-primary bottom-space" href="{{ sSelfLink|raw ~ "cl=oscpaypalconfig&fnc=transferBannerSettings" }}">{{ translate({ ident: 'OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS' }) }}</a>
+                        <a class="btn btn-primary bottom-space" href="{{ sSelfLink|raw ~ "cl=" ~ oViewConf.getActiveClassName() ~ "&fnc=transferBannerSettings" }}">{{ translate({ ident: 'OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS' }) }}</a>
                         {% endif %}
                         <p>{{ translate({ ident: "OSC_PAYPAL_BANNER_INFOTEXT" }) }}</p>
                         <div class="form-group">
