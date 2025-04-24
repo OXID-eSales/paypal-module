@@ -14,6 +14,7 @@ use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Core\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
@@ -672,5 +673,35 @@ class OrderController extends OrderController_parent
         }
 
         return parent::getNextStep($success);
+    }
+
+    public function getPurchaseUnits()
+    {
+        return Registry::get(PayPalPurchaseUnitsFactory::class)->getPurchaseUnits();
+    }
+
+    public function getVaultedPaymentSource(): string
+    {
+        $user = $this->getUser();
+        $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
+        $session = Registry::getSession();
+        $selectedVaultPaymentSourceIndex = $session->getVariable("selectedVaultPaymentSourceIndex");
+        $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+
+        if (null === $selectedVaultPaymentSourceIndex){
+            return 'null';
+        }
+
+        $selectedPaymentToken = $vaultingService->getVaultPaymentTokenByIndex(
+            $payPalCustomerId,
+            $selectedVaultPaymentSourceIndex
+        );
+
+        return !empty($selectedPaymentToken) ? json_encode([
+            "token" => [
+                "id"    => $selectedPaymentToken['id'],
+                "type"  => "SETUP_TOKEN",
+            ]
+        ]) : 'null';
     }
 }

@@ -245,4 +245,12 @@ class PatchRequestFactory
 
         return $patch;
     }
+
+    /**
+     * @param \OxidEsales\Eshop\Application\Model\Basket $basket
+     */
+    public function setBasket(Basket $basket): void
+    {
+        $this->basket = $basket;
+    }
 }

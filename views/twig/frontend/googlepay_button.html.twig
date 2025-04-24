@@ -12,7 +12,7 @@
          data-button-id="{{ buttonId }}"
          data-token="{{ sToken }}"
          data-self-link="{{ sSelfLink }}"
-         data-use-google-pay-address="{{ oViewConf.usePayPalUseGooglePayAddress() }}"
+         data-use-google-pay-address="{{ oPPconfig.usePayPalUseGooglePayAddress() }}"
          data-is-sandbox="{{ oPPconfig.isSandbox() }}"
          data-merchant-name="{{ oxcmp_shop.oxshops__oxname.value|json_encode }}"
          data-total-price="{{ oxcmp_basket.getPriceForPayment() }}"
@@ -26,6 +26,6 @@
             window.onGooglePayLoaded = resolve;
         });
     </script>
-    <script async src="https://pay.google.com/gp/p/js/pay.js" onload="window.onGooglePayLoaded()"></script>
+    <script defer src="https://pay.google.com/gp/p/js/pay.js" onload="window.onGooglePayLoaded()"></script>
     <div id="{{paymentId}}" class="paypal-button-container paypal-button-wrapper paypal-button-right large"></div>
 {% endhasrights %}
