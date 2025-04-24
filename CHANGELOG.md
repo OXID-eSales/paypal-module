@@ -16,11 +16,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Move PayPal-Config to Config-Section in Admin > Module-List > Module > Options
 - provide orderNumber also for GooglePay
 - Better handling when storing credit card data in the customer account
+- switch to experience context and drop deprecated application_context
 
 ### FIX
 
 - Fix: Locales for PP-Buttons are editable again
 - Fix: captured order could not be changed in the backend
+- use PayPal-Client v2.0.20
 
 ## [2.5.3] - 2025-04-04
 
