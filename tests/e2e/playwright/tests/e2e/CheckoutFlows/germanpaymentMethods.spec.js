@@ -1,3 +1,5 @@
+// fiöe: tests/e2e/playwright/tests/e2e/CheckoutFlows/germanpaymentMethods.spec.js
+
 import * as login from '../../PageObjects/login/login';
 import * as paypalUtility from '../../PageObjects/paypal/paypalUtility'; // Importing the utility file
 import { test, expect } from '@playwright/test';

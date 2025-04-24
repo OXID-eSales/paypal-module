@@ -1,3 +1,7 @@
+// file: tests/e2e/playwright/tests/PageObjects/utility.js
+
+import {Frame} from "@playwright/test";
+
 const redPink = 'rgb(248, 215, 218)';
 const red = 'rgb(114, 28, 36)';
 import { test, expect } from '@playwright/test';
@@ -111,27 +115,27 @@ export async function birtthDatePoneNr(page) {
 //    await page.waitForTimeout(2000);
 //}
 
-
-export async function loginPaypalSession(page) {
-    // Wait for login iframe to appear (usually has "paypal_checkout" in name)
-    const loginFrame = await waitForPaypalLoginIframe(page);
-    require('dotenv').config();
-    const email = process.env.PAYPAL_EMAIL;
-    const password = process.env.PAYPAL_PASSWORD;
-
-    // Fill email and click next
-    await loginFrame.locator('#email').fill(email);
-
-    // Fill password and login
-    await loginFrame.locator('#password').waitFor({ state: 'visible', timeout: 10000 });
-    await loginFrame.locator('#password').fill(password);
-    await loginFrame.locator('#btnLogin').click();
-    await page.waitForTimeout(2000);
-    await loginFrame.locator('#payment-submit-btn').click();
-
-    // Optionally wait for success or redirection
-    await page.waitForTimeout(3000);
-}
+//
+// export async function loginPaypalSession(page) {
+//     // Wait for login iframe to appear (usually has "paypal_checkout" in name)
+//     const loginFrame = await waitForPaypalLoginIframe(page);
+//     require('dotenv').config();
+//     const email = process.env.PAYPAL_EMAIL;
+//     const password = process.env.PAYPAL_PASSWORD;
+//
+//     // Fill email and click next
+//     await loginFrame.locator('#email').fill(email);
+//
+//     // Fill password and login
+//     await loginFrame.locator('#password').waitFor({ state: 'visible', timeout: 10000 });
+//     await loginFrame.locator('#password').fill(password);
+//     await loginFrame.locator('#btnLogin').click();
+//     await page.waitForTimeout(2000);
+//     await loginFrame.locator('#payment-submit-btn').click();
+//
+//     // Optionally wait for success or redirection
+//     await page.waitForTimeout(3000);
+// }
 
 async function waitForPaypalLoginIframe(page) {
     const maxWait = 15000;
@@ -153,7 +157,7 @@ async function waitForPaypalLoginIframe(page) {
 
 
 export async function clickGooglePay(page) {
-    await page.locator('[aria-label="Buy with GPay"]').click();
+    return await page.locator('[aria-label="Buy with GPay"]').click();
 }
 
 export async function changeCountry(page, context) {
@@ -213,6 +217,149 @@ export async function nonGermanExternalPage(page) {
     await page.locator('#Successful').click();
     await page.waitForTimeout(5000);
 }
+
+async function detectPayPalLoginContext(page) {
+    const maxAttempts = 3;
+    const attemptInterval = 2000; // 2 seconds between attempts
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        console.log(`Attempt ${attempt}/${maxAttempts} to detect PayPal context`);
+
+        // Check for popup first
+        try {
+            console.log('Checking for popup...');
+            const popup = await page.waitForEvent('popup', { timeout: 3000 });
+            if (popup) {
+                console.log('Popup detected');
+                await popup.waitForLoadState('domcontentloaded');
+                return { type: 'popup', context: popup };
+            }
+        } catch (e) {
+            console.log('No popup detected:', e.message);
+        }
+
+        // Then check for iframes
+        try {
+            console.log('Checking for iframes...');
+            await page.waitForTimeout(1000); // Small delay to ensure frames are loaded
+
+            const frames = page.frames();
+            console.log(`Found ${frames.length} frames`);
+
+            // Log all frame URLs and names for debugging
+            frames.forEach((frame, index) => {
+                console.log(`Frame ${index}:`, {
+                    url: frame.url(),
+                    name: frame.name()
+                });
+            });
+
+            // Look for PayPal-specific iframes
+            const paypalSelectors = [
+                'iframe[name^="__zoid__paypal_buttons__"]',
+                'iframe[name*="paypal"]',
+                'iframe[title*="PayPal"]'
+            ];
+
+            for (const selector of paypalSelectors) {
+                const frameElement = await page.$(selector);
+                if (frameElement) {
+                    const frame = await frameElement.contentFrame();
+                    if (frame) {
+                        console.log(`PayPal iframe found with selector: ${selector}`);
+                        return { type: 'iframe', context: frame };
+                    }
+                }
+            }
+
+            // Traditional frame search
+            const loginFrame = frames.find(f =>
+                f.url().includes('paypal.com') ||
+                f.name().includes('checkout') ||
+                f.name().includes('login') ||
+                f.name().includes('xcomponent') // Common PayPal frame identifier
+            );
+
+            if (loginFrame) {
+                console.log('PayPal frame found through URL/name matching');
+                return { type: 'iframe', context: loginFrame };
+            }
+        } catch (e) {
+            console.log('Error during iframe detection:', e.message);
+        }
+
+        if (attempt < maxAttempts) {
+            console.log(`Waiting ${attemptInterval}ms before next attempt...`);
+            await page.waitForTimeout(attemptInterval);
+        }
+    }
+
+    console.log('All attempts to detect PayPal context failed');
+    throw new Error('Could not detect PayPal login context (neither popup nor iframe found)');
+}
+
+export async function loginPaypalSession(page) {
+    // Wait a bit for the PayPal context to initialize
+    await page.waitForTimeout(2000);
+
+    // Detect whether we're dealing with a popup or iframe
+    const { type, context } = await detectPayPalLoginContext(page);
+
+    require('dotenv').config();
+    const email = process.env.PAYPAL_EMAIL;
+    const password = process.env.PAYPAL_PASSWORD;
+
+    try {
+        // Handle login based on context type
+        if (type === 'popup') {
+            await context.waitForLoadState('networkidle');
+            await context.locator('#email').fill(email);
+            await context.locator('#password').waitFor({ state: 'visible', timeout: 10000 });
+            await context.locator('#password').fill(password);
+            await context.locator('#btnLogin').click();
+            await context.waitForTimeout(2000);
+            await context.locator('#payment-submit-btn').click();
+        } else {
+            // iframe handling
+            await context.locator('#email').fill(email);
+            await context.locator('#password').waitFor({ state: 'visible', timeout: 10000 });
+            await context.locator('#password').fill(password);
+            await context.locator('#btnLogin').click();
+            await page.waitForTimeout(2000);
+            await context.locator('#payment-submit-btn').click();
+        }
+
+        // Wait for the payment process to complete
+        await page.waitForTimeout(3000);
+
+    } catch (error) {
+        console.error(`PayPal login failed in ${type} mode:`, error);
+        throw error;
+    }
+}
+
+
+export async function handleGooglePayFlow(page) {
+    const gpayBtn = page.locator('button[aria-label="Buy with GPay"]');
+    await gpayBtn.waitFor({ state: 'visible', timeout: 15_000 });
+
+    // 2) Set up popup listener _before_ clicking
+    const [popup] = await Promise.all([
+        page.waitForEvent('popup'),
+        gpayBtn.click({ force: true }),
+    ]);
+
+    // 4) Drive the Google login flow in the popup
+    await popup.waitForLoadState('domcontentloaded');
+    await popup.fill('input[type="email"]', process.env.GOOGLE_EMAIL);
+    await popup.click('button:has-text("Next")');
+    await popup.fill('input[type="password"]', process.env.GOOGLE_PASSWORD);
+    await popup.click('button:has-text("Next")');
+
+    // 5) Wait for it to close/return
+    await popup.waitForClose({ timeout: 30_000 });
+}
+
 
 
 
