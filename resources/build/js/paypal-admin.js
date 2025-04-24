@@ -45,7 +45,7 @@ function onboardedCallbackSandbox(authCode, sharedId)
 function callConfigControllerAutoConfigurationFromCallback(authCode, sharedId, isSandBox)
 {
     const sandboxSnippet = isSandBox ? '&XDEBUG_SESSION_START=1' : '';
-    fetch(window.selfLink + 'cl=oscpaypalconfig&fnc=autoConfigurationFromCallback' + sandboxSnippet, {
+    fetch(window.selfLink + 'cl=module_config&fnc=autoConfigurationFromCallback' + sandboxSnippet, {
         method: 'POST',
         headers: {
             'content-type': 'application/json'
@@ -58,8 +58,9 @@ function callConfigControllerAutoConfigurationFromCallback(authCode, sharedId, i
     })
         .then(
             function (response) {
-            if (response.status === 200) {
-                window.location.reload();
+                if (response.status === 200) {
+                    // Search for the form named "transfer" and submit it
+                    document.forms.transfer.submit();
                 }
             }
         )

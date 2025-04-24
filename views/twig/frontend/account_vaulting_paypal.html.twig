@@ -24,6 +24,7 @@
                 <script>
                     window.onload = function () {
                         paypal.Buttons({
+                            style: PayPalButtonStyle,
                             createVaultSetupToken: async () => {
                                const result = await fetch(
                                    "{{ seo_url({ ident: oViewConf.getGenerateSetupTokenLink()|raw }) }}",
