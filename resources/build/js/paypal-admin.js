@@ -45,7 +45,7 @@ function onboardedCallbackSandbox(authCode, sharedId)
 function callConfigControllerAutoConfigurationFromCallback(authCode, sharedId, isSandBox)
 {
     const sandboxSnippet = isSandBox ? '&XDEBUG_SESSION_START=1' : '';
-    fetch(window.selfLink + 'cl=oscpaypalconfig&fnc=autoConfigurationFromCallback' + sandboxSnippet, {
+    fetch(window.selfLink + 'cl=module_config&fnc=autoConfigurationFromCallback' + sandboxSnippet, {
         method: 'POST',
         headers: {
             'content-type': 'application/json'

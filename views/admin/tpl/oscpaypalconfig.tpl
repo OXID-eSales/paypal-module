@@ -5,7 +5,6 @@
     [{strip}]
     window.isSandBox = '[{$isSandBox}]';
     window.selfLink = '[{$sSelfLink}]';
-    window.selfControl = window.selfLink + 'cl=oscpaypalconfig';
     [{/strip}]
     [{/capture}]
 
@@ -524,7 +523,7 @@
                 <div id="collapse7" class="collapse" aria-labelledby="heading7" data-parent="#accordion">
                     <div class="card-body">
                         [{if $oView->showTransferLegacySettingsButton()}]
-                        <a class="btn btn-primary bottom-space" href="[{$sSelfLink|cat:"cl=oscpaypalconfig&fnc=transferBannerSettings"}]">[{oxmultilang ident='OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'}]</a>
+                        <a class="btn btn-primary bottom-space" href="[{$sSelfLink|cat:"cl="|cat:$oViewConf->getActiveClassName()|cat:"&fnc=transferBannerSettings"}]">[{oxmultilang ident='OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'}]</a>
                         [{/if}]
                         <p>[{oxmultilang ident="OSC_PAYPAL_BANNER_INFOTEXT"}]</p>
                         <div class="form-group">
