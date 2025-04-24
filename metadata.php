@@ -136,6 +136,9 @@ $aModule = [
         '@osc_paypal/frontend/flow/change_payment.tpl' => 'views/smarty/frontend/flow/page/checkout/change_payment.tpl',
         '@osc_paypal/frontend/wave/change_payment.tpl' => 'views/smarty/frontend/wave/page/checkout/change_payment.tpl',
 
+        // PSPAYPAL-822 Button customization
+         '@osc_paypal/frontend/layout/base_paypal_button_config.tpl' => 'views/smarty/frontend/shared/layout/base_paypal_button_config.tpl',
+
         // PSPAYPAL-491 Installment banners
         '@osc_paypal/frontend/shared/installment_banners.tpl' => 'views/smarty/frontend/shared/installment_banners.tpl',
 

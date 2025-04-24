@@ -16,6 +16,7 @@
             FUNDING_SOURCES.forEach(function (fundingSource) {
                 // Initialize the buttons
                 let button = paypal.Buttons({
+                    style: PayPalButtonStyle,
                     fundingSource: fundingSource,
                     createOrder: function (data, actions) {
                         return await fetch(selfLink + "cl=oscpaypalproxy&fnc=createOrder&paymentid={{ buttonId }}&context=continue&stoken={{ sToken }}", {
@@ -65,6 +66,7 @@
             });
         {% else %}
             button = paypal.Buttons({
+                style: PayPalButtonStyle,
                 {% if oViewConf.getCountryRestrictionForPayPalExpress() %}
                 onShippingChange: function (data, actions) {
                     if (!countryRestriction.includes(data.shipping_address.country_code)) {
