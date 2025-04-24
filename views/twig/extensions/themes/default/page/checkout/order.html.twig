@@ -1,10 +1,11 @@
 {% extends "page/checkout/order.html.twig" %}
 
 {% block shippingAndPayment %}
+    {{ oViewConf.setSDKIsNecessary(true) }}
     {% set payment = oView.getPayment() %}
-    {% if payment.getId() in ['oscpaypal_acdc', 'oscpaypal_pui', 'oscpaypal'] or vaultedPaymentDescription %}
+    {% set sPaymentID = oView.getPayment().getId() %}
+    {% if sPaymentID in ['oscpaypal_acdc', 'oscpaypal_pui', 'oscpaypal'] or vaultedPaymentDescription %}
         {{ oViewConf.setSDKIsNecessary(true) }}
-        {% set sPaymentID = payment.getId() %}
         <form action="{{ oViewConf.getSslSelfLink()|replace({'&amp;': '&'})|raw }}" method="post"
               id="orderShipping">
             {{ oViewConf.getHiddenSid()|raw }}
@@ -40,7 +41,6 @@
             </h4>
         </form>
         <div class="card-body">
-            {% set payment = oView.getPayment() %}
             {% if vaultedPaymentDescription %}
                 {{ vaultedPaymentDescription }}
             {% elseif not oscpaypal_executing_order %}
@@ -69,31 +69,17 @@
         {# apple pay has a specific button #}
         {% include "@osc_paypal/frontend/applepay_button.html.twig" with {paymentId: payment.getId()} %}
     {% else %}
-        {# usual order button #}
-        <button id="orderSubmitButton" type="button" class="btn btn-highlight btn-lg w-100">
-            {{ translate({ ident: "SUBMIT_ORDER" }) }}
-        </button>
-
-        {% capture assign = "oscpaypal_madClickPrevention" %}
-            const submitButton = document.getElementById('orderSubmitButton');
-            const orderConfirmAgbBottom = document.getElementById('orderConfirmAgbBottom');
-
-            submitButton.addEventListener('click', function(event) {
-                event.preventDefault();
-
-                // Create CustomEvent and check if it was canceled
-                const submitEvent = new CustomEvent('submit', {cancelable: true});
-                const eventNotCancelled = orderConfirmAgbBottom.dispatchEvent(submitEvent);
-
-                // Only deactivate the button if the validation was successful (event not canceled)
-                if (eventNotCancelled) {
-                    this.disabled = true;
-                    orderConfirmAgbBottom.submit();
-                }
-            });
-
-        {% endcapture %}
-        {{ script({ add: oscpaypal_madClickPrevention, dynamic: __oxid_include_dynamic }) }}
-
+        {% if paymentId == "oscpaypal_acdc" %}
+            <button id="{{ paymentId }}" type="button" class="btn btn-lg btn-primary pull-right submitButton nextStep largeButton">
+                <i class="fa fa-check"></i> {{ translate({ ident: "SUBMIT_ORDER" }) }}
+            </button>
+        {% elseif paymentId == "oscpaypal" %}
+            <div id="{{ paymentId }}" class="paypal-button-container [{$buttonClass}] float-right pull-right"></div>
+        {% else %}
+            {# usual order button #}
+            <button id="orderSubmitButton" type="button" class="btn btn-highlight btn-lg w-100">
+                {{ translate({ ident: "SUBMIT_ORDER" }) }}
+            </button>
+        {% endif %}
     {% endif %}
 {% endblock %}

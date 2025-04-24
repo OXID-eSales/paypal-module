@@ -1,0 +1,16 @@
+{% set config = oViewConf.getPayPalCheckoutConfig() %}
+<script>
+    (function (){
+        const PayPalButtonStyleConfigurator = function(){
+            return {
+                layout: '{{ config.getPayPalButtonStyleLayout() }}',
+                color:  '{{ config.getPayPalButtonStyleColor() }}',
+                shape:  '{{ config.getPayPalButtonStyleShape() }}',
+                label:  '{{ config.getPayPalButtonStyleLabel() }}'
+            }
+        }
+
+        window.PayPalButtonStyle = new PayPalButtonStyleConfigurator();
+    })();
+</script>
+
