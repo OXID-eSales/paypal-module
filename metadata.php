@@ -26,7 +26,6 @@ use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Component\BasketComponent as PayPalBasketComponent;
 use OxidSolutionCatalysts\PayPal\Component\UserComponent as PayPalUserComponent;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\ModuleConfiguration as PaypalModuleConfiguration;
-use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalConfigController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalOrderController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderArticle as PayPalOrderArticleController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderMain as PayPalOrderMainController;
@@ -90,13 +89,12 @@ $aModule = [
         State::class => PayPalState::class
     ],
     'controllers' => [
-        'oscpaypalconfig'       => PaypalModuleConfiguration::class,
-        'oscpaypalwebhook'      => WebhookController::class,
-        'oscpaypalproxy'        => ProxyController::class,
-        'oscpaypalorder'        => PayPalOrderController::class,
-        'oscaccountvault'       => PayPalVaultingController::class,
-        'oscaccountvaultcard'   => PayPalVaultingCardController::class,
-        'osctokencontroller'    => VaultingTokenController::class,
+        'oscpaypalwebhook'    => WebhookController::class,
+        'oscpaypalproxy'      => ProxyController::class,
+        'oscpaypalorder'      => PayPalOrderController::class,
+        'oscaccountvault'     => PayPalVaultingController::class,
+        'oscaccountvaultcard' => PayPalVaultingCardController::class,
+        'osctokencontroller'  => VaultingTokenController::class,
     ],
     'events' => [
         'onActivate' => '\OxidSolutionCatalysts\PayPal\Core\Events\Events::onActivate',
