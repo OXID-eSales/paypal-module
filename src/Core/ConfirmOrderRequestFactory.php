@@ -17,6 +17,7 @@ use OxidEsales\Eshop\Core\Language;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderConfirmApplicationContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
+use OxidSolutionCatalysts\PayPalApi\Pui\ExperienceContext;
 
 /**
  * Class ConfirmOrderRequestFactory
@@ -42,7 +43,6 @@ class ConfirmOrderRequestFactory
         $request = $this->request = new ConfirmOrderRequest();
 
         $request->payment_source = $this->getPaymentSource($basket, $requestName);
-        $request->application_context = $this->getApplicationContext();
 
         return $request;
     }
@@ -68,7 +68,6 @@ class ConfirmOrderRequestFactory
             $requestName = 'google_pay';
             $paymentSource = new \stdClass();
 
-            // Dynamically adding properties to the stdClass object
             $paymentSource->$requestName = new \stdClass();
             $paymentSource->$requestName->name = $userName;
             $paymentSource->$requestName->country_code = $country->getFieldData('oxisoalpha2');
@@ -85,6 +84,8 @@ class ConfirmOrderRequestFactory
             ]);
         }
 
+        $paymentSource->$requestName->experience_context = $this->getExperienceContext();
+
         return $paymentSource;
     }
 
@@ -93,12 +94,11 @@ class ConfirmOrderRequestFactory
      *
      * @return OrderConfirmApplicationContext
      */
-    protected function getApplicationContext(): OrderConfirmApplicationContext
+    protected function getExperienceContext(): \JsonSerializable
     {
-        $context = new OrderConfirmApplicationContext();
+        $context = new ExperienceContext();
         $language = new Language();
         $config = Registry::getConfig();
-
         $shopLanguageAbbr = $language->getLanguageAbbr();
         $context->locale = $shopLanguageAbbr . '-' . strtoupper($shopLanguageAbbr);
         $context->return_url = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
