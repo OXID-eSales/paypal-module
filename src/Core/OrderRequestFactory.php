@@ -156,15 +156,6 @@ class OrderRequestFactory
             $request->payer = $this->getPayer();
         }
 
-        if ($userAction || $returnUrl || $cancelUrl) {
-            $request->payment_source->experience_context = $this->getExperienceContext(
-                "",
-                $returnUrl,
-                $cancelUrl,
-                false
-            );
-        }
-
         if ($processingInstruction) {
             $request->processing_instruction = $processingInstruction;
         }

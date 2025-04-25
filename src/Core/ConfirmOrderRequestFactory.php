@@ -74,6 +74,7 @@ class ConfirmOrderRequestFactory
             $paymentSource->$requestName->attributes = new \stdClass();
             $paymentSource->$requestName->attributes->verification = new \stdClass();
             $paymentSource->$requestName->attributes->verification->method = 'SCA_ALWAYS';
+            $paymentSource->$requestName->experience_context = $this->getExperienceContext();
         } else {
             $paymentSource = new PaymentSource([
                 $requestName => [
@@ -82,9 +83,8 @@ class ConfirmOrderRequestFactory
                     'country_code' => $country->getFieldData('oxisoalpha2')
                 ]
             ]);
+            $paymentSource->experience_context = $this->getExperienceContext();
         }
-
-        $paymentSource->$requestName->experience_context = $this->getExperienceContext();
 
         return $paymentSource;
     }
