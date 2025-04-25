@@ -18,6 +18,7 @@ use OxidEsales\EshopCommunity\Core\Language;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderConfirmApplicationContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
+use OxidSolutionCatalysts\PayPalApi\Pui\ExperienceContext;
 
 /**
  * Class ConfirmOrderRequestFactory
@@ -49,6 +50,9 @@ class ConfirmOrderRequestFactory
         return $request;
     }
 
+    /**
+     * @throws \OxidEsales\Eshop\Core\Exception\LanguageNotFoundException
+     */
     protected function getPaymentSource(Basket $basket, string $requestName)
     {
         $user = $basket->getBasketUser();
@@ -87,6 +91,8 @@ class ConfirmOrderRequestFactory
             ]);
         }
 
+        $paymentSource->$requestName->experience_context = $this->getExperienceContext();
+
         return $paymentSource;
     }
 
@@ -96,12 +102,11 @@ class ConfirmOrderRequestFactory
      * @throws LanguageNotFoundException
      * @return OrderConfirmApplicationContext
      */
-    protected function getApplicationContext(): OrderConfirmApplicationContext
+    protected function getExperienceContext(): \JsonSerializable
     {
-        $context = new OrderConfirmApplicationContext();
+        $context = new ExperienceContext();
         $language = new Language();
         $config = Registry::getConfig();
-
         $shopLanguageAbbr = $language->getLanguageAbbr();
         $context->locale = $shopLanguageAbbr . '-' . strtoupper($shopLanguageAbbr);
         $context->return_url = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';

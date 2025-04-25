@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use DateTime;
+use JsonSerializable;
 use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
@@ -130,7 +131,7 @@ class OrderRequestFactory
                 $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc';
             }
 
-            $request->application_context = $this->getApplicationContext(
+            $request->application_context = $this->getExperienceContext(
                 "",
                 $returnUrl,
                 $cancelUrl,
@@ -153,7 +154,7 @@ class OrderRequestFactory
         }
 
         if ($userAction || $returnUrl || $cancelUrl) {
-            $request->application_context = $this->getApplicationContext(
+            $request->application_context = $this->getExperienceContext(
                 $userAction,
                 $returnUrl,
                 $cancelUrl,
@@ -222,23 +223,26 @@ class OrderRequestFactory
         return $paymentSource;
     }
 
-    /**
-     * Sets application context
-     *
-     * @param string|null $userAction
-     * @param string|null $returnUrl
-     * @param string|null $cancelUrl
-     * @param bool|null $setProvidedAddress
-     * @return OrderApplicationContext
-     */
-    protected function getApplicationContext(
+
+    protected function getExperienceContext(
         ?string $userAction,
         ?string $returnUrl,
         ?string $cancelUrl,
         ?bool $setProvidedAddress
-    ): OrderApplicationContext {
+    ): JsonSerializable {
+        $context = new ExperienceContext();
+        $context = $this->populateContext($context, $userAction, $returnUrl, $cancelUrl, $setProvidedAddress);;
+        return $context;
+    }
+
+    protected function populateContext(
+        JsonSerializable $context,
+        ?string $userAction,
+        ?string $returnUrl,
+        ?string $cancelUrl,
+        ?bool $setProvidedAddress
+    ): \JsonSerializable {
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $context = new OrderApplicationContext();
         $context->brand_name = $moduleSettings->getShopName();
         $context->shipping_preference = 'GET_FROM_FILE';
         $context->landing_page = 'LOGIN';
