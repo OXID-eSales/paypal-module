@@ -1,5 +1,4 @@
 <h1>Ala ma kota</h1>
-{{ debug(getControllerName(oView)) }}
 
 {% if getControllerName(oView) == 'OrderController' %}
     {% set payment = oView.getPayment() %}
@@ -11,7 +10,9 @@
     {% set oPPconfig = oViewConf.getPayPalCheckoutConfig() %}
     {% set isSandBox = oPPconfig.isSandbox() %}
     {% set captureStrategy = oPPconfig.getPayPalStandardCaptureStrategy() %}
+    {% set currency = oView.getActCurrency() %}
 
+    {{ debug(paymentId) }}
     {% if isSandBox %}
         {% set debug = '&XDEBUG_SESSION=PHPSTORM' %}
     {% else %}
@@ -58,7 +59,7 @@
         {% endif %}
 
         {% if paymentId == 'oscpaypal_googlepay' %}
-            {% set bGooglePayDelivery = oConfig.getConfigParam('oscPayPalUseGooglePayAddress') %}
+            {% set bGooglePayDelivery = oPPconfig.getIsGooglePayDeliveryAddressActive() %}
 
             window.PayPalPaymentControllerConfigurator = function () {
                 return Object.assign(PayPalPaymentControllerConfiguratorDefaults, {
