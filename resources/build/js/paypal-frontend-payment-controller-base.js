@@ -141,7 +141,7 @@
                 await PayPalPayment.vaultPayment(paypalOrderDetails);
             }
 
-            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl').replaceAll('&amp;', '&');
         };
 
         this.handlePaymentAuthorization = async function (details) {
@@ -152,7 +152,7 @@
                 await PayPalPayment.vaultPayment(paypalOrderDetails);
             }
 
-            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl').replaceAll('&amp;', '&');
         };
 
         this.deleteOrder = async function () {
@@ -178,7 +178,8 @@
 
         // Common backend request method
         this.backendRequest = async function (urlSlug, headers, body) {
-            let response = await fetch(PayPalPayment.getConfigValue(urlSlug), {
+            let url = PayPalPayment.getConfigValue(urlSlug).replaceAll('&amp;', '&');
+            let response = await fetch(url, {
                 method: 'post',
                 headers: Object.assign({
                     'content-type': 'application/json',
