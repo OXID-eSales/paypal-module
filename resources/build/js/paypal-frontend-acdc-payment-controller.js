@@ -36,7 +36,7 @@
         };
 
         this.afterCaptureOrder = function (details) {
-            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl').replaceAll('&amp;', '&');
         };
 
         this.renderButtonForVaultedPayment = function() {
