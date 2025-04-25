@@ -49,7 +49,8 @@
         };
         
         this.onGooglePaymentButtonClicked = async function () {
-            let response = await fetch(PayPalPayment.getConfigValue('shopOrderCreateUrl'), {
+            let url = PayPalPayment.getConfigValue('shopOrderCreateUrl').replaceAll('&amp;', '&');
+            let response = await fetch(url, {
                 method: 'post',
                 headers: Object.assign({
                     'content-type': 'application/json',
@@ -159,7 +160,7 @@
 
         this.processPayment = async function (paymentDataAttr) {
             try {
-                const createOrderUrl = PayPalPayment.getConfigValue('googlePayOrderCreateUrl');
+                const createOrderUrl = PayPalPayment.getConfigValue('googlePayOrderCreateUrl').replaceAll('&amp;', '&');
                 const paymentData = {
                     ...paymentDataAttr,
                     shopOrderId: PayPalPayment.currentOrder.shop.shopOrderId
@@ -209,14 +210,13 @@
                 .Googlepay()
                 .initiatePayerAction({ orderId: orderId })
                 .then(async () => {
-                    console.log("===== Payer Action Completed =====");
                     await PayPalPayment.executeOxidOrder(orderId);
                     await PayPalPayment.captureOrder(orderId);
                 });
         };
 
         this.executeOxidOrder = async function (orderId) {
-            const url = PayPalPayment.getConfigValue('executeGooglePayOrder');
+            const url = PayPalPayment.getConfigValue('executeGooglePayOrder').replaceAll('&amp;', '&');
             createData = new FormData();
             createData.append('orderID', orderId);
 
@@ -239,7 +239,7 @@
         };
 
         this.captureOrder = async function (orderId) {
-            const url = PayPalPayment.getConfigValue('captureGooglePayOrder');
+            const url = PayPalPayment.getConfigValue('captureGooglePayOrder').replaceAll('&amp;', '&');
             captureData = new FormData();
             captureData.append('orderID', orderId);
             await fetch(url, {
@@ -249,7 +249,8 @@
                 return res.json();
             }).then(function (data) {
                 if ('undefined' !== typeof data.token) {
-                    window.location = PayPalPayment.getConfigValue('finalizeGooglePayOrder') + '&token=' + data.token;
+                    let location = PayPalPayment.getConfigValue('finalizeGooglePayOrder').replaceAll('&amp;', '&') + '&token=' + data.token;
+                    window.location = location;
                     return;
                 }
 
