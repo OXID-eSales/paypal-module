@@ -5,7 +5,7 @@
     {% set payment = oView.getPayment() %}
     {% set paymentId = payment.getId() %}
     {% set sToken = oViewConf.getSessionChallengeToken() %}
-    {% set sSelfLink = oViewConf.getSslSelfLink()|replace({'&amp;': '&'}) %}
+    {% set sSelfLink = oViewConf.getSslSelfLink() %}
     {% set purchaseUnits = oView.getPurchaseUnits() %}
     {% set vaultedPaymentSource = oView.getVaultedPaymentSource() %}
     {% set oPPconfig = oViewConf.getPayPalCheckoutConfig() %}
@@ -20,63 +20,63 @@
 
     <script>
         const PayPalPaymentControllerConfiguratorDefaults = {
-            shopOrderErrorUrl: '{{ sSelfLink ~ "cl=ajaxpay&fnc=logError&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug | raw }}',
-            shopOrderDeleteUrl: '{{ sSelfLink ~ "cl=ajaxpay&fnc=cancelShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug | raw }}',
-            payPalOrderDetailsUrl: '{{ sSelfLink ~ "cl=ajaxpay&fnc=fetchPayPalOrderDetails&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug | raw }}',
-            errorLogUrl: '{{ sSelfLink ~ "cl=payment&payerror=2&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug | raw }}',
-            shopThankYouPageUrl: '{{ sSelfLink ~ "cl=thankyou&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug | raw }}',
+            shopOrderErrorUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=logError&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
+            shopOrderDeleteUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=cancelShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
+            payPalOrderDetailsUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=fetchPayPalOrderDetails&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
+            errorLogUrl: '{{ (sSelfLink ~ "cl=payment&payerror=2&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
+            shopThankYouPageUrl: '{{ (sSelfLink ~ "cl=thankyou&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
             deliveryAddressId: '{{ oView.getDeliveryAddressMD5() }}',
             purchaseUnits: {{ purchaseUnits|raw }},
             vaultedPaymentSource: {{ vaultedPaymentSource|raw }},
             language: '{{ oView.getActiveLangAbbr()|lower }}',
             currency: '{{ currency.name }}'
-        }
+        };
 
         {% if paymentId == 'oscpaypal' %}
-        window.PayPalPaymentControllerConfigurator = function () {
-            return Object.assign(PayPalPaymentControllerConfiguratorDefaults, {
-                shopOrderCreateUrl: '{{ sSelfLink ~ "cl=ajaxpay&fnc=createShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug | raw }}',
-                shopOrderPatchingUrl: '{{ sSelfLink ~ "cl=ajaxpay&fnc=patchShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug | raw }}',
-                updateOxUserWithPayPalCustomerIdUrl: '{{ sSelfLink ~ "cl=ajaxpay&fnc=updateOxUserWithPayPalCustomerId&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug | raw }}',
-                buttonSelector: 'div#{{ paymentId }}',
-                captureStrategy: '{% if captureStrategy == 'directly' %}CAPTURE{% else %}AUTHORIZE{% endif %}',
-                paymentId: 'oscpaypal',
-            });
-        };
+            window.PayPalPaymentControllerConfigurator = function () {
+                return Object.assign(PayPalPaymentControllerConfiguratorDefaults, {
+                    shopOrderCreateUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=createShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
+                    shopOrderPatchingUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=patchShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
+                    updateOxUserWithPayPalCustomerIdUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=updateOxUserWithPayPalCustomerId&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
+                    buttonSelector: 'div#{{ paymentId }}',
+                    captureStrategy: '{% if captureStrategy == 'directly' %}CAPTURE{% else %}AUTHORIZE{% endif %}',
+                    paymentId: 'oscpaypal',
+                });
+            };
         {% endif %}
 
         {% if paymentId == 'oscpaypal_acdc' %}
-        window.PayPalPaymentControllerConfigurator = function () {
-            return Object.assign(PayPalPaymentControllerConfiguratorDefaults, {
-                shopOrderCaptureUrl: '{{ sSelfLink ~ "cl=ajaxpay&fnc=captureOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug | raw }}',
-                shopOrderCreateUrl: '{{ sSelfLink ~ "cl=ajaxpay&fnc=createAcdcOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug | raw }}',
-                cardFields: true,
-                paymentId: '{{ paymentId }}',
-                buttonSelector: 'button#{{ paymentId }}'
-            });
-        };
+            window.PayPalPaymentControllerConfigurator = function () {
+                return Object.assign(PayPalPaymentControllerConfiguratorDefaults, {
+                    shopOrderCaptureUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=captureOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
+                    shopOrderCreateUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=createAcdcOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
+                    cardFields: true,
+                    paymentId: '{{ paymentId }}',
+                    buttonSelector: 'button#{{ paymentId }}'
+                });
+            };
         {% endif %}
 
         {% if paymentId == 'oscpaypal_googlepay' %}
-        {% set bGooglePayDelivery = oConfig.getConfigParam('oscPayPalUseGooglePayAddress') %}
+            {% set bGooglePayDelivery = oConfig.getConfigParam('oscPayPalUseGooglePayAddress') %}
 
-        window.PayPalPaymentControllerConfigurator = function () {
-            return Object.assign(PayPalPaymentControllerConfiguratorDefaults, {
-                finalizeGooglePayOrder: '{{ sSelfLink ~ "cl=order&fnc=finalizeGooglePay&paymentid=oscpaypal_googlepay&context=continue&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug | raw }}',
-                executeGooglePayOrder: '{{ sSelfLink ~ "cl=order&fnc=executeGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug | raw }}',
-                captureGooglePayOrder: '{{ sSelfLink ~ "cl=order&fnc=captureGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid=" ~ aid ~ "&stoken=" ~ sToken ~ "&sDeliveryAddressMD5=" ~ oView.getDeliveryAddressMD5() ~ debug | raw }}',
-                googlePayOrderCreateUrl: '{{ sSelfLink ~ "cl=oscpaypalproxy&fnc=createGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug | raw }}',
-                shopOrderCreateUrl: '{{ sSelfLink ~ "cl=ajaxpay&fnc=createShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug | raw }}',
+            window.PayPalPaymentControllerConfigurator = function () {
+                return Object.assign(PayPalPaymentControllerConfiguratorDefaults, {
+                    finalizeGooglePayOrder: '{{ (sSelfLink ~ "cl=order&fnc=finalizeGooglePay&paymentid=oscpaypal_googlepay&context=continue&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
+                    executeGooglePayOrder: '{{ (sSelfLink ~ "cl=order&fnc=executeGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
+                    captureGooglePayOrder: '{{ (sSelfLink ~ "cl=order&fnc=captureGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid=" ~ aid ~ "&stoken=" ~ sToken ~ "&sDeliveryAddressMD5=" ~ oView.getDeliveryAddressMD5() ~ debug)|raw }}',
+                    googlePayOrderCreateUrl: '{{ (sSelfLink ~ "cl=oscpaypalproxy&fnc=createGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
+                    shopOrderCreateUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=createShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
 
-                isSandbox: !!{{ isSandBox ? 'true' : 'false' }},
-                useGooglePayAddress: !!'{{ bGooglePayDelivery }}',
-                merchantName: '{{ oxcmp_shop.oxshops__oxname.value|escape('js') }}',
-                totalPrice: '{{ oxcmp_basket.getPriceForPayment() }}',
-                paymentId: '{{ paymentId }}',
-                loadingContainer: 'google-pay-loading-container',
-                buttonSelector: 'div#{{ paymentId }}'
-            });
-        };
+                    isSandbox: !!{{ isSandBox ? 'true' : 'false' }},
+                    useGooglePayAddress: !!'{{ bGooglePayDelivery }}',
+                    merchantName: '{{ oxcmp_shop.oxshops__oxname.value|escape('js') }}',
+                    totalPrice: '{{ oxcmp_basket.getPriceForPayment() }}',
+                    paymentId: '{{ paymentId }}',
+                    loadingContainer: 'google-pay-loading-container',
+                    buttonSelector: 'div#{{ paymentId }}'
+                });
+            };
         {% endif %}
 
         if ('undefined' !== typeof PayPalPaymentControllerConfigurator) {
