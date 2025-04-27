@@ -5,7 +5,7 @@
 [{if $vaultSuccess !== null}]
     [{if $vaultSuccess}]
         <p class="alert alert-success">
-            [{oxmultilang ident="OSC_PAYPAL_VAULTING_SUCCESS"}]
+            [{oxmultilang ident="OSC_PAYPAL_VAULTING_SUCCESS_THANKYOU"}]
         </p>
     [{else}]
         <p class="alert alert-danger">
