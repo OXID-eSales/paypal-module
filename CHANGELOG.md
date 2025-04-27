@@ -11,11 +11,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - All PayPal payment methods have "PayPal" as a prefix in a fresh installation to better identify them in the admin panel. When setting up payment methods, the merchant can decide which name best fits their needs.
 - Additional check of eligibility for unbranded payments
 - Move PayPal-Config to Config-Section in Admin > Module-List > Module > Options
+- switch to experience context and drop deprecated application_context
 
 ### FIX
 
 - Fix: Locales for PP-Buttons are editable again
 - Fix: captured order could not be changed in the backend
+- use PayPal-Client v3.0.16
 
 ## [3.4.1] - 2025-04-08
 
