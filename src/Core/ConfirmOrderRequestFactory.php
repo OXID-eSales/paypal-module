@@ -9,9 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
-use OxidEsales\Eshop\Application\Model\Address;
 use OxidEsales\Eshop\Application\Model\Basket;
-use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Language;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderConfirmApplicationContext;
@@ -25,6 +23,8 @@ use OxidSolutionCatalysts\PayPalApi\Pui\ExperienceContext;
  */
 class ConfirmOrderRequestFactory
 {
+    use CustomerAddressHelper;
+
     /**
      * @var ConfirmOrderRequest
      */
@@ -41,49 +41,42 @@ class ConfirmOrderRequestFactory
         string $requestName
     ): ConfirmOrderRequest {
         $request = $this->request = new ConfirmOrderRequest();
-
         $request->payment_source = $this->getPaymentSource($basket, $requestName);
-
         return $request;
     }
 
-    protected function getPaymentSource(Basket $basket, string $requestName)
+    protected function getPaymentSource(Basket $basket, string $requestName): PaymentSource
     {
-        $user = $basket->getBasketUser();
+        $userName = $this->getUserNameFromBasket($basket);
+        $country = $this->getCountryFromBasket($basket);
 
-        $userName = $user->getFieldData('oxfname') . ' ' . $user->getFieldData('oxlname');
-
-        // get Billing CountryCode
-        $country = oxNew(Country::class);
-        $country->load($user->getFieldData('oxcountryid'));
-
-        // check possible deliveryCountry
-        $deliveryId = Registry::getSession()->getVariable("deladrid");
-        $deliveryAddress = oxNew(Address::class);
-        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
-            $country->load($deliveryAddress->getFieldData('oxcountryid'));
-        }
         //@todo remove the next line, until client has added googlepay
         if ($requestName === 'googlepay') {
             $requestName = 'google_pay';
-            $paymentSource = new \stdClass();
-
-            $paymentSource->$requestName = new \stdClass();
-            $paymentSource->$requestName->name = $userName;
-            $paymentSource->$requestName->country_code = $country->getFieldData('oxisoalpha2');
-            $paymentSource->$requestName->attributes = new \stdClass();
-            $paymentSource->$requestName->attributes->verification = new \stdClass();
-            $paymentSource->$requestName->attributes->verification->method = 'SCA_ALWAYS';
-            $paymentSource->$requestName->experience_context = $this->getExperienceContext();
+            $paymentSource = new PaymentSource(
+                [
+                    $requestName => [
+                        'name' => $userName,
+                        'country_code' => $country->getFieldData('oxisoalpha2'),
+                        'attributes' => [
+                            'verification' => [
+                                'method' => 'SCA_ALWAYS'
+                            ]
+                        ],
+                        'experience_context' => $this->getExperienceContext()
+                    ]
+                ]
+            );
         } else {
+            $user = $basket->getBasketUser();
             $paymentSource = new PaymentSource([
                 $requestName => [
                     'name' => $userName,
                     'email' => $user->getFieldData('oxusername'),
-                    'country_code' => $country->getFieldData('oxisoalpha2')
+                    'country_code' => $country->getFieldData('oxisoalpha2'),
+                    'experience_context' => $this->getExperienceContext()
                 ]
             ]);
-            $paymentSource->experience_context = $this->getExperienceContext();
         }
 
         return $paymentSource;
