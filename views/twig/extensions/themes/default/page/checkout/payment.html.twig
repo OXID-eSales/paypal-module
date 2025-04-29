@@ -64,6 +64,35 @@
 {% endblock %}
 
 {% block change_payment %}
+    {% if vaultedPaymentSources %}
+        <h4 class="card-header card-title">{{ 'OSC_PAYPAL_VAULTING_VAULTED_PAYMENTS'|translate }}</h4>
+        <div class="card-body">
+            {% set iterator = 0 %}
+            {% for paymentType, vaultedPayment in vaultedPaymentSources %}
+                {% for paymentDescription in vaultedPayment %}
+                    <div class="well well-sm">
+                        <dl>
+                            <dt>
+                                <input class="vaulting_paymentsource" name="vaulting_paymentsource" type="radio" id="paymentsource_{{ iterator }}" data-index="{{ iterator }}" data-paymenttype="{{ paymentType }}">
+                                <label for="paymentsource_{{ iterator }}">{{ paymentDescription }}</label>
+                            </dt>
+                        </dl>
+                    </div>
+                    {% set iterator = iterator + 1 %}
+                {% endfor %}
+            {% endfor %}
+
+            <div class="text-right">
+                <button type="submit" name="userform"
+                        class="btn btn-primary pull-right submitButton nextStep largeButton"
+                        id="paypalVaultCheckoutButton"
+                        disabled
+                >
+                    {{ 'OSC_PAYPAL_CONTINUE_TO_NEXT_STEP'|translate }} <i class="fa fa-caret-right"></i>
+                </button>
+            </div>
+        </div>
+    {% endif %}
     {% if oView.getPaymentList().oscpaypal_express is defined and oViewConf.isPayPalExpressSessionActive() %}
         {% set config = oViewConf.getPayPalCheckoutConfig() %}
         <h4 class="card-header card-title">
