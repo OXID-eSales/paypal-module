@@ -158,6 +158,15 @@ class Payment
     public function doCreatePatchedOrder(
         EshopModelBasket $basket
     ): array {
+        $config = Registry::getConfig();
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $debug = '';
+        if ($moduleSettings->isSandbox()) {
+            $debug = '&XDEBUG_SESSION_START=1';
+        }
+        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc'.$debug;
+        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=ajaxpay&fnc=cancelShopOrder'.$debug;
+
         // PatchOrders access an OrderCall that has taken place before.
         // For this reason, the payPalPartnerAttributionId does not have
         // to be transmitted again in the case of a PatchCall
@@ -169,8 +178,8 @@ class Payment
             null,
             '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-            null,
-            null,
+            $returnUrl,
+            $cancelUrl,
             false
         );
 
@@ -182,11 +191,15 @@ class Payment
             $status = $response->status ?: '';
         }
 
+        $order = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
+        $order->load($basket->getOrderId());
+
         // patch the order only if paypalOrderId exists
         if ($paypalOrderId) {
             $this->doPatchPayPalOrder(
                 $basket,
-                $paypalOrderId
+                $paypalOrderId,
+                $this->getCustomIdParameter($order)
             );
         }
 
@@ -194,6 +207,10 @@ class Payment
             'id' => $paypalOrderId,
             'status' => $status
         ];
+
+        if($status === 'PAYER_ACTION_REQUIRED') {
+            $return['links'] = $response->links;
+        }
 
         return $return;
     }
