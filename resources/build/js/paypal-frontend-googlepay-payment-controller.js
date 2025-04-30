@@ -112,7 +112,6 @@
             return this.paymentsClient;
         };
 
-
         this.getGoogleIsReadyToPayRequest = function (allowedPaymentMethods) {
             return Object.assign({}, this.baseRequest, {
                 allowedPaymentMethods: allowedPaymentMethods
