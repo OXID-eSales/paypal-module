@@ -139,6 +139,7 @@ final class PayPalDefinitions
             'onlybrutto' => false,
             'buttonpayment' => false,
             'defaulton' => true,
+            'deprecated' => true
         ],
         //Express PayPal
         self::EXPRESS_PAYPAL_PAYMENT_ID => [
@@ -225,7 +226,8 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
             'buttonpayment' => true,
-            'defaulton' => false
+            'defaulton' => false,
+            'deprecated' => true
         ],
         self::ACDC_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
