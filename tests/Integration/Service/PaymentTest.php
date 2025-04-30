@@ -349,7 +349,7 @@ final class PaymentTest extends BaseTestCase
 
         $request->intent = OrderRequest::INTENT_CAPTURE;
         $request->purchase_units = $decoded['purchase_units'];
-        $request->application_context = $decoded['application_context'];
+        $request->experience_context = $decoded['experience_context'];
         $request->payment_source = $decoded['payment_source'];
         $request->processing_instruction = "ORDER_COMPLETE_ON_PAYMENT_APPROVAL";
 
