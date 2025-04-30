@@ -50,14 +50,14 @@
         };
 
         this.getCurrentOrderData = function (name, orderType) {
-            if (null == this.currentOrder) {
+            if (null == this.currentOrder[orderType]) {
                 console.error('No current order.');
-                return;
+                return null;
             }
 
             if (undefined === this.currentOrder[orderType][name]) {
                 console.error('Current order do not have detail named ' + name + '.');
-                return;
+                return null;
             }
 
             return this.currentOrder[orderType][name];
@@ -156,6 +156,11 @@
         };
 
         this.deleteOrder = async function () {
+            let shopOrderId = PayPalPayment.getCurrentOrderOxid();
+            if (null == shopOrderId){
+                return;
+            }
+
             await PayPalPayment.backendRequest('shopOrderDeleteUrl', {}, {
                 'shopOrderId': PayPalPayment.getCurrentOrderOxid()
             });
@@ -164,6 +169,13 @@
         };
 
         this.handleError = async function (data) {
+            PayPalPayment.buttonControll('disabled', false);
+
+            let shopOrderId = PayPalPayment.getCurrentOrderOxid();
+            if (null == shopOrderId){
+                return;
+            }
+
             await PayPalPayment.backendRequest('shopOrderErrorUrl', {}, {
                 'shopOrderId': PayPalPayment.getCurrentOrderOxid()
             });
@@ -186,13 +198,29 @@
                 body: JSON.stringify(body)
             });
 
-            const result = await response.json();
+            let result = {status: 'pending'};
+
+            try {
+                result = await response.json();
+            } catch (e) {
+                result = {
+                    status: 'error',
+                    error: e.message
+                };
+            }
 
             if (result.status !== 'success') {
                 PayPalPayment.handleError();
             }
 
             return result;
+        };
+
+        this.buttonControll = function (property, value) {
+            const submitButton = document.querySelector(PayPalPayment.config.buttonSelector);
+            if (undefined !== submitButton[property]) {
+                submitButton[property] = value;
+            }
         };
 
         // Common initialization

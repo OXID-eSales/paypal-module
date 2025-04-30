@@ -10,6 +10,11 @@
                 'vaultPayment': PayPalPayment.currentOrder.vaultPayment
             });
 
+            if (undefined !== result.error){
+                //error will be reported in logs via handleError method
+                return false;
+            }
+
             if (result.payPalOrder.status === 'PAYER_ACTION_REQUIRED'){
                 for (const i in result.payPalOrder.links) {
                     if (result.payPalOrder.links[i].rel === 'payer-action'){
@@ -41,9 +46,12 @@
 
         this.renderButtonForVaultedPayment = function() {
             const submitButton = document.querySelector(PayPalPayment.config.buttonSelector);
-            submitButton.addEventListener('click', function (){
-                PayPalPayment.createOrder();
+            submitButton.addEventListener('click', function (e){
+                e.stopPropagation();
+                e.preventDefault();
+                PayPalPayment.buttonControll('disabled', true);
                 //order finalization will be handled in OrderController::finalizeacdc
+                PayPalPayment.createOrder();
             });
         };
 

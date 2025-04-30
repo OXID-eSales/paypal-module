@@ -26,6 +26,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderApplicationContext;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderExperienceContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
@@ -46,6 +47,7 @@ use stdClass;
 class OrderRequestFactory
 {
     use ServiceContainer;
+    use CustomerAddressHelper;
 
     /**
      * After you redirect the customer to the PayPal payment page, a Continue button appears.
@@ -108,6 +110,7 @@ class OrderRequestFactory
         if ($paymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID) {
             $request->payment_source = $this->getApplePayPaymentSource($basket, 'apple_pay');
         }
+
         $request->intent = $intent;
         $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $withItems);
 
@@ -144,9 +147,7 @@ class OrderRequestFactory
         } elseif (Registry::getRequest()->getRequestParameter("vaultPayment") === "true") {
             $paymentType = Registry::getRequest()->getRequestParameter("oscPayPalPaymentTypeForVaulting");
             $card = ($paymentType == PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID);
-
             Registry::getSession()->setVariable("vaultSuccess", true);
-
             $this->modifyPaymentSourceForVaulting($request, $card);
 
             return $request;
@@ -169,53 +170,34 @@ class OrderRequestFactory
         return $request;
     }
 
-    protected function getApplePayPaymentSource($basket, $requestName): PaymentSource
+    protected function getApplePayPaymentSource(Basket $basket, string $requestName): PaymentSource
     {
-        $user = $basket->getBasketUser();
+        $userName = $this->getUserNameFromBasket($basket);
+        $country = $this->getCountryFromBasket($basket);
 
-        $userName = $user->getFieldData('oxfname') . ' ' . $user->getFieldData('oxlname');
-
-        // get Billing CountryCode
-        $country = oxNew(Country::class);
-        $country->load($user->getFieldData('oxcountryid'));
-
-        // check possible deliveryCountry
-        $deliveryId = Registry::getSession()->getVariable("deladrid");
-        $deliveryAddress = oxNew(Address::class);
-        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
-            $country->load($deliveryAddress->getFieldData('oxcountryid'));
-        }
-        $paymentSource = new PaymentSource([
+        return new PaymentSource([
             $requestName => [
                 'name' => $userName,
                 'country_code' => $country->getFieldData('oxisoalpha2')
             ]
         ]);
-        return $paymentSource;
     }
 
-    protected function getGooglePayPaymentSource($basket, $requestName)
+    protected function getGooglePayPaymentSource(Basket $basket, string $requestName): PaymentSource
     {
-        $user = $basket->getBasketUser();
-
-        // get Billing CountryCode
-        $country = oxNew(Country::class);
-        $country->load($user->getFieldData('oxcountryid'));
-
-        // check possible deliveryCountry
-        $deliveryId = Registry::getSession()->getVariable("deladrid");
-        $deliveryAddress = oxNew(Address::class);
-        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
-            $country->load($deliveryAddress->getFieldData('oxcountryid'));
-        }
-        $paymentSource = new stdClass();
-
-        // Dynamically adding properties to the stdClass object
-        $paymentSource->$requestName = new stdClass();
-        $paymentSource->$requestName->attributes = new stdClass();
-        $paymentSource->$requestName->attributes->verification = new stdClass();
-        $paymentSource->$requestName->attributes->verification->method = 'SCA_ALWAYS';
-        return $paymentSource;
+        $userName = $this->getUserNameFromBasket($basket);
+        $country = $this->getCountryFromBasket($basket);
+        return new PaymentSource([
+            $requestName => [
+                'name' => $userName,
+                'country_code' => $country->getFieldData('oxisoalpha2'),
+                'attributes' => [
+                    'verification' => [
+                        'method' => 'SCA_ALWAYS'
+                    ]
+                ],
+            ]
+        ]);
     }
 
     protected function getExperienceContext(
@@ -224,18 +206,7 @@ class OrderRequestFactory
         ?string $cancelUrl,
         ?bool $setProvidedAddress
     ): JsonSerializable {
-        $context = new ExperienceContext();
-        $context = $this->populateContext($context, $userAction, $returnUrl, $cancelUrl, $setProvidedAddress);;
-        return $context;
-    }
-
-    protected function populateContext(
-        JsonSerializable $context,
-        ?string $userAction,
-        ?string $returnUrl,
-        ?string $cancelUrl,
-        ?bool $setProvidedAddress
-    ): \JsonSerializable {
+        $context = new OrderExperienceContext();
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $context->brand_name = $moduleSettings->getShopName();
         $context->shipping_preference = 'GET_FROM_FILE';
@@ -252,7 +223,6 @@ class OrderRequestFactory
         if ($setProvidedAddress) {
             $context->shipping_preference = "SET_PROVIDED_ADDRESS";
         }
-
         return $context;
     }
 
@@ -651,9 +621,10 @@ class OrderRequestFactory
 
     /**
      * @param OrderRequest $request
+     * @param bool $useCard
      * @return void
      */
-    protected function modifyPaymentSourceForVaulting(OrderRequest $request, $useCard = false): void
+    protected function modifyPaymentSourceForVaulting(OrderRequest $request, bool $useCard = false): void
     {
         $config = Registry::getConfig();
         $vaultingService = $this->getVaultingService();
