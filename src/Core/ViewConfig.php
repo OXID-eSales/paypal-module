@@ -174,7 +174,7 @@ class ViewConfig extends ViewConfig_parent
         $config = Registry::getConfig();
         $lang = Registry::getLang();
         $params = [];
-        $enableFunding = [];
+        $enableFunding = ['card'];
         $disableFunding = [
             'bancontact',
             'blik',
@@ -224,13 +224,7 @@ class ViewConfig extends ViewConfig_parent
             $enableFunding[] = 'paylater';
         }
 
-        if ($moduleSettings->isAcdcEligibility()) {
-            $components[] = 'hosted-fields';
-        } else {
-            $enableFunding[] = 'card';
-        }
-
-        if ($this->getIsVaultingActive()) {
+        if ($moduleSettings->isAcdcEligibility() || $this->getIsVaultingActive()) {
             $components[] = 'card-fields';
         }
 
