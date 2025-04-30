@@ -190,6 +190,7 @@
 
         // Common backend request method
         this.backendRequest = async function (urlSlug, headers, body) {
+            console.log(urlSlug, body);
             let response = await fetch(PayPalPayment.getConfigValue(urlSlug), {
                 method: 'post',
                 headers: Object.assign({
@@ -209,6 +210,8 @@
                 };
             }
 
+            console.log(result.status, result.message, result.data);
+            await new Promise(resolve => setTimeout(resolve, 5000));
             if (result.status !== 'success') {
                 PayPalPayment.handleError();
             }

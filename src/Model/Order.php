@@ -290,10 +290,9 @@ class Order extends Order_parent
         $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($sessionPaymentId);
         $isPayPalACDC = $sessionPaymentId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $sessionPaymentId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
-        $isPayPalPayLater = $sessionPaymentId === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID;
 
         //catch UAPM, Standard and Pay Later PayPal payments here
-        if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater) {
+        if ($isPayPalUAPM || $isPayPalStandard) {
             try {
                 //order number needs to be set before the payment is requested
                 $this->setOrderNumber();
@@ -307,9 +306,6 @@ class Order extends Order_parent
                         Constants::PAYPAL_ORDER_INTENT_AUTHORIZE;
 
                     $redirectLink = $paymentService->doExecuteStandardPayment($this, $basket, $intent);
-                    if ($isPayPalPayLater) {
-                        $redirectLink .= '&fundingSource=paylater';
-                    }
                 }
                 PayPalSession::setSessionRedirectLink($redirectLink);
 

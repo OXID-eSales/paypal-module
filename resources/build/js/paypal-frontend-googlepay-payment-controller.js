@@ -47,7 +47,7 @@
             }
             return PayPalPayment.paymentsClient;
         };
-        
+
         this.onGooglePaymentButtonClicked = async function () {
             let response = await fetch(PayPalPayment.getConfigValue('shopOrderCreateUrl'), {
                 method: 'post',
@@ -121,7 +121,7 @@
         this.onShopOrderCreated = function (data) {
             PayPalPayment.setShopOrderData(data.detail, 'shop');
         };
-        
+
         this.onInit = async function (e) {
             let this_ = e.detail;
             await window.googlePayReady;
@@ -163,6 +163,7 @@
                     ...paymentDataAttr,
                     shopOrderId: PayPalPayment.currentOrder.shop.shopOrderId
                 };
+
                 const {id: orderId, status} = await fetch(createOrderUrl, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
@@ -196,7 +197,8 @@
                 paymentMethodData: paymentData.paymentMethodData
             });
 
-            if (confirmOrderResponse.status === "PAYER_ACTION_REQUIRED") {
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            if (confirmOrderResponse.status === "PAYER_ACTION_REQUIRED" || confirmOrderResponse.status === 'APPROVED') {
                 PayPalPayment.googlePayUserActionRequired(orderId);
             } else {
                 PayPalPayment.handleError();
@@ -208,7 +210,6 @@
                 .Googlepay()
                 .initiatePayerAction({ orderId: orderId })
                 .then(async () => {
-                    console.log("===== Payer Action Completed =====");
                     await PayPalPayment.executeOxidOrder(orderId);
                     await PayPalPayment.captureOrder(orderId);
                 });

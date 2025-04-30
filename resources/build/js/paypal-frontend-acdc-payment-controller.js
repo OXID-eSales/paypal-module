@@ -15,7 +15,7 @@
                 return false;
             }
 
-            if (result.payPalOrder.status === 'PAYER_ACTION_REQUIRED'){
+            if (result.payPalOrder.status === 'PAYER_ACTION_REQUIRED' || result.payPalOrder.status === 'APPROVED' ){
                 for (const i in result.payPalOrder.links) {
                     if (result.payPalOrder.links[i].rel === 'payer-action'){
                         window.location = result.payPalOrder.links[i].href;
