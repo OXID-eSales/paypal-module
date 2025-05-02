@@ -1,21 +1,13 @@
 <!-- Advanced credit and debit card payments form -->
 <div id="card_container" class="card_container">
     <div id="card_form">
-        <div class="form-group">
-            <label for="card-number" class="control-label">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_NUMBER"}]</label>
-            <div id="card-number-field-container"></div>
+        <div class="form-group" id="card-number-field-container">
         </div>
-        <div class="form-group">
-            <label for="expiration-date" class="control-label">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_EXDATE"}]</label>
-            <div id="card-expiry-field-container"></div>
+        <div class="form-group" id="card-expiry-field-container">
         </div>
-        <div class="form-group">
-            <label for="cvv" class="control-label">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_CVV"}]</label>
-            <div id="card-cvv-field-container"></div>
+        <div class="form-group" id="card-cvv-field-container">
         </div>
-        <div class="form-group">
-            <label for="card-holder-name" class="control-label">[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD"}]</label>
-            <div id="card-name-field-container"></div>
+        <div class="form-group" id="card-name-field-container">
         </div>
         [{if $oscpaypal_isVaultingPossible}]
             <input type="checkbox" id="oscPayPalVaultPaymentCheckbox">
