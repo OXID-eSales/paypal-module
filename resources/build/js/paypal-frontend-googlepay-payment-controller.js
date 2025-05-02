@@ -192,12 +192,12 @@
             }
         };
         this.confirmOrder= async function (orderId, paymentData) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
             const confirmOrderResponse = await paypal.Googlepay().confirmOrder({
                 orderId: orderId,
                 paymentMethodData: paymentData.paymentMethodData
             });
 
-            await new Promise(resolve => setTimeout(resolve, 5000));
             if (confirmOrderResponse.status === "PAYER_ACTION_REQUIRED" || confirmOrderResponse.status === 'APPROVED') {
                 PayPalPayment.googlePayUserActionRequired(orderId);
             } else {
