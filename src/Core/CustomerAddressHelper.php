@@ -10,7 +10,6 @@ use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
-use OxidSolutionCatalysts\PayPal\Service\PayPalUrlService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderExperienceContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
 

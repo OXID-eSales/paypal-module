@@ -12,6 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Language;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderConfirmApplicationContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
@@ -23,6 +24,7 @@ use OxidSolutionCatalysts\PayPalApi\Pui\ExperienceContext;
  */
 class ConfirmOrderRequestFactory
 {
+    use ServiceContainer;
     use CustomerAddressHelper;
 
     /**
