@@ -3,7 +3,6 @@
         // Inherit from base controller
         PayPalPaymentControllerBase.call(this, config);
 
-
         this.createOrder = async function (data, actions) {
             let result = await PayPalPayment.backendRequest('shopOrderCreateUrl', {}, {
                 'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId'),
@@ -67,26 +66,40 @@
             }
 
             const cardFields = paypal.CardFields({
-                style: {
-                    'input': {
-                        'color': '#3A3A3A',
-                        'transition': 'color 160ms linear',
-                        '-webkit-transition': 'color 160ms linear'
-                    },
-                    ':focus': {
-                        'color': '#333333'
-                    },
-                    '.valid': {
-                        'color': 'green'
-                    },
-                    '.invalid': {
-                        'color': 'red'
-                    }
-                },
                 createOrder: PayPalPayment.createOrder,
                 onApprove: PayPalPayment.captureOrder,
                 onError: PayPalPayment.handleError
             });
+
+            // Helper-Function to read the calculated CSS properties of an element
+            function getComputedStylesAsObject(selector) {
+                // Find element
+                const element = document.querySelector(selector);
+                if (!element) {
+                    return {};
+                }
+
+                // Get all calculated styles
+                const computedStyle = window.getComputedStyle(element);
+
+                // Extract relevant properties and convert them into an object
+                const styleObject = {};
+
+                // List of properties you want to adopt
+                const relevantProperties = [
+                    'color', 'font-size', 'font-family', 'font-weight',
+                    'background-color', 'border', 'border-radius', 'padding',
+                    'box-shadow', 'height', 'line-height'
+                ];
+
+                relevantProperties.forEach(prop => {
+                    // CSS properties in JavaScript have camelCase (e.g. fontSize instead of font-size)
+                    // But we can leave them in CSS format for the PayPal API
+                    styleObject[prop] = computedStyle.getPropertyValue(prop);
+                });
+
+                return styleObject;
+            }
 
             if (cardFields.isEligible()) {
                 const cardNameContainer = document.getElementById("card-name-field-container");
@@ -97,17 +110,36 @@
                     PayPalPayment.getConfigValue('buttonSelector').split('#').reverse()[0]
                 );
 
+                // Retrieve styles from your existing element
+                const formControlStyles = getComputedStylesAsObject('input.form-control');
+                // Prepare these styles for PayPal cardFields
+                const payPalInputStyles = {
+                    'input': formControlStyles
+                };
+
                 if (cardNameContainer) {
-                    cardFields.NameField().render(cardNameContainer);
+                    cardFields.NameField({
+                        placeholder: PayPalI18n.OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD,
+                        style: payPalInputStyles
+                    }).render(cardNameContainer);
                 }
                 if (cardNumberContainer) {
-                    cardFields.NumberField().render(cardNumberContainer);
+                    cardFields.NumberField({
+                        placeholder: PayPalI18n.OSC_PAYPAL_ACDC_CARD_NUMBER,
+                        style: payPalInputStyles
+                    }).render(cardNumberContainer);
                 }
                 if (cardCvvContainer) {
-                    cardFields.CVVField().render(cardCvvContainer);
+                    cardFields.CVVField({
+                        placeholder: PayPalI18n.OSC_PAYPAL_ACDC_CARD_CVV,
+                        style: payPalInputStyles
+                    }).render(cardCvvContainer);
                 }
                 if (cardExpiryContainer) {
-                    cardFields.ExpiryField().render(cardExpiryContainer);
+                    cardFields.ExpiryField({
+                        placeholder: PayPalI18n.OSC_PAYPAL_ACDC_CARD_EXDATE,
+                        style: payPalInputStyles
+                    }).render(cardExpiryContainer);
                 }
                 if (submitButton) {
                     submitButton.addEventListener("click", () => {

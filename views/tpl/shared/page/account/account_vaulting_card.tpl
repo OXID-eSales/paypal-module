@@ -1,24 +1,11 @@
 [{capture append="oxidBlock_content"}]
     [{assign var="template_title" value="OSC_PAYPAL_VAULTING_MENU_CARD"|oxmultilangassign}]
 
-    <h1 class="page-header">[{oxmultilang ident="OSC_PAYPAL_VAULTING_MENU_CARD"}]</h1>
-
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">[{oxmultilang ident="OSC_PAYPAL_VAULTING_SAVE_INSTRUCTION_CARD"}]</h3>
-        </div>
-        <div class="card-body">
-            <p id="PayPalVaultingSuccess" class="alert alert-success" style="display: none">[{oxmultilang ident="OSC_PAYPAL_VAULTING_SUCCESS"}]</p>
-            <p id="PayPalVaultingFailure" class="alert alert-danger" style="display: none">[{oxmultilang ident="OSC_PAYPAL_VAULTING_ERROR"}]</p>
-            <div class="card_container" id="payPalVaultingCardContainer">
-                <div id="card-holder-name"></div>
-                <div id="card-number"></div>
-                <div id="expiration-date"></div>
-                <div id="cvv"></div>
-                <button value="submit" id="submit" class="btn btn-primary">[{oxmultilang ident="OSC_PAYPAL_VAULTING_CARD_SAVE"}]</button>
-            </div>
-        </div>
-    </div>
+    [{if $oViewConf->isFlowCompatibleTheme()}]
+    [{include file='modules/osc/paypal/account_vaulting_card_flow.tpl'}]
+    [{else}]
+    [{include file='modules/osc/paypal/account_vaulting_card_wave.tpl'}]
+    [{/if}]
 
     <script>
         window.onload = function () {
@@ -56,13 +43,31 @@
                 console.error('Something went wrong:', error)
             });
 
+            // Retrieve styles from your existing element
+            const formControlStyles = getComputedStylesAsObject('input.form-control');
+            // Prepare these styles for PayPal cardFields
+            const payPalInputStyles = {
+                'input': formControlStyles
+            };
 
             // Check eligibility and display advanced credit and debit card payments
             if (cardFields.isEligible()) {
-                cardFields.NameField().render("#card-holder-name");
-                cardFields.NumberField().render("#card-number");
-                cardFields.ExpiryField().render("#expiration-date");
-                cardFields.CVVField().render("#cvv");
+                cardFields.NameField({
+                    placeholder: "[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD"}]",
+                    style: payPalInputStyles
+                }).render("#card-holder-name");
+                cardFields.NumberField({
+                    placeholder: "[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_NUMBER"}]",
+                    style: payPalInputStyles
+                }).render("#card-number");
+                cardFields.ExpiryField({
+                    placeholder: "[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_EXDATE"}]",
+                    style: payPalInputStyles
+                }).render("#expiration-date");
+                cardFields.CVVField({
+                    placeholder: "[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_CVV"}]",
+                    style: payPalInputStyles
+                }).render("#cvv");
             } else {
                 // Handle the workflow when credit and debit cards are not available
             }
@@ -88,6 +93,34 @@
             function showFailureMessage() {
                 $('#PayPalVaultingSuccess').hide();
                 $('#PayPalVaultingFailure').show();
+            }
+
+            // Function to read the calculated CSS properties of an element
+            function getComputedStylesAsObject(selector) {
+                // Find element
+                const element = document.querySelector(selector);
+                if (!element) return {};
+
+                // Get all calculated styles
+                const computedStyle = window.getComputedStyle(element);
+
+                // Extract relevant properties and convert them into an object
+                const styleObject = {};
+
+                // List of properties you want to adopt
+                const relevantProperties = [
+                    'color', 'font-size', 'font-family', 'font-weight',
+                    'background-color', 'border', 'border-radius', 'padding',
+                    'box-shadow', 'height', 'line-height'
+                ];
+
+                relevantProperties.forEach(prop => {
+                    // CSS properties in JavaScript have camelCase (e.g. fontSize instead of font-size)
+                    // But we can leave them in CSS format for the PayPal API
+                    styleObject[prop] = computedStyle.getPropertyValue(prop);
+                });
+
+                return styleObject;
             }
         }
     </script>

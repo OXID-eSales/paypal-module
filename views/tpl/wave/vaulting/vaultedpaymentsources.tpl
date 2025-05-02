@@ -3,7 +3,7 @@
 [{if $vaultedPaymentSources}]
     <div class="card">
         <div class="card-header">
-            <h3 id="paymentHeader" class="card-title">[{oxmultilang ident="OSC_PAYPAL_VAULTING_VAULTED_PAYMENTS"}]</h3>
+            [{oxmultilang ident="OSC_PAYPAL_VAULTING_VAULTED_PAYMENTS"}]
         </div>
         <div class="card-body">
             <ul>

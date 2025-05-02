@@ -6,16 +6,14 @@ function deselectRadioButtons(selector) {
 }
 
 function registerClickListenerForPaymentMethodsRadioButtons() {
-    const paymentMethodsRadioButtons = document.querySelectorAll(".vaulting_paymentsource");
-
-    if (!paymentMethodsRadioButtons) {
-        return;
-    }
-
+    const paymentMethodsRadioButtons = document.getElementById('payment').querySelectorAll('[type="radio"]');
     paymentMethodsRadioButtons.forEach(function(paymentMethod) {
         paymentMethod.onclick = function() {
-            if (paymentMethod.checked) {
+            const paypalVaultCheckoutButton = document.getElementById("paypalVaultCheckoutButton");
+            if (paypalVaultCheckoutButton) {
                 document.getElementById("paypalVaultCheckoutButton").disabled = true;
+            }
+            if (paymentMethod.checked) {
                 document.getElementById("paymentNextStepBottom").disabled = false;
                 deselectRadioButtons(".vaulting_paymentsource");
             }
