@@ -2,18 +2,12 @@
 [{capture append="oxidBlock_content"}]
     [{assign var="template_title" value="OSC_PAYPAL_VAULTING_MENU"|oxmultilangassign}]
 
-    <h1 class="page-header">[{oxmultilang ident="OSC_PAYPAL_VAULTING_MENU"}]</h1>
+    [{if $oViewConf->isFlowCompatibleTheme()}]
+        [{include file='modules/osc/paypal/account_vaulting_paypal_flow.tpl'}]
+    [{else}]
+        [{include file='modules/osc/paypal/account_vaulting_paypal_wave.tpl'}]
+    [{/if}]
 
-    <div class="card">
-        <div class="card-header">
-            <h3 class="card-title">[{oxmultilang ident="OSC_PAYPAL_VAULTING_SAVE_INSTRUCTION"}]</h3>
-        </div>
-        <div class="card-body">
-            <p id="PayPalVaultingSuccess" class="alert alert-success" style="display: none">[{oxmultilang ident="OSC_PAYPAL_VAULTING_SUCCESS"}]</p>
-            <p id="PayPalVaultingFailure" class="alert alert-danger" style="display: none">[{oxmultilang ident="OSC_PAYPAL_VAULTING_ERROR"}]</p>
-            <div id="PayPalButtonVaulting" class="paypal-button-container paypal-button-wrapper large"></div>
-        </div>
-    </div>
     <script>
         window.onload = function () {
             paypal.Buttons({
