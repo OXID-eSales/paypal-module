@@ -74,6 +74,8 @@ class AjaxPaymentController extends ProxyController
             ]);
         }
 
+        PayPalSession::unsetPayPalSession();
+
         $this->outputJson([
             'status' => 'success'
         ]);

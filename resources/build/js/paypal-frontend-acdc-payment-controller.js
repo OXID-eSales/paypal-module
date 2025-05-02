@@ -43,7 +43,7 @@
             window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
         };
 
-        this.renderButtonForVaultedPayment = function() {
+        this.initilizeAcceptPaymentButton = function() {
             const submitButton = document.querySelector(PayPalPayment.config.buttonSelector);
             submitButton.addEventListener('click', function (e){
                 e.stopPropagation();
@@ -55,8 +55,9 @@
         };
 
         this.renderCardFields = function() {
+            this.initilizeAcceptPaymentButton();
+
             if (null !== this.config.vaultedPaymentSource) {
-                this.renderButtonForVaultedPayment();
                 return;
             }
 
