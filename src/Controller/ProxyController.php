@@ -74,9 +74,16 @@ class ProxyController extends FrontendController
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
         }
 
+        /** @var ModuleSettings $moduleSettings */
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
+        $intent = OrderRequest::INTENT_AUTHORIZE;
+        if ($captureStrategy === 'directly') {
+            $intent = OrderRequest::INTENT_CAPTURE;
+        }
         $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
             $basket,
-            OrderRequest::INTENT_CAPTURE,
+            $intent,
             OrderRequestFactory::USER_ACTION_CONTINUE,
             null,
             '',
