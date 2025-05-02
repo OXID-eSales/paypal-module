@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - provide orderNumber also for GooglePay
 - Better handling when storing credit card data in the customer account
 - switch to experience context and drop deprecated application_context
+- Better style and Localisations for ACDC and Vaulting
 
 ### FIX
 
