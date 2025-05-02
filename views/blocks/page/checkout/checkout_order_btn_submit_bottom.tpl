@@ -3,7 +3,7 @@
 [{$oViewConf->setSDKIsNecessary()}]
 
 [{if "oscpaypal_acdc" == $paymentId}]
-    <button id="[{$paymentId}]" type="button" class="btn btn-lg btn-primary pull-right submitButton nextStep largeButton">
+    <button id="[{$paymentId}]" type="button" class="btn btn-lg btn-primary float-right pull-right submitButton nextStep largeButton">
         <i class="fa fa-check"></i> [{oxmultilang ident="SUBMIT_ORDER"}]
     </button>
 [{/if}]
