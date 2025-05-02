@@ -21,6 +21,7 @@ use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Service\PayPalUrlService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
@@ -113,7 +114,6 @@ class OrderRequestFactory
 
         $request->intent = $intent;
         $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $withItems);
-
         $useVaultedPayment = $setVaulting && !is_null($selectedVaultPaymentSourceIndex);
         if ($useVaultedPayment) {
             $config = Registry::getConfig();
@@ -127,7 +127,6 @@ class OrderRequestFactory
             //find out which payment token was selected by getting the index via request param
             $paymentType = key($selectedPaymentToken["payment_source"]);
             $useCard = $paymentType === "card";
-
             $this->modifyPaymentSourceForVaulting($request, $useCard);
 
             //we use the PayPal payment type as a "dummy payment" when we use vaulted payments.
@@ -136,11 +135,16 @@ class OrderRequestFactory
                 $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc';
             }
 
-            $request->payment_source->experience_context = $this->getExperienceContext(
-                "",
-                $returnUrl,
-                $cancelUrl,
-                false
+            $request->payment_source = new PaymentSource(
+                [
+                    $paymentId => [
+                        "experience_context" => $this->getExperienceContext(
+                            null,
+                            $returnUrl,
+                            $cancelUrl,
+                            false)
+                    ]
+                ]
             );
 
             return $request;
@@ -149,6 +153,17 @@ class OrderRequestFactory
             $card = ($paymentType == PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID);
             Registry::getSession()->setVariable("vaultSuccess", true);
             $this->modifyPaymentSourceForVaulting($request, $card);
+            $request->payment_source = new PaymentSource(
+                [
+                    $paymentId => [
+                        "experience_context" => $this->getExperienceContext(
+                            null,
+                            $returnUrl,
+                            $cancelUrl,
+                            false)
+                    ]
+                ]
+            );
 
             return $request;
         }
@@ -181,49 +196,6 @@ class OrderRequestFactory
                 'country_code' => $country->getFieldData('oxisoalpha2')
             ]
         ]);
-    }
-
-    protected function getGooglePayPaymentSource(Basket $basket, string $requestName): PaymentSource
-    {
-        $userName = $this->getUserNameFromBasket($basket);
-        $country = $this->getCountryFromBasket($basket);
-        return new PaymentSource([
-            $requestName => [
-                'name' => $userName,
-                'country_code' => $country->getFieldData('oxisoalpha2'),
-                'attributes' => [
-                    'verification' => [
-                        'method' => 'SCA_ALWAYS'
-                    ]
-                ],
-            ]
-        ]);
-    }
-
-    protected function getExperienceContext(
-        ?string $userAction,
-        ?string $returnUrl,
-        ?string $cancelUrl,
-        ?bool $setProvidedAddress
-    ): JsonSerializable {
-        $context = new OrderExperienceContext();
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $context->brand_name = $moduleSettings->getShopName();
-        $context->shipping_preference = 'GET_FROM_FILE';
-        $context->landing_page = 'LOGIN';
-        if ($userAction) {
-            $context->user_action = $userAction;
-        }
-        if ($returnUrl) {
-            $context->return_url = $returnUrl;
-        }
-        if ($cancelUrl) {
-            $context->cancel_url = $cancelUrl;
-        }
-        if ($setProvidedAddress) {
-            $context->shipping_preference = "SET_PROVIDED_ADDRESS";
-        }
-        return $context;
     }
 
     /**

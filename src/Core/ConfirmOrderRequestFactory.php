@@ -53,20 +53,7 @@ class ConfirmOrderRequestFactory
         //@todo remove the next line, until client has added googlepay
         if ($requestName === 'googlepay') {
             $requestName = 'google_pay';
-            $paymentSource = new PaymentSource(
-                [
-                    $requestName => [
-                        'name' => $userName,
-                        'country_code' => $country->getFieldData('oxisoalpha2'),
-                        'attributes' => [
-                            'verification' => [
-                                'method' => 'SCA_ALWAYS'
-                            ]
-                        ],
-                        'experience_context' => $this->getExperienceContext()
-                    ]
-                ]
-            );
+            $paymentSource = $this->getGooglePayPaymentSource($basket, $requestName);
         } else {
             $user = $basket->getBasketUser();
             $paymentSource = new PaymentSource([
@@ -80,23 +67,5 @@ class ConfirmOrderRequestFactory
         }
 
         return $paymentSource;
-    }
-
-    /**
-     * Sets application context
-     *
-     * @return OrderConfirmApplicationContext
-     */
-    protected function getExperienceContext(): \JsonSerializable
-    {
-        $context = new ExperienceContext();
-        $language = new Language();
-        $config = Registry::getConfig();
-        $shopLanguageAbbr = $language->getLanguageAbbr();
-        $context->locale = $shopLanguageAbbr . '-' . strtoupper($shopLanguageAbbr);
-        $context->return_url = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
-        $context->cancel_url = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
-
-        return $context;
     }
 }

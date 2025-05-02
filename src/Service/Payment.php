@@ -137,7 +137,6 @@ class Payment
         );
 
         $response = null;
-
         try {
             $response = $orderService->createOrder(
                 $request,
@@ -147,6 +146,7 @@ class Payment
             );
         } catch (ApiException $exception) {
             $this->logger->log('error', 'API Error.', [$exception->getMessage()]);
+
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
             $this->logger->log('error', 'Error on order create call.', [$exception->getMessage()]);
@@ -167,7 +167,7 @@ class Payment
         }
         $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc'.$debug;
         $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=ajaxpay&fnc=cancelShopOrder'.$debug;
-        
+
         // PatchOrders access an OrderCall that has taken place before.
         // For this reason, the payPalPartnerAttributionId does not have
         // to be transmitted again in the case of a PatchCall
