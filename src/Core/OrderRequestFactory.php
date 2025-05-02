@@ -127,7 +127,7 @@ class OrderRequestFactory
 
             //we use the PayPal payment type as a "dummy payment" when we use vaulted payments.
             //therefore, we need to use a returnURL depending on the payment type.
-            if ($useCard) {
+            if ($useCard && null === $returnUrl) {
                 $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc';
             }
 

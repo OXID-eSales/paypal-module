@@ -20,7 +20,7 @@ function registerClickListenerForTheVaultCheckoutButton() {
             if (vaultingPaymentsourceRadioButtons && vaultingPaymentsourceRadioButtons.length > 0) {
                 vaultingPaymentsourceRadioButtons.forEach(function (paymentsource) {
                     if (paymentsource.checked) {
-                        document.getElementById("payment_oscpaypal").click();
+                        document.getElementById("payment_oscpaypal_acdc").click();
 
                         let input = document.createElement("input");
                         input.type = "hidden";
@@ -28,7 +28,7 @@ function registerClickListenerForTheVaultCheckoutButton() {
                         input.value = paymentsource.dataset.index;
                         document.getElementById("payment").appendChild(input);
 
-                        document.getElementById("paymentNextStepBottom").click();
+                        document.querySelector('#payment').requestSubmit();
                     }
                 });
             }

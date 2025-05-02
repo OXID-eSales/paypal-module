@@ -26,10 +26,12 @@ use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Component\BasketComponent as PayPalBasketComponent;
 use OxidSolutionCatalysts\PayPal\Component\UserComponent as PayPalUserComponent;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\ModuleConfiguration as PaypalModuleConfiguration;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalConfigController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalOrderController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderArticle as PayPalOrderArticleController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderMain as PayPalOrderMainController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderOverview as PayPalOrderOverviewController;
+use OxidSolutionCatalysts\PayPal\Controller\AjaxPaymentController;
 use OxidSolutionCatalysts\PayPal\Controller\OrderController as PayPalFrontEndOrderController;
 use OxidSolutionCatalysts\PayPal\Controller\PaymentController as PayPalPaymentController;
 use OxidSolutionCatalysts\PayPal\Controller\PayPalVaultingCardController;
@@ -89,12 +91,14 @@ $aModule = [
         State::class => PayPalState::class
     ],
     'controllers' => [
-        'oscpaypalwebhook'    => WebhookController::class,
-        'oscpaypalproxy'      => ProxyController::class,
-        'oscpaypalorder'      => PayPalOrderController::class,
-        'oscaccountvault'     => PayPalVaultingController::class,
-        'oscaccountvaultcard' => PayPalVaultingCardController::class,
-        'osctokencontroller'  => VaultingTokenController::class,
+        'oscpaypalconfig'       => PaypalModuleConfiguration::class,
+        'oscpaypalwebhook'      => WebhookController::class,
+        'oscpaypalproxy'        => ProxyController::class,
+        'ajaxpay'               => AjaxPaymentController::class,
+        'oscpaypalorder'        => PayPalOrderController::class,
+        'oscaccountvault'       => PayPalVaultingController::class,
+        'oscaccountvaultcard'   => PayPalVaultingCardController::class,
+        'osctokencontroller'    => VaultingTokenController::class,
     ],
     'events' => [
         'onActivate' => '\OxidSolutionCatalysts\PayPal\Core\Events\Events::onActivate',
@@ -133,9 +137,6 @@ $aModule = [
         // PAYPAL-486 Theme-specific
         '@osc_paypal/frontend/flow/change_payment.tpl' => 'views/smarty/frontend/flow/page/checkout/change_payment.tpl',
         '@osc_paypal/frontend/wave/change_payment.tpl' => 'views/smarty/frontend/wave/page/checkout/change_payment.tpl',
-
-        // PSPAYPAL-822 Button customization
-         '@osc_paypal/frontend/layout/base_paypal_button_config.tpl' => 'views/smarty/frontend/shared/layout/base_paypal_button_config.tpl',
 
         // PSPAYPAL-491 Installment banners
         '@osc_paypal/frontend/shared/installment_banners.tpl' => 'views/smarty/frontend/shared/installment_banners.tpl',
