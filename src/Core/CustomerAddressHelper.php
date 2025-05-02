@@ -37,10 +37,10 @@ trait CustomerAddressHelper
     }
 
     protected function getExperienceContext(
-        ?string $userAction,
-        ?string $returnUrl,
-        ?string $cancelUrl,
-        ?bool $setProvidedAddress
+        ?string $userAction = null,
+        ?string $returnUrl = null,
+        ?string $cancelUrl = null,
+        ?bool $setProvidedAddress = null
     ): JsonSerializable {
         $context = new OrderExperienceContext();
 
@@ -87,7 +87,7 @@ trait CustomerAddressHelper
                         'method' => 'SCA_ALWAYS'
                     ],
                 ],
-                'experience_context' => $this->getExperienceContext(null, null, null, true),
+                'experience_context' => $this->getExperienceContext(),
             ]
         ]);
     }
