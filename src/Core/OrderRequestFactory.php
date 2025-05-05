@@ -612,10 +612,10 @@ class OrderRequestFactory
             //find out which payment token was selected by getting the index via request param
             $selectedPaymentToken = $paymentTokens["payment_tokens"][$selectedVaultPaymentSourceIndex];
 
-            // XXX Hier stand paypal
+            // XXX It said PayPal here, shouldn't it say $paymentSourceId?
             $request->payment_source =
                 [
-                    $paymentSourceId =>
+                    'paypal' =>
                         [
                             "vault_id" => $selectedPaymentToken["id"],
                         ]
