@@ -136,10 +136,10 @@ class OrderController extends OrderController_parent
                 $paymentSource = $selectedPaymentToken["payment_source"][$paymentType];
 
                 $paymentDescription = "";
-                if ($paymentType === "card") {
+                if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
                     $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
                     $paymentDescription = $paymentSource["brand"] . " " . $string . $paymentSource["last_digits"];
-                } elseif ($paymentType === "paypal") {
+                } elseif ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL) {
                     $string = $lang->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
                     $paymentDescription = $string . " " . $paymentSource["email_address"];
                 }

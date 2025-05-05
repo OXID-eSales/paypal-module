@@ -97,6 +97,7 @@
         };
 
         this.vaultPayment = async function (details) {
+            debugger;
             try {
                 if (details.payment_source.paypal) {
                     const vaultToken = details.payment_source.paypal.attributes.vault.id;

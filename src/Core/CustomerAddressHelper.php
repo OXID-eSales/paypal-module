@@ -72,13 +72,13 @@ trait CustomerAddressHelper
         return $context;
     }
 
-    protected function getGooglePayPaymentSource(Basket $basket, string $requestName): PaymentSource
+    protected function getGooglePayPaymentSource(Basket $basket, string $paymentSourceId): PaymentSource
     {
         $userName = $this->getUserNameFromBasket($basket);
         $country = $this->getCountryFromBasket($basket);
 
         return new PaymentSource([
-            $requestName => [
+            $paymentSourceId => [
                 'name' => $userName,
                 'country_code' => $country->getFieldData('oxisoalpha2'),
                 'attributes' => [

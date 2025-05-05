@@ -617,7 +617,7 @@ class ViewConfig extends ViewConfig_parent
                 $vaultPaymentTokens,
                 function ($token) {
                     return array_key_exists('payment_source', $token)
-                        && !array_key_exists('card', $token['payment_source']);
+                        && !array_key_exists(PayPalDefinitions::PAYMENT_SOURCE_CARD, $token['payment_source']);
                 }
             );
         }
@@ -627,7 +627,7 @@ class ViewConfig extends ViewConfig_parent
                 $vaultPaymentTokens,
                 function ($token) {
                     return array_key_exists('payment_source', $token)
-                        && array_key_exists('card', $token['payment_source']);
+                        && array_key_exists(PayPalDefinitions::PAYMENT_SOURCE_CARD, $token['payment_source']);
                 }
             );
         }
