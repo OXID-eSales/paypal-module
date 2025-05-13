@@ -1,5 +1,3 @@
-<h1>Ala ma kota</h1>
-
 {% if getControllerName(oView) == 'OrderController' %}
     {% set payment = oView.getPayment() %}
     {% set paymentId = payment.getId() %}
@@ -12,7 +10,6 @@
     {% set captureStrategy = oPPconfig.getPayPalStandardCaptureStrategy() %}
     {% set currency = oView.getActCurrency() %}
 
-    {{ debug(paymentId) }}
     {% if isSandBox %}
         {% set debug = '&XDEBUG_SESSION=PHPSTORM' %}
     {% else %}
