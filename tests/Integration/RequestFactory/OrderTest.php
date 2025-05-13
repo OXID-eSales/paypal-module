@@ -59,7 +59,7 @@ final class OrderTest extends BaseTestCase
             OrderRequestFactory::USER_ACTION_CONTINUE,
             '',
             Constants::PAYPAL_PUI_PROCESSING_INSTRUCTIONS,
-            PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME,
+            PayPalDefinitions::PAYMENT_SOURCE_PUI,
         );
 
         $this->assertEquals('2000-04-01', $request->payment_source['pay_upon_invoice']->birth_date);
@@ -93,7 +93,7 @@ final class OrderTest extends BaseTestCase
             OrderRequestFactory::USER_ACTION_CONTINUE,
             '',
             Constants::PAYPAL_PUI_PROCESSING_INSTRUCTIONS,
-            PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME,
+            PayPalDefinitions::PAYMENT_SOURCE_PUI,
         );
     }
 }

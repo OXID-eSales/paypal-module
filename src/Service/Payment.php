@@ -15,8 +15,6 @@ use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidEsales\Eshop\Core\ShopVersion;
-use OxidSolutionCatalysts\PayPal\Controller\PaymentController;
-use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
@@ -425,7 +423,7 @@ class Payment
         EshopModelOrder $order,
         EshopModelBasket $basket,
         string $checkoutOrderId,
-        string $uapmName
+        string $paymentSourceId
     ): string {
         $redirectLink = '';
 
@@ -434,7 +432,7 @@ class Payment
         /** @var ConfirmOrderRequest $request */
         $request = $requestFactory->getRequest(
             $basket,
-            $uapmName
+            $paymentSourceId
         );
 
         // toDo: Clearing with Marcus. Optional. Verifies that the payment originates from a valid,
@@ -681,7 +679,7 @@ class Payment
                 Constants::PAYPAL_ORDER_INTENT_CAPTURE,
                 null,
                 Constants::PAYPAL_PUI_PROCESSING_INSTRUCTIONS,
-                PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME,
+                PayPalDefinitions::PAYMENT_SOURCE_PUI,
                 $payPalClientMetadataId,
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );

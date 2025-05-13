@@ -5,6 +5,7 @@ namespace OxidSolutionCatalysts\PayPal\Controller;
 use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Request;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidEsales\Eshop\Application\Controller\FrontendController;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
@@ -19,7 +20,9 @@ class VaultingTokenController extends FrontendController
     {
         $vaultingService = $this->getVaultingService();
         $card = (bool)Registry::get(Request::class)->getRequestEscapedParameter("card");
-        $setupToken = $vaultingService->createVaultSetupToken($card);
+        $paymentTypeId =  $card ? PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID : PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
+
+        $setupToken = $vaultingService->createVaultSetupToken($paymentTypeId);
 
         if ($this->storeSetupToken($setupToken["id"])) {
             $this->outputJson($setupToken);

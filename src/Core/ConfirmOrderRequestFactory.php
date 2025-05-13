@@ -34,32 +34,31 @@ class ConfirmOrderRequestFactory
 
     /**
      * @param Basket $basket
-     * @param string $requestName Name of the RequestClass defined in PayPalClient
+     * @param string $paymentSourceId Name of the $paymentSourceId
      *
      * @return ConfirmOrderRequest
      */
     public function getRequest(
         Basket $basket,
-        string $requestName
+        string $paymentSourceId
     ): ConfirmOrderRequest {
         $request = $this->request = new ConfirmOrderRequest();
-        $request->payment_source = $this->getPaymentSource($basket, $requestName);
+        $request->payment_source = $this->getPaymentSource($basket, $paymentSourceId);
         return $request;
     }
 
-    protected function getPaymentSource(Basket $basket, string $requestName): PaymentSource
+    protected function getPaymentSource(Basket $basket, string $paymentSourceId): PaymentSource
     {
         $userName = $this->getUserNameFromBasket($basket);
         $country = $this->getCountryFromBasket($basket);
 
         //@todo remove the next line, until client has added googlepay
-        if ($requestName === 'googlepay') {
-            $requestName = 'google_pay';
-            $paymentSource = $this->getGooglePayPaymentSource($basket, $requestName);
+        if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_GOOGLEPAY) {
+            $paymentSource = $this->getGooglePayPaymentSource($basket, $paymentSourceId);
         } else {
             $user = $basket->getBasketUser();
             $paymentSource = new PaymentSource([
-                $requestName => [
+                $paymentSourceId => [
                     'name' => $userName,
                     'email' => $user->getFieldData('oxusername'),
                     'country_code' => $country->getFieldData('oxisoalpha2'),
