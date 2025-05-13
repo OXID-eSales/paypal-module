@@ -117,7 +117,6 @@ class OrderRequestFactory
         $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $withItems);
         $useVaultedPayment = $setVaulting && !is_null($selectedVaultPaymentSourceIndex);
         if ($useVaultedPayment) {
-            $config = Registry::getConfig();
             $vaultingService = $this->getVaultingService();
             $payPalCustomerId = $this->getUsersPayPalCustomerId();
 
@@ -126,35 +125,16 @@ class OrderRequestFactory
                 $selectedVaultPaymentSourceIndex
             );
             //find out which payment token was selected by getting the index via request param
-            $paymentType = key($selectedPaymentToken["payment_source"]);
-            $useCard = $paymentType === PayPalDefinitions::PAYMENT_SOURCE_CARD;
-            $this->modifyPaymentSourceForVaulting($request, $paymentId);
-
-            //we use the PayPal payment type as a "dummy payment" when we use vaulted payments.
-            //therefore, we need to use a returnURL depending on the payment type.
-            if ($useCard && null === $returnUrl) {
-                $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc';
-            }
-
-            $request->payment_source = new PaymentSource(
-                [
-                    $paymentSourceId => [
-                        "experience_context" => $this->getExperienceContext(
-                            null,
-                            $returnUrl,
-                            $cancelUrl,
-                            false)
-                    ]
-                ]
-            );
+            $paymentSourceId = key($selectedPaymentToken["payment_source"]);
+            $this->modifyPaymentSourceForVaulting($request, $paymentSourceId, $returnUrl, $cancelUrl);
 
             return $request;
         }
 
         if (Registry::getRequest()->getRequestParameter("vaultPayment") === "true") {
-            $paymentType = Registry::getRequest()->getRequestParameter("oscPayPalPaymentTypeForVaulting");
+            $paymentSourceId = Registry::getRequest()->getRequestParameter("oscPayPalPaymentTypeForVaulting");
             Registry::getSession()->setVariable("vaultSuccess", true);
-            $this->modifyPaymentSourceForVaulting($request, $paymentType);
+            $this->modifyPaymentSourceForVaulting($request, $paymentSourceId, $returnUrl, $cancelUrl);
             $request->payment_source = new PaymentSource(
                 [
                     $paymentSourceId => [
@@ -594,15 +574,20 @@ class OrderRequestFactory
 
     /**
      * @param OrderRequest $request
-     * @param string $paymentTypeId
+     * @param string $paymentSourceId
+     * @param string|null $returnUrl
+     * @param string|null $cancelUrl
      * @return void
      */
-    protected function modifyPaymentSourceForVaulting(OrderRequest $request, string $paymentTypeId): void
+    protected function modifyPaymentSourceForVaulting(
+        OrderRequest $request,
+        string $paymentSourceId,
+        ?string $returnUrl = null,
+        ?string $cancelUrl = null
+    ): void
     {
         $config = Registry::getConfig();
         $vaultingService = $this->getVaultingService();
-
-        $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName($paymentTypeId);
 
         $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
 
@@ -612,13 +597,29 @@ class OrderRequestFactory
             //find out which payment token was selected by getting the index via request param
             $selectedPaymentToken = $paymentTokens["payment_tokens"][$selectedVaultPaymentSourceIndex];
 
-            // XXX It said PayPal here, shouldn't it say $paymentSourceId?
             $request->payment_source =
                 [
-                    'paypal' =>
-                        [
-                            "vault_id" => $selectedPaymentToken["id"],
+                    $paymentSourceId => [
+                        "vault_id" => $selectedPaymentToken["id"],
+                        "attributes" => [
+                            "verification" => [
+                                "method" => "SCA_WHEN_REQUIRED",
+                                "_comment" => "SCA_ALWAYS to force otherwise use SCA_WHEN_REQUIRED"
+                            ],
+                            "customer" => [
+                                "id" => $payPalCustomerId
+                            ]
+                        ],
+                        "stored_credential" => [
+                            "payment_initiator" => "CUSTOMER",
+                            "payment_type" => "UNSCHEDULED",
+                            "usage" => "SUBSEQUENT"
+                        ],
+                        "experience_context" => [
+                            "return_url" => $returnUrl,
+                            "cancel_url" => $cancelUrl
                         ]
+                    ]
                 ];
         } elseif ($user = $config->getUser()) {
             //save during purchase
