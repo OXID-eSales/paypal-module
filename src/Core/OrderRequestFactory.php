@@ -127,32 +127,14 @@ class OrderRequestFactory
             //find out which payment token was selected by getting the index via request param
             $paymentType = key($selectedPaymentToken["payment_source"]);
             $useCard = $paymentType === "card";
-            $this->modifyPaymentSourceForVaulting($request, $useCard);
-
-            //we use the PayPal payment type as a "dummy payment" when we use vaulted payments.
-            //therefore, we need to use a returnURL depending on the payment type.
-            if ($useCard && null === $returnUrl) {
-                $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc';
-            }
-
-            $request->payment_source = new PaymentSource(
-                [
-                    $paymentId => [
-                        "experience_context" => $this->getExperienceContext(
-                            null,
-                            $returnUrl,
-                            $cancelUrl,
-                            false)
-                    ]
-                ]
-            );
+            $this->modifyPaymentSourceForVaulting($request, $useCard, $returnUrl, $cancelUrl);
 
             return $request;
         } elseif (Registry::getRequest()->getRequestParameter("vaultPayment") === "true") {
             $paymentType = Registry::getRequest()->getRequestParameter("oscPayPalPaymentTypeForVaulting");
             $card = ($paymentType == PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID);
             Registry::getSession()->setVariable("vaultSuccess", true);
-            $this->modifyPaymentSourceForVaulting($request, $card);
+            $this->modifyPaymentSourceForVaulting($request, $card, $returnUrl, $cancelUrl);
             $request->payment_source = new PaymentSource(
                 [
                     $paymentId => [
@@ -596,7 +578,12 @@ class OrderRequestFactory
      * @param bool $useCard
      * @return void
      */
-    protected function modifyPaymentSourceForVaulting(OrderRequest $request, bool $useCard = false): void
+    protected function modifyPaymentSourceForVaulting(
+        OrderRequest $request,
+        bool $useCard = false,
+        ?string $returnUrl = null,
+        ?string $cancelUrl = null
+    ): void
     {
         $config = Registry::getConfig();
         $vaultingService = $this->getVaultingService();
@@ -608,13 +595,30 @@ class OrderRequestFactory
             $paymentTokens = $vaultingService->getVaultPaymentTokens($payPalCustomerId);
             //find out which payment token was selected by getting the index via request param
             $selectedPaymentToken = $paymentTokens["payment_tokens"][$selectedVaultPaymentSourceIndex];
-
             $request->payment_source =
                 [
-                    "paypal" =>
-                        [
-                            "vault_id" => $selectedPaymentToken["id"],
+                    'card' => [
+                        "vault_id" => $selectedPaymentToken["id"],
+                        "attributes" => [
+                            "verification" => [
+                                "method" => "SCA_WHEN_REQUIRED",
+                                "_comment" => "SCA_ALWAYS to force otherwise use SCA_WHEN_REQUIRED"
+                            ],
+                            "customer" => [
+                                "id" => $payPalCustomerId
+                            ]
+                        ],
+                        "stored_credential" => [
+                            "payment_initiator" => "CUSTOMER",
+                            "payment_type" => "UNSCHEDULED",
+                            "usage" => "SUBSEQUENT"
+                        ],
+                        "experience_context" => [
+                            "return_url" => $returnUrl,
+                            "cancel_url" => $cancelUrl
                         ]
+                    ]
+
                 ];
         } elseif ($user = $config->getUser()) {
             //save during purchase
