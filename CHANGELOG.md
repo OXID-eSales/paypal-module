@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - switch to experience context and drop deprecated application_context
 - Better style and Localisations for ACDC and Vaulting
 - Saving vaulted payment methods is now only possible via checkout
+- Trim the item names for PayPal in a proper way
 
 ### FIX
 

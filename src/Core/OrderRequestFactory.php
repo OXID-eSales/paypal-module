@@ -20,6 +20,7 @@ use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Helper\Truncate;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\PayPalUrlService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
@@ -237,7 +238,8 @@ class OrderRequestFactory
         /** @var BasketItem $basketItem */
         foreach ($basket->getContents() as $basketItem) {
             $item = new Item();
-            $item->name = substr($basketItem->getTitle(), 0, 120);
+            $item->name = (new Truncate())->truncate($basketItem->getTitle());
+
             $itemUnitPrice = $basketItem->getUnitPrice();
 
             $basketArticle = $basketItem->getArticle();

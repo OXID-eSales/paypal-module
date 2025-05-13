@@ -15,6 +15,7 @@ use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Helper\Truncate;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch;
@@ -150,7 +151,7 @@ class   PatchRequestFactory
         /** @var BasketItem $basketItem */
         foreach ($basketItems as $basketItem) {
             $item = new Item();
-            $item->name = $basketItem->getTitle();
+            $item->name = (new Truncate())->truncate($basketItem->getTitle());
             $itemUnitPrice = $basketItem->getUnitPrice();
             if ($itemUnitPrice) {
                 $item->unit_amount = PriceToMoney::convert(
