@@ -117,6 +117,7 @@ class OrderRequestFactory
         $request->intent = $intent;
         $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $withItems);
         $useVaultedPayment = $setVaulting && !is_null($selectedVaultPaymentSourceIndex);
+
         if ($useVaultedPayment) {
             $vaultingService = $this->getVaultingService();
             $payPalCustomerId = $this->getUsersPayPalCustomerId();
@@ -126,29 +127,24 @@ class OrderRequestFactory
                 $selectedVaultPaymentSourceIndex
             );
             //find out which payment token was selected by getting the index via request param
-            $paymentSourceId = key($selectedPaymentToken["payment_source"]);
-            $this->modifyPaymentSourceForVaulting($request, $paymentSourceId, $returnUrl, $cancelUrl);
+            $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName(
+                key($selectedPaymentToken["payment_source"])
+            );
 
+            $this->modifyPaymentSourceForVaulting($request, $paymentSourceId, $returnUrl, $cancelUrl);
             return $request;
         }
 
         if (Registry::getRequest()->getRequestParameter("vaultPayment") === "true") {
-            $paymentSourceId = Registry::getRequest()->getRequestParameter("oscPayPalPaymentTypeForVaulting");
+            $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName(
+                Registry::getRequest()->getRequestParameter("oscPayPalPaymentTypeForVaulting")
+            );
             Registry::getSession()->setVariable("vaultSuccess", true);
             $this->modifyPaymentSourceForVaulting($request, $paymentSourceId, $returnUrl, $cancelUrl);
-            $request->payment_source = new PaymentSource(
-                [
-                    $paymentSourceId => [
-                        "experience_context" => $this->getExperienceContext(
-                            null,
-                            $returnUrl,
-                            $cancelUrl,
-                            false)
-                    ]
-                ]
-            );
 
             return $request;
+        } else {
+            $this->modifyPaymentSourceForVaulting($request, $paymentSourceId, $returnUrl, $cancelUrl);
         }
 
         if (!$paymentSource && $basket->getUser()) {
