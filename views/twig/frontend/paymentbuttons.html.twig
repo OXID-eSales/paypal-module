@@ -32,7 +32,7 @@
                             return data.id;
                         })
                     },
-                    onApprove: function (data, actions) {
+                    onApprove: async function (data, actions) {
                         captureData = new FormData();
                         captureData.append('orderID', data.orderID);
                         return fetch(selfLink + "cl=oscpaypalproxy&fnc=approveOrder&paymentid={{ buttonId }}&context=continue&stoken={{ sToken }}", {
