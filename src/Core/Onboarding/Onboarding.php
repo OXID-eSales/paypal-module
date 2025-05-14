@@ -220,6 +220,7 @@ class Onboarding
             throw OnboardingException::merchantInformationsNotFound();
         }
 
+        $isApplePayCapability = false;
         $isPuiCapability = false;
         $isAcdcCapability = false;
         $isVaultingCapability = false;
@@ -276,6 +277,7 @@ class Onboarding
         $moduleSettings->saveAcdcEligibility($isAcdcCapability);
         $moduleSettings->saveVaultingEligibility($isVaultingCapability);
         $moduleSettings->saveGooglePayEligibility($isGooglePayCapability);
+
         $moduleSettings->saveApplePayEligibility($isApplePayCapability);
         $moduleSettings->saveEpsEligibility($isEpsCapability);
         $moduleSettings->savePrzelewy24Eligibility($isPrzelewy24Capability);

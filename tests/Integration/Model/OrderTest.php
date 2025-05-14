@@ -205,7 +205,7 @@ final class OrderTest extends BaseTestCase
      * @dataProvider dataProviderFinalizeOrder
      */
     public function testFinalizeOrder(
-        string $paymentId,
+        string $payment,
         bool $isOrderFinished,
         bool $isOrderPaid,
         bool $isWaitForWebhookTimeoutReached,
@@ -237,7 +237,7 @@ final class OrderTest extends BaseTestCase
             ->getMock();
         $paymentServiceMock->expects($this->any())
             ->method('getSessionPaymentId')
-            ->willReturn($paymentId);
+            ->willReturn($payment);
         $paymentServiceMock->expects($this->any())
             ->method('isOrderExecutionInProgress')
             ->willReturn($orderInProgress);

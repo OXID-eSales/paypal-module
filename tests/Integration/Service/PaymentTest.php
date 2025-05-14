@@ -149,6 +149,8 @@ final class PaymentTest extends BaseTestCase
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
+        $session = EshopRegistry::getSession();
+        $session->setVariable('paymentid', PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
 
         try {
             $result = $paymentService->doCreatePayPalOrder($basket, OrderRequest::INTENT_CAPTURE);
