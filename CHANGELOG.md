@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix: Locales for PP-Buttons are editable again
 - Fix: captured order could not be changed in the backend
 - use PayPal-Client v3.0.16
+- [0007797](https://bugs.oxid-esales.com/view.php?id=7797): Trim the item names for PayPal in a proper way
 
 ## [3.4.1] - 2025-04-08
 
