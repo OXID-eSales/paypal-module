@@ -49,8 +49,9 @@
                 e.stopPropagation();
                 e.preventDefault();
                 PayPalPayment.buttonControll('disabled', true);
-                //order finalization will be handled in OrderController::finalizeacdc
-                PayPalPayment.createOrder();
+                if (PayPalPayment.config.vaultedPaymentSource) {
+                    PayPalPayment.createOrder();
+                }
             });
         };
 
