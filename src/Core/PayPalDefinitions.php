@@ -34,6 +34,8 @@ final class PayPalDefinitions
     public const PAYMENT_SOURCE_GOOGLEPAY = 'google_pay';
     public const PAYMENT_SOURCE_PUI = 'pay_upon_invoice';
 
+    public const VAULTABLE_PAYMENTS = [self::PAYMENT_SOURCE_PAYPAL, self::PAYMENT_SOURCE_CARD];
+
 
     //vaulting
     public const PAYMENT_VAULTING = [

@@ -639,24 +639,40 @@ class OrderRequestFactory
                 ];
 
             } else {
-                $newPaymentSource = [
-                    $paymentSourceId =>
-                        [
-                            "attributes" =>
-                                [
-                                    "vault" =>
-                                        PayPalDefinitions::PAYMENT_VAULTING
-                                ],
-                            "experience_context" =>
-                                [
-                                    "return_url" => $config->getSslShopUrl() .
-                                        'index.php?cl=order&fnc=finalizepaypalsession',
-                                    "cancel_url" => $config->getSslShopUrl() .
-                                        'index.php?cl=order&fnc=cancelpaypalsession',
-                                    "shipping_preference" => "SET_PROVIDED_ADDRESS",
-                                ]
-                        ],
-                ];
+                if (!in_array($paymentSourceId, PayPalDefinitions::VAULTABLE_PAYMENTS)) {
+                    $newPaymentSource = [
+                        $paymentSourceId =>
+                            [
+                                "experience_context" =>
+                                    [
+                                        "return_url" => $config->getSslShopUrl() .
+                                            'index.php?cl=order&fnc=finalizepaypalsession',
+                                        "cancel_url" => $config->getSslShopUrl() .
+                                            'index.php?cl=order&fnc=cancelpaypalsession',
+                                        "shipping_preference" => "SET_PROVIDED_ADDRESS",
+                                    ]
+                            ],
+                    ];
+                } else {
+                    $newPaymentSource = [
+                        $paymentSourceId =>
+                            [
+                                "attributes" =>
+                                    [
+                                        "vault" =>
+                                            PayPalDefinitions::PAYMENT_VAULTING
+                                    ],
+                                "experience_context" =>
+                                    [
+                                        "return_url" => $config->getSslShopUrl() .
+                                            'index.php?cl=order&fnc=finalizepaypalsession',
+                                        "cancel_url" => $config->getSslShopUrl() .
+                                            'index.php?cl=order&fnc=cancelpaypalsession',
+                                        "shipping_preference" => "SET_PROVIDED_ADDRESS",
+                                    ]
+                            ],
+                    ];
+                }
 
                 if ($paypalCustomerId) {
                     $newPaymentSource[$paymentSourceId]["attributes"]["customer"] = [
