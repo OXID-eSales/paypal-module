@@ -6,33 +6,35 @@
             [{oxmultilang ident="OSC_PAYPAL_VAULTING_VAULTED_PAYMENTS"}]
         </div>
         <div class="panel-body" id="savedPaymentCards">
-            <ul>
-                [{foreach from=$vaultedPaymentSources item=paymentToken}]
-                    <li class="mt-3">
-                        <form action="[{$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]" method="post">
-                            <div class="hidden">
-                                [{$oViewConf->getHiddenSid()}]
-                                <input type="hidden" name="cl" value="[{$oViewConf->getActiveClassName()}]">
-                                <input type="hidden" name="fnc" value="deleteVaultedPayment">
-                                <input type="hidden" name="paymentTokenId" value="[{$paymentToken.id}]">
+            [{foreach from=$vaultedPaymentSources name=paymentTokens item=paymentToken}]
+                <div class="payment-method">
+                    <form action="[{$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]" method="post">
+                        <div class="hidden">
+                            [{$oViewConf->getHiddenSid()}]
+                            <input type="hidden" name="cl" value="[{$oViewConf->getActiveClassName()}]">
+                            <input type="hidden" name="fnc" value="deleteVaultedPayment">
+                            <input type="hidden" name="paymentTokenId" value="[{$paymentToken.id}]">
+                        </div>
+                        <div class="payment-info">
+                            <div>
+                                <i class="fa fa-credit-card"></i>
+                                [{if $paymentToken.payment_source.card}]
+                                    [{assign var="brand" value=$paymentToken.payment_source.card.brand}]
+                                    [{assign var="lastdigits" value=$paymentToken.payment_source.card.last_digits}]
+                                    <strong>[{$brand}]</strong> [{oxmultilang ident="OSC_PAYPAL_CARD_ENDING_IN"}] [{$lastdigits}]
+                                [{elseif $paymentToken.payment_source.paypal}]
+                                    [{assign var="lastdigits" value=$paymentToken.payment_source.paypal.email_address}]
+                                    <strong>[{oxmultilang ident="OSC_PAYPAL_CARD_PAYPAL_PAYMENT"}]</strong> [{$lastdigits}]
+                                [{/if}]
                             </div>
-
-                            [{if $paymentToken.payment_source.card}]
-                                [{assign var="brand" value=$paymentToken.payment_source.card.brand}]
-                                [{assign var="lastdigits" value=$paymentToken.payment_source.card.last_digits}]
-                                [{$brand}] [{oxmultilang ident="OSC_PAYPAL_CARD_ENDING_IN"}][{$lastdigits}]
-                            [{elseif $paymentToken.payment_source.paypal}]
-                                [{assign var="lastdigits" value=$paymentToken.payment_source.paypal.email_address}]
-                                [{oxmultilang ident="OSC_PAYPAL_CARD_PAYPAL_PAYMENT"}] [{$lastdigits}]
-                            [{/if}]
-
-                            <button type="submit" class="btn btn-danger btn-sm">
-                                [{oxmultilang ident="OSC_PAYPAL_VAULTING_DELETE"}]
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fa fa-trash"></i> [{oxmultilang ident="OSC_PAYPAL_VAULTING_DELETE"}]
                             </button>
-                        </form>
-                    </li>
-                [{/foreach}]
-            </ul>
+                        </div>
+                    </form>
+                </div>
+                [{if !$smarty.foreach.paymentTokens.last }]<hr style="margin: 15px 0;">[{/if}]
+            [{/foreach}]
         </div>
     </div>
 [{/if}]
