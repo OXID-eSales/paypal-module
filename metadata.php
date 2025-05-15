@@ -128,7 +128,6 @@ $aModule = [
         'modules/osc/paypal/base_js.tpl' => 'osc/paypal/views/tpl/shared/layout/base_js.tpl',
         'modules/osc/paypal/base_paypal_button_config.tpl' => 'osc/paypal/views/tpl/shared/layout/base_paypal_button_config.tpl',
         'modules/osc/paypal/base_paypal_payment_controller_config.tpl' => 'osc/paypal/views/tpl/shared/layout/base_paypal_payment_controller_config.tpl',
-        'modules/osc/paypal/base_style.tpl' => 'osc/paypal/views/tpl/shared/layout/base_style.tpl',
         'modules/osc/paypal/basket_btn_next_bottom.tpl' =>
             'osc/paypal/views/tpl/shared/page/checkout/basket_btn_next_bottom.tpl',
         'modules/osc/paypal/select_payment.tpl' => 'osc/paypal/views/tpl/shared/page/checkout/select_payment.tpl',
@@ -184,11 +183,6 @@ $aModule = [
             'template' => 'layout/base.tpl',
             'block' => 'base_js',
             'file' => 'views/blocks/layout/base_js.tpl'
-        ],
-        [
-            'template' => 'layout/base.tpl',
-            'block' => 'base_style',
-            'file' => 'views/blocks/layout/base_style.tpl'
         ],
         [
             'template' => 'page/account/inc/account_menu.tpl',

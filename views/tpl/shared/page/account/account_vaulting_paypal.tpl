@@ -4,7 +4,6 @@
 
     <h1 class="page-header">[{oxmultilang ident="OSC_PAYPAL_VAULTING_MENU"}]</h1>
 
-    [{$oViewConf->setSDKIsNecessary()}]
     [{if $oViewConf->isFlowCompatibleTheme()}]
         [{include file='modules/osc/paypal/vaultedpaymentsources_flow.tpl'}]
     [{else}]

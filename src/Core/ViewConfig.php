@@ -37,12 +37,6 @@ class ViewConfig extends ViewConfig_parent
     protected $isWaveCompatibleTheme = null;
 
     /**
-     * is this SDK necessary?
-     * @var boolean
-     */
-    protected $isSDKNecessary = false;
-
-    /**
      * @return bool
      */
     public function isPayPalCheckoutActive(): bool
@@ -123,22 +117,6 @@ class ViewConfig extends ViewConfig_parent
     }
 
     /**
-     * @return void
-     */
-    public function setSDKIsNecessary()
-    {
-        $this->isSDKNecessary = true;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isSDKNecessary(): bool
-    {
-        return $this->isSDKNecessary;
-    }
-
-    /**
      * @return string
      */
     public function getPayPalPuiFNParams(): string
@@ -167,9 +145,10 @@ class ViewConfig extends ViewConfig_parent
     /**
      * Gets PayPal JS SDK url
      *
+     * @param bool $bCommitFlow
      * @return string
      */
-    public function getPayPalJsSdkUrl(): string
+    public function getPayPalJsSdkUrl(bool $bCommitFlow = false): string
     {
         $config = Registry::getConfig();
         $lang = Registry::getLang();
@@ -208,7 +187,7 @@ class ViewConfig extends ViewConfig_parent
         if ('directly' === $captureStrategy) {
             $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
         }
-        $params['commit'] = 'false';
+        $params['commit'] = $bCommitFlow ? 'true': 'false';
 
         if ($currency = $config->getActShopCurrencyObject()) {
             $params['currency'] = strtoupper($currency->name);
