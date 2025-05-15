@@ -92,7 +92,8 @@
         this.patchOrder = async function (details) {
             return await PayPalPayment.backendRequest('shopOrderPatchingUrl', {}, {
                 'shopOrderId': PayPalPayment.getCurrentOrderOxid(),
-                'payPalOrderId': PayPalPayment.getCurrentPayPalOrderId()
+                'payPalOrderId': PayPalPayment.getCurrentPayPalOrderId(),
+                'vaultPayment': PayPalPayment.currentOrder.vaultPayment
             });
         };
 
