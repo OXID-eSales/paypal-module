@@ -1,7 +1,9 @@
-[{if $oViewConf->isPayPalCheckoutActive() && $oViewConf->isSDKNecessary()}]
+[{if $oViewConf->isPayPalCheckoutActive()}]
     [{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','out/src/js/paypal-frontend.min.js')|filemtime}]
     <script src="[{$oViewConf->getModuleUrl('osc_paypal','out/src/js/paypal-frontend.min.js')|cat:"?"|cat:$sFileMTime}]"></script>
-    <script src="[{$oViewConf->getPayPalJsSdkUrl()}]"
+    [{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','out/src/css/paypal.min.css')|filemtime}]
+    [{oxstyle include=$oViewConf->getModuleUrl('osc_paypal', 'out/src/css/paypal.min.css')|cat:"?"|cat:$sFileMTime}]
+    <script src="[{$oViewConf->getPayPalJsSdkUrl($commitFlow)}]"
         [{if $oViewConf->isVaultingEligibility()}]
             data-user-id-token="[{$oViewConf->getUserIdForVaulting()}]"
         [{/if}]
@@ -15,10 +17,7 @@
             const countryRestriction = [[{$sCountryRestriction}]];
         </script>
     [{/if}]
-    [{if $submitCart}]
-    <script>
-        document.getElementById('orderConfirmAgbBottom').submit();
-    </script>
-    [{/if}]
 
+    [{include file='modules/osc/paypal/base_paypal_payment_controller_config.tpl'}]
+    [{include file='modules/osc/paypal/base_paypal_button_config.tpl'}]
 [{/if}]

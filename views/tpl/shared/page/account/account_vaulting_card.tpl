@@ -1,9 +1,8 @@
 [{capture append="oxidBlock_content"}]
     [{assign var="template_title" value="OSC_PAYPAL_VAULTING_MENU_CARD"|oxmultilangassign}]
 
-    <h1 class="page-header">[{oxmultilang ident="OSC_PAYPAL_VAULTING_MENU"}]</h1>
+    <h1 class="page-header">[{oxmultilang ident="OSC_PAYPAL_VAULTING_MENU_CARD"}]</h1>
 
-    [{$oViewConf->setSDKIsNecessary()}]
     [{if $oViewConf->isFlowCompatibleTheme()}]
         [{include file='modules/osc/paypal/vaultedpaymentsources_flow.tpl'}]
     [{else}]
