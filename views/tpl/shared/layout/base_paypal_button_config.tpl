@@ -1,4 +1,5 @@
 [{assign var="config" value=$oViewConf->getPayPalCheckoutConfig()}]
+[{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
 <script>
     (function (){
         const PayPalButtonStyleConfigurator = function(){
@@ -22,5 +23,16 @@
         }
 
         window.PayPalI18n = new PayPalI18nConfigurator();
+
+        const PayPalExpressSessionConfigurator = function(){
+            return {
+                cancelPayPalExpressSession: async function (){
+                    await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
+                },
+                started: false
+            }
+        }
+
+        window.PayPalExpressSession = new PayPalExpressSessionConfigurator();
     })();
 </script>

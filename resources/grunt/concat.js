@@ -19,7 +19,8 @@ module.exports = {
                 "build/js/paypal-frontend-payment-controller-base.js",
                 "build/js/paypal-frontend-standard-payment-controller.js",
                 "build/js/paypal-frontend-acdc-payment-controller.js",
-                "build/js/paypal-frontend-googlepay-payment-controller.js"
+                "build/js/paypal-frontend-googlepay-payment-controller.js",
+                "build/js/paypal-frontend-express-payment-controller.js"
             ]
         }
     }
