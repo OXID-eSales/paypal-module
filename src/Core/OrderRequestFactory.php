@@ -639,7 +639,7 @@ class OrderRequestFactory
                 ];
 
             } else {
-                if (!in_array($paymentSourceId, PayPalDefinitions::VAULTABLE_PAYMENTS)) {
+                if (!in_array($paymentSourceId, PayPalDefinitions::VAULTABLE_PAYMENT_SOURCES)) {
                     $newPaymentSource = [
                         $paymentSourceId =>
                             [
