@@ -53,6 +53,9 @@ final class OrderTest extends BaseTestCase
 
         /** @var OrderRequestFactory $requestFactory */
         $requestFactory = EshopRegistry::get(OrderRequestFactory::class);
+        $session = EshopRegistry::getSession();
+        $session->setVariable('paymentid', PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID);
+
         $request = $requestFactory->getRequest(
             $basket,
             OrderRequest::INTENT_CAPTURE,
@@ -80,6 +83,8 @@ final class OrderTest extends BaseTestCase
         $basket->setPayment(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
         $basket->setShipping('oxidstandard');
         $basket->calculateBasket(true);
+        $session = EshopRegistry::getSession();
+        $session->setVariable('paymentid', PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
 
         /** @var OrderRequestFactory $requestFactory */
         $requestFactory = EshopRegistry::get(OrderRequestFactory::class);
