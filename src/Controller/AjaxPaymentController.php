@@ -230,7 +230,6 @@ class AjaxPaymentController extends ProxyController
     {
         $data = $this->getRequestParameters();
         $vaultPayment = filter_var($data['vaultPayment'], FILTER_VALIDATE_BOOLEAN);
-
         $shopOrderId = $data['shopOrderId'];
         $this->permissionsCheck($shopOrderId);
 
