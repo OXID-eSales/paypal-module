@@ -229,6 +229,8 @@ class AjaxPaymentController extends ProxyController
     public function patchShopOrder(): void
     {
         $data = $this->getRequestParameters();
+        $vaultPayment = filter_var($data['vaultPayment'], FILTER_VALIDATE_BOOLEAN);
+
         $shopOrderId = $data['shopOrderId'];
         $this->permissionsCheck($shopOrderId);
 
@@ -288,7 +290,10 @@ class AjaxPaymentController extends ProxyController
             ]);
         }
 
-        Registry::getSession()->setVariable("vaultSuccess", true);
+        if($vaultPayment) {
+            //assuming that if there is no error during the request and vaulted was requested it went fine
+            Registry::getSession()->setVariable("vaultSuccess", true);
+        }
 
         $this->outputJson([
             'status' => 'success',
