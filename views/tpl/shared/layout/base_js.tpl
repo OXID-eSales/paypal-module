@@ -8,7 +8,9 @@
             data-user-id-token="[{$oViewConf->getUserIdForVaulting()}]"
         [{/if}]
         data-partner-attribution-id="[{$oViewConf->getPayPalPartnerAttributionIdForBanner()}]"
-        data-client-token="[{$oViewConf->getDataClientToken()}]"
+        [{* data-client-token is only necessary for hosted fields, it could be removed
+            data-client-token="[{$oViewConf->getDataClientToken()}]"
+        *}]
         onload="undefined === window.OxidPayPal ? null : window.OxidPayPal.onSDKLoaded()"
         ></script>
     [{assign var="sCountryRestriction" value=$oViewConf->getCountryRestrictionForPayPalExpress()}]
