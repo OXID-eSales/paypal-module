@@ -115,6 +115,8 @@
                         params.append('amountToBasket', amount);
                         let baseUrl = '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]';
                         let url = baseUrl + (params.toString() ? '&' + params.toString() : '');
+                        window.PayPalExpressSession.started = true;
+                        window.history.pushState(null, ""); // needed to trigger the popstate event
                         return fetch(url , {
                                 method: 'post',
                                 headers: {
