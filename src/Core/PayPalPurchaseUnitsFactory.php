@@ -101,7 +101,7 @@ class PayPalPurchaseUnitsFactory
 
             $shipping = [
                 'name' => [
-                    'full_name' => $user->oxuser__oxfname . ' von ' . $user->oxuser__oxlname
+                    'full_name' => $user->oxuser__oxfname . ' ' . $user->oxuser__oxlname
                 ],
 
                 'address' => [
