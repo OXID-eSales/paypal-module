@@ -23,6 +23,7 @@ $aLang = [
     'OSC_PAYPAL_ACDC_CARD_CVV'                      => 'CVV',
     'OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD'             => 'Karteninhaber',
     'OSC_PAYPAL_ACDC_PLEASE_RETRY'                  => 'Bezahlvorgang wurde aus Sicherheitsgründen abgebrochen. Bitte geben Sie ihre Kreditkartendaten erneut ein und klicken einmal auf den Bestellbutton.',
+    'OSC_PAYPAL_ACDC_ERROR_INBOX'                   => 'Ein Fehler ist aufgetreten. Bitte überprüfen Sie Ihre Zahlungsinformationen.',
 
     'OSC_PAYPAL_VAT_CORRECTION'                     => 'Mwst. Korrektur',
 

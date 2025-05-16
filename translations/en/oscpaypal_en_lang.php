@@ -23,7 +23,7 @@ $aLang = [
     'OSC_PAYPAL_ACDC_CARD_CVV'                     => 'CVV',
     'OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD'            => 'Name on Card',
     'OSC_PAYPAL_ACDC_PLEASE_RETRY'                 => 'Payment process was stopped due to security reasons. Please enter your credit card data again and press submit button once.',
-
+    'OSC_PAYPAL_ACDC_ERROR_INBOX'                  => 'There is a problem with your payment data. Please check your payment data and try again.',
     'OSC_PAYPAL_VAT_CORRECTION'                    => 'VAT. Correction',
 
     'OSC_PAYPAL_PUI_HELP'                          => 'To process the invoice, we need your date of birth and a valid telephone number with city- or country code (e.g. 030 123456789 or +49 30 123456789)',

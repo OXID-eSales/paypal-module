@@ -147,6 +147,20 @@
                     submitButton.addEventListener("click", () => {
                         cardFields.submit().catch(err => {
                             console.error('Error submitting card fields:', err);
+                            const panelBody = document.querySelector("#orderPayment .panel-body");
+
+                            const existingError = panelBody.querySelector(".error-message");
+                            if (existingError) {
+                                existingError.remove();
+                            }
+
+                            const errorMessage = document.createElement("div");
+                            errorMessage.className = "error-message alert alert-danger"; // Use bootstrap classes for styling
+                            errorMessage.textContent = PayPalI18n.OSC_PAYPAL_ACDC_ERROR_INBOX;
+
+                            panelBody.prepend(errorMessage);
+                            panelBody.addEventListener("click", removeErrorOnClick);
+                            window.PayPalExpressSession.cancelPayPalExpressSession();
                         });
                     });
                 }
@@ -167,3 +181,14 @@
         }
     });
 })();
+
+function removeErrorOnClick(event) {
+    const panelBody = event.currentTarget;
+    const errorMessage = panelBody.querySelector(".error-message");
+
+    if (errorMessage) {
+        errorMessage.remove();
+    }
+
+    panelBody.removeEventListener("click", removeErrorOnClick);
+}
