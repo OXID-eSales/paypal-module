@@ -16,15 +16,13 @@
                 purchase_units: [
                     {...this.config.purchaseUnits}
                 ],
-                application_context: {
+                experience_context: {
                     return_url: PayPalPayment.getConfigValue('updateOxUserWithPayPalCustomerIdUrl'),
                     cancel_url: PayPalPayment.getConfigValue('shopOrderDeleteUrl')
                 }
             };
 
-            if (PayPalPayment.currentOrder.vaultPayment) {
-                purchaseUnits.payment_source = this.getPaymentSource();
-            }
+            purchaseUnits.payment_source = this.getPaymentSource();
 
             return purchaseUnits;
         };

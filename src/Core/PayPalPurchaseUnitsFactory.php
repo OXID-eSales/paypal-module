@@ -114,9 +114,6 @@ class PayPalPurchaseUnitsFactory
                 ]
             ];
             $purchaseUnits['shipping'] = $shipping;
-            $purchaseUnits['experience_context'] = [
-                'shipping_preference' => 'SET_PROVIDED_ADDRESS'
-            ];
         }
 
         return $purchaseUnits;
