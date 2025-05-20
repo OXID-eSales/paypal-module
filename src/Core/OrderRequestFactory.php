@@ -681,17 +681,18 @@ class OrderRequestFactory
                 }
 
                 if (
-                    !isset($request->payment_source->{$paymentSourceId}->attributes->vault) &&
                     in_array($paymentSourceId, PayPalDefinitions::VAULTABLE_PAYMENT_SOURCES)
                 ) {
-                    $newPaymentSource[$paymentSourceId]["attributes"]["vault"] = PayPalDefinitions::PAYMENT_VAULTING;
-                }
+                    if (!isset($request->payment_source->{$paymentSourceId}->attributes->vault)) {
+                        $newPaymentSource[$paymentSourceId]["attributes"]["vault"] = PayPalDefinitions::PAYMENT_VAULTING;
+                    }
 
-                if (
-                    $paypalCustomerId &&
-                    !isset($request->payment_source->{$paymentSourceId}->attributes->customer->id)
-                ) {
-                    $newPaymentSource[$paymentSourceId]["attributes"]["customer"]["id"] = $paypalCustomerId;
+                    if (
+                        $paypalCustomerId &&
+                        !isset($request->payment_source->{$paymentSourceId}->attributes->customer->id)
+                    ) {
+                        $newPaymentSource[$paymentSourceId]["attributes"]["customer"]["id"] = $paypalCustomerId;
+                    }
                 }
             }
             $request->payment_source = $newPaymentSource;
