@@ -111,11 +111,17 @@ class OrderRequestFactory
             $request->payment_source = $this->getGooglePayPaymentSource($basket, $paymentSourceId);
         }
 
-        if (
-            $paymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID ||
-            PayPalDefinitions::isUAPMPayment($paymentId)
-        ) {
-            $request->payment_source = $this->getSimpleCountryCodePaymentSource($basket, $paymentSourceId);
+        if ($paymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID) {
+            $request->payment_source = $this->getSimplePaymentSource($basket, $paymentSourceId);
+        }
+
+        if (PayPalDefinitions::isUAPMPayment($paymentId)) {
+            if ($paymentId === PayPalDefinitions::PRZELEWY24_PAYPAL_PAYMENT_ID) {
+                $request->payment_source = $this->getSimplePaymentSourceWithEMail($basket, $paymentSourceId);
+            }
+            else {
+                $request->payment_source = $this->getSimplePaymentSource($basket, $paymentSourceId);
+            }
         }
 
         $request->intent = $intent;
@@ -168,7 +174,20 @@ class OrderRequestFactory
         return $request;
     }
 
-    protected function getSimpleCountryCodePaymentSource(Basket $basket, string $requestName): PaymentSource
+    protected function getSimplePaymentSource(Basket $basket, string $requestName): PaymentSource
+    {
+        $userName = $this->getUserNameFromBasket($basket);
+        $country = $this->getCountryFromBasket($basket);
+
+        return new PaymentSource([
+            $requestName => [
+                'name' => $userName,
+                'country_code' => $country->getFieldData('oxisoalpha2')
+            ]
+        ]);
+    }
+
+    protected function getSimplePaymentSourceWithEMail(Basket $basket, string $requestName): PaymentSource
     {
         $userName = $this->getUserNameFromBasket($basket);
         $country = $this->getCountryFromBasket($basket);
