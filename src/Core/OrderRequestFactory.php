@@ -110,8 +110,11 @@ class OrderRequestFactory
             $request->payment_source = $this->getGooglePayPaymentSource($basket, $paymentSourceId);
         }
 
-        if ($paymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID) {
-            $request->payment_source = $this->getApplePayPaymentSource($basket, $paymentSourceId);
+        if (
+            $paymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID ||
+            PayPalDefinitions::isUAPMPayment($paymentId)
+        ) {
+            $request->payment_source = $this->getSimpleCountryCodePaymentSource($basket, $paymentSourceId);
         }
 
         $request->intent = $intent;
@@ -164,7 +167,7 @@ class OrderRequestFactory
         return $request;
     }
 
-    protected function getApplePayPaymentSource(Basket $basket, string $requestName): PaymentSource
+    protected function getSimpleCountryCodePaymentSource(Basket $basket, string $requestName): PaymentSource
     {
         $userName = $this->getUserNameFromBasket($basket);
         $country = $this->getCountryFromBasket($basket);
@@ -638,50 +641,29 @@ class OrderRequestFactory
                     "id" => $paypalCustomerId
                 ];
 
+                $request->payment_source = $newPaymentSource;
             } else {
-                if (!in_array($paymentSourceId, PayPalDefinitions::VAULTABLE_PAYMENT_SOURCES)) {
-                    $newPaymentSource = [
-                        $paymentSourceId =>
-                            [
-                                "experience_context" =>
-                                    [
-                                        "return_url" => $config->getSslShopUrl() .
-                                            'index.php?cl=order&fnc=finalizepaypalsession',
-                                        "cancel_url" => $config->getSslShopUrl() .
-                                            'index.php?cl=order&fnc=cancelpaypalsession',
-                                        "shipping_preference" => "SET_PROVIDED_ADDRESS",
-                                    ]
-                            ],
-                    ];
-                } else {
-                    $newPaymentSource = [
-                        $paymentSourceId =>
-                            [
-                                "attributes" =>
-                                    [
-                                        "vault" =>
-                                            PayPalDefinitions::PAYMENT_VAULTING
-                                    ],
-                                "experience_context" =>
-                                    [
-                                        "return_url" => $config->getSslShopUrl() .
-                                            'index.php?cl=order&fnc=finalizepaypalsession',
-                                        "cancel_url" => $config->getSslShopUrl() .
-                                            'index.php?cl=order&fnc=cancelpaypalsession',
-                                        "shipping_preference" => "SET_PROVIDED_ADDRESS",
-                                    ]
-                            ],
-                    ];
-                }
+                $request->payment_source->{$paymentSourceId}->experience_context = [
+                    "return_url" => $config->getSslShopUrl() .
+                        'index.php?cl=order&fnc=finalizepaypalsession',
+                    "cancel_url" => $config->getSslShopUrl() .
+                        'index.php?cl=order&fnc=cancelpaypalsession',
+                    "shipping_preference" => "SET_PROVIDED_ADDRESS",
+                ];
 
-                if ($paypalCustomerId) {
-                    $newPaymentSource[$paymentSourceId]["attributes"]["customer"] = [
-                        "id" => $paypalCustomerId
-                    ];
+                if (in_array($paymentSourceId, PayPalDefinitions::VAULTABLE_PAYMENT_SOURCES)) {
+                    $this->ensureObjectPath(
+                        $request->payment_source->{$paymentSourceId},
+                        ['attributes']
+                    )->vault = PayPalDefinitions::PAYMENT_VAULTING;
+                    if ($paypalCustomerId) {
+                        $this->ensureObjectPath(
+                            $request->payment_source->{$paymentSourceId},
+                            ['attributes', 'customer']
+                        )->id = $paypalCustomerId;
+                    }
                 }
             }
-
-            $request->payment_source = $newPaymentSource;
         }
     }
 
@@ -696,8 +678,16 @@ class OrderRequestFactory
         return $user ? $user->getFieldData("oscpaypalcustomerid") : '';
     }
 
-    protected function hasExperienceContext(?PaymentSource $paymentSource, string $paymentId): bool
-    {
-        return property_exists($paymentSource->$paymentId, 'experience_context');
+    private function ensureObjectPath(&$obj, array $path) {
+        $current = &$obj;
+
+        foreach ($path as $key) {
+            if (!isset($current->$key)) {
+                $current->$key = new stdClass();
+            }
+            $current = &$current->$key;
+        }
+
+        return $current;
     }
 }
