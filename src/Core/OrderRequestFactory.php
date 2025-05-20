@@ -667,7 +667,7 @@ class OrderRequestFactory
                 }
             }
         }
-        $request->payment_source = new PaymentSource($newPaymentSource);
+        $request->payment_source = $newPaymentSource;
     }
 
     private function getVaultingService()
