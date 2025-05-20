@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use DateTime;
+use JsonException;
 use JsonSerializable;
 use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberFormat;
@@ -491,8 +492,6 @@ class OrderRequestFactory
         $country->load($user->getFieldData('oxcountryid'));
         $countryCode = $country->oxcountry__oxisoalpha2->value;
 
-        $number = null;
-
         foreach ($userPhoneFields as $numberField => $numberType) {
             $number = $user->getFieldData($numberField);
 
@@ -598,30 +597,31 @@ class OrderRequestFactory
             //find out which payment token was selected by getting the index via request param
             $selectedPaymentToken = $paymentTokens["payment_tokens"][$selectedVaultPaymentSourceIndex];
 
-            $request->payment_source =
-                [
-                    $paymentSourceId => [
-                        "vault_id" => $selectedPaymentToken["id"],
-                        "attributes" => [
-                            "verification" => [
-                                "method" => "SCA_WHEN_REQUIRED",
-                                "_comment" => "SCA_ALWAYS to force otherwise use SCA_WHEN_REQUIRED"
-                            ],
-                            "customer" => [
-                                "id" => $payPalCustomerId
-                            ]
+            $newPaymentSource = [
+                $paymentSourceId => [
+                    "vault_id" => $selectedPaymentToken["id"],
+                    "attributes" => [
+                        "verification" => [
+                            "method" => "SCA_WHEN_REQUIRED",
+                            "_comment" => "SCA_ALWAYS to force otherwise use SCA_WHEN_REQUIRED"
                         ],
-                        "stored_credential" => [
-                            "payment_initiator" => "CUSTOMER",
-                            "payment_type" => "UNSCHEDULED",
-                            "usage" => "SUBSEQUENT"
-                        ],
-                        "experience_context" => [
-                            "return_url" => $returnUrl,
-                            "cancel_url" => $cancelUrl
+                        "customer" => [
+                            "id" => $payPalCustomerId
                         ]
+                    ],
+                    "stored_credential" => [
+                        "payment_initiator" => "CUSTOMER",
+                        "payment_type" => "UNSCHEDULED",
+                        "usage" => "SUBSEQUENT"
+                    ],
+                    "experience_context" => [
+                        "return_url" => $returnUrl,
+                        "cancel_url" => $cancelUrl
                     ]
-                ];
+                ]
+            ];
+            $request->payment_source = $newPaymentSource;
+
         } elseif ($user = $config->getUser()) {
             //save during purchase
             $paypalCustomerId = $user->getFieldData("oscpaypalcustomerid");
@@ -641,29 +641,34 @@ class OrderRequestFactory
                     "id" => $paypalCustomerId
                 ];
 
-                $request->payment_source = $newPaymentSource;
             } else {
-                $request->payment_source->{$paymentSourceId}->experience_context = [
-                    "return_url" => $config->getSslShopUrl() .
-                        'index.php?cl=order&fnc=finalizepaypalsession',
-                    "cancel_url" => $config->getSslShopUrl() .
-                        'index.php?cl=order&fnc=cancelpaypalsession',
-                    "shipping_preference" => "SET_PROVIDED_ADDRESS",
+                $newPaymentSource = [
+                    $paymentSourceId => [
+                        "experience_context" => [
+                            "return_url" => $config->getSslShopUrl() .
+                                'index.php?cl=order&fnc=finalizepaypalsession',
+                            "cancel_url" => $config->getSslShopUrl() .
+                                'index.php?cl=order&fnc=cancelpaypalsession',
+                            "shipping_preference" => "SET_PROVIDED_ADDRESS",
+                        ]
+                    ]
                 ];
+                // it is possible that we have an existing payment_source. We must merge it
+                if (isset($request->payment_source->{$paymentSourceId})) {
+                    $paymentSourceData = $this->getArrayFromPaymentSource($request, $paymentSourceId);
+                    $newPaymentSource[$paymentSourceId] = array_merge($paymentSourceData, $newPaymentSource[$paymentSourceId]);
+                }
 
                 if (in_array($paymentSourceId, PayPalDefinitions::VAULTABLE_PAYMENT_SOURCES)) {
-                    $this->ensureObjectPath(
-                        $request->payment_source->{$paymentSourceId},
-                        ['attributes']
-                    )->vault = PayPalDefinitions::PAYMENT_VAULTING;
+                    if (!isset($request->payment_source->{$paymentSourceId}->attributes->vault)) {
+                        $newPaymentSource[$paymentSourceId]["attributes"]["vault"] = PayPalDefinitions::PAYMENT_VAULTING;
+                    }
                     if ($paypalCustomerId) {
-                        $this->ensureObjectPath(
-                            $request->payment_source->{$paymentSourceId},
-                            ['attributes', 'customer']
-                        )->id = $paypalCustomerId;
+                        $newPaymentSource[$paymentSourceId]["attributes"]["customer"]["id"] = $paypalCustomerId;
                     }
                 }
             }
+            $request->payment_source = $newPaymentSource;
         }
     }
 
@@ -678,16 +683,11 @@ class OrderRequestFactory
         return $user ? $user->getFieldData("oscpaypalcustomerid") : '';
     }
 
-    private function ensureObjectPath(&$obj, array $path) {
-        $current = &$obj;
-
-        foreach ($path as $key) {
-            if (!isset($current->$key)) {
-                $current->$key = new stdClass();
-            }
-            $current = &$current->$key;
-        }
-
-        return $current;
+    /**
+     * @throws JsonException
+     */
+    private function getArrayFromPaymentSource(OrderRequest $request, string $paymentSourceId): array {
+        $encodedData = json_encode($request->payment_source->{$paymentSourceId}, JSON_THROW_ON_ERROR);
+        return json_decode($encodedData, true, 512, JSON_THROW_ON_ERROR);
     }
 }
