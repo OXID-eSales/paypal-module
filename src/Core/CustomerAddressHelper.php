@@ -21,6 +21,11 @@ trait CustomerAddressHelper
         return $user->getFieldData('oxfname') . ' ' . $user->getFieldData('oxlname');
     }
 
+    protected function getEMailFromBasket($basket): string
+    {
+        return $basket->getBasketUser()->getFieldData('oxusername');
+    }
+
     protected function getCountryFromBasket($basket): Country
     {
         $user = $basket->getBasketUser();

@@ -172,10 +172,12 @@ class OrderRequestFactory
     {
         $userName = $this->getUserNameFromBasket($basket);
         $country = $this->getCountryFromBasket($basket);
+        $eMail = $this->getEMailFromBasket($basket);
 
         return new PaymentSource([
             $requestName => [
                 'name' => $userName,
+                'email' => $eMail,
                 'country_code' => $country->getFieldData('oxisoalpha2')
             ]
         ]);
@@ -659,13 +661,18 @@ class OrderRequestFactory
                     $newPaymentSource[$paymentSourceId] = array_merge($paymentSourceData, $newPaymentSource[$paymentSourceId]);
                 }
 
-                if (in_array($paymentSourceId, PayPalDefinitions::VAULTABLE_PAYMENT_SOURCES)) {
-                    if (!isset($request->payment_source->{$paymentSourceId}->attributes->vault)) {
-                        $newPaymentSource[$paymentSourceId]["attributes"]["vault"] = PayPalDefinitions::PAYMENT_VAULTING;
-                    }
-                    if ($paypalCustomerId) {
-                        $newPaymentSource[$paymentSourceId]["attributes"]["customer"]["id"] = $paypalCustomerId;
-                    }
+                if (
+                    !isset($request->payment_source->{$paymentSourceId}->attributes->vault) &&
+                    in_array($paymentSourceId, PayPalDefinitions::VAULTABLE_PAYMENT_SOURCES)
+                ) {
+                    $newPaymentSource[$paymentSourceId]["attributes"]["vault"] = PayPalDefinitions::PAYMENT_VAULTING;
+                }
+
+                if (
+                    $paypalCustomerId &&
+                    !isset($request->payment_source->{$paymentSourceId}->attributes->customer->id)
+                ) {
+                    $newPaymentSource[$paymentSourceId]["attributes"]["customer"]["id"] = $paypalCustomerId;
                 }
             }
             $request->payment_source = $newPaymentSource;
