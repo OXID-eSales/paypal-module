@@ -620,6 +620,8 @@ class OrderRequestFactory
                     ]
                 ]
             ];
+            $request->payment_source = $newPaymentSource;
+
         } elseif ($user = $config->getUser()) {
             //save during purchase
             $paypalCustomerId = $user->getFieldData("oscpaypalcustomerid");
@@ -666,8 +668,8 @@ class OrderRequestFactory
                     }
                 }
             }
+            $request->payment_source = $newPaymentSource;
         }
-        $request->payment_source = $newPaymentSource;
     }
 
     private function getVaultingService()
