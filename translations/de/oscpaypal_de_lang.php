@@ -55,6 +55,7 @@ $aLang = [
     'OSC_PAYPAL_CONTINUE_TO_NEXT_STEP'              => 'Weiter mit gespeicherter Zahlungsart',
     'OSC_PAYPAL_CARD_ENDING_IN'                     => 'endet mit ●●●',
     'OSC_PAYPAL_CARD_PAYPAL_PAYMENT'                => 'PayPal Zahlung mit',
+    'OSC_PAYPAL_VAULTING_USE_HINT'                  => 'Bezahlung mit gespeichertem PayPal<br ><br >Wenn Sie einen anderen PayPal-Zugang nutzen wollen, so löschen Sie den aktuellen Zugang in Ihrem Kundenkonto und melden sich anschließend hier erneut an.',
     'OSC_PAYPAL_DELETE_FAILED'                      => 'Beim Löschen Ihrer Zahlart ist etwas schiefgelaufen.',
     'OSC_RUNNING_PAYPAL_CHECKOUT_SESSION_HINT' => 'Zahlung erfolgt mit PayPal-Zahlart.',
     'OSC_RUNNING_PAYPAL_CHECKOUT_SESSION_HINT_AFREF' => 'Hier zum Bestellabschluss.',
