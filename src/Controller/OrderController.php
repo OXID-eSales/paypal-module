@@ -117,15 +117,15 @@ class OrderController extends OrderController_parent
                 && $user->getFieldData('oxpassword');
 
             $this->addTplParam('oscpaypal_isVaultingPossible', $isVaultingPossible);
-
-            $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
             $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
-            $vaultedPaymentTokens = $vaultingService->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"];
 
             if (
                 $isVaultingPossible
                 && $payPalCustomerId
             ) {
+                $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+                $vaultedPaymentTokens = $vaultingService->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"];
+
                 $paymentDescription = '';
 
                 // Vaulted Cards?
