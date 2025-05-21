@@ -129,21 +129,27 @@ class OrderController extends OrderController_parent
                 $paymentDescription = '';
 
                 // Vaulted Cards?
-                $selectedVaultPaymentSourceIndex = $session->getVariable("selectedVaultPaymentSourceIndex");
-                // the PaymentSourceIndex is set in Payment-Controller only by vaulted cards
-                if (!is_null($selectedVaultPaymentSourceIndex)) {
-                    //find out which payment token was selected by getting the index via request param
-                    $selectedPaymentToken = $vaultedPaymentTokens[$selectedVaultPaymentSourceIndex];
-                    $paymentType = key($selectedPaymentToken["payment_source"]);
-                    $paymentSource = $selectedPaymentToken["payment_source"][$paymentType];
-                    // double check source type
-                    if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
-                        $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
-                        $paymentDescription = $paymentSource["brand"] . " " . $string . $paymentSource["last_digits"];
+                if ($paymentId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) {
+                    $selectedVaultPaymentSourceIndex = $session->getVariable("selectedVaultPaymentSourceIndex");
+                    // the PaymentSourceIndex is set in Payment-Controller only by vaulted cards
+                    if (!is_null($selectedVaultPaymentSourceIndex)) {
+                        //find out which payment token was selected by getting the index via request param
+                        $selectedPaymentToken = $vaultedPaymentTokens[$selectedVaultPaymentSourceIndex];
+                        $paymentType = key($selectedPaymentToken["payment_source"]);
+                        $paymentSource = $selectedPaymentToken["payment_source"][$paymentType];
+                        // double check source type
+                        if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
+                            $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
+                            $paymentDescription = $paymentSource["brand"] . " " . $string . $paymentSource["last_digits"];
+                        }
                     }
                 }
+
                 // Vaulted PP-Accounts?
-                else {
+                if (
+                    $paymentId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID ||
+                    $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
+                ) {
                     $foundPayPalVault = false;
                     foreach ($vaultedPaymentTokens as $vaultPaymentToken) {
                         if (isset($vaultPaymentToken["payment_source"][PayPalDefinitions::PAYMENT_SOURCE_PAYPAL])) {
