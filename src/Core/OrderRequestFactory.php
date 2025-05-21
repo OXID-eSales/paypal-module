@@ -683,7 +683,11 @@ class OrderRequestFactory
                 if (
                     in_array($paymentSourceId, PayPalDefinitions::VAULTABLE_PAYMENT_SOURCES)
                 ) {
-                    if (!isset($request->payment_source->{$paymentSourceId}->attributes->vault)) {
+                    $vaultSuccess = Registry::getSession()->getVariable("vaultSuccess");
+                    if (
+                        $vaultSuccess &&
+                        !isset($request->payment_source->{$paymentSourceId}->attributes->vault)
+                    ) {
                         $newPaymentSource[$paymentSourceId]["attributes"]["vault"] = PayPalDefinitions::PAYMENT_VAULTING;
                     }
 
