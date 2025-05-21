@@ -81,6 +81,11 @@ class AjaxPaymentController extends ProxyController
         ]);
     }
 
+    public function cancelPayPalSession(): void
+    {
+        PayPalSession::unsetPayPalSession();
+    }
+
     /**
      * @psalm-suppress InternalMethod
      */
@@ -193,6 +198,7 @@ class AjaxPaymentController extends ProxyController
 
     /**
      * @throws JsonException
+     * @throws \Exception
      */
     public function cancelShopOrder(): void
     {
@@ -208,6 +214,8 @@ class AjaxPaymentController extends ProxyController
             'Current user do not have permission to cancel referenced order'
         );
 
+        PayPalSession::unsetPayPalSession();
+
         /** @var PayPalOrder $order */
         $order = oxNew(Order::class);
         $order->load($shopOrderId);
@@ -220,6 +228,8 @@ class AjaxPaymentController extends ProxyController
         ));
 
         $order->cancelOrder();
+        $order->markOrderPaymentFailed();
+        $order->save();
 
         $this->outputJson([
             'status' => 'success'

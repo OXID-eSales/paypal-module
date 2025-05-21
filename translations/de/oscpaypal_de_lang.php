@@ -27,6 +27,11 @@ $aLang = [
 
     'OSC_PAYPAL_VAT_CORRECTION'                     => 'Mwst. Korrektur',
 
+    'OSC_PAYPAL_ACDC_ERROR_MISSING_NAME'            => 'Bitte geben Sie den Namen auf Ihrer Karte ein',
+    'OSC_PAYPAL_ACDC_ERROR_MISSING_NUMBER'          => 'Bitte geben Sie Ihre Kartennummer ein',
+    'OSC_PAYPAL_ACDC_ERROR_MISSING_CVV'             => 'Bitte geben Sie den CVV-Code ein',
+    'OSC_PAYPAL_ACDC_ERROR_MISSING_EXDATE'          => 'Bitte geben Sie das Ablaufdatum ein',
+
     'OSC_PAYPAL_PUI_HELP'                           => 'Für die Abwicklung des Rechnungskaufes benötigen wir Ihr Geburtsdatum sowie eine gültige Telefonnummer mit Orts- oder Ländervorwahl (z.B. 030 123456789 oder +49 30 123456789)',
     'OSC_PAYPAL_PUI_BIRTHDAY'                       => 'Geburtstag',
     'OSC_PAYPAL_PUI_BIRTHDAY_PLACEHOLDER'           => '01.01.1970',

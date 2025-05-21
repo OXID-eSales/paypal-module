@@ -26,6 +26,11 @@ $aLang = [
     'OSC_PAYPAL_ACDC_ERROR_INBOX'                  => 'There is a problem with your payment data. Please check your payment data and try again.',
     'OSC_PAYPAL_VAT_CORRECTION'                    => 'VAT. Correction',
 
+    'OSC_PAYPAL_ACDC_ERROR_MISSING_NAME'            => 'Please enter the name on your card',
+    'OSC_PAYPAL_ACDC_ERROR_MISSING_NUMBER'          => 'Please enter your card number',
+    'OSC_PAYPAL_ACDC_ERROR_MISSING_CVV'             => 'Please enter the CVV code',
+    'OSC_PAYPAL_ACDC_ERROR_MISSING_EXDATE'          => 'Please enter the expiration date',
+
     'OSC_PAYPAL_PUI_HELP'                          => 'To process the invoice, we need your date of birth and a valid telephone number with city- or country code (e.g. 030 123456789 or +49 30 123456789)',
     'OSC_PAYPAL_PUI_BIRTHDAY'                      => 'Birthday',
     'OSC_PAYPAL_PUI_BIRTHDAY_PLACEHOLDER'          => '01.01.1970',

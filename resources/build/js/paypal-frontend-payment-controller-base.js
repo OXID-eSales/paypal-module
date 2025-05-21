@@ -18,7 +18,7 @@
                 ],
                 experience_context: {
                     return_url: PayPalPayment.getConfigValue('updateOxUserWithPayPalCustomerIdUrl'),
-                    cancel_url: PayPalPayment.getConfigValue('shopOrderDeleteUrl')
+                    cancel_url: PayPalPayment.getConfigValue('shopOrderCancelUrl')
                 }
             };
 
@@ -38,7 +38,7 @@
 
         this.setShopOrderData = async function (response, orderType) {
             if (null !== this.currentOrder.shop) {
-                await PayPalPayment.deleteOrder().then(function (data) {
+                await PayPalPayment.cancelOrder().then(function (data) {
                     PayPalPayment.resetCurrentOrder();
                 });
             }
@@ -154,13 +154,13 @@
             window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
         };
 
-        this.deleteOrder = async function () {
+        this.cancelOrder = async function () {
             let shopOrderId = PayPalPayment.getCurrentOrderOxid();
             if (null == shopOrderId){
                 return;
             }
 
-            await PayPalPayment.backendRequest('shopOrderDeleteUrl', {}, {
+            await PayPalPayment.backendRequest('shopOrderCancelUrl', {}, {
                 'shopOrderId': PayPalPayment.getCurrentOrderOxid()
             });
 
@@ -168,28 +168,22 @@
         };
 
         this.handleError = async function (data) {
-            PayPalPayment.buttonControll('disabled', false);
+            PayPalPayment.buttonControl('disabled', false);
 
             let shopOrderId = PayPalPayment.getCurrentOrderOxid();
             if (null == shopOrderId){
                 return;
             }
 
-            await PayPalPayment.backendRequest('shopOrderErrorUrl', {}, {
+            /*await PayPalPayment.backendRequest('shopOrderErrorUrl', {}, {
                 'shopOrderId': PayPalPayment.getCurrentOrderOxid()
-            });
-            await PayPalPayment.deleteOrder().then(function (response) {
-                if (response.status === 'success') {
-                    PayPalPayment.resetCurrentOrder();
-                }
-            });
+            });*/
 
-            window.location = PayPalPayment.getConfigValue('shopOrderErrorUrl');
+            await PayPalPayment.cancelOrder();
         };
 
         // Common backend request method
         this.backendRequest = async function (urlSlug, headers, body) {
-            console.log(urlSlug, body);
             let response = await fetch(PayPalPayment.getConfigValue(urlSlug), {
                 method: 'post',
                 headers: Object.assign({
@@ -218,7 +212,7 @@
             return result;
         };
 
-        this.buttonControll = function (property, value) {
+        this.buttonControl = function (property, value) {
             const submitButton = document.querySelector(PayPalPayment.config.buttonSelector);
             if (undefined !== submitButton[property]) {
                 submitButton[property] = value;

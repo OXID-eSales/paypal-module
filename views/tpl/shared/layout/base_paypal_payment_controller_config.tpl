@@ -18,7 +18,7 @@
     <script>
         const PayPalPaymentControllerConfiguratorDefaults = {
             shopOrderErrorUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=logError&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
-            shopOrderDeleteUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=cancelShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+            shopOrderCancelUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=cancelShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             payPalOrderDetailsUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=fetchPayPalOrderDetails&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             errorLogUrl: '[{$sSelfLink|cat:"cl=payment&payerror=2&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             shopThankYouPageUrl: '[{$sSelfLink|cat:"cl=thankyou&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
