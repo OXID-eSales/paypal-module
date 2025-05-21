@@ -31,12 +31,8 @@ class VaultingService extends BaseService
         $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
 
         $params = [
-            'response_type'    => 'id_token',
-            'grant_type' => 'client_credentials',
-            'scope' => implode(' ', [
-                'https://uri.paypal.com/services/vault/payment-tokens/readwrite',
-                'https://uri.paypal.com/services/payment_source/token'
-            ])
+            'response_type' => 'id_token',
+            'grant_type'    => 'client_credentials',
         ];
 
         if ($payPalCustomerId) {

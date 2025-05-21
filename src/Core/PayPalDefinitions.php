@@ -243,7 +243,7 @@ final class PayPalDefinitions
             'onlybrutto' => false,
             'buttonpayment' => true,
             'defaulton' => false,
-            'deprecated' => true,
+            'deprecated' => false,
             'paymentsource' => self::PAYMENT_SOURCE_PAYPAL
         ],
         self::ACDC_PAYPAL_PAYMENT_ID => [
