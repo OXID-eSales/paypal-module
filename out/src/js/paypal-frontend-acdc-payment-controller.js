@@ -58,6 +58,7 @@
                 e.stopPropagation();
                 e.preventDefault();
                 PayPalPayment.buttonControl('disabled', true);
+                window.history.pushState(null, ""); // needed to trigger the popstate event
                 if (PayPalPayment.config.vaultedPaymentSource) {
                     PayPalPayment.createOrder();
                 }
@@ -99,20 +100,19 @@
 
         this.isCardFieldInvalid = function (name)
         {
-            return
+            return false === PayPalPayment.cardFieldsState.fields[name].isValid;
+
          //   null !== PayPalPayment.cardFieldsState.fields[name].isValid &&
             //true !== PayPalPayment.cardFieldsState.fields[name].isValid
-            false === PayPalPayment.cardFieldsState.fields[name].isValid
         }
 
         this.validateCardFields = function () {
-            let valid = true;
             this.removeErrorMessage(); //clear all errors
 
             if (PayPalPayment.isCardFieldInvalid('cardNumberField')) {
                 this.showErrorMessage(PayPalI18n.OSC_PAYPAL_ACDC_ERROR_MISSING_NUMBER,
                     'cardNumberError');
-                valid = false;
+                return false;
             } else {
                 this.removeErrorMessage('cardNumberError');
             }
@@ -120,7 +120,7 @@
             if (PayPalPayment.isCardFieldInvalid('cardExpiryField')) {
                 this.showErrorMessage(PayPalI18n.OSC_PAYPAL_ACDC_ERROR_MISSING_EXDATE,
                     'cardExpiryError');
-                valid = false;
+                return false;
             } else {
                 this.removeErrorMessage('cardExpiryError');
             }
@@ -128,7 +128,7 @@
             if (PayPalPayment.isCardFieldInvalid('cardCvvField')) {
                 this.showErrorMessage(PayPalI18n.OSC_PAYPAL_ACDC_ERROR_MISSING_CVV,
                     'cardCvvError');
-                valid = false;
+                return false;
             } else {
                 this.removeErrorMessage('cardCvvError');
             }
@@ -136,12 +136,12 @@
             if (PayPalPayment.isCardFieldInvalid('cardNameField')) {
                 this.showErrorMessage(PayPalI18n.OSC_PAYPAL_ACDC_ERROR_MISSING_NAME,
                     'cardNameError');
-                valid = false;
+                return false;
             } else {
                 this.removeErrorMessage('cardNameError');
             }
 
-            return valid;
+            return true;
         };
 
         this.renderCardFields = function () {
@@ -163,14 +163,13 @@
                 inputEvents: {
                     onChange: (data) => {
                         PayPalPayment.cardFieldsState = data;
-                        //PayPalPayment.buttonControl('disabled', !PayPalPayment.validateCardFields());
+                        //PayPalPayment.buttonControl('disabled', PayPalPayment.validateCardFields());
                     }
                 }
             });
 
             // Helper-Function to read the calculated CSS properties of an element
             function getComputedStylesAsObject(selector) {
-                // Find element
                 const element = document.querySelector(selector);
                 if (!element) {
                     return {};
@@ -185,7 +184,7 @@
                 // List of properties you want to adopt
                 const relevantProperties = [
                     'color', 'font-size', 'font-family', 'font-weight',
-                    'background-color', 'border', 'border-radius', 'padding',
+                    'border', 'border-radius', 'padding',
                     'box-shadow', 'height', 'line-height'
                 ];
 
@@ -244,6 +243,7 @@
                         debugger
                         // Validate fields before submission
                         if (!PayPalPayment.validateCardFields()) {
+                            PayPalPayment.buttonControl('disabled', false);
                             return;
                         }
 
@@ -259,6 +259,10 @@
         return this.init();
     };
 
+    window.addEventListener('popstate', function (e) {
+        debugger
+    });
+
     window.addEventListener('load', function () {
         if (typeof PayPalPaymentControllerConfig === 'object') {
             if (PayPalPaymentControllerConfig.paymentId !== 'oscpaypal_acdc') {
@@ -267,7 +271,6 @@
 
             window.PayPalPayment = new PayPalACDCPaymentController();
             window.PayPalPayment.renderCardFields();
-            PayPalPayment.buttonControl('disabled', true);
         }
     });
 })();

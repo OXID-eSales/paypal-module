@@ -214,7 +214,7 @@ class AjaxPaymentController extends ProxyController
             'Current user do not have permission to cancel referenced order'
         );
 
-        PayPalSession::unsetPayPalSession();
+        //PayPalSession::unsetPayPalSession();
 
         /** @var PayPalOrder $order */
         $order = oxNew(Order::class);
