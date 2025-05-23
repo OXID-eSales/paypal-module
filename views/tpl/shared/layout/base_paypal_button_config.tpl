@@ -19,6 +19,11 @@
                 OSC_PAYPAL_ACDC_CARD_EXDATE : "[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_EXDATE"}]",
                 OSC_PAYPAL_ACDC_CARD_CVV : "[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_CVV"}]",
                 OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD : "[{oxmultilang ident="OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD"}]",
+                OSC_PAYPAL_ACDC_ERROR_MISSING_NAME: "[{oxmultilang ident="OSC_PAYPAL_ACDC_ERROR_MISSING_NAME"}]",
+                OSC_PAYPAL_ACDC_ERROR_MISSING_NUMBER: "[{oxmultilang ident="OSC_PAYPAL_ACDC_ERROR_MISSING_NUMBER"}]",
+                OSC_PAYPAL_ACDC_ERROR_MISSING_CVV: "[{oxmultilang ident="OSC_PAYPAL_ACDC_ERROR_MISSING_CVV"}]",
+                OSC_PAYPAL_ACDC_ERROR_MISSING_EXDATE: "[{oxmultilang ident="OSC_PAYPAL_ACDC_ERROR_MISSING_EXDATE"}]",
+                OSC_PAYPAL_ACDC_ERROR_INBOX: "[{oxmultilang ident="OSC_PAYPAL_ACDC_ERROR_INBOX"}]",
             }
         }
 
@@ -27,7 +32,7 @@
         const PayPalExpressSessionConfigurator = function(){
             return {
                 cancelPayPalExpressSession: async function (){
-                    await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
+                    await fetch('[{$sSelfLink|cat:"cl=ajaxpay&fnc=cancelPayPalSession"}]');
                 },
                 started: false
             }

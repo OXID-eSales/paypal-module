@@ -10,7 +10,7 @@
                     experience_context : {
                         shipping_preference: "SET_PROVIDED_ADDRESS",
                         return_url: PayPalPayment.getConfigValue("updateOxUserWithPayPalCustomerIdUrl"),
-                        cancel_url: PayPalPayment.getConfigValue("shopOrderDeleteUrl")
+                        cancel_url: PayPalPayment.getConfigValue("shopOrderCancelUrl")
                     }
                 }
             };
@@ -58,7 +58,7 @@
             const buttonSettings = {
                 createOrder: PayPalPayment.createOrder,
                 onApprove: PayPalPayment.handlePaymentAuthorization,
-                onCancel: PayPalPayment.deleteOrder,
+                onCancel: PayPalPayment.cancelOrder,
                 onError: PayPalPayment.handleError
             };
 

@@ -78,6 +78,7 @@ class OrderController extends OrderController_parent
     {
         $session = Registry::getSession();
         $lang = Registry::getLang();
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
         if ($session->getVariable('oscpaypal_payment_redirect')) {
             $session->deleteVariable('oscpaypal_payment_redirect');
@@ -88,9 +89,8 @@ class OrderController extends OrderController_parent
         }
 
         $this->addTplParam('oscpaypal_executing_order', false);
-        $isRetry = $this->renderRetryOrderExecution();
+            $isRetry = $this->renderRetryOrderExecution();
 
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
         if (!$isRetry && $paymentService->isOrderExecutionInProgress()) {
             $displayError = oxNew(DisplayError::class);
             $displayError->setMessage('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS');
@@ -106,6 +106,7 @@ class OrderController extends OrderController_parent
         ) {
             $paymentService->removeTemporaryOrder();
         }
+
 
         $user = $this->getUser();
 
