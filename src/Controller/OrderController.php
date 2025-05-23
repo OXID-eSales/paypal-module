@@ -78,6 +78,7 @@ class OrderController extends OrderController_parent
     {
         $session = Registry::getSession();
         $lang = Registry::getLang();
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
         if ($session->getVariable('oscpaypal_payment_redirect')) {
             $session->deleteVariable('oscpaypal_payment_redirect');
@@ -87,16 +88,21 @@ class OrderController extends OrderController_parent
             );
         }
 
-        $this->addTplParam('oscpaypal_executing_order', false);
-        $isRetry = $this->renderRetryOrderExecution();
+        /*
+        @TODO confirm if this part is needed, removed it or refactor accordingly to JS mechanisms
+        I think this is not needed anymore, because the order is created in JS and we do not need
+        to cover reloading of the page
 
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $this->addTplParam('oscpaypal_executing_order', false);
+            $isRetry = $this->renderRetryOrderExecution();
+
         if (!$isRetry && $paymentService->isOrderExecutionInProgress()) {
             $displayError = oxNew(DisplayError::class);
             $displayError->setMessage('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS');
             Registry::getUtilsView()->addErrorToDisplay($displayError);
             $this->addTplParam('oscpaypal_executing_order', true);
         }
+        */
 
         if (
             $paymentService->getSessionPaymentId() === PayPalDefinitions::SEPA_PAYPAL_PAYMENT_ID
@@ -106,6 +112,7 @@ class OrderController extends OrderController_parent
         ) {
             $paymentService->removeTemporaryOrder();
         }
+
 
         $user = $this->getUser();
 

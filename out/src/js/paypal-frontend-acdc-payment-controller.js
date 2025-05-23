@@ -32,9 +32,6 @@
                 }
             }
 
-            document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...result.shopOrder}})));
-            document.dispatchEvent(new CustomEvent('payPalOrderCreated', new Object({detail: {...result.payPalOrder}})));
-
             return result.payPalOrder.id;
         };
 
@@ -84,7 +81,7 @@
             // Remove existing error if present
             this.removeErrorMessage(className);
 
-            // Create and display new error message
+            // Create and display a new error message
             const errorMessage = document.createElement("div");
             errorMessage.className = "error-message alert alert-danger " + className;
             errorMessage.textContent = message;
@@ -96,14 +93,10 @@
             });
         };
 
-
-
         this.isCardFieldInvalid = function (name)
         {
-            return false === PayPalPayment.cardFieldsState.fields[name].isValid;
-
-         //   null !== PayPalPayment.cardFieldsState.fields[name].isValid &&
-            //true !== PayPalPayment.cardFieldsState.fields[name].isValid
+            let valid = PayPalPayment.cardFieldsState.fields[name].isValid;
+            return false === valid || null === valid ;
         }
 
         this.validateCardFields = function () {
@@ -163,7 +156,7 @@
                 inputEvents: {
                     onChange: (data) => {
                         PayPalPayment.cardFieldsState = data;
-                        //PayPalPayment.buttonControl('disabled', PayPalPayment.validateCardFields());
+                        PayPalPayment.buttonControl('disabled', false);
                     }
                 }
             });
@@ -240,12 +233,13 @@
                 if (submitButton) {
 
                     submitButton.addEventListener("click", () => {
-                        debugger
                         // Validate fields before submission
                         if (!PayPalPayment.validateCardFields()) {
                             PayPalPayment.buttonControl('disabled', false);
                             return;
                         }
+
+                        PayPalPayment.paypalOverlayWatcher();
 
                         cardFields.submit().catch(err => {
                             console.info('Error submitting card fields:', err);
@@ -259,8 +253,10 @@
         return this.init();
     };
 
-    window.addEventListener('popstate', function (e) {
-        debugger
+    document.addEventListener('paypalOverlayClosed', function() {
+        PayPalPayment.cancelOrder().then((e) => {
+            PayPalPayment.buttonControl('disabled', false);
+        });
     });
 
     window.addEventListener('load', function () {
