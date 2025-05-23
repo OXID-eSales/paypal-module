@@ -88,11 +88,6 @@ class OrderController extends OrderController_parent
             );
         }
 
-        /*
-        @TODO confirm if this part is needed, removed it or refactor accordingly to JS mechanisms
-        I think this is not needed anymore, because the order is created in JS and we do not need
-        to cover reloading of the page
-
         $this->addTplParam('oscpaypal_executing_order', false);
             $isRetry = $this->renderRetryOrderExecution();
 
@@ -102,7 +97,6 @@ class OrderController extends OrderController_parent
             Registry::getUtilsView()->addErrorToDisplay($displayError);
             $this->addTplParam('oscpaypal_executing_order', true);
         }
-        */
 
         if (
             $paymentService->getSessionPaymentId() === PayPalDefinitions::SEPA_PAYPAL_PAYMENT_ID
