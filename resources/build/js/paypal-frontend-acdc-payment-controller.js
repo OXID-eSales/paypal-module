@@ -55,7 +55,6 @@
                 e.stopPropagation();
                 e.preventDefault();
                 PayPalPayment.buttonControl('disabled', true);
-                window.history.pushState(null, ""); // needed to trigger the popstate event
                 if (PayPalPayment.config.vaultedPaymentSource) {
                     PayPalPayment.createOrder();
                 }
