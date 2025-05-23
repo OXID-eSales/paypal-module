@@ -23,7 +23,6 @@
             }
 
             document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...result.shopOrder}})));
-            document.dispatchEvent(new CustomEvent('payPalOrderCreated', new Object({detail: {...result.payPalOrder}})));
 
             if (result.payPalOrder.status === 'PAYER_ACTION_REQUIRED' || result.payPalOrder.status === 'APPROVED' ){
                 for (const i in result.payPalOrder.links) {
