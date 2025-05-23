@@ -66,13 +66,12 @@
             className = className || '';
             const panelBody = document.querySelector("#orderPayment .panel-body");
             if (panelBody) {
-                const existingError = panelBody.querySelector(".error-message"
-                    + (className ? '.'+className : ''));
+                const existingError = panelBody.querySelector(".error-message" + (className ? '.' + className : ''));
                 if (existingError) {
                     existingError.remove();
                 }
             }
-        }
+        };
 
         this.showErrorMessage = function (message, className) {
             className = className || '';
@@ -97,7 +96,7 @@
         {
             let valid = PayPalPayment.cardFieldsState.fields[name].isValid;
             return false === valid || null === valid ;
-        }
+        };
 
         this.validateCardFields = function () {
             this.removeErrorMessage(); //clear all errors
