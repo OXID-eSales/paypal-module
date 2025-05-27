@@ -9,6 +9,7 @@
         };
 
         this.currentOrder = null;
+        this.reactOnPayPalOverlayClosed = false;
 
         this.getPurchaseUnits = function () {
             let purchaseUnits = {
@@ -259,6 +260,8 @@
                 });
             });
             observer.observe(document.body, config);
+
+            PayPalPayment.reactOnPayPalOverlayClosed = true;
 
             return observer;
         };
