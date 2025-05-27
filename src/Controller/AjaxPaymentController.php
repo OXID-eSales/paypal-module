@@ -214,8 +214,6 @@ class AjaxPaymentController extends ProxyController
             'Current user do not have permission to cancel referenced order'
         );
 
-        //PayPalSession::unsetPayPalSession();
-
         /** @var PayPalOrder $order */
         $order = oxNew(Order::class);
         $order->load($shopOrderId);
@@ -230,6 +228,8 @@ class AjaxPaymentController extends ProxyController
         $order->cancelOrder();
         $order->markOrderPaymentFailed();
         $order->save();
+
+        Registry::getSession()->deleteVariable('sess_challenge'); //session cleanup
 
         $this->outputJson([
             'status' => 'success'
@@ -325,9 +325,12 @@ class AjaxPaymentController extends ProxyController
 
         $basket = Registry::getSession()->getBasket();
         $order = oxNew(Order::class);
+        Registry::getSession()->deleteVariable('sess_challenge');
 
-        //finalizing ordering process (validating, storing order into DB, setting status)
+        //finalizing an ordering process (validating, storing order into DB, setting status)
         $success = $order->finalizePayPalOrder($basket, $user, false);
+
+        Registry::getSession()->setVariable('sess_challenge', $basket->getOrderId());
 
         // performing special actions after user finishes order (assignment to special user groups)
         $user->onOrderExecute($basket, $success);

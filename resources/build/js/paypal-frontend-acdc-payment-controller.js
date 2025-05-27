@@ -37,6 +37,8 @@
         };
 
         this.captureOrder = async function (data, actions) {
+            //if we managed to get at this stage, closing the overlay not suppose to be watched anymore
+            PayPalPayment.reactOnPayPalOverlayClosed = false;
             let result = await PayPalPayment.backendRequest('shopOrderCaptureUrl', {}, {
                 'orderId': data.orderID
             });
@@ -253,6 +255,10 @@
     };
 
     document.addEventListener('paypalOverlayClosed', function() {
+        //in some cases we shouldn't go forward
+        if (true !== PayPalPayment.reactOnPayPalOverlayClosed) {
+            return;
+        }
         PayPalPayment.cancelOrder().then((e) => {
             PayPalPayment.buttonControl('disabled', false);
         });

@@ -68,7 +68,14 @@
             const paymentDataRequest = await PayPalPayment.getGooglePaymentDataRequest();
             paymentDataRequest.transactionInfo = PayPalPayment.getGoogleTransactionInfo();
             if ('function' === typeof paymentsClient.loadPaymentData) {
-                paymentsClient.loadPaymentData(paymentDataRequest);
+                try {
+                    await paymentsClient.loadPaymentData(paymentDataRequest);
+                } catch (err) {
+                    // user cancels code
+                    if (err.code === 20 ) {
+                        await PayPalPayment.cancelOrder();
+                    }
+                }
             }
         };
 
