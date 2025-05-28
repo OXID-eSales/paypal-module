@@ -21,6 +21,5 @@
             document.getElementById('orderConfirmAgbBottom').submit();
         </script>
     [{/if}]
-    [{include file='@osc_paypal/frontend/layout/base_paypal_button_config.tpl'}]
+    [{include file='@osc_paypal/frontend/blocks/layout/base_paypal_button_config.tpl'}]
 [{/if}]
-

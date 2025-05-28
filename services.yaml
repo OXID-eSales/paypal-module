@@ -55,7 +55,3 @@ services:
   OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface:
     class:  OxidSolutionCatalysts\PayPal\Service\SCAValidator
     public: true
-
-  OxidSolutionCatalysts\PayPal\Service\TwigExtension:
-    class:  OxidSolutionCatalysts\PayPal\Service\TwigExtension
-    tags: ['twig.extension']
