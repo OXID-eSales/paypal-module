@@ -230,6 +230,7 @@ class AjaxPaymentController extends ProxyController
         $order->save();
 
         Registry::getSession()->deleteVariable('sess_challenge'); //session cleanup
+        PayPalSession::unsetPayPalSession();
 
         $this->outputJson([
             'status' => 'success'
