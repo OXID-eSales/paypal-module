@@ -5,18 +5,35 @@
 
         // PayPal-specific payment source configuration
         this.getPaymentSource = function () {
-            return {
-                "paypal": {
-                    "attributes": {
-                        "vault": {
-                            "store_in_vault": "ON_SUCCESS",
-                            "usage_type": "MERCHANT",
-                            "customer_type": "CONSUMER",
-                            "permit_multiple_payment_tokens": true
-                        }
-                    },
+            let paymentSource = {
+                paypal: {
+                    experience_context : {
+                        shipping_preference: "SET_PROVIDED_ADDRESS",
+                        return_url: PayPalPayment.getConfigValue("updateOxUserWithPayPalCustomerIdUrl"),
+                        cancel_url: PayPalPayment.getConfigValue("shopOrderCancelUrl")
+                    }
                 }
             };
+
+            return PayPalPayment.currentOrder.vaultPayment ?
+                PayPalPayment.modifyPaymentSourceForVaulting(paymentSource) :
+                paymentSource;
+        };
+
+        this.modifyPaymentSourceForVaulting = function(paymentSource)
+        {
+            paymentSource.paypal.attributes = Object.assign(paymentSource.paypal.attributes || {},
+                {
+                    vault: {
+                        store_in_vault: "ON_SUCCESS",
+                        usage_type: "MERCHANT",
+                        customer_type: "CONSUMER",
+                        permit_multiple_payment_tokens: true
+                    }
+                }
+            );
+
+            return paymentSource;
         };
 
         // PayPal-specific order creation
@@ -41,7 +58,7 @@
             const buttonSettings = {
                 createOrder: PayPalPayment.createOrder,
                 onApprove: PayPalPayment.handlePaymentAuthorization,
-                onCancel: PayPalPayment.deleteOrder,
+                onCancel: PayPalPayment.cancelOrder,
                 onError: PayPalPayment.handleError
             };
 

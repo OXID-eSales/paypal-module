@@ -140,14 +140,10 @@ class PatchRequestFactory
             return null;
         }
 
-        $basketItems = $this->basket->getContents();
+        $patchValues = [];
         $language = Registry::getLang();
 
-        $patch = new Patch();
-        $patch->op = Patch::OP_REPLACE;
-        $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/items";
-        $patchValues = [];
-
+        $basketItems = $this->basket->getContents();
         /** @var BasketItem $basketItem */
         foreach ($basketItems as $basketItem) {
             $item = new Item();
@@ -231,6 +227,14 @@ class PatchRequestFactory
             $item->quantity = '1';
             $patchValues[] = $item;
         }
+
+        if (!count($patchValues)) {
+            return null;
+        }
+
+        $patch = new Patch();
+        $patch->op = Patch::OP_REPLACE;
+        $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/items";
 
         $patch->value = $patchValues;
 

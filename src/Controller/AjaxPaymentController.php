@@ -74,11 +74,16 @@ class AjaxPaymentController extends ProxyController
             ]);
         }
 
+        PayPalSession::unsetPayPalSession();
         $this->outputJson([
             'status' => 'success'
         ]);
     }
 
+    public function cancelPayPalSession(): void
+    {
+        PayPalSession::unsetPayPalSession();
+    }
     /**
      * @psalm-suppress InternalMethod
      */
@@ -191,6 +196,7 @@ class AjaxPaymentController extends ProxyController
 
     /**
      * @throws JsonException
+     * @throws \Exception
      */
     public function cancelShopOrder(): void
     {
@@ -218,6 +224,11 @@ class AjaxPaymentController extends ProxyController
         ));
 
         $order->cancelOrder();
+        $order->markOrderPaymentFailed();
+        $order->save();
+
+        Registry::getSession()->deleteVariable('sess_challenge'); //session cleanup
+        PayPalSession::unsetPayPalSession();
 
         $this->outputJson([
             'status' => 'success'
@@ -227,6 +238,7 @@ class AjaxPaymentController extends ProxyController
     public function patchShopOrder(): void
     {
         $data = $this->getRequestParameters();
+        $vaultPayment = filter_var($data['vaultPayment'], FILTER_VALIDATE_BOOLEAN);
         $shopOrderId = $data['shopOrderId'];
         $this->permissionsCheck($shopOrderId);
 
@@ -286,7 +298,10 @@ class AjaxPaymentController extends ProxyController
             ]);
         }
 
+        if($vaultPayment) {
+            //assuming that if there is no error during the request and vaulted was requested it went fine
         Registry::getSession()->setVariable("vaultSuccess", true);
+        }
 
         $this->outputJson([
             'status' => 'success',
@@ -309,10 +324,12 @@ class AjaxPaymentController extends ProxyController
 
         $basket = Registry::getSession()->getBasket();
         $order = oxNew(Order::class);
+        Registry::getSession()->deleteVariable('sess_challenge');
 
-        //finalizing ordering process (validating, storing order into DB, setting status)
+        //finalizing an ordering process (validating, storing order into DB, setting status)
         $success = $order->finalizePayPalOrder($basket, $user, false);
 
+        Registry::getSession()->setVariable('sess_challenge', $basket->getOrderId());
         // performing special actions after user finishes order (assignment to special user groups)
         $user->onOrderExecute($basket, $success);
 

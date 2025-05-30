@@ -10,9 +10,8 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Controller\PaymentController;
-use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
-use OxidSolutionCatalysts\PayPal\Core\PayPalRequestAmountFactory;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPal\Traits\CustomerAddressHelper;
 
 /**
  * Used to generate purchase_units that are transfered in JS request to create PayPal Order
@@ -22,6 +21,9 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalRequestAmountFactory;
  */
 class PayPalPurchaseUnitsFactory
 {
+    use ServiceContainer;
+    use CustomerAddressHelper;
+
     /**
      * @var object|\OxidEsales\Eshop\Application\Model\Basket|null
      */
@@ -79,6 +81,38 @@ class PayPalPurchaseUnitsFactory
             $purchaseUnits['items'] = $items;
         }
 
+        $purchaseUnits = $this->addDeliveryAddress($purchaseUnits);
+
         return json_encode($purchaseUnits);
+    }
+
+    /**
+     * @param array $purchaseUnits
+     * @return array
+     */
+    public function addDeliveryAddress(array $purchaseUnits): array
+    {
+        $user = oxNew(\OxidEsales\Eshop\Application\Model\User::class);
+        if ($user->loadActiveUser()) {
+            $country = $this->getCountryFromBasket($this->basket);
+
+            $shipping = [
+                'name' => [
+                    'full_name' => $user->oxuser__oxfname . ' ' . $user->oxuser__oxlname
+                ],
+
+                'address' => [
+                    'address_line_1' => $user->oxuser__oxstreet->value,
+                    'address_line_2' => $user->oxuser__oxstreetnr->value,
+                    'admin_area_2' => $user->oxuser__oxcity->value,
+                    'admin_area_1' => $user->oxuser__oxstateid->value,
+                    'postal_code' => $user->oxuser__oxzip->value,
+                    'country_code' => $country->getFieldData('oxisoalpha2'),
+                ]
+            ];
+            $purchaseUnits['shipping'] = $shipping;
+        }
+
+        return $purchaseUnits;
     }
 }

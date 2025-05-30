@@ -1,38 +1,43 @@
 [{assign var="payment" value=$oView->getPayment()}]
-[{if "oscpaypal" == $payment->getId()}]
-    <input type="hidden" name="vaultPayment" id="oscPayPalVaultPayment" value="">
-    [{capture name="oscpaypal_madClickPrevention"}]
-        const submitButton = document.querySelector('#orderConfirmAgbBottom .submitButton');
-        const orderConfirmAgbBottom = document.getElementById('orderConfirmAgbBottom');
-
-        submitButton.addEventListener('click', function(event) {
-            event.preventDefault();
-
-            // Create CustomEvent and check if it was canceled
-            const submitEvent = new CustomEvent('submit', {cancelable: true});
-            const eventNotCancelled = orderConfirmAgbBottom.dispatchEvent(submitEvent);
-
-            // Only deactivate the button if the validation was successful (event not canceled)
-            if (eventNotCancelled) {
-                this.disabled = true;
-                orderConfirmAgbBottom.submit();
-            }
-        });
+[{assign var="paymentId" value=$payment->getId()}]
+[{assign var="oConfig" value=$oViewConf->getConfig()}]
+[{assign var="PayPalSDKJS" value=$oConfig->getGlobalParameter("PayPalSDKJS")}]
+[{if !$PayPalSDKJS}]
+    [{capture assign="PayPalSDKJS"}]
+        [{assign var="commitFlow" value=false}]
+        [{if "oscpaypal" == $paymentId}]
+            [{assign var="commitFlow" value=true}]
+        [{/if}]
+        [{include file="@osc_paypal/frontend/shared/layout/base_js.tpl" commitFlow=$commitFlow}]
     [{/capture}]
-    [{oxscript add=$smarty.capture.oscpaypal_madClickPrevention}]
+    [{$oConfig->setGlobalParameter("PayPalSDKJS", $PayPalSDKJS)}]
 [{/if}]
-[{if "oscpaypal_pui" == $payment->getId()}]
+[{if "oscpaypal_acdc" == $paymentId}]
+    <button id="[{$paymentId}]" type="button" class="btn btn-lg btn-primary float-right pull-right submitButton nextStep largeButton">
+        <i class="fa fa-check"></i> [{oxmultilang ident="SUBMIT_ORDER"}]
+    </button>
+[{/if}]
+
+[{if "oscpaypal" == $paymentId}]
+    <div id="[{$paymentId}]" class="paypal-button-container [{$buttonClass}] float-right pull-right"></div>
+[{/if}]
+
+[{if "oscpaypal_pui" == $paymentId}]
     [{if $oViewConf->isFlowCompatibleTheme()}]
-        [{include file="@osc_paypal/frontend/flow/checkout_order_btn_submit_bottom.tpl"}]
+        [{include file="modules/osc/paypal/checkout_order_btn_submit_bottom_flow.tpl"}]
     [{else}]
-        [{include file="@osc_paypal/frontend/wave/checkout_order_btn_submit_bottom.tpl"}]
+        [{include file="modules/osc/paypal/checkout_order_btn_submit_bottom_wave.tpl"}]
     [{/if}]
 [{/if}]
-[{if "oscpaypal_googlepay" == $payment->getId()}]
-    [{include file="@osc_paypal/frontend/shared/googlepay.tpl" buttonClass="paypal-button-wrapper large"}]
-[{elseif "oscpaypal_applepay" == $payment->getId()}]
-    [{include file="@osc_paypal/frontend/shared/applepay.tpl" paymentId=$payment->getId() buttonClass="paypal-button-wrapper large"}]
+
+[{if "oscpaypal_googlepay" == $paymentId}]
+    [{include file="modules/osc/paypal/googlepay.tpl" buttonClass="paypal-button-wrapper large"}]
+[{elseif "oscpaypal_applepay" == $paymentId}]
+    [{include file="modules/osc/paypal/applepay.tpl" paymentId=$paymentId buttonClass="paypal-button-wrapper large"}]
     <div id="applepay-container" class="paypal-button-container paypal-button-wrapper paypal-button-right large"></div>
-[{else}]
+[{elseif
+    "oscpaypal" != $paymentId &&
+    "oscpaypal_acdc" != $paymentId
+}]
     [{$smarty.block.parent}]
 [{/if}]

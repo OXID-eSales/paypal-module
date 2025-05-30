@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use DateTime;
+use JsonException;
 use JsonSerializable;
 use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberFormat;
@@ -26,7 +27,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderApplicationContext;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderExperienceContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
@@ -38,7 +39,7 @@ use OxidSolutionCatalysts\PayPalApi\Pui\ExperienceContext;
 use OxidSolutionCatalysts\PayPalApi\Pui\PuiPaymentSource;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
-use stdClass;
+use OxidSolutionCatalysts\PayPal\Traits\CustomerAddressHelper;
 
 /**
  * Class OrderRequestBuilder
@@ -47,6 +48,7 @@ use stdClass;
 class OrderRequestFactory
 {
     use ServiceContainer;
+    use CustomerAddressHelper;
 
     /**
      * After you redirect the customer to the PayPal payment page, a Continue button appears.
@@ -101,18 +103,30 @@ class OrderRequestFactory
         $setVaulting = $moduleSettings->getIsVaultingActive();
         $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
         $paymentId = Registry::getSession()->getVariable('paymentid');
+        $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName($paymentId);
+
         if ($paymentId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID) {
-            $request->payment_source = $this->getGooglePayPaymentSource($basket, 'google_pay');
+            $request->payment_source = $this->getSimplePaymentSource($basket, $paymentSourceId);
         }
+
         if ($paymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID) {
-            $request->payment_source = $this->getApplePayPaymentSource($basket, 'apple_pay');
+            $request->payment_source = $this->getSimplePaymentSource($basket, $paymentSourceId);
         }
+
+        if (PayPalDefinitions::isUAPMPayment($paymentId)) {
+            if ($paymentId === PayPalDefinitions::PRZELEWY24_PAYPAL_PAYMENT_ID) {
+                $request->payment_source = $this->getSimplePaymentSourceWithEMail($basket, $paymentSourceId);
+            }
+            else {
+                $request->payment_source = $this->getSimplePaymentSource($basket, $paymentSourceId);
+            }
+        }
+
         $request->intent = $intent;
         $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $withItems);
-
         $useVaultedPayment = $setVaulting && !is_null($selectedVaultPaymentSourceIndex);
+
         if ($useVaultedPayment) {
-            $config = Registry::getConfig();
             $vaultingService = $this->getVaultingService();
             $payPalCustomerId = $this->getUsersPayPalCustomerId();
 
@@ -121,53 +135,35 @@ class OrderRequestFactory
                 $selectedVaultPaymentSourceIndex
             );
             //find out which payment token was selected by getting the index via request param
-            $paymentType = key($selectedPaymentToken["payment_source"]);
-            $useCard = $paymentType === "card";
-
-            $this->modifyPaymentSourceForVaulting($request, $useCard);
-
-            //we use the PayPal payment type as a "dummy payment" when we use vaulted payments.
-            //therefore, we need to use a returnURL depending on the payment type.
-            if ($useCard && null === $returnUrl) {
-                $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc';
-            }
-
-            $request->application_context = $this->getExperienceContext(
-                "",
-                $returnUrl,
-                $cancelUrl,
-                false
+            $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName(
+                key($selectedPaymentToken["payment_source"])
             );
-            return $request;
-        } elseif (Registry::getRequest()->getRequestParameter("vaultPayment") === "true") {
-            $paymentType = Registry::getRequest()->getRequestParameter("oscPayPalPaymentTypeForVaulting");
-            $card = ($paymentType == PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID);
 
+            $this->modifyPaymentSourceForVaulting($request, $paymentSourceId, $returnUrl, $cancelUrl);
+            return $request;
+        }
+
+        if (Registry::getRequest()->getRequestParameter("vaultPayment") === "true") {
+            $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName(
+                Registry::getRequest()->getRequestParameter("oscPayPalPaymentTypeForVaulting")
+            );
             Registry::getSession()->setVariable("vaultSuccess", true);
-
-            $this->modifyPaymentSourceForVaulting($request, $card);
+            $this->modifyPaymentSourceForVaulting($request, $paymentSourceId, $returnUrl, $cancelUrl);
 
             return $request;
+        } else {
+            $this->modifyPaymentSourceForVaulting($request, $paymentSourceId, $returnUrl, $cancelUrl);
         }
 
         if (!$paymentSource && $basket->getUser()) {
             $request->payer = $this->getPayer();
         }
 
-        if ($userAction || $returnUrl || $cancelUrl) {
-            $request->application_context = $this->getExperienceContext(
-                $userAction,
-                $returnUrl,
-                $cancelUrl,
-                $setProvidedAddress
-            );
-        }
-
         if ($processingInstruction) {
             $request->processing_instruction = $processingInstruction;
         }
 
-        if ($paymentSource == PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME) {
+        if ($paymentSource === PayPalDefinitions::PAYMENT_SOURCE_PUI) {
             /** @var PaymentSource $puiPaymentSource */
             $puiPaymentSource = $this->getPuiPaymentSource();
             $request->payment_source = $puiPaymentSource;
@@ -175,92 +171,33 @@ class OrderRequestFactory
 
         return $request;
     }
-    protected function getApplePayPaymentSource($basket, $requestName)
+
+    protected function getSimplePaymentSource(Basket $basket, string $requestName): PaymentSource
     {
-        $user = $basket->getBasketUser();
+        $userName = $this->getUserNameFromBasket($basket);
+        $country = $this->getCountryFromBasket($basket);
 
-        $userName = $user->getFieldData('oxfname') . ' ' . $user->getFieldData('oxlname');
-
-        // get Billing CountryCode
-        $country = oxNew(Country::class);
-        $country->load($user->getFieldData('oxcountryid'));
-
-        // check possible deliveryCountry
-        $deliveryId = Registry::getSession()->getVariable("deladrid");
-        $deliveryAddress = oxNew(Address::class);
-        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
-            $country->load($deliveryAddress->getFieldData('oxcountryid'));
-        }
-        $paymentSource = new PaymentSource([
+        return new PaymentSource([
             $requestName => [
                 'name' => $userName,
                 'country_code' => $country->getFieldData('oxisoalpha2')
             ]
         ]);
-        return $paymentSource;
     }
 
-    protected function getGooglePayPaymentSource($basket, $requestName)
+    protected function getSimplePaymentSourceWithEMail(Basket $basket, string $requestName): PaymentSource
     {
-        $user = $basket->getBasketUser();
+        $userName = $this->getUserNameFromBasket($basket);
+        $country = $this->getCountryFromBasket($basket);
+        $eMail = $this->getEMailFromBasket($basket);
 
-        // get Billing CountryCode
-        $country = oxNew(Country::class);
-        $country->load($user->getFieldData('oxcountryid'));
-
-        // check possible deliveryCountry
-        $deliveryId = Registry::getSession()->getVariable("deladrid");
-        $deliveryAddress = oxNew(Address::class);
-        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
-            $country->load($deliveryAddress->getFieldData('oxcountryid'));
-        }
-        $paymentSource = new stdClass();
-
-        // Dynamically adding properties to the stdClass object
-        $paymentSource->$requestName = new stdClass();
-        $paymentSource->$requestName->attributes = new stdClass();
-        $paymentSource->$requestName->attributes->verification = new stdClass();
-        $paymentSource->$requestName->attributes->verification->method = 'SCA_ALWAYS';
-        return $paymentSource;
-    }
-
-
-    protected function getExperienceContext(
-        ?string $userAction,
-        ?string $returnUrl,
-        ?string $cancelUrl,
-        ?bool $setProvidedAddress
-    ): JsonSerializable {
-        $context = new ExperienceContext();
-        $context = $this->populateContext($context, $userAction, $returnUrl, $cancelUrl, $setProvidedAddress);;
-        return $context;
-    }
-
-    protected function populateContext(
-        JsonSerializable $context,
-        ?string $userAction,
-        ?string $returnUrl,
-        ?string $cancelUrl,
-        ?bool $setProvidedAddress
-    ): \JsonSerializable {
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $context->brand_name = $moduleSettings->getShopName();
-        $context->shipping_preference = 'GET_FROM_FILE';
-        $context->landing_page = 'LOGIN';
-        if ($userAction) {
-            $context->user_action = $userAction;
-        }
-        if ($returnUrl) {
-            $context->return_url = $returnUrl;
-        }
-        if ($cancelUrl) {
-            $context->cancel_url = $cancelUrl;
-        }
-        if ($setProvidedAddress) {
-            $context->shipping_preference = "SET_PROVIDED_ADDRESS";
-        }
-
-        return $context;
+        return new PaymentSource([
+            $requestName => [
+                'name' => $userName,
+                'email' => $eMail,
+                'country_code' => $country->getFieldData('oxisoalpha2')
+            ]
+        ]);
     }
 
     /**
@@ -573,8 +510,6 @@ class OrderRequestFactory
         $country->load($user->getFieldData('oxcountryid'));
         $countryCode = $country->oxcountry__oxisoalpha2->value;
 
-        $number = null;
-
         foreach ($userPhoneFields as $numberField => $numberType) {
             $number = $user->getFieldData($numberField);
 
@@ -644,7 +579,6 @@ class OrderRequestFactory
             $paymentSource->birth_date = $birthdate;
         }
 
-        $activeShop = Registry::getConfig()->getActiveShop();
         $experienceContext = new ExperienceContext();
         $experienceContext->brand_name = $moduleSettings->getShopName();
         $experienceContext->locale = strtolower($payer->address->country_code)
@@ -653,14 +587,23 @@ class OrderRequestFactory
         $experienceContext->customer_service_instructions[] = $moduleSettings->getInfoEMail();
         $paymentSource->experience_context = $experienceContext;
 
-        return [PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME => $paymentSource];
+        return [PayPalDefinitions::PAYMENT_SOURCE_PUI => $paymentSource];
     }
 
     /**
      * @param OrderRequest $request
+     * @param string $paymentSourceId
+     * @param string|null $returnUrl
+     * @param string|null $cancelUrl
      * @return void
+     * @throws \JsonException
      */
-    protected function modifyPaymentSourceForVaulting(OrderRequest $request, $useCard = false): void
+    protected function modifyPaymentSourceForVaulting(
+        OrderRequest $request,
+        string $paymentSourceId,
+        ?string $returnUrl = null,
+        ?string $cancelUrl = null
+    ): void
     {
         $config = Registry::getConfig();
         $vaultingService = $this->getVaultingService();
@@ -673,19 +616,37 @@ class OrderRequestFactory
             //find out which payment token was selected by getting the index via request param
             $selectedPaymentToken = $paymentTokens["payment_tokens"][$selectedVaultPaymentSourceIndex];
 
-            $request->payment_source =
-                [
-                    "paypal" =>
-                        [
-                            "vault_id" => $selectedPaymentToken["id"],
+            $newPaymentSource = [
+                $paymentSourceId => [
+                    "vault_id" => $selectedPaymentToken["id"],
+                    "attributes" => [
+                        "verification" => [
+                            "method" => "SCA_WHEN_REQUIRED",
+                            "_comment" => "SCA_ALWAYS to force otherwise use SCA_WHEN_REQUIRED"
+                        ],
+                        "customer" => [
+                            "id" => $payPalCustomerId
                         ]
-                ];
+                    ],
+                    "stored_credential" => [
+                        "payment_initiator" => "CUSTOMER",
+                        "payment_type" => "UNSCHEDULED",
+                        "usage" => "SUBSEQUENT"
+                    ],
+                    "experience_context" => [
+                        "return_url" => $returnUrl,
+                        "cancel_url" => $cancelUrl
+                    ]
+                ]
+            ];
+            $request->payment_source = $newPaymentSource;
+
         } elseif ($user = $config->getUser()) {
             //save during purchase
             $paypalCustomerId = $user->getFieldData("oscpaypalcustomerid");
 
-            if ($useCard) {
-                $newPaymentSource = $vaultingService->getPaymentSourceForVaulting(true);
+            if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
+                $newPaymentSource = $vaultingService->getPaymentSourceForVaulting($paymentSourceId);
                 $newPaymentSource["attributes"] = [
                     "verification" => [
                         "method" => "SCA_WHEN_REQUIRED"
@@ -695,38 +656,47 @@ class OrderRequestFactory
                     ],
                 ];
 
-                if ($paypalCustomerId) {
-                    $newPaymentSource["card"]["attributes"]["customer"] = [
-                        "id" => $paypalCustomerId
-                    ];
-                }
-            } else {
-                $newPaymentSource = [
-                    "paypal" =>
-                        [
-                            "attributes" =>
-                                [
-                                    "vault" =>
-                                        PayPalDefinitions::PAYMENT_VAULTING
-                                ],
-                            "experience_context" =>
-                                [
-                                    "return_url" => $config->getSslShopUrl() .
-                                        'index.php?cl=order&fnc=finalizepaypalsession',
-                                    "cancel_url" => $config->getSslShopUrl() .
-                                        'index.php?cl=order&fnc=cancelpaypalsession',
-                                    "shipping_preference" => "SET_PROVIDED_ADDRESS",
-                                ]
-                        ],
+                $newPaymentSource[$paymentSourceId]["attributes"]["customer"] = [
+                    "id" => $paypalCustomerId
                 ];
 
-                if ($paypalCustomerId) {
-                    $newPaymentSource["paypal"]["attributes"]["customer"] = [
-                        "id" => $paypalCustomerId
-                    ];
+            } else {
+                $newPaymentSource = [
+                    $paymentSourceId => [
+                        "experience_context" => [
+                            "return_url" => $config->getSslShopUrl() .
+                                'index.php?cl=order&fnc=finalizepaypalsession',
+                            "cancel_url" => $config->getSslShopUrl() .
+                                'index.php?cl=order&fnc=cancelpaypalsession',
+                            "shipping_preference" => "SET_PROVIDED_ADDRESS",
+                        ]
+                    ]
+                ];
+                // it is possible that we have an existing payment_source. We must merge it
+                if (isset($request->payment_source->{$paymentSourceId})) {
+                    $paymentSourceData = $this->getArrayFromPaymentSource($request, $paymentSourceId);
+                    $newPaymentSource[$paymentSourceId] = array_merge($paymentSourceData, $newPaymentSource[$paymentSourceId]);
+                }
+
+                if (
+                    in_array($paymentSourceId, PayPalDefinitions::VAULTABLE_PAYMENT_SOURCES)
+                ) {
+                    $vaultSuccess = Registry::getSession()->getVariable("vaultSuccess");
+                    if (
+                        $vaultSuccess &&
+                        !isset($request->payment_source->{$paymentSourceId}->attributes->vault)
+                    ) {
+                        $newPaymentSource[$paymentSourceId]["attributes"]["vault"] = PayPalDefinitions::PAYMENT_VAULTING;
+                    }
+
+                    if (
+                        $paypalCustomerId &&
+                        !isset($request->payment_source->{$paymentSourceId}->attributes->customer->id)
+                    ) {
+                        $newPaymentSource[$paymentSourceId]["attributes"]["customer"]["id"] = $paypalCustomerId;
+                    }
                 }
             }
-
             $request->payment_source = $newPaymentSource;
         }
     }
@@ -740,5 +710,13 @@ class OrderRequestFactory
     {
         $user = Registry::getConfig()->getUser();
         return $user ? $user->getFieldData("oscpaypalcustomerid") : '';
+    }
+
+    /**
+     * @throws JsonException
+     */
+    private function getArrayFromPaymentSource(OrderRequest $request, string $paymentSourceId): array {
+        $encodedData = json_encode($request->payment_source->{$paymentSourceId}, JSON_THROW_ON_ERROR);
+        return json_decode($encodedData, true, 512, JSON_THROW_ON_ERROR);
     }
 }

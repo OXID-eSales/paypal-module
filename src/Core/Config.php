@@ -147,6 +147,7 @@ class Config
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxAcdcEligibility();
     }
+
     public function isPuiEligibility(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isPuiEligibility();
@@ -211,10 +212,12 @@ class Config
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isLivePrzelewy24Eligibility();
     }
+
     public function isSandboxPrzelewy24Eligibility(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxPrzelewy24Eligibility();
     }
+
     public function isLiveSepaEligibility(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isLiveSepaEligibility();
@@ -234,18 +237,22 @@ class Config
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxBlikEligibility();
     }
+
     public function isLiveBanContactEligibility(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isLiveBanContactEligibility();
     }
+
     public function isSandboxBanContactEligibility(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxBanContactEligibility();
     }
+
     public function isLiveIDealEligibility(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isLiveIDealEligibility();
     }
+
     public function isSandboxIDealEligibility(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxIDealEligibility();

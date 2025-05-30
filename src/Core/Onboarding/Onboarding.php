@@ -220,6 +220,7 @@ class Onboarding
             throw OnboardingException::merchantInformationsNotFound();
         }
 
+        $isApplePayCapability = false;
         $isPuiCapability = false;
         $isAcdcCapability = false;
         $isVaultingCapability = false;

@@ -631,7 +631,7 @@ class ModuleSettings
         $this->logger->log(
             'debug',
             sprintf(
-                'Saving Live  Merchant ID %s from onboarding',
+                'Saving Merchant ID %s from onboarding',
                 $merchantId
             )
         );
@@ -681,6 +681,7 @@ class ModuleSettings
             $this->save('oscPayPalEpsEligibility', $eligibility);
         }
     }
+
     public function savePrzelewy24Eligibility(bool $eligibility): void
     {
         if ($this->isSandbox()) {
@@ -770,10 +771,8 @@ class ModuleSettings
     public function isPayPalCheckoutExpressPaymentEnabled(): bool
     {
         if (is_null($this->payPalCheckoutExpressPaymentEnabled)) {
-            $expressEnabled = false;
             $payment = oxNew(Payment::class);
             $payment->load(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
-            // check currency
             if ($expressEnabled = (bool)$payment->oxpayments__oxactive->value) {
                 $actShopCurrency = Registry::getConfig()->getActShopCurrencyObject();
                 $payPalDefinitions = PayPalDefinitions::getPayPalDefinitions();
@@ -835,6 +834,7 @@ class ModuleSettings
         if ($paymentList === null) {
             return false;
         }
+
         return $paymentEnabled &&
             $this->getIsVaultingActive() &&
             $vaultingType &&

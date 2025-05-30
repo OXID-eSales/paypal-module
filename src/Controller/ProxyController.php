@@ -50,7 +50,7 @@ class ProxyController extends FrontendController
     use JsonTrait;
     use ServiceContainer;
 
-    public function createOrder()
+    public function createOrder(): void
     {
         if (PayPalSession::isPayPalExpressOrderActive()) {
             //TODO: improve
@@ -68,6 +68,7 @@ class ProxyController extends FrontendController
         $session = Registry::getSession();
         $basket = $session->getBasket();
 
+        /** @var ModuleSettings $moduleSettings */
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $defaultShippingPriceExpress = (double) $moduleSettings->getDefaultShippingPriceForExpress();
 
@@ -80,9 +81,14 @@ class ProxyController extends FrontendController
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
         }
 
+        $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
+        $intent = OrderRequest::INTENT_AUTHORIZE;
+        if ($captureStrategy === 'directly') {
+            $intent = OrderRequest::INTENT_CAPTURE;
+        }
         $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
             $basket,
-            OrderRequest::INTENT_CAPTURE,
+            $intent,
             OrderRequestFactory::USER_ACTION_CONTINUE,
             null,
             '',
@@ -620,7 +626,7 @@ class ProxyController extends FrontendController
         $this->outputJson($response);
     }
 
-    private function itemExists(?Basket $basket, ?string $articleOxid, int $amountToBasket): bool
+    private function itemExists(?Basket $basket, ?string $articleOxid, ?int $amountToBasket): bool
     {
         if ($basket === null) {
             return false;
@@ -628,7 +634,7 @@ class ProxyController extends FrontendController
 
         $basketContents = $basket->getContents();
         foreach ($basketContents as $basketItem) {
-            if ($basketItem->getProductId() === $articleOxid && $basketItem->getAmount() == $amountToBasket) {
+            if ($basketItem->getProductId() === $articleOxid && $basketItem->getAmount() === $amountToBasket) {
                 return true;
             }
         }

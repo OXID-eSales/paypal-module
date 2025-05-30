@@ -208,6 +208,7 @@ class Order extends Order_parent
 
         //TODO: reduce calls to api, see above
         if (is_null($transactionId)) {
+            $capture = $this->getOrderPaymentCapture($payPalOrderId);
             $orderService = Registry::get(ServiceFactory::class)->getOrderService();
             if($payPalPaymentSuccess){
                 $request = new OrderCaptureRequest();
@@ -220,10 +221,12 @@ class Order extends Order_parent
                         Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                     );
                 } catch (ApiException $exception) {
-                $this->setOrderStatus('ERROR');
-                throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
+                    $this->setOrderStatus('ERROR');
+                    throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
+                }
+
             }
-            }
+
             $this->setTransId($capture->id);
         }
 
@@ -275,7 +278,7 @@ class Order extends Order_parent
      * @param Basket $basket      basket object
      * @param object $userpayment user payment object
      *
-     * @return     integer 2 or an error code
+     * @return  integer 2 or an error code
      * @deprecated underscore prefix violates PSR12, will be renamed to "executePayment" in next major
      */
     protected function executePayment(Basket $basket, $userpayment)
@@ -600,9 +603,10 @@ class Order extends Order_parent
         return 0 < (int) $this->getFieldData('oxordernr');
     }
 
+
     /**
      * @inheritdoc
-     * @throws     Exception
+     * @throws Exception
      */
     public function finalizeOrder(Basket $basket, $user, $recalculatingOrder = false)
     {
@@ -667,13 +671,14 @@ class Order extends Order_parent
 
     public function setPayPalTracking(string $trackingCarrier, string $trackingCode): void
     {
-        // for backwardscompatibility
+        // for backwards compatibility
         $this->assign(
             [
                 'oxtrackcode' => $trackingCode
             ]
         );
         $this->save();
+
         $payPalOrder = $this->getPayPalRepository();
         $payPalOrder->setTrackingCode($trackingCode);
         $payPalOrder->setTrackingCarrier($trackingCarrier);

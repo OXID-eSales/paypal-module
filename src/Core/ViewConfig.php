@@ -14,7 +14,6 @@ use OxidEsales\Eshop\Core\Theme;
 use OxidSolutionCatalysts\PayPal\Core\Api\IdentityService;
 use OxidSolutionCatalysts\PayPal\Service\LanguageLocaleMapper;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
-use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 
@@ -191,14 +190,15 @@ class ViewConfig extends ViewConfig_parent
     /**
      * Gets PayPal JS SDK url
      *
+     * @param bool $bCommitFlow
      * @return string
      */
-    public function getPayPalJsSdkUrl(): string
+    public function getPayPalJsSdkUrl(bool $bCommitFlow = false): string
     {
         $config = Registry::getConfig();
         $lang = Registry::getLang();
         $params = [];
-        $enableFunding = [];
+        $enableFunding = ['card'];
         $disableFunding = [
             'bancontact',
             'blik',
@@ -222,12 +222,17 @@ class ViewConfig extends ViewConfig_parent
         $localeCode = $this->getServiceFromContainer(LanguageLocaleMapper::class)
             ->mapLanguageToLocale($lang->getLanguageAbbr());
 
+        /** @var ModuleSettings $moduleSettings */
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
 
         $params['client-id'] = $this->getPayPalClientId();
         $params['integration-date'] = Constants::PAYPAL_INTEGRATION_DATE;
-        $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
-        $params['commit'] = 'false';
+        $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_AUTHORIZE);
+        if ('directly' === $captureStrategy) {
+            $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
+        }
+        $params['commit'] = $bCommitFlow ? 'true': 'false';
 
         if ($currency = $config->getActShopCurrencyObject()) {
             $params['currency'] = strtoupper($currency->name);
@@ -243,13 +248,7 @@ class ViewConfig extends ViewConfig_parent
             $enableFunding[] = 'paylater';
         }
 
-        if ($moduleSettings->isAcdcEligibility()) {
-            $components[] = 'hosted-fields';
-        } else {
-            $enableFunding[] = 'card';
-        }
-
-        if ($this->getIsVaultingActive()) {
+        if ($moduleSettings->isAcdcEligibility() || $this->getIsVaultingActive()) {
             $components[] = 'card-fields';
         }
 
@@ -649,7 +648,7 @@ class ViewConfig extends ViewConfig_parent
                 $vaultPaymentTokens,
                 function ($token) {
                     return array_key_exists('payment_source', $token)
-                        && !array_key_exists('card', $token['payment_source']);
+                        && !array_key_exists(PayPalDefinitions::PAYMENT_SOURCE_CARD, $token['payment_source']);
                 }
             );
         }
@@ -659,7 +658,7 @@ class ViewConfig extends ViewConfig_parent
                 $vaultPaymentTokens,
                 function ($token) {
                     return array_key_exists('payment_source', $token)
-                        && array_key_exists('card', $token['payment_source']);
+                        && array_key_exists(PayPalDefinitions::PAYMENT_SOURCE_CARD, $token['payment_source']);
                 }
             );
         }
@@ -676,4 +675,10 @@ class ViewConfig extends ViewConfig_parent
     {
         return Registry::getRequest()->getRequestEscapedParameter("cl") === 'oscaccountvaultcard';
     }
+
+    public static function getConfig(): \OxidEsales\EshopCommunity\Core\Config
+    {
+        return Registry::getConfig();
+    }
+
 }

@@ -163,22 +163,4 @@ class PayPalSession
             Constants::SESSION_ONBOARDING_PAYLOAD
         );
     }
-
-    public static function setSDKIsNecessary(): void
-    {
-        Registry::getSession()->setVariable(
-            'TTTT', true
-        );
-    }
-
-    public static function isSDKNecessary(): bool
-    {
-        $session = Registry::getSession();
-        $result = (bool) $session->getVariable(
-            'TTTT'
-        );
-        $session->deleteVariable('TTTT');
-        return $result;
-    }
-
 }

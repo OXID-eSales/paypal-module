@@ -78,6 +78,7 @@ class OrderController extends OrderController_parent
     {
         $session = Registry::getSession();
         $lang = Registry::getLang();
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
         if ($session->getVariable('oscpaypal_payment_redirect')) {
             $session->deleteVariable('oscpaypal_payment_redirect');
@@ -90,7 +91,6 @@ class OrderController extends OrderController_parent
         $this->addTplParam('oscpaypal_executing_order', false);
         $isRetry = $this->renderRetryOrderExecution();
 
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
         if (!$isRetry && $paymentService->isOrderExecutionInProgress()) {
             $displayError = oxNew(DisplayError::class);
             $displayError->setMessage('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS');
@@ -137,7 +137,7 @@ class OrderController extends OrderController_parent
                 $paymentSource = $selectedPaymentToken["payment_source"][$paymentType];
 
                 $paymentDescription = "";
-                if ($paymentType === "card") {
+                if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
                     $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
                     $paymentDescription = $paymentSource["brand"] . " " . $string . $paymentSource["last_digits"];
                 } elseif ($paymentType === "paypal") {
@@ -387,6 +387,11 @@ class OrderController extends OrderController_parent
 
         $this->outputJson($result);
     }
+    public function isPayPalCheckoutPayment(): bool
+    {
+        $payment = $this->getPayment();
+        return $payment && PayPalDefinitions::isPayPalPayment($payment->getId());
+    }
     public function createApplePayOrder(): void
     {
         try {
@@ -528,7 +533,7 @@ class OrderController extends OrderController_parent
             $deliveryAddress = PayPalAddressResponseToOxidAddress::mapOrderDeliveryAddress($payPalOrder);
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
-            $paymentsId = $order->getFieldData('oxpaymenttype');
+            $paymentsId = $order->getFieldData('oxpaymenttype') ?? '';
             $isButtonPayment = PayPalDefinitions::isButtonPayment($paymentsId);
             if ($isButtonPayment) {
                 $order->assign($deliveryAddress);

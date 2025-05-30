@@ -56,14 +56,14 @@ function callConfigControllerAutoConfigurationFromCallback(authCode, sharedId, i
             isSandBox: isSandBox
         })
     })
-        .then(
-            function (response) {
-                if (response.status === 200) {
-                    // Search for the form named "transfer" and submit it
-                    document.forms.transfer.submit();
-                }
+    .then(
+        function (response) {
+            if (response.status === 200) {
+                // Search for the form named "transfer" and submit it
+                document.forms.transfer.submit();
             }
-        )
-        .catch(function (err) {
-        });
+        }
+    )
+    .catch(function (err) {
+    });
 }

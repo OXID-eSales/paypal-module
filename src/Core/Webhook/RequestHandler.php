@@ -57,7 +57,6 @@ final class RequestHandler
             $headers = $this->requestReader->getHeaders();
 
             $this->verificationService->verify($headers, $requestBody);
-
             $this->processEvent($requestBody);
 
             $result = true;

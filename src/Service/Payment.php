@@ -15,7 +15,6 @@ use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidEsales\Eshop\Core\ShopVersion;
-use OxidSolutionCatalysts\PayPal\Controller\PaymentController;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
@@ -90,7 +89,7 @@ class Payment
         SCAValidatorInterface $scaValidator,
         ModuleSettings $moduleSettingsService,
         LoggerInterface $logger,
-        ServiceFactory $serviceFactory = null,
+        ?ServiceFactory $serviceFactory = null,
         PatchRequestFactory $patchRequestFactory = null,
         OrderRequestFactory $orderRequestFactory = null
     ) {
@@ -136,7 +135,6 @@ class Payment
         );
 
         $response = null;
-
         try {
             $response = $orderService->createOrder(
                 $request,
@@ -217,8 +215,8 @@ class Payment
 
     public function doPatchPayPalOrder(
         EshopModelBasket $basket,
-        string $checkoutOrderId,
-        string $shopOrderId = ''
+        string           $payPalOrderId,
+        string           $shopOrderId = ''
     ): void {
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
@@ -226,7 +224,7 @@ class Payment
         // Update Order
         try {
             $orderService->updateOrder(
-                $checkoutOrderId,
+                $payPalOrderId,
                 $this->patchRequestFactory->getOrderPatches($basket, $shopOrderId),
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
@@ -422,7 +420,7 @@ class Payment
         EshopModelOrder $order,
         EshopModelBasket $basket,
         string $checkoutOrderId,
-        string $uapmName
+        string $paymentSourceId
     ): string {
         $redirectLink = '';
 
@@ -431,7 +429,7 @@ class Payment
         /** @var ConfirmOrderRequest $request */
         $request = $requestFactory->getRequest(
             $basket,
-            $uapmName
+            $paymentSourceId
         );
 
         // toDo: Clearing with Marcus. Optional. Verifies that the payment originates from a valid,
@@ -671,17 +669,20 @@ class Payment
     ): bool {
         $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
 
+        $payPalOrderId = '';
         try {
             $result = $this->doCreatePayPalOrder(
                 $basket,
                 Constants::PAYPAL_ORDER_INTENT_CAPTURE,
                 null,
                 Constants::PAYPAL_PUI_PROCESSING_INSTRUCTIONS,
-                PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME,
+                PayPalDefinitions::PAYMENT_SOURCE_PUI,
                 $payPalClientMetadataId,
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
-            $payPalOrderId = $result->id;
+            if ($result) {
+                $payPalOrderId = $result->id;
+            }
         } catch (Exception $exception) {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_GENERIC);
             $this->logger->log('error', 'Error on pui order creation call.', [$exception]);
@@ -761,9 +762,6 @@ class Payment
             );
     }
 
-    /**
-     * @throws StandardException
-     */
     public function verify3D(string $paymentId, Order $payPalOrder): bool
     {
         //no ACDC payment
@@ -833,8 +831,7 @@ class Payment
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $module = oxNew(\OxidEsales\Eshop\Core\Module\Module::class);
         $module->load(Module::MODULE_ID);
-        $orderNumber = $order instanceof EshopModelOrder ? $order->getFieldData('oxordernr') : null;
-
+        $orderNumber = $order instanceof EshopModelOrder ? $order->getFieldData('oxordernr') : '';
         if ($moduleSettings->isCustomIdSchemaStructural()) {
             $customID = [
                 'oxordernr' => $orderNumber,
@@ -847,7 +844,6 @@ class Payment
 
         return $orderNumber;
     }
-
 
     /**
      * @param \OxidEsales\Eshop\Application\Model\Basket $basket
