@@ -4,7 +4,7 @@
     [{assign var="PayPalSDKJS" value=$oConfig->getGlobalParameter("PayPalSDKJS")}]
     [{if !$PayPalSDKJS}]
         [{capture assign="PayPalSDKJS"}]
-            [{include file="modules/osc/paypal/base_js.tpl" commitFlow=false}]
+            [{include file="@osc_paypal/frontend/shared/layout/base_js.tpl" commitFlow=$commitFlow}]
         [{/capture}]
     [{$oConfig->setGlobalParameter("PayPalSDKJS", $PayPalSDKJS)}]
     [{/if}]

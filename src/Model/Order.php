@@ -824,4 +824,51 @@ class Order extends Order_parent
 
         return $iRet;
     }
+
+    /**
+     * Assigns to new oxorder object customer delivery and shipping info
+     *
+     * @param object $oUser user object
+     * @deprecated underscore prefix violates PSR12, will be renamed to "assignUserInformation" in next major
+     */
+    public function setUser($oUser) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+    {
+        $this->oxorder__oxuserid = new \OxidEsales\Eshop\Core\Field($oUser->getId());
+
+        // bill address
+        $this->oxorder__oxbillcompany = clone $oUser->oxuser__oxcompany;
+        $this->oxorder__oxbillemail = clone $oUser->oxuser__oxusername;
+        $this->oxorder__oxbillfname = clone $oUser->oxuser__oxfname;
+        $this->oxorder__oxbilllname = clone $oUser->oxuser__oxlname;
+        $this->oxorder__oxbillstreet = clone $oUser->oxuser__oxstreet;
+        $this->oxorder__oxbillstreetnr = clone $oUser->oxuser__oxstreetnr;
+        $this->oxorder__oxbilladdinfo = clone $oUser->oxuser__oxaddinfo;
+        $this->oxorder__oxbillustid = clone $oUser->oxuser__oxustid;
+        $this->oxorder__oxbillcity = clone $oUser->oxuser__oxcity;
+        $this->oxorder__oxbillcountryid = clone $oUser->oxuser__oxcountryid;
+        $this->oxorder__oxbillstateid = clone $oUser->oxuser__oxstateid;
+        $this->oxorder__oxbillzip = clone $oUser->oxuser__oxzip;
+        $this->oxorder__oxbillfon = clone $oUser->oxuser__oxfon;
+        $this->oxorder__oxbillfax = clone $oUser->oxuser__oxfax;
+        $this->oxorder__oxbillsal = clone $oUser->oxuser__oxsal;
+
+
+        // delivery address
+        if (($oDelAdress = $this->getDelAddressInfo())) {
+            // set delivery address
+            $this->oxorder__oxdelcompany = clone $oDelAdress->oxaddress__oxcompany;
+            $this->oxorder__oxdelfname = clone $oDelAdress->oxaddress__oxfname;
+            $this->oxorder__oxdellname = clone $oDelAdress->oxaddress__oxlname;
+            $this->oxorder__oxdelstreet = clone $oDelAdress->oxaddress__oxstreet;
+            $this->oxorder__oxdelstreetnr = clone $oDelAdress->oxaddress__oxstreetnr;
+            $this->oxorder__oxdeladdinfo = clone $oDelAdress->oxaddress__oxaddinfo;
+            $this->oxorder__oxdelcity = clone $oDelAdress->oxaddress__oxcity;
+            $this->oxorder__oxdelcountryid = clone $oDelAdress->oxaddress__oxcountryid;
+            $this->oxorder__oxdelstateid = clone $oDelAdress->oxaddress__oxstateid;
+            $this->oxorder__oxdelzip = clone $oDelAdress->oxaddress__oxzip;
+            $this->oxorder__oxdelfon = clone $oDelAdress->oxaddress__oxfon;
+            $this->oxorder__oxdelfax = clone $oDelAdress->oxaddress__oxfax;
+            $this->oxorder__oxdelsal = clone $oDelAdress->oxaddress__oxsal;
+        }
+    }
 }
