@@ -239,7 +239,7 @@ class Order extends Order_parent
     }
 
     /** @inheritDoc */
-    protected function sendPayPalOrderByEmail(User $user, Basket $basket): void
+    public function sendPayPalOrderByEmail(User $user, Basket $basket): void
     {
         $userPayment = oxNew(UserPayment::class);
         $userPayment->load($this->getFieldData('oxpaymentid'));
@@ -683,15 +683,7 @@ class Order extends Order_parent
             $this->_markVouchers($oBasket, $oUser);
         }
 
-        // send order by email to shop owner and current user
-        // skipping this action in case of order recalculation
-        if (!$blRecalculatingOrder) {
-            $iRet = $this->_sendOrderByEmail($oUser, $oBasket, $oUserPayment);
-        } else {
-            $iRet = self::ORDER_STATE_OK;
-        }
-
-        return $iRet;
+        return self::ORDER_STATE_OK;
     }
 
 

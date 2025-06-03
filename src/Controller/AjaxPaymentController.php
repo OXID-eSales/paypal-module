@@ -9,6 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use Exception;
 use JsonException;
+use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\User;
@@ -73,6 +74,13 @@ class AjaxPaymentController extends ProxyController
                 'error' => $translatedErrorMessage
             ]);
         }
+        $sessionOrderId = (string)Registry::getSession()->getVariable('sess_challenge');
+        $order = oxNew(Order::class);
+        $order->load($sessionOrderId);
+        $basket = Registry::getSession()->getBasket();
+        $user = $basket->getUser();
+
+        $this->sendPayPalOrderMail($order, $basket, $user);
 
         PayPalSession::unsetPayPalSession();
 
@@ -138,7 +146,7 @@ class AjaxPaymentController extends ProxyController
         $this->outputJson([
             'status' => 'success',
             'shopOrder' => [
-                'shopOrderId' => $order->oxorder__oxid->value,
+                'shopOrderId' => $order->getId(),
                 'customId' => $paymentService->getCustomIdParameter($order)
             ],
             'payPalOrder' => $response,
@@ -175,7 +183,7 @@ class AjaxPaymentController extends ProxyController
         $user = oxNew(User::class);
         $user->loadActiveUser();
 
-        if (null == $shopOrderId) {
+        if (is_null($shopOrderId)) {
             $this->logger->log('error', sprintf($message));
             $this->outputJson([
                 'status' => 'error'
@@ -230,7 +238,7 @@ class AjaxPaymentController extends ProxyController
         $order->save();
 
         Registry::getSession()->deleteVariable('sess_challenge'); //session cleanup
-        PayPalSession::unsetPayPalSession();
+        PayPalSession::unsetPayPalOrderId();
 
         $this->outputJson([
             'status' => 'success'
@@ -251,9 +259,11 @@ class AjaxPaymentController extends ProxyController
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
 
-        /** @var PayPalOrder $oOrder */
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Order $oOrder */
         $oOrder = oxNew(Order::class);
         $oOrder->load($shopOrderId);
+        $basket = Registry::getSession()->getBasket();
+        $basketUser = $basket ? $basket->getBasketUser(): null;
 
         if ($cancelSession) {
             $this->outputJson([
@@ -305,16 +315,18 @@ class AjaxPaymentController extends ProxyController
             Registry::getSession()->setVariable("vaultSuccess", true);
         }
 
+        $this->sendPayPalOrderMail($oOrder, $basket, $basketUser);
+
         $this->outputJson([
             'status' => 'success',
-            'oxid' => $oOrder->oxorder__oxid->value,
+            'oxid' => $oOrder->getId(),
             'paypalOrderDetails' => $payPalOrder
         ]);
     }
 
     public function createShopOrder(): void
     {
-        /** @var \OxidSolutionCatalysts\PayPal\Service\Payment $paymentService */
+        /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $data = $this->getRequestParameters();
         $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'];
@@ -345,7 +357,7 @@ class AjaxPaymentController extends ProxyController
 
     /**
      * @return array|mixed
-     * @throws \JsonException
+     * @throws JsonException
      */
     public function getRequestParameters(): array
     {
@@ -378,5 +390,17 @@ class AjaxPaymentController extends ProxyController
         $this->outputJson([
             'status' => 'success'
         ]);
+    }
+
+    protected function sendPayPalOrderMail(Order $order, ?Basket $basket, ?User $user): void
+    {
+        if (!$basket || !$user) {
+            return;
+        }
+
+        /** @var \OxidSolutionCatalysts\PayPal\Model\Order $oOrder */
+        $order->sendPayPalOrderByEmail(
+            $user, $basket
+        );
     }
 }
