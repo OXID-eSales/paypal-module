@@ -66,7 +66,7 @@
 
         this.removeErrorMessage = function (className) {
             className = className || '';
-            const panelBody = document.querySelector("#orderPayment .panel-body");
+            const panelBody = document.querySelector("#card_container").parentElement;
             if (panelBody) {
                 const existingError = panelBody.querySelector(".error-message" + (className ? '.' + className : ''));
                 if (existingError) {
@@ -77,7 +77,7 @@
 
         this.showErrorMessage = function (message, className) {
             className = className || '';
-            const panelBody = document.querySelector("#orderPayment .panel-body");
+            const panelBody = document.querySelector("#card_container").parentElement;
 
             // Remove existing error if present
             this.removeErrorMessage(className);
