@@ -21,6 +21,7 @@ use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Exception\Redirect;
 use OxidSolutionCatalysts\PayPal\Exception\RedirectWithMessage;
+use OxidSolutionCatalysts\PayPal\Model\Basket;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -34,6 +35,7 @@ use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Payments\Item;
 
 /**
  * Class OrderController
@@ -697,15 +699,19 @@ class OrderController extends OrderController_parent
         return parent::_getNextStep($success);
     }
 
-    public function getPurchaseUnits()
+    public function getPurchaseUnits(): string
     {
         return Registry::get(PayPalPurchaseUnitsFactory::class)->getPurchaseUnits();
     }
 
+    public function getPayPalCustomerId(): string
+    {
+        return $this->getUser() ? $this->getUser()->getFieldData('oscpaypalcustomerid') : '';
+    }
+
     public function getVaultedPaymentSource(): string
     {
-        $user = $this->getUser();
-        $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
+        $payPalCustomerId = $this->getPayPalCustomerId();
         $session = Registry::getSession();
         $selectedVaultPaymentSourceIndex = $session->getVariable("selectedVaultPaymentSourceIndex");
         $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
@@ -721,9 +727,9 @@ class OrderController extends OrderController_parent
 
         return !empty($selectedPaymentToken) ? json_encode([
             "token" => [
-                "id"    => $selectedPaymentToken['id'],
-                "type"  => "SETUP_TOKEN",
+                "id" => $selectedPaymentToken['id'],
+                "type" => "SETUP_TOKEN",
             ]
-        ]) : 'null';
+        ], JSON_THROW_ON_ERROR) : 'null';
     }
 }
