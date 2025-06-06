@@ -331,8 +331,8 @@ class AjaxPaymentController extends ProxyController
         $data = $this->getRequestParameters();
         $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'];
 
-        $user = oxNew(User::class);
-        if (! $user->loadActiveUser()) {
+        $user = $this->getUser();
+        if (!$user->loadActiveUser()) {
             $this->permissionsCheck();
         }
 
@@ -349,9 +349,9 @@ class AjaxPaymentController extends ProxyController
         $user->onOrderExecute($basket, $success);
 
         $this->outputJson([
-            'status' => 'success',
-            'shopOrderId' => $order->oxorder__oxid->value,
-            'customId' => $paymentService->getCustomIdParameter($order)
+            'status'      => 'success',
+            'shopOrderId' => $order->getId(),
+            'customId'    => $paymentService->getCustomIdParameter($order)
         ]);
     }
 
@@ -379,7 +379,7 @@ class AjaxPaymentController extends ProxyController
         $data = $this->getRequestParameters();
         $user = $this->getUser();
 
-        if (! $user->loadActiveUser()) {
+        if (!$user->loadActiveUser()) {
             $this->permissionsCheck();
         }
 

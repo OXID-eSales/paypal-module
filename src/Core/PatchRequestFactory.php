@@ -134,6 +134,7 @@ class   PatchRequestFactory
         $withItems = !$this->basket->isCalculationModeNetto();
         //update currency object with decimal precision restricted version
         $currency = $this->basket->getBasketCurrency();
+        $itemCategory = $this->getItemCategoryByBasketContent();
         $currency->decimal = 2;
 
         if (!$withItems) {
@@ -148,6 +149,11 @@ class   PatchRequestFactory
         foreach ($basketItems as $basketItem) {
             $item = new Item();
             $item->name = (new Truncate())->truncate($basketItem->getTitle());
+            $basketArticle = $basketItem->getArticle();
+            $articleCategory = ($basketArticle->isVirtualPayPalArticle())
+                ? Item::CATEGORY_DIGITAL_GOODS
+                : Item::CATEGORY_PHYSICAL_GOODS;
+            $item->category = $articleCategory;
             $itemUnitPrice = $basketItem->getUnitPrice();
             if ($itemUnitPrice) {
                 $item->unit_amount = PriceToMoney::convert(
@@ -165,7 +171,7 @@ class   PatchRequestFactory
         if ($wrapping) {
             $item = new Item();
             $item->name = $language->translateString('GIFT_WRAPPING');
-
+            $item->category = $itemCategory;
             $item->unit_amount = PriceToMoney::convert(
                 $wrapping,
                 $currency
@@ -179,7 +185,7 @@ class   PatchRequestFactory
         if ($giftCard) {
             $item = new Item();
             $item->name = $language->translateString('GREETING_CARD');
-
+            $item->category = $itemCategory;
             $item->unit_amount = PriceToMoney::convert(
                 $giftCard,
                 $currency
@@ -193,7 +199,7 @@ class   PatchRequestFactory
         if ($payment) {
             $item = new Item();
             $item->name = $language->translateString('PAYMENT_METHOD');
-
+            $item->category = $itemCategory;
             $item->unit_amount = PriceToMoney::convert(
                 $payment,
                 $currency
@@ -210,7 +216,7 @@ class   PatchRequestFactory
             $discount *= -1;
             $item = new Item();
             $item->name = $language->translateString('SURCHARGE');
-
+            $item->category = $itemCategory;
             $item->unit_amount = PriceToMoney::convert($discount, $currency);
 
             $item->quantity = '1';
@@ -221,7 +227,7 @@ class   PatchRequestFactory
         if ($roundDiff = $this->basket->getPayPalCheckoutRoundDiff()) {
             $item = new Item();
             $item->name = $language->translateString('OSC_PAYPAL_VAT_CORRECTION');
-
+            $item->category = $itemCategory;
             $item->unit_amount = PriceToMoney::convert((float)$roundDiff, $currency);
 
             $item->quantity = '1';
@@ -249,6 +255,20 @@ class   PatchRequestFactory
         $patch->value = $shopOrderId;
 
         return $patch;
+    }
+
+    /**
+     * Determine the item category based on the entire basket contents. If all items in the basket are virtual
+     * the category "DIGITAL_GOODS" is used, in any other case it'll be "PHYSICAL_GOODS".
+     * @return string
+     */
+    protected function getItemCategoryByBasketContent(): string
+    {
+        return (
+            $this->basket->isEntirelyVirtualPayPalBasket()
+                ? Item::CATEGORY_DIGITAL_GOODS
+                : Item::CATEGORY_PHYSICAL_GOODS
+            );
     }
 
     /**
