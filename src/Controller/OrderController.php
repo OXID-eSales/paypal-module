@@ -706,7 +706,13 @@ class OrderController extends OrderController_parent
 
     public function getPayPalCustomerId(): string
     {
-        return $this->getUser() ? $this->getUser()->getFieldData('oscpaypalcustomerid') : '';
+        $result = '';
+        $user = $this->getUser();
+        if ($user) {
+            $result = $user->getFieldData('oscpaypalcustomerid');
+            $result = !is_null($result) ? $result : '';
+        }
+        return $result;
     }
 
     public function getVaultedPaymentSource(): string
