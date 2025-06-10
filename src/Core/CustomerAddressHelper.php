@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OxidSolutionCatalysts\PayPal\Traits;
+namespace OxidSolutionCatalysts\PayPal\Core;
 
 use JsonSerializable;
 use OxidEsales\Eshop\Application\Model\Address;

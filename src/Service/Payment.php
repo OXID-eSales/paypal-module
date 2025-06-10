@@ -408,7 +408,6 @@ class Payment
                 $order->setTransId((string)$payPalTransactionId);
             }
         } catch (Exception $exception) {
-            //Webhook might try to capture already captured order
             $this->logger->log('debug', 'Warning on order capture call.', [$exception]);
             throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
         }

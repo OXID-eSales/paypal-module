@@ -11,16 +11,12 @@
         this.currentOrder = null;
         this.reactOnPayPalOverlayClosed = false;
 
-        this.getPurchaseUnits = function () {
+        this.getPaymentData = function () {
             let purchaseUnits = {
                 intent: PayPalPayment.getConfigValue('captureStrategy'),
                 purchase_units: [
                     {...this.config.purchaseUnits}
-                ],
-                experience_context: {
-                    return_url: PayPalPayment.getConfigValue('updateOxUserWithPayPalCustomerIdUrl'),
-                    cancel_url: PayPalPayment.getConfigValue('shopOrderCancelUrl')
-                }
+                ]
             };
 
             purchaseUnits.payment_source = this.getPaymentSource();

@@ -289,10 +289,9 @@ class Order extends Order_parent
         $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($sessionPaymentId);
         $isPayPalACDC = $sessionPaymentId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $sessionPaymentId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
-        $isPayPalPayLater = $sessionPaymentId === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID;
 
         //catch UAPM, Standard and Pay Later PayPal payments here
-        if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater) {
+        if ($isPayPalUAPM || $isPayPalStandard) {
             try {
                 //order number needs to be set before the payment is requested
                 $this->setOrderNumber();
@@ -306,9 +305,6 @@ class Order extends Order_parent
                         Constants::PAYPAL_ORDER_INTENT_AUTHORIZE;
 
                     $redirectLink = $paymentService->doExecuteStandardPayment($this, $basket, $intent);
-                    if ($isPayPalPayLater) {
-                        $redirectLink .= '&fundingSource=paylater';
-                    }
                 }
                 PayPalSession::setSessionRedirectLink($redirectLink);
 
@@ -603,6 +599,89 @@ class Order extends Order_parent
         return 0 < (int) $this->getFieldData('oxordernr');
     }
 
+    public function finalizePayPalOrder(Basket $oBasket, $oUser, $blRecalculatingOrder = false)
+    {
+        // check if this order is already stored
+        $orderId = \OxidEsales\Eshop\Core\Registry::getSession()->getVariable('sess_challenge');
+        if ($this->checkOrderExist($orderId)) {
+            \OxidEsales\Eshop\Core\Registry::getLogger()->debug(
+                'finalizeOrder: Order already exists: ' . $orderId,
+                [$oBasket, $oUser]
+            );
+            // we might use this later, this means that somebody clicked like mad on order button
+            return self::ORDER_STATE_ORDEREXISTS;
+        }
+
+        // if not recalculating order, use sess_challenge id, else leave old order id
+        if (!$blRecalculatingOrder) {
+            // use this ID
+            $this->setId($orderId);
+
+            // validating various order/basket parameters before finalizing
+            if ($iOrderState = $this->validateOrder($oBasket, $oUser)) {
+                return $iOrderState;
+            }
+        }
+
+        // copies user info
+        $this->setUser($oUser);
+
+        // copies basket info
+        $this->loadFromBasket($oBasket);
+
+        $this->oxorder__oxuserid = oxNew('oxfield', $oUser->getId());
+
+        // payment information
+        $oUserPayment = $this->setPayment($oBasket->getPaymentId());
+
+        // set folder information, if order is new
+        // #M575 in recalculating order case folder must be the same as it was
+        if (!$blRecalculatingOrder) {
+            $this->setFolder();
+        }
+
+        // marking as not finished
+        $this->setOrderStatus('NOT_FINISHED');
+
+        //saving all order data to DB
+        $this->save();
+
+        if (!$this->oxorder__oxordernr->value) {
+            $this->setNumber();
+        } else {
+            oxNew(\OxidEsales\Eshop\Core\Counter::class)
+                ->update($this->getCounterIdent(), $this->oxorder__oxordernr->value);
+        }
+
+        // deleting remark info only when order is finished
+        \OxidEsales\Eshop\Core\Registry::getSession()->deleteVariable('ordrem');
+
+        //#4005: Order creation time is not updated when order processing is complete
+        if (!$blRecalculatingOrder) {
+            $this->updateOrderDate();
+        }
+
+        // updating order trans status (success status)
+        $this->setOrderStatus('OK');
+
+        // store orderid
+        $oBasket->setOrderId($this->getId());
+
+        // updating wish lists
+        $this->updateWishlist($oBasket->getContents(), $oUser);
+
+        // updating users notice list
+        $this->updateNoticeList($oBasket->getContents(), $oUser);
+
+        // marking vouchers as used and sets them to $this->aVoucherList (will be used in order email)
+        // skipping this action in case of order recalculation
+        if (!$blRecalculatingOrder) {
+            $this->markVouchers($oBasket, $oUser);
+        }
+
+        return self::ORDER_STATE_OK;
+    }
+
 
     /**
      * @inheritdoc
@@ -732,143 +811,5 @@ class Order extends Order_parent
         }
 
         return parent::delete($sOxId);
-    }
-
-    public function finalizePayPalOrder(Basket $oBasket, $oUser, $blRecalculatingOrder = false)
-    {
-        // check if this order is already stored
-        $orderId = \OxidEsales\Eshop\Core\Registry::getSession()->getVariable('sess_challenge');
-        if ($this->checkOrderExist($orderId)) {
-            \OxidEsales\Eshop\Core\Registry::getLogger()->debug(
-                'finalizeOrder: Order already exists: ' . $orderId,
-                [$oBasket, $oUser]
-            );
-            // we might use this later, this means that somebody clicked like mad on order button
-            return self::ORDER_STATE_ORDEREXISTS;
-        }
-
-        // if not recalculating order, use sess_challenge id, else leave old order id
-        if (!$blRecalculatingOrder) {
-            // use this ID
-            $this->setId($orderId);
-
-            // validating various order/basket parameters before finalizing
-            if ($iOrderState = $this->validateOrder($oBasket, $oUser)) {
-                return $iOrderState;
-            }
-        }
-
-        // copies user info
-        $this->setUser($oUser);
-
-        // copies basket info
-        $this->loadFromBasket($oBasket);
-
-        $this->oxorder__oxuserid = oxNew('oxfield', $oUser->getId());
-
-        // payment information
-        $oUserPayment = $this->setPayment($oBasket->getPaymentId());
-
-        // set folder information, if order is new
-        // #M575 in recalculating order case folder must be the same as it was
-        if (!$blRecalculatingOrder) {
-            $this->setFolder();
-        }
-
-        // marking as not finished
-        $this->setOrderStatus('NOT_FINISHED');
-
-        //saving all order data to DB
-        $this->save();
-
-        if (!$this->oxorder__oxordernr->value) {
-            $this->setNumber();
-        } else {
-            oxNew(\OxidEsales\Eshop\Core\Counter::class)
-                ->update($this->getCounterIdent(), $this->oxorder__oxordernr->value);
-        }
-
-        // deleting remark info only when order is finished
-        \OxidEsales\Eshop\Core\Registry::getSession()->deleteVariable('ordrem');
-
-        //#4005: Order creation time is not updated when order processing is complete
-        if (!$blRecalculatingOrder) {
-            $this->updateOrderDate();
-        }
-
-        // updating order trans status (success status)
-        $this->setOrderStatus('OK');
-
-        // store orderid
-        $oBasket->setOrderId($this->getId());
-
-        // updating wish lists
-        $this->updateWishlist($oBasket->getContents(), $oUser);
-
-        // updating users notice list
-        $this->updateNoticeList($oBasket->getContents(), $oUser);
-
-        // marking vouchers as used and sets them to $this->aVoucherList (will be used in order email)
-        // skipping this action in case of order recalculation
-        if (!$blRecalculatingOrder) {
-            $this->markVouchers($oBasket, $oUser);
-        }
-
-        // send order by email to shop owner and current user
-        // skipping this action in case of order recalculation
-        if (!$blRecalculatingOrder) {
-            $iRet = $this->sendOrderByEmail($oUser, $oBasket, $oUserPayment);
-        } else {
-            $iRet = self::ORDER_STATE_OK;
-        }
-
-        return $iRet;
-    }
-
-    /**
-     * Assigns to new oxorder object customer delivery and shipping info
-     *
-     * @param object $oUser user object
-     * @deprecated underscore prefix violates PSR12, will be renamed to "assignUserInformation" in next major
-     */
-    public function setUser($oUser) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
-    {
-        $this->oxorder__oxuserid = new \OxidEsales\Eshop\Core\Field($oUser->getId());
-
-        // bill address
-        $this->oxorder__oxbillcompany = clone $oUser->oxuser__oxcompany;
-        $this->oxorder__oxbillemail = clone $oUser->oxuser__oxusername;
-        $this->oxorder__oxbillfname = clone $oUser->oxuser__oxfname;
-        $this->oxorder__oxbilllname = clone $oUser->oxuser__oxlname;
-        $this->oxorder__oxbillstreet = clone $oUser->oxuser__oxstreet;
-        $this->oxorder__oxbillstreetnr = clone $oUser->oxuser__oxstreetnr;
-        $this->oxorder__oxbilladdinfo = clone $oUser->oxuser__oxaddinfo;
-        $this->oxorder__oxbillustid = clone $oUser->oxuser__oxustid;
-        $this->oxorder__oxbillcity = clone $oUser->oxuser__oxcity;
-        $this->oxorder__oxbillcountryid = clone $oUser->oxuser__oxcountryid;
-        $this->oxorder__oxbillstateid = clone $oUser->oxuser__oxstateid;
-        $this->oxorder__oxbillzip = clone $oUser->oxuser__oxzip;
-        $this->oxorder__oxbillfon = clone $oUser->oxuser__oxfon;
-        $this->oxorder__oxbillfax = clone $oUser->oxuser__oxfax;
-        $this->oxorder__oxbillsal = clone $oUser->oxuser__oxsal;
-
-
-        // delivery address
-        if (($oDelAdress = $this->getDelAddressInfo())) {
-            // set delivery address
-            $this->oxorder__oxdelcompany = clone $oDelAdress->oxaddress__oxcompany;
-            $this->oxorder__oxdelfname = clone $oDelAdress->oxaddress__oxfname;
-            $this->oxorder__oxdellname = clone $oDelAdress->oxaddress__oxlname;
-            $this->oxorder__oxdelstreet = clone $oDelAdress->oxaddress__oxstreet;
-            $this->oxorder__oxdelstreetnr = clone $oDelAdress->oxaddress__oxstreetnr;
-            $this->oxorder__oxdeladdinfo = clone $oDelAdress->oxaddress__oxaddinfo;
-            $this->oxorder__oxdelcity = clone $oDelAdress->oxaddress__oxcity;
-            $this->oxorder__oxdelcountryid = clone $oDelAdress->oxaddress__oxcountryid;
-            $this->oxorder__oxdelstateid = clone $oDelAdress->oxaddress__oxstateid;
-            $this->oxorder__oxdelzip = clone $oDelAdress->oxaddress__oxzip;
-            $this->oxorder__oxdelfon = clone $oDelAdress->oxaddress__oxfon;
-            $this->oxorder__oxdelfax = clone $oDelAdress->oxaddress__oxfax;
-            $this->oxorder__oxdelsal = clone $oDelAdress->oxaddress__oxsal;
-        }
     }
 }

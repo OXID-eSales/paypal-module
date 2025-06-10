@@ -15,6 +15,14 @@
                 }
             };
 
+            const customerId = PayPalPayment.getConfigValue('customerId');
+            if (customerId) {
+                paymentSource.paypal.attributes = {
+                    customer: {
+                        id: customerId
+                    }
+                };
+            }
             return PayPalPayment.currentOrder.vaultPayment ?
                 PayPalPayment.modifyPaymentSourceForVaulting(paymentSource) :
                 paymentSource;
@@ -44,7 +52,7 @@
 
             document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...result}})));
 
-            return actions.order.create(PayPalPayment.getPurchaseUnits());
+            return actions.order.create(PayPalPayment.getPaymentData());
         };
 
         // PayPal-specific capture handling

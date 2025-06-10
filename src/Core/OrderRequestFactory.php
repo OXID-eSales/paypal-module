@@ -11,7 +11,6 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 
 use DateTime;
 use JsonException;
-use JsonSerializable;
 use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
@@ -27,7 +26,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderExperienceContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
@@ -39,7 +37,6 @@ use OxidSolutionCatalysts\PayPalApi\Pui\ExperienceContext;
 use OxidSolutionCatalysts\PayPalApi\Pui\PuiPaymentSource;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
-use OxidSolutionCatalysts\PayPal\Traits\CustomerAddressHelper;
 
 /**
  * Class OrderRequestBuilder
@@ -106,7 +103,7 @@ class OrderRequestFactory
         $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName($paymentId);
 
         if ($paymentId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID) {
-            $request->payment_source = $this->getSimplePaymentSource($basket, $paymentSourceId);
+            $request->payment_source = $this->getGooglePayPaymentSource($basket, $paymentSourceId);
         }
 
         if ($paymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID) {
@@ -596,7 +593,6 @@ class OrderRequestFactory
      * @param string|null $returnUrl
      * @param string|null $cancelUrl
      * @return void
-     * @throws \JsonException
      */
     protected function modifyPaymentSourceForVaulting(
         OrderRequest $request,

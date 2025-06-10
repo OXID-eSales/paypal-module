@@ -616,15 +616,13 @@ class ModuleSettings
     /**
      * @throws ModuleSettingNotFountException
      */
-    public function saveMerchantId(string $merchantId, ?bool $isSandbox = null): void
+    public function saveMerchantId(string $merchantId): void
     {
-        $isSandbox = !is_null($isSandbox) ? $isSandbox : $this->isSandbox();
+        if ($this->isSandbox()) {
 
-        if ($isSandbox) {
             $this->save('oscPayPalSandboxClientMerchantId', $merchantId);
-        }
+        } else {
 
-        if (!$isSandbox) {
             $this->save('oscPayPalClientMerchantId', $merchantId);
         }
 

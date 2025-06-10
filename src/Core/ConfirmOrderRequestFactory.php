@@ -10,15 +10,13 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Application\Model\Basket;
-use OxidEsales\Eshop\Core\Exception\LanguageNotFoundException;
 use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\EshopCommunity\Core\Language;
+use OxidEsales\Eshop\Core\Language;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderConfirmApplicationContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Pui\ExperienceContext;
-use OxidSolutionCatalysts\PayPal\Traits\CustomerAddressHelper;
 
 /**
  * Class ConfirmOrderRequestFactory
@@ -39,7 +37,6 @@ class ConfirmOrderRequestFactory
      * @param string $paymentSourceId Name of the $paymentSourceId
      *
      * @return ConfirmOrderRequest
-     * @throws LanguageNotFoundException
      */
     public function getRequest(
         Basket $basket,
@@ -71,24 +68,5 @@ class ConfirmOrderRequestFactory
         }
 
         return $paymentSource;
-    }
-
-    /**
-     * Sets application context
-     *
-     * @throws LanguageNotFoundException
-     * @return OrderConfirmApplicationContext
-     */
-    protected function getExperienceContext(): \JsonSerializable
-    {
-        $context = new ExperienceContext();
-        $language = new Language();
-        $config = Registry::getConfig();
-        $shopLanguageAbbr = $language->getLanguageAbbr();
-        $context->locale = $shopLanguageAbbr . '-' . strtoupper($shopLanguageAbbr);
-        $context->return_url = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
-        $context->cancel_url = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
-
-        return $context;
     }
 }

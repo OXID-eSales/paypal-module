@@ -11,7 +11,6 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
-use OxidSolutionCatalysts\PayPal\Traits\CustomerAddressHelper;
 
 /**
  * Used to generate purchase_units that are transfered in JS request to create PayPal Order
