@@ -55,17 +55,4 @@
     </div>
 </div>
 
-[{if $oscpaypal_isVaultingPossible}]
-<script>
-    function setVaultingCheckbox() {
-        let checkbox = document.getElementById("oscPayPalVaultPaymentCheckbox");
-        let vaultingInput = document.getElementById("oscPayPalVaultPayment");
 
-        if (checkbox.checked) {
-            vaultingInput.value = "true";
-        }else {
-            vaultingInput.value = "";
-        }
-    }
-</script>
-[{/if}]

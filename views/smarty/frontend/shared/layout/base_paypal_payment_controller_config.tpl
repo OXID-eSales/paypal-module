@@ -4,9 +4,9 @@
     [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
     [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
     [{assign var="purchaseUnits" value=$oView->getPurchaseUnits()}]
-    [{assign var="paypalCustomerId" value=$oView->getPaypalCustomerId()}]
     [{assign var="vaultedPaymentSource" value=$oView->getVaultedPaymentSource()}]
     [{assign var="oPPconfig" value=$oViewConf->getPayPalCheckoutConfig()}]
+    [{assign var="customerId" value=$oView->getPayPalCustomerId()}]
     [{assign var="isSandBox" value=$oPPconfig->isSandbox()}]
     [{assign var="captureStrategy" value=$oPPconfig->getPayPalStandardCaptureStrategy()}]
 
@@ -19,16 +19,16 @@
     <script>
         const PayPalPaymentControllerConfiguratorDefaults = {
             shopOrderErrorUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=logError&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
-            shopOrderDeleteUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=cancelShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+            shopOrderCancelUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=cancelShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             payPalOrderDetailsUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=fetchPayPalOrderDetails&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             errorLogUrl: '[{$sSelfLink|cat:"cl=payment&payerror=2&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             shopThankYouPageUrl: '[{$sSelfLink|cat:"cl=thankyou&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             deliveryAddressId: '[{$oView->getDeliveryAddressMD5()}]',
             purchaseUnits: [{$purchaseUnits}],
-            paypalCustomerId: '[{$paypalCustomerId}]',
             vaultedPaymentSource: [{$vaultedPaymentSource}],
             language: '[{$oView->getActiveLangAbbr()|lower}]',
-            currency: '[{$currency->name}]'
+            currency: '[{$currency->name}]',
+            customerId: '[{$customerId}]'
         }
 
         [{if $paymentId == 'oscpaypal'}]
@@ -39,7 +39,7 @@
                     updateOxUserWithPayPalCustomerIdUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=updateOxUserWithPayPalCustomerId&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                     buttonSelector: 'div#[{$paymentId}]',
                     captureStrategy: '[{if $captureStrategy == 'directly'}]CAPTURE[{else}]AUTHORIZE[{/if}]',
-                    paymentId: 'oscpaypal',
+                    paymentId: 'oscpaypal'
                 });
             };
     [{/if}]

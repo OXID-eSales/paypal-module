@@ -4,8 +4,9 @@
     [{assign var="PayPalSDKJS" value=$oConfig->getGlobalParameter("PayPalSDKJS")}]
     [{if !$PayPalSDKJS}]
         [{capture assign="PayPalSDKJS"}]
-            [{include file="@osc_paypal/frontend/shared/layout/base_js.tpl" commitFlow=$commitFlow}]
+            [{include file="@osc_paypal/frontend/shared/layout/base_js.tpl" commitFlow=false}]
         [{/capture}]
+            [{assign var="oConfig" value=$oViewConf->getConfig()}]
     [{$oConfig->setGlobalParameter("PayPalSDKJS", $PayPalSDKJS)}]
     [{/if}]
         <div id="[{$buttonId}]" class="paypal-button-container [{$buttonClass}]"></div>

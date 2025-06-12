@@ -11,7 +11,14 @@
         [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
         [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
         [{assign var="config" value=$oViewConf->getPayPalCheckoutConfig()}]
-        <div id="applepay-container" class="paypal-button-container paypal-button-wrapper large"></div>
+        <style>
+            #applepay_button {
+                float: right;
+            }
+            #applepay-container {
+                float: right;
+            }
+        </style>
         [{capture name="detailsApplePayScript"}]
             [{if $phpstorm}]<script>[{/if}]
             let order_id;
@@ -49,7 +56,7 @@
                 [{if $config->isSandbox()}]
                 console.log('--- Start preloadPaymentRequestData ---');
                 [{/if}]
-                let url = "[{$sSelfLink|cat:'cl=oscpaypalproxy&fnc=getPaymentRequestLines&paymentid='|cat:$paymentId|cat:'&context=continue&stoken='|cat:$sToken}]";
+                let url = "[{$sSelfLink|cat:'cl=oscpaypalproxy&fnc=getPaymentRequestLines&paymentid=oscpaypal_applepay&context=continue&aid='|cat:$aid|cat:'&stoken='|cat:$sToken}]";
                 [{if $config->isSandbox()}]
                 console.log('Fetching payment request lines from URL:', url);
                 [{/if}]
@@ -165,7 +172,7 @@
                 let intent = 'captures';
                 let intent_object = intent === "authorize" ? "authorizations" : "captures";
 
-                const createOrderUrl = "[{$sSelfLink|cat:'cl=oscpaypalproxy&fnc=createApplepayOrder&paymentid='|cat:$paymentId|cat:'&context=continue&stoken='|cat:$sToken}]";
+                const createOrderUrl = "[{$sSelfLink|cat:'cl=oscpaypalproxy&fnc=createApplepayOrder&paymentid='|cat:$paymentId|cat:'&context=continue&aid='|cat:$aid|cat:'&stoken='|cat:$sToken}]";
                 [{if $config->isSandbox()}]
                 console.log('Creating order with URL:', createOrderUrl);
                 [{/if}]
@@ -196,7 +203,7 @@
                         session.completePayment(session.STATUS_FAILURE);
                         return;
                     }
-                    const approve_order = "[{$sSelfLink|cat:'cl=oscpaypalproxy&fnc=approveOrder&paymentid='|cat:$paymentId|cat:'&context=continue&stoken='|cat:$sToken}]";
+                    const approve_order = "[{$sSelfLink|cat:'cl=oscpaypalproxy&fnc=approveOrder&paymentid='|cat:$paymentId|cat:'&context=continue&aid='|cat:$aid|cat:'&stoken='|cat:$sToken}]";
                     const approve_response = await fetch(approve_order, {
                         method: "post",
                         headers: { "Content-Type": "application/json; charset=utf-8" },
@@ -254,7 +261,7 @@
                 [{if $config->isSandbox()}]
                 console.log('--- Start onApprove ---');
                 [{/if}]
-                const url = "[{$sSelfLink|cat:'cl=order&fnc=createApplePayOrder&context=continue&stoken='|cat:$sToken|cat:'&sDeliveryAddressMD5='|cat:$oView->getDeliveryAddressMD5()}]";
+                const url = `[{$sSelfLink|cat:'cl=order&fnc=createApplePayOrder&context=continue&aid='|cat:$aid|cat:'&stoken='|cat:$sToken|cat:'&sDeliveryAddressMD5='|cat:$oView->getDeliveryAddressMD5()}]`;
                 [{if $config->isSandbox()}]
                 console.log('Approving order with URL:', url);
                 [{/if}]

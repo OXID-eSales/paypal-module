@@ -1,7 +1,6 @@
 [{if $phpstorm}]<script>[{/if}]
 [{capture assign="detailsApplePayScriptPaymentPage"}]
     const check_applepay = async () => {
-        console.log('--- Start check_applepay ---');
         let error_message = "";
 
         if (!window.ApplePaySession) {
@@ -11,15 +10,11 @@
         }
 
         if (error_message !== "") {
-            console.error(error_message);
             const applePayInput = document.getElementById('payment_[{$sPaymentID}]');
             if (applePayInput) {
                 applePayInput.closest('.well.well-sm').remove(); // Remove the outer div if Apple Pay is not supported
             }
-            throw new Error(error_message);
         }
-
-        console.log('--- End check_applepay ---');
     };
     // Ensure the function runs when the script is loaded
     document.addEventListener('DOMContentLoaded', check_applepay);
