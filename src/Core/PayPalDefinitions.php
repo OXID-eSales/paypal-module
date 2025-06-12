@@ -16,7 +16,7 @@ final class PayPalDefinitions
     public const EXPRESS_PAYPAL_PAYMENT_ID = 'oscpaypal_express';
     public const ACDC_PAYPAL_PAYMENT_ID = 'oscpaypal_acdc';
     public const PUI_PAYPAL_PAYMENT_ID = 'oscpaypal_pui';
-    public const PUI_REQUEST_PAYMENT_SOURCE_NAME = 'pay_upon_invoice';
+
     public const GIROPAY_PAYPAL_PAYMENT_ID = 'oscpaypal_giropay';
     public const SEPA_PAYPAL_PAYMENT_ID = 'oscpaypal_sepa';
     public const CCALTERNATIVE_PAYPAL_PAYMENT_ID = 'oscpaypal_cc_alternative';
@@ -27,6 +27,15 @@ final class PayPalDefinitions
     public const IDEAL_PAYPAL_PAYMENT_ID = 'oscpaypal_ideal';
     public const PRZELEWY24_PAYPAL_PAYMENT_ID = 'oscpaypal_przelewy24';
     public const BANCONTACT_PAYPAL_PAYMENT_ID = 'oscpaypal_bancontact';
+
+    public const PAYMENT_SOURCE_PAYPAL = 'paypal';
+    public const PAYMENT_SOURCE_CARD = 'card';
+    public const PAYMENT_SOURCE_APPLEPAY = 'apple_pay';
+    public const PAYMENT_SOURCE_GOOGLEPAY = 'google_pay';
+    public const PAYMENT_SOURCE_PUI = 'pay_upon_invoice';
+
+    public const VAULTABLE_PAYMENT_SOURCES = [self::PAYMENT_SOURCE_PAYPAL, self::PAYMENT_SOURCE_CARD];
+
 
     //vaulting
     public const PAYMENT_VAULTING = [
@@ -75,7 +84,8 @@ final class PayPalDefinitions
             'onlybrutto' => false,
             'buttonpayment' => false,
             'defaulton' => true,
-            'vaultingtype' => 'paypal'
+            'vaultingtype' => self::PAYMENT_SOURCE_PAYPAL,
+            'paymentsource' => self::PAYMENT_SOURCE_PAYPAL
         ],
         //GooglePay
         self::GOOGLEPAY_PAYPAL_PAYMENT_ID => [
@@ -96,7 +106,8 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
             'buttonpayment' => false,
-            'defaulton' => true
+            'defaulton' => true,
+            'paymentsource' => self::PAYMENT_SOURCE_GOOGLEPAY
         ],
         //ApplePay
         self::APPLEPAY_PAYPAL_PAYMENT_ID => [
@@ -117,7 +128,8 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
             'buttonpayment' => false,
-            'defaulton' => true
+            'defaulton' => true,
+            'paymentsource' => self::PAYMENT_SOURCE_APPLEPAY
         ],
         //Paylater PayPal
         self::PAYLATER_PAYPAL_PAYMENT_ID => [
@@ -139,6 +151,8 @@ final class PayPalDefinitions
             'onlybrutto' => false,
             'buttonpayment' => false,
             'defaulton' => true,
+            'deprecated' => true,
+            'paymentsource' => self::PAYMENT_SOURCE_PAYPAL
         ],
         //Express PayPal
         self::EXPRESS_PAYPAL_PAYMENT_ID => [
@@ -160,6 +174,7 @@ final class PayPalDefinitions
             'onlybrutto' => false,
             'buttonpayment' => true,
             'defaulton' => true,
+            'paymentsource' => self::PAYMENT_SOURCE_PAYPAL
         ],
         self::PUI_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
@@ -181,7 +196,8 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_PUI,
             'onlybrutto' => true,
             'buttonpayment' => false,
-            'defaulton' => true
+            'defaulton' => true,
+            'paymentsource' => self::PAYMENT_SOURCE_PUI
         ],
         self::SEPA_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
@@ -203,7 +219,8 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
             'buttonpayment' => true,
-            'defaulton' => true
+            'defaulton' => true,
+            'paymentsource' => self::PAYMENT_SOURCE_PAYPAL
         ],
         self::CCALTERNATIVE_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
@@ -225,7 +242,9 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
             'buttonpayment' => true,
-            'defaulton' => false
+            'defaulton' => false,
+            'deprecated' => false,
+            'paymentsource' => self::PAYMENT_SOURCE_PAYPAL
         ],
         self::ACDC_PAYPAL_PAYMENT_ID => [
             'descriptions' => [
@@ -248,7 +267,8 @@ final class PayPalDefinitions
             'onlybrutto' => false,
             'buttonpayment' => false,
             'defaulton' => true,
-            'vaultingtype' => 'card'
+            'vaultingtype' => self::PAYMENT_SOURCE_CARD,
+            'paymentsource' => self::PAYMENT_SOURCE_CARD
         ],
         // uAPM Bancontact
         self::BANCONTACT_PAYPAL_PAYMENT_ID => [
@@ -278,11 +298,12 @@ final class PayPalDefinitions
             ],
             'countries' => ['BE'],
             'currencies' => ['EUR'],
-            'uapmpaymentsource' => 'bancontact',
+            'isuapm' => true,
             'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,
             'onlybrutto' => false,
             'buttonpayment' => false,
-            'defaulton' => true
+            'defaulton' => true,
+            'paymentsource' => 'bancontact'
         ],
         // uAPM BLIK
         self::BLIK_PAYPAL_PAYMENT_ID => [
@@ -314,11 +335,12 @@ final class PayPalDefinitions
             ],
             'countries' => ['PL'],
             'currencies' => ['PLN'],
-            'uapmpaymentsource' => 'blik',
+            'isuapm' => true,
             'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,
             'onlybrutto' => false,
             'buttonpayment' => false,
-            'defaulton' => true
+            'defaulton' => true,
+            'paymentsource' => 'blik'
         ],
         // uAPM EPS
         self::EPS_PAYPAL_PAYMENT_ID => [
@@ -345,11 +367,12 @@ final class PayPalDefinitions
             ],
             'countries' => ['AT'],
             'currencies' => ['EUR'],
-            'uapmpaymentsource' => 'eps',
+            'isuapm' => true,
             'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,
             'onlybrutto' => false,
             'buttonpayment' => false,
-            'defaulton' => true
+            'defaulton' => true,
+            'paymentsource' => 'eps'
         ],
         // uAPM GiroPay
         self::GIROPAY_PAYPAL_PAYMENT_ID => [
@@ -377,12 +400,13 @@ final class PayPalDefinitions
             ],
             'countries' => ['DE'],
             'currencies' => ['EUR'],
-            'uapmpaymentsource' => 'giropay',
+            'isuapm' => true,
             'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,
             'onlybrutto' => false,
             'buttonpayment' => false,
             'defaulton' => false,
             'deprecated' => true,
+            'paymentsource' => 'giropay'
         ],
         // uAPM iDEAL
         self::IDEAL_PAYPAL_PAYMENT_ID => [
@@ -413,11 +437,12 @@ final class PayPalDefinitions
             ],
             'countries' => ['NL'],
             'currencies' => ['EUR'],
-            'uapmpaymentsource' => 'ideal',
+            'isuapm' => true,
             'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,
             'onlybrutto' => false,
             'buttonpayment' => false,
-            'defaulton' => true
+            'defaulton' => true,
+            'paymentsource' => 'ideal'
         ],
         // uAPM Przelewy24
         self::PRZELEWY24_PAYPAL_PAYMENT_ID => [
@@ -441,11 +466,12 @@ final class PayPalDefinitions
             ],
             'countries' => ['PL'],
             'currencies' => ['EUR', 'PLN'],
-            'uapmpaymentsource' => 'p24',
+            'isuapm' => true,
             'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,
             'onlybrutto' => false,
             'buttonpayment' => false,
-            'defaulton' => true
+            'defaulton' => true,
+            'paymentsource' => 'p24'
         ],
     ];
 
@@ -486,7 +512,7 @@ final class PayPalDefinitions
 
     public static function isUAPMPayment(string $oxid): bool
     {
-        return (isset(self::PAYPAL_DEFINTIONS[$oxid]['uapmpaymentsource']));
+        return (isset(self::PAYPAL_DEFINTIONS[$oxid]['isuapm']));
     }
 
     public static function isButtonPayment(string $oxid): bool
@@ -498,9 +524,16 @@ final class PayPalDefinitions
 
     public static function getPaymentSourceRequestName(string $oxid): string
     {
-        return self::isUAPMPayment($oxid) ?
-            self::PAYPAL_DEFINTIONS[$oxid]['uapmpaymentsource'] :
-            '';
+        $mapping = [
+            self::PAYMENT_SOURCE_PAYPAL => 'oscpaypal_paypal',
+            self::PAYMENT_SOURCE_CARD => 'oscpaypal_acdc'
+        ];
+
+        $return = array_key_exists($oxid, self::PAYPAL_DEFINTIONS) ?
+            self::PAYPAL_DEFINTIONS[$oxid]['paymentsource'] :
+            self::PAYPAL_DEFINTIONS[$mapping[$oxid]]['paymentsource'];
+
+        return $return;
     }
 
     public static function isPayPalPayment(string $paymentId): bool

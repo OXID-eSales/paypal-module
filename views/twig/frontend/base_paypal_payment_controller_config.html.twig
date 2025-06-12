@@ -18,11 +18,11 @@
 
     <script>
         const PayPalPaymentControllerConfiguratorDefaults = {
-            shopOrderErrorUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=logError&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
-            shopOrderDeleteUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=cancelShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
-            payPalOrderDetailsUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=fetchPayPalOrderDetails&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
-            errorLogUrl: '{{ (sSelfLink ~ "cl=payment&payerror=2&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
-            shopThankYouPageUrl: '{{ (sSelfLink ~ "cl=thankyou&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
+            shopOrderErrorUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=logError&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
+            shopOrderDeleteUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=cancelShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
+            payPalOrderDetailsUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=fetchPayPalOrderDetails&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
+            errorLogUrl: '{{ (sSelfLink ~ "cl=payment&payerror=2&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
+            shopThankYouPageUrl: '{{ (sSelfLink ~ "cl=thankyou&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
             deliveryAddressId: '{{ oView.getDeliveryAddressMD5() }}',
             purchaseUnits: {{ purchaseUnits|raw }},
             vaultedPaymentSource: {{ vaultedPaymentSource|raw }},
@@ -33,9 +33,9 @@
         {% if paymentId == 'oscpaypal' %}
             window.PayPalPaymentControllerConfigurator = function () {
                 return Object.assign(PayPalPaymentControllerConfiguratorDefaults, {
-                    shopOrderCreateUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=createShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
-                    shopOrderPatchingUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=patchShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
-                    updateOxUserWithPayPalCustomerIdUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=updateOxUserWithPayPalCustomerId&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
+                    shopOrderCreateUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=createShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
+                    shopOrderPatchingUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=patchShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
+                    updateOxUserWithPayPalCustomerIdUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=updateOxUserWithPayPalCustomerId&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
                     buttonSelector: 'div#{{ paymentId }}',
                     captureStrategy: '{% if captureStrategy == 'directly' %}CAPTURE{% else %}AUTHORIZE{% endif %}',
                     paymentId: 'oscpaypal',
@@ -46,8 +46,8 @@
         {% if paymentId == 'oscpaypal_acdc' %}
             window.PayPalPaymentControllerConfigurator = function () {
                 return Object.assign(PayPalPaymentControllerConfiguratorDefaults, {
-                    shopOrderCaptureUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=captureOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
-                    shopOrderCreateUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=createAcdcOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
+                    shopOrderCaptureUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=captureOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
+                    shopOrderCreateUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=createAcdcOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
                     cardFields: true,
                     paymentId: '{{ paymentId }}',
                     buttonSelector: 'button#{{ paymentId }}'
@@ -60,11 +60,11 @@
 
             window.PayPalPaymentControllerConfigurator = function () {
                 return Object.assign(PayPalPaymentControllerConfiguratorDefaults, {
-                    finalizeGooglePayOrder: '{{ (sSelfLink ~ "cl=order&fnc=finalizeGooglePay&paymentid=oscpaypal_googlepay&context=continue&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
-                    executeGooglePayOrder: '{{ (sSelfLink ~ "cl=order&fnc=executeGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
-                    captureGooglePayOrder: '{{ (sSelfLink ~ "cl=order&fnc=captureGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid=" ~ aid ~ "&stoken=" ~ sToken ~ "&sDeliveryAddressMD5=" ~ oView.getDeliveryAddressMD5() ~ debug)|raw }}',
-                    googlePayOrderCreateUrl: '{{ (sSelfLink ~ "cl=oscpaypalproxy&fnc=createGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
-                    shopOrderCreateUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=createShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|raw }}',
+                    finalizeGooglePayOrder: '{{ (sSelfLink ~ "cl=order&fnc=finalizeGooglePay&paymentid=oscpaypal_googlepay&context=continue&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
+                    executeGooglePayOrder: '{{ (sSelfLink ~ "cl=order&fnc=executeGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
+                    captureGooglePayOrder: '{{ (sSelfLink ~ "cl=order&fnc=captureGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid=" ~ aid ~ "&stoken=" ~ sToken ~ "&sDeliveryAddressMD5=" ~ oView.getDeliveryAddressMD5() ~ debug)|replace({'&amp;': '&'})|raw }}',
+                    googlePayOrderCreateUrl: '{{ (sSelfLink ~ "cl=oscpaypalproxy&fnc=createGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
+                    shopOrderCreateUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=createShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
 
                     isSandbox: !!{{ isSandBox ? 'true' : 'false' }},
                     useGooglePayAddress: !!'{{ bGooglePayDelivery }}',

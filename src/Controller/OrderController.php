@@ -13,14 +13,15 @@ use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalPurchaseUnitsFactory;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Exception\Redirect;
 use OxidSolutionCatalysts\PayPal\Exception\RedirectWithMessage;
+use OxidSolutionCatalysts\PayPal\Model\Basket;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -34,6 +35,7 @@ use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Payments\Item;
 
 /**
  * Class OrderController
@@ -78,6 +80,7 @@ class OrderController extends OrderController_parent
     {
         $session = Registry::getSession();
         $lang = Registry::getLang();
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
         if ($session->getVariable('oscpaypal_payment_redirect')) {
             $session->deleteVariable('oscpaypal_payment_redirect');
@@ -90,7 +93,6 @@ class OrderController extends OrderController_parent
         $this->addTplParam('oscpaypal_executing_order', false);
         $isRetry = $this->renderRetryOrderExecution();
 
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
         if (!$isRetry && $paymentService->isOrderExecutionInProgress()) {
             $displayError = oxNew(DisplayError::class);
             $displayError->setMessage('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS');
@@ -102,7 +104,6 @@ class OrderController extends OrderController_parent
             $paymentService->getSessionPaymentId() === PayPalDefinitions::SEPA_PAYPAL_PAYMENT_ID
             || $paymentService->getSessionPaymentId() === PayPalDefinitions::CCALTERNATIVE_PAYPAL_PAYMENT_ID
             || $paymentService->getSessionPaymentId() === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID
-            || $paymentService->getSessionPaymentId() === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID
             || $paymentService->getSessionPaymentId() === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID
         ) {
             $paymentService->removeTemporaryOrder();
@@ -119,32 +120,50 @@ class OrderController extends OrderController_parent
 
             $this->addTplParam('oscpaypal_isVaultingPossible', $isVaultingPossible);
 
-            $selectedVaultPaymentSourceIndex = $session->getVariable("selectedVaultPaymentSourceIndex");
+            $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
 
             if (
                 $isVaultingPossible
-                && !is_null($selectedVaultPaymentSourceIndex)
-                && $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid")
+                && $payPalCustomerId
             ) {
                 $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+                $vaultedPaymentTokens = $vaultingService->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"];
 
-                $selectedPaymentToken = $vaultingService->getVaultPaymentTokenByIndex(
-                    $payPalCustomerId,
-                    $selectedVaultPaymentSourceIndex
-                );
-                //find out which payment token was selected by getting the index via request param
-                $paymentType = key($selectedPaymentToken["payment_source"]);
-                $paymentSource = $selectedPaymentToken["payment_source"][$paymentType];
+                $paymentDescription = '';
+                // Vaulted Cards?
+                if ($paymentId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) {
+                    $selectedVaultPaymentSourceIndex = $session->getVariable("selectedVaultPaymentSourceIndex");
+                    // the PaymentSourceIndex is set in Payment-Controller only by vaulted cards
+                    if (!is_null($selectedVaultPaymentSourceIndex)) {
+                        //find out which payment token was selected by getting the index via request param
+                        $selectedPaymentToken = $vaultedPaymentTokens[$selectedVaultPaymentSourceIndex];
+                        $paymentType = key($selectedPaymentToken["payment_source"]);
+                        $paymentSource = $selectedPaymentToken["payment_source"][$paymentType];
 
-                $paymentDescription = "";
-                if ($paymentType === "card") {
-                    $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
-                    $paymentDescription = $paymentSource["brand"] . " " . $string . $paymentSource["last_digits"];
-                } elseif ($paymentType === "paypal") {
-                    $string = $lang->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
-                    $paymentDescription = $string . " " . $paymentSource["email_address"];
+                        // double check source type
+                        if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
+                            $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
+                            $paymentDescription = $paymentSource["brand"] . " " . $string . $paymentSource["last_digits"];
+                        }
+                    }
                 }
 
+                // Vaulted PP-Accounts?
+                if (
+                    $paymentId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID ||
+                    $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
+                ) {
+                    $foundPayPalVault = false;
+                    foreach ($vaultedPaymentTokens as $vaultPaymentToken) {
+                        if (isset($vaultPaymentToken["payment_source"][PayPalDefinitions::PAYMENT_SOURCE_PAYPAL])) {
+                            $foundPayPalVault = true;
+                            break;
+                        }
+                    }
+                    if ($foundPayPalVault) {
+                        $paymentDescription = $lang->translateString("OSC_PAYPAL_VAULTING_USE_HINT");
+                    }
+                }
                 $this->addTplParam("vaultedPaymentDescription", $paymentDescription);
             }
         }
@@ -387,6 +406,11 @@ class OrderController extends OrderController_parent
 
         $this->outputJson($result);
     }
+    public function isPayPalCheckoutPayment(): bool
+    {
+        $payment = $this->getPayment();
+        return $payment && PayPalDefinitions::isPayPalPayment($payment->getId());
+    }
     public function createApplePayOrder(): void
     {
         try {
@@ -528,7 +552,7 @@ class OrderController extends OrderController_parent
             $deliveryAddress = PayPalAddressResponseToOxidAddress::mapOrderDeliveryAddress($payPalOrder);
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
-            $paymentsId = $order->getFieldData('oxpaymenttype');
+            $paymentsId = $order->getFieldData('oxpaymenttype') ?? '';
             $isButtonPayment = PayPalDefinitions::isButtonPayment($paymentsId);
             if ($isButtonPayment) {
                 $order->assign($deliveryAddress);
@@ -672,15 +696,24 @@ class OrderController extends OrderController_parent
         return parent::getNextStep($success);
     }
 
-    public function getPurchaseUnits()
+    public function getPurchaseUnits(): string
     {
         return Registry::get(PayPalPurchaseUnitsFactory::class)->getPurchaseUnits();
     }
 
+    public function getPayPalCustomerId(): string
+    {
+        $result = '';
+        $user = $this->getUser();
+        if ($user) {
+            $result = $user->getFieldData('oscpaypalcustomerid');
+            $result = !is_null($result) ? $result : '';
+        }
+        return $result;
+    }
     public function getVaultedPaymentSource(): string
     {
-        $user = $this->getUser();
-        $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
+        $payPalCustomerId = $this->getPayPalCustomerId();
         $session = Registry::getSession();
         $selectedVaultPaymentSourceIndex = $session->getVariable("selectedVaultPaymentSourceIndex");
         $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
@@ -699,6 +732,6 @@ class OrderController extends OrderController_parent
                 "id"    => $selectedPaymentToken['id'],
                 "type"  => "SETUP_TOKEN",
             ]
-        ]) : 'null';
+        ], JSON_THROW_ON_ERROR) : 'null';
     }
 }

@@ -208,6 +208,7 @@ class Order extends Order_parent
 
         //TODO: reduce calls to api, see above
         if (is_null($transactionId)) {
+            $capture = $this->getOrderPaymentCapture($payPalOrderId);
             $orderService = Registry::get(ServiceFactory::class)->getOrderService();
             if($payPalPaymentSuccess){
                 $request = new OrderCaptureRequest();
@@ -220,10 +221,12 @@ class Order extends Order_parent
                         Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                     );
                 } catch (ApiException $exception) {
-                $this->setOrderStatus('ERROR');
-                throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
+                    $this->setOrderStatus('ERROR');
+                    throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
+                }
+
             }
-            }
+
             $this->setTransId($capture->id);
         }
 
@@ -275,7 +278,7 @@ class Order extends Order_parent
      * @param Basket $basket      basket object
      * @param object $userpayment user payment object
      *
-     * @return     integer 2 or an error code
+     * @return  integer 2 or an error code
      * @deprecated underscore prefix violates PSR12, will be renamed to "executePayment" in next major
      */
     protected function executePayment(Basket $basket, $userpayment)
@@ -286,10 +289,9 @@ class Order extends Order_parent
         $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($sessionPaymentId);
         $isPayPalACDC = $sessionPaymentId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $sessionPaymentId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
-        $isPayPalPayLater = $sessionPaymentId === PayPalDefinitions::PAYLATER_PAYPAL_PAYMENT_ID;
 
         //catch UAPM, Standard and Pay Later PayPal payments here
-        if ($isPayPalUAPM || $isPayPalStandard || $isPayPalPayLater) {
+        if ($isPayPalUAPM || $isPayPalStandard) {
             try {
                 //order number needs to be set before the payment is requested
                 $this->setOrderNumber();
@@ -303,9 +305,6 @@ class Order extends Order_parent
                         Constants::PAYPAL_ORDER_INTENT_AUTHORIZE;
 
                     $redirectLink = $paymentService->doExecuteStandardPayment($this, $basket, $intent);
-                    if ($isPayPalPayLater) {
-                        $redirectLink .= '&fundingSource=paylater';
-                    }
                 }
                 PayPalSession::setSessionRedirectLink($redirectLink);
 
@@ -600,135 +599,6 @@ class Order extends Order_parent
         return 0 < (int) $this->getFieldData('oxordernr');
     }
 
-    /**
-     * @inheritdoc
-     * @throws     Exception
-     */
-    public function finalizeOrder(Basket $basket, $user, $recalculatingOrder = false)
-    {
-        //we might have the case that the order is already stored but we are waiting for webhook events
-        /** @var PaymentService $paymentService */
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        if (
-            $paymentService->isPayPalPayment() &&
-            $paymentService->isOrderExecutionInProgress() &&
-            $this->load(Registry::getSession()->getVariable('sess_challenge'))
-        ) {
-            //order payment is being processed
-            if (
-                !$this->isOrderFinished() &&
-                !$this->isOrderPaid() &&
-                !$this->isWaitForWebhookTimeoutReached()
-            ) {
-                return self::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS;
-            }
-
-            //ACDC payment dropoff scenario where webhook might have kicked in so we can continue
-            if (
-                (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentService->getSessionPaymentId()) &&
-                $this->isOrderFinished() &&
-                $this->isOrderPaid() &&
-                !$this->hasOrderNumber()
-            ) {
-                return self::ORDER_STATE_NEED_CALL_ACDC_FINALIZE;
-            }
-
-            //webhook events might be delayed so try to fetch information from PayPal api
-            if (
-                (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentService->getSessionPaymentId()) &&
-                !$this->isOrderFinished() &&
-                !$this->isOrderPaid() &&
-                !$this->hasOrderNumber() &&
-                $this->isWaitForWebhookTimeoutReached()
-            ) {
-                return self::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS;
-            }
-        }
-
-        return parent::finalizeOrder($basket, $user, $recalculatingOrder);
-    }
-
-    public function isPayPalOrderCompleted(PayPalApiOrder $apiOrder): bool
-    {
-        return (
-            isset(
-                $apiOrder->status,
-                $apiOrder->purchase_units[0]->payments->captures[0]->status
-            ) &&
-            $apiOrder->status === PayPalApiOrder::STATUS_COMPLETED &&
-            $apiOrder->purchase_units[0]->payments->captures[0]->status === Capture::STATUS_COMPLETED
-        );
-    }
-
-    protected function extractTransactionId(PayPalApiOrder $apiOrder): string
-    {
-        return (string) $apiOrder->purchase_units[0]->payments->captures[0]->id;
-    }
-
-    public function setPayPalTracking(string $trackingCarrier, string $trackingCode): void
-    {
-        // for backwardscompatibility
-        $this->assign(
-            [
-                'oxtrackcode' => $trackingCode
-            ]
-        );
-        $this->save();
-        $payPalOrder = $this->getPayPalRepository();
-        $payPalOrder->setTrackingCode($trackingCode);
-        $payPalOrder->setTrackingCarrier($trackingCarrier);
-        $payPalOrder->save();
-    }
-
-    public function getPayPalTrackingCarrier(): string
-    {
-        return $this->getPayPalRepository()->getTrackingCarrier();
-    }
-
-    public function getPayPalTrackingCode(): string
-    {
-        return $this->getPayPalRepository()->getTrackingCode();
-    }
-
-    public function getPayPalTransactionId(): string
-    {
-        return $this->getPayPalRepository()->getTransactionId();
-    }
-
-    protected function getPayPalRepository(): PayPalOrder
-    {
-        /** @var OrderRepository $payPalOrderRepository */
-        $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
-        $this->payPalOrder = $payPalOrderRepository->paypalOrderByOrderId(
-            $this->getId()
-        );
-        return $this->payPalOrder;
-    }
-
-    /**
-     * @inerhitDoc
-     *
-     * @param string $sOxId Ordering ID (default null)
-     *
-     * @return bool
-     */
-    public function delete($sOxId = null)
-    {
-        $sOxId = $sOxId ?? $this->getId();
-
-        // delete PayPalOrder too
-        /** @var OrderRepository $payPalOrderRepository */
-        $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
-        $payPalOrder = $payPalOrderRepository->paypalOrderByOrderId(
-            $sOxId
-        );
-        if ($payPalOrder->isLoaded()) {
-            $payPalOrder->delete();
-        }
-
-        return parent::delete($sOxId);
-    }
-
     public function finalizePayPalOrder(Basket $oBasket, $oUser, $blRecalculatingOrder = false)
     {
         // check if this order is already stored
@@ -809,14 +679,137 @@ class Order extends Order_parent
             $this->markVouchers($oBasket, $oUser);
         }
 
-        // send order by email to shop owner and current user
-        // skipping this action in case of order recalculation
-        if (!$blRecalculatingOrder) {
-            $iRet = $this->sendOrderByEmail($oUser, $oBasket, $oUserPayment);
-        } else {
-            $iRet = self::ORDER_STATE_OK;
+        return self::ORDER_STATE_OK;
+    }
+
+
+    /**
+     * @inheritdoc
+     * @throws Exception
+     */
+    public function finalizeOrder(Basket $basket, $user, $recalculatingOrder = false)
+    {
+        //we might have the case that the order is already stored but we are waiting for webhook events
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        if (
+            $paymentService->isPayPalPayment() &&
+            $paymentService->isOrderExecutionInProgress() &&
+            $this->load(Registry::getSession()->getVariable('sess_challenge'))
+        ) {
+            //order payment is being processed
+            if (
+                !$this->isOrderFinished() &&
+                !$this->isOrderPaid() &&
+                !$this->isWaitForWebhookTimeoutReached()
+            ) {
+                return self::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS;
+            }
+
+            //ACDC payment dropoff scenario where webhook might have kicked in so we can continue
+            if (
+                (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentService->getSessionPaymentId()) &&
+                $this->isOrderFinished() &&
+                $this->isOrderPaid() &&
+                !$this->hasOrderNumber()
+            ) {
+                return self::ORDER_STATE_NEED_CALL_ACDC_FINALIZE;
+            }
+
+            //webhook events might be delayed so try to fetch information from PayPal api
+            if (
+                (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentService->getSessionPaymentId()) &&
+                !$this->isOrderFinished() &&
+                !$this->isOrderPaid() &&
+                !$this->hasOrderNumber() &&
+                $this->isWaitForWebhookTimeoutReached()
+            ) {
+                return self::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS;
+            }
         }
 
-        return $iRet;
+        return parent::finalizeOrder($basket, $user, $recalculatingOrder);
+    }
+
+    public function isPayPalOrderCompleted(PayPalApiOrder $apiOrder): bool
+    {
+        return (
+            isset(
+                $apiOrder->status,
+                $apiOrder->purchase_units[0]->payments->captures[0]->status
+            ) &&
+            $apiOrder->status === PayPalApiOrder::STATUS_COMPLETED &&
+            $apiOrder->purchase_units[0]->payments->captures[0]->status === Capture::STATUS_COMPLETED
+        );
+    }
+
+    protected function extractTransactionId(PayPalApiOrder $apiOrder): string
+    {
+        return (string) $apiOrder->purchase_units[0]->payments->captures[0]->id;
+    }
+
+    public function setPayPalTracking(string $trackingCarrier, string $trackingCode): void
+    {
+        // for backwards compatibility
+        $this->assign(
+            [
+                'oxtrackcode' => $trackingCode
+            ]
+        );
+        $this->save();
+
+        $payPalOrder = $this->getPayPalRepository();
+        $payPalOrder->setTrackingCode($trackingCode);
+        $payPalOrder->setTrackingCarrier($trackingCarrier);
+        $payPalOrder->save();
+    }
+
+    public function getPayPalTrackingCarrier(): string
+    {
+        return $this->getPayPalRepository()->getTrackingCarrier();
+    }
+
+    public function getPayPalTrackingCode(): string
+    {
+        return $this->getPayPalRepository()->getTrackingCode();
+    }
+
+    public function getPayPalTransactionId(): string
+    {
+        return $this->getPayPalRepository()->getTransactionId();
+    }
+
+    protected function getPayPalRepository(): PayPalOrder
+    {
+        /** @var OrderRepository $payPalOrderRepository */
+        $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
+        $this->payPalOrder = $payPalOrderRepository->paypalOrderByOrderId(
+            $this->getId()
+        );
+        return $this->payPalOrder;
+    }
+
+    /**
+     * @inerhitDoc
+     *
+     * @param string $sOxId Ordering ID (default null)
+     *
+     * @return bool
+     */
+    public function delete($sOxId = null)
+    {
+        $sOxId = $sOxId ?? $this->getId();
+
+        // delete PayPalOrder too
+        /** @var OrderRepository $payPalOrderRepository */
+        $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
+        $payPalOrder = $payPalOrderRepository->paypalOrderByOrderId(
+            $sOxId
+        );
+        if ($payPalOrder->isLoaded()) {
+            $payPalOrder->delete();
+        }
+
+        return parent::delete($sOxId);
     }
 }

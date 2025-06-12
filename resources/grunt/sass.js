@@ -8,9 +8,9 @@ module.exports = {
             outputStyle: 'nested'
         },
         files: {
-            "../assets/css/bootstrap.css": "node_modules/bootstrap/scss/bootstrap.scss",
-            "../assets/css/paypal.css": "build/scss/paypal.scss",
-            "../assets/css/paypal-admin.css": "build/scss/paypal-admin.scss",
+            "../assets/src/css/bootstrap.css": "node_modules/bootstrap/scss/bootstrap.scss",
+            "../assets/src/css/paypal.css": "build/scss/paypal.scss",
+            "../assets/src/css/paypal-admin.css": "build/scss/paypal-admin.scss",
         }
     },
 
@@ -21,9 +21,9 @@ module.exports = {
             outputStyle: 'compressed'
         },
         files: {
-            "../assets/css/bootstrap.css": "node_modules/bootstrap/scss/bootstrap.scss",
-            "../assets/css/paypal.css": "build/scss/paypal.scss",
-            "../assets/css/paypal-admin.css": "build/scss/paypal-admin.scss",
+            "../assets/src/css/bootstrap.css": "node_modules/bootstrap/scss/bootstrap.scss",
+            "../assets/src/css/paypal.css": "build/scss/paypal.scss",
+            "../assets/src/css/paypal-admin.css": "build/scss/paypal-admin.scss",
         }
     }
 };

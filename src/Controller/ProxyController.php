@@ -50,7 +50,7 @@ class ProxyController extends FrontendController
     use JsonTrait;
     use ServiceContainer;
 
-    public function createOrder()
+    public function createOrder(): void
     {
         if (PayPalSession::isPayPalExpressOrderActive()) {
             //TODO: improve
@@ -68,6 +68,7 @@ class ProxyController extends FrontendController
         $session = Registry::getSession();
         $basket = $session->getBasket();
 
+        /** @var ModuleSettings $moduleSettings */
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $defaultShippingPriceExpress = (double) $moduleSettings->getDefaultShippingPriceForExpress();
 
@@ -80,9 +81,14 @@ class ProxyController extends FrontendController
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
         }
 
+        $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
+        $intent = OrderRequest::INTENT_AUTHORIZE;
+        if ($captureStrategy === 'directly') {
+            $intent = OrderRequest::INTENT_CAPTURE;
+        }
         $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
             $basket,
-            OrderRequest::INTENT_CAPTURE,
+            $intent,
             OrderRequestFactory::USER_ACTION_CONTINUE,
             null,
             '',
@@ -154,9 +160,6 @@ class ProxyController extends FrontendController
             false
         );
 
-        if (!$response) {
-            return;
-        }
 
         if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);
@@ -191,7 +194,7 @@ class ProxyController extends FrontendController
             /** @var array $userInvoiceAddress */
             $userInvoiceAddress = $user->getInvoiceAddress();
             // add PayPal-Address as Delivery-Address
-            if (!empty($response->purchase_units[0]->shipping)) {
+            if (($response !== null) && !empty($response->purchase_units[0]->shipping)) {
                 $response->purchase_units[0]->shipping->address = $shippingAddress;
                 $response->purchase_units[0]->shipping->name->full_name = $data['shippingAddress']['name'] ?? '';
                 $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
@@ -346,6 +349,7 @@ class ProxyController extends FrontendController
                     $basket->isNewItemAdded();
                 }
                 // Remove flag of "new item added" to not show "Item added" popup when returning to checkout from paypal
+                $basket->isNewItemAdded();
             } catch (OutOfStockException $exception) {
                 $utilsView->addErrorToDisplay($exception);
             } catch (ArticleInputException $exception) {
@@ -377,10 +381,9 @@ class ProxyController extends FrontendController
 
     private function getActiveShippingSetId($session, $user, $basket): void
     {
-        $sShipSet = $session->getVariable('sShipSet');
         /** @psalm-suppress InvalidArgument */
         [, $shippingSetId,] =
-            Registry::get(DeliverySetList::class)->getDeliverySetData($sShipSet, $user, $basket);
+            Registry::get(DeliverySetList::class)->getDeliverySetData('', $user, $basket);
 
         if ($shippingSetId) {
             $basket->setShipping($shippingSetId);
@@ -537,9 +540,6 @@ class ProxyController extends FrontendController
             false
         );
 
-        if (!$response) {
-            return;
-        }
 
         if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);
@@ -620,7 +620,7 @@ class ProxyController extends FrontendController
         $this->outputJson($response);
     }
 
-    private function itemExists(?Basket $basket, ?string $articleOxid, int $amountToBasket): bool
+    private function itemExists(?Basket $basket, ?string $articleOxid, ?int $amountToBasket): bool
     {
         if ($basket === null) {
             return false;
@@ -628,7 +628,7 @@ class ProxyController extends FrontendController
 
         $basketContents = $basket->getContents();
         foreach ($basketContents as $basketItem) {
-            if ($basketItem->getProductId() === $articleOxid && $basketItem->getAmount() == $amountToBasket) {
+            if ($basketItem->getProductId() === $articleOxid && $basketItem->getAmount() === $amountToBasket) {
                 return true;
             }
         }

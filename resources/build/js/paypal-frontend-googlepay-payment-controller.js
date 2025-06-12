@@ -47,10 +47,9 @@
             }
             return PayPalPayment.paymentsClient;
         };
-        
+
         this.onGooglePaymentButtonClicked = async function () {
-            let url = PayPalPayment.getConfigValue('shopOrderCreateUrl').replaceAll('&amp;', '&');
-            let response = await fetch(url, {
+            let response = await fetch(PayPalPayment.getConfigValue('shopOrderCreateUrl'), {
                 method: 'post',
                 headers: Object.assign({
                     'content-type': 'application/json',
@@ -69,7 +68,14 @@
             const paymentDataRequest = await PayPalPayment.getGooglePaymentDataRequest();
             paymentDataRequest.transactionInfo = PayPalPayment.getGoogleTransactionInfo();
             if ('function' === typeof paymentsClient.loadPaymentData) {
-                paymentsClient.loadPaymentData(paymentDataRequest);
+                try {
+                    await paymentsClient.loadPaymentData(paymentDataRequest);
+                } catch (err) {
+                    // user cancels code
+                    if (err.code === 20 ) {
+                        await PayPalPayment.cancelOrder();
+                    }
+                }
             }
         };
 
@@ -113,7 +119,6 @@
             return this.paymentsClient;
         };
 
-
         this.getGoogleIsReadyToPayRequest = function (allowedPaymentMethods) {
             return Object.assign({}, this.baseRequest, {
                 allowedPaymentMethods: allowedPaymentMethods
@@ -123,7 +128,7 @@
         this.onShopOrderCreated = function (data) {
             PayPalPayment.setShopOrderData(data.detail, 'shop');
         };
-        
+
         this.onInit = async function (e) {
             let this_ = e.detail;
             await window.googlePayReady;
@@ -160,11 +165,12 @@
 
         this.processPayment = async function (paymentDataAttr) {
             try {
-                const createOrderUrl = PayPalPayment.getConfigValue('googlePayOrderCreateUrl').replaceAll('&amp;', '&');
+                const createOrderUrl = PayPalPayment.getConfigValue('googlePayOrderCreateUrl');
                 const paymentData = {
                     ...paymentDataAttr,
                     shopOrderId: PayPalPayment.currentOrder.shop.shopOrderId
                 };
+
                 const {id: orderId, status} = await fetch(createOrderUrl, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
@@ -193,12 +199,13 @@
             }
         };
         this.confirmOrder= async function (orderId, paymentData) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
             const confirmOrderResponse = await paypal.Googlepay().confirmOrder({
                 orderId: orderId,
                 paymentMethodData: paymentData.paymentMethodData
             });
 
-            if (confirmOrderResponse.status === "PAYER_ACTION_REQUIRED") {
+            if (confirmOrderResponse.status === "PAYER_ACTION_REQUIRED" || confirmOrderResponse.status === 'APPROVED') {
                 PayPalPayment.googlePayUserActionRequired(orderId);
             } else {
                 PayPalPayment.handleError();
@@ -216,7 +223,7 @@
         };
 
         this.executeOxidOrder = async function (orderId) {
-            const url = PayPalPayment.getConfigValue('executeGooglePayOrder').replaceAll('&amp;', '&');
+            const url = PayPalPayment.getConfigValue('executeGooglePayOrder');
             createData = new FormData();
             createData.append('orderID', orderId);
 
@@ -239,7 +246,7 @@
         };
 
         this.captureOrder = async function (orderId) {
-            const url = PayPalPayment.getConfigValue('captureGooglePayOrder').replaceAll('&amp;', '&');
+            const url = PayPalPayment.getConfigValue('captureGooglePayOrder');
             captureData = new FormData();
             captureData.append('orderID', orderId);
             await fetch(url, {
@@ -249,8 +256,7 @@
                 return res.json();
             }).then(function (data) {
                 if ('undefined' !== typeof data.token) {
-                    let location = PayPalPayment.getConfigValue('finalizeGooglePayOrder').replaceAll('&amp;', '&') + '&token=' + data.token;
-                    window.location = location;
+                    window.location = PayPalPayment.getConfigValue('finalizeGooglePayOrder') + '&token=' + data.token;
                     return;
                 }
 

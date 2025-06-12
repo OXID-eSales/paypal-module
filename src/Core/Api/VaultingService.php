@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -29,8 +30,10 @@ class VaultingService extends BaseService
         $headers['Content-Type'] = 'application/x-www-form-urlencoded';
         $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
 
-        $params['grant_type']       = 'client_credentials';
-        $params['response_type']    = 'id_token';
+        $params = [
+            'response_type' => 'id_token',
+            'grant_type'    => 'client_credentials',
+        ];
 
         if ($payPalCustomerId) {
             $params["target_customer_id"] = $payPalCustomerId;
@@ -54,20 +57,21 @@ class VaultingService extends BaseService
 
     /**
      * Request a setup token either for card or for PayPal vaulting
-     * @param bool $card
+     * @param string $paymentTypeId
      * @return array
      * @throws JsonException
      */
-    public function createVaultSetupToken(bool $card = false): array
+    public function createVaultSetupToken(string $paymentTypeId): array
     {
-        if ($card) {
+        $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName($paymentTypeId);
+        if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
             $requestBody = [
                 "payment_source" => [
-                    "card" => [],
+                    $paymentSourceId => [],
                 ]
             ];
         } else {
-            $requestBody = $this->getPaymentSourceForVaulting($card);
+            $requestBody = $this->getPaymentSourceForVaulting($paymentSourceId);
         }
 
         //add customerid if there already is one
@@ -106,10 +110,10 @@ class VaultingService extends BaseService
     }
 
     /**
-     * @param bool $card
+     * @param string $paymentSourceId
      * @return array
      */
-    public function getPaymentSourceForVaulting(bool $card): array
+    public function getPaymentSourceForVaulting(string $paymentSourceId): array
     {
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $viewConf   = Registry::get(ViewConfig::class);
@@ -152,10 +156,10 @@ class VaultingService extends BaseService
 //            "shipping_preference" => "SET_PROVIDED_ADDRESS",
         ];
 
-        if ($card) {
+        if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
             $paymentSource = [
-                "card" => [
-                    "name" => "$name",
+                $paymentSourceId => [
+                    "name" => $name,
                     "billing_address"       => $address,
                     "verification_method"   => "SCA_WHEN_REQUIRED",
                     "experience_context"    => $experience_context,
@@ -172,7 +176,7 @@ class VaultingService extends BaseService
         } else {
             $paymentSource = [
                 "payment_source" => [
-                    "paypal" => [
+                    $paymentSourceId => [
                         "description"   => $description,
                         "shipping"      => [
                             "name"      => [
@@ -253,22 +257,25 @@ class VaultingService extends BaseService
         $uniquePaypalVaultedPaymentSources = [];
         foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
             foreach ($vaultedPaymentToken["payment_source"] as $paymentType => $paymentSource) {
-                if ($paymentType === 'paypal' && $moduleSettings->isVaultingAllowedForPayPal()) {
+                if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL && $moduleSettings->isVaultingAllowedForPayPal()) {
                     $email = $paymentSource["email_address"];
                     $payer_id = $paymentSource["payer_id"];
 
                     if (!isset($uniquePaypalVaultedPaymentSources[$email])) {
                         $uniquePaypalVaultedPaymentSources[$email] = [];
                     }
+
                     if (in_array($payer_id, $uniquePaypalVaultedPaymentSources[$email])) {
                         continue;
                     }
+
                     $uniquePaypalVaultedPaymentSources[$email][] = $payer_id;
                 }
                 $filteredVaultedPaymentTokens[] = $vaultedPaymentToken;
             }
         }
         $result['payment_tokens'] = $filteredVaultedPaymentTokens;
+
         return is_array($result) ? $result : [];
     }
 

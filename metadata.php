@@ -129,6 +129,9 @@ $aModule = [
 
         // PAYPAL-486 Register templates for overloading here;
         // use theme name in key when theme-specific. Shared templates don't receive a theme-specific key.
+        '@osc_paypal/frontend/shared/layout/base_paypal_button_config.tpl' => 'views/smarty/frontend/shared/layout/base_paypal_button_config.tpl',
+        '@osc_paypal/frontend/shared/layout/base_paypal_payment_controller_config.tpl' => 'views/smarty/frontend/shared/layout/base_paypal_payment_controller_config.tpl',
+        '@osc_paypal/frontend/shared/layout/base_js.tpl' => 'views/smarty/frontend/shared/layout/base_js.tpl',
         '@osc_paypal/frontend/shared/acdc.tpl' => 'views/smarty/frontend/shared/page/checkout/acdc.tpl',
         '@osc_paypal/frontend/shared/sepa_cc_alternative.tpl' => 'views/smarty/frontend/shared/page/checkout/sepa_cc_alternative.tpl',
         '@osc_paypal/frontend/shared/select_payment.tpl' => 'views/smarty/frontend/shared/page/checkout/select_payment.tpl',
@@ -157,117 +160,117 @@ $aModule = [
         [
             'template' => 'headitem.tpl',
             'block' => 'admin_headitem_inccss',
-            'file' => 'views/smarty/admin/blocks/admin_headitem_inccss.tpl'
+            'file' => 'views/smarty/extensions/themes/admin/admin_headitem_inccss.tpl'
         ],
         [
             'template' => 'headitem.tpl',
             'block' => 'admin_headitem_incjs',
-            'file' => 'views/smarty/admin/blocks/admin_headitem_incjs.tpl'
+            'file' => 'views/smarty/extensions/themes/admin/admin_headitem_incjs.tpl'
         ],
         [
             'template' => 'order_main.tpl',
             'block' => 'admin_order_main_form_shipping',
-            'file' => 'views/smarty/admin/blocks/admin_order_main_form_shipping.tpl'
+            'file' => 'views/smarty/extensions/themes/admin/admin_order_main_form_shipping.tpl'
         ],
         [
             'template' => 'order_main.tpl',
             'block' => 'admin_order_main_send_order',
-            'file' => 'views/smarty/admin/blocks/admin_order_main_send_order.tpl'
+            'file' => 'views/smarty/extensions/themes/admin/admin_order_main_send_order.tpl'
         ],
         [
             'template' => 'layout/base.tpl',
             'block' => 'base_js',
-            'file' => 'views/smarty/frontend/blocks/layout/base_js.tpl'
+            'file' => 'views/smarty/extensions/themes/default/layout/base_js.tpl'
         ],
         [
             'template' => 'layout/base.tpl',
             'block' => 'base_style',
-            'file' => 'views/smarty/frontend/blocks/layout/base_style.tpl'
+            'file' => 'views/smarty/extensions/themes/default/layout/base_style.tpl'
         ],
         [
             'template' => 'page/account/inc/account_menu.tpl',
             'block' => 'account_menu',
-            'file' => 'views/smarty/frontend/blocks/page/account/inc/account_menu.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/account/inc/account_menu.tpl',
         ],
         [
             'template' => 'page/checkout/basket.tpl',
             'block' => 'basket_btn_next_bottom',
-            'file' => 'views/smarty/frontend/blocks/page/checkout/basket_btn_next_bottom.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/checkout/basket_btn_next_bottom.tpl',
         ],
         [
             'template' => 'page/checkout/basket.tpl',
             'block' => 'checkout_basket_next_step_top',
-            'file' => 'views/smarty/frontend/blocks/page/checkout/basket_installment_banner_after.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/checkout/basket_installment_banner_after.tpl',
         ],
         [
             'template' => 'page/checkout/basket.tpl',
             'block' => 'checkout_basket_backtoshop_bottom',
-            'file' => 'views/smarty/frontend/blocks/page/checkout/checkout_basket_backtoshop_bottom.tpl'
+            'file' => 'views/smarty/extensions/themes/default/page/checkout/checkout_basket_backtoshop_bottom.tpl'
         ],
         [
             'template' => 'page/checkout/basket.tpl',
             'block' => 'checkout_basket_emptyshippingcart',
-            'file' => 'views/smarty/frontend/blocks/page/checkout/basket_installment_banner_before.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/checkout/basket_installment_banner_before.tpl',
         ],
         [
             'template' => 'page/checkout/order.tpl',
             'block' => 'checkout_order_btn_submit_bottom',
-            'file' => 'views/smarty/frontend/blocks/page/checkout/checkout_order_btn_submit_bottom.tpl'
+            'file' => 'views/smarty/extensions/themes/default/page/checkout/checkout_order_btn_submit_bottom.tpl'
         ],
         [
             'template' => 'page/checkout/order.tpl',
             'block' => 'shippingAndPayment',
-            'file' => 'views/smarty/frontend/blocks/page/checkout/shipping_and_payment.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/checkout/shipping_and_payment.tpl',
         ],
         [
             'template' => 'page/checkout/payment.tpl',
             'block' => 'change_payment',
-            'file' => 'views/smarty/frontend/blocks/page/checkout/change_payment.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/checkout/change_payment.tpl',
         ],
         [
             'template' => 'page/checkout/payment.tpl',
             'block' => 'checkout_payment_main',
-            'file' => 'views/smarty/frontend/blocks/page/checkout/basket_installment_banner_before.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/checkout/basket_installment_banner_before.tpl',
         ],
         [
             'template' => 'page/checkout/payment.tpl',
             'block' => 'select_payment',
-            'file' => 'views/smarty/frontend/blocks/page/checkout/select_payment.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/checkout/select_payment.tpl',
         ],
         [
             'template' => 'page/checkout/thankyou.tpl',
             'block' => 'checkout_thankyou_info',
-            'file' => 'views/smarty/frontend/blocks/page/checkout/checkout_thankyou_info.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/checkout/checkout_thankyou_info.tpl',
         ],
         [
             'template' => 'page/details/inc/productmain.tpl',
             'block' => 'details_productmain_price_value',
-            'file' => 'views/smarty/frontend/blocks/page/details/inc/details_productmain_price_value.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/details/inc/details_productmain_price_value.tpl',
         ],
         [
             'template' => 'page/details/inc/productmain.tpl',
             'block' => 'details_productmain_tobasket',
-            'file' => 'views/smarty/frontend/blocks/page/details/inc/details_productmain_tobasket.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/details/inc/details_productmain_tobasket.tpl',
         ],
         [
             'template' => 'page/list/list.tpl',
             'block' => 'page_list_listhead',
-            'file' => 'views/smarty/frontend/blocks/page/list/page_list_listhead.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/list/page_list_listhead.tpl',
         ],
         [
             'template' => 'page/search/search.tpl',
             'block' => 'search_header',
-            'file' => 'views/smarty/frontend/blocks/page/search/search_header.tpl'
+            'file' => 'views/smarty/extensions/themes/default/page/search/search_header.tpl'
         ],
         [
             'template' => 'page/shop/start.tpl',
             'block' => 'start_welcome_text',
-            'file' => 'views/smarty/frontend/blocks/page/shop/start_welcome_text.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/shop/start_welcome_text.tpl',
         ],
         [
             'template' => 'widget/minibasket/minibasket.tpl',
             'block' => 'dd_layout_page_header_icon_menu_minibasket_functions',
-            'file' => 'views/smarty/frontend/blocks/widget/minibasket/dd_layout_page_header_icon_menu_minibasket_functions.tpl',
+            'file' => 'views/smarty/extensions/themes/default/widget/minibasket/dd_layout_page_header_icon_menu_minibasket_functions.tpl',
         ],
     ],
     'settings' => [

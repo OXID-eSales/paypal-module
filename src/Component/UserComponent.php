@@ -42,6 +42,9 @@ class UserComponent extends UserComponent_parent
         }
     }
 
+    /**
+     * @throws Exception
+     */
     public function createPayPalGuestUser(Order $response): void
     {
         $this->setParent(oxNew('Register'));
@@ -55,7 +58,8 @@ class UserComponent extends UserComponent_parent
         $invoiceAddress = PayPalAddressResponseToOxidAddress::mapUserInvoiceAddress($response);
         $this->setRequestParameterByPayPal('invadr', $invoiceAddress);
 
-        $this->registerUser();
+        // registered new user
+        $this->createUser();
     }
 
     /**

@@ -45,7 +45,7 @@ $aLang = [
     'HELP_OSC_PAYPAL_BUTTON_PLACEMEMT'            => 'Toggle the display of PayPal buttons',
     'OSC_SHOW_PAYPAL_PAYLATER_BUTTON'             => 'Show "Pay later"-Button?',
     'HELP_OSC_SHOW_PAYPAL_PAYLATER_BUTTON'        => 'In addition to the classic PayPal button, there is a "Pay later"-button that can be displayed below the standard button. If it is activated, the customer has the option of paying for the goods later.',
-        "OSC_PAYPAL_STYLE_BUTTON_TITLE"             => "Buttons Customization",
+    "OSC_PAYPAL_STYLE_BUTTON_TITLE"             => "Buttons Customization",
     "OSC_PAYPAL_STYLE_BUTTON_LAYOUT"            => "Layout",
     "OSC_PAYPAL_STYLE_BUTTON_LAYOUT_HORIZONTAL" => "Horizontal",
     "OSC_PAYPAL_STYLE_BUTTON_LAYOUT_VERTICAL"   => "Vertical",
@@ -130,7 +130,6 @@ $aLang = [
     'OSC_PAYPAL_MONEY_REFUND'                     => 'Money refund',
     'OSC_PAYPAL_CAPTURE'                          => 'Capture',
     'OSC_PAYPAL_REFUND'                           => 'Refund',
-    'OSC_PAYPAL_CONFIRM_REFUND'                   => 'Do you really want to request a refund?',
     'OSC_PAYPAL_DETAILS'                          => 'Details',
     'OSC_PAYPAL_AUTHORIZATION'                    => 'Authorization',
     'OSC_PAYPAL_CANCEL_AUTHORIZATION'             => 'Void',
@@ -162,6 +161,7 @@ $aLang = [
     'OSC_PAYPAL_COMMENT'                          => 'Comment',
     'OSC_PAYPAL_TRANSACTIONID'                    => 'Transaction ID',
     'OSC_PAYPAL_REFUND_AMOUNT'                    => 'Refund amount',
+    'OSC_PAYPAL_CONFIRM_REFUND'                   => 'Do you really want to request a refund?',
     'OSC_PAYPAL_INVOICE_ID'                       => 'Invoice No',
     'OSC_PAYPAL_NOTE_TO_BUYER'                    => 'Note to buyer',
     'OSC_PAYPAL_REFUND_ALL'                       => 'Refund all',
@@ -314,15 +314,15 @@ $aLang = [
                                                         mean higher checkout conversion.',
     'OSC_PAYPAL_EXPRESS_SHIPPING_TITLE'             => 'Pseudo shipping costs for PayPal Express',
     'OSC_PAYPAL_EXPRESS_SHIPPING_DESC'              => 'PayPal Express requires shipping costs to authorize the shopping cart amount. If a customer has neither logged in to the shop nor provided their shipping address, the shop cannot calculate shipping costs by default. In the shop settings (Master Settings > Core Settings > Tab Settings > Section Other Settings ) there is an option "Calculate default Shipping costs when User is not logged in yet". This allows OXID to try to calculate the shipping costs for standard cases. If you do not want to use this option, the last option is to enter pseudo shipping costs. These should be as close to the shipping costs you use most often. As soon as the customer is in the checkout and their delivery address and desired shipping method are known to the shop, the actual shipping costs are calculated. These overwrite all previously used "auxiliary" shipping costs.',
-    'OSC_PAYPAL_GOOGLEPAY_TITLE'                     => 'Google Pay address',
-    'OSC_PAYPAL_GOOGLEPAY_ADDRESS_ACTIVATE'           => 'Google Pay address active',
-    'HELP_OSC_OSC_PAYPAL_GOOGLEPAY_ADRESS_ACTIVATE'     => 'Takeover delivery address from googlepay',
+    'OSC_PAYPAL_GOOGLEPAY_TITLE'                    => 'Google Pay address',
+    'OSC_PAYPAL_GOOGLEPAY_ADDRESS_ACTIVATE'         => 'Google Pay address active',
+    'HELP_OSC_OSC_PAYPAL_GOOGLEPAY_ADRESS_ACTIVATE' => 'Takeover delivery address from googlepay',
 
     'OSC_PAYPAL_INSTALLPROCESS_FAILED'              => 'Because the module was not installed correctly via Composer, errors occurred during the (de)activation of the module. Please reinstall the module via composer and repeat the process.',
 
-
     // PayPal Payment
     'OSC_PAYPAL_PAYMENT_DEPRECATED'                 => 'This PayPal payment method can no longer be activated as it will be removed soon!',
+
     'OSC_PAYPAL_CUSTOM_ID_CONTENTS_TITLE'           => 'PayPal custom id field contents',
     'OSC_PAYPAL_CUSTOM_ID_CONTENTS_DESC'            => 'PayPal custom id field will be JSON encoded string with order number, shop version and the PayPal module version.',
 ];

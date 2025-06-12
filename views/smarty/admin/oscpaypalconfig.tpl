@@ -34,7 +34,6 @@
         <input type="hidden" name="cl" value="[{$oViewConf->getActiveClassName()}]">
         <input type="hidden" name="fnc" value="save">
         <input type="hidden" name="oxid" value="[{$oModule->getInfo('id')}]">
-
         <div id="accordion">
             <div class="card">
                 <div class="card-header" id="heading1">

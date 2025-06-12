@@ -155,6 +155,7 @@ class Events
             $logger = $container->get(Logger::class);
 
             $userRepository = $container->get(UserRepository::class);
+
             return new ModuleSettings(
                 $moduleSettingsBridge,
                 $context,
