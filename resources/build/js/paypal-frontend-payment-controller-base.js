@@ -137,7 +137,7 @@
                 await PayPalPayment.vaultPayment(paypalOrderDetails);
             }
 
-            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl').replaceAll('&amp;', '&');
+            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
         };
 
         this.handlePaymentAuthorization = async function (details) {

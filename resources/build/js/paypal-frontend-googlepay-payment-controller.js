@@ -49,7 +49,7 @@
         };
 
         this.onGooglePaymentButtonClicked = async function () {
-            let response = await fetch(PayPalPayment.getConfigValue('shopOrderCreateUrl').replaceAll('&amp;', '&'), {
+            let response = await fetch(PayPalPayment.getConfigValue('shopOrderCreateUrl'), {
                 method: 'post',
                 headers: Object.assign({
                     'content-type': 'application/json',
@@ -165,7 +165,7 @@
 
         this.processPayment = async function (paymentDataAttr) {
             try {
-                const createOrderUrl = PayPalPayment.getConfigValue('googlePayOrderCreateUrl').replaceAll('&amp;', '&');
+                const createOrderUrl = PayPalPayment.getConfigValue('googlePayOrderCreateUrl');
                 const paymentData = {
                     ...paymentDataAttr,
                     shopOrderId: PayPalPayment.currentOrder.shop.shopOrderId
@@ -223,7 +223,7 @@
         };
 
         this.executeOxidOrder = async function (orderId) {
-            const url = PayPalPayment.getConfigValue('executeGooglePayOrder').replaceAll('&amp;', '&');
+            const url = PayPalPayment.getConfigValue('executeGooglePayOrder');
             createData = new FormData();
             createData.append('orderID', orderId);
 
@@ -246,7 +246,7 @@
         };
 
         this.captureOrder = async function (orderId) {
-            const url = PayPalPayment.getConfigValue('captureGooglePayOrder').replaceAll('&amp;', '&');
+            const url = PayPalPayment.getConfigValue('captureGooglePayOrder');
             captureData = new FormData();
             captureData.append('orderID', orderId);
             await fetch(url, {

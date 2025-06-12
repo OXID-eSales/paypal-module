@@ -49,7 +49,7 @@
         };
 
         this.afterCaptureOrder = function (details) {
-            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl').replaceAll('&amp;', '&');
+            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
         };
 
         this.initializeAcceptPaymentButton = function () {

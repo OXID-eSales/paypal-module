@@ -1,8 +1,8 @@
 [{if $oViewConf->isPayPalCheckoutActive()}]
-    [{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','out/src/js/paypal-frontend.min.js')|filemtime}]
-    <script src="[{$oViewConf->getModuleUrl('osc_paypal','out/src/js/paypal-frontend.min.js')|cat:"?"|cat:$sFileMTime}]"></script>
-    [{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','out/src/css/paypal.min.css')|filemtime}]
-    [{oxstyle include=$oViewConf->getModuleUrl('osc_paypal', 'out/src/css/paypal.min.css')|cat:"?"|cat:$sFileMTime}]
+    [{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','src/js/paypal-frontend.min.js')|filemtime}]
+    <script src="[{$oViewConf->getModuleUrl('osc_paypal','src/js/paypal-frontend.min.js')|cat:"?"|cat:$sFileMTime}]"></script>
+    [{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','src/css/paypal.min.css')|filemtime}]
+    [{oxstyle include=$oViewConf->getModuleUrl('osc_paypal', 'src/css/paypal.min.css')|cat:"?"|cat:$sFileMTime}]
     <script src="[{$oViewConf->getPayPalJsSdkUrl($commitFlow)}]"
         [{if $oViewConf->isVaultingEligibility()}]
             data-user-id-token="[{$oViewConf->getUserIdForVaulting()}]"

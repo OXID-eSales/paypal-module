@@ -7,9 +7,9 @@ module.exports = {
         files: [
             {
                 expand: true,
-                cwd: '../assets/css',
+                cwd: '../src/assets/css',
                 src: ['*.css', '!*.min.css'],
-                dest: '../assets/css',
+                dest: '../src/assets/css',
                 ext: '.min.css',
                 extDot: 'last'
         }
