@@ -25,7 +25,7 @@
             {{ script({ add: "$('#configForm').oxModuleConfiguration();", priority: 10, dynamic: __oxid_include_dynamic }) }}
             {{ script({ add: "$.noConflict();", priority: 10, dynamic: __oxid_include_dynamic }) }}
 
-            {{ script({ include: oViewConf.getModuleUrl('osc_paypal','js/paypal-admin.min.js'), priority: 10, dynamic: __oxid_include_dynamic }) }}
+            {{ script({ include: oViewConf.getModuleUrl('osc_paypal','src/js/paypal-admin.min.js'), priority: 10, dynamic: __oxid_include_dynamic }) }}
         {% endif %}
     {% endif %}
     {{ parent() }}
