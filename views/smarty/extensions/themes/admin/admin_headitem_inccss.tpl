@@ -5,8 +5,10 @@
     ) ||
     $oViewConf->getTopActiveClassName()|lower=="oscpaypalorder"
 }]
-    [{oxstyle include=$oViewConf->getModuleUrl('osc_paypal','css/bootstrap.min.css') priority=10}]
-    [{oxstyle include=$oViewConf->getModuleUrl('osc_paypal','css/paypal-admin.min.css') priority=10}]
+    [{assign var="sFileMTimeBootstrap" value=$oViewConf->getModulePath('osc_paypal','src/css/bootstrap.min.css')|filemtime}]
+    [{oxstyle include=$oViewConf->getModuleUrl('osc_paypal','src/css/bootstrap.min.css')|cat:"?"|cat:$sFileMTimeBootstrap priority=10}]
+    [{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','src/css/paypal-admin.min.css')|filemtime}]
+    [{oxstyle include=$oViewConf->getModuleUrl('osc_paypal','src/css/paypal-admin.min.css')|cat:"?"|cat:$sFileMTime priority=10}]
     [{oxstyle}]
 [{/if}]
 [{$smarty.block.parent}]

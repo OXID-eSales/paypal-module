@@ -15,7 +15,8 @@
         [{oxscript add="$('#configForm').oxModuleConfiguration();" priority=10}]
         [{oxscript add="$.noConflict();" priority=10}]
 
-        [{oxscript include=$oViewConf->getModuleUrl('osc_paypal','js/paypal-admin.min.js') priority=10}]
+        [{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','src/js/paypal-admin.min.js')|filemtime}]
+        [{oxscript include=$oViewConf->getModuleUrl('osc_paypal','src/js/paypal-admin.min.js')|cat:"?"|cat:$sFileMTime priority=10}]
     [{/if}]
 [{/if}]
 [{$smarty.block.parent}]
