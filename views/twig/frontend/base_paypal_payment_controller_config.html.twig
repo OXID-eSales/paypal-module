@@ -1,4 +1,4 @@
-{% if getControllerName(oView) == 'OrderController' %}
+{% if oViewConf.getTopActiveClassName() == 'order' %}
     {% set payment = oView.getPayment() %}
     {% set paymentId = payment.getId() %}
     {% set sToken = oViewConf.getSessionChallengeToken() %}

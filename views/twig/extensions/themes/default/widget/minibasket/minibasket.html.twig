@@ -3,9 +3,6 @@
 {% block dd_layout_page_header_icon_menu_minibasket_functions %}
     {{ parent() }}
     {% if oViewConf.showPayPalExpressInMiniBasket() %}
-        <div class="text-center paypal-button-or">
-            {{ translate({ ident: "OR" })|upper }}
-        </div>
         {% include "@osc_paypal/frontend/paymentbuttons.html.twig" with {buttonId: "PayPalPayButtonNextCart1", buttonClass: "paypal-button-wrapper"} %}
     {% endif %}
     {% include "@osc_paypal/frontend/paypalexpresshint.html.twig" with {withBreak: true} %}
