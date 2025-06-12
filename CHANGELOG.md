@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [2.5.4] - 2025-06-12
+
+- set the PayPal-Client to v2.0.19
+- and PHP-Versions to 7.4-8.1
+
 ## [2.5.3] - 2025-04-04
 
 ### FIX
