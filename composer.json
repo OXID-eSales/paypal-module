@@ -25,7 +25,8 @@
         "viison/address-splitter": "^0.3.4",
         "webmozart/path-util": "^2.3.0",
         "oxid-solution-catalysts/paypal-client": "v2.0.20",
-        "symfony/dotenv": "*"
+        "symfony/dotenv": "*",
+        "php": "^7.4|^8.0|^8.1"
     },
     "require-dev": {
         "codeception/module-rest": "^1.4.2",
