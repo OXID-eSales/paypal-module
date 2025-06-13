@@ -1,42 +1,8 @@
 {% extends "layout/base.html.twig" %}
 
-{% set isSDKNecessary = oViewConf.isSDKNecessary(true) %}
-
 {% block base_js %}
     {{ parent() }}
-    {% if oViewConf.isPayPalCheckoutActive() and isSDKNecessary %}
-        {% include "@osc_paypal/frontend/base_paypal_button_config.html.twig" %}
-        {% include "@osc_paypal/frontend/base_paypal_payment_controller_config.html.twig" %}
-
-        {% set sFileMTime = oViewConf.getModulePath('osc_paypal', 'js/paypal-frontend.min.js') | getFileMTime %}
-        <script src="{{ oViewConf.getModuleUrl('osc_paypal','js/paypal-frontend.min.js') ~ '?' ~ sFileMTime }}"></script>
-        <script src="{{ oViewConf.getPayPalJsSdkUrl() }}"
-                {% if oViewConf.isVaultingEligibility() %}
-                    data-user-id-token="{{ oViewConf.getUserIdForVaulting() }}"
-                {% endif %}
-                data-partner-attribution-id="{{ oViewConf.getPayPalPartnerAttributionIdForBanner() }}"
-                data-client-token="{{ oViewConf.getDataClientToken() }}"
-                onload="window.OxidPayPal.onSDKLoaded()"
-        ></script>
-        {% set sCountryRestriction = oViewConf.getCountryRestrictionForPayPalExpress() %}
-        {% if sCountryRestriction %}
-            <script>
-                const countryRestriction = [{{ sCountryRestriction|raw }}];
-            </script>
-        {% endif %}
-        {% if submitCart %}
-            <script>
-                document.getElementById('orderConfirmAgbBottom').submit();
-            </script>
-        {% endif %}
-    {% endif %}
-    {% include "@osc_paypal/frontend/base_paypal_button_config.html.twig"  %}
-{% endblock %}
-
-{% block base_style %}
-    {{ parent() }}
-    {% if oViewConf.isPayPalCheckoutActive() and isSDKNecessary %}
-    {{ style({ include: oViewConf.getModuleUrl('osc_paypal', 'css/paypal.min.css') }) }}
-    {% endif %}
-
+    {% set oConfig = oViewConf.getConfig() %}
+    {% set PayPalSDKJS = oConfig.getGlobalParameter("PayPalSDKJS") %}
+    {{ PayPalSDKJS|raw }}
 {% endblock %}

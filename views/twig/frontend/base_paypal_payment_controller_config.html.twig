@@ -1,8 +1,8 @@
-{% if getControllerName(oView) == 'OrderController' %}
+{% if oViewConf.getTopActiveClassName() == 'order' %}
     {% set payment = oView.getPayment() %}
     {% set paymentId = payment.getId() %}
     {% set sToken = oViewConf.getSessionChallengeToken() %}
-    {% set sSelfLink = oViewConf.getSslSelfLink() %}
+    {% set sSelfLink = oViewConf.getSslSelfLink()|replace({"&amp;": "&"}) %}
     {% set purchaseUnits = oView.getPurchaseUnits() %}
     {% set vaultedPaymentSource = oView.getVaultedPaymentSource() %}
     {% set oPPconfig = oViewConf.getPayPalCheckoutConfig() %}
@@ -19,7 +19,7 @@
     <script>
         const PayPalPaymentControllerConfiguratorDefaults = {
             shopOrderErrorUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=logError&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
-            shopOrderDeleteUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=cancelShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
+            shopOrderCancelUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=cancelShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
             payPalOrderDetailsUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=fetchPayPalOrderDetails&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
             errorLogUrl: '{{ (sSelfLink ~ "cl=payment&payerror=2&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
             shopThankYouPageUrl: '{{ (sSelfLink ~ "cl=thankyou&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',

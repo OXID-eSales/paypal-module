@@ -1,39 +1,41 @@
 {% set vaultedPaymentSources = oViewConf.getVaultPaymentTokens() %}
 
 {% if vaultedPaymentSources %}
-    {{ oViewConf.setSDKIsNecessary(true) }}
     <div class="card">
         <div class="card-header">
             <h3 id="paymentHeader" class="card-title">{{ translate({ ident: "OSC_PAYPAL_VAULTING_VAULTED_PAYMENTS" }) }}</h3>
         </div>
-        <div class="card-body">
-            <ul class="list-unstyled">
-                {% for paymentToken in vaultedPaymentSources %}
-                    <li class="mb-3">
-                        <form action="{{ oViewConf.getSslSelfLink()|replace({"&amp;": "&"}) }}" method="post">
-                            <div class="hidden">
-                                {{ oViewConf.getHiddenSid()|raw }}
-                                <input type="hidden" name="cl" value="{{ oViewConf.getActiveClassName() }}">
-                                <input type="hidden" name="fnc" value="deleteVaultedPayment">
-                                <input type="hidden" name="paymentTokenId" value="{{ paymentToken.id }}">
-                            </div>
-
+        <div class="card-body" id="savedPaymentCards">
+            {% for paymentToken in vaultedPaymentSources %}
+                <div class="payment-method">
+                    <form action="{{ oViewConf.getSslSelfLink()|replace({"&amp;": "&"}) }}" method="post">
+                        <div class="hidden">
+                            {{ oViewConf.getHiddenSid()|raw }}
+                            <input type="hidden" name="cl" value="{{ oViewConf.getActiveClassName() }}">
+                            <input type="hidden" name="fnc" value="deleteVaultedPayment">
+                            <input type="hidden" name="paymentTokenId" value="{{ paymentToken.id }}">
+                        </div>
+                        <div class="payment-info">
                             {% if paymentToken.payment_source.card %}
                                 {% set brand = paymentToken.payment_source.card.brand %}
                                 {% set lastdigits = paymentToken.payment_source.card.last_digits %}
-                                {{ brand }} {{ translate({ ident: "OSC_PAYPAL_CARD_ENDING_IN" }) }}{{ lastdigits }}
+                                <strong>{{ brand }}</strong> {{ translate({ ident: "OSC_PAYPAL_CARD_ENDING_IN" }) }}{{ lastdigits }}
                             {% elseif paymentToken.payment_source.paypal %}
                                 {% set lastdigits = paymentToken.payment_source.paypal.email_address %}
                                 {{ translate({ ident: "OSC_PAYPAL_CARD_PAYPAL_PAYMENT" }) }} {{ lastdigits }}
                             {% endif %}
-
-                            <button type="submit" class="btn btn-primary btn-sm">
+                        </div>
+                        <div class="payment-action mt-2">
+                            <button type="submit" class="btn btn-primary ms-lg-auto">
+                                <svg aria-hidden="true">
+                                    <use xlink:href="#trash"></use>
+                                </svg>
                                 {{ translate({ ident: "OSC_PAYPAL_VAULTING_DELETE" }) }}
                             </button>
-                        </form>
-                    </li>
-                {% endfor %}
-            </ul>
+                        </div>
+                    </form>
+                </div>
+            {% endfor %}
         </div>
     </div>
 {% endif %}

@@ -1,5 +1,12 @@
 {% hasrights { ident: "PAYWITHGOOGLEPAY" } %}
-    {{ oViewConf.setSDKIsNecessary(true) }}
+    {% set oConfig = oViewConf.getConfig() %}
+    {% set PayPalSDKJS = oConfig.getGlobalParameter("PayPalSDKJS") %}
+    {% if not PayPalSDKJS %}
+        {% set PayPalSDKJS %}
+            {% include "@osc_paypal/frontend/base_js.html.twig" with {'commitFlow': false} %}
+        {% endset %}
+        {{ oConfig.setGlobalParameter("PayPalSDKJS", PayPalSDKJS) }}
+    {% endif %}
     {% set sToken = oViewConf.getSessionChallengeToken() %}
     {% set sSelfLink = oViewConf.getSslSelfLink()|replace({'&amp;': '&'})|raw %}
     {% set oPPconfig = oViewConf.getPayPalCheckoutConfig() %}

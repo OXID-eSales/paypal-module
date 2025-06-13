@@ -1,4 +1,11 @@
-{{ oViewConf.setSDKIsNecessary(true) }}
+{% set oConfig = oViewConf.getConfig() %}
+{% set PayPalSDKJS = oConfig.getGlobalParameter("PayPalSDKJS") %}
+{% if not PayPalSDKJS %}
+    {% set PayPalSDKJS %}
+        {% include "@osc_paypal/frontend/base_js.html.twig" with {'commitFlow': commitFlow} %}
+    {% endset %}
+    {{ oConfig.setGlobalParameter("PayPalSDKJS", PayPalSDKJS) }}
+{% endif %}
 <script type="application/json" fncls="{{ oViewConf.getPayPalPuiFNParams() }}">
     {
     {% if oViewConf.isPayPalSandbox() %}

@@ -8,10 +8,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### NEW
 
+- PayPal-Buttons are configurable
+- Use PayPal-Button also on Checkout-Page for PayPal-Standard, this Button triggers a popUp instead of a page redirect
 - All PayPal payment methods have "PayPal" as a prefix in a fresh installation to better identify them in the admin panel. When setting up payment methods, the merchant can decide which name best fits their needs.
 - Additional check of eligibility for unbranded payments
+- CreditCard (ACDC) and Vaulting works now internally with card-fields-component. Fewer PayPal SDK resources are needed
 - Move PayPal-Config to Config-Section in Admin > Module-List > Module > Options
+- provide orderNumber also for GooglePay
+- Better handling when storing credit card data in the customer account
 - switch to experience context and drop deprecated application_context
+- Better style and Localisations for ACDC and Vaulting
+- Saving vaulted payment methods is now only possible via checkout
+- Trim the item names for PayPal in a proper way
 
 ### FIX
 

@@ -115,7 +115,7 @@
 
 {% block checkout_payment_main %}
     {% if attribute(oViewConf, 'showPayPalCheckoutBannerOnCheckoutPage') is defined and oViewConf.showPayPalCheckoutBannerOnCheckoutPage() %}
-        {{ style({ include: oViewConf.getModuleUrl('osc_paypal', 'css/paypal.min.css') }) }}
+        {{ style({ include: oViewConf.getModuleUrl('osc_paypal', 'src/css/paypal.min.css') }) }}
         {% set basketAmount = oxcmp_basket.getPrice() %}
         {% include "@osc_paypal/frontend/installment_banners.html.twig" with {amount: basketAmount.getPrice(), selector: oViewConf.getPayPalCheckoutBannerPaymentPageSelector(), addClass: "mt-5"} %}
     {% endif %}

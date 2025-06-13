@@ -1,12 +1,11 @@
 {% extends "page/checkout/order.html.twig" %}
 
 {% block shippingAndPayment %}
-    {{ oViewConf.setSDKIsNecessary(true) }}
+    {% set sSelfLink = oViewConf.getSslSelfLink()|replace({'&amp;': '&'})|raw %}
     {% set payment = oView.getPayment() %}
-    {% set sPaymentID = oView.getPayment().getId() %}
-    {% if sPaymentID in ['oscpaypal_acdc', 'oscpaypal_pui', 'oscpaypal'] or vaultedPaymentDescription %}
-        {{ oViewConf.setSDKIsNecessary(true) }}
-        <form action="{{ oViewConf.getSslSelfLink()|replace({'&amp;': '&'})|raw }}" method="post"
+    {% set paymentId = oView.getPayment().getId() %}
+    {% if paymentId in ['oscpaypal_acdc', 'oscpaypal_pui', 'oscpaypal'] or vaultedPaymentDescription %}
+        <form action="{{ sSelfLink }}" method="post"
               id="orderShipping">
             {{ oViewConf.getHiddenSid()|raw }}
             <input type="hidden" name="cl" value="payment">
@@ -45,11 +44,11 @@
                 {{ vaultedPaymentDescription }}
             {% elseif not oscpaypal_executing_order %}
                 {{ payment.oxpayments__oxdesc.value }}
-                {% if sPaymentID == "oscpaypal_acdc" %}
+                {% if paymentId == "oscpaypal_acdc" %}
                     {% include "@osc_paypal/frontend/acdc.html.twig" %}
-                {% elseif sPaymentID == "oscpaypal_pui" %}
+                {% elseif paymentId == "oscpaypal_pui" %}
                     {% include "@osc_paypal/frontend/pui.html.twig" %}
-                {% elseif sPaymentID == "oscpaypal" %}
+                {% elseif paymentId == "oscpaypal" %}
                     {% include "@osc_paypal/frontend/paypal.html.twig" %}
                 {% endif %}
             {% endif %}
@@ -62,6 +61,18 @@
 {% block checkout_order_next_step_side %}
     {% set payment = oView.getPayment() %}
     {% set paymentId = oView.getPayment().getId() %}
+    {% set oConfig = oViewConf.getConfig() %}
+    {% set PayPalSDKJS = oConfig.getGlobalParameter("PayPalSDKJS") %}
+    {% if not PayPalSDKJS %}
+        {% set PayPalSDKJS %}
+            {% set commitFlow = false %}
+            {% if "oscpaypal" == paymentId %}
+                {% set commitFlow = true %}
+            {% endif %}
+            {% include "@osc_paypal/frontend/base_js.html.twig" with {'commitFlow': commitFlow} %}
+        {% endset %}
+        {{ oConfig.setGlobalParameter("PayPalSDKJS", PayPalSDKJS) }}
+    {% endif %}
     {% if paymentId == "oscpaypal_googlepay" %}
         {# google pay has a specific button #}
         {% include "@osc_paypal/frontend/googlepay_button.html.twig" %}
@@ -74,12 +85,9 @@
                 <i class="fa fa-check"></i> {{ translate({ ident: "SUBMIT_ORDER" }) }}
             </button>
         {% elseif paymentId == "oscpaypal" %}
-            <div id="{{ paymentId }}" class="paypal-button-container [{$buttonClass}] float-right pull-right"></div>
+            <div id="{{ paymentId }}" class="paypal-button-container float-right pull-right"></div>
         {% else %}
-            {# usual order button #}
-            <button id="orderSubmitButton" type="button" class="btn btn-highlight btn-lg w-100">
-                {{ translate({ ident: "SUBMIT_ORDER" }) }}
-            </button>
+            {{ parent() }}
         {% endif %}
     {% endif %}
 {% endblock %}

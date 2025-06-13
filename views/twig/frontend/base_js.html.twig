@@ -1,0 +1,23 @@
+{% if oViewConf.isPayPalCheckoutActive() %}
+    {{ script({ include: oViewConf.getModuleUrl('osc_paypal', 'src/js/paypal-frontend.min.js')|raw, priority: 10, dynamic: __oxid_include_dynamic }) }}
+    {{ style({ include: oViewConf.getModuleUrl('osc_paypal', 'src/css/paypal.min.css')|raw }) }}
+    <script src="{{ oViewConf.getPayPalJsSdkUrl(commitFlow) }}"
+            {% if oViewConf.isVaultingEligibility() %}
+                data-user-id-token="{{ oViewConf.getUserIdForVaulting() }}"
+            {% endif %}
+            data-partner-attribution-id="{{ oViewConf.getPayPalPartnerAttributionIdForBanner() }}"
+            {# data-client-token is only necessary for hosted fields, it could be removed
+            data-client-token="{{ oViewConf.getDataClientToken() }}"
+            #}
+            onload="undefined === window.OxidPayPal ? null : window.OxidPayPal.onSDKLoaded()"
+    ></script>
+    {% set sCountryRestriction = oViewConf.getCountryRestrictionForPayPalExpress() %}
+    {% if sCountryRestriction %}
+        <script>
+            const countryRestriction = [{{ sCountryRestriction|raw }}];
+        </script>
+    {% endif %}
+
+    {% include '@osc_paypal/frontend/base_paypal_payment_controller_config.html.twig' %}
+    {% include '@osc_paypal/frontend/base_paypal_button_config.html.twig' %}
+{% endif %}

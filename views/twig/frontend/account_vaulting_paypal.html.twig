@@ -10,63 +10,7 @@
             </div>
         </div>
         {% block account_vaulting_paypal %}
-            <div class="card card-lg">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">{{ translate({ ident: "OSC_PAYPAL_VAULTING_SAVE_INSTRUCTION" }) }}</h3>
-                    </div>
-                    <div class="card-body">
-                        <p id="PayPalVaultingSuccess" class="alert alert-success" style="display: none">{{ translate({ ident: "OSC_PAYPAL_VAULTING_SUCCESS" }) }}</p>
-                        <p id="PayPalVaultingFailure" class="alert alert-danger" style="display: none">{{ translate({ ident: "OSC_PAYPAL_VAULTING_ERROR" }) }}</p>
-                        <div id="PayPalButtonVaulting" class="paypal-button-container paypal-button-wrapper large"></div>
-                    </div>
-                </div>
-                <script>
-                    window.onload = function () {
-                        paypal.Buttons({
-                            style: PayPalButtonStyle,
-                            createVaultSetupToken: async () => {
-                               const result = await fetch(
-                                   "{{ seo_url({ ident: oViewConf.getGenerateSetupTokenLink()|raw }) }}",
-                                   { method: "POST"
-                                   })
-                               const { id } = await result.json();
-                               return id;
-                            },
-                            onApprove: async ({ vaultSetupToken }) => {
-                               const result = await fetch(
-                                   "{{ seo_url({ ident: oViewConf.getGeneratePaymentTokenLink()|raw }) }}"+vaultSetupToken,
-                                   {method: 'POST'
-                                   })
-                               const status = await result.json();
-
-                               if(status.state === "SUCCESS") {
-                                   showSuccessMessage();
-                               }else {
-                                   showFailureMessage();
-                               }
-                            },
-                            onError: (error) => {
-                               //TODO
-                            },
-                            style: {
-                               label: 'checkout'
-                            }
-                        }).render("#PayPalButtonVaulting");
-
-                        function showSuccessMessage() {
-                            $('#PayPalButtonVaulting').hide();
-                            $('#PayPalVaultingSuccess').show();
-                        }
-
-                        function showFailureMessage() {
-                            $('#PayPalVaultingFailure').show();
-                        }
-                    };
-                </script>
-
-                {% include "@osc_paypal/frontend/vaultedpaymentsources.html.twig" %}
-            </div>
+            {% include "@osc_paypal/frontend/vaultedpaymentsources.html.twig" %}
         {% endblock %}
     </div>
     {{ insert_tracker({title: template_title}) }}

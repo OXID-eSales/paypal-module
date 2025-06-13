@@ -8,7 +8,7 @@
             {% set paypalInstallmentPrice = oxcmp_basket.getNettoSum() %}
         {% endif %}
 
-        {{ style({ include: oViewConf.getModuleUrl('osc_paypal', 'css/paypal.min.css') }) }}
+        {{ style({ include: oViewConf.getModuleUrl('osc_paypal', 'src/css/paypal.min.css') }) }}
         {% include "@osc_paypal/frontend/installment_banners.html.twig" with {amount: paypalInstallmentPrice, selector: oViewConf.getPayPalCheckoutBannerCategoryPageSelector(), addClass: "mb-4"} %}
     {% endif %}
 {% endblock %}
