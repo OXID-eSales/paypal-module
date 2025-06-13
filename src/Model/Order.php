@@ -239,7 +239,7 @@ class Order extends Order_parent
     }
 
     /** @inheritDoc */
-    protected function sendPayPalOrderByEmail(User $user, Basket $basket): void
+    public function sendPayPalOrderByEmail(User $user, Basket $basket): void
     {
         $userPayment = oxNew(UserPayment::class);
         $userPayment->load($this->getFieldData('oxpaymentid'));

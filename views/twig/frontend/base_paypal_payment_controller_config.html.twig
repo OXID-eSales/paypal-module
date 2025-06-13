@@ -19,7 +19,7 @@
     <script>
         const PayPalPaymentControllerConfiguratorDefaults = {
             shopOrderErrorUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=logError&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
-            shopOrderDeleteUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=cancelShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
+            shopOrderCancelUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=cancelShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
             payPalOrderDetailsUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=fetchPayPalOrderDetails&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
             errorLogUrl: '{{ (sSelfLink ~ "cl=payment&payerror=2&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
             shopThankYouPageUrl: '{{ (sSelfLink ~ "cl=thankyou&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',

@@ -1,6 +1,6 @@
 {% if oViewConf.isPayPalExpressSessionActive() %}
     <div class="alert alert-info" role="alert">
-        {{ translate({ ident: "OSC_PAYPAL_RUNNING_EXPRESS_CHECKOUT_SESSION_HINT" }) }}{% if withBreak %}<br />{% endif %}
-        <a href="{{ oViewConf.getSslSelfLink()|replace({'&amp;': '&'})|raw ~ "cl=order"}}"> {{ translate({ ident: "OSC_PAYPAL_RUNNING_EXPRESS_CHECKOUT_SESSION_HINT_AFREF" }) }}</a>
+        {{ translate({ ident: "OSC_RUNNING_PAYPAL_CHECKOUT_SESSION_HINT" }) }}{% if withBreak %}<br />{% endif %}
+        <a href="{{ oViewConf.getSslSelfLink()|replace({'&amp;': '&'})|raw ~ "cl=order"}}"> {{ translate({ ident: "OSC_RUNNING_PAYPAL_CHECKOUT_SESSION_HINT_AFREF" }) }}</a>
     </div>
 {% endif %}
