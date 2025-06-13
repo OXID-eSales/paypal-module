@@ -16,7 +16,6 @@
                             <input type="hidden" name="paymentTokenId" value="{{ paymentToken.id }}">
                         </div>
                         <div class="payment-info">
-                            <i class="fa fa-credit-card"></i>
                             {% if paymentToken.payment_source.card %}
                                 {% set brand = paymentToken.payment_source.card.brand %}
                                 {% set lastdigits = paymentToken.payment_source.card.last_digits %}
@@ -27,8 +26,11 @@
                             {% endif %}
                         </div>
                         <div class="payment-action mt-2">
-                            <button type="submit" class="btn btn-danger">
-                                <i class="fa fa-trash"></i> {{ translate({ ident: "OSC_PAYPAL_VAULTING_DELETE" }) }}
+                            <button type="submit" class="btn btn-primary ms-lg-auto">
+                                <svg aria-hidden="true">
+                                    <use xlink:href="#trash"></use>
+                                </svg>
+                                {{ translate({ ident: "OSC_PAYPAL_VAULTING_DELETE" }) }}
                             </button>
                         </div>
                     </form>
