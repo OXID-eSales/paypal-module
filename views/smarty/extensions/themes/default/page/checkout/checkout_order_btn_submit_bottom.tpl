@@ -19,7 +19,7 @@
 [{/if}]
 
 [{if "oscpaypal" == $paymentId}]
-    <div id="[{$paymentId}]" class="paypal-button-container [{$buttonClass}] float-right pull-right"></div>
+    <div id="[{$paymentId}]" class="paypal-button-container paypal-button-wrapper large float-right pull-right"></div>
 [{/if}]
 
 [{if "oscpaypal_pui" == $paymentId}]

@@ -1,6 +1,6 @@
 {% if oViewConf.isPayPalCheckoutActive() %}
-    {{ script({ include: "src/js/paypal-frontend.min.js"}) }}
-    {{ style({ include: "src/css/paypal.min.css"}) }}
+    {{ script({ include: oViewConf.getModuleUrl('osc_paypal', 'src/js/paypal-frontend.min.js')|raw, priority: 10, dynamic: __oxid_include_dynamic }) }}
+    {{ style({ include: oViewConf.getModuleUrl('osc_paypal', 'src/css/paypal.min.css')|raw }) }}
     <script src="{{ oViewConf.getPayPalJsSdkUrl(commitFlow) }}"
             {% if oViewConf.isVaultingEligibility() %}
                 data-user-id-token="{{ oViewConf.getUserIdForVaulting() }}"
