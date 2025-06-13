@@ -2,6 +2,8 @@
 
 {% block shippingAndPayment %}
     {% set sSelfLink = oViewConf.getSslSelfLink()|replace({'&amp;': '&'})|raw %}
+    {% set payment = oView.getPayment() %}
+    {% set paymentId = oView.getPayment().getId() %}
     {% if paymentId in ['oscpaypal_acdc', 'oscpaypal_pui', 'oscpaypal'] or vaultedPaymentDescription %}
         <form action="{{ sSelfLink }}" method="post"
               id="orderShipping">

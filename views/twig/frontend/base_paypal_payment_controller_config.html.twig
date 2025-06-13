@@ -2,7 +2,7 @@
     {% set payment = oView.getPayment() %}
     {% set paymentId = payment.getId() %}
     {% set sToken = oViewConf.getSessionChallengeToken() %}
-    {% set sSelfLink = oViewConf.getSslSelfLink() %}
+    {% set sSelfLink = oViewConf.getSslSelfLink()|replace({"&amp;": "&"}) %}
     {% set purchaseUnits = oView.getPurchaseUnits() %}
     {% set vaultedPaymentSource = oView.getVaultedPaymentSource() %}
     {% set oPPconfig = oViewConf.getPayPalCheckoutConfig() %}

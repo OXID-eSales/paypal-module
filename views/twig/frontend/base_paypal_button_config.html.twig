@@ -1,4 +1,5 @@
 {% set config = oViewConf.getPayPalCheckoutConfig() %}
+{% set sSelfLink = oViewConf.getSslSelfLink()|replace({"&amp;": "&"}) %}
 <script>
     (function (){
         const PayPalButtonStyleConfigurator = function(){
@@ -10,5 +11,29 @@
             }
         }
         window.PayPalButtonStyle = new PayPalButtonStyleConfigurator();
+
+        const PayPalI18nConfigurator = function(){
+            return {
+                OSC_PAYPAL_ACDC_CARD_NUMBER : "{{ translate({ ident: 'OSC_PAYPAL_ACDC_CARD_NUMBER' }) }}",
+                OSC_PAYPAL_ACDC_CARD_EXDATE : "{{ translate({ ident: 'OSC_PAYPAL_ACDC_CARD_EXDATE' }) }}",
+                OSC_PAYPAL_ACDC_CARD_CVV : "{{ translate({ ident: 'OSC_PAYPAL_ACDC_CARD_CVV' }) }}",
+                OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD : "{{ translate({ ident: 'OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD' }) }}",
+                OSC_PAYPAL_ACDC_ERROR_MISSING_NAME: "{{ translate({ ident: 'OSC_PAYPAL_ACDC_ERROR_MISSING_NAME' }) }}",
+                OSC_PAYPAL_ACDC_ERROR_MISSING_NUMBER: "{{ translate({ ident: 'OSC_PAYPAL_ACDC_ERROR_MISSING_NUMBER' }) }}",
+                OSC_PAYPAL_ACDC_ERROR_MISSING_CVV: "{{ translate({ ident: 'OSC_PAYPAL_ACDC_ERROR_MISSING_CVV' }) }}",
+                OSC_PAYPAL_ACDC_ERROR_MISSING_EXDATE: "{{ translate({ ident: 'OSC_PAYPAL_ACDC_ERROR_MISSING_EXDATE' }) }}",
+                OSC_PAYPAL_ACDC_ERROR_INBOX: "{{ translate({ ident: 'OSC_PAYPAL_ACDC_ERROR_INBOX' }) }}",
+            }
+        }
+        window.PayPalI18n = new PayPalI18nConfigurator();
+        const PayPalExpressSessionConfigurator = function(){
+            return {
+                cancelPayPalExpressSession: async function (){
+                    await fetch('{{ sSelfLink ~ "cl=ajaxpay&fnc=cancelPayPalSession" }}');
+                },
+                started: false
+            }
+        }
+        window.PayPalExpressSession = new PayPalExpressSessionConfigurator();
     })();
 </script>
