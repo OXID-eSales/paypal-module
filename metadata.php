@@ -242,12 +242,12 @@ $aModule = [
         [
             'template' => 'page/checkout/thankyou.tpl',
             'block' => 'checkout_thankyou_info',
-            'file' => 'views/smarty/extensions/themes/default/page/checkout/checkout_thankyou_info.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/checkout/thankyou.tpl',
         ],
         [
             'template' => 'page/details/inc/productmain.tpl',
             'block' => 'details_productmain_price_value',
-            'file' => 'views/smarty/extensions/themes/default/page/details/inc/details_productmain_price_value.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/details/inc/productmain.tpl',
         ],
         [
             'template' => 'page/details/inc/productmain.tpl',
@@ -257,17 +257,17 @@ $aModule = [
         [
             'template' => 'page/list/list.tpl',
             'block' => 'page_list_listhead',
-            'file' => 'views/smarty/extensions/themes/default/page/list/page_list_listhead.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/list/page.tpl',
         ],
         [
             'template' => 'page/search/search.tpl',
             'block' => 'search_header',
-            'file' => 'views/smarty/extensions/themes/default/page/search/search_header.tpl'
+            'file' => 'views/smarty/extensions/themes/default/page/search/search.tpl'
         ],
         [
             'template' => 'page/shop/start.tpl',
             'block' => 'start_welcome_text',
-            'file' => 'views/smarty/extensions/themes/default/page/shop/start_welcome_text.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/shop/start.tpl',
         ],
         [
             'template' => 'widget/minibasket/minibasket.tpl',
