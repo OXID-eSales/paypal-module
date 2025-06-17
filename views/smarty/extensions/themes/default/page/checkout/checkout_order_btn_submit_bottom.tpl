@@ -24,16 +24,16 @@
 
 [{if "oscpaypal_pui" == $paymentId}]
     [{if $oViewConf->isFlowCompatibleTheme()}]
-        [{include file="modules/osc/paypal/checkout_order_btn_submit_bottom_flow.tpl"}]
+        [{include file="@osc_paypal/frontend/flow/checkout_order_btn_submit_bottom.tpl"}]
     [{else}]
-        [{include file="modules/osc/paypal/checkout_order_btn_submit_bottom_wave.tpl"}]
+        [{include file="@osc_paypal/frontend/wave/checkout_order_btn_submit_bottom.tpl"}]
     [{/if}]
 [{/if}]
 
 [{if "oscpaypal_googlepay" == $paymentId}]
-    [{include file="modules/osc/paypal/googlepay.tpl" buttonClass="paypal-button-wrapper large"}]
+    [{include file="@osc_paypal/frontend/shared/googlepay.tpl" buttonClass="paypal-button-wrapper large"}]
 [{elseif "oscpaypal_applepay" == $paymentId}]
-    [{include file="modules/osc/paypal/applepay.tpl" paymentId=$paymentId buttonClass="paypal-button-wrapper large"}]
+    [{include file="@osc_paypal/frontend/shared/applepay.tpl" paymentId=$paymentId buttonClass="paypal-button-wrapper large"}]
     <div id="applepay-container" class="paypal-button-container paypal-button-wrapper paypal-button-right large"></div>
 [{elseif
     "oscpaypal" != $paymentId &&

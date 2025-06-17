@@ -115,7 +115,6 @@ $aModule = [
 
         '@osc_paypal/frontend/shared/paymentbuttons.tpl' => 'views/smarty/frontend/shared/paymentbuttons.tpl',
         '@osc_paypal/frontend/shared/paypalexpresshint.tpl' => 'views/smarty/frontend/shared/paypalexpresshint.tpl',
-
         '@osc_paypal/frontend/flow/pui.tpl' => 'views/smarty/frontend/flow/page/checkout/pui.tpl',
         '@osc_paypal/frontend/wave/pui.tpl' => 'views/smarty/frontend/wave/page/checkout/pui.tpl',
         '@osc_paypal/frontend/shared/pui_fraudnet.tpl' => 'views/smarty/frontend/shared/page/checkout/pui_fraudnet.tpl',
@@ -129,14 +128,18 @@ $aModule = [
 
         // PAYPAL-486 Register templates for overloading here;
         // use theme name in key when theme-specific. Shared templates don't receive a theme-specific key.
-        '@osc_paypal/frontend/shared/layout/base_paypal_button_config.tpl' => 'views/smarty/frontend/shared/layout/base_paypal_button_config.tpl',
-        '@osc_paypal/frontend/shared/layout/base_paypal_payment_controller_config.tpl' => 'views/smarty/frontend/shared/layout/base_paypal_payment_controller_config.tpl',
-        '@osc_paypal/frontend/shared/layout/base_js.tpl' => 'views/smarty/frontend/shared/layout/base_js.tpl',
         '@osc_paypal/frontend/shared/acdc.tpl' => 'views/smarty/frontend/shared/page/checkout/acdc.tpl',
         '@osc_paypal/frontend/shared/sepa_cc_alternative.tpl' => 'views/smarty/frontend/shared/page/checkout/sepa_cc_alternative.tpl',
+        '@osc_paypal/frontend/shared/layout/base_js.tpl' => 'views/smarty/frontend/shared/layout/base_js.tpl',
+        '@osc_paypal/frontend/shared/layout/base_paypal_button_config.tpl' => 'views/smarty/frontend/shared/layout/base_paypal_button_config.tpl',
+        '@osc_paypal/frontend/shared/layout/base_paypal_payment_controller_config.tpl' => 'views/smarty/frontend/shared/layout/base_paypal_payment_controller_config.tpl',
+        '@osc_paypal/frontend/shared/page/checkout/basket_btn_next_bottom.tpl' =>
+            'views/smarty/frontend/shared/page/checkout/basket_btn_next_bottom.tpl',
         '@osc_paypal/frontend/shared/select_payment.tpl' => 'views/smarty/frontend/shared/page/checkout/select_payment.tpl',
         '@osc_paypal/frontend/shared/details_productmain_tobasket.tpl' =>
             'views/smarty/frontend/shared/page/details/inc/details_productmain_tobasket.tpl',
+        '@osc_paypal/frontend/shared/widget/minibasket/dd_layout_page_header_icon_menu_minibasket_functions.tpl' =>
+            'views/smarty/frontend/shared/widget/minibasket/dd_layout_page_header_icon_menu_minibasket_functions.tpl',
         // PAYPAL-486 Theme-specific
         '@osc_paypal/frontend/flow/change_payment.tpl' => 'views/smarty/frontend/flow/page/checkout/change_payment.tpl',
         '@osc_paypal/frontend/wave/change_payment.tpl' => 'views/smarty/frontend/wave/page/checkout/change_payment.tpl',
@@ -152,7 +155,6 @@ $aModule = [
         //PSPAYPAL-680 Vaulting
         '@osc_paypal/frontend/account_vaulting_paypal.tpl'    => 'views/smarty/frontend/shared/page/account/account_vaulting_paypal.tpl',
         '@osc_paypal/frontend/account_vaulting_card.tpl'      => 'views/smarty/frontend/shared/page/account/account_vaulting_card.tpl',
-        '@osc_paypal/frontend/shared/vaultedpaymentsources.tpl'      => 'views/smarty/frontend/shared/vaultedpaymentsources.tpl',
         '@osc_paypal/frontend/flow/vaultedpaymentsources.tpl' => 'views/smarty/frontend/flow/vaulting/vaultedpaymentsources.tpl',
         '@osc_paypal/frontend/wave/vaultedpaymentsources.tpl' => 'views/smarty/frontend/wave/vaulting/vaultedpaymentsources.tpl',
     ],
