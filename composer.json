@@ -51,20 +51,22 @@
     "prefer-stable": true,
     "scripts": {
         "phpmd": "./.github/scripts/codestyle_check.sh phpmd",
-        "phpmd:commit": "./.github/scripts/codestyle_check.sh phpmd commit",
+        "phpmd-commit": "./.github/scripts/codestyle_check.sh phpmd commit",
         "phpstan": "./.github/scripts/codestyle_check.sh phpstan",
-        "phpstan:commit": "./.github/scripts/codestyle_check.sh phpstan commit",
+        "phpstan-commit": "./.github/scripts/codestyle_check.sh phpstan commit",
         "phpcs": "./.github/scripts/codestyle_check.sh phpcs",
-        "phpcs:commit": "./.github/scripts/codestyle_check.sh phpcs commit",
+        "phpcs-commit": "./.github/scripts/codestyle_check.sh phpcs commit",
         "style": "./.github/scripts/codestyle_check.sh all",
-        "style:commit": "./.github/scripts/codestyle_check.sh all commit",
+        "style-commit":  "./.github/scripts/codestyle_check.sh all commit",
         "phpcbf": "phpcbf --standard=tests/phpcs.xml",
-
         "static": [
             "@phpcs",
             "@phpstan",
             "@phpmd"
         ],
+        "phpunit": "XDEBUG_MODE=coverage vendor/bin/phpunit -c tests/phpunit.xml --bootstrap=/var/www/source/bootstrap.php",
+        "phpunit-integration": "XDEBUG_MODE=coverage vendor/bin/phpunit -c tests/phpunit.xml --bootstrap=/var/www/source/bootstrap.php --testsuite=Integration",
+
         "generate-reports": [
             "@phpstan-report",
             "@phpmd-report"
@@ -74,6 +76,7 @@
             "@phpmd-generate-baseline"
         ]
     },
+
     "config": {
         "allow-plugins": {
             "oxid-esales/oxideshop-unified-namespace-generator": true,
