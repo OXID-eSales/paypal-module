@@ -655,7 +655,6 @@ class OrderRequestFactory
                 ];
 
             } else {
-                $r=1;
                 $newPaymentSource = [
                     $paymentSourceId => [
                         "experience_context" => [
