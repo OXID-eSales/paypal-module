@@ -52,18 +52,6 @@
             window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
         };
 
-        this.initializeAcceptPaymentButton = function () {
-            const submitButton = document.querySelector(PayPalPayment.config.buttonSelector);
-            submitButton.addEventListener('click', function (e) {
-                e.stopPropagation();
-                e.preventDefault();
-                PayPalPayment.buttonControl('disabled', true);
-                if (PayPalPayment.config.vaultedPaymentSource) {
-                    PayPalPayment.createOrder();
-                }
-            });
-        };
-
         this.removeErrorMessage = function (className) {
             className = className || '';
             const panelBody = document.querySelector("#card_container").parentElement;

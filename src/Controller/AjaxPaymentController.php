@@ -15,6 +15,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Field;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
@@ -27,6 +28,7 @@ use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 
 class AjaxPaymentController extends ProxyController
 {
@@ -95,6 +97,71 @@ class AjaxPaymentController extends ProxyController
     }
 
     /**
+     * @throws \JsonException
+     */
+    public function createPayPalOrder(): void
+    {
+        $data = $this->getRequestParameters();
+        $_POST['vaultPayment'] = $data['vaultPayment'] ? "true" : "false";
+        $_POST['oscPayPalPaymentTypeForVaulting'] = PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
+        $_POST['useVaultedPayment'] = $data['useVaultedPayment'];
+
+        $this->addToBasket();
+
+        $this->setPayPalPaymentMethod(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
+        $session = Registry::getSession();
+        $basket = $session->getBasket();
+
+        if ($basket->getItemsCount() === 0) {
+            $this->outputJson(['ERROR' => 'No Article in the Basket']);
+        }
+
+        /** @var ModuleSettings $moduleSettings */
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
+        $intent = OrderRequest::INTENT_AUTHORIZE;
+        if ($captureStrategy === 'directly') {
+            $intent = OrderRequest::INTENT_CAPTURE;
+        }
+        $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
+            $basket,
+            $intent,
+            OrderRequestFactory::USER_ACTION_CONTINUE,
+            null,
+            '',
+            '',
+            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
+            null,
+            null,
+            false
+        );
+
+        if ($response->id) {
+            $paymentService = $this->getServiceFromContainer(PaymentService::class);
+            $sessionOrderId = $basket->getOrderId();
+            $order = oxNew(Order::class);
+            $order->load($sessionOrderId);
+
+            PayPalSession::unsetPayPalSession();
+
+            $this->outputJson([
+                'status' => 'success',
+                'shopOrder' => [
+                    'shopOrderId' => $sessionOrderId,
+                    'customId' => $paymentService->getCustomIdParameter($order)
+                ],
+                'payPalOrder' => $response,
+            ]);
+
+        }
+
+        $this->outputJson([
+            'status' => 'error',
+            'message' => 'error'
+        ]);
+    }
+
+    /**
      * @psalm-suppress InternalMethod
      */
     public function createAcdcOrder(): void
@@ -146,7 +213,7 @@ class AjaxPaymentController extends ProxyController
         $this->outputJson([
             'status' => 'success',
             'shopOrder' => [
-                'shopOrderId' => $order->getId(),
+                'shopOrderId' => $sessionOrderId,
                 'customId' => $paymentService->getCustomIdParameter($order)
             ],
             'payPalOrder' => $response,
