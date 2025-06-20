@@ -232,12 +232,12 @@ class VaultingService extends BaseService
     }
 
     public function fetchSelectedVaultedPaymentToken(
-        User $user,
+        ?User $user = null,
         ?string $id = null
     ): ?array {
         $vaultedPaymentTokens = [];
-        $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
-        if($payPalCustomerId) {
+        $payPalCustomerId = $user ? $user->getFieldData("oscpaypalcustomerid") : '';
+        if(!empty($payPalCustomerId)) {
             $vaultedPaymentTokens = $this->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"];
         }
         $selectedVaultedPaymentTokenId = null === $id ?
