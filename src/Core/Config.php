@@ -12,7 +12,6 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\DatabaseProvider;
-use OxidSolutionCatalysts\PayPal\Model\User;
 use OxidSolutionCatalysts\PayPal\Module;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -545,13 +544,20 @@ class Config
 
     public function getUserIdForVaulting(): string
     {
-        // If no vaulted payment token is selected, return empty string
-        if(empty(Registry::getSession()->getVariable("selectedVaultedPaymentTokenId"))){
+        $user = Registry::getConfig()->getUser();
+
+        // Do not generate user id token for order controller
+        if( !$user instanceof User ||
+            (
+                !empty(Registry::getSession()->getVariable("selectedVaultedPaymentTokenId"))
+                &&  'order' === Registry::getRequest()->getRequestEscapedParameter('cl')
+            )
+        )
+        {
             return '';
         }
 
-        $user = Registry::getConfig()->getUser();
-        $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
+        $payPalCustomerId = $user instanceof User ? $user->getFieldData("oscpaypalcustomerid") : '';
 
         if (!$payPalCustomerId) {
             return "";
