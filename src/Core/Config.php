@@ -545,19 +545,12 @@ class Config
 
     public function getUserIdForVaulting(): string
     {
-        $user = Registry::getConfig()->getUser();
-
-        // Do not generate user id token for order controller
-        if( !$user instanceof User ||
-            (
-                !empty(Registry::getSession()->getVariable("selectedVaultedPaymentTokenId"))
-                &&  'order' === Registry::getRequest()->getRequestEscapedParameter('cl')
-            )
-        )
-        {
+        // If no vaulted payment token is selected, return empty string
+        if(empty(Registry::getSession()->getVariable("selectedVaultedPaymentTokenId"))){
             return '';
         }
 
+        $user = Registry::getConfig()->getUser();
         $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
 
         if (!$payPalCustomerId) {

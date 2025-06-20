@@ -610,7 +610,7 @@ class OrderRequestFactory
 
         $config = Registry::getConfig();
         $user = $config->getUser() instanceof User ? $config->getUser() : null;
-        $payPalCustomerId = '';
+
         $vaultingService = $this->getVaultingService();
         $selectedPaymentToken = $vaultingService->fetchSelectedVaultedPaymentToken($user);
 
@@ -625,7 +625,7 @@ class OrderRequestFactory
                             "_comment" => "SCA_ALWAYS to force otherwise use SCA_WHEN_REQUIRED"
                         ],
                         "customer" => [
-                            "id" => $payPalCustomerId
+                            "id" => $selectedPaymentToken['customer']['id']
                         ]
                     ],
                     "stored_credential" => [

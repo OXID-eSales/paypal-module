@@ -164,7 +164,7 @@ class VaultingService extends BaseService
                 "store_in_vault" => "ON_SUCCESS",
                 "usage_type" => "MERCHANT",
                 "customer_type" => "CONSUMER",
-                "permit_multiple_payment_tokens" => true //Check: if this is set to 'false' either card od PP account can be vaulted
+                "permit_multiple_payment_tokens" => false //Check: if this is set to 'false' either card od PP account can be vaulted
             ];
         }
 
