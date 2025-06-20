@@ -557,7 +557,7 @@ class Config
             return '';
         }
 
-        $payPalCustomerId = $user instanceof User ? $user->getFieldData("oscpaypalcustomerid") : '';
+        $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
 
         if (!$payPalCustomerId) {
             return "";

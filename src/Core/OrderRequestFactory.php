@@ -102,6 +102,8 @@ class OrderRequestFactory
         $paymentId = Registry::getSession()->getVariable('paymentid');
         $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName($paymentId);
 
+        $request->payment_source = $this->getSimplePaymentSource($basket, $paymentSourceId);
+
         if ($paymentId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID) {
             $request->payment_source = $this->getGooglePayPaymentSource($basket, $paymentSourceId);
         }
