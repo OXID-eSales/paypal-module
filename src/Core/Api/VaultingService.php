@@ -235,8 +235,11 @@ class VaultingService extends BaseService
         User $user,
         ?string $id = null
     ): ?array {
+        $vaultedPaymentTokens = [];
         $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
-        $vaultedPaymentTokens = $this->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"];
+        if($payPalCustomerId) {
+            $vaultedPaymentTokens = $this->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"];
+        }
         $selectedVaultedPaymentTokenId = null === $id ?
             Registry::getSession()->getVariable("selectedVaultedPaymentTokenId") : $id;
 
