@@ -623,7 +623,7 @@ class OrderRequestFactory
                             "_comment" => "SCA_ALWAYS to force otherwise use SCA_WHEN_REQUIRED"
                         ],
                         "customer" => [
-                            "id" => $payPalCustomerId
+                            "id" => $selectedPaymentToken['customer']['id']
                         ]
                     ],
                     "stored_credential" => [
