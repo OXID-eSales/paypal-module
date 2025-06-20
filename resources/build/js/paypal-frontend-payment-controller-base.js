@@ -63,7 +63,11 @@
         };
 
         this.getCurrentPayPalOrderId = function () {
-            return this.getCurrentOrderData('orderID', 'paypal');
+            // check if part: this.getCurrentOrderData('orderID', 'paypal') is needed, maybe in ACDC
+            const payPalOrderId =
+                this.getCurrentOrderData('orderID', 'paypal') || this.getCurrentOrderData('id', 'paypal');
+
+            return payPalOrderId || null;
         };
 
         this.getConfigValue = function (name) {
@@ -153,7 +157,7 @@
 
         this.cancelOrder = async function () {
             let shopOrderId = PayPalPayment.getCurrentOrderOxid();
-            if (null == shopOrderId){
+            if (null == shopOrderId) {
                 return;
             }
 
@@ -168,7 +172,7 @@
             PayPalPayment.buttonControl('disabled', false);
 
             let shopOrderId = PayPalPayment.getCurrentOrderOxid();
-            if (null == shopOrderId){
+            if (null == shopOrderId) {
                 return;
             }
 
@@ -221,20 +225,20 @@
             const overlayClosedEvent = new Event('paypalOverlayClosed');
 
             // Options for the observer (which mutations to observe)
-            const config = { childList: true, subtree: true };
+            const config = {childList: true, subtree: true};
 
             // Create an observer instance
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
+            const observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
                     let addedNodes = mutation.addedNodes;
 
-                    addedNodes.forEach(function(node) {
+                    addedNodes.forEach(function (node) {
                         if (node.nodeType === Node.ELEMENT_NODE) {
 
                             if (node.id.startsWith('paypal-overlay-uid_')) {
-                                const overlayObserver = new MutationObserver(function(ovMutations, ovObserver) {
-                                    ovMutations.forEach(function(ovMutation) {
-                                        ovMutation.removedNodes.forEach(function(removedNode) {
+                                const overlayObserver = new MutationObserver(function (ovMutations, ovObserver) {
+                                    ovMutations.forEach(function (ovMutation) {
+                                        ovMutation.removedNodes.forEach(function (removedNode) {
                                             if (removedNode === node ||
                                                 (removedNode.contains && removedNode.contains(node))) {
 
@@ -248,7 +252,7 @@
 
                                 // Start observing the parent of the iframe for removal
                                 if (node.parentNode) {
-                                    overlayObserver.observe(node.parentNode, { childList: true });
+                                    overlayObserver.observe(node.parentNode, {childList: true});
                                 }
                             }
                         }
@@ -260,6 +264,18 @@
             PayPalPayment.reactOnPayPalOverlayClosed = true;
 
             return observer;
+        };
+
+        this.initializeAcceptPaymentButton = function () {
+            const submitButton = document.querySelector(PayPalPayment.config.buttonSelector);
+            submitButton.addEventListener('click', function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+                PayPalPayment.buttonControl('disabled', true);
+                if (PayPalPayment.config.vaultedPaymentSource) {
+                    PayPalPayment.createOrder();
+                }
+            });
         };
 
         // Common initialization

@@ -7,7 +7,7 @@
         this.getPaymentSource = function () {
             let paymentSource = {
                 paypal: {
-                    experience_context : {
+                    experience_context: {
                         shipping_preference: "SET_PROVIDED_ADDRESS",
                         return_url: PayPalPayment.getConfigValue("updateOxUserWithPayPalCustomerIdUrl"),
                         cancel_url: PayPalPayment.getConfigValue("shopOrderCancelUrl")
@@ -29,8 +29,7 @@
                 paymentSource;
         };
 
-        this.modifyPaymentSourceForVaulting = function(paymentSource)
-        {
+        this.modifyPaymentSourceForVaulting = function (paymentSource) {
             paymentSource.paypal.attributes = Object.assign(paymentSource.paypal.attributes || {},
                 {
                     vault: {
@@ -47,19 +46,42 @@
 
         // PayPal-specific order creation
         this.createOrder = async function (data, actions) {
-            let result = await PayPalPayment.backendRequest('shopOrderCreateUrl', {}, {
+            let shopOrderCreateResult = await PayPalPayment.backendRequest('shopOrderCreateUrl', {}, {
                 'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId')
             });
 
-            document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...result}})));
+            document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...shopOrderCreateResult}})));
 
-            return actions.order.create(PayPalPayment.getPaymentData());
+            let payPalOrderCreateResult = await PayPalPayment.backendRequest('payPalOrderCreateUrl', {}, {
+                'shopOrderId': shopOrderCreateResult.shopOrderId,
+                'vaultPayment': PayPalPayment.currentOrder.vaultPayment,
+                'useVaultedPayment': PayPalPayment.config.vaultedPaymentSource
+            });
+
+            document.dispatchEvent(new CustomEvent('payPalOrderCreated', new Object({detail: {...payPalOrderCreateResult.payPalOrder}})));
+
+            if (payPalOrderCreateResult.status !== 'success') {
+                throw new Error('PayPal order creation failed: ' + payPalOrderCreateResult.message);
+            }
+
+            //if the vaulted payment source is used, go to finalize payment
+            if (null !== PayPalPayment.config.vaultedPaymentSource && payPalOrderCreateResult.payPalOrder.status === 'COMPLETED') {
+                PayPalPayment.afterCaptureOrder();
+            }
+
+            return payPalOrderCreateResult.payPalOrder.id;
         };
 
-        // PayPal-specific capture handling
         this.captureOrder = async function (data, actions) {
-            PayPalPayment.setCreatePayPalOrderResponse(data);
-            return actions.order.capture().then(await PayPalPayment.afterCaptureOrder);
+            //if we managed to get at this stage, closing the overlay not suppose to be watched anymore
+            PayPalPayment.reactOnPayPalOverlayClosed = false;
+            let result = await PayPalPayment.backendRequest('shopOrderCaptureUrl', {}, {
+                'orderId': data.orderID
+            });
+
+            if (result.status === 'success') {
+                PayPalPayment.afterCaptureOrder();
+            }
         };
 
         // PayPal-specific button settings
@@ -80,23 +102,28 @@
 
         // PayPal-specific button rendering
         this.renderButton = function (style) {
-            const buttonSettings = Object.assign(
-                PayPalPayment.getPayButtonSettings(),
-                {
-                    style: typeof style == 'object' ? style : {}
-                }
-            );
-            let button = paypal.Buttons(buttonSettings);
+            const vaultedPaymentSource = null !== PayPalPayment.getConfigValue('vaultedPaymentSource');
+            if (vaultedPaymentSource) {
+                this.initializeAcceptPaymentButton();
+            } else {
+                const buttonSettings = Object.assign(
+                    PayPalPayment.getPayButtonSettings(),
+                    {
+                        style: typeof style == 'object' ? style : {}
+                    }
+                );
+                let button = paypal.Buttons(buttonSettings);
 
-            if (button.isEligible()) {
-                button.render(PayPalPayment.getConfigValue('buttonSelector'));
+                if (button.isEligible()) {
+                    button.render(PayPalPayment.getConfigValue('buttonSelector'));
+                }
             }
         };
 
         return this.init();
     };
 
-    window.addEventListener('load', function() {
+    window.addEventListener('load', function () {
         if (typeof PayPalPaymentControllerConfig === 'object' &&
             PayPalPaymentControllerConfig.paymentId === 'oscpaypal') {
             window.PayPalPayment = new PayPalStandardPaymentController();

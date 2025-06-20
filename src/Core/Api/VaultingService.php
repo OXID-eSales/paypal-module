@@ -10,10 +10,12 @@ namespace OxidSolutionCatalysts\PayPal\Core\Api;
 use JsonException;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
+use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -156,6 +158,16 @@ class VaultingService extends BaseService
 //            "shipping_preference" => "SET_PROVIDED_ADDRESS",
         ];
 
+        $attributes = [];
+        if(Registry::getRequest()->getRequestParameter("vaultPayment") === "true"){
+            $attributes["vault"] = [
+                "store_in_vault" => "ON_SUCCESS",
+                "usage_type" => "MERCHANT",
+                "customer_type" => "CONSUMER",
+                "permit_multiple_payment_tokens" => true //Check: if this is set to 'false' either card od PP account can be vaulted
+            ];
+        }
+
         if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
             $paymentSource = [
                 $paymentSourceId => [
@@ -163,33 +175,26 @@ class VaultingService extends BaseService
                     "billing_address"       => $address,
                     "verification_method"   => "SCA_WHEN_REQUIRED",
                     "experience_context"    => $experience_context,
-                    "attributes" => [
+                    "attributes" => array_merge($attributes, [
                         "verification" => [
                             "method" => "SCA_WHEN_REQUIRED"
-                        ],
-                        "vault" => [
-                            "store_in_vault" => "ON_SUCCESS"
                         ]
-                    ],
+                    ])
                 ]
             ];
         } else {
             $paymentSource = [
-                "payment_source" => [
-                    $paymentSourceId => [
-                        "description"   => $description,
-                        "shipping"      => [
-                            "name"      => [
-                                "full name" => $name
-                            ],
-                            "address"   => $address
+                $paymentSourceId => [
+                    "description"   => $description,
+                    "shipping"      => [
+                        "name"      => [
+                            "full name" => $name
                         ],
-                        "usage_type" => "MERCHANT",
-                        "customer_type" => "CONSUMER",
-                        "permit_multiple_payment_tokens" => true,
-                        "usage_pattern" => "IMMEDIATE",
-                        "experience_context" => $experience_context
-                    ]
+                        "address"   => $address
+                    ],
+                    "usage_pattern" => "IMMEDIATE",
+                    "experience_context" => $experience_context,
+                    "attributes" => $attributes
                 ]
             ];
         }
@@ -226,6 +231,31 @@ class VaultingService extends BaseService
         return is_array($result) ? $result : [];
     }
 
+    public function fetchSelectedVaultedPaymentToken(
+        User $user,
+        ?string $id = null
+    ): ?array {
+        $vaultedPaymentTokens = [];
+        $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
+        if($payPalCustomerId) {
+            $vaultedPaymentTokens = $this->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"];
+        }
+        $selectedVaultedPaymentTokenId = null === $id ?
+            Registry::getSession()->getVariable("selectedVaultedPaymentTokenId") : $id;
+
+        if (is_null($selectedVaultedPaymentTokenId)) {
+            return null;
+        }
+
+        $vaultPaymentToken = null;
+        foreach ($vaultedPaymentTokens as $vaultPaymentToken) {
+            if ($vaultPaymentToken["id"] === $selectedVaultedPaymentTokenId) {
+                break;
+            }
+        }
+
+        return is_array($vaultPaymentToken) ? $vaultPaymentToken : null;
+    }
     public function getVaultPaymentTokens(string $paypalCustomerId): array
     {
         $viewConf = oxNew(ViewConfig::class);

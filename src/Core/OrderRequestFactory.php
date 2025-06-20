@@ -98,7 +98,7 @@ class OrderRequestFactory
 
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $setVaulting = $moduleSettings->getIsVaultingActive();
-        $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
+
         $paymentId = Registry::getSession()->getVariable('paymentid');
         $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName($paymentId);
 
@@ -121,17 +121,13 @@ class OrderRequestFactory
 
         $request->intent = $intent;
         $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $withItems);
-        $useVaultedPayment = $setVaulting && !is_null($selectedVaultPaymentSourceIndex);
+        $vaultingService = $this->getVaultingService();
+        $selectedPaymentToken = $vaultingService->fetchSelectedVaultedPaymentToken(
+            Registry::getConfig()->getUser(), $_POST["useVaultedPayment"]["token"]["id"] ?? null
+        );
+        $useVaultedPayment = $setVaulting && !is_null($selectedPaymentToken);
 
         if ($useVaultedPayment) {
-            $vaultingService = $this->getVaultingService();
-            $payPalCustomerId = $this->getUsersPayPalCustomerId();
-
-            $selectedPaymentToken = $vaultingService->getVaultPaymentTokenByIndex(
-                $payPalCustomerId,
-                $selectedVaultPaymentSourceIndex
-            );
-            //find out which payment token was selected by getting the index via request param
             $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName(
                 key($selectedPaymentToken["payment_source"])
             );
@@ -602,17 +598,19 @@ class OrderRequestFactory
         ?string $cancelUrl = null
     ): void
     {
-        $config = Registry::getConfig();
-        $vaultingService = $this->getVaultingService();
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $debug = '';
+        if ($moduleSettings->isSandbox()) {
+            $debug = '&XDEBUG_SESSION_START=1';
+        }
 
-        $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
+        $config = Registry::getConfig();
+        $user = $config->getUser();
+        $vaultingService = $this->getVaultingService();
+        $selectedPaymentToken = $vaultingService->fetchSelectedVaultedPaymentToken($user);
 
         //use selected vault
-        if (!is_null($selectedVaultPaymentSourceIndex) && $payPalCustomerId = $this->getUsersPayPalCustomerId()) {
-            $paymentTokens = $vaultingService->getVaultPaymentTokens($payPalCustomerId);
-            //find out which payment token was selected by getting the index via request param
-            $selectedPaymentToken = $paymentTokens["payment_tokens"][$selectedVaultPaymentSourceIndex];
-
+        if (!is_null($selectedPaymentToken)) {
             $newPaymentSource = [
                 $paymentSourceId => [
                     "vault_id" => $selectedPaymentToken["id"],
@@ -638,20 +636,16 @@ class OrderRequestFactory
             ];
             $request->payment_source = $newPaymentSource;
 
-        } elseif ($user = $config->getUser()) {
+        } elseif ($user) {
             //save during purchase
             $paypalCustomerId = $user->getFieldData("oscpaypalcustomerid");
 
-            if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
+            $paymentSourceIdVaultable =
+                $paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_CARD
+                || $paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL;
+
+            if ($paymentSourceIdVaultable) {
                 $newPaymentSource = $vaultingService->getPaymentSourceForVaulting($paymentSourceId);
-                $newPaymentSource["attributes"] = [
-                    "verification" => [
-                        "method" => "SCA_WHEN_REQUIRED"
-                    ],
-                    "vault" => [
-                        "store_in_vault" => "ON_SUCCESS"
-                    ],
-                ];
 
                 $newPaymentSource[$paymentSourceId]["attributes"]["customer"] = [
                     "id" => $paypalCustomerId
@@ -661,10 +655,10 @@ class OrderRequestFactory
                 $newPaymentSource = [
                     $paymentSourceId => [
                         "experience_context" => [
-                            "return_url" => $config->getSslShopUrl() .
-                                'index.php?cl=order&fnc=finalizepaypalsession',
+                             "return_url" => $config->getSslShopUrl() .
+                                'index.php?cl=order&fnc=finalizepaypalsession'.$debug,
                             "cancel_url" => $config->getSslShopUrl() .
-                                'index.php?cl=order&fnc=cancelpaypalsession',
+                                'index.php?cl=order&fnc=cancelpaypalsession'.$debug,
                             "shipping_preference" => "SET_PROVIDED_ADDRESS",
                         ]
                     ]
