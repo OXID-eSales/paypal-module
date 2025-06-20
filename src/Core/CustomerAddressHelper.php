@@ -33,9 +33,6 @@ trait CustomerAddressHelper
             return oxNew(Country::class);
         }
         $country = oxNew(Country::class);
-        if (!$user) {
-            return $country;
-        }
         $country->load($user->getFieldData('oxcountryid'));
         $deliveryId = Registry::getSession()->getVariable("deladrid");
         $deliveryAddress = oxNew(Address::class);
