@@ -143,7 +143,10 @@ class OrderController extends OrderController_parent
                         // double check source type
                         if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
                             $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
-                            $paymentDescription = $paymentSource["brand"] . " " . $string . $paymentSource["last_digits"];
+                            $paymentDescription = $paymentSource["brand"]
+                                . " "
+                                . $string
+                                . $paymentSource["last_digits"];
                         }
                     }
                 }
@@ -718,7 +721,7 @@ class OrderController extends OrderController_parent
         $selectedVaultPaymentSourceIndex = $session->getVariable("selectedVaultPaymentSourceIndex");
         $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
 
-        if (null === $selectedVaultPaymentSourceIndex){
+        if (null === $selectedVaultPaymentSourceIndex) {
             return 'null';
         }
 

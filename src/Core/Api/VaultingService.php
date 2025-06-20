@@ -251,13 +251,17 @@ class VaultingService extends BaseService
                 ->log('error', __CLASS__ . ' ' . __FUNCTION__ . ' : ' . $e->getMessage());
             $result = [];
         }
+
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $vaultedPaymentTokens = $result['payment_tokens'];
         $filteredVaultedPaymentTokens = [];
         $uniquePaypalVaultedPaymentSources = [];
         foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
             foreach ($vaultedPaymentToken["payment_source"] as $paymentType => $paymentSource) {
-                if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL && $moduleSettings->isVaultingAllowedForPayPal()) {
+                if (
+                    $paymentType === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL
+                    && $moduleSettings->isVaultingAllowedForPayPal()
+                ) {
                     $email = $paymentSource["email_address"];
                     $payer_id = $paymentSource["payer_id"];
 

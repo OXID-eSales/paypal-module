@@ -210,7 +210,7 @@ class Order extends Order_parent
         if (is_null($transactionId)) {
             $capture = $this->getOrderPaymentCapture($payPalOrderId);
             $orderService = Registry::get(ServiceFactory::class)->getOrderService();
-            if($payPalPaymentSuccess){
+            if ($payPalPaymentSuccess) {
                 $request = new OrderCaptureRequest();
                 try {
                     $capture = $orderService->capturePaymentForOrder(
@@ -224,7 +224,6 @@ class Order extends Order_parent
                     $this->setOrderStatus('ERROR');
                     throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
                 }
-
             }
 
             $this->setTransId($capture->id);

@@ -162,8 +162,8 @@ class Payment
         if ($moduleSettings->isSandbox()) {
             $debug = '&XDEBUG_SESSION_START=1';
         }
-        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc'.$debug;
-        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=ajaxpay&fnc=cancelShopOrder'.$debug;
+        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc' . $debug;
+        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=ajaxpay&fnc=cancelShopOrder' . $debug;
 
         // PatchOrders access an OrderCall that has taken place before.
         // For this reason, the payPalPartnerAttributionId does not have
@@ -206,7 +206,7 @@ class Payment
             'status' => $status
         ];
 
-        if($status === 'PAYER_ACTION_REQUIRED') {
+        if ($status === 'PAYER_ACTION_REQUIRED') {
             $return['links'] = $response->links;
         }
 
@@ -215,8 +215,8 @@ class Payment
 
     public function doPatchPayPalOrder(
         EshopModelBasket $basket,
-        string           $payPalOrderId,
-        string           $shopOrderId = ''
+        string $payPalOrderId,
+        string $shopOrderId = ''
     ): void {
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
