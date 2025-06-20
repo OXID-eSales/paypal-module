@@ -24,7 +24,7 @@
         "php": ">=8.0",
         "viison/address-splitter": "^0.3.4",
         "webmozart/path-util": "^2.3.0",
-        "oxid-solution-catalysts/paypal-client": "v3.0.16",
+        "oxid-solution-catalysts/paypal-client": "*",
         "brick/phonenumber": "^0.5.0"
     },
     "require-dev": {
@@ -64,8 +64,7 @@
             "@phpstan",
             "@phpmd"
         ],
-        "phpunit": "XDEBUG_MODE=coverage vendor/bin/phpunit -c tests/phpunit.xml --bootstrap=/var/www/source/bootstrap.php",
-        "phpunit-integration": "XDEBUG_MODE=coverage vendor/bin/phpunit -c tests/phpunit.xml --bootstrap=/var/www/source/bootstrap.php --testsuite=Integration",
+        "phpunit": "XDEBUG_MODE=coverage vendor/bin/phpunit -c tests/phpunit.xml --bootstrap=/var/www/source/bootstrap.php    --verbose",
 
         "generate-reports": [
             "@phpstan-report",

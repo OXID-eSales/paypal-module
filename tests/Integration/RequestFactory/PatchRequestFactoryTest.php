@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\RequestFactory;
 
 use OxidEsales\Eshop\Application\Model\Address;
+use OxidEsales\Eshop\Application\Model\Article;
 use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\Country;
+use OxidEsales\Eshop\Application\Model\OrderArticle;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
@@ -131,9 +133,16 @@ class PatchRequestFactoryTest extends BaseTestCase
 
         $basketMock->method('isCalculationModeNetto')->willReturn(false);
         $basketMock->method('getBasketCurrency')->willReturn((object) ['decimal' => 2]);
-        $basketMock->method('getContents')->willReturn([
-            $this->createMock(BasketItem::class)
-        ]);
+
+        $basketItem = $this->createMock(BasketItem::class);
+        $article = $this->createMock(\OxidSolutionCatalysts\PayPal\Model\Article::class);
+
+        $article->method('isVirtualPayPalArticle')->willReturn(false);
+        $basketItem->method('getArticle')
+            ->willReturn($article);
+        $basketItem->method('getTitle')->willReturn('Test Product');
+        $basketMock->method('getContents')->willReturn([$basketItem]);
+
         $basketMock->method('getPayPalCheckoutWrapping')->willReturn(10.00);
         $basketMock->method('getPayPalCheckoutGiftCard')->willReturn(5.00);
         $basketMock->method('getPayPalCheckoutPayment')->willReturn(2.00);

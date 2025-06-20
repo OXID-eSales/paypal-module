@@ -48,15 +48,6 @@ final class ViewConfigTest extends TestCase
     }
 
     /**
-     * Test case for ViewConfig::getPayPalClientId()
-     * @Todo needs new test with Core\Config mock
-     */
-    public function testGetPayPalClientIdId(): void
-    {
-        $this->markTestIncomplete('TODO');
-    }
-
-    /**
      * Test case for ViewConfig::showPayPalBannerOnStartPage()
      */
     public function testShowBannersStartPage(): void

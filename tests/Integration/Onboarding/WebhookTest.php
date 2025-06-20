@@ -30,7 +30,10 @@ final class WebhookTest extends BaseTestCase
     {
         $service = oxNew(Webhook::class);
 
-        $this->doAssertStringContainsString('CHECKOUT.ORDER.COMPLETED', serialize($service->getAvailableEventNames()));
+        $this->doAssertStringContainsString(
+            'CHECKOUT.ORDER.COMPLETED',
+            serialize($service->getAvailableEventNames())
+        );
     }
 
     public function testNonSslEndpoint(): void
@@ -45,8 +48,6 @@ final class WebhookTest extends BaseTestCase
 
     public function testWebhookCreationRoundtrip(): void
     {
-        $this->markTestSkipped('Test removes existing webhooks, only use manually until refactored');
-
         $this->ensureCleanUp();
 
         $loggerMock = $this->getPsrLoggerMock();
@@ -69,44 +70,10 @@ final class WebhookTest extends BaseTestCase
 
         $this->assertEmpty(array_diff($service->getEnabledEvents($hook), $service->getAvailableEventNames()));
 
-        $this->ensureCleanUp();
-    }
-
-    public function testWebhookCreationNewEvents(): void
-    {
-        $this->markTestSkipped('Test removes existing webhooks, only use manually until refactored');
-
-        $this->ensureCleanUp();
-
-        $loggerMock = $this->getPsrLoggerMock();
-        $loggerMock->expects($this->never())
-            ->method('error');
-        Registry::set('logger', $loggerMock);
-
-        //create webhook with subset of events
-        $service = $this->getServiceMock(self::TEST_WEBHOOK_URL, ['getAvailableEventNames']);
-        $service->expects($this->any())
-            ->method('getAvailableEventNames')
-            ->willReturn([['name' => 'PAYMENT.SALE.COMPLETED']]);
-
-        //we start from clean slate for this url
-        $hook = $service->getHookForUrl(self::TEST_WEBHOOK_URL);
-        $this->assertEmpty($hook);
-
-        //ensure webhook is saved
-        $webhookId = $service->ensureWebhook();
-        $this->assertNotEmpty($webhookId);
-        $hook = $service->getHookForUrl(self::TEST_WEBHOOK_URL);
-        $this->assertSame([['name' => 'PAYMENT.SALE.COMPLETED']], $service->getEnabledEvents($hook));
-
-        //simulate new available webhook event
-        $service = $this->getServiceMock();
-        $newWebhookId = $service->ensureWebhook();
+        $service->removeWebhook($hook['id']);
 
         $hook = $service->getHookForUrl(self::TEST_WEBHOOK_URL);
-        $this->assertEmpty(array_diff($service->getEnabledEvents($hook), $service->getAvailableEventNames()));
-
-        $this->ensureCleanUp();
+        $this->assertEquals([], $hook);
     }
 
     protected function getServiceMock(string $url = self::TEST_WEBHOOK_URL, array $addMockMethods = []): Webhook

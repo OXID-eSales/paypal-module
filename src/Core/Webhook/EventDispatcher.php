@@ -34,9 +34,9 @@ class EventDispatcher
     /**
      * We need this method for proper mocking in tests
      * @param string $class
-     * @return string
+     * @return object
      */
-    protected function oxNew(string $class): string
+    protected function oxNew(string $class)
     {
         return oxNew($class);
     }

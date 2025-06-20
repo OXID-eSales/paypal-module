@@ -16,11 +16,7 @@
          verbose="false"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
     <testsuites>
-        <!-- those tests are currently running -->
-        <testsuite name="RunningTests">
-            <file>Unit/Model/HateoasLinksTest.php</file>
-        </testsuite>
-        <!-- those tests are currently not running -->
+
         <testsuite name="UnitTests">
             <directory>Unit/</directory>
             <directory>Integration/</directory>

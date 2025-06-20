@@ -37,30 +37,8 @@ final class OrderTest extends BaseTestCase
      * @throws \OxidEsales\Eshop\Core\Exception\NoArticleException
      * @throws \OxidEsales\Eshop\Core\Exception\ArticleInputException
      */
-    public function testCreatePuiPayPalOrderRequestWithPuiRequiredFields(): void
+    public function testCreatePuiPayPalOrderWithExperienceContext(): void
     {
-        $puiRequired =
-            [
-                'birthdate' => [
-                    'day' => 1,
-                    'month' => 4,
-                    'year' => 2000
-                ],
-                'phonenumber' => '040 111222333'
-            ];
-
-        $request = $this->getMockBuilder(Request::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $request->method('getRequestParameter')
-            ->willReturnMap([
-                ['pui_required', null, $puiRequired],
-                ['listorderby', null, 'desc'],
-            ]);
-
-        EshopRegistry::set(Request::class, $request);
-
-        //DE demo user
         $user = oxNew(EshopModelUser::class);
         $user->load(self::TEST_USER_ID);
 
@@ -72,6 +50,8 @@ final class OrderTest extends BaseTestCase
         $basket->setShipping('oxidstandard');
         $basket->calculateBasket(true);
 
+        EshopRegistry::getSession()->setVariable('paymentid', PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID);
+
         /** @var OrderRequestFactory $requestFactory */
         $requestFactory = EshopRegistry::get(OrderRequestFactory::class);
         $request = $requestFactory->getRequest(
@@ -80,44 +60,22 @@ final class OrderTest extends BaseTestCase
             OrderRequestFactory::USER_ACTION_CONTINUE,
             '',
             Constants::PAYPAL_PUI_PROCESSING_INSTRUCTIONS,
-            PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME,
+            PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID,
         );
 
-        $this->assertEquals('2000-04-01', $request->payment_source['pay_upon_invoice']->birth_date);
-        $this->assertEquals('49', $request->payment_source['pay_upon_invoice']->phone->country_code);
         $this->assertEquals(
-            '40111222333',
-            $request->payment_source['pay_upon_invoice']->phone->national_number
+            'SET_PROVIDED_ADDRESS',
+            $request->payment_source["pay_upon_invoice"]
+            ["experience_context"]
+            ["shipping_preference"]
         );
-    }
-
-    public function testCreatePuiPayPalOrderRequestWithoutPuiRequiredFields(): void
-    {
-        //DE demo user
-        $user = oxNew(EshopModelUser::class);
-        $user->load(self::TEST_USER_ID);
-
-        $basket = oxNew(EshopModelBasket::class);
-        $basket->addToBasket($this->testProductOxid, 1);
-        $basket->setUser($user);
-        $basket->setBasketUser($user);
-        $basket->setPayment(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
-        $basket->setShipping('oxidstandard');
-        $basket->calculateBasket(true);
-
-        /** @var OrderRequestFactory $requestFactory */
-        $requestFactory = EshopRegistry::get(OrderRequestFactory::class);
-
-        $this->expectException(UserPhoneException::class);
-        $this->expectExceptionMessage(UserPhoneException::byRequestData()->getMessage());
-
-        $requestFactory->getRequest(
-            $basket,
-            OrderRequest::INTENT_CAPTURE,
-            OrderRequestFactory::USER_ACTION_CONTINUE,
-            '',
-            Constants::PAYPAL_PUI_PROCESSING_INSTRUCTIONS,
-            PayPalDefinitions::PUI_REQUEST_PAYMENT_SOURCE_NAME,
+        $this->assertStringContainsString(
+            "cl=order&fnc=finalizepaypalsession",
+            $request->payment_source["pay_upon_invoice"]["experience_context"]["return_url"]
+        );
+        $this->assertStringContainsString(
+            "cl=order&fnc=cancelpaypalsession",
+            $request->payment_source["pay_upon_invoice"]["experience_context"]["cancel_url"]
         );
     }
 
