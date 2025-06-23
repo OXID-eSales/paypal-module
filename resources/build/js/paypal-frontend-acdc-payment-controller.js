@@ -145,7 +145,7 @@
                 inputEvents: {
                     onChange: (data) => {
                         PayPalPayment.cardFieldsState = data;
-                        PayPalPayment.buttonControl('disabled', false);
+                        PayPalPayment.removeSubmitButtonOverlay();
                     }
                 }
             });
@@ -222,17 +222,23 @@
                 if (submitButton) {
 
                     submitButton.addEventListener("click", () => {
+                        PayPalPayment.addSubmitButtonOverlay();
+
                         // Validate fields before submission
                         if (!PayPalPayment.validateCardFields()) {
-                            PayPalPayment.buttonControl('disabled', false);
+                            PayPalPayment.removeSubmitButtonOverlay();
                             return;
                         }
 
+                        //enable the PP overlay watcher
+                        //PP sdk do not support events, so we have to watch for the overlay
                         PayPalPayment.paypalOverlayWatcher();
 
                         cardFields.submit().catch(err => {
                             console.info('Error submitting card fields:', err);
                             PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_ACDC_ERROR_INBOX);
+
+                            PayPalPayment.removeSubmitButtonOverlay();
                         });
                     });
                 }
@@ -248,7 +254,7 @@
             return;
         }
         PayPalPayment.cancelOrder().then((e) => {
-            PayPalPayment.buttonControl('disabled', false);
+            this.removeSubmitButtonOverlay();
         });
     });
 

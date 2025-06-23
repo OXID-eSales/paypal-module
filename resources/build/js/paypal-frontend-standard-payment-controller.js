@@ -46,12 +46,17 @@
 
         // PayPal-specific order creation
         this.createOrder = async function (data, actions) {
+            PayPalPayment.addSubmitButtonOverlay();
+            PayPalPayment.paypalOverlayWatcher();
+
+            // Create shop order first
             let shopOrderCreateResult = await PayPalPayment.backendRequest('shopOrderCreateUrl', {}, {
                 'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId')
             });
 
             document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...shopOrderCreateResult}})));
 
+            // Create PayPal order
             let payPalOrderCreateResult = await PayPalPayment.backendRequest('payPalOrderCreateUrl', {}, {
                 'shopOrderId': shopOrderCreateResult.shopOrderId,
                 'vaultPayment': PayPalPayment.currentOrder.vaultPayment,
