@@ -60,9 +60,9 @@ runslim:
   matrix:
     script: |
       [
-        "osc_paypal:phpmd-commit",
-        "osc_paypal:phpcs-commit",
-        "osc_paypal:phpstan-commit"
+        "osc_paypal:phpmd",
+        "osc_paypal:phpcs",
+        "osc_paypal:phpstan"
       ]
 
 sonarcloud:

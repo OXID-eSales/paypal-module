@@ -148,19 +148,19 @@ final class PaymentTest extends BaseTestCase
 
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        EshopRegistry::getSession()->setVariable('paymentid', PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
+        EshopRegistry::getSession()
+            ->setVariable('paymentid', PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
+
         try {
             $result = $paymentService->doCreatePayPalOrder($basket, OrderRequest::INTENT_CAPTURE);
         } catch (TypeError $e) {
-            var_dump($e->getMessage());
-            $this->fail('Expected ApiException, got TypeError');
+            $this->fail('Expected ApiException, got TypeError ' . $e->getMessage());
         }
 
         $this->assertNotEmpty($result->id);
     }
-    /**
-     * TODO: Fix the test
-     */
+
+
     public function testACDCOrder3DSecureSuccess(): void
     {
 
