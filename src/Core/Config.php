@@ -551,7 +551,7 @@ class Config
         }
 
         $user = Registry::getConfig()->getUser();
-        $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
+        $payPalCustomerId = $user ? $user->getFieldData("oscpaypalcustomerid") : '';
 
         if (!$payPalCustomerId) {
             return "";
