@@ -40,6 +40,9 @@ install_shop_with_modules:
   custom_script_container: |
     vendor/bin/oe-console oe:module:activate "{{ $ids }}"
     cp vendor/{{ $org }}/{{ $name }}/tests/.env.dist vendor/{{ $org }}/{{ $name }}/tests/.env
+    cp vendor/{{ $org }}/{{ $name }}/recipe/environment/1.yaml /var/www/var/configuration/environment/shops/1/modules/osc_paypal.yaml 
+    ./bin/oe-console oe:module:install extensions/paypal
+    ./bin/oe-console oe:module:activate osc_paypal
     chmod +x vendor/{{ $org }}/{{ $name }}/.github/scripts/codestyle_check.sh
     composer require --dev mikey179/vfsstream --no-update
     composer require symfony/dotenv --no-update
