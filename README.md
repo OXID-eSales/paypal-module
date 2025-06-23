@@ -22,6 +22,48 @@ PayPal checkout integration for OXID eShop 6.1 and above.
 
 * see Official documentation
 
+## Install with new recipe for development OXID >= v7.x
+
+1. Download SDK
+    ```
+     echo oxidshop && git clone git@github.com:OXID-eSales/docker-eshop-sdk.git $_ && cd $_
+    ```
+2. Download Paypal Module into temporary folder 
+    ```
+     git clone --recurse-submodules git@github.com:OXID-eSales/paypal-module.git extensions/paypal
+    ```
+  
+3. Check if you have all submodules:
+
+    ```
+    ls -la extensions/paypal/recipe/parts
+    ```
+
+4. If you don't have the submodules, run the following command:
+    ```
+    cd extensions/paypal
+    git submodule update --init --recursive
+    ```
+    If you still do not see the submodule, download it manually
+
+  ```
+  git clone https://github.com/OXID-eSales/docker-eshop-sdk-recipe-parts.git recipe/parts
+  ```
+5. Run the installation
+  ```
+
+  ./extensions/paypal/recipe/setup-twig-dev.sh
+
+  ```
+
+  * SMARTY version is available only for OXID 7.0.x
+    ```
+    ./extensions/paypal/recipe/setup-smarty-dev.sh
+    ```
+    
+
+
+
 ## Limitations
 
 * no limitations
