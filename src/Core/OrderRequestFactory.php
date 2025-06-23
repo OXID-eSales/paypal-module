@@ -21,6 +21,7 @@ use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Helper\Truncate;
+use OxidSolutionCatalysts\PayPal\Model\User;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
@@ -124,8 +125,9 @@ class OrderRequestFactory
         $request->intent = $intent;
         $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $withItems);
         $vaultingService = $this->getVaultingService();
+        $user = Registry::getConfig()->getUser() instanceof User ? Registry::getConfig()->getUser() : null;
         $selectedPaymentToken = $vaultingService->fetchSelectedVaultedPaymentToken(
-            Registry::getConfig()->getUser(), $_POST["useVaultedPayment"]["token"]["id"] ?? null
+            $user, $_POST["useVaultedPayment"]["token"]["id"] ?? null
         );
         $useVaultedPayment = $setVaulting && !is_null($selectedPaymentToken);
 
