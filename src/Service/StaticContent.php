@@ -174,8 +174,8 @@ class StaticContent
             ->select('oxid')
             ->from('oxdeliveryset')
             ->where('oxactive = 1')
-            ->execute()
-            ->fetchAll(PDO::FETCH_ASSOC);
+            ->executeQuery()
+            ->fetchAllAssociative();
 
         foreach ($fromDb as $row) {
             $result[$row['oxid']] = $row['oxid'];

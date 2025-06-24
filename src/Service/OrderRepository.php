@@ -132,7 +132,7 @@ class OrderRepository
 
         $id = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
-            ->execute()
+            ->executeQuery()
             ->fetch(PDO::FETCH_COLUMN);
 
         return (string) $id;
@@ -167,7 +167,7 @@ class OrderRepository
             ->andWhere('oxorderdate < now() - interval :sessiontime MINUTE');
 
         $ids = $queryBuilder->setParameters($parameters)
-            ->execute()
+            ->executeQuery()
             ->fetchAllAssociative();
 
         foreach ($ids as $id) {
@@ -220,7 +220,7 @@ class OrderRepository
 
         $id = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
-            ->execute()
+            ->executeQuery()
             ->fetch(PDO::FETCH_COLUMN);
 
         return (string) $id;
@@ -242,7 +242,7 @@ class OrderRepository
 
         $id = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
-            ->execute()
+            ->executeQuery()
             ->fetch(PDO::FETCH_COLUMN);
 
         return (string) $id;
@@ -264,7 +264,7 @@ class OrderRepository
 
         $id = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
-            ->execute()
+            ->executeQuery()
             ->fetch(PDO::FETCH_COLUMN);
 
         return (string) $id;

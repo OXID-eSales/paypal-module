@@ -410,7 +410,7 @@ class Order extends Order_parent
         $date = date('Y-m-d H:i:s', $utilsDate->getTime());
 
         $query = 'update oxorder set oxpaid=? where oxid=?';
-        $db->execute($query, [$date, $this->getId()]);
+        $db->executeStatement($query, [$date, $this->getId()]);
 
         //updating order object
         $this->oxorder__oxpaid = new Field($date);
@@ -424,7 +424,7 @@ class Order extends Order_parent
         $db = DatabaseProvider::getDb();
 
         $query = 'update oxorder set oxtransid=? where oxid=?';
-        $db->execute($query, [$sTransId, $this->getId()]);
+        $db->executeStatement($query, [$sTransId, $this->getId()]);
 
         //updating order object
         $this->oxorder__oxtransid = new Field($sTransId);

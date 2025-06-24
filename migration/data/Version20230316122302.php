@@ -89,9 +89,7 @@ final class Version20230316122302 extends AbstractMigration
                 ['columnDefinition' => 'timestamp default current_timestamp on update current_timestamp']
             );
         }
-        if (!$carrierTable->hasPrimaryKey('OXID')) {
-            $carrierTable->setPrimaryKey(['OXID']);
-        }
+        $carrierTable->setPrimaryKey(['OXID']);
         if (!$carrierTable->hasIndex('OXKEY')) {
             $carrierTable->addUniqueIndex(['OXKEY'], 'OXKEY');
         }

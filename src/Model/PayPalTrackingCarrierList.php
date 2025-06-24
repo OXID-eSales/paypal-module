@@ -70,7 +70,7 @@ class PayPalTrackingCarrierList extends ListModel
             ->where($queryBuilder->expr()->in('CONVERT(oxcountrycode USING utf8)', $inQueryBuilder->getSQL()))
             ->orWhere($queryBuilder->expr()->notIn('CONVERT(oxcountrycode USING utf8)', $notInQueryBuilder->getSQL()))
             ->groupBy('oxcountrycode')
-            ->execute();
+            ->executeQuery();
 
         if (is_a($resultDB, Result::class)) {
             $fromDB = $resultDB->fetchAllAssociative();

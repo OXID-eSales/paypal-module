@@ -32,12 +32,6 @@ services:
     class: OxidEsales\EshopCommunity\Internal\Framework\Logger\Factory\MonologLoggerFactory
     public: true
     arguments:
-      $configuration: '@OxidSolutionCatalysts\PayPal\Logger\Configuration'
-
-  OxidSolutionCatalysts\PayPal\Logger\Configuration:
-    class: OxidEsales\EshopCommunity\Internal\Framework\Logger\Configuration\MonologConfiguration
-    public: true
-    arguments:
       $loggerName: 'PayPal Payment Logger'
       $logFilePath: '@=service("OxidSolutionCatalysts\\PayPal\\Service\\Context").getPayPalLogFilePath()'
       $logLevel: !php/const Psr\Log\LogLevel::DEBUG

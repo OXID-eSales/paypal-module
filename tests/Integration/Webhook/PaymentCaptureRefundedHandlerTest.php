@@ -112,7 +112,7 @@ final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
             ->where('oscpaypaltransactiontype = :type');
 
         $result = $queryBuilder->setParameters(['type' => Constants::PAYPAL_TRANSACTION_TYPE_REFUND])
-            ->execute();
+            ->executeQuery();
 
         $this->assertEquals($refundId, $result->fetchOne());
     }
