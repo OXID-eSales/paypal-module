@@ -349,7 +349,7 @@
                 PayPalPayment.getConfigValue('buttonSelector').split('#').reverse()[0]
             );
             PayPalPayment.removeOverlay(submitButton);
-        }
+        };
 
         this.addSubmitButtonOverlay = function() {
             const submitButton = document.getElementById(
