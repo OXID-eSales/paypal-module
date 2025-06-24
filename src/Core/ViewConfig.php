@@ -232,7 +232,7 @@ class ViewConfig extends ViewConfig_parent
         if ('directly' === $captureStrategy) {
             $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
         }
-        $params['commit'] = $bCommitFlow ? 'true': 'false';
+        $params['commit'] = $bCommitFlow ? 'true' : 'false';
 
         if ($currency = $config->getActShopCurrencyObject()) {
             $params['currency'] = strtoupper($currency->name);
@@ -676,9 +676,8 @@ class ViewConfig extends ViewConfig_parent
         return Registry::getRequest()->getRequestEscapedParameter("cl") === 'oscaccountvaultcard';
     }
 
-    public static function getConfig(): \OxidEsales\EshopCommunity\Core\Config
+    public function getConfig(): \OxidEsales\EshopCommunity\Core\Config
     {
         return Registry::getConfig();
     }
-
 }

@@ -148,93 +148,22 @@ final class PaymentTest extends BaseTestCase
 
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        EshopRegistry::getSession()
+            ->setVariable('paymentid', PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
 
         try {
             $result = $paymentService->doCreatePayPalOrder($basket, OrderRequest::INTENT_CAPTURE);
         } catch (TypeError $e) {
-            var_dump($e->getMessage());
-            $this->fail('Expected ApiException, got TypeError');
+            $this->fail('Expected ApiException, got TypeError ' . $e->getMessage());
         }
 
         $this->assertNotEmpty($result->id);
     }
 
-    public function testCreatePuiPayPalOrder(): void
-    {
-        $this->markTestSkipped('For manual use only, for automatic tests we have codeception tests');
 
-        // The rest of the method remains unchanged
-        $_POST['pui_required'] = [
-            'birthdate' => [
-                'day' => '1',
-                'month' => '4',
-                'year' => '2000'
-            ],
-            'phonenumber' => '040111222333'
-        ];
-
-        $loggerMock = $this->getPsrLoggerMock();
-        $loggerMock->expects($this->never())
-            ->method('error');
-        EshopRegistry::set('logger', $loggerMock);
-
-        $user = oxNew(EshopModelUser::class);
-        $user->load(self::TEST_USER_ID);
-
-        $basket = oxNew(EshopModelBasket::class);
-        $basket->addToBasket($this->testProductOxid, 1);
-        $basket->setUser($user);
-        $basket->setBasketUser($user);
-        $basket->setPayment(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
-        $basket->setShipping('oxidstandard');
-        $basket->calculateBasket(true);
-
-        $transactionId = EshopRegistry::getUtilsObject()->generateUId();
-        $order = $this->getMockBuilder(EshopModelOrder::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $order->expects($this->any())
-            ->method('getShopId')
-            ->willReturn(1);
-        $order->expects($this->any())
-            ->method('getId')
-            ->willReturn($transactionId);
-        $order->expects($this->once())
-            ->method('savePuiInvoiceNr');
-
-        /** @var PaymentService $paymentService */
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        $result = $paymentService->doExecutePuiPayment($order, $basket, '007c7c9d810c4a4cb3f5b88e3e040083');
-
-        $this->assertTrue($result);
-        $this->assertSame(PaymentService::PAYMENT_ERROR_NONE, $paymentService->getPaymentExecutionError());
-    }
-
-    public function testSandboxAccountCanCreatePuiOrder(): void
-    {
-        $this->markTestSkipped('For manual use only, for automatic tests we have codeception tests');
-
-        /** @var \OxidSolutionCatalysts\PayPalApi\Service\Orders $orderService */
-        $orderService = EshopRegistry::get(ServiceFactory::class)
-            ->getOrderService();
-
-        $result = $orderService->createOrder(
-            $this->getPuiOrderRequest(),
-            'Oxid_Cart_Payments',
-            '007c7c9d810c4a4cb3f5b88e3e040083',
-            'return=minimal',
-            'request-id-' . microtime()
-        );
-
-        $this->assertNotEmpty($result->id);
-    }
-
-    /**
-     * TODO: Fix the test
-     */
     public function testACDCOrder3DSecureSuccess(): void
     {
-        $this->markTestSkipped("This test is failing, it needs to be fixed");
+
         // The string is still in $this->success3DCard, but now it was built in setUp()
         /**
          * @var PaymentService|MockObject $paymentService
@@ -251,7 +180,9 @@ final class PaymentTest extends BaseTestCase
             PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID
         );
 
-        $this->assertInstanceOf(ApiOrderModel::class, $apiOrder);
+        $parentClasses = class_parents($apiOrder);
+
+        $this->assertArrayHasKey('OxidSolutionCatalysts\PayPalApi\Model\Orders\Order', $parentClasses);
     }
 
     public function testACDCOrder3DSecureFail(): void

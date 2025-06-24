@@ -264,7 +264,7 @@ class AjaxPaymentController extends ProxyController
         $oOrder = oxNew(Order::class);
         $oOrder->load($shopOrderId);
         $basket = Registry::getSession()->getBasket();
-        $basketUser = $basket ? $basket->getBasketUser(): null;
+        $basketUser = $basket ? $basket->getBasketUser() : null;
 
         if ($cancelSession) {
             $this->outputJson([
@@ -311,7 +311,7 @@ class AjaxPaymentController extends ProxyController
             ]);
         }
 
-        if($vaultPayment) {
+        if ($vaultPayment) {
             //assuming that if there is no error during the request and vaulted was requested it went fine
             Registry::getSession()->setVariable("vaultSuccess", true);
         }
@@ -398,7 +398,8 @@ class AjaxPaymentController extends ProxyController
         }
         /** @var \OxidSolutionCatalysts\PayPal\Model\Order $oOrder */
         $order->sendPayPalOrderByEmail(
-            $user, $basket
+            $user,
+            $basket
         );
     }
 }

@@ -1,0 +1,18 @@
+id: osc_paypal
+moduleSettings:
+  oscPayPalSandboxClientId:
+    type: str
+    value: BAAKBWpOsTL3LYMSwWCbtwc5oJmvBY4u4_fbEnKyPFr-8ut7fsqbZ1XTVawj8nS6uG_plGSxHft44XR9BA
+  oscPayPalSandboxClientSecret:
+    type: str
+    value: EBOJMTp2rNmEq6Tx5f84MHQ4VCKRVeIeooHnbc5xTubThKUqjr_TPbRmNE3GrPx5V6BKTTT9nQT8lNf_
+  oscPayPalSandboxClientMerchantId:
+    type: str
+    value: X2L5DZSHNFVKS
+  oscPayPalSandboxWebhookId:
+    type: str
+    value: 4U4073206P653792T
+  oscPayPalSandboxAcdcEligibility:
+    value: true
+  oscPayPalSandboxPuiEligibility:
+    value: true

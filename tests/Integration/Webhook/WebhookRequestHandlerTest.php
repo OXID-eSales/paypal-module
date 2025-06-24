@@ -35,8 +35,7 @@ final class WebhookRequestHandlerTest extends TestCase
         $dispatcher = $this->getMockBuilder(EventDispatcher::class)
             ->getMock();
         $dispatcher->expects($this->any())
-            ->method('dispatch')
-            ->willReturn(true);
+            ->method('dispatch');
 
         $webhookRequestHandler = new WebhookRequestHandler($requestReader, $verificationService, $dispatcher);
 

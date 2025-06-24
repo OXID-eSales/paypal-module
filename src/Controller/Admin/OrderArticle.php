@@ -18,8 +18,9 @@ class OrderArticle extends OrderArticle_parent
     {
         $parent = parent::render();
         if ($order = $this->getEditObject()) {
-            if ( $order->paidWithPayPal() ||
-                 $order->paidWithPayPalPlus()||
+            if (
+                $order->paidWithPayPal() ||
+                 $order->paidWithPayPalPlus() ||
                  $order->paidWithPayPalSoap()
             ) {
                 $capture = $order->getOrderPaymentCapture();

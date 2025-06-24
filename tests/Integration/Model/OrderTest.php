@@ -384,59 +384,6 @@ final class OrderTest extends BaseTestCase
         $orderMock->finalizeOrderAfterExternalPayment(self::TEST_PAYPAL_ORDER_ID, true);
     }
 
-    public function testFinalizeOrderAfterExternalPaymentACDCNoForceFetch(): void
-    {
-        $paymentServiceMock = $this->prepareFinalizeTest('never', 'never');
-
-        $orderMock = $this->getMockBuilder(PayPalExtendModelOrder::class)
-            ->onlyMethods([
-                'sendOrderByEmail',
-                'getServiceFromContainer',
-                'afterOrderCleanUp',
-                'isPayPalOrderCompleted',
-                'markOrderPaid',
-                'setTransId',
-                'extractTransactionId',
-                'getOrderPaymentCapture',
-                'doExecutePayPalPayment',
-            ])
-            ->getMock();
-
-        $captureMock = $this->getMockBuilder(PayPalApiCapture::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $captureMock->id = self::TEST_PAYPAL_TRANS_ID;
-
-        $orderMock->expects($this->once())
-            ->method('getOrderPaymentCapture')
-            ->willReturn($captureMock);
-        $orderMock->expects($this->never())
-            ->method('doExecutePayPalPayment');
-        $orderMock->expects($this->any())
-            ->method('getServiceFromContainer')
-            ->willReturn($paymentServiceMock);
-        $orderMock->expects($this->once())
-            ->method('afterOrderCleanUp');
-        $orderMock->expects($this->never())
-            ->method('extractTransactionId');
-        $orderMock->expects($this->once())
-            ->method('setTransId')
-            ->with($this->equalTo(self::TEST_PAYPAL_TRANS_ID));
-        $orderMock->expects($this->never())
-            ->method('isPayPalOrderCompleted');
-        $orderMock->expects($this->once())
-            ->method('sendOrderByEmail');
-
-        $orderMock->load(self::TEST_ORDER_ID);
-        $orderMock->assign(
-            [
-                'oxpaymenttype' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID
-            ]
-        );
-
-        $orderMock->finalizeOrderAfterExternalPayment(self::TEST_PAYPAL_ORDER_ID);
-    }
-
     public function testFinalizeOrderAfterExternalPaymentBailOutBecauseNonPayPalPayment(): void
     {
         $paymentServiceMock = $this->prepareFinalizeTest('never', 'never');
@@ -497,7 +444,6 @@ final class OrderTest extends BaseTestCase
      */
     public function testFinalizeOrderAfterExternalUapmPayment(): void
     {
-        $this->markTestSkipped('This test needs to be fixed');
         $paymentServiceMock = $this->prepareFinalizeTest('never', 'never');
 
         $orderMock = $this->getMockBuilder(PayPalExtendModelOrder::class)

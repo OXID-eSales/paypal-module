@@ -12,4 +12,10 @@ php-cs-fixer.phar
 /tests/report
 /resources/node_modules/
 /resources/build/js/typescript-transpiled
+/resources/package-lock.json
 *:Zone.Identifier
+/assets/js/*
+/assets/css/*
+ # Ignore all files in recipe directory except parts
+ recipe/*
+ !recipe/parts

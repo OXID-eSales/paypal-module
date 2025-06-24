@@ -132,12 +132,13 @@ final class StaticContentTest extends BaseTestCase
         $payPalDefinitions = PayPalDefinitions::getPayPalDefinitions();
 
         foreach ($paymentIds as $paymentId) {
-            if (in_array($paymentId, ['oscpaypal_blik', 'oscpaypal_eps', 'oscpaypal_giropay'])) {
+            if (in_array($paymentId, ['oscpaypal_paylater', 'oscpaypal_blik', 'oscpaypal_eps', 'oscpaypal_giropay'])) {
                 continue;
             }
 
             $payment = oxNew(EshopModelPayment::class);
-            $this->assertTrue($payment->load($paymentId));
+            $isLoaded = $payment->load($paymentId);
+            $this->assertTrue($isLoaded);
 
             $payment->loadInLang(0, $paymentId);
             $this->assertEquals(

@@ -619,10 +619,8 @@ class ModuleSettings
     public function saveMerchantId(string $merchantId): void
     {
         if ($this->isSandbox()) {
-
             $this->save('oscPayPalSandboxClientMerchantId', $merchantId);
         } else {
-
             $this->save('oscPayPalClientMerchantId', $merchantId);
         }
 
