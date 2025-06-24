@@ -624,15 +624,6 @@ class OrderRequestFactory
             $newPaymentSource = [
                 $paymentSourceId => [
                     "vault_id" => $selectedPaymentToken["id"],
-                    "attributes" => [
-                        "verification" => [
-                            "method" => "SCA_WHEN_REQUIRED",
-                            "_comment" => "SCA_ALWAYS to force otherwise use SCA_WHEN_REQUIRED"
-                        ],
-                        "customer" => [
-                            "id" => $selectedPaymentToken['customer']['id']
-                        ]
-                    ],
                     "stored_credential" => [
                         "payment_initiator" => "CUSTOMER",
                         "payment_type" => "UNSCHEDULED",
