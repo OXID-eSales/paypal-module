@@ -169,7 +169,7 @@ class AcceptanceTester extends \Codeception\Actor
     public function switchToLastWindow()
     {
         $I = $this;
-        $I->executeInSelenium(function (\Facebook\WebDriver\Remote\RemoteWebDriver $webdriver) {
+        $I->executeInSelenium(function (\Facebook\WebDriver\Remote\RemoteWebDriver $webdriver): void {
             $handles = $webdriver->getWindowHandles();
             $last_window = end($handles);
             $webdriver->switchTo()->window($last_window);

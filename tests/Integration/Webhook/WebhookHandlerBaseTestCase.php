@@ -127,7 +127,7 @@ class WebhookHandlerBaseTestCase extends BaseTestCase
             ->where('oxpaypalorderid = :oxpaypalorderid');
 
         $result = $queryBuilder->setParameters($parameters)
-            ->execute();
+            ->executeQuery();
 
         $this->assertEquals($expected, $result->fetchOne());
     }

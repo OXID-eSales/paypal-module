@@ -87,7 +87,7 @@ class UserRepository
 
         $userId = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
-            ->execute()
+            ->executeQuery()
             ->fetch(PDO::FETCH_COLUMN);
 
         return (string) $userId;

@@ -40,23 +40,15 @@ final class Version20220901134100 extends AbstractMigration
     {
         $order = $schema->getTable('oscpaypal_order');
         if ($order->hasColumn('OSCPAYPALTRANSACTIONID')) {
-            $order->changeColumn(
-                'OSCPAYPALTRANSACTIONID',
-                [
-                    'notnull' => true,
-                    'default' => ''
-                ]
+            $this->addSql(
+                "ALTER TABLE `oscpaypal_order` MODIFY `OSCPAYPALTRANSACTIONID` VARCHAR(255) NOT NULL DEFAULT ''"
             );
         }
 
         if ($order->hasColumn('OSCPAYPALSTATUS')) {
-            $order->changeColumn(
-                'OSCPAYPALSTATUS',
-                [
-                    'columnDefinition' => 'varchar(255) collate latin1_general_ci',
-                    'notnull' => true,
-                    'default' => ''
-                ]
+            $this->addSql(
+                "ALTER TABLE `oscpaypal_order` MODIFY `OSCPAYPALSTATUS` VARCHAR(255) CHARACTER " .
+                     "SET latin1 COLLATE latin1_general_ci NOT NULL DEFAULT ''"
             );
         }
     }

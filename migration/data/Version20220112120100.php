@@ -97,9 +97,7 @@ final class Version20220112120100 extends AbstractMigration
                 ['columnDefinition' => 'timestamp default current_timestamp on update current_timestamp']
             );
         }
-        if (!$order->hasPrimaryKey('OXID')) {
-            $order->setPrimaryKey(['OXID']);
-        }
+        $order->setPrimaryKey(['OXID']);
         if (!$order->hasIndex('ORDERID_PAYPALORDERID')) {
             $order->addUniqueIndex(['OXORDERID', 'OXPAYPALORDERID'], 'ORDERID_PAYPALORDERID');
         }

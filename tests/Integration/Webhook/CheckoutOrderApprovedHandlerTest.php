@@ -180,7 +180,7 @@ final class CheckoutOrderApprovedHandlerTest extends WebhookHandlerBaseTestCase
             ->where('oxid = :oxid');
 
         $result = $queryBuilder->setParameters($parameters)
-            ->execute();
+            ->executeQuery();
 
         return 0 < (int) $result->fetchOne();
     }
