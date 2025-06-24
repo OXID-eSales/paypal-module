@@ -99,7 +99,21 @@ class PayPalSession
     public static function isPayPalACDCOrderActive(): bool
     {
         $paymentId = Registry::getSession()->getBasket()->getPaymentId();
-        if (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID == $paymentId) {
+        if (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if active PayPalStandard Order exists
+     *
+     * @return bool
+     */
+    public static function isPayPalStandardOrderActive(): bool
+    {
+        $paymentId = Registry::getSession()->getBasket()->getPaymentId();
+        if (PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID === $paymentId) {
             return true;
         }
         return false;

@@ -164,7 +164,7 @@ class VaultingService extends BaseService
                 "store_in_vault" => "ON_SUCCESS",
                 "usage_type" => "MERCHANT",
                 "customer_type" => "CONSUMER",
-                "permit_multiple_payment_tokens" => true //Check: if this is set to 'false' either card od PP account can be vaulted
+                "permit_multiple_payment_tokens" => false //Check: if this is set to 'false' either card od PP account can be vaulted
             ];
         }
 
@@ -232,12 +232,12 @@ class VaultingService extends BaseService
     }
 
     public function fetchSelectedVaultedPaymentToken(
-        User $user,
+        ?User $user = null,
         ?string $id = null
     ): ?array {
         $vaultedPaymentTokens = [];
-        $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
-        if($payPalCustomerId) {
+        $payPalCustomerId = $user ? $user->getFieldData("oscpaypalcustomerid") : '';
+        if(!empty($payPalCustomerId)) {
             $vaultedPaymentTokens = $this->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"];
         }
         $selectedVaultedPaymentTokenId = null === $id ?
