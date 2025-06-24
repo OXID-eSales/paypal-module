@@ -85,7 +85,13 @@
                 <i class="fa fa-check"></i> {{ translate({ ident: "SUBMIT_ORDER" }) }}
             </button>
         {% elseif paymentId == "oscpaypal" %}
-            <div id="{{ paymentId }}" class="paypal-button-container float-right pull-right"></div>
+            {% if vaultedPaymentDescription %}
+                <button id="{{ paymentId }}" type="button" class="btn btn-lg btn-primary float-right pull-right submitButton nextStep largeButton">
+                    <i class="fa fa-check"></i> {{ translate({ ident: "SUBMIT_ORDER" }) }}
+                </button>
+            {% else %}
+                <div id="{{ paymentId }}" class="paypal-button-container float-right pull-right"></div>
+            {% endif %}
         {% else %}
             {{ parent() }}
         {% endif %}

@@ -19,7 +19,13 @@
 [{/if}]
 
 [{if "oscpaypal" == $paymentId}]
-    <div id="[{$paymentId}]" class="paypal-button-container paypal-button-wrapper large float-right pull-right"></div>
+    [{if $vaultedPaymentDescription}]
+    <button id="[{$paymentId}]" type="button" class="btn btn-lg btn-primary float-right pull-right submitButton nextStep largeButton">
+        <i class="fa fa-check"></i> [{oxmultilang ident="SUBMIT_ORDER"}]
+    </button>
+    [{else}]
+        <div id="[{$paymentId}]" class="paypal-button-container float-right pull-right"></div>
+    [{/if}]
 [{/if}]
 
 [{if "oscpaypal_pui" == $paymentId}]

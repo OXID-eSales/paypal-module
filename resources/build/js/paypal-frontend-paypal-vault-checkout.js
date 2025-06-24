@@ -50,7 +50,7 @@ function registerClickListenerForTheVaultCheckoutButton() {
                         let vaultedPaymentInput = document.createElement("input");
                         vaultedPaymentInput.type = "hidden";
                         vaultedPaymentInput.name = "vaultingpaymentsource";
-                        vaultedPaymentInput.value = paymentsource.dataset.index;
+                        vaultedPaymentInput.value = paymentsource.dataset.tokenId;
                         document.getElementById("payment").appendChild(vaultedPaymentInput);
 
                         let paymentIdInput = document.createElement("input");

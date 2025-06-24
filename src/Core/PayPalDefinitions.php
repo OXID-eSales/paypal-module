@@ -42,7 +42,7 @@ final class PayPalDefinitions
         "store_in_vault" => "ON_SUCCESS",
         "usage_type" => "MERCHANT",
         "customer_type" => "CONSUMER",
-        "permit_multiple_payment_tokens" => true,
+        "permit_multiple_payment_tokens" => false,
     ];
 
     private const PAYMENT_CONSTRAINTS_PAYPAL = [
@@ -525,7 +525,8 @@ final class PayPalDefinitions
     public static function getPaymentSourceRequestName(string $oxid): string
     {
         $mapping = [
-            self::PAYMENT_SOURCE_PAYPAL => 'oscpaypal_paypal',
+            self::STANDARD_PAYPAL_PAYMENT_ID => 'oscpaypal_paypal',
+            self::PAYMENT_SOURCE_PAYPAL => 'oscpaypal',
             self::PAYMENT_SOURCE_CARD => 'oscpaypal_acdc'
         ];
 
@@ -533,6 +534,9 @@ final class PayPalDefinitions
             self::PAYPAL_DEFINTIONS[$oxid]['paymentsource'] :
             self::PAYPAL_DEFINTIONS[$mapping[$oxid]]['paymentsource'];
 
+        //if (empty($return) && array_key_exists($oxid, $mapping)) {
+        //    $return = self::PAYPAL_DEFINTIONS[$mapping[$oxid]]['paymentsource'];
+        //}
         return $return;
     }
 

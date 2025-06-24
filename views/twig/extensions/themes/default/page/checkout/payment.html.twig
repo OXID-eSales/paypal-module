@@ -67,21 +67,20 @@
     {% if vaultedPaymentSources %}
         <h4 class="card-header card-title">{{ 'OSC_PAYPAL_VAULTING_VAULTED_PAYMENTS'|translate }}</h4>
         <div class="card-body">
-            {% set iterator = 0 %}
-            {% for paymentType, vaultedPayment in vaultedPaymentSources %}
-                {% for paymentDescription in vaultedPayment %}
-                    <div class="well well-sm">
-                        <dl>
-                            <dt>
-                                <input class="vaulting_paymentsource" name="vaulting_paymentsource" type="radio" id="paymentsource_{{ iterator }}" data-index="{{ iterator }}" data-paymenttype="{{ paymentType }}">
-                                <label for="paymentsource_{{ iterator }}">{{ paymentDescription }}</label>
-                            </dt>
-                        </dl>
-                    </div>
-                    {% set iterator = iterator + 1 %}
-                {% endfor %}
+            {% for paymentTokenId, vaultedPayment in vaultedPaymentSources %}
+                <div class="well well-sm">
+                    <dl>
+                        <dt>
+                            <input type="radio" name="vaulting_paymentsource" class="vaulting_paymentsource"
+                                   id="paymenttoken_{{ vaultedPayment.id }}"
+                                   data-token-id="{{ vaultedPayment.id }}"
+                                   data-paymenttype="{{ vaultedPayment.type }}"
+                            >
+                            <label for="paymenttoken_{{ vaultedPayment.id }}">{{ vaultedPayment.label }}</label>
+                        </dt>
+                    </dl>
+                </div>
             {% endfor %}
-
             <div class="text-right">
                 <button type="submit" name="userform"
                         class="btn btn-primary pull-right submitButton nextStep largeButton"

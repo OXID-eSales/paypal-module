@@ -63,7 +63,11 @@
         };
 
         this.getCurrentPayPalOrderId = function () {
-            return this.getCurrentOrderData('orderID', 'paypal');
+            // check if part: this.getCurrentOrderData('orderID', 'paypal') is needed, maybe in ACDC
+            const payPalOrderId =
+                this.getCurrentOrderData('orderID', 'paypal') || this.getCurrentOrderData('id', 'paypal');
+
+            return payPalOrderId || null;
         };
 
         this.getConfigValue = function (name) {
@@ -148,12 +152,14 @@
                 await PayPalPayment.vaultPayment(paypalOrderDetails);
             }
 
-            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl').replaceAll('&amp;', '&');
+            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
         };
 
         this.cancelOrder = async function () {
+            PayPalPayment.removeSubmitButtonOverlay();
+
             let shopOrderId = PayPalPayment.getCurrentOrderOxid();
-            if (null == shopOrderId){
+            if (null == shopOrderId) {
                 return;
             }
 
@@ -165,16 +171,10 @@
         };
 
         this.handleError = async function (data) {
-            PayPalPayment.buttonControl('disabled', false);
-
             let shopOrderId = PayPalPayment.getCurrentOrderOxid();
-            if (null == shopOrderId){
+            if (null == shopOrderId) {
                 return;
             }
-
-            /*await PayPalPayment.backendRequest('shopOrderErrorUrl', {}, {
-                'shopOrderId': PayPalPayment.getCurrentOrderOxid()
-            });*/
 
             await PayPalPayment.cancelOrder();
         };
@@ -216,25 +216,24 @@
             }
         };
 
-
         this.paypalOverlayWatcher = function () {
             const overlayClosedEvent = new Event('paypalOverlayClosed');
 
             // Options for the observer (which mutations to observe)
-            const config = { childList: true, subtree: true };
+            const config = {childList: true, subtree: true};
 
             // Create an observer instance
-            const observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
+            const observer = new MutationObserver(function (mutations) {
+                mutations.forEach(function (mutation) {
                     let addedNodes = mutation.addedNodes;
 
-                    addedNodes.forEach(function(node) {
+                    addedNodes.forEach(function (node) {
                         if (node.nodeType === Node.ELEMENT_NODE) {
 
                             if (node.id.startsWith('paypal-overlay-uid_')) {
-                                const overlayObserver = new MutationObserver(function(ovMutations, ovObserver) {
-                                    ovMutations.forEach(function(ovMutation) {
-                                        ovMutation.removedNodes.forEach(function(removedNode) {
+                                const overlayObserver = new MutationObserver(function (ovMutations, ovObserver) {
+                                    ovMutations.forEach(function (ovMutation) {
+                                        ovMutation.removedNodes.forEach(function (removedNode) {
                                             if (removedNode === node ||
                                                 (removedNode.contains && removedNode.contains(node))) {
 
@@ -248,7 +247,7 @@
 
                                 // Start observing the parent of the iframe for removal
                                 if (node.parentNode) {
-                                    overlayObserver.observe(node.parentNode, { childList: true });
+                                    overlayObserver.observe(node.parentNode, {childList: true});
                                 }
                             }
                         }
@@ -260,6 +259,103 @@
             PayPalPayment.reactOnPayPalOverlayClosed = true;
 
             return observer;
+        };
+
+        this.initializeAcceptPaymentButton = function () {
+            const submitButton = document.querySelector(PayPalPayment.config.buttonSelector);
+            submitButton.addEventListener('click', function (e) {
+                e.stopPropagation();
+                e.preventDefault();
+                PayPalPayment.addSubmitButtonOverlay();
+
+                if (PayPalPayment.config.vaultedPaymentSource) {
+                    PayPalPayment.createOrder();
+                }
+            });
+        };
+
+        // Add a non-clickable overlay to a DOM element
+        // If an overlay already exists on the element, returns the existing overlay instead of creating a new one
+        this.addOverlay = function (element) {
+            if (!element) {
+                console.warn('No element provided to add overlay');
+                return null;
+            }
+
+            // Check if overlay already exists
+            const existingOverlay = element.querySelector('.paypal-element-overlay');
+            if (existingOverlay) {
+                console.log('Overlay already exists, returning existing overlay');
+                return existingOverlay;
+            }
+
+            // Create overlay element
+            const overlay = document.createElement('div');
+            overlay.className = 'paypal-element-overlay';
+
+            // Set overlay styles
+            overlay.style.position = 'absolute';
+            overlay.style.top = '0';
+            overlay.style.left = '0';
+            overlay.style.width = '100%';
+            overlay.style.height = '100%';
+            overlay.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
+            overlay.style.zIndex = '1000';
+            overlay.style.cursor = 'not-allowed';
+
+            // Make sure the target element has position relative or absolute
+            const elementPosition = window.getComputedStyle(element).getPropertyValue('position');
+            if (elementPosition !== 'relative' && elementPosition !== 'absolute') {
+                element.style.position = 'relative';
+            }
+
+            // Add overlay to the element
+            element.appendChild(overlay);
+
+            return overlay;
+        };
+
+        // Remove overlay(s) from a DOM element
+        this.removeOverlay = function (element) {
+            if (!element) {
+                console.warn('No element provided to remove overlay from');
+                return false;
+            }
+
+            // Get the parent of the element
+            const parent = element.parentNode;
+            if (!parent) {
+                console.warn('Element has no parent node');
+                return false;
+            }
+
+            // Find all overlays within the parent element
+            const overlays = parent.querySelectorAll('.paypal-element-overlay');
+            if (!overlays || overlays.length === 0) {
+                console.warn('No overlays found in the parent of the provided element');
+                return false;
+            }
+
+            // Remove all overlay
+            overlays.forEach(overlay => {
+                parent.removeChild(overlay);
+            });
+
+            return true;
+        };
+
+        this.removeSubmitButtonOverlay = function() {
+            const submitButton = document.getElementById(
+                PayPalPayment.getConfigValue('buttonSelector').split('#').reverse()[0]
+            );
+            PayPalPayment.removeOverlay(submitButton);
+        };
+
+        this.addSubmitButtonOverlay = function() {
+            const submitButton = document.getElementById(
+                PayPalPayment.getConfigValue('buttonSelector').split('#').reverse()[0]
+            );
+            PayPalPayment.addOverlay(submitButton.parentElement);
         };
 
         // Common initialization

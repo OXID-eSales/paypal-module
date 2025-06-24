@@ -21,6 +21,7 @@ use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Helper\Truncate;
+use OxidSolutionCatalysts\PayPal\Model\User;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
@@ -98,10 +99,11 @@ class OrderRequestFactory
 
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $setVaulting = $moduleSettings->getIsVaultingActive();
-        $selectedVaultPaymentSourceIndex = Registry::getSession()->getVariable("selectedVaultPaymentSourceIndex");
+
         $paymentId = Registry::getSession()->getVariable('paymentid');
         $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName($paymentId);
 
+        $request->payment_source = $this->getSimplePaymentSource($basket, $paymentSourceId);
         if ($paymentId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID) {
             $request->payment_source = $this->getGooglePayPaymentSource($basket, $paymentSourceId);
         }
@@ -113,24 +115,24 @@ class OrderRequestFactory
         if (PayPalDefinitions::isUAPMPayment($paymentId)) {
             if ($paymentId === PayPalDefinitions::PRZELEWY24_PAYPAL_PAYMENT_ID) {
                 $request->payment_source = $this->getSimplePaymentSourceWithEMail($basket, $paymentSourceId);
-            } else {
+            }
+            else {
                 $request->payment_source = $this->getSimplePaymentSource($basket, $paymentSourceId);
             }
         }
 
         $request->intent = $intent;
         $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $withItems);
-        $useVaultedPayment = $setVaulting && !is_null($selectedVaultPaymentSourceIndex);
+        $vaultingService = $this->getVaultingService();
+        $user = Registry::getConfig()->getUser() instanceof User ? Registry::getConfig()->getUser() : null;
+        $selectedPaymentToken = $vaultingService->fetchSelectedVaultedPaymentToken(
+            $user, $_POST["useVaultedPayment"]["token"]["id"] ?? null
+        );
+        $useVaultedPayment = $setVaulting && !is_null($selectedPaymentToken)
+            && PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID !== $paymentId;
 
         if ($useVaultedPayment) {
-            $vaultingService = $this->getVaultingService();
-            $payPalCustomerId = $this->getUsersPayPalCustomerId();
 
-            $selectedPaymentToken = $vaultingService->getVaultPaymentTokenByIndex(
-                $payPalCustomerId,
-                $selectedVaultPaymentSourceIndex
-            );
-            //find out which payment token was selected by getting the index via request param
             $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName(
                 key($selectedPaymentToken["payment_source"])
             );
