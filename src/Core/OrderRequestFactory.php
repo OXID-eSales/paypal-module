@@ -129,7 +129,8 @@ class OrderRequestFactory
         $selectedPaymentToken = $vaultingService->fetchSelectedVaultedPaymentToken(
             $user, $_POST["useVaultedPayment"]["token"]["id"] ?? null
         );
-        $useVaultedPayment = $setVaulting && !is_null($selectedPaymentToken);
+        $useVaultedPayment = $setVaulting && !is_null($selectedPaymentToken)
+            && PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID !== $paymentId;
 
         if ($useVaultedPayment) {
             $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName(
@@ -608,14 +609,18 @@ class OrderRequestFactory
             $debug = '&XDEBUG_SESSION_START=1';
         }
 
+        $basket = Registry::getSession()->getBasket();
+        $paymentId = $basket->getPaymentId();
+
         $config = Registry::getConfig();
         $user = $config->getUser() instanceof User ? $config->getUser() : null;
 
         $vaultingService = $this->getVaultingService();
-        $selectedPaymentToken = $vaultingService->fetchSelectedVaultedPaymentToken($user);
+        $selectedPaymentToken = $vaultingService->fetchSelectedVaultedPaymentToken($user)
+            && PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID !== $paymentId;
 
         //use selected vault
-        if (!is_null($selectedPaymentToken)) {
+        if (!empty($selectedPaymentToken)) {
             $newPaymentSource = [
                 $paymentSourceId => [
                     "vault_id" => $selectedPaymentToken["id"],
