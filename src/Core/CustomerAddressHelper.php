@@ -18,7 +18,7 @@ trait CustomerAddressHelper
     protected function getUserNameFromBasket($basket): string
     {
         $user = $basket->getBasketUser();
-        return $user->getFieldData('oxfname') . ' ' . $user->getFieldData('oxlname');
+        return $user ? $user->getFieldData('oxfname') . ' ' . $user->getFieldData('oxlname') : '';
     }
 
     protected function getEMailFromBasket($basket): string
@@ -30,6 +30,9 @@ trait CustomerAddressHelper
     {
         $user = $basket->getBasketUser();
         $country = oxNew(Country::class);
+        if (!$user) {
+            return $country;
+        }
         $country->load($user->getFieldData('oxcountryid'));
         $deliveryId = Registry::getSession()->getVariable("deladrid");
         $deliveryAddress = oxNew(Address::class);

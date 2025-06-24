@@ -122,31 +122,22 @@ class OrderController extends OrderController_parent
 
             $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
 
-            if (
-                $isVaultingPossible
-                && $payPalCustomerId
-            ) {
                 $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
-                $vaultedPaymentTokens = $vaultingService->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"];
 
+            if ($isVaultingPossible && $payPalCustomerId ) {
                 $paymentDescription = '';
-                // Vaulted Cards?
+                // Vaulted Cards
                 if ($paymentId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) {
-                    $selectedVaultPaymentSourceIndex = $session->getVariable("selectedVaultPaymentSourceIndex");
+                    $vaultedPaymentTokenSelected = $vaultingService->fetchSelectedVaultedPaymentToken($this->getUser());
                     // the PaymentSourceIndex is set in Payment-Controller only by vaulted cards
-                    if (!is_null($selectedVaultPaymentSourceIndex)) {
-                        //find out which payment token was selected by getting the index via request param
-                        $selectedPaymentToken = $vaultedPaymentTokens[$selectedVaultPaymentSourceIndex];
-                        $paymentType = key($selectedPaymentToken["payment_source"]);
-                        $paymentSource = $selectedPaymentToken["payment_source"][$paymentType];
+                    if (!is_null($vaultedPaymentTokenSelected)) {
+                        $paymentType = key($vaultedPaymentTokenSelected["payment_source"]);
+                        $paymentSource = $vaultedPaymentTokenSelected["payment_source"][$paymentType];
 
                         // double check source type
                         if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
                             $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
-                            $paymentDescription = $paymentSource["brand"]
-                                . " "
-                                . $string
-                                . $paymentSource["last_digits"];
+                            $paymentDescription = $paymentSource["brand"] . " " . $string . $paymentSource["last_digits"];
                         }
                     }
                 }
@@ -156,14 +147,8 @@ class OrderController extends OrderController_parent
                     $paymentId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID ||
                     $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
                 ) {
-                    $foundPayPalVault = false;
-                    foreach ($vaultedPaymentTokens as $vaultPaymentToken) {
-                        if (isset($vaultPaymentToken["payment_source"][PayPalDefinitions::PAYMENT_SOURCE_PAYPAL])) {
-                            $foundPayPalVault = true;
-                            break;
-                        }
-                    }
-                    if ($foundPayPalVault) {
+                    $vaultedPaymentTokenSelected = $vaultingService->fetchSelectedVaultedPaymentToken($this->getUser());
+                    if ($vaultedPaymentTokenSelected) {
                         $paymentDescription = $lang->translateString("OSC_PAYPAL_VAULTING_USE_HINT");
                     }
                 }
@@ -714,25 +699,22 @@ class OrderController extends OrderController_parent
         }
         return $result;
     }
+    /**
+     * Used in the template: checkout_order_btn_submit_bottom.tpl to get the vaulted payment source
+     *
+     * @return string
+     * @throws \JsonException
+     */
     public function getVaultedPaymentSource(): string
     {
-        $payPalCustomerId = $this->getPayPalCustomerId();
-        $session = Registry::getSession();
-        $selectedVaultPaymentSourceIndex = $session->getVariable("selectedVaultPaymentSourceIndex");
         $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+        $vaultedPaymentTokenSelected = $vaultingService->fetchSelectedVaultedPaymentToken($this->getUser());
 
-        if (null === $selectedVaultPaymentSourceIndex) {
-            return 'null';
-        }
+        return !empty($vaultedPaymentTokenSelected) ? json_encode([
 
-        $selectedPaymentToken = $vaultingService->getVaultPaymentTokenByIndex(
-            $payPalCustomerId,
-            $selectedVaultPaymentSourceIndex
-        );
 
-        return !empty($selectedPaymentToken) ? json_encode([
             "token" => [
-                "id"    => $selectedPaymentToken['id'],
+                "id" => $vaultedPaymentTokenSelected['id'],
                 "type"  => "SETUP_TOKEN",
             ]
         ], JSON_THROW_ON_ERROR) : 'null';

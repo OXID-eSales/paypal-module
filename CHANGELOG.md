@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Better style and Localisations for ACDC and Vaulting
 - Saving vaulted payment methods is now only possible via checkout
 - Trim the item names for PayPal in a proper way
+- Switch to ServerSide-API-Calls instead deprecated ClientSide-API-Calls
 - use PayPal-Client v3.0.17
 
 ### FIX

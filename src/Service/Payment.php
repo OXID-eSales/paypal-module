@@ -382,7 +382,7 @@ class Payment
                     $vault = $card->attributes->vault;
                 }
 
-                if ($session->getVariable("vaultSuccess") && $vault->status === "VAULTED") {
+                if ($vault->status === "VAULTED") {
                     $vaultSuccess = false;
 
                     if ($id = $vault->customer["id"]) {

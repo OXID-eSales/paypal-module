@@ -52,18 +52,6 @@
             window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
         };
 
-        this.initializeAcceptPaymentButton = function () {
-            const submitButton = document.querySelector(PayPalPayment.config.buttonSelector);
-            submitButton.addEventListener('click', function (e) {
-                e.stopPropagation();
-                e.preventDefault();
-                PayPalPayment.buttonControl('disabled', true);
-                if (PayPalPayment.config.vaultedPaymentSource) {
-                    PayPalPayment.createOrder();
-                }
-            });
-        };
-
         this.removeErrorMessage = function (className) {
             className = className || '';
             const panelBody = document.querySelector("#card_container").parentElement;
@@ -157,7 +145,7 @@
                 inputEvents: {
                     onChange: (data) => {
                         PayPalPayment.cardFieldsState = data;
-                        PayPalPayment.buttonControl('disabled', false);
+                        PayPalPayment.removeSubmitButtonOverlay();
                     }
                 }
             });
@@ -234,17 +222,23 @@
                 if (submitButton) {
 
                     submitButton.addEventListener("click", () => {
+                        PayPalPayment.addSubmitButtonOverlay();
+
                         // Validate fields before submission
                         if (!PayPalPayment.validateCardFields()) {
-                            PayPalPayment.buttonControl('disabled', false);
+                            PayPalPayment.removeSubmitButtonOverlay();
                             return;
                         }
 
+                        //enable the PP overlay watcher
+                        //PP sdk do not support events, so we have to watch for the overlay
                         PayPalPayment.paypalOverlayWatcher();
 
                         cardFields.submit().catch(err => {
                             console.info('Error submitting card fields:', err);
                             PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_ACDC_ERROR_INBOX);
+
+                            PayPalPayment.removeSubmitButtonOverlay();
                         });
                     });
                 }
@@ -260,7 +254,7 @@
             return;
         }
         PayPalPayment.cancelOrder().then((e) => {
-            PayPalPayment.buttonControl('disabled', false);
+            PayPalPayment.removeSubmitButtonOverlay();
         });
     });
 
