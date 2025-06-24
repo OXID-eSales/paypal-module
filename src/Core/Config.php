@@ -545,8 +545,8 @@ class Config
 
     public function getUserIdForVaulting(): string
     {
-        // If no vaulted payment token is selected, return empty string
-        if(empty(Registry::getSession()->getVariable("selectedVaultedPaymentTokenId"))){
+        // In case of Standard PayPal we use vaulting via API not, via Buttons
+        if(PayPalSession::isPayPalStandardOrderActive()){
             return '';
         }
 
