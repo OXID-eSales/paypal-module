@@ -12,12 +12,16 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\DatabaseProvider;
+use OxidEsales\EshopCommunity\Core\Di\ContainerFacade;
 use OxidSolutionCatalysts\PayPal\Model\User;
 use OxidSolutionCatalysts\PayPal\Module;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Client;
 use RuntimeException;
+use OxidEsales\EshopCommunity\Internal\Framework\Configuration\DataObject\DatabaseConfiguration;
+use OxidEsales\EshopCommunity\Internal\Transition\Utility\BasicContext;
+
 
 /**
  * Class Config
@@ -442,7 +446,7 @@ class Config
                     1, 0)
                     AS if_exists",
                 [
-                    ':database' => Registry::getConfig()->getConfigParam("dbName"),
+                    ':database' => (new DatabaseConfiguration(ContainerFacade::get(BasicContext::class)->getDatabaseUrl()))->getName(),
                     ':tablename' => $tableName
                 ]
             );
@@ -459,7 +463,7 @@ class Config
      */
     public function getCacheDir(): string
     {
-        $dir = Registry::getConfig()->getConfigParam('sCompileDir')
+        $dir = ContainerFacade::getParameter('oxid_esales.build_directory')
             . DIRECTORY_SEPARATOR . Module::MODULE_ID . DIRECTORY_SEPARATOR;
         if ((file_exists($dir) === false) && !mkdir($dir) && !is_dir($dir)) {
             throw new RuntimeException(sprintf('Directory "%s" was not created', $dir));
@@ -495,8 +499,9 @@ class Config
     public function getAdminUrlForJSCalls(): string
     {
         $config = Registry::getConfig();
-        $url = $config->getConfigParam('sAdminSSLURL') ?:
-            $config->getConfigParam('sShopURL') . $config->getConfigParam('sAdminDir') . "/";
+        $url = ContainerFacade::getParameter('oxid_esales.shop_admin_url') ?:
+            ContainerFacade::getParameter('oxid_esales.shop_url') .
+            $config->getConfigParam('sAdminDir') . "/";
         $url = Registry::getSession()->processUrl($url . 'index.php?');
         $url = str_replace("&amp;", "&", $url);
         return $url;
