@@ -254,7 +254,7 @@
             return;
         }
         PayPalPayment.cancelOrder().then((e) => {
-            this.removeSubmitButtonOverlay();
+            PayPalPayment.removeSubmitButtonOverlay();
         });
     });
 
