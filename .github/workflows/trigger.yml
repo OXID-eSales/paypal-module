@@ -11,7 +11,7 @@ jobs:
   module_template_php82_mysql_80:
     uses: oxid-eSales/github-actions/.github/workflows/universal_workflow_light.yml@v4
     with:
-      testplan: '~/defaults/7.0.x.yml,~/defaults/php8.2_mysql8.0_only.yml,~/module-template.yml'
+      testplan: '~/defaults/7.1.x.yml,~/defaults/php8.2_mysql8.0_only.yml,~/module-template.yml'
       runs_on: '"ubuntu-latest"'
       defaults: 'v4'
       plan_folder: '.github/oxid-esales'
