@@ -54,13 +54,13 @@ mkdir -p ./source/var/configuration/environment/shops/1/modules
 cp $MODULE_ROOT/recipe/environment/1.yaml ./source/var/configuration/environment/shops/1/modules/osc_paypal.yaml
 
 
-$PROJECT_ROOT/source/extensions/paypal/recipe/parts/b-7.3.x/require_twig_components.sh -e"${edition}" -t"apex" || exit 1
+$PROJECT_ROOT/source/extensions/paypal/recipe/parts/b-8.0.x/require_twig_components.sh -e"${edition}" -t"apex" || exit 1
 
 # Require demodata package
 docker compose exec -T \
   php composer config repositories.oxid-esales/oxideshop-demodata-ee \
   --json '{"type":"git", "url":"https://github.com/OXID-eSales/oxideshop_demodata_ee"}'
-docker compose exec -T php composer require oxid-esales/oxideshop-demodata-ee:dev-b-7.3.x --no-update
+docker compose exec -T php composer require oxid-esales/oxideshop-demodata-ee:dev-b-8.0.x --no-update
 
 # Install all preconfigured dependencies
 docker compose exec -T php composer update --no-interaction
