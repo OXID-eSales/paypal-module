@@ -2,50 +2,50 @@
 # {{ $org := "oxid-solution-catalysts" }}organisation: {{ $org }}
 # {{ $name := "paypal-module" }}name: {{ $name }}
 # {{ $repo := "OXID-eSales/paypal-module" }}repo: {{ $repo }}
-
-install_shop_with_modules:
+install:
   cache:
     prepared_shop: false
+  method: 'script'
+  script: '.github/oxid-esales/install.sh'
+  git:
+    repository: '{{ $repo }}'
+    ref: &ref '{{ .Github.RefName }}'
+    shop_url: 'https://github.com/OXID-eSales/paypal-module.git'
+    shop_ref: *ref
+  container:
+    options: '-e ESHOP_BOOTSTRAP_PATH=vendor/oxid-esales/oxideshop-ce/source/bootstrap.php -e THEME_ID=apex'
   composer:
+    root_url: ''
     transform: |
       {
-          "preferred-install": {
-            "oxid-esales/*": "source",
-            "oxid-professional-services/*": "source",
-            "ddoe/*": "source"
-          },
           "require": {
               "oxid-esales/oxideshop-ce": "{{ .Data.global.composer.dev_ref }}",
               "oxid-esales/twig-component": "{{ .Data.global.composer.dev_ref }}",
               "oxid-esales/twig-admin-theme": "{{ .Data.global.composer.dev_ref }}",
               "oxid-esales/apex-theme": "{{ .Data.global.composer.dev_ref }}",
-              "{{ $org }}/{{ $name }}": "{{ .Data.global.composer.ref_name }}"
-          },
-          "repositories": {
-            "{{ $org }}/{{ $name }}": {
-              "type": "git",
-              "url": "https://github.com/{{ $repo }}.git"
-            },
-            "oxid-solution-catalysts/paypal-client": {
-                "type": "git",
-                "url": "https://github.com/OXID-eSales/paypal-client.git"
-            },
-            "oxid-solution-catalysts/paypal-module": {
-                "type": "git",
-                "url": "https://github.com/OXID-eSales/paypal-module.git"
-            }
+              "oxid-esales/developer-tools": "{{ .Data.global.composer.dev_ref }}"
           }
       }
   custom_script_container: |
+    perl -pi -e 'print "SetEnvIf Authorization \"(.*)\" HTTP_AUTHORIZATION=\$1\n\n" if $. == 1' source/.htaccess
+    
+    vendor/bin/oe-console oe:module:install ./
     vendor/bin/oe-console oe:module:activate "{{ $ids }}"
-    cp vendor/{{ $org }}/{{ $name }}/tests/.env.dist vendor/{{ $org }}/{{ $name }}/tests/.env
-    cp vendor/{{ $org }}/{{ $name }}/recipe/environment/1.yaml /var/www/var/configuration/environment/shops/1/modules/osc_paypal.yaml 
-    ./bin/oe-console oe:module:install extensions/paypal
-    ./bin/oe-console oe:module:activate osc_paypal
-    chmod +x vendor/{{ $org }}/{{ $name }}/.github/scripts/codestyle_check.sh
+    vendor/bin/oe-console oe:theme:activate apex
+    
+    cp tests/.env.dist tests/.env
+    cp ./recipe/environment/1.yaml /var/www/var/configuration/environment/shops/1/modules/osc_paypal.yaml 
+    vendor/bin/oe-console oe:module:install extensions/paypal
+    vendor/bin/oe-console oe:module:activate osc_paypal
+    chmod +x .github/scripts/codestyle_check.sh
     composer require --dev mikey179/vfsstream --no-update
-    composer require symfony/dotenv --no-update
-    composer update --prefer-dist --no-interaction --no-progress
+    composer require symfony/dotenv
+
+
+install_shop_with_modules:
+  composer:
+    root_url: ''
+
 
 runscript: &runscript
   matrix:
@@ -54,7 +54,7 @@ runscript: &runscript
         "osc_paypal:phpunit"
       ]
   osc_paypal:
-    path: 'vendor/{{ $org}}/{{ $name }}'
+    path: ''
 
 runslim:
   <<: *runscript
@@ -69,7 +69,6 @@ runslim:
 sonarcloud:
   matrix:
     testplan: '["-"]'
-  strip_path: '/var/www/vendor/{{ print $org }}/{{ print $name}}/'
   project_key: 'OXID-eSales_{{ print $name }}'
   project_name: '{{ $org}}/{{ $name }}'
   parameters: |
