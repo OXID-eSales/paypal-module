@@ -45,22 +45,22 @@ make file=services/adminer.yml addservice
 echo "module root is $MODULE_ROOT"
 cd "$PROJECT_ROOT" || exit 1
 
-$MODULE_ROOT/recipe/parts/b-7.0.x/start_shop.sh -e"${edition}" -u"false" || exit 1
+$MODULE_ROOT/recipe/parts/b-7.2.x/start_shop.sh -e"${edition}" -u"false" || exit 1
 
 mkdir -p "$PROJECT_ROOT"/source/extensions || exit 1
 cp -r "$MODULE_ROOT" "$PROJECT_ROOT"/source/extensions/ || exit 1
-git clone git@github.com:OXID-eSales/paypal-client.git --branch=v3.0.16 "$PROJECT_ROOT"/source/extensions/paypal-client || exit 1
+git clone git@github.com:OXID-eSales/paypal-client.git --branch=v3.0.17 "$PROJECT_ROOT"/source/extensions/paypal-client || exit 1
 mkdir -p ./source/var/configuration/environment/shops/1/modules
 cp $MODULE_ROOT/recipe/environment/1.yaml ./source/var/configuration/environment/shops/1/modules/osc_paypal.yaml
 
 
-$PROJECT_ROOT/source/extensions/paypal/recipe/parts/b-7.0.x/require_twig_components.sh -e"${edition}" -t"apex" || exit 1
+$PROJECT_ROOT/source/extensions/paypal/recipe/parts/b-7.2.x/require_twig_components.sh -e"${edition}" -t"apex" || exit 1
 
 # Require demodata package
 docker compose exec -T \
   php composer config repositories.oxid-esales/oxideshop-demodata-ee \
   --json '{"type":"git", "url":"https://github.com/OXID-eSales/oxideshop_demodata_ee"}'
-docker compose exec -T php composer require oxid-esales/oxideshop-demodata-ee:dev-b-7.0.x --no-update
+docker compose exec -T php composer require oxid-esales/oxideshop-demodata-ee:dev-b-7.2.x --no-update
 
 # Install all preconfigured dependencies
 docker compose exec -T php composer update --no-interaction
