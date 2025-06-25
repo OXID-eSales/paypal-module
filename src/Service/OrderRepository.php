@@ -133,7 +133,7 @@ class OrderRepository
         $id = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
             ->executeQuery()
-            ->fetch(PDO::FETCH_COLUMN);
+            ->fetchOne();
 
         return (string) $id;
     }
@@ -221,7 +221,7 @@ class OrderRepository
         $id = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
             ->executeQuery()
-            ->fetch(PDO::FETCH_COLUMN);
+            ->fetchOne();
 
         return (string) $id;
     }
@@ -243,7 +243,7 @@ class OrderRepository
         $id = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
             ->executeQuery()
-            ->fetch(PDO::FETCH_COLUMN);
+            ->fetchOne();
 
         return (string) $id;
     }
@@ -265,7 +265,7 @@ class OrderRepository
         $id = $queryBuilder->setParameters($parameters)
             ->setMaxResults(1)
             ->executeQuery()
-            ->fetch(PDO::FETCH_COLUMN);
+            ->fetchOne();
 
         return (string) $id;
     }

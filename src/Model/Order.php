@@ -410,7 +410,7 @@ class Order extends Order_parent
         $date = date('Y-m-d H:i:s', $utilsDate->getTime());
 
         $query = 'update oxorder set oxpaid=? where oxid=?';
-        $db->executeStatement($query, [$date, $this->getId()]);
+        $db->execute($query, [$date, $this->getId()]);
 
         //updating order object
         $this->oxorder__oxpaid = new Field($date);
@@ -424,7 +424,7 @@ class Order extends Order_parent
         $db = DatabaseProvider::getDb();
 
         $query = 'update oxorder set oxtransid=? where oxid=?';
-        $db->executeStatement($query, [$sTransId, $this->getId()]);
+        $db->execute($query, [$sTransId, $this->getId()]);
 
         //updating order object
         $this->oxorder__oxtransid = new Field($sTransId);
@@ -454,7 +454,7 @@ class Order extends Order_parent
             $paypalOrderObj->init($table);
             $select = $paypalOrderObj->buildSelectString($params);
 
-            if ($data = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getRow($select)) {
+            if ($data = DatabaseProvider::getDb()->getRow($select)) {
                 $this->payPalOrderId = $data['oxpaypalorderid'];
             }
         }
