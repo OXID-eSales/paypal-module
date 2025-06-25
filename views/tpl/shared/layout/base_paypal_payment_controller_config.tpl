@@ -52,6 +52,7 @@
                 return Object.assign (PayPalPaymentControllerConfiguratorDefaults, {
                     shopOrderCaptureUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=captureOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                     shopOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createAcdcOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    shopOrderCompleteUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=completeOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                     cardFields: true, //probably not needed when payment controller will be split
                     paymentId: '[{$paymentId}]', //probably not needed when payment controller will be split
                     buttonSelector: 'button#[{$paymentId}]'

@@ -194,7 +194,7 @@ class Payment
         $order->load($basket->getOrderId());
 
         // patch the order only if paypalOrderId exists
-        if ($paypalOrderId) {
+        if ($paypalOrderId && $response->status !== 'COMPLETED') {
             $this->doPatchPayPalOrder(
                 $basket,
                 $paypalOrderId,
@@ -678,7 +678,7 @@ class Payment
                 $basket,
                 Constants::PAYPAL_ORDER_INTENT_CAPTURE,
                 null,
-                Constants::PAYPAL_PUI_PROCESSING_INSTRUCTIONS,
+                '',
                 PayPalDefinitions::PAYMENT_SOURCE_PUI,
                 $payPalClientMetadataId,
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP

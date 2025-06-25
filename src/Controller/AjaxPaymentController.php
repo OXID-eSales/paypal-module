@@ -91,6 +91,35 @@ class AjaxPaymentController extends ProxyController
         ]);
     }
 
+    /**
+     * CompleteOrder with no capture.
+     * Use it for vaulted payments or when capture is handled by PP with order creation.
+     *
+     * @return void
+     * @throws \JsonException
+     */
+    public function completeOrder(): void
+    {
+        $data = $this->getRequestParameters();
+        $payPalOrderId = $data['orderId'];
+
+        $this->logger->log('debug', sprintf('Order with id %s capture', $payPalOrderId));
+
+        $sessionOrderId = (string)Registry::getSession()->getVariable('sess_challenge');
+        $order = oxNew(Order::class);
+        $order->load($sessionOrderId);
+        $basket = Registry::getSession()->getBasket();
+        $user = $basket->getUser();
+
+        $this->sendPayPalOrderMail($order, $basket, $user);
+
+        PayPalSession::unsetPayPalSession();
+
+        $this->outputJson([
+            'status' => 'success'
+        ]);
+    }
+
     public function cancelPayPalSession(): void
     {
         PayPalSession::unsetPayPalSession();

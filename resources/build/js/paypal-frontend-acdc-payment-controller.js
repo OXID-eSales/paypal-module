@@ -23,6 +23,19 @@
             }
 
             document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...result.shopOrder}})));
+            let shopOrderId = result.shopOrder.shopOrderId;
+
+            //vaulted payment source
+            if (result.payPalOrder.status === 'COMPLETED' ){
+                let result = await PayPalPayment.backendRequest('shopOrderCompleteUrl', {}, {
+                    'orderId': shopOrderId
+                });
+                if ('success' !== result.status) {
+                    return false;
+                }
+
+                window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+            }
 
             if (result.payPalOrder.status === 'PAYER_ACTION_REQUIRED' || result.payPalOrder.status === 'APPROVED' ){
                 for (const i in result.payPalOrder.links) {
