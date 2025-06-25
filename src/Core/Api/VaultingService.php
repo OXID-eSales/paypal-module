@@ -138,7 +138,7 @@ class VaultingService extends BaseService
 
         $name                   = $user->getFieldData("oxfname");
         $name                   .= $user->getFieldData("oxlname");
-        $address                = [
+        $billingAddress                = [
             "address_line_1"    => $user->getFieldData('oxstreet') . " " . $user->getFieldData('oxstreetnr'),
             "address_line_2"    => $user->getFieldData('oxcompany') . " " . $user->getFieldData('oxaddinfo'),
             "admin_area_1"      => $state->getFieldData('oxtitle'),
@@ -155,7 +155,7 @@ class VaultingService extends BaseService
             "locale"              => $locale,
             "return_url"          => $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession',
             "cancel_url"          => $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
-//            "shipping_preference" => "SET_PROVIDED_ADDRESS",
+            "shipping_preference" => "SET_PROVIDED_ADDRESS"
         ];
 
         $attributes = [];
@@ -172,31 +172,33 @@ class VaultingService extends BaseService
             $paymentSource = [
                 $paymentSourceId => [
                     "name" => $name,
-                    "billing_address"       => $address,
-                    "verification_method"   => "SCA_WHEN_REQUIRED",
+                    "billing_address"       => $billingAddress,
                     "experience_context"    => $experience_context,
-                    "attributes" => array_merge($attributes, [
-                        "verification" => [
-                            "method" => "SCA_WHEN_REQUIRED"
-                        ]
-                    ])
                 ]
             ];
+
+            $mergedAttributes = array_merge($attributes, [
+                "verification" => [
+                    "method" => "SCA_WHEN_REQUIRED"
+                ]
+            ]);
+
+            if (!empty($mergedAttributes)) {
+                $paymentSource[$paymentSourceId]["attributes"] = $mergedAttributes;
+            }
         } else {
             $paymentSource = [
                 $paymentSourceId => [
                     "description"   => $description,
-                    "shipping"      => [
-                        "name"      => [
-                            "full name" => $name
-                        ],
-                        "address"   => $address
-                    ],
-                    "usage_pattern" => "IMMEDIATE",
-                    "experience_context" => $experience_context,
-                    "attributes" => $attributes
+                    "experience_context" => array_merge([
+                        'payment_method_preference' => 'UNRESTRICTED'
+                    ], $experience_context),
                 ]
             ];
+
+            if (!empty($attributes)) {
+                $paymentSource[$paymentSourceId]["attributes"] = $attributes;
+            }
         }
 
         return $paymentSource;

@@ -181,23 +181,28 @@
 
         // Common backend request method
         this.backendRequest = async function (urlSlug, headers, body) {
-            let response = await fetch(PayPalPayment.getConfigValue(urlSlug), {
-                method: 'post',
-                headers: Object.assign({
-                    'content-type': 'application/json',
-                }, headers),
-                body: JSON.stringify(body)
-            });
-
+            let response;
             let result = {status: 'pending'};
 
             try {
+                response = await fetch(PayPalPayment.getConfigValue(urlSlug), {
+                    method: 'post',
+                    headers: Object.assign({
+                        'content-type': 'application/json',
+                    }, headers),
+                    body: JSON.stringify(body)
+                });
+
                 result = await response.json();
-            } catch (e) {
+            } catch (error) {
+                console.error('Operation failed:', error);
                 result = {
                     status: 'error',
-                    error: e.message
+                    error: error.message
                 };
+                // Ensure order cancellation if operation fails
+                await PayPalPayment.handleError();
+                return result;
             }
 
             console.log(result.status, result.message, result.data);
