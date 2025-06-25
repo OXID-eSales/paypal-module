@@ -153,8 +153,8 @@ class VaultingService extends BaseService
         $experience_context     = [
             "brand_name"          => $shopName,
             "locale"              => $locale,
-            "return_url"          => $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession',
-            "cancel_url"          => $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
+            "return_url"          => $config->getShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession',
+            "cancel_url"          => $config->getShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
 //            "shipping_preference" => "SET_PROVIDED_ADDRESS",
         ];
 

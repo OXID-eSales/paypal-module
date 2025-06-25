@@ -156,7 +156,6 @@ final class PaymentTest extends BaseTestCase
         } catch (TypeError $e) {
             $this->fail('Expected ApiException, got TypeError ' . $e->getMessage());
         }
-
         $this->assertNotEmpty($result->id);
     }
 

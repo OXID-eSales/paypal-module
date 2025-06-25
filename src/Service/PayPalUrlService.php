@@ -13,13 +13,13 @@ class PayPalUrlService
     }
     public function getCancelUrl(): string
     {
-        return $this->config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
+        return $this->config->getShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
     }
     public function getReturnUrl(): string
     {
         return $this->session->getVariable('paymentid') === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID ?
-            $this->config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeGooglePay&stoken='
+            $this->config->getShopUrl() . 'index.php?cl=order&fnc=finalizeGooglePay&stoken='
                 . $this->session->getSessionChallengeToken() :
-            $this->config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
+            $this->config->getShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
     }
 }
