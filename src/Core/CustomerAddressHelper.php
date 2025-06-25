@@ -58,11 +58,11 @@ trait CustomerAddressHelper
         $config = Registry::getConfig();
 
         if (empty($returnUrl)) {
-            $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
+            $returnUrl = $config->getShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
         }
 
         if (empty($cancelUrl)) {
-            $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
+            $cancelUrl = $config->getShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
         }
 
         if ($userAction) {

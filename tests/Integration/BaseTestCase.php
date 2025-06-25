@@ -9,10 +9,10 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration;
 
-use Codeception\Util\Fixtures;
 use Exception;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
-use PDOException;
+use OxidEsales\EshopCommunity\Core\Di\ContainerFacade;
+use OxidEsales\EshopCommunity\Internal\Framework\Database\ConnectionFactoryInterface;
 use PHPUnit\Framework\TestCase;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -131,7 +131,8 @@ abstract class BaseTestCase extends TestCase
 
         $sqlStatements = $this->splitSqlStatements($sqlContent);
         $queryBuilder = $this->queryBuilderFactory->create();
-        $connection = $queryBuilder->getConnection();
+        $connection = ContainerFacade::get(ConnectionFactoryInterface::class)
+            ->create();
 
         foreach ($sqlStatements as $statement) {
             if (!empty($statement)) {

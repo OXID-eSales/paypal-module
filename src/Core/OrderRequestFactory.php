@@ -658,9 +658,9 @@ class OrderRequestFactory
                 $newPaymentSource = [
                     $paymentSourceId => [
                         "experience_context" => [
-                            "return_url" => $config->getSslShopUrl() .
+                            "return_url" => $config->getShopUrl() .
                                 'index.php?cl=order&fnc=finalizepaypalsession',
-                            "cancel_url" => $config->getSslShopUrl() .
+                            "cancel_url" => $config->getShopUrl() .
                                 'index.php?cl=order&fnc=cancelpaypalsession',
                             "shipping_preference" => "SET_PROVIDED_ADDRESS",
                         ]

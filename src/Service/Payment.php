@@ -162,8 +162,8 @@ class Payment
         if ($moduleSettings->isSandbox()) {
             $debug = '&XDEBUG_SESSION_START=1';
         }
-        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc' . $debug;
-        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=ajaxpay&fnc=cancelShopOrder' . $debug;
+        $returnUrl = $config->getShopUrl() . 'index.php?cl=order&fnc=finalizeacdc' . $debug;
+        $cancelUrl = $config->getShopUrl() . 'index.php?cl=ajaxpay&fnc=cancelShopOrder' . $debug;
 
         // PatchOrders access an OrderCall that has taken place before.
         // For this reason, the payPalPartnerAttributionId does not have
@@ -586,8 +586,8 @@ class Payment
         //For Standard payment we should not yet have a paypal order in session.
         //We create a fresh paypal order at this point
         $config = Registry::getConfig();
-        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
-        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
+        $returnUrl = $config->getShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
+        $cancelUrl = $config->getShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
 
         $response = $this->doCreatePayPalOrder(
             $basket,
