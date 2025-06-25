@@ -19,7 +19,6 @@ install_shop_with_modules:
               "oxid-esales/twig-component": "{{ .Data.global.composer.dev_ref }}",
               "oxid-esales/twig-admin-theme": "{{ .Data.global.composer.dev_ref }}",
               "oxid-esales/apex-theme": "{{ .Data.global.composer.dev_ref }}",
-              "oxid-solution-catalysts/paypal-client": "v3.0.16",
               "{{ $org }}/{{ $name }}": "{{ .Data.global.composer.ref_name }}"
           },
           "repositories": {
