@@ -37,7 +37,7 @@ jobs:
               ;;
           esac
           # shellcheck disable=SC2088
-          TESTPLAN="~/defaults/7.3.x.yml,${LIMIT}~/module-template.yml"
+          TESTPLAN="~/defaults/7.4.x.yml,${LIMIT}~/module-template.yml"
           echo "testplan=${TESTPLAN}" | tee -a "${GITHUB_OUTPUT}"
 
   dispatch_stable:
