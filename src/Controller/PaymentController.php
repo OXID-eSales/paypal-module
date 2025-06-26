@@ -95,8 +95,7 @@ class PaymentController extends PaymentController_parent
         }
     }
 
-    public
-    function getPayPalPuiFraudnetCmId(): string
+    public function getPayPalPuiFraudnetCmId(): string
     {
 
         if (!($cmId = PayPalSession::getPayPalPuiCmId())) {
@@ -250,8 +249,7 @@ class PaymentController extends PaymentController_parent
      *
      * @return string|array
      */
-    public
-    function getPaymentErrorText()
+    public function getPaymentErrorText()
     {
         return Registry::getLang()->translateString(
             $this->_sPaymentErrorText,

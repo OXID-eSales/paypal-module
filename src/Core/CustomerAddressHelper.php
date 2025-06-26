@@ -29,9 +29,6 @@ trait CustomerAddressHelper
     protected function getCountryFromBasket($basket): Country
     {
         $user = $basket->getBasketUser();
-        if (!$user) {
-            return oxNew(Country::class);
-        }
         $country = oxNew(Country::class);
         if (!$user) {
             return $country;
