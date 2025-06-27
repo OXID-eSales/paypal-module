@@ -159,12 +159,12 @@ class VaultingService extends BaseService
         ];
 
         $attributes = [];
-        if(Registry::getRequest()->getRequestParameter("vaultPayment") === "true"){
+        if (Registry::getRequest()->getRequestParameter("vaultPayment") === "true") {
             $attributes["vault"] = [
                 "store_in_vault" => "ON_SUCCESS",
                 "usage_type" => "MERCHANT",
                 "customer_type" => "CONSUMER",
-                "permit_multiple_payment_tokens" => false //Check: if this is set to 'false' either card od PP account can be vaulted
+                "permit_multiple_payment_tokens" => false
             ];
         }
         if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
@@ -192,8 +192,8 @@ class VaultingService extends BaseService
                             "address"   => $address
                         ],
                         "usage_pattern" => "IMMEDIATE",
-                    "experience_context" => $experience_context,
-                    "attributes" => $attributes
+                        "experience_context" => $experience_context,
+                        "attributes" => $attributes
                 ]
             ];
         }
@@ -218,7 +218,13 @@ class VaultingService extends BaseService
 
         $body = '';
         try {
-            $response = $this->send('POST', $path, [], $headers, json_encode($requestBody, JSON_THROW_ON_ERROR));
+            $response = $this->send(
+                'POST',
+                $path,
+                [],
+                $headers,
+                json_encode($requestBody, JSON_THROW_ON_ERROR)
+            );
             if ($response) {
                 $body = $response->getBody();
             }
@@ -236,7 +242,7 @@ class VaultingService extends BaseService
     ): ?array {
         $vaultedPaymentTokens = [];
         $payPalCustomerId = $user ? $user->getFieldData("oscpaypalcustomerid") : '';
-        if(!empty($payPalCustomerId)) {
+        if (!empty($payPalCustomerId)) {
             $vaultedPaymentTokens = $this->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"];
         }
         $selectedVaultedPaymentTokenId = $id ?? Registry::getSession()->getVariable("selectedVaultedPaymentTokenId");
@@ -283,7 +289,10 @@ class VaultingService extends BaseService
         $uniquePaypalVaultedPaymentSources = [];
         foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
             foreach ($vaultedPaymentToken["payment_source"] as $paymentType => $paymentSource) {
-                if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL && $moduleSettings->isVaultingAllowedForPayPal()) {
+                if (
+                    $paymentType === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL
+                    && $moduleSettings->isVaultingAllowedForPayPal()
+                ) {
                     $email = $paymentSource["email_address"];
                     $payer_id = $paymentSource["payer_id"];
 

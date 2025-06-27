@@ -22,7 +22,6 @@ use RuntimeException;
 use OxidEsales\EshopCommunity\Internal\Framework\Configuration\DataObject\DatabaseConfiguration;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\BasicContext;
 
-
 /**
  * Class Config
  */
@@ -446,7 +445,9 @@ class Config
                     1, 0)
                     AS if_exists",
                 [
-                    ':database' => (new DatabaseConfiguration(ContainerFacade::get(BasicContext::class)->getDatabaseUrl()))->getName(),
+                    ':database' => (new DatabaseConfiguration(
+                        ContainerFacade::get(BasicContext::class)->getDatabaseUrl()
+                    ))->getName(),
                     ':tablename' => $tableName
                 ]
             );
@@ -548,7 +549,7 @@ class Config
     public function getUserIdForVaulting(): string
     {
         // In case of Standard PayPal we use vaulting via API not, via Buttons
-        if(PayPalSession::isPayPalStandardOrderActive()){
+        if (PayPalSession::isPayPalStandardOrderActive()) {
             return '';
         }
         $user = Registry::getConfig()->getUser();

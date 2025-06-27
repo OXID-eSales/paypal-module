@@ -115,8 +115,7 @@ class OrderRequestFactory
         if (PayPalDefinitions::isUAPMPayment($paymentId)) {
             if ($paymentId === PayPalDefinitions::PRZELEWY24_PAYPAL_PAYMENT_ID) {
                 $request->payment_source = $this->getSimplePaymentSourceWithEMail($basket, $paymentSourceId);
-            }
-            else {
+            } else {
                 $request->payment_source = $this->getSimplePaymentSource($basket, $paymentSourceId);
             }
         }
@@ -126,13 +125,13 @@ class OrderRequestFactory
         $vaultingService = $this->getVaultingService();
         $user = Registry::getConfig()->getUser() instanceof User ? Registry::getConfig()->getUser() : null;
         $selectedPaymentToken = $vaultingService->fetchSelectedVaultedPaymentToken(
-            $user, $_POST["useVaultedPayment"]["token"]["id"] ?? null
+            $user,
+            $_POST["useVaultedPayment"]["token"]["id"] ?? null
         );
         $useVaultedPayment = $setVaulting && !is_null($selectedPaymentToken)
             && PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID !== $paymentId;
 
         if ($useVaultedPayment) {
-
             $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName(
                 key($selectedPaymentToken["payment_source"])
             );

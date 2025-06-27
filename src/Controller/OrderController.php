@@ -124,11 +124,12 @@ class OrderController extends OrderController_parent
 
                 $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
 
-            if ($isVaultingPossible && $payPalCustomerId ) {
+            if ($isVaultingPossible && $payPalCustomerId) {
                 $paymentDescription = '';
                 // Vaulted Cards
                 if ($paymentId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) {
-                    $vaultedPaymentTokenSelected = $vaultingService->fetchSelectedVaultedPaymentToken($this->getUser());
+                    $vaultedPaymentTokenSelected = $vaultingService
+                        ->fetchSelectedVaultedPaymentToken($this->getUser());
                     // the PaymentSourceIndex is set in Payment-Controller only by vaulted cards
                     if (!is_null($vaultedPaymentTokenSelected)) {
                         $paymentType = key($vaultedPaymentTokenSelected["payment_source"]);
@@ -137,7 +138,10 @@ class OrderController extends OrderController_parent
                         // double check source type
                         if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
                             $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
-                            $paymentDescription = $paymentSource["brand"] . " " . $string . $paymentSource["last_digits"];
+                            $paymentDescription = $paymentSource["brand"]
+                                . " "
+                                . $string
+                                . $paymentSource["last_digits"];
                         }
                     }
                 }
@@ -147,7 +151,8 @@ class OrderController extends OrderController_parent
                     $paymentId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID ||
                     $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
                 ) {
-                    $vaultedPaymentTokenSelected = $vaultingService->fetchSelectedVaultedPaymentToken($this->getUser());
+                    $vaultedPaymentTokenSelected = $vaultingService
+                        ->fetchSelectedVaultedPaymentToken($this->getUser());
                     if ($vaultedPaymentTokenSelected) {
                         $paymentDescription = $lang->translateString("OSC_PAYPAL_VAULTING_USE_HINT");
                     }
@@ -176,7 +181,13 @@ class OrderController extends OrderController_parent
             Registry::getUtilsView()->addErrorToDisplay($displayError);
 
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
-            if (in_array((string)$paymentService->getSessionPaymentId(), $this->removeTemporaryOrderOnRetry, true)) {
+            if (
+                in_array(
+                    (string)$paymentService->getSessionPaymentId(),
+                    $this->removeTemporaryOrderOnRetry,
+                    true
+                )
+            ) {
                 $paymentService->removeTemporaryOrder();
             }
             return true;

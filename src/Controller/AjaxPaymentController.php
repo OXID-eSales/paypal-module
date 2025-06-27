@@ -455,7 +455,8 @@ class AjaxPaymentController extends ProxyController
         }
         /** @var \OxidSolutionCatalysts\PayPal\Model\Order $oOrder */
         $order->sendPayPalOrderByEmail(
-            $user, $basket
+            $user,
+            $basket
         );
     }
 }

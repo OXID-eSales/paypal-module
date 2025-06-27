@@ -62,14 +62,19 @@ class PaymentController extends PaymentController_parent
                     $uniquePaypalVaultedPaymentSources = [];
                     foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
                         foreach ($vaultedPaymentToken["payment_source"] as $paymentId => $paymentSource) {
-                            $paymentTokenId= $vaultedPaymentToken['id'];
+                            $paymentTokenId = $vaultedPaymentToken['id'];
                             $label = '';
-                            if ($paymentId === PayPalDefinitions::PAYMENT_SOURCE_CARD && $moduleSettings->isVaultingAllowedForACDC()) {
+                            if (
+                                $paymentId === PayPalDefinitions::PAYMENT_SOURCE_CARD
+                                && $moduleSettings->isVaultingAllowedForACDC()
+                            ) {
                                 $labelPrefix = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
                                 $label = $paymentSource["brand"] . " " . $labelPrefix . $paymentSource["last_digits"];
                             }
                             if ($paymentId === "paypal" && $moduleSettings->isVaultingAllowedForPayPal()) {
-                                $labelPrefix = $lang->translateString("OSC_PAYPAL_CARD_PAYPAL_PAYMENT");
+                                $labelPrefix = $lang->translateString(
+                                    "OSC_PAYPAL_CARD_PAYPAL_PAYMENT"
+                                );
                                 $label = $labelPrefix . " " . $paymentSource["email_address"];
                             }
                             $uniquePaypalVaultedPaymentSources[] = [
