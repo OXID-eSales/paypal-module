@@ -18,7 +18,8 @@ install:
     root_url: ''
     transform: |
       {
-          "require": {
+          "minimum-stability": "dev",
+          "require-dev": {
               "oxid-esales/oxideshop-ce": "{{ .Data.global.composer.dev_ref }}",
               "oxid-esales/twig-component": "{{ .Data.global.composer.dev_ref }}",
               "oxid-esales/twig-admin-theme": "{{ .Data.global.composer.dev_ref }}",
@@ -28,19 +29,18 @@ install:
       }
   custom_script_container: |
     perl -pi -e 'print "SetEnvIf Authorization \"(.*)\" HTTP_AUTHORIZATION=\$1\n\n" if $. == 1' source/.htaccess
-    
+    vendor/bin/oe-console oe:theme:activate apex
+
+
+    cp tests/.env.dist tests/.env
+    mkdir -p /var/www/var/configuration/environment/shops/1/modules
+    cp ./recipe/environment/1.yaml /var/www/var/configuration/environment/shops/1/modules/osc_paypal.yaml  
     vendor/bin/oe-console oe:module:install ./
     vendor/bin/oe-console oe:module:activate "{{ $ids }}"
-    vendor/bin/oe-console oe:theme:activate apex
     
-    cp tests/.env.dist tests/.env
-    cp ./recipe/environment/1.yaml /var/www/var/configuration/environment/shops/1/modules/osc_paypal.yaml 
-    vendor/bin/oe-console oe:module:install extensions/paypal
-    vendor/bin/oe-console oe:module:activate osc_paypal
     chmod +x .github/scripts/codestyle_check.sh
     composer require --dev mikey179/vfsstream --no-update
     composer require symfony/dotenv
-
 
 install_shop_with_modules:
   composer:

@@ -13,16 +13,17 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
-use OxidEsales\EshopCommunity\Tests\ContainerTrait;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalExtendOrderModel;
+use OxidSolutionCatalysts\PayPal\Tests\Integration\Trait\ContainerTrait;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
 use Psr\Log\LoggerInterface;
 
 class WebhookHandlerBaseTestCase extends BaseTestCase
 {
-    use ContainerTrait;
+    use ServiceContainer;
 
     public const TEST_RESOURCE_ID = 'PAYPALID123456789';
     public const PAYPAL_OXID = '_test_oxid';
@@ -121,7 +122,7 @@ class WebhookHandlerBaseTestCase extends BaseTestCase
         ];
 
         /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $this->get(QueryBuilderFactoryInterface::class)->create();
+        $queryBuilder = $this->getServiceFromContainer(QueryBuilderFactoryInterface::class)->create();
         $queryBuilder->select('count(*)')
             ->from('oscpaypal_order')
             ->where('oxpaypalorderid = :oxpaypalorderid');

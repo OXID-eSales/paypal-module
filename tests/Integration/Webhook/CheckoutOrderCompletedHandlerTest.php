@@ -93,7 +93,7 @@ final class CheckoutOrderCompletedHandlerTest extends WebhookHandlerBaseTestCase
         // after CheckoutOrderCompletedHandler::handle there's one paypal order entry with status null
         // and one with status completed
         /** @var OrderRepository $orderRepo */
-        $orderRepo = $this->get(OrderRepository::class);
+        $orderRepo = $this->getServiceFromContainer(OrderRepository::class);
         $payPalOrder = $orderRepo->paypalOrderByOrderIdAndPayPalId(
             self::SHOP_ORDER_ID,
             $payPalOrderId,

@@ -10,16 +10,18 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
-use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureRefundedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
 final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
 {
+    use ServiceContainer;
+
     public const WEBHOOK_EVENT = 'PAYMENT.CAPTURE.REFUNDED';
 
     public const FIXTURE = 'payment_capture_refunded.json';
@@ -106,7 +108,7 @@ final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
         $this->assertSame($expected, $payPalOrder->getStatus());
 
         /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $this->get(QueryBuilderFactoryInterface::class)->create();
+        $queryBuilder = $this->getServiceFromContainer(QueryBuilderFactoryInterface::class)->create();
         $queryBuilder->select('oscpaypaltransactionid')
             ->from('oscpaypal_order')
             ->where('oscpaypaltransactiontype = :type');

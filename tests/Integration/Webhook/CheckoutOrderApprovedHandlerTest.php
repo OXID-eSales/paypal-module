@@ -174,7 +174,7 @@ final class CheckoutOrderApprovedHandlerTest extends WebhookHandlerBaseTestCase
         ];
 
         /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $this->get(QueryBuilderFactoryInterface::class)->create();
+        $queryBuilder = $this->getServiceFromContainer(QueryBuilderFactoryInterface::class)->create();
         $queryBuilder->select('oxordernr')
             ->from('oxorder')
             ->where('oxid = :oxid');
