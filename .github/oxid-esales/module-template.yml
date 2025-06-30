@@ -30,14 +30,11 @@ install:
   custom_script_container: |
     perl -pi -e 'print "SetEnvIf Authorization \"(.*)\" HTTP_AUTHORIZATION=\$1\n\n" if $. == 1' source/.htaccess
     vendor/bin/oe-console oe:theme:activate apex
-
-
     cp tests/.env.dist tests/.env
     mkdir -p /var/www/var/configuration/environment/shops/1/modules
     cp ./recipe/environment/1.yaml /var/www/var/configuration/environment/shops/1/modules/osc_paypal.yaml  
     vendor/bin/oe-console oe:module:install ./
     vendor/bin/oe-console oe:module:activate "{{ $ids }}"
-    
     chmod +x .github/scripts/codestyle_check.sh
     composer require --dev mikey179/vfsstream --no-update
     composer require symfony/dotenv
@@ -51,10 +48,18 @@ runscript: &runscript
   matrix:
     script: |
       [
-        "osc_paypal:phpunit"
+        "osc_paypal:phpunit",
+        "osc_paypal-node:test",
       ]
   osc_paypal:
     path: ''
+  osc_paypal-node:
+    path: 'tests/e2e'
+    container_name: 'node'
+    container_method: 'run'
+    script_runner: 'npm run'
+    custom_script: |
+      docker compose run node npm install 
 
 runslim:
   <<: *runscript

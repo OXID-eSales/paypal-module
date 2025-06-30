@@ -86,11 +86,17 @@ make up
 # Install all preconfigured dependencies
 docker compose exec -T php composer update --no-interaction
 
+docker compose exec -T php bin/oe-console oe:setup:demodata
 docker compose exec -T php bin/oe-console oe:theme:activate apex
 docker compose exec -T php bin/oe-console oe:module:install extensions/paypal
 docker compose exec -T php bin/oe-console oe:module:activate osc_paypal
 
-$PROJECT_ROOT/source/extensions/paypal/recipe/parts/shared/create_admin.sh
+
+
+email=${ADMIN_EMAIL:-noreply@oxid-esales.com}
+password=${ADMIN_PASSWORD:-admin}
+docker compose exec -T php ./bin/oe-console oe:admin:create ${email} ${password}
+echo -e "\033[1;37m\033[1;42mCreate admin: Admin login: ${email} Password: ${password}\033[0m\n"
 # Register all related project packages git repositories
 mkdir -p .idea; mkdir -p source/.idea; cp "$PROJECT_ROOT/source/extensions/paypal/recipe/parts/bases/vcs.xml.base" .idea/vcs.xml
 perl -pi\
