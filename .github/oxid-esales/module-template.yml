@@ -7,7 +7,7 @@ install:
     prepared_shop: false
   method: 'script'
   script: '.github/oxid-esales/install.sh'
-  add_service: 'node selenium-chrome-126'
+  add_service: 'node'
   git:
     repository: '{{ $repo }}'
     ref: &ref '{{ .Github.RefName }}'
