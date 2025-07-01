@@ -13,10 +13,8 @@ function error() {
 
 function init() {
     ls -la
-    cat Makefile
-    make down
-    make addbasicservices
-    make up
+    cat docker-compose.yml
+    docker ps
     for VAR in install_container_method install_container_options install_container_name \
         install_config_idebug install_is_enterprise; do
         echo -n "Checking, if $VAR is set ..."
