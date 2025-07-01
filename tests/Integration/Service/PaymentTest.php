@@ -350,6 +350,7 @@ final class PaymentTest extends BaseTestCase
         $request->purchase_units = $decoded['purchase_units'];
         $request->experience_context = $decoded['experience_context'];
         $request->payment_source = $decoded['payment_source'];
+        $request->processing_instruction = "ORDER_COMPLETE_ON_PAYMENT_APPROVAL";
 
         return $request;
     }

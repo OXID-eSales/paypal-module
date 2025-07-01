@@ -34,7 +34,7 @@ class VaultingService extends BaseService
 
         $params = [
             'response_type' => 'id_token',
-            'grant_type'    => 'client_credentials',
+            'grant_type' => 'client_credentials',
         ];
 
         if ($payPalCustomerId) {
@@ -50,7 +50,7 @@ class VaultingService extends BaseService
                 $body = $response->getBody();
             }
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (ApiException | JsonException $e) {
+        } catch (ApiException|JsonException $e) {
             $result = [];
         }
 
@@ -104,7 +104,7 @@ class VaultingService extends BaseService
                 $body = $response->getBody();
             }
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (ApiException | JsonException $e) {
+        } catch (ApiException|JsonException $e) {
             $result = [];
         }
 
@@ -118,9 +118,9 @@ class VaultingService extends BaseService
     public function getPaymentSourceForVaulting(string $paymentSourceId): array
     {
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $viewConf   = Registry::get(ViewConfig::class);
-        $config     = Registry::getConfig();
-        $user       = $viewConf->getUser();
+        $viewConf = Registry::get(ViewConfig::class);
+        $config = Registry::getConfig();
+        $user = $viewConf->getUser();
 
         $country = oxNew(Country::class);
         $country->load($user->getFieldData('oxcountryid'));
@@ -132,39 +132,41 @@ class VaultingService extends BaseService
         );
 
         $shopName = $moduleSettings->getShopName();
-        $lang = Registry::getLang();
-
-        $description = sprintf($lang->translateString('OSC_PAYPAL_DESCRIPTION'), $shopName);
-
-        $name                   = $user->getFieldData("oxfname");
-        $name                   .= $user->getFieldData("oxlname");
-        $billingAddress                = [
-            "address_line_1"    => $user->getFieldData('oxstreet') . " " . $user->getFieldData('oxstreetnr'),
-            "address_line_2"    => $user->getFieldData('oxcompany') . " " . $user->getFieldData('oxaddinfo'),
-            "admin_area_1"      => $state->getFieldData('oxtitle'),
-            "admin_area_2"      => $user->getFieldData('oxcity'),
-            "postal_code"       => $user->getFieldData('oxzip'),
-            "country_code"      => $country->oxcountry__oxisoalpha2->value,
+        $name = $user->getFieldData("oxfname");
+        $name .= $user->getFieldData("oxlname");
+        $billingAddress = [
+            "address_line_1" => $user->getFieldData('oxstreet') . " " . $user->getFieldData('oxstreetnr'),
+            "address_line_2" => $user->getFieldData('oxcompany') . " " . $user->getFieldData('oxaddinfo'),
+            "admin_area_1" => $state->getFieldData('oxtitle'),
+            "admin_area_2" => $user->getFieldData('oxcity'),
+            "postal_code" => $user->getFieldData('oxzip'),
+            "country_code" => $country->oxcountry__oxisoalpha2->value,
         ];
-        $locale                 =
+        $locale =
             strtolower($country->oxcountry__oxisoalpha2->value)
             . '-'
             . strtoupper($country->oxcountry__oxisoalpha2->value);
-        $experience_context     = [
-            "brand_name"          => $shopName,
-            "locale"              => $locale,
-            "return_url"          => $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession',
-            "cancel_url"          => $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
+        $experience_context = [
+            "brand_name" => $shopName,
+            "locale" => $locale,
+            "return_url" => $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession',
+            "cancel_url" => $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
             "shipping_preference" => "SET_PROVIDED_ADDRESS"
         ];
 
         $attributes = [];
-        if(Registry::getRequest()->getRequestParameter("vaultPayment") === "true"){
-            $attributes["vault"] = [
-                "store_in_vault" => "ON_SUCCESS",
-                "usage_type" => "MERCHANT",
-                "customer_type" => "CONSUMER",
-                "permit_multiple_payment_tokens" => false //Check: if this is set to 'false' either card od PP account can be vaulted
+        $vaultPaymentOnSuccess = Registry::getRequest()->getRequestParameter("vaultPayment");
+        if (filter_var($vaultPaymentOnSuccess, FILTER_VALIDATE_BOOLEAN)) {
+            $attributes = [
+                "customer" => [
+                    "id" => $user->getFieldData("oscpaypalcustomerid")
+                ],
+                "vault" => [
+                    "store_in_vault" => "ON_SUCCESS",
+                    "usage_type" => "MERCHANT",
+                    "customer_type" => "CONSUMER",
+                    "permit_multiple_payment_tokens" => false
+                ]
             ];
         }
 
@@ -172,24 +174,21 @@ class VaultingService extends BaseService
             $paymentSource = [
                 $paymentSourceId => [
                     "name" => $name,
-                    "billing_address"       => $billingAddress,
-                    "experience_context"    => $experience_context,
+                    "billing_address" => $billingAddress,
+                    "experience_context" => $experience_context,
                 ]
             ];
 
-            $mergedAttributes = array_merge($attributes, [
-                "verification" => [
-                    "method" => "SCA_WHEN_REQUIRED"
-                ]
-            ]);
+            $paymentSource[$paymentSourceId]["attributes"] = array_merge($attributes,
+                [
+                    "verification" => [
+                        "method" => "SCA_WHEN_REQUIRED"
+                    ]
+                ]);
 
-            if (!empty($mergedAttributes)) {
-                $paymentSource[$paymentSourceId]["attributes"] = $mergedAttributes;
-            }
         } else {
             $paymentSource = [
                 $paymentSourceId => [
-                    "description"   => $description,
                     "experience_context" => array_merge([
                         'payment_method_preference' => 'UNRESTRICTED'
                     ], $experience_context),
@@ -198,6 +197,10 @@ class VaultingService extends BaseService
 
             if (!empty($attributes)) {
                 $paymentSource[$paymentSourceId]["attributes"] = $attributes;
+            }
+
+            if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL) {
+                $paymentSource[$paymentSourceId]["address"] = $billingAddress;
             }
         }
 
@@ -213,8 +216,8 @@ class VaultingService extends BaseService
         $requestBody = [
             "payment_source" => [
                 "token" => [
-                    "id"    => $setupToken,
-                    "type"  => "SETUP_TOKEN",
+                    "id" => $setupToken,
+                    "type" => "SETUP_TOKEN",
                 ]
             ]
         ];
@@ -226,7 +229,7 @@ class VaultingService extends BaseService
                 $body = $response->getBody();
             }
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (ApiException | JsonException $e) {
+        } catch (ApiException|JsonException $e) {
             $result = [];
         }
 
@@ -234,12 +237,13 @@ class VaultingService extends BaseService
     }
 
     public function fetchSelectedVaultedPaymentToken(
-        ?User $user = null,
+        ?User   $user = null,
         ?string $id = null
-    ): ?array {
+    ): ?array
+    {
         $vaultedPaymentTokens = [];
         $payPalCustomerId = $user ? $user->getFieldData("oscpaypalcustomerid") : '';
-        if(!empty($payPalCustomerId)) {
+        if (!empty($payPalCustomerId)) {
             $vaultedPaymentTokens = $this->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"];
         }
         $selectedVaultedPaymentTokenId = null === $id ?
@@ -258,6 +262,7 @@ class VaultingService extends BaseService
 
         return is_array($vaultPaymentToken) ? $vaultPaymentToken : null;
     }
+
     public function getVaultPaymentTokens(string $paypalCustomerId): array
     {
         $viewConf = oxNew(ViewConfig::class);
@@ -278,7 +283,7 @@ class VaultingService extends BaseService
                 $body = $response->getBody();
             }
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (ApiException | JsonException $e) {
+        } catch (ApiException|JsonException $e) {
             $this->getServiceFromContainer(Logger::class)
                 ->log('error', __CLASS__ . ' ' . __FUNCTION__ . ' : ' . $e->getMessage());
             $result = [];

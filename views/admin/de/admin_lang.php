@@ -326,4 +326,11 @@ $aLang = [
 
     'OSC_PAYPAL_CUSTOM_ID_CONTENTS_TITLE'           => 'PayPal Inhalte des benutzerdefinierten ID-Feldes',
     'OSC_PAYPAL_CUSTOM_ID_CONTENTS_DESC'            => 'Das benutzerdefinierte PayPal-ID-Feld kann entweder nur den Bestellnummernwert oder ein JSON mit zusätzlichen Daten enthalten.',
+
+    'OSC_PAYPAL_DEBUG_LEVEL_OVERRIDE_TITLE'         => 'Debug-Level',
+    'OSC_PAYPAL_DEBUG_LEVEL'                        => 'Debug-Level',
+    'OSC_PAYPAL_DEBUG_LEVEL_OFF'                    => 'Aus',
+    'OSC_PAYPAL_DEBUG_LEVEL_DEBUG'                  => 'Debug',
+    'OSC_PAYPAL_DEBUG_LEVEL_ERROR'                  => 'Fehler',
+    'HELP_OSC_PAYPAL_DEBUG_LEVEL'                   => 'Steuert die Protokollierungsstufe für PayPal-API-Aufrufe. "Aus" deaktiviert die Protokollierung, "Debug" protokolliert alle Anfragen und Antworten, "Fehler" protokolliert nur Fehler.',
 ];

@@ -675,5 +675,12 @@ $aModule = [
             'value' => 'paypal',
             'group' => null
         ],
+        [
+            'name' => 'oscPayPalDebugLevel',
+            'type' => 'select',
+            'constraints' => 'off|debug|error',
+            'value' => 'off',
+            'group' => null
+        ],
     ],
 ];

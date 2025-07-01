@@ -60,7 +60,8 @@
             let payPalOrderCreateResult = await PayPalPayment.backendRequest('payPalOrderCreateUrl', {}, {
                 'shopOrderId': shopOrderCreateResult.shopOrderId,
                 'vaultPayment': PayPalPayment.currentOrder.vaultPayment,
-                'useVaultedPayment': PayPalPayment.config.vaultedPaymentSource
+                'useVaultedPayment': PayPalPayment.config.vaultedPaymentSource,
+                'deliveryAddressId': PayPalPayment.getConfigValue('deladrid')
             });
 
             document.dispatchEvent(new CustomEvent('payPalOrderCreated', new Object({detail: {...payPalOrderCreateResult.payPalOrder}})));

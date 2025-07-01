@@ -142,6 +142,10 @@ class OrderRequestFactory
             $this->modifyPaymentSourceForVaulting($request, $paymentSourceId, $returnUrl, $cancelUrl);
         }
 
+        if ($processingInstruction) {
+            $request->processing_instruction = $processingInstruction;
+        }
+
         if ($paymentSource === PayPalDefinitions::PAYMENT_SOURCE_PUI) {
             /** @var PaymentSource $puiPaymentSource */
             $puiPaymentSource = $this->getPuiPaymentSource();
@@ -632,10 +636,6 @@ class OrderRequestFactory
 
             if ($paymentSourceIdVaultable) {
                 $newPaymentSource = $vaultingService->getPaymentSourceForVaulting($paymentSourceId);
-
-                $newPaymentSource[$paymentSourceId]["attributes"]["customer"] = [
-                    "id" => $paypalCustomerId
-                ];
 
             } else {
                 $shippingPreference = "SET_PROVIDED_ADDRESS";
