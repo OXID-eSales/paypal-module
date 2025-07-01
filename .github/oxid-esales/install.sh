@@ -12,6 +12,9 @@ function error() {
 }
 
 function init() {
+    make file=services/node.yml addservice
+    cat docker-compose.yml
+    docker compose up -d --build node
     for VAR in install_container_method install_container_options install_container_name \
         install_config_idebug install_is_enterprise; do
         echo -n "Checking, if $VAR is set ..."

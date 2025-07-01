@@ -35,9 +35,6 @@ install:
     vendor/bin/oe-console oe:module:install ./
     vendor/bin/oe-console oe:module:activate "{{ $ids }}"
     chmod +x .github/scripts/codestyle_check.sh
-    make file=services/node.yml addservice
-    cat docker-compose.yml
-    docker compose up -d --build node
 
 install_shop_with_modules:
   composer:
@@ -54,7 +51,7 @@ runscript: &runscript
   osc_paypal:
     path: ''
   osc_paypal-node:
-    path: 'tests/e2e'
+    path: ''
     container_name: 'node'
     container_method: 'run'
     script_runner: 'npm run'
