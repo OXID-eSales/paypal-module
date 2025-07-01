@@ -35,7 +35,9 @@
         "oxid-esales/oxideshop-ce": "dev-b-8.0.x",
         "phpstan/phpstan": "^1.10",
         "phpunit/phpunit": "^9.1.1",
-        "phpmd/phpmd": "^2.15"
+        "phpmd/phpmd": "^2.15",
+        "mikey179/vfsstream": "*",
+        "symfony/dotenv": "*"
     },
     "conflicts": {
         "oxid-esales/oxideshop-ce": "<7.0"

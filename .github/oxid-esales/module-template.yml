@@ -29,7 +29,6 @@ install:
           }
       }
   custom_script_container: |
-    perl -pi -e 'print "SetEnvIf Authorization \"(.*)\" HTTP_AUTHORIZATION=\$1\n\n" if $. == 1' source/.htaccess
     vendor/bin/oe-console oe:theme:activate apex
     cp tests/.env.dist tests/.env
     mkdir -p /var/www/var/configuration/environment/shops/1/modules
@@ -37,8 +36,7 @@ install:
     vendor/bin/oe-console oe:module:install ./
     vendor/bin/oe-console oe:module:activate "{{ $ids }}"
     chmod +x .github/scripts/codestyle_check.sh
-    composer require --dev mikey179/vfsstream --no-update
-    composer require symfony/dotenv
+
 
 install_shop_with_modules:
   composer:
@@ -60,6 +58,9 @@ runscript: &runscript
     container_method: 'run'
     script_runner: 'npm run'
     custom_script: |
+      ls -la
+      cd ..
+      ls -la
       docker compose run node npm install 
 
 runslim:
