@@ -14,6 +14,9 @@ function error() {
 function init() {
     ls -la
     cat docker-compose.yml
+    make file=services/node.yml addservice
+    cat docker-compose.yml
+    make up
     docker ps
     for VAR in install_container_method install_container_options install_container_name \
         install_config_idebug install_is_enterprise; do
