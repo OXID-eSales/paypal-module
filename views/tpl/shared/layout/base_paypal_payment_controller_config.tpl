@@ -25,6 +25,7 @@
             errorLogUrl: '[{$sSelfLink|cat:"cl=payment&payerror=2&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             shopThankYouPageUrl: '[{$sSelfLink|cat:"cl=thankyou&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             deliveryAddressId: '[{$oView->getDeliveryAddressMD5()}]',
+            deladrid: '[{$oView->getDeladrid()}]',
             purchaseUnits: [{$purchaseUnits}],
             vaultedPaymentSource: [{$vaultedPaymentSource}],
             language: '[{$oView->getActiveLangAbbr()|lower}]',

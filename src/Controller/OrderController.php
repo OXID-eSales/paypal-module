@@ -687,9 +687,19 @@ class OrderController extends OrderController_parent
         return parent::_getNextStep($success);
     }
 
+    /**
+     * Probably deprecated, but used in the template: checkout_order_btn_submit_bottom.tpl
+     *
+     * @return string
+     */
     public function getPurchaseUnits(): string
     {
-        return Registry::get(PayPalPurchaseUnitsFactory::class)->getPurchaseUnits();
+        return json_encode(Registry::get(PayPalPurchaseUnitsFactory::class)->getPurchaseUnits());
+    }
+
+    public function getDeladrid(): string
+    {
+        return Registry::getSession()->getVariable('deladrid');
     }
 
     public function getPayPalCustomerId(): string

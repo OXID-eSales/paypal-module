@@ -733,6 +733,34 @@
                     </div>
                 </div>
             </div>
+            <div class="card">
+                <div class="card-header" id="heading12">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse12" aria-expanded="false" aria-controls="collapse12">
+                        [{oxmultilang ident="OSC_PAYPAL_DEBUG_LEVEL_OVERRIDE_TITLE"}]
+                    </h4>
+                </div>
+                <div id="collapse12" class="collapse" aria-labelledby="heading12" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="debug-level">[{oxmultilang ident="OSC_PAYPAL_DEBUG_LEVEL"}]</label>
+                            <div class="controls">
+                                <select name="conf[oscPayPalDebugLevel]" id="debug-level" class="form-control">
+                                    <option value="off" [{if $config->getPayPalDebugLevel() == 'off'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_DEBUG_LEVEL_OFF"}]
+                                    </option>
+                                    <option value="debug" [{if $config->getPayPalDebugLevel() == 'debug'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_DEBUG_LEVEL_DEBUG"}]
+                                    </option>
+                                    <option value="error" [{if $config->getPayPalDebugLevel() == 'error'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_DEBUG_LEVEL_ERROR"}]
+                                    </option>
+                                </select>
+                                <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_DEBUG_LEVEL"}]</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             [{*
             <div class="card">
                 <div class="card-header" id="heading9">

@@ -49,7 +49,10 @@ class AjaxPaymentController extends ProxyController
         $data = $this->getRequestParameters();
         $payPalOrderId = $data['orderId'];
 
-        $this->logger->log('debug', sprintf('Order with id %s capture', $payPalOrderId));
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        if ($moduleSettings->getPayPalDebugLevel() === 'debug') {
+            $this->logger->log('debug', sprintf('Order with id %s capture', $payPalOrderId));
+        }
 
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();
         $request = new OrderCaptureRequest();
@@ -69,7 +72,9 @@ class AjaxPaymentController extends ProxyController
                 (int)$languageObject->getBaseLanguage(),
                 false
             );
-            $this->logger->log('error', $exception->getMessage(), [$exception]);
+            if ($moduleSettings->getPayPalDebugLevel() === 'debug' || $moduleSettings->getPayPalDebugLevel() === 'error') {
+                $this->logger->log('error', $exception->getMessage(), [$exception]);
+            }
 
             $this->outputJson([
                 'status' => 'error',
@@ -103,7 +108,10 @@ class AjaxPaymentController extends ProxyController
         $data = $this->getRequestParameters();
         $payPalOrderId = $data['orderId'];
 
-        $this->logger->log('debug', sprintf('Order with id %s capture', $payPalOrderId));
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        if ($moduleSettings->getPayPalDebugLevel() === 'debug') {
+            $this->logger->log('debug', sprintf('Order with id %s capture', $payPalOrderId));
+        }
 
         $sessionOrderId = (string)Registry::getSession()->getVariable('sess_challenge');
         $order = oxNew(Order::class);
@@ -261,11 +269,14 @@ class AjaxPaymentController extends ProxyController
         $shopOrderId = $data['shopOrderId'];
         $errorMessage = $data['errorMessage'];
 
-        $this->logger->log('debug', sprintf(
-            'Order with id %s error: %s',
-            $shopOrderId,
-            $errorMessage
-        ));
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        if ($moduleSettings->getPayPalDebugLevel() === 'debug') {
+            $this->logger->log('debug', sprintf(
+                'Order with id %s error: %s',
+                $shopOrderId,
+                $errorMessage
+            ));
+        }
 
         $this->outputJson([
             'status' => 'success'
@@ -280,7 +291,10 @@ class AjaxPaymentController extends ProxyController
         $user->loadActiveUser();
 
         if (is_null($shopOrderId)) {
-            $this->logger->log('error', sprintf($message));
+            $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+            if ($moduleSettings->getPayPalDebugLevel() === 'debug' || $moduleSettings->getPayPalDebugLevel() === 'error') {
+                $this->logger->log('error', sprintf($message));
+            }
             $this->outputJson([
                 'status' => 'error'
             ]);
@@ -293,7 +307,10 @@ class AjaxPaymentController extends ProxyController
 
 
         if ($order->oxorder__oxuserid->value !== $user->getId()) {
-            $this->logger->log('error', sprintf($message));
+            $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+            if ($moduleSettings->getPayPalDebugLevel() === 'debug' || $moduleSettings->getPayPalDebugLevel() === 'error') {
+                $this->logger->log('error', sprintf($message));
+            }
             $this->outputJson([
                 'status' => 'error'
             ]);
@@ -310,7 +327,10 @@ class AjaxPaymentController extends ProxyController
 
         $shopOrderId = $data['shopOrderId'];
         if (empty($shopOrderId)) {
-            $this->logger->log('error', __CLASS__ . '::' . __FUNCTION__ . '(): Shop order id is empty');
+            $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+            if ($moduleSettings->getPayPalDebugLevel() === 'debug' || $moduleSettings->getPayPalDebugLevel() === 'error') {
+                $this->logger->log('error', __CLASS__ . '::' . __FUNCTION__ . '(): Shop order id is empty');
+            }
         }
 
         $this->permissionsCheck(
@@ -323,11 +343,14 @@ class AjaxPaymentController extends ProxyController
         $order->load($shopOrderId);
 
         $orderNumberPart = !$order->hasOrderNumber() ? 'without Order number and' : '';
-        $this->logger->log('debug', sprintf(
-            'Temporary order %s with id %s was canceled',
-            $shopOrderId,
-            $orderNumberPart
-        ));
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        if ($moduleSettings->getPayPalDebugLevel() === 'debug') {
+            $this->logger->log('debug', sprintf(
+                'Temporary order %s with id %s was canceled',
+                $shopOrderId,
+                $orderNumberPart
+            ));
+        }
 
         $order->cancelOrder();
         $order->markOrderPaymentFailed();
