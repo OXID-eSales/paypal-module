@@ -58,9 +58,6 @@ runscript: &runscript
     container_method: 'run'
     script_runner: 'npm run'
     custom_script: |
-      ls -la
-      cd ..
-      ls -la
       docker compose run node npm install 
 
 runslim:

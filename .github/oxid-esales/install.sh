@@ -16,7 +16,7 @@ function init() {
     cat docker-compose.yml
     make file=services/node.yml addservice
     cat docker-compose.yml
-    make up
+    docker compose up -d --build node
     docker ps
     docker compose logs node
     for VAR in install_container_method install_container_options install_container_name \
