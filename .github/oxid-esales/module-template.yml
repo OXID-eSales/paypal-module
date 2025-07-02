@@ -48,6 +48,10 @@ runscript: &runscript
         "osc_paypal:phpunit",
         "osc_paypal-node:test",
       ]
+  osc_paypal:
+    path: ''
+  composer:
+    early: true
   osc_paypal-node:
     path: 'tests/e2e'
     container_name: 'node'
