@@ -45,7 +45,7 @@ runscript: &runscript
   matrix:
     script: |
       [
-        "osc_paypal:phpunit".
+        "osc_paypal:phpunit",
         "osc_paypal-node:test",
       ]
   osc_paypal-node:
