@@ -45,11 +45,16 @@ runscript: &runscript
   matrix:
     script: |
       [
-        "osc_paypal:phpunit"
+        "osc_paypal:phpunit".
+        "osc_paypal-node:test",
       ]
-  run_custom_scripts: |
-    docker ps
-    ls -la
+  osc_paypal-node:
+    path: 'tests/e2e'
+    container_name: 'node'
+    container_method: 'run'
+    script_runner: 'npm run'
+    custom_script: |
+      docker compose run node npm install 
     
 
 runslim:
