@@ -282,7 +282,19 @@ class PayPalOrderController extends AdminDetailsController
      */
     public function getPayPalPaymentStatus()
     {
-        return $this->getPayPalCheckoutOrder()->status;
+        $paypalOrder = $this->getPayPalCheckoutOrder();
+        $status = $paypalOrder->getCapturePaymentStatus();
+
+
+        if ($paypalOrder->intent === Constants::PAYPAL_ORDER_INTENT_AUTHORIZE){
+            return $status ? 'AUTHORIZED' : 'ERROR';
+        }
+
+        if ($paypalOrder->intent === Constants::PAYPAL_ORDER_INTENT_CAPTURE){
+            return $status ? 'COMPLETED' : 'ERROR';
+        }
+
+        return $status;
     }
 
     /**

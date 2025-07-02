@@ -85,7 +85,7 @@
                 'orderId': data.orderID
             });
 
-            if (result.status === 'success') {
+            if (result.paymentStatus === 'success') {
                 PayPalPayment.afterCaptureOrder();
             }
         };

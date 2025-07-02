@@ -143,8 +143,6 @@ class Payment
                 'return=minimal'
             );
         } catch (ApiException $exception) {
-           // $this->logger->log('error', 'API Error.', [$exception->getMessage()]);
-
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
             if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug' || $this->moduleSettingsService->getPayPalDebugLevel() === 'error') {
@@ -296,16 +294,6 @@ class Payment
                         Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                     );
                 }
-
-                //track authorization
-                $this->trackPayPalOrder(
-                    $order->getId(),
-                    $checkoutOrderId,
-                    (string)$order->getFieldData('oxpaymenttype'),
-                    $authorization->status,
-                    $authorizationId,
-                    Constants::PAYPAL_TRANSACTION_TYPE_AUTH
-                );
 
                 // capture
                 $request = new CaptureRequest();

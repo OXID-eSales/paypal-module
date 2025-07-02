@@ -148,11 +148,47 @@
             PayPalPayment.setCreatePayPalOrderResponse(details);
             const {paypalOrderDetails} = await PayPalPayment.patchOrder(details);
 
-            if (paypalOrderDetails && paypalOrderDetails.payment_source) {
+            if (PayPalPayment.currentOrder.vaultPayment && paypalOrderDetails && paypalOrderDetails.payment_source) {
                 await PayPalPayment.vaultPayment(paypalOrderDetails);
             }
 
-            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+            const result = await PayPalPayment.authorizeOrder(paypalOrderDetails);
+
+            if (result.paymentStatus === 'success' ){
+                window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+                return;
+            }
+
+            PayPalPayment.handleError();
+        };
+
+        this.authorizeOrder = async function (data) {
+            const orderId = data.id || PayPalPayment.getCurrentPayPalOrderId();
+            const shopOrderId = PayPalPayment.getCurrentOrderOxid();
+
+            if (!orderId) {
+                console.error('No PayPal order ID available for authorization');
+                return;
+            }
+
+            try {
+                const result = await PayPalPayment.backendRequest('shopOrderAuthorizeUrl', {}, {
+                    'orderId': orderId,
+                    'shopOrderId': shopOrderId
+                });
+
+                if (result.status !== 'success') {
+                    console.error('Order authorization failed:', result.message);
+                    PayPalPayment.handleError();
+                }
+
+                return result;
+            } catch (error) {
+                console.error('Error during order authorization:', error);
+                PayPalPayment.handleError();
+            }
+
+            return {status: 'error'};
         };
 
         this.cancelOrder = async function () {

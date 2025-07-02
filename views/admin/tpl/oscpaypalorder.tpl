@@ -226,7 +226,7 @@
                 </table>
             </form>
         </div>
-    [{elseif $oView->getPayPalPaymentStatus() !== 'COMPLETED'}]
+    [{elseif $oView->getPayPalPaymentStatus() === 'AUTHORIZED'}]
         <div style="margin-top: 10px">
             <p><b>[{oxmultilang ident="OSC_PAYPAL_ACTIONS" suffix="COLON"}]</b></p>
             <form action="[{$oViewConf->getSelfLink()}]" method="post">
