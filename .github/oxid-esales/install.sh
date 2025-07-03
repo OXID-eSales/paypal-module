@@ -124,7 +124,15 @@ cd ..
 pwd
 docker compose up -d --build node
 docker ps
-docker compose logs paypal-module-node
+for container in $(docker ps -aq); do
+  container_name=$(docker inspect --format '{{.Name}}' "$container" | sed 's/^\/\?//') # Get the container name
+  if [[ $container_name == *node* ]]; then
+    echo "Logs for container $container_name:"
+    docker logs "$container"
+  fi
+done
+
+
 if docker ps | grep -q "paypal-module-node"; then
        # Install Playwright dependencies
        docker compose "${install_container_method}" -T \
