@@ -124,13 +124,12 @@ cd ..
 pwd
 docker compose up -d --build node
 docker ps
-for container in $(docker ps -aq); do
-  container_name=$(docker inspect --format '{{.Name}}' "$container" | sed 's/^\/\?//') # Get the container name
-  if [[ $container_name == *node* ]]; then
-    echo "Logs for container $container_name:"
-    docker logs "$container"
-  fi
+for container in $(docker ps --filter "name=node" -q); do
+      container_name=$(docker inspect --format '{{.Name}}' "$container" | sed 's/^\/\?//')
+      echo "Logs for container $container_name:"
+      docker logs "$container"
 done
+
 
 
 if docker ps | grep -q "paypal-module-node"; then
