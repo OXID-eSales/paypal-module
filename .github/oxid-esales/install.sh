@@ -124,33 +124,35 @@ cd ..
 pwd
 docker compose up -d --build node
 docker ps
-docker compose logs node
+docker compose logs paypal-module-node
+if docker ps | grep -q "paypal-module-node"; then
+       # Install Playwright dependencies
+       docker compose "${install_container_method}" -T \
+           ${install_container_options} \
+           node \
+           npm install playwright --save-dev
 
-# Install Playwright dependencies in the Node container
-docker compose "${install_container_method}" -T \
-    ${install_container_options} \
-    node \
-    npm install playwright --save-dev
+       # Install Playwright browsers
+       docker compose "${install_container_method}" -T \
+           ${install_container_options} \
+           node \
+           npx playwright install
 
-docker ps
+       # Run Playwright tests
+       docker compose "${install_container_method}" -T \
+           ${install_container_options} \
+           node \
+           npx playwright test tests/e2e
 
-# Install the Playwright browsers
-docker compose "${install_container_method}" -T \
-    ${install_container_options} \
-    node \
-    npx playwright install
-
-# Run Playwright tests
-docker compose "${install_container_method}" -T \
-    ${install_container_options} \
-    node \
-    npx playwright test tests/e2e
-
-# Optional: Generate Playwright HTML report (stored in the container under playwright-report/)
-docker compose "${install_container_method}" -T \
-    ${install_container_options} \
-    "${install_container_name}" \
-    npx playwright show-report
+       # Optional: Generate Playwright HTML report
+       docker compose "${install_container_method}" -T \
+           ${install_container_options} \
+           node \
+           npx playwright show-report
+   else
+       echo "NODE ERROR:: Node container is not running. Exiting..."
+       exit 1
+   fi
 
 
 exit 0
