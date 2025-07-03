@@ -116,7 +116,7 @@ docker compose "${install_container_method}" -T \
 docker compose "${install_container_method}" -T \
     ${install_container_options} \
     "${install_container_name}" \
-    vendor/bin/oe-console oe:module:activate "{{ $ids }}"
+    vendor/bin/oe-console oe:module:activate osc_paypal
 
 # Install Playwright dependencies in the Node container
 docker compose "${install_container_method}" -T \
