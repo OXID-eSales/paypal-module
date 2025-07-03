@@ -89,4 +89,58 @@ if [ -s data/php/logs/error_log.txt ]; then
     echo -e "\033[0;35mPHP error log\033[0m"
     cat data/php/logs/error_log.txt
 fi
+
+docker compose "${install_container_method}" -T \
+    ${install_container_options} \
+    "${install_container_name}" \
+    cp tests/.env.dist tests/.env
+
+
+docker compose "${install_container_method}" -T \
+    ${install_container_options} \
+    "${install_container_name}" \
+    mkdir -p /var/www/var/configuration/environment/shops/1/modules
+
+
+docker compose "${install_container_method}" -T \
+    ${install_container_options} \
+    "${install_container_name}" \
+    cp ./recipe/environment/1.yaml /var/www/var/configuration/environment/shops/1/modules/osc_paypal.yaml
+
+
+docker compose "${install_container_method}" -T \
+    ${install_container_options} \
+    "${install_container_name}" \
+    vendor/bin/oe-console oe:module:install ./
+
+docker compose "${install_container_method}" -T \
+    ${install_container_options} \
+    "${install_container_name}" \
+    vendor/bin/oe-console oe:module:activate "{{ $ids }}"
+
+# Install Playwright dependencies in the Node container
+docker compose "${install_container_method}" -T \
+    ${install_container_options} \
+    node \
+    npm install playwright --save-dev
+
+# Install the Playwright browsers
+docker compose "${install_container_method}" -T \
+    ${install_container_options} \
+    node \
+    npx playwright install
+
+# Run Playwright tests
+docker compose "${install_container_method}" -T \
+    ${install_container_options} \
+    node \
+    npx playwright test tests/e2e
+
+# Optional: Generate Playwright HTML report (stored in the container under playwright-report/)
+docker compose "${install_container_method}" -T \
+    ${install_container_options} \
+    "${install_container_name}" \
+    npx playwright show-report
+
+
 exit 0
