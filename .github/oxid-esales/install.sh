@@ -118,7 +118,10 @@ docker compose "${install_container_method}" -T \
     "${install_container_name}" \
     vendor/bin/oe-console oe:module:activate osc_paypal
 
+cat docker-compose.yml
 docker compose up -d --build node
+docker ps
+docker compose logs node
 
 # Install Playwright dependencies in the Node container
 docker compose "${install_container_method}" -T \
