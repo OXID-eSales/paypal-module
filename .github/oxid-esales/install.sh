@@ -120,6 +120,8 @@ docker compose "${install_container_method}" -T \
 
 ls -la
 pwd
+cd ..
+pwd
 docker compose up -d --build node
 docker ps
 docker compose logs node
