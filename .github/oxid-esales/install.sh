@@ -118,11 +118,15 @@ docker compose "${install_container_method}" -T \
     "${install_container_name}" \
     vendor/bin/oe-console oe:module:activate osc_paypal
 
+docker compose up -d --build node
+
 # Install Playwright dependencies in the Node container
 docker compose "${install_container_method}" -T \
     ${install_container_options} \
     node \
     npm install playwright --save-dev
+
+docker ps
 
 # Install the Playwright browsers
 docker compose "${install_container_method}" -T \
