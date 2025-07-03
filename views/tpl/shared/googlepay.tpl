@@ -11,7 +11,6 @@
         [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
         [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
         [{assign var="oPPconfig" value=$oViewConf->getPayPalCheckoutConfig()}]
-        [{assign var="oConfig" value=$oViewConf->getConfig()}]
         [{assign var="bGooglePayDelivery" value=$oConfig->getConfigParam('oscPayPalUseGooglePayAddress')}]
         <div class="google-pay-loading-container paypal-button-right">
             <img src="[{$oViewConf->getModuleUrl('osc_paypal', 'out/img/loading.svg')}]" width="24" height="24" alt="loading animation"/>
