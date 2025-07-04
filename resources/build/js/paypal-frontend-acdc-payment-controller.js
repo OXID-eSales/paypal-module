@@ -14,6 +14,7 @@
             };
 
         this.createOrder = async function (data, actions) {
+            PayPalPayment.reactOnPayPalOverlayClosed = false;
             let result = await PayPalPayment.backendRequest('shopOrderCreateUrl', {}, {
                 'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId'),
                 'vaultPayment': PayPalPayment.currentOrder.vaultPayment
@@ -23,6 +24,7 @@
             }
 
             document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...result.shopOrder}})));
+            document.dispatchEvent(new CustomEvent('payPalOrderCreated', new Object({detail: {...result.payPalOrder}})));
             let shopOrderId = result.shopOrder.shopOrderId;
 
             //vaulted payment source
@@ -139,6 +141,25 @@
             return true;
         };
 
+        this.handlePaymentAuthorization = async function (details) {
+            const result = await PayPalPayment.authorizeOrder({});
+
+            PayPalPayment.reactOnPayPalOverlayClosed = false;
+            if (result.paymentStatus === 'success' ){
+                let result = await PayPalPayment.backendRequest('shopOrderCompleteUrl', {}, {
+                    'orderId': PayPalPayment.currentOrder.shop.shopOrderId
+                });
+                if ('success' !== result.status) {
+                    return false; //some better err handlig here should be added
+                }
+
+                window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+                return;
+            }
+
+            PayPalPayment.handleError();
+        };
+
         this.renderCardFields = function () {
             this.initializeAcceptPaymentButton();
 
@@ -153,7 +174,7 @@
 
             const cardFields = paypal.CardFields({
                 createOrder: PayPalPayment.createOrder,
-                onApprove: PayPalPayment.captureOrder,
+                onApprove: PayPalPayment.handlePaymentAuthorization,
                 onError: PayPalPayment.handleError,
                 inputEvents: {
                     onChange: (data) => {
@@ -162,6 +183,10 @@
                     }
                 }
             });
+
+            if (PayPalPayment.config.captureStrategy === 'CAPTURE') {
+                buttonSettings.onApprove = PayPalPayment.captureOrder;
+            }
 
             // Helper-Function to read the calculated CSS properties of an element
             function getComputedStylesAsObject(selector) {

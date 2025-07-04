@@ -151,6 +151,7 @@ class AjaxPaymentController extends ProxyController
     public function createPayPalOrder(): void
     {
         $data = $this->getRequestParameters();
+        $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'];
         $_POST['vaultPayment'] = $data['vaultPayment'] ? "true" : "false";
         $_POST['oscPayPalPaymentTypeForVaulting'] = PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
         $_POST['useVaultedPayment'] = $data['useVaultedPayment'];
@@ -447,8 +448,6 @@ class AjaxPaymentController extends ProxyController
             Registry::getSession()->setVariable("vaultSuccess", true);
         }
 
-        $this->sendPayPalOrderMail($oOrder, $basket, $basketUser);
-
         $this->outputJson([
             'status' => 'success',
             'oxid' => $oOrder->getId(),
@@ -576,7 +575,11 @@ class AjaxPaymentController extends ProxyController
 
             if ($payPalOrder->intent === Constants::PAYPAL_ORDER_INTENT_AUTHORIZE) {
                 // if order approved then authorize
-                if ($payPalOrder->status === PayPalApiOrder::STATUS_APPROVED) {
+                if (
+                    $payPalOrder->status === PayPalApiOrder::STATUS_APPROVED
+                    || $payPalOrder->status === PayPalApiOrder::STATUS_CREATED
+
+                ) {
                     $request = new OrderAuthorizeRequest();
                     $payPalOrder = $orderService->authorizePaymentForOrder(
                         '',
@@ -585,6 +588,7 @@ class AjaxPaymentController extends ProxyController
                         '',
                         Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                     );
+                    $payPalOrder->intent = Constants::PAYPAL_ORDER_INTENT_AUTHORIZE;
                 }
 
                 $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
@@ -606,7 +610,7 @@ class AjaxPaymentController extends ProxyController
                 // track authorization if order is available
                 if ($order) {
                     $paymentService->trackPayPalOrder(
-                        $order->getId(),
+                        $shopOrderId,
                         $checkoutOrderId,
                         (string)$order->getFieldData('oxpaymenttype'),
                         $authorization->status,
@@ -618,7 +622,7 @@ class AjaxPaymentController extends ProxyController
                 $result = $paymentService->fetchOrderFields($checkoutOrderId);
 
                 $this->outputJson([
-                    'paymentStatus' => $result->getCapturePaymentStatus() ? 'success' : 'error',
+                    'paymentStatus' => $payPalOrder->getCapturePaymentStatus() ? 'success' : 'error',
                     'status' => 'success',
                     'payPalOrder' => $result
                 ]);

@@ -33,6 +33,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderAuthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\CaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\ReauthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
@@ -159,6 +160,11 @@ class Payment
     ): array {
         $config = Registry::getConfig();
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
+        $intent = OrderRequest::INTENT_AUTHORIZE;
+        if ($captureStrategy === 'directly') {
+            $intent = OrderRequest::INTENT_CAPTURE;
+        }
         $debug = '';
         if ($moduleSettings->isSandbox()) {
             $debug = '&XDEBUG_SESSION_START=1';
@@ -171,7 +177,7 @@ class Payment
         // to be transmitted again in the case of a PatchCall
         $response = $this->doCreatePayPalOrder(
             $basket,
-            Constants::PAYPAL_ORDER_INTENT_CAPTURE,
+            $intent,
             OrderRequestFactory::USER_ACTION_CONTINUE,
             null,
             null,
