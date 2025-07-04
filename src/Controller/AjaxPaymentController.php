@@ -30,7 +30,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderAuthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Payments\CaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\ReauthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
 use OxidSolutionCatalysts\PayPalApi\Service\Payments as ApiPaymentService;
@@ -56,7 +55,7 @@ class AjaxPaymentController extends ProxyController
 
         /** @var ModuleSettings $moduleSettings */
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
+
         if ($moduleSettings->getPayPalDebugLevel() === 'debug') {
             $this->logger->log('debug', sprintf('Order with id %s capture', $payPalOrderId));
         }
@@ -72,6 +71,7 @@ class AjaxPaymentController extends ProxyController
                 '',
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
+            $capturePaymentForOrder->intent = OrderRequest::INTENT_CAPTURE;
         } catch (ApiException $exception) {
             $issue = $exception->getErrorIssue();
             $languageObject = Registry::getLang();
