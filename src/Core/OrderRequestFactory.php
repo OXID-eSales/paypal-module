@@ -105,20 +105,9 @@ class OrderRequestFactory
 
         $request->payment_source = $this->getSimplePaymentSource($basket, $paymentSourceId);
 
-        if ($paymentId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID) {
-            $request->payment_source = $this->getGooglePayPaymentSource($basket, $paymentSourceId);
-        }
-
-        if ($paymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID) {
-            $request->payment_source = $this->getSimplePaymentSource($basket, $paymentSourceId);
-        }
-
         if (PayPalDefinitions::isUAPMPayment($paymentId)) {
             if ($paymentId === PayPalDefinitions::PRZELEWY24_PAYPAL_PAYMENT_ID) {
                 $request->payment_source = $this->getSimplePaymentSourceWithEMail($basket, $paymentSourceId);
-            }
-            else {
-                $request->payment_source = $this->getSimplePaymentSource($basket, $paymentSourceId);
             }
         }
 
@@ -151,10 +140,6 @@ class OrderRequestFactory
             return $request;
         } else {
             $this->modifyPaymentSourceForVaulting($request, $paymentSourceId, $returnUrl, $cancelUrl);
-        }
-
-        if (!$paymentSource && $basket->getUser()) {
-            $request->payer = $this->getPayer();
         }
 
         if ($processingInstruction) {
@@ -616,25 +601,29 @@ class OrderRequestFactory
         $user = $config->getUser() instanceof User ? $config->getUser() : null;
 
         $vaultingService = $this->getVaultingService();
-        $selectedPaymentToken = $vaultingService->fetchSelectedVaultedPaymentToken($user)
-            && PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID !== $paymentId;
+        $selectedPaymentToken = $vaultingService->fetchSelectedVaultedPaymentToken($user);
 
         //use selected vault
         if (!empty($selectedPaymentToken)) {
             $newPaymentSource = [
                 $paymentSourceId => [
                     "vault_id" => $selectedPaymentToken["id"],
-                    "stored_credential" => [
-                        "payment_initiator" => "CUSTOMER",
-                        "payment_type" => "UNSCHEDULED",
-                        "usage" => "SUBSEQUENT"
-                    ],
                     "experience_context" => [
                         "return_url" => $returnUrl,
-                        "cancel_url" => $cancelUrl
+                        "cancel_url" => $cancelUrl,
+                        "payment_method_preference" => 'UNRESTRICTED'
                     ]
                 ]
             ];
+
+            //stored_credential are only used with card types, it should not be used with PayPal
+            if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
+                $newPaymentSource[$paymentSourceId]["stored_credential"] = [
+                    "payment_initiator" => "CUSTOMER",
+                    "payment_type" => "UNSCHEDULED",
+                    "usage" => "SUBSEQUENT"
+                ];
+            }
             $request->payment_source = $newPaymentSource;
 
         } elseif ($user) {
@@ -648,11 +637,12 @@ class OrderRequestFactory
             if ($paymentSourceIdVaultable) {
                 $newPaymentSource = $vaultingService->getPaymentSourceForVaulting($paymentSourceId);
 
-                $newPaymentSource[$paymentSourceId]["attributes"]["customer"] = [
-                    "id" => $paypalCustomerId
-                ];
-
             } else {
+                $shippingPreference = "SET_PROVIDED_ADDRESS";
+                if (PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID === $paymentId && !$user) {
+                    $shippingPreference = "GET_FROM_FILE";
+                }
+
                 $newPaymentSource = [
                     $paymentSourceId => [
                         "experience_context" => [
@@ -660,7 +650,7 @@ class OrderRequestFactory
                                 'index.php?cl=order&fnc=finalizepaypalsession'.$debug,
                             "cancel_url" => $config->getSslShopUrl() .
                                 'index.php?cl=order&fnc=cancelpaypalsession'.$debug,
-                            "shipping_preference" => "SET_PROVIDED_ADDRESS",
+                            "shipping_preference" => $shippingPreference,
                         ]
                     ]
                 ];

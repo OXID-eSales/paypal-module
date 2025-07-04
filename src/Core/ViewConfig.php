@@ -139,7 +139,11 @@ class ViewConfig extends ViewConfig_parent
      */
     public function getCancelPayPalPaymentUrl(): string
     {
-        return $this->getSslSelfLink() . 'cl=oscpaypalproxy&fnc=cancelPayPalPayment&redirect=1';
+        $link = $this->getSslSelfLink() . 'cl=oscpaypalproxy&fnc=cancelPayPalPayment&redirect=1';
+        if ($this->isPayPalSandbox()) {
+            $link .= "&XDEBUG_SESSION_START=1";
+        }
+        return $link;
     }
 
     /**

@@ -325,4 +325,11 @@ $aLang = [
 
     'OSC_PAYPAL_CUSTOM_ID_CONTENTS_TITLE'           => 'PayPal custom id field contents',
     'OSC_PAYPAL_CUSTOM_ID_CONTENTS_DESC'            => 'PayPal custom id field will be JSON encoded string with order number, shop version and the PayPal module version.',
+
+    'OSC_PAYPAL_DEBUG_LEVEL_OVERRIDE_TITLE'         => 'Debug Level',
+    'OSC_PAYPAL_DEBUG_LEVEL'                        => 'Debug Level',
+    'OSC_PAYPAL_DEBUG_LEVEL_OFF'                    => 'Off',
+    'OSC_PAYPAL_DEBUG_LEVEL_DEBUG'                  => 'Debug',
+    'OSC_PAYPAL_DEBUG_LEVEL_ERROR'                  => 'Error',
+    'HELP_OSC_PAYPAL_DEBUG_LEVEL'                   => 'Controls the level of logging for PayPal API calls. "Off" disables logging, "Debug" logs all requests and responses, "Error" logs only errors.',
 ];

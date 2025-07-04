@@ -142,20 +142,21 @@ class ServiceFactory
             $paymentId = $session->getVariable('paymentid');
             $actionHash = md5($sessionId . $basketId . $paymentId);
 
-            $sTokenCacheFileName = $config->getTokenCacheFileName();
+            $tokenCacheFileName = $config->getTokenCacheFileName();
+            $debugLevel = $config->getPayPalDebugLevel();
 
             $client = new Client(
                 $logger,
                 $config->isSandbox() ? Client::SANDBOX_URL : Client::PRODUCTION_URL,
                 $config->getClientId(),
                 $config->getClientSecret(),
-                $sTokenCacheFileName,
+                $tokenCacheFileName,
                 $actionHash,
                 // must be empty. We do not have the merchant's payerid
                 //and confirmed by paypal we should not use it for auth and
                 //so not ask for it on the configuration page
                 '',
-                false
+                $debugLevel
             );
 
             $this->client = $client;

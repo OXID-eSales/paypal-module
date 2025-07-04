@@ -148,11 +148,47 @@
             PayPalPayment.setCreatePayPalOrderResponse(details);
             const {paypalOrderDetails} = await PayPalPayment.patchOrder(details);
 
-            if (paypalOrderDetails && paypalOrderDetails.payment_source) {
+            if (PayPalPayment.currentOrder.vaultPayment && paypalOrderDetails && paypalOrderDetails.payment_source) {
                 await PayPalPayment.vaultPayment(paypalOrderDetails);
             }
 
-            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+            const result = await PayPalPayment.authorizeOrder(paypalOrderDetails);
+
+            if (result.paymentStatus === 'success' ){
+                window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+                return;
+            }
+
+            PayPalPayment.handleError();
+        };
+
+        this.authorizeOrder = async function (data) {
+            const orderId = data.id || PayPalPayment.getCurrentPayPalOrderId();
+            const shopOrderId = PayPalPayment.getCurrentOrderOxid();
+
+            if (!orderId) {
+                console.error('No PayPal order ID available for authorization');
+                return;
+            }
+
+            try {
+                const result = await PayPalPayment.backendRequest('shopOrderAuthorizeUrl', {}, {
+                    'orderId': orderId,
+                    'shopOrderId': shopOrderId
+                });
+
+                if (result.status !== 'success') {
+                    console.error('Order authorization failed:', result.message);
+                    PayPalPayment.handleError();
+                }
+
+                return result;
+            } catch (error) {
+                console.error('Error during order authorization:', error);
+                PayPalPayment.handleError();
+            }
+
+            return {status: 'error'};
         };
 
         this.cancelOrder = async function () {
@@ -181,23 +217,28 @@
 
         // Common backend request method
         this.backendRequest = async function (urlSlug, headers, body) {
-            let response = await fetch(PayPalPayment.getConfigValue(urlSlug), {
-                method: 'post',
-                headers: Object.assign({
-                    'content-type': 'application/json',
-                }, headers),
-                body: JSON.stringify(body)
-            });
-
+            let response;
             let result = {status: 'pending'};
 
             try {
+                response = await fetch(PayPalPayment.getConfigValue(urlSlug), {
+                    method: 'post',
+                    headers: Object.assign({
+                        'content-type': 'application/json',
+                    }, headers),
+                    body: JSON.stringify(body)
+                });
+
                 result = await response.json();
-            } catch (e) {
+            } catch (error) {
+                console.error('Operation failed:', error);
                 result = {
                     status: 'error',
-                    error: e.message
+                    error: error.message
                 };
+                // Ensure order cancellation if operation fails
+                await PayPalPayment.handleError();
+                return result;
             }
 
             console.log(result.status, result.message, result.data);

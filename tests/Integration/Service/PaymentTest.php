@@ -61,7 +61,6 @@ final class PaymentTest extends BaseTestCase
     {
         $order = new ApiOrderModel();
         $order->id = 'some_id';
-        $order->processing_instruction = 'NO_INSTRUCTION';
 
         $paymentSource = new PaymentSourceResponse();
         $card = new CardResponse();
@@ -90,7 +89,6 @@ final class PaymentTest extends BaseTestCase
     private function createFailedAuthenticationOrder(): ApiOrderModel
     {
         $order = new ApiOrderModel();
-        $order->processing_instruction = 'NO_INSTRUCTION';
 
         $paymentSource = new PaymentSourceResponse();
         $card = new CardResponse();
@@ -119,7 +117,6 @@ final class PaymentTest extends BaseTestCase
     private function createMissingCardAuthenticationOrder(): ApiOrderModel
     {
         $order = new ApiOrderModel();
-        $order->processing_instruction = 'NO_INSTRUCTION';
 
         $paymentSource = new PaymentSourceResponse();
         $card = new CardResponse();

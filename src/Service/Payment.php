@@ -143,11 +143,11 @@ class Payment
                 'return=minimal'
             );
         } catch (ApiException $exception) {
-            $this->logger->log('error', 'API Error.', [$exception->getMessage()]);
-
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
-            $this->logger->log('error', 'Error on order create call.', [$exception->getMessage()]);
+            if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug' || $this->moduleSettingsService->getPayPalDebugLevel() === 'error') {
+                $this->logger->log('error', 'Error on order create call.', [$exception->getMessage()]);
+            }
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
         }
 
@@ -194,7 +194,7 @@ class Payment
         $order->load($basket->getOrderId());
 
         // patch the order only if paypalOrderId exists
-        if ($paypalOrderId) {
+        if ($paypalOrderId && $response->status !== 'COMPLETED') {
             $this->doPatchPayPalOrder(
                 $basket,
                 $paypalOrderId,
@@ -233,7 +233,9 @@ class Payment
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
         } catch (Exception $exception) {
-            $this->logger->log('error', 'Error on order patch call.', [$exception]);
+            if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug' || $this->moduleSettingsService->getPayPalDebugLevel() === 'error') {
+                $this->logger->log('error', 'Error on order patch call.', [$exception]);
+            }
             throw $exception;
         }
     }
@@ -292,16 +294,6 @@ class Payment
                         Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                     );
                 }
-
-                //track authorization
-                $this->trackPayPalOrder(
-                    $order->getId(),
-                    $checkoutOrderId,
-                    (string)$order->getFieldData('oxpaymenttype'),
-                    $authorization->status,
-                    $authorizationId,
-                    Constants::PAYPAL_TRANSACTION_TYPE_AUTH
-                );
 
                 // capture
                 $request = new CaptureRequest();
@@ -400,7 +392,9 @@ class Payment
                     }
 
                     if (!$vaultSuccess) {
-                        $this->logger->log('debug', "Vaulting was attempted but didn't succeed.");
+                        if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
+                            $this->logger->log('debug', "Vaulting was attempted but didn't succeed.");
+                        }
                     }
 
                     $session->setVariable("vaultSuccess", $vaultSuccess);
@@ -412,7 +406,9 @@ class Payment
                 $order->setTransId((string)$payPalTransactionId);
             }
         } catch (Exception $exception) {
-            $this->logger->log('debug', 'Warning on order capture call.', [$exception->getMessage()]);
+            if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
+                $this->logger->log('debug', 'Warning on order capture call.', [$exception->getMessage()]);
+            }
             throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
         }
 
@@ -505,16 +501,20 @@ class Payment
             $orderModel->isLoaded()
         ) {
             $orderModel->cancelOrder();
-            $this->logger->log('debug', sprintf(
-                'Temporary order with id %s was canceled',
-                $sessionOrderId
-            ));
-            if (!$orderModel->hasOrderNumber()) {
-                $orderModel->delete();
+            if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
                 $this->logger->log('debug', sprintf(
-                    'Temporary order without Order number and with id %s was deleted',
+                    'Temporary order with id %s was canceled',
                     $sessionOrderId
                 ));
+            }
+            if (!$orderModel->hasOrderNumber()) {
+                $orderModel->delete();
+                if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
+                    $this->logger->log('debug', sprintf(
+                        'Temporary order without Order number and with id %s was deleted',
+                        $sessionOrderId
+                    ));
+                }
             }
         }
 
@@ -569,7 +569,9 @@ class Payment
             PayPalSession::unsetPayPalOrderId();
             $this->removeTemporaryOrder();
             //TODO: do we need to log this?
-            $this->logger->log('error', $exception->getMessage(), [$exception]);
+            if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug' || $this->moduleSettingsService->getPayPalDebugLevel() === 'error') {
+                $this->logger->log('error', $exception->getMessage(), [$exception]);
+            }
         }
 
         //NOTE: payment not fully executed, we need customer interaction first
@@ -688,7 +690,9 @@ class Payment
             }
         } catch (Exception $exception) {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_GENERIC);
-            $this->logger->log('error', 'Error on pui order creation call.', [$exception]);
+            if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug' || $this->moduleSettingsService->getPayPalDebugLevel() === 'error') {
+                $this->logger->log('error', 'Error on pui order creation call.', [$exception]);
+            }
         }
 
         # TODO: check what we created, ensure it is a pui order
