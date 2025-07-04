@@ -61,7 +61,7 @@
                 'shopOrderId': shopOrderCreateResult.shopOrderId,
                 'vaultPayment': PayPalPayment.currentOrder.vaultPayment,
                 'useVaultedPayment': PayPalPayment.config.vaultedPaymentSource,
-                'deliveryAddressId': PayPalPayment.getConfigValue('deladrid')
+                'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId')
             });
 
             document.dispatchEvent(new CustomEvent('payPalOrderCreated', new Object({detail: {...payPalOrderCreateResult.payPalOrder}})));
