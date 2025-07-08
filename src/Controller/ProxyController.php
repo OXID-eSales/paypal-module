@@ -81,16 +81,20 @@ class ProxyController extends FrontendController
         if ($captureStrategy === 'directly') {
             $intent = OrderRequest::INTENT_CAPTURE;
         }
+        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
+        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
+        $paymentId = Registry::getSession()->getVariable('paymentid');
         $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
             $basket,
             $intent,
-            OrderRequestFactory::USER_ACTION_CONTINUE,
+            $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID ?
+                OrderRequestFactory::USER_ACTION_PAY_NOW : OrderRequestFactory::USER_ACTION_CONTINUE,
             null,
             '',
             '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-            null,
-            null,
+            $returnUrl,
+            $cancelUrl,
             false
         );
 

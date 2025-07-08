@@ -139,7 +139,7 @@ class OrderRequestFactory
 
             return $request;
         } else {
-            $this->modifyPaymentSourceForVaulting($request, $paymentSourceId, $returnUrl, $cancelUrl);
+            $this->modifyPaymentSourceForVaulting($request, $paymentSourceId, $returnUrl, $cancelUrl, $userAction);
         }
 
         if ($processingInstruction) {
@@ -585,7 +585,8 @@ class OrderRequestFactory
         OrderRequest $request,
         string $paymentSourceId,
         ?string $returnUrl = null,
-        ?string $cancelUrl = null
+        ?string $cancelUrl = null,
+        ?string $userAction = null
     ): void
     {
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
@@ -602,6 +603,10 @@ class OrderRequestFactory
 
         $vaultingService = $this->getVaultingService();
         $selectedPaymentToken = $vaultingService->fetchSelectedVaultedPaymentToken($user);
+        $shippingPreference = "SET_PROVIDED_ADDRESS";
+        if (PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID === $paymentId && !$user) {
+            $shippingPreference = "GET_FROM_FILE";
+        }
 
         //use selected vault
         if (!empty($selectedPaymentToken)) {
@@ -611,12 +616,16 @@ class OrderRequestFactory
                     "experience_context" => [
                         "return_url" => $returnUrl,
                         "cancel_url" => $cancelUrl,
-                        "payment_method_preference" => 'UNRESTRICTED'
+                        "payment_method_preference" => 'UNRESTRICTED',
+                        "shipping_preference" => $shippingPreference,
                     ]
                 ]
             ];
 
             //stored_credential are only used with card types, it should not be used with PayPal
+            if (PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID === $paymentId) {
+                unset($newPaymentSource[$paymentSourceId]["vault_id"]);
+            }
             if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
                 $newPaymentSource[$paymentSourceId]["stored_credential"] = [
                     "payment_initiator" => "CUSTOMER",
@@ -636,20 +645,13 @@ class OrderRequestFactory
 
             if ($paymentSourceIdVaultable) {
                 $newPaymentSource = $vaultingService->getPaymentSourceForVaulting($paymentSourceId);
-
             } else {
-                $shippingPreference = "SET_PROVIDED_ADDRESS";
-                if (PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID === $paymentId && !$user) {
-                    $shippingPreference = "GET_FROM_FILE";
-                }
-
                 $newPaymentSource = [
                     $paymentSourceId => [
                         "experience_context" => [
-                             "return_url" => $config->getSslShopUrl() .
-                                'index.php?cl=order&fnc=finalizepaypalsession'.$debug,
-                            "cancel_url" => $config->getSslShopUrl() .
-                                'index.php?cl=order&fnc=cancelpaypalsession'.$debug,
+                            "user_action" => $userAction ?? self::USER_ACTION_CONTINUE,
+                            "return_url" => $returnUrl,
+                            "cancel_url" => $cancelUrl,
                             "shipping_preference" => $shippingPreference,
                         ]
                     ]
@@ -679,7 +681,24 @@ class OrderRequestFactory
                     }
                 }
             }
-            $request->payment_source = $newPaymentSource;
+
+        $newPaymentSource[$paymentSourceId]["experience_context"]["shipping_preference"]
+            = $shippingPreference;
+
+        $newPaymentSource[$paymentSourceId]["experience_context"]["user_action"]
+            = $userAction ?? self::USER_ACTION_CONTINUE;
+
+        $request->payment_source = $newPaymentSource;
+        }
+
+        //express payments
+        if (!$user){
+            if (empty($request->payment_source->{$paymentSourceId}->experience_context)){
+                $request->payment_source->{$paymentSourceId}->experience_context = [
+                    "shipping_preference" => $shippingPreference,
+                    "user_action" => $userAction ?? self::USER_ACTION_CONTINUE
+                ];
+            }
         }
     }
 

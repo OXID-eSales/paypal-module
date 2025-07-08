@@ -51,7 +51,8 @@
 
             // Create shop order first
             let shopOrderCreateResult = await PayPalPayment.backendRequest('shopOrderCreateUrl', {}, {
-                'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId')
+                'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId'),
+                'paymentId': PayPalPayment.getConfigValue('paymentId')
             });
 
             document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...shopOrderCreateResult}})));

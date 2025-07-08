@@ -172,7 +172,7 @@
                 return;
             }
 
-            const cardFields = paypal.CardFields({
+            const cardFieldsSettings = {
                 createOrder: PayPalPayment.createOrder,
                 onApprove: PayPalPayment.handlePaymentAuthorization,
                 onError: PayPalPayment.handleError,
@@ -182,11 +182,13 @@
                         PayPalPayment.removeSubmitButtonOverlay();
                     }
                 }
-            });
+            };
 
             if (PayPalPayment.config.captureStrategy === 'CAPTURE') {
-                buttonSettings.onApprove = PayPalPayment.captureOrder;
+                cardFieldsSettings.onApprove = PayPalPayment.captureOrder;
             }
+
+            const cardFields = paypal.CardFields(cardFieldsSettings);
 
             // Helper-Function to read the calculated CSS properties of an element
             function getComputedStylesAsObject(selector) {
