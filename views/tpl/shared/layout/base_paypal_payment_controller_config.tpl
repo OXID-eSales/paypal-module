@@ -30,7 +30,8 @@
             vaultedPaymentSource: [{$vaultedPaymentSource}],
             language: '[{$oView->getActiveLangAbbr()|lower}]',
             currency: '[{$currency->name}]',
-            customerId: '[{$customerId}]'
+            customerId: '[{$customerId}]',
+            captureStrategy: '[{if $captureStrategy == 'directly'}]CAPTURE[{else}]AUTHORIZE[{/if}]',
         }
 
         [{if $paymentId == 'oscpaypal'}]
@@ -42,7 +43,6 @@
                     shopOrderPatchingUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                     updateOxUserWithPayPalCustomerIdUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=updateOxUserWithPayPalCustomerId&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                     buttonSelector: '#[{$paymentId}]',
-                    captureStrategy: '[{if $captureStrategy == 'directly'}]CAPTURE[{else}]AUTHORIZE[{/if}]',
                     paymentId: 'oscpaypal'
                 });
             };

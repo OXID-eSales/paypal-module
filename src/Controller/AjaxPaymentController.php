@@ -170,6 +170,7 @@ class AjaxPaymentController extends ProxyController
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
         $intent = OrderRequest::INTENT_AUTHORIZE;
+        $config = Registry::getConfig();
         if ($captureStrategy === 'directly') {
             $intent = OrderRequest::INTENT_CAPTURE;
         }
@@ -181,8 +182,8 @@ class AjaxPaymentController extends ProxyController
             '',
             '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-            null,
-            null,
+            $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession',
+            $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
             false
         );
 
@@ -468,6 +469,10 @@ class AjaxPaymentController extends ProxyController
         }
 
         $basket = Registry::getSession()->getBasket();
+        if(empty($basket->getPaymentId()) && !empty($data['paymentId'])){
+            $basket->setPaymentId($data['paymentId']);
+        }
+
         $order = oxNew(Order::class);
         Registry::getSession()->deleteVariable('sess_challenge');
 
