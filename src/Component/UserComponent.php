@@ -50,7 +50,7 @@ class UserComponent extends UserComponent_parent
     {
         $this->setParent(oxNew('Register'));
 
-        $this->setRequestParameterByPayPal('lgn_usr', $response->purchase_units[0]->payee->email_address);
+        $this->setRequestParameterByPayPal('lgn_usr', $response->payer->email_address);
         // Guest users have a blank password
         $password = '';
         $this->setRequestParameterByPayPal('lgn_pwd', $password);
