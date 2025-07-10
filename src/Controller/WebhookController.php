@@ -9,7 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use OxidEsales\Eshop\Application\Component\Widget\WidgetController;
 use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\EshopCommunity\modules\osc\paypal\src\Traits\OrderProcessTrackingTrait;
+use OxidSolutionCatalysts\PayPal\Traits\OrderProcessTrackingTrait;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher;

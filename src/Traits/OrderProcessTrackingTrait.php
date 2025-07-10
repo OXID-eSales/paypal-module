@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace OxidEsales\EshopCommunity\modules\osc\paypal\src\Traits;
+namespace OxidSolutionCatalysts\PayPal\Traits;
 
 use OxidEsales\Eshop\Core\Registry;
 
