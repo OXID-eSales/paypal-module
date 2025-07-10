@@ -19,6 +19,7 @@ use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\modules\osc\paypal\src\Traits\OrderProcessTrackingTrait;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
@@ -46,6 +47,7 @@ class ProxyController extends FrontendController
 {
     use JsonTrait;
     use ServiceContainer;
+    use OrderProcessTrackingTrait;
 
     public function createOrder(): void
     {
@@ -54,6 +56,8 @@ class ProxyController extends FrontendController
             //  $this->outputJson(['ERROR' => 'PayPal session already started.']);
         }
 
+        $session = Registry::getSession();
+        $basket = $session->getBasket();
         $config = Registry::getConfig();
         $this->addToBasket();
         $paymentId = Registry::getRequest()->getRequestParameter('paymentid');
@@ -62,8 +66,7 @@ class ProxyController extends FrontendController
         } else {
             $this->setPayPalPaymentMethod();
         }
-        $session = Registry::getSession();
-        $basket = $session->getBasket();
+        $paymentId = $basket->getPaymentId();
         $defaultShippingPriceExpress = (double) $config->getConfigParam('oscPayPalDefaultShippingPriceExpress');
         $calculateDelCostIfNotLoggedIn = (bool) $config->getConfigParam('blCalculateDelCostIfNotLoggedIn');
         $isDeliverySet = (bool) $session->getVariable('sShipSet');
@@ -76,19 +79,17 @@ class ProxyController extends FrontendController
 
         /** @var ModuleSettings $moduleSettings */
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
-        $intent = OrderRequest::INTENT_AUTHORIZE;
-        if ($captureStrategy === 'directly') {
-            $intent = OrderRequest::INTENT_CAPTURE;
-        }
+        $intent = $captureStrategy === 'directly' ? OrderRequest::INTENT_CAPTURE : OrderRequest::INTENT_AUTHORIZE;
+        $userAction = $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID ?
+            OrderRequestFactory::USER_ACTION_CONTINUE : OrderRequestFactory::USER_ACTION_PAY_NOW;
         $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
         $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
-        $paymentId = Registry::getSession()->getVariable('paymentid');
-        $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
+        $response = $paymentService->doCreatePayPalOrder(
             $basket,
             $intent,
-            $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID ?
-                OrderRequestFactory::USER_ACTION_PAY_NOW : OrderRequestFactory::USER_ACTION_CONTINUE,
+            $userAction,
             null,
             '',
             '',
@@ -249,12 +250,13 @@ class ProxyController extends FrontendController
 
         /** @var ServiceFactory $serviceFactory */
         $serviceFactory = Registry::get(ServiceFactory::class);
-        $service = $serviceFactory->getOrderService();
+        $orderService = $serviceFactory->getOrderService();
+        $orderService->setTrackingId($this->getTrackingId());
         $nonGuestAccountDetected = false;
         $isLoggedIn = false;
 
         try {
-            $response = $service->showOrderDetails(
+            $response = $orderService->showOrderDetails(
                 $orderId,
                 '',
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP

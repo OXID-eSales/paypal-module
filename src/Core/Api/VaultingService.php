@@ -21,10 +21,16 @@ use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Service\BaseService;
+use Psr\Log\LoggerInterface;
 
 class VaultingService extends BaseService
 {
     use ServiceContainer;
+
+    public function getLogger(): LoggerInterface
+    {
+        return $this->getServiceFromContainer(Logger::class);
+    }
 
     public function generateUserIdToken($payPalCustomerId = false): array
     {
@@ -269,7 +275,7 @@ class VaultingService extends BaseService
         if (!$viewConf->getIsVaultingActive()) {
             return [];
         }
-
+        $this->setTrackingId(Registry::getSession()->getVariable('payPalPaymentProcessId'));
         $headers = [];
         $headers['Content-Type'] = 'application/x-www-form-urlencoded';
         $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
@@ -277,17 +283,22 @@ class VaultingService extends BaseService
         $path = '/v3/vault/payment-tokens?customer_id=' . $paypalCustomerId;
 
         $body = '';
-        try {
-            $response = $this->send('GET', $path, [], $headers);
-            if ($response) {
-                $body = $response->getBody();
+        $result = Registry::getSession()->getVariable('payPalPaymentVaultedTokenCache' . $this->getTrackingId());
+        if (empty($result)) {
+            try {
+                $response = $this->sendWithRequestResponseLogging('GET', $path, [], $headers);
+                if ($response) {
+                    $body = $response->getBody();
+                }
+                $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
+                Registry::getSession()->setVariable('payPalPaymentVaultedTokenCache' . $this->getTrackingId(), $result);
+            } catch (ApiException|JsonException $e) {
+                $this->getServiceFromContainer(Logger::class)
+                    ->log('error', __CLASS__ . ' ' . __FUNCTION__ . ' : ' . $e->getMessage());
+                $result = [];
             }
-            $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (ApiException|JsonException $e) {
-            $this->getServiceFromContainer(Logger::class)
-                ->log('error', __CLASS__ . ' ' . __FUNCTION__ . ' : ' . $e->getMessage());
-            $result = [];
         }
+
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $vaultedPaymentTokens = $result['payment_tokens'];
         $filteredVaultedPaymentTokens = [];

@@ -69,6 +69,7 @@
             paymentDataRequest.transactionInfo = PayPalPayment.getGoogleTransactionInfo();
             if ('function' === typeof paymentsClient.loadPaymentData) {
                 try {
+                    debugger
                     await paymentsClient.loadPaymentData(paymentDataRequest);
                 } catch (err) {
                     // user cancels code
