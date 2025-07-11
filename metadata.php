@@ -269,6 +269,17 @@ $aModule = [
             'block' => 'dd_layout_page_header_icon_menu_minibasket_functions',
             'file' => '/views/blocks/widget/minibasket/dd_layout_page_header_icon_menu_minibasket_functions.tpl',
         ],
+        //email
+        [
+            'template' => 'email/plain/order_cust.tpl',
+            'block' => 'email_plain_order_cust_paymentinfo',
+            'file' => 'views/blocks/email/plain/email_plain_order_cust_paymentinfo.tpl'
+        ],
+        [
+            'template' => 'email/html/order_cust.tpl',
+            'block' => 'email_html_order_cust_paymentinfo',
+            'file' => 'views/blocks/email/html/email_html_order_cust_paymentinfo.tpl'
+        ],
     ],
     'settings' => [
         [

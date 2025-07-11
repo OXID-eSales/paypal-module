@@ -589,6 +589,18 @@ class ViewConfig extends ViewConfig_parent
         return $this->getServiceFromContainer(ModuleSettings::class)->isAcdcEligibility();
     }
 
+    /**
+     * retrieve additional payment information from session
+     *
+     * @return string
+     */
+    public function getPuiPaymentInfo(): string
+    {
+        /** @var string $addPaymentInfo */
+        $addPaymentInfo = Registry::getSession()->getVariable('additionalPuiInformation') ?? '';
+        return $addPaymentInfo;
+    }
+
     private function filterVaultPaymentTokensByController($vaultPaymentTokens)
     {
         if (is_null($vaultPaymentTokens)) {

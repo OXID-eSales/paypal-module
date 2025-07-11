@@ -188,6 +188,7 @@ $aLang = [
     'OSC_PAYPAL_PAYMENT_PUI_IBAN'                 => 'IBAN',
     'OSC_PAYPAL_PAYMENT_PUI_BANKNAME'             => 'Bankname',
     'OSC_PAYPAL_PAYMENT_PUI_ACCOUNTHOLDER'        => 'Accountholder',
+    'OSC_PAYPAL_PAYMENT_PUI_NOTE'                 => 'Please use the following data for the transfer of the order amount',
 
     'OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'     => 'Apply settings from the classic PayPal module',
     'OSC_PAYPAL_BANNER_TRANSFERREDOLDSETTINGS'     => 'Banner settings have been transferred from the classig PayPal module.',

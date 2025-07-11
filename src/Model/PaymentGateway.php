@@ -37,10 +37,11 @@ class PaymentGateway extends PaymentGateway_parent
     {
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $sessionPaymentId = $paymentService->getSessionPaymentId();
+        $isPuiPayment = PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID === $sessionPaymentId;
 
         if (PayPalDefinitions::isButtonPayment($sessionPaymentId)) {
             $success = $this->doExecutePayPalExpressPayment($order);
-        } elseif (PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID === $sessionPaymentId) {
+        } elseif ($isPuiPayment) {
             $success = $this->doExecutePuiPayment($order);
         } else {
             $success = parent::executePayment($amount, $order);
@@ -56,6 +57,9 @@ class PaymentGateway extends PaymentGateway_parent
             $success &&
             $paymentService->isPayPalPayment()
         ) {
+            if ($isPuiPayment) {
+                $paymentService->setPuiPaymentInfo($order, $paypalOrderId);
+            }
             $capture = $order->getOrderPaymentCapture($paypalOrderId);
             if ($capture && (string) $capture->status === 'COMPLETED') {
                 $order->setTransId($capture->id);
