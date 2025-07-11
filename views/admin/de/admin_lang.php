@@ -132,6 +132,7 @@ $aLang = [
     'OSC_PAYPAL_CAPTURE'                          => 'Einziehen',
     'OSC_PAYPAL_REFUND'                           => 'Erstatten',
     'OSC_PAYPAL_CONFIRM_REFUND'                   => 'Möchten Sie wirklich einen Rückerlass beantragen?',
+    'OSC_PAYPAL_CONFIRM_CAPTURE'                  => 'Möchten Sie wirklich eine Geldabbuchung beantragen?',
     'OSC_PAYPAL_DETAILS'                          => 'Details',
     'OSC_PAYPAL_AUTHORIZATION'                    => 'Autorisierung',
     'OSC_PAYPAL_CANCEL_AUTHORIZATION'             => 'Stornieren',

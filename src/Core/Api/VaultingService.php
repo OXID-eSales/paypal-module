@@ -13,7 +13,6 @@ use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\ViewConfig;
-use OxidSolutionCatalysts\PayPal\Traits\OrderProcessTrackingTrait;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
@@ -26,7 +25,6 @@ use Psr\Log\LoggerInterface;
 class VaultingService extends BaseService
 {
     use ServiceContainer;
-    use OrderProcessTrackingTrait;
 
     public function getLogger(): LoggerInterface
     {
@@ -276,7 +274,7 @@ class VaultingService extends BaseService
         if (!$viewConf->getIsVaultingActive()) {
             return [];
         }
-        $this->setTrackingId($this->getTrackingId());
+        $this->setTrackingId((string)Registry::getSession()->getVariable('payPalPaymentProcessId'));
         $headers = [];
         $headers['Content-Type'] = 'application/x-www-form-urlencoded';
         $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
