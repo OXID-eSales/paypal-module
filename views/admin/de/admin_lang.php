@@ -159,6 +159,7 @@ $aLang = [
     'OSC_PAYPAL_STATUS_PENDING'                   => 'steht aus',
     'OSC_PAYPAL_STATUS_PENDING_APPROVAL'          => 'Genehmigung ausstehend',
     'OSC_PAYPAL_STATUS_REFUNDED'                  => 'Erstattet',
+    'OSC_PAYPAL_STATUS_ERROR'                     => 'es ist ein Fehler aufgetreten',
     'OSC_PAYPAL_STATUS_PAYER_ACTION_REQUIRED'     => 'Aktion des Käufers erforderlich',
     'OSC_PAYPAL_PAYMENT_METHOD'                   => 'Zahlungsart',
     'OSC_PAYPAL_COMMENT'                          => 'Kommentar',

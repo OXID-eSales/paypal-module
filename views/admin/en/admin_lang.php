@@ -156,6 +156,7 @@ $aLang = [
     'OSC_PAYPAL_STATUS_PENDING'                   => 'Pending',
     'OSC_PAYPAL_STATUS_PENDING_APPROVAL'          => 'Pending Approval',
     'OSC_PAYPAL_STATUS_REFUNDED'                  => 'Refunded',
+    'OSC_PAYPAL_STATUS_ERROR'                     => 'An error has occurred',
     'OSC_PAYPAL_STATUS_PAYER_ACTION_REQUIRED'     => 'Payer action required',
     'OSC_PAYPAL_PAYMENT_METHOD'                   => 'Payment method',
     'OSC_PAYPAL_COMMENT'                          => 'Comment',
