@@ -280,27 +280,15 @@ class PayPalOrderController extends AdminDetailsController
     /**
      * Template getter getPayPalPaymentStatus
      */
-    public function getPayPalPaymentStatus()
+    public function getPayPalPaymentStatus(): string
     {
-        $paypalOrder = $this->getPayPalCheckoutOrder();
-        $status = $paypalOrder->getCapturePaymentStatus();
-
-
-        if ($paypalOrder->intent === Constants::PAYPAL_ORDER_INTENT_AUTHORIZE){
-            return $status ? 'AUTHORIZED' : 'ERROR';
-        }
-
-        if ($paypalOrder->intent === Constants::PAYPAL_ORDER_INTENT_CAPTURE){
-            return $status ? 'COMPLETED' : 'ERROR';
-        }
-
-        return $status;
+        return $this->getPayPalCheckoutOrder()->getCapturePaymentStatusString();
     }
 
     /**
      * Template getter getPayPalTotalOrderSum
      */
-    public function getPayPalTotalOrderSum()
+    public function getPayPalTotalOrderSum(): string
     {
         return $this->getPayPalCheckoutOrder()->purchase_units[0]->amount->value;
     }
@@ -345,6 +333,49 @@ class PayPalOrderController extends AdminDetailsController
             $refundAmount += (float)$refund->amount->value;
         }
         return $refundAmount;
+    }
+
+    /**
+     * Template getter eligibleForRefund
+     */
+    public function eligibleForRefund(): bool
+    {
+        $status = $this->getCapturePaymentStatusString();
+        $refundAmount = $this->getPayPalRemainingRefundAmount();
+        return  in_array($status, ['CAPTURED', 'PARTIALLY_REFUNDED', 'COMPLETED']) &&
+                $refundAmount > 0.00;
+    }
+    /**
+     * Template getter eligibleForCapture
+     */
+    public function eligibleForCapture(): bool
+    {
+        $status = $this->getCapturePaymentStatusString();
+        return in_array($status, ['AUTHORIZED', 'CREATED']) &&
+            !in_array($status, ['CAPTURED', 'PARTIALLY_REFUNDED', 'REFUNDED', 'PENDING']);
+    }
+
+    public function getCapturePaymentStatusString(): ?string
+    {
+        $paypalOrder = $this->getPayPalCheckoutOrder();
+
+        if ($paypalOrder->intent === \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::INTENT_CAPTURE) {
+            if (!isset($paypalOrder->purchase_units[0]->payments->captures[0]->status)) {
+                return null;
+            }
+
+            return $paypalOrder->purchase_units[0]->payments->captures[0]->status;
+        }
+
+        if ($paypalOrder->intent === \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::INTENT_AUTHORIZE) {
+            if (!isset($paypalOrder->purchase_units[0]->payments->authorizations[0]->status)) {
+                return null;
+            }
+
+            return $paypalOrder->purchase_units[0]->payments->authorizations[0]->status;
+        }
+
+        return null;
     }
 
     /**

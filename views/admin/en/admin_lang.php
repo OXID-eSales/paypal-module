@@ -162,6 +162,7 @@ $aLang = [
     'OSC_PAYPAL_TRANSACTIONID'                    => 'Transaction ID',
     'OSC_PAYPAL_REFUND_AMOUNT'                    => 'Refund amount',
     'OSC_PAYPAL_CONFIRM_REFUND'                   => 'Do you really want to request a refund?',
+    'OSC_PAYPAL_CONFIRM_CAPTURE'                  => 'Do you really want to request a money capture?',
     'OSC_PAYPAL_INVOICE_ID'                       => 'Invoice No',
     'OSC_PAYPAL_NOTE_TO_BUYER'                    => 'Note to buyer',
     'OSC_PAYPAL_REFUND_ALL'                       => 'Refund all',

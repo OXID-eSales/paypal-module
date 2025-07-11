@@ -31,6 +31,7 @@ class WebhookController extends WidgetController
     {
         parent::init();
 
+       // $this->setTrackingId($this->getTrackingId());
         /** @var Logger $logger */
         $logger = $this->getServiceFromContainer(Logger::class);
 

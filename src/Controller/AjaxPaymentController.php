@@ -14,6 +14,7 @@ use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Field;
+use OxidSolutionCatalysts\PayPal\Traits\OrderProcessTrackingTrait;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -38,6 +39,7 @@ class AjaxPaymentController extends ProxyController
 {
     use JsonTrait;
     use ServiceContainer;
+    use OrderProcessTrackingTrait;
 
     private Logger $logger;
 
@@ -52,15 +54,8 @@ class AjaxPaymentController extends ProxyController
     {
         $data = $this->getRequestParameters();
         $payPalOrderId = $data['orderId'];
-
-        /** @var ModuleSettings $moduleSettings */
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-
-        if ($moduleSettings->getPayPalDebugLevel() === 'debug') {
-            $this->logger->log('debug', sprintf('Order with id %s capture', $payPalOrderId));
-        }
-
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();
+        $orderService->setTrackingId($this->getTrackingId());
         $request = new OrderCaptureRequest();
         $capturePaymentForOrder = null;
         try {
@@ -150,12 +145,12 @@ class AjaxPaymentController extends ProxyController
      */
     public function createPayPalOrder(): void
     {
+        $this->startPaymentProcessTracking();
         $data = $this->getRequestParameters();
         $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'];
         $_POST['vaultPayment'] = $data['vaultPayment'] ? "true" : "false";
         $_POST['oscPayPalPaymentTypeForVaulting'] = PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
         $_POST['useVaultedPayment'] = $data['useVaultedPayment'];
-
         $this->addToBasket();
 
         $this->setPayPalPaymentMethod(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
@@ -168,27 +163,31 @@ class AjaxPaymentController extends ProxyController
 
         /** @var ModuleSettings $moduleSettings */
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
-        $intent = OrderRequest::INTENT_AUTHORIZE;
         $config = Registry::getConfig();
-        if ($captureStrategy === 'directly') {
-            $intent = OrderRequest::INTENT_CAPTURE;
-        }
-        $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
+        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
+        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
+        $paymentId = Registry::getSession()->getVariable('paymentid');
+        $intent = $captureStrategy === 'directly' ? OrderRequest::INTENT_CAPTURE : OrderRequest::INTENT_AUTHORIZE;
+        $userAction = $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID ?
+            OrderRequestFactory::USER_ACTION_CONTINUE : OrderRequestFactory::USER_ACTION_PAY_NOW;
+        
+        $response = $paymentService->doCreatePayPalOrder(
             $basket,
             $intent,
-            OrderRequestFactory::USER_ACTION_CONTINUE,
+            $userAction,
             null,
             '',
             '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-            $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession',
-            $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
+            $returnUrl,
+            $cancelUrl,
             false
         );
 
         if ($response->id) {
-            $paymentService = $this->getServiceFromContainer(PaymentService::class);
             $sessionOrderId = $basket->getOrderId();
             $order = oxNew(Order::class);
             $order->load($sessionOrderId);
@@ -464,7 +463,7 @@ class AjaxPaymentController extends ProxyController
         $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'];
 
         $user = $this->getUser();
-        if (!$user->loadActiveUser()) {
+        if ($user && !$user->loadActiveUser()) {
             $this->permissionsCheck();
         }
 
