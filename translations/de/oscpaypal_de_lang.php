@@ -64,4 +64,15 @@ $aLang = [
     'OSC_PAYPAL_DELETE_FAILED'                      => 'Beim Löschen Ihrer Zahlart ist etwas schiefgelaufen.',
     'OSC_RUNNING_PAYPAL_CHECKOUT_SESSION_HINT' => 'Zahlung erfolgt mit PayPal-Zahlart.',
     'OSC_RUNNING_PAYPAL_CHECKOUT_SESSION_HINT_AFREF' => 'Hier zum Bestellabschluss.',
+
+    'OSC_PAYPAL_PAYMENT_PUI'                      => 'Kauf auf Rechnung - Bankdaten',
+    'OSC_PAYPAL_PAYMENT_PUI_REFERENCE'            => 'Verwendungszweck',
+    'OSC_PAYPAL_PAYMENT_PUI_BIC'                  => 'BIC',
+    'OSC_PAYPAL_PAYMENT_PUI_IBAN'                 => 'IBAN',
+    'OSC_PAYPAL_PAYMENT_PUI_BANKNAME'             => 'Bankname',
+    'OSC_PAYPAL_PAYMENT_PUI_ACCOUNTHOLDER'        => 'Kontoinhaber',
+    'OSC_PAYPAL_PAYMENT_PUI_FOLLOW'               => 'In wenigen Minuten erhalten Sie eine weitere eMail mit den Kontodaten für die Überweisung. Bitte haben Sie einen Augenblick Geduld.',
+    'OSC_PAYPAL_PAYMENT_PUI_NOTE'                 => 'Bitte nutzen Sie folgende Daten für die Überweisung der Bestellsumme',
+    'OSC_PAYPAL_PAYMENT_PUI_HEADING'              => 'Zahlungsinformationen',
+
 ];

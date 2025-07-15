@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidEsales\Eshop\Core\Email;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
@@ -91,6 +92,7 @@ abstract class WebhookHandlerBase
         $this->updateStatus(
             $this->getStatusFromResource($eventPayload),
             $paypalOrderModel,
+            $order,
             $orderDetail
         );
 
@@ -166,6 +168,7 @@ abstract class WebhookHandlerBase
     protected function updateStatus(
         string $status,
         PayPalModelOrder $paypalOrderModel,
+        EshopModelOrder $order,
         ?PayPalApiModelOrder $orderDetails
     ): void {
         if (
@@ -177,6 +180,9 @@ abstract class WebhookHandlerBase
             $paypalOrderModel->setPuiIban($puiPaymentDetails->iban);
             $paypalOrderModel->setPuiBankName($puiPaymentDetails->bank_name);
             $paypalOrderModel->setPuiAccountHolderName($puiPaymentDetails->account_holder_name);
+
+            $oxEmail = oxNew(Email::class);
+            $oxEmail->sendPuiInfo($order, $puiPaymentDetails);
         }
 
         $paypalOrderModel->setTransactionType(Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE);
