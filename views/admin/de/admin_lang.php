@@ -8,9 +8,11 @@
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 
-$sLangName = 'Deutsch';
+include_once __DIR__ . '/../../../translations/de/oscpaypal_de_lang.php';
 
-$aLang = [
+$aLang = array_merge(
+    $aLang,
+    [
     'charset'                                     => 'UTF-8',
     'paypal'                                      => 'PayPal',
     'tbclorder_oscpaypal'                         => 'PayPal Checkout',
@@ -183,13 +185,6 @@ $aLang = [
     'OSC_PAYPAL_COUNTRY_CODE'                     => 'Ländercode',
     'OSC_PAYPAL_SHIPPING'                         => 'Versand',
     'OSC_PAYPAL_BILLING'                          => 'Abrechnung',
-    'OSC_PAYPAL_PAYMENT_PUI'                      => 'Kauf auf Rechnung - Bankdaten',
-    'OSC_PAYPAL_PAYMENT_PUI_REFERENCE'            => 'Verwendungszweck',
-    'OSC_PAYPAL_PAYMENT_PUI_BIC'                  => 'BIC',
-    'OSC_PAYPAL_PAYMENT_PUI_IBAN'                 => 'IBAN',
-    'OSC_PAYPAL_PAYMENT_PUI_BANKNAME'             => 'Bankname',
-    'OSC_PAYPAL_PAYMENT_PUI_ACCOUNTHOLDER'        => 'Kontoinhaber',
-    'OSC_PAYPAL_PAYMENT_PUI_NOTE'                 => 'Bitte nutzen Sie folgende Daten für die Überweisung der Bestellsumme',
 
     'OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'     => 'Einstellungen aus dem klassischen PayPal-Modul übernehmen',
     'OSC_PAYPAL_BANNER_TRANSFERREDOLDSETTINGS'     => 'Banner-Einstellungen wurden aus dem klassischen PayPal-Modul übertragen.',
@@ -336,4 +331,5 @@ $aLang = [
     'OSC_PAYPAL_DEBUG_LEVEL_DEBUG'                  => 'Debug',
     'OSC_PAYPAL_DEBUG_LEVEL_ERROR'                  => 'Fehler',
     'HELP_OSC_PAYPAL_DEBUG_LEVEL'                   => 'Steuert die Protokollierungsstufe für PayPal-API-Aufrufe. "Aus" deaktiviert die Protokollierung, "Debug" protokolliert alle Anfragen und Antworten, "Fehler" protokolliert nur Fehler.',
-];
+    ]
+);

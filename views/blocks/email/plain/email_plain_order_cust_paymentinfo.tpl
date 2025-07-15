@@ -1,7 +1,5 @@
-[{if "oscpaypal_pui" == $payment->oxuserpayments__oxpaymentsid->value && $oViewConf->getPuiPaymentInfo()}]
-    [{oxmultilang ident="OSC_PAYPAL_PAYMENT_PUI_NOTE" suffix="COLON"}]
-
-    [{$oViewConf->getPuiPaymentInfo()|regex_replace:'/<br\s*\/?>/i':"\n"}]
+[{if "oscpaypal_pui" == $payment->oxuserpayments__oxpaymentsid->value}]
+    [{oxmultilang ident="OSC_PAYPAL_PAYMENT_PUI_FOLLOW"}]
 [{/if}]
 
 [{$smarty.block.parent}]
