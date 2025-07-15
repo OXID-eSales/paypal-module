@@ -219,6 +219,7 @@ $aLang = [
     'OSC_PAYPAL_BANNER_COLORSCHEMEGRAY'             => 'gray',
     'OSC_PAYPAL_BANNER_COLORSCHEMEMONOCHROME'       => 'monochrome',
     'OSC_PAYPAL_BANNER_COLORSCHEMEGRAYSCALE'        => 'grayscale',
+    'OSC_PAYPAL_CAPTURE_STRATEGY_TITLE'             => 'Capture money strategy',
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME'              => 'PayPal Standard - Capture money',
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME_LABEL'        => 'A deviating collection of money at the time of the order is only possible for PayPal Standard. All other payment methods (incl. PayPal Express) will be capture immediately.',
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME_HELP'         => 'Please note! The authorization of an order is valid for three days. It will be refreshed automatically for a maximum of 29 days after ordering. After that, it is no longer possible to capture the money.',

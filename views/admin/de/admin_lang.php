@@ -220,6 +220,7 @@ $aLang = [
     'OSC_PAYPAL_BANNER_COLORSCHEMEGRAY'             => 'Grau',
     'OSC_PAYPAL_BANNER_COLORSCHEMEMONOCHROME'       => 'Einfarbig',
     'OSC_PAYPAL_BANNER_COLORSCHEMEGRAYSCALE'        => 'Graustufen',
+    'OSC_PAYPAL_CAPTURE_STRATEGY_TITLE'             => 'Strategie zur Gelderfassung',
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME'              => 'PayPal Standard - Geldeinzug',
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME_LABEL'        => 'Nur für PayPal Standard ist ein abweichender Geldeinzug zum Bestellzeitpunkt möglich. Alle anderen Zahlarten (inkl. PayPal Express) werden sofort eingezogen.',
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME_HELP'         => 'Bitte beachten! Die Autorisierung einer Bestellung gilt drei Tage. Sie wird maximal bis 29 Tage nach Bestellung automatisch aufgefrischt. Anschließend ist ein Geldeinzug nicht mehr möglich.',

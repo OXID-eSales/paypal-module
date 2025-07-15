@@ -10,11 +10,14 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 use Exception;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Controller\AjaxPaymentController;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 
 /**
  * Class PaymentGateway
@@ -66,10 +69,17 @@ class PaymentGateway extends PaymentGateway_parent
         return $success;
     }
 
+    /**
+     * @throws \Exception
+     */
     protected function doExecutePayPalExpressPayment(EshopModelOrder $order): bool
     {
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        /** @var ModuleSettings $moduleSettings */
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
+        $intent = $captureStrategy === 'directly' ? OrderRequest::INTENT_CAPTURE : OrderRequest::INTENT_AUTHORIZE;
         $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
         $success = false;
 
@@ -88,19 +98,33 @@ class PaymentGateway extends PaymentGateway_parent
                 $logger->log('error', 'Error on order patch call.', [$exception]);
             }
 
-            // Capture Order
-            try {
-                // At this point we only trigger the capture. We find out that order was really captured via the
-                // CHECKOUT.ORDER.COMPLETED webhook, where we mark the order as paid
-                $paymentService->doCapturePayPalOrder($order, $checkoutOrderId, $sessionPaymentId);
-                // success means at this point, that we triggered the capture without errors
-                $success = true;
-            } catch (Exception $exception) {
-                $logger->log('error', 'Error on order capture call.', [$exception]);
-            }
+        if($intent === OrderRequest::INTENT_AUTHORIZE){
+            $paymentId = (string) $paymentService->getSessionPaymentId();
+            $result = AjaxPaymentController::doAuthorizePayment($checkoutOrderId, $order->getId(), $paymentId);
 
-            // destroy PayPal-Session
-            PayPalSession::unsetPayPalOrderId();
+            if($result['paymentStatus'] === 'success' && $result['status'] === 'success'){
+                $success = true;
+                PayPalSession::unsetPayPalSession();
+            } else {
+                $logger->log('error', 'Error on order authorization call.', [$result]);
+            }
+        }
+
+        if($intent === OrderRequest::INTENT_CAPTURE){
+                // Capture Order
+                try {
+                    // At this point we only trigger the capture. We find out that order was really captured via the
+                    // CHECKOUT.ORDER.COMPLETED webhook, where we mark the order as paid
+                    $paymentService->doCapturePayPalOrder($order, $checkoutOrderId, $sessionPaymentId);
+                    // success means at this point, that we triggered the capture without errors
+                    $success = true;
+                } catch (Exception $exception) {
+                    $logger->log('error', 'Error on order capture call.', [$exception]);
+                }
+
+                // destroy PayPal-Session
+                PayPalSession::unsetPayPalSession();
+            }
         }
 
         return $success;
