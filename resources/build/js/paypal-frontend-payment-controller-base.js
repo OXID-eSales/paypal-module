@@ -173,7 +173,7 @@
         this.handlePaymentAuthorization = async function (details) {
             PayPalPayment.setCreatePayPalOrderResponse(details);
             const patchResult = await PayPalPayment.patchOrder(details);
-debugger
+
             if (patchResult.error) {
                 console.error('Failed to patch order:', patchResult.error);
                 PayPalPayment.handleError();
