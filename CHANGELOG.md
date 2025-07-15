@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fix: Locales for PP-Buttons are editable again
 - Fix: captured order could not be changed in the backend
-- use PayPal-Client v2.0.20
+- [0007807](https://bugs.oxid-esales.com/view.php?id=7807): Fix: cleanUpNotFinishedOrders() check for cancellation status
 
 ## [2.5.3] - 2025-04-04
 
