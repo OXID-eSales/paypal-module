@@ -727,17 +727,6 @@ class Payment
         return (bool)$payPalOrderId;
     }
 
-    public function setPuiPaymentInfo(EshopModelOrder $order, string $paypalOrderId): void
-    {
-        $puiPaymentDetails = $order->getPayPalCheckoutOrder($paypalOrderId)->payment_source->pay_upon_invoice ?? null;
-        if ($puiPaymentDetails) {
-            $this->eshopSession->setVariable(
-                'additionalPuiInformation',
-                $this->getBankDataFromPaymentDetails($puiPaymentDetails)
-            );
-        }
-    }
-
     public function setPaymentExecutionError(string $text): void
     {
         $this->paymentExecutionError = $text;
@@ -899,44 +888,5 @@ class Payment
         }
 
         return $customId;
-    }
-    
-    private function getBankDataFromPaymentDetails($puiPaymentDetails): string
-    {
-        $languageObject = Registry::getLang();
-
-        $docBlock = '%s: %s<br />';
-
-        $bankData = sprintf(
-            $docBlock,
-            $languageObject->translateString('OSC_PAYPAL_PAYMENT_PUI_REFERENCE'),
-            $puiPaymentDetails->payment_reference
-        );
-
-        $bankData .= sprintf(
-            $docBlock,
-            $languageObject->translateString('OSC_PAYPAL_PAYMENT_PUI_BIC'),
-            $puiPaymentDetails->bic
-        );
-
-        $bankData .= sprintf(
-            $docBlock,
-            $languageObject->translateString('OSC_PAYPAL_PAYMENT_PUI_IBAN'),
-            $puiPaymentDetails->iban
-        );
-
-        $bankData .= sprintf(
-            $docBlock,
-            $languageObject->translateString('OSC_PAYPAL_PAYMENT_PUI_BANKNAME'),
-            $puiPaymentDetails->bank_name
-        );
-
-        $bankData .= sprintf(
-            $docBlock,
-            $languageObject->translateString('OSC_PAYPAL_PAYMENT_PUI_ACCOUNTHOLDER'),
-            $puiPaymentDetails->account_holder_name
-        );
-
-        return $bankData;
     }
 }
