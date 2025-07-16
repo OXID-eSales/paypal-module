@@ -47,6 +47,7 @@ $aLang = [
     'OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'        => 'Ihre Bestellung wird geprüft, das kann bis zu 60 Sekunden dauern. Bitte kurz warten und dann erneut auf "zahlungspflichtig bestellen" klicken.',
     'OSC_PAYPAL_LOG_IN_TO_CONTINUE'                 => 'Bitte loggen Sie sich ein, um die Bestellung abzuschliessen.',
     'OSC_PAYPAL_3DSECURITY_ERROR'                   => 'Die Sicherheitsüberprüfung ist fehlgeschlagen, bitte erneut versuchen.',
+    'OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR'         => 'Die Zahlungsautorisierung wurde abgelehnt. Bitte überprüfen Sie Ihre Zahlungsdaten und versuchen Sie es erneut.',
     'OSC_PAYPAL_ORDEREXECUTION_ERROR'               => 'Der Bezahlvorgang wurde abgebrochen.',
     'OSCPAYPAL_KILL_EXPRESS_SESSION_REASON'         => 'Der Warenkorb wurde geändert. Aus diesem Grund wurde der aktive PayPal-Zahlvorgang automatisch abgebrochen. Bitte starten Sie die Zahlung mit PayPal erneut. Es wurde noch kein Geld von PayPal eingezogen.',
 

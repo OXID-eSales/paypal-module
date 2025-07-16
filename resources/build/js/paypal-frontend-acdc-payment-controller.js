@@ -19,7 +19,11 @@
                 'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId'),
                 'vaultPayment': PayPalPayment.currentOrder.vaultPayment
             });
-            if (undefined !== result.error) {
+
+            if (result.status === 'error' ){
+                PayPalPayment.showErrorMessage(result.message);
+                PayPalPayment.handleError(result.message);
+
                 return false;
             }
 

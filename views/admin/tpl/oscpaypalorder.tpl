@@ -231,7 +231,7 @@
             <p><b>[{oxmultilang ident="OSC_PAYPAL_ACTIONS" suffix="COLON"}]</b></p>
             <form action="[{$oViewConf->getSelfLink()}]" method="post">
                 [{$oViewConf->getHiddenSid()}]
-                <input type="hidden" name="fnc" value="capturePayPalStandard">
+                <input type="hidden" name="fnc" value="capturePayPalOrder">
                 <input type="hidden" name="cl" value="oscpaypalorder">
                 <input type="hidden" name="oxid" value="[{$oxid}]">
                 <input type="hidden" name="language" value="[{$actlang}]">

@@ -706,9 +706,9 @@ class Payment
         // Get PayPal order details
         $payPalOrder = $this->fetchOrderFields($checkoutOrderId);
         $verify3DResult = $this->verify3D($paymentId, $payPalOrder);
+        $language = Registry::getLang();
 
         if (!$verify3DResult) {
-            $language = Registry::getLang();
             return [
                 'status' => 'error',
                 'message' => $language->translateString('OSC_PAYPAL_3DSECURITY_ERROR')
@@ -733,6 +733,14 @@ class Payment
             }
 
             $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
+
+            if($authorization->status === 'DENIED'){
+                return [
+                    'status' => 'error',
+                    'message' => $language->translateString('OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR')
+                ];
+            }
+
             $authorizationId = $authorization->id;
 
             // check if we need a reauthorization

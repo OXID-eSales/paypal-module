@@ -436,6 +436,10 @@
         };
 
         this.showErrorMessage = function (message, className) {
+            if(message.length === 0) {
+                message = PayPalI18n.OSC_PAYPAL_UNKNOWN_ERROR;
+            }
+
             className = className || '';
             const panelBody = document.querySelector("#card_container").parentElement;
 
