@@ -68,30 +68,35 @@
 
     [{block name="email_html_pui_paymentinfo_paymentbody"}]
         <p>[{oxmultilang ident="OSC_PAYPAL_PAYMENT_PUI_NOTE" suffix="COLON"}]</p>
-        <table border="0" cellspacing="0" cellpadding="0" width="100%">
+        <table class="orderarticles" border="0" cellspacing="0" cellpadding="0" width="100%">
             <tbody>
                 <tr valign="top">
-                    <th align="right" class="text-right">[{oxmultilang ident="OSC_PAYPAL_PAYMENT_PUI_IBAN" suffix="COLON"}]</th>
+                    <th align="right" class="text-right">[{oxmultilang ident="OSC_PAYPAL_PAYMENT_PUI_IBAN"}]</th>
                     <td>[{$puiPaymentDetails->iban}]</td>
                 </tr>
                 <tr valign="top">
-                    <th align="right" class="text-right">[{oxmultilang ident="OSC_PAYPAL_PAYMENT_PUI_BIC" suffix="COLON"}]</th>
+                    <th align="right" class="text-right">[{oxmultilang ident="OSC_PAYPAL_PAYMENT_PUI_BIC"}]</th>
                     <td>[{$puiPaymentDetails->bic}]</td>
                 </tr>
                 <tr valign="top">
-                    <th align="right" class="text-right">[{oxmultilang ident="OSC_PAYPAL_PAYMENT_PUI_BANKNAME" suffix="COLON"}]</th>
+                    <th align="right" class="text-right">[{oxmultilang ident="OSC_PAYPAL_PAYMENT_PUI_BANKNAME"}]</th>
                     <td>[{$puiPaymentDetails->bank_name}]</td>
                 </tr>
                 <tr valign="top">
-                    <th align="right" class="text-right">[{oxmultilang ident="OSC_PAYPAL_PAYMENT_PUI_ACCOUNTHOLDER" suffix="COLON"}]</th>
+                    <th align="right" class="text-right">[{oxmultilang ident="OSC_PAYPAL_PAYMENT_PUI_ACCOUNTHOLDER"}]</th>
                     <td>[{$puiPaymentDetails->account_holder_name}]</td>
                 </tr>
                 <tr valign="top">
-                    <th align="right" class="text-right">[{oxmultilang ident="OSC_PAYPAL_PAYMENT_PUI_REFERENCE" suffix="COLON"}]</th>
+                    <th align="right" class="text-right">[{oxmultilang ident="OSC_PAYPAL_PAYMENT_PUI_REFERENCE"}]</th>
                     <td>[{$puiPaymentDetails->payment_reference}]</td>
+                </tr>
+                <tr valign="top">
+                    <th align="right" class="text-right">[{oxmultilang ident="GRAND_TOTAL"}]</th>
+                    <td>[{oxprice price=$order->oxorder__oxtotalbrutsum->value currency=$currency}]</td>
                 </tr>
             </tbody>
         </table>
+        <br />
     [{/block}]
 
     [{block name="email_html_pui_paymentinfo_oxordernr"}]

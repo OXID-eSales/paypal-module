@@ -49,6 +49,7 @@ class Email extends Email_parent
 
         $this->setViewData("order", $order);
         $this->setViewData("puiPaymentDetails", $puiPaymentDetails);
+        $this->setViewData("currency", $order->getOrderCurrency());
 
         // create messages
         $renderer = $this->getRenderer();
