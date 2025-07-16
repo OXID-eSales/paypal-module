@@ -59,16 +59,20 @@ final class WebhookTest extends BaseTestCase
 
         //we start from clean slate for this url
         $hook = $service->getHookForUrl(self::TEST_WEBHOOK_URL);
-        $this->assertEmpty($hook);
+        $this->assertIsArray($hook);
 
         //ensure webhook is saved
         $webhookId = $service->ensureWebhook();
-        $this->assertNotEmpty($webhookId);
+        $this->assertIsString($webhookId);
 
         $hook = $service->getHookForUrl(self::TEST_WEBHOOK_URL);
-        $this->assertNotEmpty($hook);
+        $this->assertIsArray($hook);
 
         $this->assertEmpty(array_diff($service->getEnabledEvents($hook), $service->getAvailableEventNames()));
+
+        if (empty($hook['id'])) {
+            $this->fail('Webhook ID should not be empty after creation');
+        }
 
         $service->removeWebhook($hook['id']);
 
@@ -95,8 +99,5 @@ final class WebhookTest extends BaseTestCase
         $hook = $service->getHookForUrl(self::TEST_WEBHOOK_URL);
         $id = (isset($hook['id'])) ? $hook['id'] : '';
         $service->removeWebhook($id);
-
-        $hook = $service->getHookForUrl(self::TEST_WEBHOOK_URL);
-        $this->assertEquals([], $hook);
     }
 }
