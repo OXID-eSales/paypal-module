@@ -13,14 +13,13 @@ use OxidSolutionCatalysts\PayPal\Exception\CardValidation;
 
 /**
  * Recommended actions according to
- * PayPal recomendations https://developer.paypal.com/docs/checkout/advanced/customize/3d-secure/response-parameters/
+ * PayPal recommendations https://developer.paypal.com/docs/checkout/advanced/customize/3d-secure/response-parameters/
  */
 class SCAValidator implements SCAValidatorInterface
 {
     public const LIABILITY_SHIFT_POSSIBLE = 'POSSIBLE';
+    public const LIABILITY_SHIFT_YES = 'YES';
     public const LIABILITY_SHIFT_NO = 'NO';
-    public const LIABILITY_SHIFT_UNKNOWN = 'UNKNOWN';
-
     public const ENROLLMENT_STATUS_YES     = 'Y';
     public const ENROLLMENT_STATUS_NO      = 'N';
     public const ENROLLMENT_STATUS_UNKNOWN = 'U';
@@ -30,32 +29,12 @@ class SCAValidator implements SCAValidatorInterface
     public const AUTH_STATUS_FAILED    = 'N';
     public const AUTH_STATUS_REJECTED  = 'R';
     public const AUTH_STATUS_ATTEMPTED = 'A';
+    public const AUTH_STATUS_UNAVAILABLE = 'U';
+    public const AUTH_STATUS_CHALLENGE = 'C';
 
-    private $okToProceed = [
-        [
-            'enroll' => self::ENROLLMENT_STATUS_YES,
-            'liability' => self::LIABILITY_SHIFT_POSSIBLE,
-            'auth' => self::AUTH_STATUS_SUCCESS
-        ],
-        [
-            'enroll' => self::ENROLLMENT_STATUS_YES,
-            'liability' => self::LIABILITY_SHIFT_POSSIBLE,
-            'auth' => self::AUTH_STATUS_ATTEMPTED,
-        ],
-        [
-            'enroll' => self::ENROLLMENT_STATUS_NO,
-            'liability' => self::LIABILITY_SHIFT_NO
-        ],
-        [
-            'enroll' => self::ENROLLMENT_STATUS_UNKNOWN,
-            'liability' => self::LIABILITY_SHIFT_NO
-        ],
-        [
-            'enroll' => self::ENROLLMENT_STATUS_BYPASS,
-            'liability' => self::LIABILITY_SHIFT_NO
-        ],
-    ];
-
+    /**
+     * @throws CardValidation
+     */
     public function isCardUsableForPayment(PayPalApiOrder $order): bool
     {
         $authenticationResult = $this->getCardAuthenticationResult($order);
@@ -73,17 +52,7 @@ class SCAValidator implements SCAValidatorInterface
 
         $liabilityShift = (string) $authenticationResult->liability_shift;
 
-        $combi = [
-            'enroll' => $enrollmentStatus,
-            'liability' => $liabilityShift
-        ];
-        if ($authStatus) {
-            $combi['auth'] = $authStatus;
-        }
-
-        $isOk = in_array($combi, $this->okToProceed) ? true : false;
-
-        return $isOk;
+        return $this->shouldContinueAuthorization($enrollmentStatus, $authStatus, $liabilityShift);
     }
 
     public function getCardAuthenticationResult(PayPalApiOrder $order): ?AuthenticationResponse
@@ -101,5 +70,52 @@ class SCAValidator implements SCAValidatorInterface
         }
 
         return $order->payment_source->card->authentication_result;
+    }
+
+    /**
+     * Determines whether to continue with authorization based on enrollment and authentication status
+     */
+    protected function shouldContinueAuthorization(
+        string $enrollmentStatus,
+        string $authStatus,
+        string $liabilityShift
+    ): bool {
+        // Normalize inputs to uppercase
+        $enrollmentStatus = strtoupper($enrollmentStatus);
+        $authStatus = strtoupper($authStatus);
+        $liabilityShift = strtoupper($liabilityShift);
+
+        switch ($enrollmentStatus) {
+            case self::ENROLLMENT_STATUS_YES:
+                return $this->handleEnrolledCase($authStatus, $liabilityShift);
+
+            case self::ENROLLMENT_STATUS_NO:
+            case self::ENROLLMENT_STATUS_UNKNOWN:
+            case self::ENROLLMENT_STATUS_BYPASS:
+                return $liabilityShift === self::LIABILITY_SHIFT_NO;
+
+            default:
+                return false;
+        }
+    }
+
+    private function handleEnrolledCase(string $authStatus, string $liabilityShift): bool
+    {
+        switch ($authStatus) {
+            case self::AUTH_STATUS_SUCCESS:
+                return $liabilityShift === self::LIABILITY_SHIFT_POSSIBLE ||
+                    $liabilityShift === self::LIABILITY_SHIFT_YES;
+
+            case self::AUTH_STATUS_ATTEMPTED:
+                return $liabilityShift === self::LIABILITY_SHIFT_POSSIBLE;
+
+            case self::AUTH_STATUS_FAILED:
+            case self::AUTH_STATUS_REJECTED:
+            case self::AUTH_STATUS_UNAVAILABLE:
+            case self::AUTH_STATUS_CHALLENGE:
+                return false;
+        }
+
+        return false;
     }
 }

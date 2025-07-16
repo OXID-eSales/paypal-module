@@ -32,6 +32,7 @@ use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthorizationWithAdditionalData;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ConfirmOrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderAuthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
@@ -197,7 +198,7 @@ class Payment
             $status = $response->status ?: '';
         }
 
-        $order = oxNew(\OxidEsales\Eshop\Application\Model\Order::class);
+        $order = oxNew(EshopModelOrder::class);
         $order->load($basket->getOrderId());
 
         // patch the order only if paypalOrderId exists
@@ -679,6 +680,101 @@ class Payment
         return $result;
     }
 
+    /**
+     * Perform the authorization process for a PayPal payment
+     *
+     * @param string $checkoutOrderId The PayPal order ID
+     * @param string|null $shopOrderId The shop order ID
+     * @param string $paymentId The payment ID
+     * @return array The result of the authorization process
+     * @throws Exception
+     */
+    public function doAuthorizePayment(string $checkoutOrderId, ?string $shopOrderId, string $paymentId): array
+    {
+        // Load order if shopOrderId is provided
+        $order = null;
+        if ($shopOrderId) {
+            $order = oxNew(EshopModelOrder::class);
+            $order->load($shopOrderId);
+        }
+
+        /** @var ApiPaymentService $apiPaymentService */
+        $apiPaymentService = Registry::get(ServiceFactory::class)->getPaymentService();
+        /** @var ApiOrderService $orderService */
+        $orderService = Registry::get(ServiceFactory::class)->getOrderService();
+
+        // Get PayPal order details
+        $payPalOrder = $this->fetchOrderFields($checkoutOrderId);
+        $verify3DResult = $this->verify3D($paymentId, $payPalOrder);
+
+        if (!$verify3DResult) {
+            $language = Registry::getLang();
+            return [
+                'status' => 'error',
+                'message' => $language->translateString('OSC_PAYPAL_3DSECURITY_ERROR')
+            ];
+        }
+
+        if ($payPalOrder->intent === Constants::PAYPAL_ORDER_INTENT_AUTHORIZE) {
+            // if order approved then authorize
+            if (
+                $payPalOrder->status === PayPalApiOrder::STATUS_APPROVED
+                || $payPalOrder->status === PayPalApiOrder::STATUS_CREATED
+            ) {
+                $request = new OrderAuthorizeRequest();
+                $payPalOrder = $orderService->authorizePaymentForOrder(
+                    '',
+                    $checkoutOrderId,
+                    $request,
+                    '',
+                    Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+                );
+                $payPalOrder->intent = Constants::PAYPAL_ORDER_INTENT_AUTHORIZE;
+            }
+
+            $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
+            $authorizationId = $authorization->id;
+
+            // check if we need a reauthorization
+            $timeAuthorizationValidity = time()
+                - strtotime($payPalOrder->update_time ?? '')
+                + Constants::PAYPAL_AUTHORIZATION_VALIDITY;
+            if ($timeAuthorizationValidity <= 0) {
+                $reAuthorizeRequest = new ReauthorizeRequest();
+                $apiPaymentService->reauthorizeAuthorizedPayment(
+                    $authorizationId,
+                    $reAuthorizeRequest,
+                    Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+                );
+            }
+
+            // track authorization if order is available
+            if ($order) {
+                $this->trackPayPalOrder(
+                    $shopOrderId,
+                    $checkoutOrderId,
+                    (string)$order->getFieldData('oxpaymenttype'),
+                    $authorization->status,
+                    $authorizationId,
+                    Constants::PAYPAL_TRANSACTION_TYPE_AUTH
+                );
+            }
+
+            $result = $this->fetchOrderFields($checkoutOrderId);
+
+            return [
+                'paymentStatus' => $payPalOrder->getCapturePaymentStatus() ? 'success' : 'error',
+                'status' => 'success',
+                'payPalOrder' => $result
+            ];
+        } else {
+            return [
+                'status' => 'error',
+                'message' => 'Order intent is not AUTHORIZE'
+            ];
+        }
+    }
+
     public function doExecutePuiPayment(
         EshopModelOrder $order,
         EshopModelBasket $basket,
@@ -846,7 +942,7 @@ class Payment
     }
 
     /**
-     * @param \OxidEsales\Eshop\Application\Model\Order|null $order
+     * @param EshopModelOrder|null $order
      * @return mixed|null
      */
     public function getCustomIdParameter(?EshopModelOrder $order): string

@@ -7,8 +7,8 @@
             paypal: null,
             vaultPayment: false
         };
-
         this.currentOrder = null;
+        this.currentError = null;
         this.reactOnPayPalOverlayClosed = false;
 
         this.getPaymentData = function () {
@@ -89,9 +89,27 @@
 
         // Common order processing methods
         this.patchOrder = async function (details) {
+            const shopOrderId = PayPalPayment.getCurrentOrderOxid();
+            const payPalOrderId = PayPalPayment.getCurrentPayPalOrderId();
+
+            if (!shopOrderId) {
+                console.error('Missing shop order ID for order patching');
+                return { error: 'Missing shop order ID' };
+            }
+
+            if (!payPalOrderId) {
+                console.error('Missing PayPal order ID for order patching');
+                return { error: 'Missing PayPal order ID' };
+            }
+
+            if (!PayPalPayment.currentOrder || typeof PayPalPayment.currentOrder.vaultPayment === 'undefined') {
+                console.error('Missing vault payment information for order patching');
+                return { error: 'Missing vault payment information' };
+            }
+
             return await PayPalPayment.backendRequest('shopOrderPatchingUrl', {}, {
-                'shopOrderId': PayPalPayment.getCurrentOrderOxid(),
-                'payPalOrderId': PayPalPayment.getCurrentPayPalOrderId(),
+                'shopOrderId': shopOrderId,
+                'payPalOrderId': payPalOrderId,
                 'vaultPayment': PayPalPayment.currentOrder.vaultPayment
             });
         };
@@ -135,7 +153,15 @@
         };
 
         this.afterCaptureOrder = async function (details) {
-            const {paypalOrderDetails} = await PayPalPayment.patchOrder(details);
+            const result = await PayPalPayment.patchOrder(details);
+
+            if (result.error) {
+                console.error('Failed to patch order:', result.error);
+                PayPalPayment.handleError();
+                return;
+            }
+
+            const {paypalOrderDetails} = result;
 
             if (paypalOrderDetails && paypalOrderDetails.payment_source) {
                 await PayPalPayment.vaultPayment(paypalOrderDetails);
@@ -146,7 +172,15 @@
 
         this.handlePaymentAuthorization = async function (details) {
             PayPalPayment.setCreatePayPalOrderResponse(details);
-            const {paypalOrderDetails} = await PayPalPayment.patchOrder(details);
+            const patchResult = await PayPalPayment.patchOrder(details);
+
+            if (patchResult.error) {
+                console.error('Failed to patch order:', patchResult.error);
+                PayPalPayment.handleError();
+                return;
+            }
+
+            const {paypalOrderDetails} = patchResult;
 
             if (PayPalPayment.currentOrder.vaultPayment && paypalOrderDetails && paypalOrderDetails.payment_source) {
                 await PayPalPayment.vaultPayment(paypalOrderDetails);
@@ -165,6 +199,7 @@
         this.authorizeOrder = async function (data) {
             const orderId = data.id || PayPalPayment.getCurrentPayPalOrderId();
             const shopOrderId = PayPalPayment.getCurrentOrderOxid();
+            const paymentId = PayPalPayment.getConfigValue('paymentId');
 
             if (!orderId) {
                 console.error('No PayPal order ID available for authorization');
@@ -174,7 +209,8 @@
             try {
                 const result = await PayPalPayment.backendRequest('shopOrderAuthorizeUrl', {}, {
                     'orderId': orderId,
-                    'shopOrderId': shopOrderId
+                    'shopOrderId': shopOrderId,
+                    'paymentId': paymentId
                 });
 
                 if (result.status !== 'success') {
@@ -397,6 +433,37 @@
                 PayPalPayment.getConfigValue('buttonSelector').split('#').reverse()[0]
             );
             PayPalPayment.addOverlay(submitButton.parentElement);
+        };
+
+        this.showErrorMessage = function (message, className) {
+            className = className || '';
+            const panelBody = document.querySelector("#card_container").parentElement;
+
+            // Remove existing error if present
+            this.removeErrorMessage(className);
+            PayPalPayment.currentError = message;
+            // Create and display a new error message
+            const errorMessage = document.createElement("div");
+            errorMessage.className = "error-message alert alert-danger " + className;
+            errorMessage.textContent = message;
+
+            panelBody.prepend(errorMessage);
+
+            errorMessage.scrollIntoView({
+                behavior: 'smooth'
+            });
+        };
+
+        this.removeErrorMessage = function (className) {
+            className = className || '';
+            const panelBody = document.querySelector("#card_container").parentElement;
+            if (panelBody) {
+                const existingError = panelBody.querySelector(".error-message" + (className ? '.' + className : ''));
+                if (existingError) {
+                    existingError.remove();
+                }
+            }
+            PayPalPayment.currentError = null;
         };
 
         // Common initialization

@@ -28,12 +28,8 @@ use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderAuthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Payments\ReauthorizeRequest;
-use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
-use OxidSolutionCatalysts\PayPalApi\Service\Payments as ApiPaymentService;
 
 class AjaxPaymentController extends ProxyController
 {
@@ -78,7 +74,7 @@ class AjaxPaymentController extends ProxyController
 
             $this->outputJson([
                 'status' => 'error',
-                'error' => $translatedErrorMessage
+                'message' => $translatedErrorMessage
             ]);
         }
         $sessionOrderId = (string)Registry::getSession()->getVariable('sess_challenge');
@@ -173,7 +169,7 @@ class AjaxPaymentController extends ProxyController
         $intent = $captureStrategy === 'directly' ? OrderRequest::INTENT_CAPTURE : OrderRequest::INTENT_AUTHORIZE;
         $userAction = $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID ?
             OrderRequestFactory::USER_ACTION_CONTINUE : OrderRequestFactory::USER_ACTION_PAY_NOW;
-        
+
         $response = $paymentService->doCreatePayPalOrder(
             $basket,
             $intent,
@@ -325,7 +321,8 @@ class AjaxPaymentController extends ProxyController
                 $this->logger->log('error', sprintf($message));
             }
             $this->outputJson([
-                'status' => 'error'
+                'status' => 'error',
+                'message' => $message
             ]);
         }
     }
@@ -395,7 +392,6 @@ class AjaxPaymentController extends ProxyController
         $oOrder = oxNew(Order::class);
         $oOrder->load($shopOrderId);
         $basket = Registry::getSession()->getBasket();
-        $basketUser = $basket ? $basket->getBasketUser(): null;
 
         if ($cancelSession) {
             $this->outputJson([
@@ -550,6 +546,10 @@ class AjaxPaymentController extends ProxyController
         $data = $this->getRequestParameters();
         $checkoutOrderId = $data['orderId'];
         $shopOrderId = $data['shopOrderId'] ?? null;
+        $paymentId = $data['paymentId'] ?? Registry::getSession()->getVariable('paymentid');
+
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
         /** @var ModuleSettings $moduleSettings */
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
@@ -559,83 +559,8 @@ class AjaxPaymentController extends ProxyController
         }
 
         try {
-            /** @var PaymentService $paymentService */
-            $paymentService = $this->getServiceFromContainer(PaymentService::class);
-
-            // Load order if shopOrderId is provided
-            $order = null;
-            if ($shopOrderId) {
-                $order = oxNew(Order::class);
-                $order->load($shopOrderId);
-            }
-
-            /** @var ApiPaymentService $apiPaymentService */
-            $apiPaymentService = Registry::get(ServiceFactory::class)->getPaymentService();
-            /** @var ApiOrderService $orderService */
-            $orderService = Registry::get(ServiceFactory::class)->getOrderService();
-
-            // Get PayPal order details
-            $payPalOrder = $paymentService->fetchOrderFields($checkoutOrderId);
-
-            if ($payPalOrder->intent === Constants::PAYPAL_ORDER_INTENT_AUTHORIZE) {
-                // if order approved then authorize
-                if (
-                    $payPalOrder->status === PayPalApiOrder::STATUS_APPROVED
-                    || $payPalOrder->status === PayPalApiOrder::STATUS_CREATED
-
-                ) {
-                    $request = new OrderAuthorizeRequest();
-                    $payPalOrder = $orderService->authorizePaymentForOrder(
-                        '',
-                        $checkoutOrderId,
-                        $request,
-                        '',
-                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
-                    );
-                    $payPalOrder->intent = Constants::PAYPAL_ORDER_INTENT_AUTHORIZE;
-                }
-
-                $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
-                $authorizationId = $authorization->id;
-
-                // check if we need a reauthorization
-                $timeAuthorizationValidity = time()
-                    - strtotime($payPalOrder->update_time ?? '')
-                    + Constants::PAYPAL_AUTHORIZATION_VALIDITY;
-                if ($timeAuthorizationValidity <= 0) {
-                    $reAuthorizeRequest = new ReauthorizeRequest();
-                    $apiPaymentService->reauthorizeAuthorizedPayment(
-                        $authorizationId,
-                        $reAuthorizeRequest,
-                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
-                    );
-                }
-
-                // track authorization if order is available
-                if ($order) {
-                    $paymentService->trackPayPalOrder(
-                        $shopOrderId,
-                        $checkoutOrderId,
-                        (string)$order->getFieldData('oxpaymenttype'),
-                        $authorization->status,
-                        $authorizationId,
-                        Constants::PAYPAL_TRANSACTION_TYPE_AUTH
-                    );
-                }
-
-                $result = $paymentService->fetchOrderFields($checkoutOrderId);
-
-                $this->outputJson([
-                    'paymentStatus' => $payPalOrder->getCapturePaymentStatus() ? 'success' : 'error',
-                    'status' => 'success',
-                    'payPalOrder' => $result
-                ]);
-            } else {
-                $this->outputJson([
-                    'status' => 'error',
-                    'message' => 'Order intent is not AUTHORIZE'
-                ]);
-            }
+            $result = $paymentService->doAuthorizePayment($checkoutOrderId, $shopOrderId, $paymentId);
+            $this->outputJson($result);
         } catch (Exception $exception) {
             if ($moduleSettings->getPayPalDebugLevel() === 'debug') {
                 $this->logger->log('debug', 'Error during payment authorization.', [$exception->getMessage()]);
