@@ -20,6 +20,7 @@ use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Application\Model\Payment;
 use OxidEsales\Eshop\Application\Model\PaymentGateway;
+use OxidEsales\Eshop\Core\Email;
 use OxidEsales\Eshop\Core\InputValidator;
 use OxidEsales\Eshop\Core\ShopControl;
 use OxidEsales\Eshop\Core\ViewConfig;
@@ -41,6 +42,7 @@ use OxidSolutionCatalysts\PayPal\Controller\PayPalVaultingController;
 use OxidSolutionCatalysts\PayPal\Core\InputValidator as PayPalInputValidator;
 use OxidSolutionCatalysts\PayPal\Core\ShopControl as PayPalShopControl;
 use OxidSolutionCatalysts\PayPal\Core\ViewConfig as PayPalViewConfig;
+use OxidSolutionCatalysts\PayPal\Core\Email as PayPalEmail;
 use OxidSolutionCatalysts\PayPal\Model\Article as PayPalArticle;
 use OxidSolutionCatalysts\PayPal\Model\Basket as PayPalBasket;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrder;
@@ -66,7 +68,7 @@ $aModule = [
         'en' => 'Use of the online payment service from PayPal. Documentation: <a href="https://docs.oxid-esales.com/modules/paypal-checkout/en/latest/" target="_blank">PayPal Checkout</a>'
     ],
     'thumbnail' => 'out/img/paypal.png',
-    'version' => '2.6.0-rc.15',
+    'version' => '2.6.0-rc.16',
     'author' => 'OXID eSales AG',
     'url' => 'https://www.oxid-esales.com',
     'email' => 'info@oxid-esales.com',
@@ -75,6 +77,7 @@ $aModule = [
         InputValidator::class => PayPalInputValidator::class,
         ShopControl::class => PayPalShopControl::class,
         ViewConfig::class => PayPalViewConfig::class,
+        Email::class => PayPalEmail::class,
         Order::class => PayPalOrder::class,
         User::class => PayPalUser::class,
         Basket::class => PayPalBasket::class,
@@ -152,6 +155,10 @@ $aModule = [
         'modules/osc/paypal/account_vaulting_card.tpl'        => 'osc/paypal/views/tpl/shared/page/account/account_vaulting_card.tpl',
         'modules/osc/paypal/vaultedpaymentsources_flow.tpl'   => 'osc/paypal/views/tpl/flow/vaulting/vaultedpaymentsources.tpl',
         'modules/osc/paypal/vaultedpaymentsources_wave.tpl'   => 'osc/paypal/views/tpl/wave/vaulting/vaultedpaymentsources.tpl',
+
+        'modules/osc/paypal/email/html/pui_paymentinfo.tpl' => 'osc/paypal/views/tpl/shared/email/html/pui_paymentinfo.tpl',
+        'modules/osc/paypal/plain/html/pui_paymentinfo.tpl' => 'osc/paypal/views/tpl/shared/plain/html/pui_paymentinfo.tpl',
+
     ],
     'events' => [
         'onActivate' => '\OxidSolutionCatalysts\PayPal\Core\Events\Events::onActivate',
@@ -268,6 +275,17 @@ $aModule = [
             'template' => 'widget/minibasket/minibasket.tpl',
             'block' => 'dd_layout_page_header_icon_menu_minibasket_functions',
             'file' => '/views/blocks/widget/minibasket/dd_layout_page_header_icon_menu_minibasket_functions.tpl',
+        ],
+        //email
+        [
+            'template' => 'email/plain/order_cust.tpl',
+            'block' => 'email_plain_order_cust_paymentinfo',
+            'file' => 'views/blocks/email/plain/email_plain_order_cust_paymentinfo.tpl'
+        ],
+        [
+            'template' => 'email/html/order_cust.tpl',
+            'block' => 'email_html_order_cust_paymentinfo',
+            'file' => 'views/blocks/email/html/email_html_order_cust_paymentinfo.tpl'
         ],
     ],
     'settings' => [

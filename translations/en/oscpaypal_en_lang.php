@@ -64,4 +64,14 @@ $aLang = [
     'OSCPAYPAL_KILL_EXPRESS_SESSION_REASON'         => 'The shopping cart has been changed. For this reason, the active PayPal payment process was automatically canceled. Please restart the payment with PayPal. No money has been collected from PayPal yet.',
     'OSC_RUNNING_PAYPAL_CHECKOUT_SESSION_HINT' => 'You have started payment via PayPal Payment.',
     'OSC_RUNNING_PAYPAL_CHECKOUT_SESSION_HINT_AFREF' => 'Click here to complete your order.',
+
+    'OSC_PAYPAL_PAYMENT_PUI'                      => 'Pay upon Invoice - Bankdata',
+    'OSC_PAYPAL_PAYMENT_PUI_REFERENCE'            => 'Payment Reference',
+    'OSC_PAYPAL_PAYMENT_PUI_BIC'                  => 'BIC',
+    'OSC_PAYPAL_PAYMENT_PUI_IBAN'                 => 'IBAN',
+    'OSC_PAYPAL_PAYMENT_PUI_BANKNAME'             => 'Bankname',
+    'OSC_PAYPAL_PAYMENT_PUI_ACCOUNTHOLDER'        => 'Accountholder',
+    'OSC_PAYPAL_PAYMENT_PUI_FOLLOW'               => 'You will receive another email with the account details for the transfer in a few minutes. Please be patient.',
+    'OSC_PAYPAL_PAYMENT_PUI_NOTE'                 => 'Please use the following data for the transfer of the order amount',
+    'OSC_PAYPAL_PAYMENT_PUI_HEADING'              => 'Payment information',
 ];
