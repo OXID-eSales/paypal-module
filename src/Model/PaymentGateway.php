@@ -10,7 +10,6 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 use Exception;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Controller\AjaxPaymentController;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
@@ -100,7 +99,7 @@ class PaymentGateway extends PaymentGateway_parent
 
         if($intent === OrderRequest::INTENT_AUTHORIZE){
             $paymentId = (string) $paymentService->getSessionPaymentId();
-            $result = AjaxPaymentController::doAuthorizePayment($checkoutOrderId, $order->getId(), $paymentId);
+            $result = $paymentService->doAuthorizePayment($checkoutOrderId, $order->getId(), $paymentId);
 
             if($result['paymentStatus'] === 'success' && $result['status'] === 'success'){
                 $success = true;
