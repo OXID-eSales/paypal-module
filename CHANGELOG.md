@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Trim the item names for PayPal in a proper way
 - Switch to ServerSide-API-Calls instead deprecated ClientSide-API-Calls
 - use PayPal-Client v2.0.22
+- send PUI-Bankdata via eMail during Checkout
 
 ### FIX
 
