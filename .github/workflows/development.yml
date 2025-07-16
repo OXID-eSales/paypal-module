@@ -156,6 +156,44 @@ jobs:
             source/var/configuration/shops/1/modules/osc-unzer.yaml
             data/php/logs/error_log.txt
 
+  styles:
+    strategy:
+      matrix:
+        php: [ '8.0' ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout current module
+        uses: actions/checkout@v4
+        with:
+          path: source/test-module
+          fetch-depth: 0  # Fetch all commits for accurate diff
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: xdebug
+          extensions: gd, zip
+
+      - name: Install module dependencies
+        id: dependencies
+        working-directory: source/test-module
+        run: composer install
+
+      - name: Codestyle check of the affected files (phpcs, phpmd, phpstan)
+        id: phpcs
+        working-directory: source/test-module
+        run: composer style-commit  # Runs oll style checks
+
+      - name: Upload log artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: StylesLog-${{ matrix.php }}
+          path: |
+            source/test-module/tests/reports/phpstan.report.json
+            source/test-module/tests/reports/phpmd.report.json
+
   unit_tests:
     strategy:
       fail-fast: false
