@@ -59,7 +59,8 @@
             //if we managed to get at this stage, closing the overlay not suppose to be watched anymore
             PayPalPayment.reactOnPayPalOverlayClosed = false;
             let result = await PayPalPayment.backendRequest('shopOrderCaptureUrl', {}, {
-                'orderId': data.orderID
+                'orderId': data.orderID,
+                'paymentId': PayPalPayment.getConfigValue('paymentId')
             });
 
             if (result.status === 'error' ){

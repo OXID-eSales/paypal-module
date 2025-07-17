@@ -50,11 +50,29 @@ class AjaxPaymentController extends ProxyController
     {
         $data = $this->getRequestParameters();
         $payPalOrderId = $data['orderId'];
+        $paymentId = $data['paymentId'] ?? Registry::getSession()->getVariable('paymentid');
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $orderService->setTrackingId($this->getTrackingId());
+        $language = Registry::getLang();
         $request = new OrderCaptureRequest();
         $capturePaymentForOrder = null;
         try {
+            $payPalOrder = $orderService->showOrderDetails(
+                $payPalOrderId,
+                '',
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+            );
+
+            //Verify 3D result if acdc payment
+            if (!$paymentService->verify3D($paymentId, $payPalOrder)) {
+                $this->outputJson([
+                    'status' => 'error',
+                    'message' => $language->translateString('OSC_PAYPAL_3DSECURITY_ERROR')
+                ]);
+            }
+
             $capturePaymentForOrder = $orderService->capturePaymentForOrder(
                 '',
                 $payPalOrderId,

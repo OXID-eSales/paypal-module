@@ -177,7 +177,7 @@ class Payment
         // PatchOrders access an OrderCall that has taken place before.
         // For this reason, the payPalPartnerAttributionId does not have
         // to be transmitted again in the case of a PatchCall
-        $response = $this->doCreatePayPalOrder(
+        $payPalOrder = $this->doCreatePayPalOrder(
             $basket,
             $intent,
             $userAction,
@@ -193,16 +193,16 @@ class Payment
         $paypalOrderId = '';
         $status = '';
 
-        if ($response) {
-            $paypalOrderId = $response->id ?: '';
-            $status = $response->status ?: '';
+        if ($payPalOrder) {
+            $paypalOrderId = $payPalOrder->id ?: '';
+            $status = $payPalOrder->status ?: '';
         }
 
         $order = oxNew(EshopModelOrder::class);
         $order->load($basket->getOrderId());
 
         // patch the order only if paypalOrderId exists
-        if ($paypalOrderId && $response->status !== 'COMPLETED') {
+        if ($paypalOrderId && $payPalOrder->status !== 'COMPLETED') {
             $this->doPatchPayPalOrder(
                 $basket,
                 $paypalOrderId,
@@ -216,7 +216,7 @@ class Payment
         ];
 
         if($status === 'PAYER_ACTION_REQUIRED') {
-            $return['links'] = $response->links;
+            $return['links'] = $payPalOrder->links;
         }
 
         return $return;
