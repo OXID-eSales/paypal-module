@@ -154,6 +154,7 @@ $aLang = array_merge(
     'OSC_PAYPAL_STATUS_COMPLETED'                 => 'Completed',
     'OSC_PAYPAL_STATUS_CAPTURED'                  => 'Captured',
     'OSC_PAYPAL_STATUS_DECLINED'                  => 'Declined',
+    'OSC_PAYPAL_STATUS_DENIED'                    => 'Denied',
     'OSC_PAYPAL_STATUS_PARTIALLY_REFUNDED'        => 'Partially refunded',
     'OSC_PAYPAL_STATUS_PENDING'                   => 'Pending',
     'OSC_PAYPAL_STATUS_PENDING_APPROVAL'          => 'Pending Approval',

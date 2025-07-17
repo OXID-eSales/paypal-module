@@ -47,6 +47,7 @@ $aLang = [
     'OSC_PAYPAL_LOG_IN_TO_CONTINUE'                => 'Please log in to continue checking out.',
 
     'OSC_PAYPAL_3DSECURITY_ERROR'                  => 'Security check failed, please retry.',
+    'OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR'        => 'Payment authorization was denied. Please check your payment data and try again.',
     'OSC_PAYPAL_ORDEREXECUTION_ERROR'              => 'Payment process could not be completed.',
 
     'OSC_PAYPAL_VAULTING_MENU'                      => 'Manage PayPal',
