@@ -199,8 +199,8 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix:
-        php: [ '8.0', '8.1', '8.2', '8.3' ]
-        mysql: [ '5.7', '8.0', '8.1' ]
+        php:  [ '8.2', '8.3' ]
+        mysql: [ '5.7', '8.1' ]
     needs: [ install_shop_with_module ]
     runs-on: ubuntu-latest
     steps:
