@@ -16,6 +16,9 @@ use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Helper\Truncate;
+use OxidSolutionCatalysts\PayPal\Model\Order;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch;
@@ -27,6 +30,8 @@ use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
  */
 class   PatchRequestFactory
 {
+    use ServiceContainer;
+
     /**
      * @var Basket
      */
@@ -46,11 +51,15 @@ class   PatchRequestFactory
         $this->basket = $basket;
         $deliveryId = Registry::getSession()->getVariable("deladrid");
         $deliveryAddress = oxNew(Address::class);
+        $order = oxNew(Order::class);
+        $order->load($orderId);
 
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $patches = array_values(
             array_filter([
                 $this->getAmountPatch(),
-                $orderId ? $this->getCustomIdPatch($orderId) : null,
+                $orderId ? $this->getCustomIdPatch($paymentService->getCustomIdParameter($order)) : null,
                 $this->getPurchaseUnitsPatch()
             ])
         );
