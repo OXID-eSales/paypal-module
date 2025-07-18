@@ -19,3 +19,7 @@ php-cs-fixer.phar
  # Ignore all files in recipe directory except parts
  recipe/*
  !recipe/parts
+ ngrok.yml
+/tests/e2e/playwright/.env
+/tests/e2e/playwright/_output
+/tests/e2e/playwright/_generated

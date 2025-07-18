@@ -1,5 +1,8 @@
 id: osc_paypal
 moduleSettings:
+  oscPayPalSandboxMode:
+    type: bool
+    value: true
   oscPayPalSandboxClientId:
     type: str
     value: BAAKBWpOsTL3LYMSwWCbtwc5oJmvBY4u4_fbEnKyPFr-8ut7fsqbZ1XTVawj8nS6uG_plGSxHft44XR9BA
