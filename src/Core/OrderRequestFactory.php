@@ -613,6 +613,11 @@ class OrderRequestFactory
             $newPaymentSource = [
                 $paymentSourceId => [
                     "vault_id" => $selectedPaymentToken["id"],
+                    "attributes" => [
+                        "verification" => [
+                            "method" => "SCA_WHEN_REQUIRED"
+                        ],
+                    ],
                     "experience_context" => [
                         "return_url" => $returnUrl,
                         "cancel_url" => $cancelUrl,

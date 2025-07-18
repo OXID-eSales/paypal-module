@@ -162,17 +162,25 @@ class VaultingService extends BaseService
         $attributes = [];
         $vaultPaymentOnSuccess = Registry::getRequest()->getRequestParameter("vaultPayment");
         if (filter_var($vaultPaymentOnSuccess, FILTER_VALIDATE_BOOLEAN)) {
-            $attributes = [
+            $attributes = [/* Probably redundant
                 "customer" => [
                     "id" => $user->getFieldData("oscpaypalcustomerid")
-                ],
+                ],*/
                 "vault" => [
                     "store_in_vault" => "ON_SUCCESS",
+                ]
+            ];
+
+            if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL) {
+                //those 3 params should be only in Paypal Standard
+                $attributes['vault'] += [
                     "usage_type" => "MERCHANT",
                     "customer_type" => "CONSUMER",
                     "permit_multiple_payment_tokens" => false
-                ]
-            ];
+                ];
+            }
+
+
         }
 
         if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
@@ -190,6 +198,12 @@ class VaultingService extends BaseService
                         "method" => "SCA_WHEN_REQUIRED"
                     ]
                 ]);
+
+            $paymentSource[$paymentSourceId]["stored_credential"] = [
+                "payment_initiator" => "CUSTOMER",
+                "payment_type" => "ONE_TIME",
+                "usage" => "FIRST"
+            ];
 
         } else {
             $paymentSource = [
@@ -239,6 +253,22 @@ class VaultingService extends BaseService
         }
 
         return is_array($result) ? $result : [];
+    }
+
+    public function isPaypalStandardVaulted(?User   $user = null): bool
+    {
+        $vaultedPaymentTokens = [];
+        $payPalCustomerId = $user ? $user->getFieldData("oscpaypalcustomerid") : '';
+        if (!empty($payPalCustomerId)) {
+            $vaultedPaymentTokens = $this->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"];
+            foreach ($vaultedPaymentTokens as $token){
+                if (isset($token["payment_source"][PayPalDefinitions::PAYMENT_SOURCE_PAYPAL])){
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     public function fetchSelectedVaultedPaymentToken(

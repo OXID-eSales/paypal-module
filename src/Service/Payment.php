@@ -334,14 +334,7 @@ class Payment
                     $order->setOrderNumber();
                 }
 
-                try {/*probably redundant
-                    //Patching the order with OXID order number as custom value
-                    $this->doPatchPayPalOrder(
-                        Registry::getSession()->getBasket(),
-                        $checkoutOrderId,
-                        $this->getCustomIdParameter($order)
-                    );*/
-
+                try {
                     /** @var $result Order */
                     $result = $orderService->capturePaymentForOrder(
                         '',
