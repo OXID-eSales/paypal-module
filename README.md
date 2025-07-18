@@ -30,7 +30,7 @@ PayPal checkout integration for OXID eShop 6.1 and above.
     ```
 2. Download Paypal Module into temporary folder 
     ```
-     git clone --recurse-submodules git@github.com:OXID-eSales/paypal-module.git extensions/paypal
+     git clone --recurse-submodules git@github.com:OXID-eSales/paypal-module.git extensions/paypal --branch=b-7.0.x
     ```
   
 3. Check if you have all submodules:
