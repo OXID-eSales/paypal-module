@@ -49,6 +49,7 @@
         };
 
         this.onGooglePaymentButtonClicked = async function () {
+            PayPalPayment.removeErrorMessage();
             let response = await fetch(PayPalPayment.getConfigValue('shopOrderCreateUrl'), {
                 method: 'post',
                 headers: Object.assign({
@@ -186,7 +187,8 @@
                     PayPalPayment.captureOrder(orderId);
                     return {transactionState: "SUCCESS"};
                 } else {
-                    console.error("Payment was not approved");
+                    PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR);
+                    PayPalPayment.handleError();
                     return {transactionState: "ERROR"};
                 }
             } catch (err) {
@@ -200,10 +202,22 @@
         };
         this.confirmOrder= async function (orderId, paymentData) {
             await new Promise(resolve => setTimeout(resolve, 1000));
-            const confirmOrderResponse = await paypal.Googlepay().confirmOrder({
-                orderId: orderId,
-                paymentMethodData: paymentData.paymentMethodData
-            });
+            try {
+                const confirmOrderResponse = await paypal.Googlepay().confirmOrder({
+                    orderId: orderId,
+                    paymentMethodData: paymentData.paymentMethodData
+                });
+            } catch (error) {
+                PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_UNKNOWN_ERROR);
+                PayPalPayment.handleError();
+                return;
+            }
+
+            if ('undefined' === typeof confirmOrderResponse){
+                PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR);
+                PayPalPayment.handleError();
+                return;
+            }
 
             if (confirmOrderResponse.status === "PAYER_ACTION_REQUIRED" || confirmOrderResponse.status === 'APPROVED') {
                 PayPalPayment.googlePayUserActionRequired(orderId);

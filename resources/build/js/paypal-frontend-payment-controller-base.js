@@ -441,7 +441,7 @@
             }
 
             className = className || '';
-            const panelBody = document.querySelector("#card_container").parentElement;
+            const panelBody = document.querySelector("#orderPayment").querySelector(".panel-body");
 
             // Remove existing error if present
             this.removeErrorMessage(className);
@@ -460,7 +460,7 @@
 
         this.removeErrorMessage = function (className) {
             className = className || '';
-            const panelBody = document.querySelector("#card_container").parentElement;
+            const panelBody = document.querySelector("#orderPayment").querySelector(".panel-body");
             if (panelBody) {
                 const existingError = panelBody.querySelector(".error-message" + (className ? '.' + className : ''));
                 if (existingError) {
