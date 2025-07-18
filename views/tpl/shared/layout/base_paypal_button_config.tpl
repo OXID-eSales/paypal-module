@@ -25,6 +25,7 @@
                 OSC_PAYPAL_ACDC_ERROR_MISSING_EXDATE: "[{oxmultilang ident="OSC_PAYPAL_ACDC_ERROR_MISSING_EXDATE"}]",
                 OSC_PAYPAL_ACDC_ERROR_INBOX: "[{oxmultilang ident="OSC_PAYPAL_ACDC_ERROR_INBOX"}]",
                 OSC_PAYPAL_UNKNOWN_ERROR: "[{oxmultilang ident="OSC_PAYPAL_UNKNOWN_ERROR"}]",
+                OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR: "[{oxmultilang ident="OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR"}]",
             }
         }
 
