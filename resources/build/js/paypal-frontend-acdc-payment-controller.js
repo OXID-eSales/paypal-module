@@ -17,7 +17,8 @@
             PayPalPayment.reactOnPayPalOverlayClosed = false;
             let result = await PayPalPayment.backendRequest('shopOrderCreateUrl', {}, {
                 'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId'),
-                'vaultPayment': PayPalPayment.currentOrder.vaultPayment
+                'vaultPayment': PayPalPayment.currentOrder.vaultPayment,
+                'paymentId': PayPalPayment.getConfigValue('paymentId')
             });
 
             if (result.status === 'error' ){

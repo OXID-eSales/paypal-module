@@ -329,6 +329,7 @@ class Payment
             } elseif ($payPalOrder->status !== Constants::PAYPAL_STATUS_COMPLETED) {
                 $request = new OrderCaptureRequest();
                 //order number must be resolved before order patching
+                $order->load((string)Registry::getSession()->getVariable('sess_challenge'));
                 if (!$order->hasOrderNumber()) {
                     $order->setOrderNumber();
                 }
@@ -959,7 +960,13 @@ class Payment
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $module = oxNew(\OxidEsales\Eshop\Core\Module\Module::class);
         $module->load(Module::MODULE_ID);
+        /** @var Order $orderNumber */
         $orderNumber = $order instanceof EshopModelOrder ? $order->getFieldData('oxordernr') : '';
+        if($orderNumber == 0){
+            $order->setOrderNumber();
+            $order->save();
+            $orderNumber = $order->getFieldData('oxordernr');
+        }
         if ($moduleSettings->isCustomIdSchemaStructural()) {
             $customID = [
                 'oxordernr' => $orderNumber,
