@@ -676,7 +676,7 @@ class ViewConfig extends ViewConfig_parent
         return Registry::getRequest()->getRequestEscapedParameter("cl") === 'oscaccountvaultcard';
     }
 
-    public function getConfig(): \OxidEsales\EshopCommunity\Core\Config
+    public function getConfig(): \OxidEsales\Eshop\Core\Config
     {
         return Registry::getConfig();
     }
