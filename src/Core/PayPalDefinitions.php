@@ -39,10 +39,7 @@ final class PayPalDefinitions
 
     //vaulting
     public const PAYMENT_VAULTING = [
-        "store_in_vault" => "ON_SUCCESS",
-        "usage_type" => "MERCHANT",
-        "customer_type" => "CONSUMER",
-        "permit_multiple_payment_tokens" => false,
+        "store_in_vault" => "ON_SUCCESS"
     ];
 
     private const PAYMENT_CONSTRAINTS_PAYPAL = [

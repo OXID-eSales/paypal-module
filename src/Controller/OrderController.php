@@ -119,6 +119,15 @@ class OrderController extends OrderController_parent
             $isVaultingPossible = $moduleSettings->isVaultingAllowedForPayment($paymentId)
                 && $user->getFieldData('oxpassword');
 
+            //Disable save payments for standard PayPal if one wallet is vaulted already
+            $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+            if (
+                PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID === $paymentId
+                && $vaultingService->isPaypalStandardVaulted($this->getUser())
+            ) {
+                $isVaultingPossible = false;
+            }
+
             $this->addTplParam('oscpaypal_isVaultingPossible', $isVaultingPossible);
             $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
@@ -699,7 +708,7 @@ class OrderController extends OrderController_parent
 
     public function getDeladrid(): string
     {
-        return Registry::getSession()->getVariable('deladrid');
+        return (string)Registry::getSession()->getVariable('deladrid');
     }
 
     public function getPayPalCustomerId(): string

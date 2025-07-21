@@ -223,6 +223,11 @@ class ViewConfig extends ViewConfig_parent
 
         $params['locale'] = $localeCode;
 
+        // Add parameters to the sandbox to test geoblocking features like PUI from anywhere
+        if ($moduleSettings->isSandbox()) {
+            $params['buyer-country'] = 'DE';
+        }
+
         return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
     }
 

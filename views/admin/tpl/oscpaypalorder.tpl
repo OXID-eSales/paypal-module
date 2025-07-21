@@ -192,7 +192,7 @@
 
     </tbody>
     </table>
-    [{if $oView->getPayPalPaymentStatus() == 'COMPLETED' && $oView->getPayPalRemainingRefundAmount()}]
+    [{if $oView->eligibleForRefund()}]
         <div style="margin-top: 10px">
             <p><b>[{oxmultilang ident="OSC_PAYPAL_ISSUE_REFUND"}]</b></p>
             <form action="[{$oViewConf->getSelfLink()}]" method="post">
@@ -226,16 +226,18 @@
                 </table>
             </form>
         </div>
-    [{elseif $oView->getPayPalPaymentStatus() === 'AUTHORIZED'}]
+    [{elseif $oView->eligibleForCapture()}]
         <div style="margin-top: 10px">
             <p><b>[{oxmultilang ident="OSC_PAYPAL_ACTIONS" suffix="COLON"}]</b></p>
             <form action="[{$oViewConf->getSelfLink()}]" method="post">
                 [{$oViewConf->getHiddenSid()}]
-                <input type="hidden" name="fnc" value="capturePayPalStandard">
+                <input type="hidden" name="fnc" value="capturePayPalOrder">
                 <input type="hidden" name="cl" value="oscpaypalorder">
                 <input type="hidden" name="oxid" value="[{$oxid}]">
                 <input type="hidden" name="language" value="[{$actlang}]">
-                <input type="submit" value="[{oxmultilang ident="OSC_PAYPAL_CAPTURE"}]">
+                <input type="submit"
+                       onclick="var really = confirm('[{oxmultilang ident="OSC_PAYPAL_CONFIRM_CAPTURE"}]'); if (really)  { this.setAttribute('disabled', true); this.form.submit();} else { return false;}"
+                       value="[{oxmultilang ident="OSC_PAYPAL_CAPTURE"}]">
             </form>
             <p>[{oxmultilang ident="OSC_PAYPAL_CAPTURE_DAYS_LEFT" args=$oView->getTimeLeftForPayPalCapture()}]</p>
         </div>

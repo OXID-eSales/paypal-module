@@ -8,9 +8,11 @@
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 
-$sLangName = 'Deutsch';
+include_once __DIR__ . '/../../../translations/de/oscpaypal_de_lang.php';
 
-$aLang = [
+$aLang = array_merge(
+    $aLang,
+    [
     'charset'                                     => 'UTF-8',
     'paypal'                                      => 'PayPal',
     'tbclorder_oscpaypal'                         => 'PayPal Checkout',
@@ -132,6 +134,7 @@ $aLang = [
     'OSC_PAYPAL_CAPTURE'                          => 'Einziehen',
     'OSC_PAYPAL_REFUND'                           => 'Erstatten',
     'OSC_PAYPAL_CONFIRM_REFUND'                   => 'Möchten Sie wirklich einen Rückerlass beantragen?',
+    'OSC_PAYPAL_CONFIRM_CAPTURE'                  => 'Möchten Sie wirklich eine Geldabbuchung beantragen?',
     'OSC_PAYPAL_DETAILS'                          => 'Details',
     'OSC_PAYPAL_AUTHORIZATION'                    => 'Autorisierung',
     'OSC_PAYPAL_CANCEL_AUTHORIZATION'             => 'Stornieren',
@@ -154,10 +157,12 @@ $aLang = [
     'OSC_PAYPAL_STATUS_COMPLETED'                 => 'abgeschlossen',
     'OSC_PAYPAL_STATUS_CAPTURED'                  => 'eingezogen',
     'OSC_PAYPAL_STATUS_DECLINED'                  => 'abgelehnt',
+    'OSC_PAYPAL_STATUS_DENIED'                    => 'bestritten',
     'OSC_PAYPAL_STATUS_PARTIALLY_REFUNDED'        => 'Teilweise erstattet',
     'OSC_PAYPAL_STATUS_PENDING'                   => 'steht aus',
     'OSC_PAYPAL_STATUS_PENDING_APPROVAL'          => 'Genehmigung ausstehend',
     'OSC_PAYPAL_STATUS_REFUNDED'                  => 'Erstattet',
+    'OSC_PAYPAL_STATUS_ERROR'                     => 'es ist ein Fehler aufgetreten',
     'OSC_PAYPAL_STATUS_PAYER_ACTION_REQUIRED'     => 'Aktion des Käufers erforderlich',
     'OSC_PAYPAL_PAYMENT_METHOD'                   => 'Zahlungsart',
     'OSC_PAYPAL_COMMENT'                          => 'Kommentar',
@@ -181,12 +186,6 @@ $aLang = [
     'OSC_PAYPAL_COUNTRY_CODE'                     => 'Ländercode',
     'OSC_PAYPAL_SHIPPING'                         => 'Versand',
     'OSC_PAYPAL_BILLING'                          => 'Abrechnung',
-    'OSC_PAYPAL_PAYMENT_PUI'                      => 'Kauf auf Rechnung - Bankdaten',
-    'OSC_PAYPAL_PAYMENT_PUI_REFERENCE'            => 'Verwendungszweck',
-    'OSC_PAYPAL_PAYMENT_PUI_BIC'                  => 'BIC',
-    'OSC_PAYPAL_PAYMENT_PUI_IBAN'                 => 'IBAN',
-    'OSC_PAYPAL_PAYMENT_PUI_BANKNAME'             => 'Bankname',
-    'OSC_PAYPAL_PAYMENT_PUI_ACCOUNTHOLDER'        => 'Kontoinhaber',
 
     'OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'     => 'Einstellungen aus dem klassischen PayPal-Modul übernehmen',
     'OSC_PAYPAL_BANNER_TRANSFERREDOLDSETTINGS'     => 'Banner-Einstellungen wurden aus dem klassischen PayPal-Modul übertragen.',
@@ -218,6 +217,7 @@ $aLang = [
     'OSC_PAYPAL_BANNER_COLORSCHEMEGRAY'             => 'Grau',
     'OSC_PAYPAL_BANNER_COLORSCHEMEMONOCHROME'       => 'Einfarbig',
     'OSC_PAYPAL_BANNER_COLORSCHEMEGRAYSCALE'        => 'Graustufen',
+    'OSC_PAYPAL_CAPTURE_STRATEGY_TITLE'             => 'Strategie zur Gelderfassung',
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME'              => 'PayPal Standard - Geldeinzug',
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME_LABEL'        => 'Nur für PayPal Standard ist ein abweichender Geldeinzug zum Bestellzeitpunkt möglich. Alle anderen Zahlarten (inkl. PayPal Express) werden sofort eingezogen.',
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME_HELP'         => 'Bitte beachten! Die Autorisierung einer Bestellung gilt drei Tage. Sie wird maximal bis 29 Tage nach Bestellung automatisch aufgefrischt. Anschließend ist ein Geldeinzug nicht mehr möglich.',
@@ -333,4 +333,5 @@ $aLang = [
     'OSC_PAYPAL_DEBUG_LEVEL_DEBUG'                  => 'Debug',
     'OSC_PAYPAL_DEBUG_LEVEL_ERROR'                  => 'Fehler',
     'HELP_OSC_PAYPAL_DEBUG_LEVEL'                   => 'Steuert die Protokollierungsstufe für PayPal-API-Aufrufe. "Aus" deaktiviert die Protokollierung, "Debug" protokolliert alle Anfragen und Antworten, "Fehler" protokolliert nur Fehler.',
-];
+    ]
+);

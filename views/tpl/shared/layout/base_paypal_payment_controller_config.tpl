@@ -24,13 +24,14 @@
             payPalOrderDetailsUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=fetchPayPalOrderDetails&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             errorLogUrl: '[{$sSelfLink|cat:"cl=payment&payerror=2&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             shopThankYouPageUrl: '[{$sSelfLink|cat:"cl=thankyou&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+            shopOrderAuthorizeUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=authorizePayment&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             deliveryAddressId: '[{$oView->getDeliveryAddressMD5()}]',
-            deladrid: '[{$oView->getDeladrid()}]',
             purchaseUnits: [{$purchaseUnits}],
             vaultedPaymentSource: [{$vaultedPaymentSource}],
             language: '[{$oView->getActiveLangAbbr()|lower}]',
             currency: '[{$currency->name}]',
-            customerId: '[{$customerId}]'
+            customerId: '[{$customerId}]',
+            captureStrategy: '[{if $captureStrategy == 'directly'}]CAPTURE[{else}]AUTHORIZE[{/if}]',
         }
 
         [{if $paymentId == 'oscpaypal'}]
@@ -39,11 +40,9 @@
                     shopOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                     payPalOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createPayPalOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                     shopOrderCaptureUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=captureOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
-                    shopOrderAuthorizeUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=authorizePayment&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                     shopOrderPatchingUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                     updateOxUserWithPayPalCustomerIdUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=updateOxUserWithPayPalCustomerId&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                     buttonSelector: '#[{$paymentId}]',
-                    captureStrategy: '[{if $captureStrategy == 'directly'}]CAPTURE[{else}]AUTHORIZE[{/if}]',
                     paymentId: 'oscpaypal'
                 });
             };

@@ -47,6 +47,9 @@ $aLang = [
     'OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'        => 'Ihre Bestellung wird geprüft, das kann bis zu 60 Sekunden dauern. Bitte kurz warten und dann erneut auf "zahlungspflichtig bestellen" klicken.',
     'OSC_PAYPAL_LOG_IN_TO_CONTINUE'                 => 'Bitte loggen Sie sich ein, um die Bestellung abzuschliessen.',
     'OSC_PAYPAL_3DSECURITY_ERROR'                   => 'Die Sicherheitsüberprüfung ist fehlgeschlagen, bitte erneut versuchen.',
+    'OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR'         => 'Die Zahlungsautorisierung wurde abgelehnt. Bitte überprüfen Sie Ihre Zahlungsdaten und versuchen Sie es erneut.',
+    'OSC_PAYPAL_CAPTURE_DENIED_ERROR'               => 'Die Überweisung wurde abgelehnt. Bitte überprüfen Sie Ihre Zahlungsdaten und versuchen Sie es erneut.',
+    'OSC_PAYPAL_INTERNAL_SERVICE_ERROR'             => 'Bei der Bearbeitung Ihrer Zahlung ist ein unbekannter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
     'OSC_PAYPAL_ORDEREXECUTION_ERROR'               => 'Der Bezahlvorgang wurde abgebrochen.',
     'OSCPAYPAL_KILL_EXPRESS_SESSION_REASON'         => 'Der Warenkorb wurde geändert. Aus diesem Grund wurde der aktive PayPal-Zahlvorgang automatisch abgebrochen. Bitte starten Sie die Zahlung mit PayPal erneut. Es wurde noch kein Geld von PayPal eingezogen.',
 
@@ -64,4 +67,15 @@ $aLang = [
     'OSC_PAYPAL_DELETE_FAILED'                      => 'Beim Löschen Ihrer Zahlart ist etwas schiefgelaufen.',
     'OSC_RUNNING_PAYPAL_CHECKOUT_SESSION_HINT' => 'Zahlung erfolgt mit PayPal-Zahlart.',
     'OSC_RUNNING_PAYPAL_CHECKOUT_SESSION_HINT_AFREF' => 'Hier zum Bestellabschluss.',
+
+    'OSC_PAYPAL_PAYMENT_PUI'                      => 'Kauf auf Rechnung - Bankdaten',
+    'OSC_PAYPAL_PAYMENT_PUI_REFERENCE'            => 'Verwendungszweck',
+    'OSC_PAYPAL_PAYMENT_PUI_BIC'                  => 'BIC',
+    'OSC_PAYPAL_PAYMENT_PUI_IBAN'                 => 'IBAN',
+    'OSC_PAYPAL_PAYMENT_PUI_BANKNAME'             => 'Bankname',
+    'OSC_PAYPAL_PAYMENT_PUI_ACCOUNTHOLDER'        => 'Kontoinhaber',
+    'OSC_PAYPAL_PAYMENT_PUI_FOLLOW'               => 'In wenigen Minuten erhalten Sie eine weitere eMail mit den Kontodaten für die Überweisung. Bitte haben Sie einen Augenblick Geduld.',
+    'OSC_PAYPAL_PAYMENT_PUI_NOTE'                 => 'Bitte nutzen Sie folgende Daten für die Überweisung der Bestellsumme',
+    'OSC_PAYPAL_PAYMENT_PUI_HEADING'              => 'Zahlungsinformationen',
+
 ];

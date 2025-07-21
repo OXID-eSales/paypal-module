@@ -14,15 +14,22 @@
             };
 
         this.createOrder = async function (data, actions) {
+            PayPalPayment.reactOnPayPalOverlayClosed = false;
             let result = await PayPalPayment.backendRequest('shopOrderCreateUrl', {}, {
                 'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId'),
-                'vaultPayment': PayPalPayment.currentOrder.vaultPayment
+                'vaultPayment': PayPalPayment.currentOrder.vaultPayment,
+                'paymentId': PayPalPayment.getConfigValue('paymentId')
             });
-            if (undefined !== result.error) {
+
+            if (result.status === 'error' ){
+                PayPalPayment.showErrorMessage(result.message);
+                PayPalPayment.handleError(result.message);
+
                 return false;
             }
 
             document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...result.shopOrder}})));
+            document.dispatchEvent(new CustomEvent('payPalOrderCreated', new Object({detail: {...result.payPalOrder}})));
             let shopOrderId = result.shopOrder.shopOrderId;
 
             //vaulted payment source
@@ -53,8 +60,14 @@
             //if we managed to get at this stage, closing the overlay not suppose to be watched anymore
             PayPalPayment.reactOnPayPalOverlayClosed = false;
             let result = await PayPalPayment.backendRequest('shopOrderCaptureUrl', {}, {
-                'orderId': data.orderID
+                'orderId': data.orderID,
+                'paymentId': PayPalPayment.getConfigValue('paymentId')
             });
+
+            if (result.status === 'error' ){
+                PayPalPayment.showErrorMessage(result.message);
+                PayPalPayment.handleError(result.message);
+            }
 
             if (result.status === 'success') {
                 PayPalPayment.afterCaptureOrder();
@@ -63,36 +76,6 @@
 
         this.afterCaptureOrder = function (details) {
             window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
-        };
-
-        this.removeErrorMessage = function (className) {
-            className = className || '';
-            const panelBody = document.querySelector("#card_container").parentElement;
-            if (panelBody) {
-                const existingError = panelBody.querySelector(".error-message" + (className ? '.' + className : ''));
-                if (existingError) {
-                    existingError.remove();
-                }
-            }
-        };
-
-        this.showErrorMessage = function (message, className) {
-            className = className || '';
-            const panelBody = document.querySelector("#card_container").parentElement;
-
-            // Remove existing error if present
-            this.removeErrorMessage(className);
-
-            // Create and display a new error message
-            const errorMessage = document.createElement("div");
-            errorMessage.className = "error-message alert alert-danger " + className;
-            errorMessage.textContent = message;
-
-            panelBody.prepend(errorMessage);
-
-            errorMessage.scrollIntoView({
-                behavior: 'smooth'
-            });
         };
 
         this.isCardFieldInvalid = function (name)
@@ -139,6 +122,28 @@
             return true;
         };
 
+        this.handlePaymentAuthorization = async function (details) {
+            const result = await PayPalPayment.authorizeOrder({});
+//@TODO figure out how to handle overlay with intent authorize
+//PayPalPayment.reactOnPayPalOverlayClosed = false;
+            if (result.status === 'error' ){
+                PayPalPayment.showErrorMessage(result.message);
+                PayPalPayment.handleError(result.message);
+            }
+
+            if (result.status === 'success' && result.paymentStatus === 'success'){
+                let result = await PayPalPayment.backendRequest('shopOrderCompleteUrl', {}, {
+                    'orderId': PayPalPayment.currentOrder.shop.shopOrderId
+                });
+                if ('success' !== result.status) {
+                    return false; //some better err handlig here should be added
+                }
+
+                window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+                return;
+            }
+        };
+
         this.renderCardFields = function () {
             this.initializeAcceptPaymentButton();
 
@@ -151,9 +156,9 @@
                 return;
             }
 
-            const cardFields = paypal.CardFields({
+            const cardFieldsSettings = {
                 createOrder: PayPalPayment.createOrder,
-                onApprove: PayPalPayment.captureOrder,
+                onApprove: PayPalPayment.handlePaymentAuthorization,
                 onError: PayPalPayment.handleError,
                 inputEvents: {
                     onChange: (data) => {
@@ -161,7 +166,13 @@
                         PayPalPayment.removeSubmitButtonOverlay();
                     }
                 }
-            });
+            };
+
+            if (PayPalPayment.config.captureStrategy === 'CAPTURE') {
+                cardFieldsSettings.onApprove = PayPalPayment.captureOrder;
+            }
+
+            const cardFields = paypal.CardFields(cardFieldsSettings);
 
             // Helper-Function to read the calculated CSS properties of an element
             function getComputedStylesAsObject(selector) {
@@ -248,8 +259,9 @@
                         PayPalPayment.paypalOverlayWatcher();
 
                         cardFields.submit().catch(err => {
-                            console.info('Error submitting card fields:', err);
-                            PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_ACDC_ERROR_INBOX);
+                            if(null != PayPalPayment.currentError) {
+                                PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_ACDC_ERROR_INBOX);
+                            }
 
                             PayPalPayment.removeSubmitButtonOverlay();
                         });

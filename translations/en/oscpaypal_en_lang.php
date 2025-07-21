@@ -47,6 +47,9 @@ $aLang = [
     'OSC_PAYPAL_LOG_IN_TO_CONTINUE'                => 'Please log in to continue checking out.',
 
     'OSC_PAYPAL_3DSECURITY_ERROR'                  => 'Security check failed, please retry.',
+    'OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR'        => 'Payment authorization was denied. Please check your payment data and try again.',
+    'OSC_PAYPAL_CAPTURE_DENIED_ERROR'              => 'Payment money transfer was denied. Please check your payment data and try again.',
+    'OSC_PAYPAL_INTERNAL_SERVICE_ERROR'            => 'Unknown error occurred while processing your payment. Please try again later.',
     'OSC_PAYPAL_ORDEREXECUTION_ERROR'              => 'Payment process could not be completed.',
 
     'OSC_PAYPAL_VAULTING_MENU'                      => 'Manage PayPal',
@@ -64,4 +67,14 @@ $aLang = [
     'OSCPAYPAL_KILL_EXPRESS_SESSION_REASON'         => 'The shopping cart has been changed. For this reason, the active PayPal payment process was automatically canceled. Please restart the payment with PayPal. No money has been collected from PayPal yet.',
     'OSC_RUNNING_PAYPAL_CHECKOUT_SESSION_HINT' => 'You have started payment via PayPal Payment.',
     'OSC_RUNNING_PAYPAL_CHECKOUT_SESSION_HINT_AFREF' => 'Click here to complete your order.',
+
+    'OSC_PAYPAL_PAYMENT_PUI'                      => 'Pay upon Invoice - Bankdata',
+    'OSC_PAYPAL_PAYMENT_PUI_REFERENCE'            => 'Payment Reference',
+    'OSC_PAYPAL_PAYMENT_PUI_BIC'                  => 'BIC',
+    'OSC_PAYPAL_PAYMENT_PUI_IBAN'                 => 'IBAN',
+    'OSC_PAYPAL_PAYMENT_PUI_BANKNAME'             => 'Bankname',
+    'OSC_PAYPAL_PAYMENT_PUI_ACCOUNTHOLDER'        => 'Accountholder',
+    'OSC_PAYPAL_PAYMENT_PUI_FOLLOW'               => 'You will receive another email with the account details for the transfer in a few minutes. Please be patient.',
+    'OSC_PAYPAL_PAYMENT_PUI_NOTE'                 => 'Please use the following data for the transfer of the order amount',
+    'OSC_PAYPAL_PAYMENT_PUI_HEADING'              => 'Payment information',
 ];

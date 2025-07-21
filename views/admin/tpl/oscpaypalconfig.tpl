@@ -426,7 +426,7 @@
             <div class="card">
                 <div class="card-header" id="heading4">
                     <h4 class="collapsed" data-toggle="collapse" data-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
-                        [{oxmultilang ident="OSC_PAYPAL_STANDARD_CAPTURE_TIME"}]
+                        [{oxmultilang ident="OSC_PAYPAL_CAPTURE_STRATEGY_TITLE"}]
                     </h4>
                 </div>
 

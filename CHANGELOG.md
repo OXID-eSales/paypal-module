@@ -21,13 +21,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Saving vaulted payment methods is now only possible via checkout
 - Trim the item names for PayPal in a proper way
 - Switch to ServerSide-API-Calls instead deprecated ClientSide-API-Calls
-- use PayPal-Client v2.0.21
+- use PayPal-Client v2.0.22
+- send PUI-Bankdata via eMail during Checkout
 
 ### FIX
 
 - Fix: Locales for PP-Buttons are editable again
 - Fix: captured order could not be changed in the backend
-- use PayPal-Client v2.0.20
+- [0007807](https://bugs.oxid-esales.com/view.php?id=7807): Fix: cleanUpNotFinishedOrders() check for cancellation status
 
 ## [2.5.3] - 2025-04-04
 
