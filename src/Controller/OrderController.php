@@ -708,7 +708,7 @@ class OrderController extends OrderController_parent
 
     public function getDeladrid(): string
     {
-        return Registry::getSession()->getVariable('deladrid');
+        return (string)Registry::getSession()->getVariable('deladrid');
     }
 
     public function getPayPalCustomerId(): string

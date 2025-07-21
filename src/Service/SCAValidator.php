@@ -14,7 +14,7 @@ use OxidSolutionCatalysts\PayPal\Exception\CardValidation;
 /**
  * Implements the recommended actions according to
  * PayPal documentation: https://developer.paypal.com/docs/checkout/advanced/customize/3d-secure/response-parameters/
- * 
+ *
  * This class handles the 3D Secure authentication flow and determines whether a payment
  * should be authorized based on the card's enrollment status, authentication status,
  * and liability shift indicators.
@@ -61,7 +61,7 @@ class SCAValidator implements SCAValidatorInterface
 
     /**
      * Determines if a card is usable for payment based on 3D Secure authentication results.
-     * 
+     *
      * This method implements PayPal's recommended actions for handling 3D Secure authentication:
      * 1. If no authentication result is available, allow the payment to proceed
      * 2. For cards not enrolled in 3D Secure, allow the payment to proceed
@@ -69,7 +69,7 @@ class SCAValidator implements SCAValidatorInterface
      *    - Successful authentication with liability shift: Allow payment
      *    - Attempted authentication with POSSIBLE liability shift: Allow payment
      *    - Failed authentication or no liability shift: Decline payment
-     * 
+     *
      * @param PayPalApiOrder $order The PayPal order containing card authentication results
      * @return bool True if the card should be allowed for payment, false otherwise
      * @throws CardValidation If payment source information is missing or invalid
@@ -107,7 +107,7 @@ class SCAValidator implements SCAValidatorInterface
 
     /**
      * Extracts the 3D Secure authentication result from a PayPal order.
-     * 
+     *
      * This method safely retrieves the authentication result from the PayPal order object,
      * performing necessary null checks to prevent errors. According to PayPal's documentation,
      * the authentication result contains critical information needed to determine whether
@@ -115,7 +115,7 @@ class SCAValidator implements SCAValidatorInterface
      * - Enrollment status (whether the card is enrolled in 3D Secure)
      * - Authentication status (the result of the authentication attempt)
      * - Liability shift indicator (whether liability has shifted to the card issuer)
-     * 
+     *
      * @param PayPalApiOrder $order The PayPal order to extract authentication results from
      * @return AuthenticationResponse|null The authentication result, or null if not available
      * @throws CardValidation If payment source information is missing or invalid
@@ -144,11 +144,11 @@ class SCAValidator implements SCAValidatorInterface
     /**
      * Determines whether to continue with authorization based on enrollment status, authentication status,
      * and liability shift indicators.
-     * 
+     *
      * PayPal recommended actions:
      * - For cards not enrolled in 3D Secure (N, U, B): Continue with authorization
      * - For enrolled cards (Y): Decision depends on authentication status and liability shift
-     * 
+     *
      * @param string $enrollmentStatus The 3D Secure enrollment status (Y, N, U, B)
      * @param string $authStatus The authentication status (Y, N, R, A, U, C)
      * @param string $liabilityShift Whether liability has shifted to the card issuer (POSSIBLE, YES, NO)
@@ -199,9 +199,9 @@ class SCAValidator implements SCAValidatorInterface
 
     /**
      * Handles the authorization decision for cards enrolled in 3D Secure.
-     * 
+     *
      * PayPal recommended actions for enrolled cards:
-     * - Authentication Success (Y): 
+     * - Authentication Success (Y):
      *   - If liability shift is POSSIBLE or YES: Continue with authorization
      *   - If liability shift is NO: Do not continue with authorization
      * - Authentication Attempted (A):
@@ -211,7 +211,7 @@ class SCAValidator implements SCAValidatorInterface
      * - Authentication Rejected (R): Do not continue with authorization
      * - Authentication Unavailable (U): Do not continue with authorization
      * - Challenge Required (C): Do not continue with authorization
-     * 
+     *
      * @param string $authStatus The authentication status (Y, N, R, A, U, C)
      * @param string $liabilityShift Whether liability has shifted to the card issuer (POSSIBLE, YES, NO)
      * @return bool True if authorization should continue, false otherwise
