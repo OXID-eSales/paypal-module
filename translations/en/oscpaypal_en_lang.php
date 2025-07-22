@@ -48,6 +48,7 @@ $aLang = [
 
     'OSC_PAYPAL_3DSECURITY_ERROR'                  => 'Security check failed, please retry.',
     'OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR'        => 'Payment authorization was denied. Please check your payment data and try again.',
+    'OSC_PAYPAL_PAYMENT_CANCELED'                    => 'Payment was cancelled',
     'OSC_PAYPAL_CAPTURE_DENIED_ERROR'              => 'Payment money transfer was denied. Please check your payment data and try again.',
     'OSC_PAYPAL_INTERNAL_SERVICE_ERROR'            => 'Unknown error occurred while processing your payment. Please try again later.',
     'OSC_PAYPAL_ORDEREXECUTION_ERROR'              => 'Payment process could not be completed.',

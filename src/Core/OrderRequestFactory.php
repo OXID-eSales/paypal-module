@@ -162,6 +162,11 @@ class OrderRequestFactory
 
         return new PaymentSource([
             $requestName => [
+                "attributes" => [
+                    "verification" => [
+                        "method" => Constants::PAYPAL_SCA_WHEN_REQUIRED
+                    ]
+                ],
                 'name' => $userName,
                 'country_code' => $country->getFieldData('oxisoalpha2')
             ]
