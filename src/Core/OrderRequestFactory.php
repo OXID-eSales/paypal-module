@@ -126,7 +126,7 @@ class OrderRequestFactory
                 key($selectedPaymentToken["payment_source"])
             );
 
-            $this->modifyPaymentSourceForVaulting($request, $paymentSourceId, $returnUrl, $cancelUrl);
+            $this->modifyPaymentSourceForVaulting($request, $paymentSourceId, $returnUrl, $cancelUrl, $userAction);
             return $request;
         }
 
@@ -624,6 +624,7 @@ class OrderRequestFactory
                         ],
                     ],
                     "experience_context" => [
+                        "user_action" => $userAction ?? self::USER_ACTION_CONTINUE,
                         "return_url" => $returnUrl,
                         "cancel_url" => $cancelUrl,
                         "payment_method_preference" => 'UNRESTRICTED',

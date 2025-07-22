@@ -255,20 +255,52 @@ class VaultingService extends BaseService
         return is_array($result) ? $result : [];
     }
 
-    public function isPaypalStandardVaulted(?User   $user = null): bool
+    /**
+     * Check if a specific type of vaulted payment is used
+     * 
+     * @param string $paymentType The payment type to check (PayPalDefinitions::PAYMENT_SOURCE_PAYPAL or 'card')
+     * @param ?User $user The user to check
+     * @return bool True if the specified vaulted payment is used
+     */
+    public function isVaultedPaymentUsed(string $paymentType = PayPalDefinitions::PAYMENT_SOURCE_PAYPAL, ?User $user = null): bool
     {
-        $vaultedPaymentTokens = [];
         $payPalCustomerId = $user ? $user->getFieldData("oscpaypalcustomerid") : '';
-        if (!empty($payPalCustomerId)) {
-            $vaultedPaymentTokens = $this->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"];
-            foreach ($vaultedPaymentTokens as $token){
-                if (isset($token["payment_source"][PayPalDefinitions::PAYMENT_SOURCE_PAYPAL])){
-                    return true;
-                }
-            }
+        if (empty($payPalCustomerId)) {
+            return false;
         }
 
-        return false;
+        $vaultedPaymentTokens = $this->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"] ?? [];
+
+        if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL) {
+            // Check for PayPal payment source
+            return !empty(array_filter($vaultedPaymentTokens, function($token) {
+                return isset($token["payment_source"][PayPalDefinitions::PAYMENT_SOURCE_PAYPAL]);
+            }));
+        } else {
+            // Check for card payment source
+            $vaultedPaymentTokenSelected = $this->fetchSelectedVaultedPaymentToken($user);
+            if (empty($vaultedPaymentTokenSelected)) {
+                return false;
+            }
+
+            return in_array($vaultedPaymentTokenSelected['id'], array_column($vaultedPaymentTokens, 'id'));
+        }
+    }
+
+    /**
+     * @deprecated Use isVaultedPaymentUsed(PayPalDefinitions::PAYMENT_SOURCE_PAYPAL, $user) instead
+     */
+    public function isVaultedPaypalStandardUsed(?User $user = null): bool
+    {
+        return $this->isVaultedPaymentUsed(PayPalDefinitions::PAYMENT_SOURCE_PAYPAL, $user);
+    }
+
+    /**
+     * @deprecated Use isVaultedPaymentUsed('card', $user) instead
+     */
+    public function isVaultedCardUsed(?User $user = null): bool
+    {
+        return $this->isVaultedPaymentUsed('card', $user);
     }
 
     public function fetchSelectedVaultedPaymentToken(
