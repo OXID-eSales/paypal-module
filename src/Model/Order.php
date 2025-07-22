@@ -166,7 +166,6 @@ class Order extends Order_parent
         $payPalPaymentSuccess = true;
 
         if (($isPayPalACDC && $forceFetchDetails) || $isPaypalGooglePay  || $isPaypalApplePay) {
-
             if ($this->isPayPalOrderCompleted($payPalApiOrder)) {
                 $this->markOrderPaid();
                 $transactionId = $this->extractTransactionId($payPalApiOrder);
