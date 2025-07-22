@@ -886,8 +886,8 @@ class Payment
 
     public function verify3D(string $paymentId, Order $payPalOrder): bool
     {
-        //no ACDC payment
-        if ($paymentId != PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) {
+        //no ACDC OR Gpay payment
+        if (!in_array($paymentId, [PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID, PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID])) {
             return true;
         }
         //case no check is needed

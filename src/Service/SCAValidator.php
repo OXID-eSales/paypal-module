@@ -7,6 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPal\Exception\CardValidation;
@@ -128,17 +129,20 @@ class SCAValidator implements SCAValidatorInterface
         }
 
         // Verify card payment source exists
-        if (is_null($order->payment_source->card)) {
+        if (is_null($order->payment_source->card) && is_null($order->payment_source->google_pay)) {
             throw CardValidation::byPaymentSource();
         }
 
         // If no authentication result is available, return null
         // According to PayPal docs, this is a valid scenario and should allow payment to proceed
-        if (is_null($order->payment_source->card->authentication_result)) {
+        if (
+            is_null($order->payment_source->card->authentication_result) &&
+            is_null($order->payment_source->google_pay->card->authentication_result)
+        ) {
             return null;
         }
 
-        return $order->payment_source->card->authentication_result;
+        return $order->payment_source->card->authentication_result ?? ($order->payment_source->google_pay->card->authentication_result ?? null);
     }
 
     /**
