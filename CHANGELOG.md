@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Switch to ServerSide-API-Calls instead deprecated ClientSide-API-Calls
 - use PayPal-Client v2.0.22
 - send PUI-Bankdata via eMail during Checkout
+- Googlepay payment 3ds support
 
 ### FIX
 
