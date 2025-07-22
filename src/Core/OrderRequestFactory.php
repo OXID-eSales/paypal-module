@@ -159,13 +159,12 @@ class OrderRequestFactory
     {
         $userName = $this->getUserNameFromBasket($basket);
         $country = $this->getCountryFromBasket($basket);
-        /** @var ModuleSettings $moduleSettings */
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+
         return new PaymentSource([
             $requestName => [
                 "attributes" => [
                     "verification" => [
-                        "method" => $moduleSettings->getPayPalSCAContingency()
+                        "method" => Constants::PAYPAL_SCA_WHEN_REQUIRED
                     ]
                 ],
                 'name' => $userName,
