@@ -50,6 +50,8 @@
 
         this.onGooglePaymentButtonClicked = async function () {
             PayPalPayment.removeErrorMessage();
+            PayPalPayment.addSubmitButtonOverlay();
+            PayPalPayment.reactOnPayPalOverlayClosed = true;
             let response = await fetch(PayPalPayment.getConfigValue('shopOrderCreateUrl'), {
                 method: 'post',
                 headers: Object.assign({
