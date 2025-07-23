@@ -119,11 +119,13 @@ class OrderController extends OrderController_parent
             $isVaultingPossible = $moduleSettings->isVaultingAllowedForPayment($paymentId)
                 && $user->getFieldData('oxpassword');
 
-            //Disable save payments for standard PayPal if one wallet is vaulted already
+            //Disable save payments if a payment of the same type is already vaulted
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
             if (
-                PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID === $paymentId
-                && $vaultingService->isPaypalStandardVaulted($this->getUser())
+                (PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID === $paymentId && 
+                 $vaultingService->isVaultedPaymentUsed(PayPalDefinitions::PAYMENT_SOURCE_PAYPAL, $this->getUser())) ||
+                (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId && 
+                 $vaultingService->isVaultedPaymentUsed(PayPalDefinitions::PAYMENT_SOURCE_CARD, $this->getUser()))
             ) {
                 $isVaultingPossible = false;
             }
@@ -151,17 +153,17 @@ class OrderController extends OrderController_parent
                     }
                 }
 
-                // Vaulted PP-Accounts?
-                if (
-                    $paymentId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID ||
-                    $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
-                ) {
-                    $vaultedPaymentTokenSelected = $vaultingService->fetchSelectedVaultedPaymentToken($this->getUser());
-                    if ($vaultedPaymentTokenSelected) {
-                        $paymentDescription = $lang->translateString("OSC_PAYPAL_VAULTING_USE_HINT");
-                    }
+            }
+
+            if (
+                $paymentId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID ||
+                $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
+            ) {
+                $vaultedPaymentTokenSelected = $vaultingService->fetchSelectedVaultedPaymentToken($this->getUser());
+                if ($vaultedPaymentTokenSelected) {
+                    $paymentDescription = $lang->translateString("OSC_PAYPAL_VAULTING_USE_HINT");
+                    $this->addTplParam("vaultedPaymentDescription", $paymentDescription);
                 }
-                $this->addTplParam("vaultedPaymentDescription", $paymentDescription);
             }
         }
 
@@ -294,10 +296,26 @@ class OrderController extends OrderController_parent
         ]);
     }
 
+    /**
+     * @throws \OxidSolutionCatalysts\PayPalApi\Exception\ApiException
+     * @throws \OxidSolutionCatalysts\PayPal\Exception\PayPalException
+     * @throws \JsonException
+     */
     public function captureGooglePayOrder(): void
     {
+        $sessionOrderId = Registry::getSession()->getVariable('sess_challenge');
+        $order = oxNew(EshopModelOrder::class);
+        $order->load($sessionOrderId);
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();
         $orderId = (string) Registry::getRequest()->getRequestParameter('orderID');
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $payPalApiOrder = $paymentService->fetchOrderFields($orderId);
+        $verify3DResult = $paymentService->verify3D(PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID, $payPalApiOrder);
+
+        if (!$verify3DResult) {
+            throw PayPalException::cannotFinalizeOrderAfterExternalPayment($orderId, PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID);
+        }
 
         $request = new OrderCaptureRequest();
         try {
@@ -708,7 +726,7 @@ class OrderController extends OrderController_parent
 
     public function getDeladrid(): string
     {
-        return Registry::getSession()->getVariable('deladrid');
+        return (string)Registry::getSession()->getVariable('deladrid');
     }
 
     public function getPayPalCustomerId(): string

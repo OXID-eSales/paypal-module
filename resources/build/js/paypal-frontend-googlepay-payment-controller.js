@@ -74,6 +74,7 @@
                 } catch (err) {
                     // user cancels code
                     if (err.code === 20 ) {
+                        PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_ORDER_CANCELED);
                         await PayPalPayment.cancelOrder();
                     }
                 }
@@ -202,22 +203,13 @@
         };
         this.confirmOrder= async function (orderId, paymentData) {
             await new Promise(resolve => setTimeout(resolve, 1000));
-            try {
-                const confirmOrderResponse = await paypal.Googlepay().confirmOrder({
-                    orderId: orderId,
-                    paymentMethodData: paymentData.paymentMethodData
-                });
-            } catch (error) {
-                PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_UNKNOWN_ERROR);
-                PayPalPayment.handleError();
+            confirmOrderResponse = await paypal.Googlepay().confirmOrder({
+                orderId: orderId,
+                paymentMethodData: paymentData.paymentMethodData
+            }).catch(function (PayPalGooglePayError) {
+                PayPalPayment.handleError(PayPalGooglePayError);
                 return;
-            }
-
-            if ('undefined' === typeof confirmOrderResponse){
-                PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR);
-                PayPalPayment.handleError();
-                return;
-            }
+            });
 
             if (confirmOrderResponse.status === "PAYER_ACTION_REQUIRED" || confirmOrderResponse.status === 'APPROVED') {
                 PayPalPayment.googlePayUserActionRequired(orderId);

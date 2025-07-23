@@ -243,6 +243,10 @@
         };
 
         this.handleError = async function (data) {
+            if ('undefined' !== data && data instanceof Error){
+                PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR);
+            }
+
             let shopOrderId = PayPalPayment.getCurrentOrderOxid();
             if (null == shopOrderId) {
                 return;

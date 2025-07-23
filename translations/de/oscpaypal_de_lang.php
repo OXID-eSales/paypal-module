@@ -48,6 +48,7 @@ $aLang = [
     'OSC_PAYPAL_LOG_IN_TO_CONTINUE'                 => 'Bitte loggen Sie sich ein, um die Bestellung abzuschliessen.',
     'OSC_PAYPAL_3DSECURITY_ERROR'                   => 'Die Sicherheitsüberprüfung ist fehlgeschlagen, bitte erneut versuchen.',
     'OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR'         => 'Die Zahlungsautorisierung wurde abgelehnt. Bitte überprüfen Sie Ihre Zahlungsdaten und versuchen Sie es erneut.',
+    'OSC_PAYPAL_PAYMENT_CANCELED'                     => 'Die Zahlung wurde storniert',
     'OSC_PAYPAL_CAPTURE_DENIED_ERROR'               => 'Die Überweisung wurde abgelehnt. Bitte überprüfen Sie Ihre Zahlungsdaten und versuchen Sie es erneut.',
     'OSC_PAYPAL_INTERNAL_SERVICE_ERROR'             => 'Bei der Bearbeitung Ihrer Zahlung ist ein unbekannter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
     'OSC_PAYPAL_ORDEREXECUTION_ERROR'               => 'Der Bezahlvorgang wurde abgebrochen.',

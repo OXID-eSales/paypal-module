@@ -126,7 +126,7 @@ class OrderRequestFactory
                 key($selectedPaymentToken["payment_source"])
             );
 
-            $this->modifyPaymentSourceForVaulting($request, $paymentSourceId, $returnUrl, $cancelUrl);
+            $this->modifyPaymentSourceForVaulting($request, $paymentSourceId, $returnUrl, $cancelUrl, $userAction);
             return $request;
         }
 
@@ -159,13 +159,12 @@ class OrderRequestFactory
     {
         $userName = $this->getUserNameFromBasket($basket);
         $country = $this->getCountryFromBasket($basket);
-        /** @var ModuleSettings $moduleSettings */
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+
         return new PaymentSource([
             $requestName => [
                 "attributes" => [
                     "verification" => [
-                        "method" => $moduleSettings->getPayPalSCAContingency()
+                        "method" => Constants::PAYPAL_SCA_WHEN_REQUIRED
                     ]
                 ],
                 'name' => $userName,
@@ -625,6 +624,7 @@ class OrderRequestFactory
                         ],
                     ],
                     "experience_context" => [
+                        "user_action" => $userAction ?? self::USER_ACTION_CONTINUE,
                         "return_url" => $returnUrl,
                         "cancel_url" => $cancelUrl,
                         "payment_method_preference" => 'UNRESTRICTED',
