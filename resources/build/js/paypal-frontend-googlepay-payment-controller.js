@@ -50,6 +50,8 @@
 
         this.onGooglePaymentButtonClicked = async function () {
             PayPalPayment.removeErrorMessage();
+            PayPalPayment.addSubmitButtonOverlay();
+            PayPalPayment.reactOnPayPalOverlayClosed = true;
             let response = await fetch(PayPalPayment.getConfigValue('shopOrderCreateUrl'), {
                 method: 'post',
                 headers: Object.assign({
@@ -74,7 +76,6 @@
                 } catch (err) {
                     // user cancels code
                     if (err.code === 20 ) {
-                        PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_ORDER_CANCELED);
                         await PayPalPayment.cancelOrder();
                     }
                 }
