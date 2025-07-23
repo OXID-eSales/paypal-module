@@ -74,7 +74,6 @@
                 } catch (err) {
                     // user cancels code
                     if (err.code === 20 ) {
-                        PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_ORDER_CANCELED);
                         await PayPalPayment.cancelOrder();
                     }
                 }

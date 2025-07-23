@@ -162,17 +162,17 @@ class VaultingService extends BaseService
         $attributes = [];
         $vaultPaymentOnSuccess = Registry::getRequest()->getRequestParameter("vaultPayment");
         if (filter_var($vaultPaymentOnSuccess, FILTER_VALIDATE_BOOLEAN)) {
-            $attributes = [/* Probably redundant
+            $attributes = [
                 "customer" => [
                     "id" => $user->getFieldData("oscpaypalcustomerid")
-                ],*/
+                ],
                 "vault" => [
                     "store_in_vault" => "ON_SUCCESS",
                 ]
             ];
 
             if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL) {
-                //those 3 params should be only in Paypal Standard
+                //those 3 params should be only in PayPal Standard
                 $attributes['vault'] += [
                     "usage_type" => "MERCHANT",
                     "customer_type" => "CONSUMER",
@@ -287,22 +287,6 @@ class VaultingService extends BaseService
         }
     }
 
-    /**
-     * @deprecated Use isVaultedPaymentUsed(PayPalDefinitions::PAYMENT_SOURCE_PAYPAL, $user) instead
-     */
-    public function isVaultedPaypalStandardUsed(?User $user = null): bool
-    {
-        return $this->isVaultedPaymentUsed(PayPalDefinitions::PAYMENT_SOURCE_PAYPAL, $user);
-    }
-
-    /**
-     * @deprecated Use isVaultedPaymentUsed('card', $user) instead
-     */
-    public function isVaultedCardUsed(?User $user = null): bool
-    {
-        return $this->isVaultedPaymentUsed('card', $user);
-    }
-
     public function fetchSelectedVaultedPaymentToken(
         ?User   $user = null,
         ?string $id = null
@@ -344,7 +328,10 @@ class VaultingService extends BaseService
         $path = '/v3/vault/payment-tokens?customer_id=' . $paypalCustomerId;
 
         $body = '';
-        $result = Registry::getSession()->getVariable('payPalPaymentVaultedTokenCache' . $this->getTrackingId());
+        $trackingId = $this->getTrackingId();
+        $result = !empty($trackingId) ?
+            Registry::getSession()->getVariable('payPalPaymentVaultedTokenCache' . $trackingId) :
+            [];
         if (empty($result)) {
             try {
                 $response = $this->sendWithRequestResponseLogging('GET', $path, [], $headers);
@@ -352,7 +339,7 @@ class VaultingService extends BaseService
                     $body = $response->getBody();
                 }
                 $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-                Registry::getSession()->setVariable('payPalPaymentVaultedTokenCache' . $this->getTrackingId(), $result);
+                Registry::getSession()->setVariable('payPalPaymentVaultedTokenCache' . $trackingId, $result);
             } catch (ApiException|JsonException $e) {
                 $this->getServiceFromContainer(Logger::class)
                     ->log('error', __CLASS__ . ' ' . __FUNCTION__ . ' : ' . $e->getMessage());
@@ -374,8 +361,9 @@ class VaultingService extends BaseService
                         $uniquePaypalVaultedPaymentSources[$email] = [];
                     }
 
+                    // redundant as we're preventing of saving PayPal standard twice
                     if (in_array($payer_id, $uniquePaypalVaultedPaymentSources[$email])) {
-                        continue;
+                   //     continue;
                     }
 
                     $uniquePaypalVaultedPaymentSources[$email][] = $payer_id;

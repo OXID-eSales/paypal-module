@@ -697,7 +697,7 @@ class OrderRequestFactory
             = $shippingPreference;
 
         $newPaymentSource[$paymentSourceId]["experience_context"]["user_action"]
-            = $userAction ?? self::USER_ACTION_CONTINUE;
+            = $userAction ?? self::USER_ACTION_PAY_NOW;
 
         $request->payment_source = $newPaymentSource;
         }
