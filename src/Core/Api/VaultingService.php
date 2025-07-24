@@ -17,6 +17,7 @@ use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Service\BaseService;
@@ -25,6 +26,14 @@ use Psr\Log\LoggerInterface;
 class VaultingService extends BaseService
 {
     use ServiceContainer;
+
+    private OrderProcessTrackingService $orderProcessTrackingService;
+
+    public function __construct(OrderProcessTrackingService $orderProcessTrackingService, \OxidSolutionCatalysts\PayPalApi\Client $client)
+    {
+        $this->orderProcessTrackingService = $orderProcessTrackingService;
+        parent::__construct($client);
+    }
 
     public function getLogger(): LoggerInterface
     {
@@ -314,13 +323,84 @@ class VaultingService extends BaseService
         return is_array($vaultPaymentToken) ? $vaultPaymentToken : null;
     }
 
+    /**
+     * Get the cache key for vaulted tokens
+     * 
+     * @return string
+     */
+    protected function getVaultedTokenCacheKey(): string
+    {
+        $trackingId = $this->orderProcessTrackingService->getTrackingId();
+        return 'payPalPaymentVaultedTokenCache' . $trackingId;
+    }
+
+    /**
+     * Get vaulted token data from cache
+     * 
+     * @return array
+     */
+    public function getVaultedTokenFromCache(): array
+    {
+        $trackingId = $this->orderProcessTrackingService->getTrackingId();
+        if (empty($trackingId)) {
+            return [];
+        }
+
+        $cacheKey = $this->getVaultedTokenCacheKey();
+        return Registry::getSession()->getVariable($cacheKey) ?: [];
+    }
+
+    /**
+     * Store vaulted token data in cache
+     * 
+     * @param array $data
+     * @return void
+     */
+    public function storeVaultedTokenInCache(array $data): void
+    {
+        $trackingId = $this->orderProcessTrackingService->getTrackingId();
+        if (empty($trackingId)) {
+            return;
+        }
+
+        $cacheKey = $this->getVaultedTokenCacheKey();
+        Registry::getSession()->setVariable($cacheKey, $data);
+    }
+
+    /**
+     * Clear vaulted token cache
+     * 
+     * @return void
+     */
+    public function clearVaultedTokenCache(): void
+    {
+        $trackingId = $this->orderProcessTrackingService->getTrackingId();
+        if (empty($trackingId)) {
+            return;
+        }
+
+        $cacheKey = $this->getVaultedTokenCacheKey();
+        Registry::getSession()->deleteVariable($cacheKey);
+    }
+
+    /**
+     * Check if vaulting cache refresh is needed
+     * 
+     * @return bool True if refresh is needed, false otherwise
+     */
+    public function isVaultingCacheRefreshNeeded(): bool
+    {
+        return !$this->orderProcessTrackingService->isPaymentProcessStarted();
+    }
+
     public function getVaultPaymentTokens(string $paypalCustomerId): array
     {
         $viewConf = oxNew(ViewConfig::class);
         if (!$viewConf->getIsVaultingActive()) {
             return [];
         }
-        $this->setTrackingId((string)Registry::getSession()->getVariable('payPalPaymentProcessId'));
+        $currentTrackingId = (string)Registry::getSession()->getVariable('payPalPaymentProcessId');
+        $this->orderProcessTrackingService->setTrackingId($currentTrackingId);
         $headers = [];
         $headers['Content-Type'] = 'application/x-www-form-urlencoded';
         $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
@@ -328,23 +408,25 @@ class VaultingService extends BaseService
         $path = '/v3/vault/payment-tokens?customer_id=' . $paypalCustomerId;
 
         $body = '';
-        $trackingId = $this->getTrackingId();
-        $result = !empty($trackingId) ?
-            Registry::getSession()->getVariable('payPalPaymentVaultedTokenCache' . $trackingId) :
-            [];
-        if (empty($result)) {
+        $cachedResult = $this->getVaultedTokenFromCache();
+
+        // If we're in the middle of a payment process, use cached results if available
+        // Is we're outside a payment process, or cache is empty, fetch fresh results
+        if (empty($cachedResult) || $this->isVaultingCacheRefreshNeeded()) {
             try {
                 $response = $this->sendWithRequestResponseLogging('GET', $path, [], $headers);
                 if ($response) {
                     $body = $response->getBody();
                 }
                 $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-                Registry::getSession()->setVariable('payPalPaymentVaultedTokenCache' . $trackingId, $result);
+                $this->storeVaultedTokenInCache($result);
             } catch (ApiException|JsonException $e) {
                 $this->getServiceFromContainer(Logger::class)
                     ->log('error', __CLASS__ . ' ' . __FUNCTION__ . ' : ' . $e->getMessage());
-                $result = [];
+                $result = $cachedResult ?: [];
             }
+        } else {
+            $result = $cachedResult;
         }
 
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
@@ -361,9 +443,8 @@ class VaultingService extends BaseService
                         $uniquePaypalVaultedPaymentSources[$email] = [];
                     }
 
-                    // redundant as we're preventing of saving PayPal standard twice
                     if (in_array($payer_id, $uniquePaypalVaultedPaymentSources[$email])) {
-                   //     continue;
+                        continue;
                     }
 
                     $uniquePaypalVaultedPaymentSources[$email][] = $payer_id;

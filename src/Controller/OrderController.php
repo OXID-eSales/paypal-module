@@ -25,6 +25,7 @@ use OxidSolutionCatalysts\PayPal\Model\Basket;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Service\GooglePay\GooglePayPayPalService;
@@ -712,6 +713,13 @@ class OrderController extends OrderController_parent
         }
 
         return parent::_getNextStep($success);
+    }
+
+    public function getCurrentTrackingId(): string
+    {
+        /** @var OrderProcessTrackingService $orderProcessTrackingService */
+        $orderProcessTrackingService = Registry::get(OrderProcessTrackingService::class);
+        return $orderProcessTrackingService->getTrackingId();
     }
 
     /**

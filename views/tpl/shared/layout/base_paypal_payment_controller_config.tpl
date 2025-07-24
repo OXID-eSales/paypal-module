@@ -32,6 +32,7 @@
             currency: '[{$currency->name}]',
             customerId: '[{$customerId}]',
             captureStrategy: '[{if $captureStrategy == 'directly'}]CAPTURE[{else}]AUTHORIZE[{/if}]',
+            trackingId: '[{$oView->getCurrentTrackingId()}]',
         }
 
         [{if $paymentId == 'oscpaypal'}]

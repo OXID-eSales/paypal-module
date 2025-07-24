@@ -19,8 +19,8 @@ use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Model\BaseModel;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Traits\OrderProcessTrackingTrait;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
+use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
@@ -46,7 +46,14 @@ use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 class Order extends Order_parent
 {
     use ServiceContainer;
-    use OrderProcessTrackingTrait;
+
+    private OrderProcessTrackingService $orderProcessTrackingService;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
+    }
 
     /**
      * Uapm payment in progress
@@ -368,7 +375,7 @@ class Order extends Order_parent
         if (!$this->payPalApiOrder) {
             /** @var Orders $orderService */
             $orderService = Registry::get(ServiceFactory::class)->getOrderService();
-            $orderService->setTrackingId($this->getTrackingId());
+            $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
 
             $this->payPalApiOrder = $orderService->showOrderDetails(
                 $payPalOrderId,

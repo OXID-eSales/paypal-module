@@ -11,6 +11,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
+use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -57,7 +58,11 @@ class PaymentController extends PaymentController_parent
                 ($paypalCustomerId = $user->getFieldData("oscpaypalcustomerid"))
             ) {
                 $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+                /** @var OrderProcessTrackingService $orderProcessTrackingService */
+                $orderProcessTrackingService = Registry::get(OrderProcessTrackingService::class);
+                $vaultingService->clearVaultedTokenCache();
                 $vaultedPaymentTokens = $vaultingService->getVaultPaymentTokens($paypalCustomerId)["payment_tokens"];
+                $orderProcessTrackingService->startPaymentProcessTracking();
                 if ($vaultedPaymentTokens) {
                     $uniquePaypalVaultedPaymentSources = [];
                     foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {

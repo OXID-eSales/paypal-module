@@ -7,11 +7,11 @@
 
 declare(strict_types=1);
 
-namespace OxidSolutionCatalysts\PayPal\Traits;
+namespace OxidSolutionCatalysts\PayPal\Service;
 
 use OxidEsales\Eshop\Core\Registry;
 
-trait OrderProcessTrackingTrait
+class OrderProcessTrackingService
 {
     private string $trackingId = '';
 
@@ -36,5 +36,10 @@ trait OrderProcessTrackingTrait
     {
         Registry::getSession()->deleteVariable('payPalPaymentProcessId');
         $this->trackingId = '';
+    }
+
+    public function isPaymentProcessStarted(): bool
+    {
+        return !empty($this->trackingId) || !empty(Registry::getSession()->getVariable('payPalPaymentProcessId'));
     }
 }

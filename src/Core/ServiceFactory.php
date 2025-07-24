@@ -94,6 +94,7 @@ class ServiceFactory
     {
         return oxNew(
             VaultingService::class,
+            $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService'),
             $this->getClient()
         );
     }
