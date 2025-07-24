@@ -61,6 +61,7 @@ $aLang = [
     'OSC_PAYPAL_VAULTING_SUCCESS'                   => 'Beim bezahlen haben Sie Ihre gespeicherten Zahlungsdaten genutzt. Wenn Sie das zum ersten Mal getan haben, dann sehen Sie diese Daten in ca. 15min auch in Ihrem Shop-Kundenaccount.',
     'OSC_PAYPAL_VAULTING_SAVE'                      => 'Zahlart speichern',
     'OSC_PAYPAL_VAULTING_DELETE'                    => 'Zahlart löschen',
+    'OSC_PAYPAL_VAULTING_REFRESH_CACHE'              => 'Zahlungsarten aktualisieren',
     'OSC_PAYPAL_CONTINUE_TO_NEXT_STEP'              => 'Weiter mit gespeicherter Zahlungsart',
     'OSC_PAYPAL_CARD_ENDING_IN'                     => 'endet mit ●●●',
     'OSC_PAYPAL_CARD_PAYPAL_PAYMENT'                => 'PayPal Zahlung mit',

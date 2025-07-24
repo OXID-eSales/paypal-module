@@ -19,7 +19,6 @@ use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Traits\OrderProcessTrackingTrait;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
@@ -29,6 +28,7 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Service\PayPalUrlService;
@@ -47,7 +47,14 @@ class ProxyController extends FrontendController
 {
     use JsonTrait;
     use ServiceContainer;
-    use OrderProcessTrackingTrait;
+
+    private OrderProcessTrackingService $orderProcessTrackingService;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
+    }
 
     public function createOrder(): void
     {
@@ -251,7 +258,7 @@ class ProxyController extends FrontendController
         /** @var ServiceFactory $serviceFactory */
         $serviceFactory = Registry::get(ServiceFactory::class);
         $orderService = $serviceFactory->getOrderService();
-        $orderService->setTrackingId($this->getTrackingId());
+        $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
         $nonGuestAccountDetected = false;
         $isLoggedIn = false;
 

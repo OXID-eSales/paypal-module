@@ -14,7 +14,6 @@ use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Field;
-use OxidSolutionCatalysts\PayPal\Traits\OrderProcessTrackingTrait;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -23,6 +22,7 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -35,15 +35,16 @@ class AjaxPaymentController extends ProxyController
 {
     use JsonTrait;
     use ServiceContainer;
-    use OrderProcessTrackingTrait;
 
     private Logger $logger;
+    private OrderProcessTrackingService $orderProcessTrackingService;
 
     public function __construct()
     {
         parent::__construct();
 
         $this->logger = $this->getServiceFromContainer(Logger::class);
+        $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
     }
 
     public function captureOrder(): void
@@ -54,7 +55,7 @@ class AjaxPaymentController extends ProxyController
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        $orderService->setTrackingId($this->getTrackingId());
+        $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
         $language = Registry::getLang();
         $request = new OrderCaptureRequest();
         $capturePaymentForOrder = null;
@@ -163,12 +164,12 @@ class AjaxPaymentController extends ProxyController
      */
     public function createPayPalOrder(): void
     {
-        $this->startPaymentProcessTracking();
         $data = $this->getRequestParameters();
         $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'];
         $_POST['vaultPayment'] = $data['vaultPayment'] ? "true" : "false";
         $_POST['oscPayPalPaymentTypeForVaulting'] = PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
         $_POST['useVaultedPayment'] = $data['useVaultedPayment'];
+        $this->orderProcessTrackingService->setTrackingId($data['trackingId']);
         $this->addToBasket();
 
         $this->setPayPalPaymentMethod(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);

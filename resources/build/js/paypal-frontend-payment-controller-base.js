@@ -261,6 +261,7 @@
             let result = {status: 'pending'};
 
             try {
+                body.trackingId = PayPalPayment.getConfigValue('trackingId');
                 response = await fetch(PayPalPayment.getConfigValue(urlSlug), {
                     method: 'post',
                     headers: Object.assign({

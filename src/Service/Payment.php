@@ -15,7 +15,6 @@ use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidEsales\Eshop\Core\ShopVersion;
-use OxidSolutionCatalysts\PayPal\Traits\OrderProcessTrackingTrait;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
@@ -44,7 +43,6 @@ use OxidSolutionCatalysts\PayPalApi\Service\Payments as ApiPaymentService;
 class Payment
 {
     use ServiceContainer;
-    use OrderProcessTrackingTrait;
 
     public const PAYMENT_ERROR_NONE = 'PAYPAL_PAYMENT_ERROR_NONE';
     public const PAYMENT_ERROR_GENERIC = 'PAYPAL_PAYMENT_ERROR_GENERIC';
@@ -86,12 +84,15 @@ class Payment
 
     private $logger;
 
+    private OrderProcessTrackingService $orderProcessTrackingService;
+
     public function __construct(
         EshopSession $eshopSession,
         OrderRepository $orderRepository,
         SCAValidatorInterface $scaValidator,
         ModuleSettings $moduleSettingsService,
         Logger $logger,
+        OrderProcessTrackingService $orderProcessTrackingService,
         ?ServiceFactory $serviceFactory = null,
         PatchRequestFactory $patchRequestFactory = null,
         OrderRequestFactory $orderRequestFactory = null
@@ -101,6 +102,7 @@ class Payment
         $this->scaValidator = $scaValidator;
         $this->moduleSettingsService = $moduleSettingsService;
         $this->logger = $logger;
+        $this->orderProcessTrackingService = $orderProcessTrackingService;
         $this->serviceFactory = $serviceFactory ?: Registry::get(ServiceFactory::class);
         $this->patchRequestFactory = $patchRequestFactory ?: Registry::get(PatchRequestFactory::class);
         $this->orderRequestFactory = $orderRequestFactory ?: Registry::get(OrderRequestFactory::class);
@@ -120,11 +122,10 @@ class Payment
     ): ?Order {
         //TODO return value
         $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
-        $this->startPaymentProcessTracking();
 
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
-        $orderService->setTrackingId($this->getTrackingId());
+        $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
         $customId = $this->getCurrentOrderNumber($basket);
 
         $request = $this->orderRequestFactory->getRequest(
@@ -232,7 +233,7 @@ class Payment
     ): void {
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
-        $orderService->setTrackingId($this->getTrackingId());
+        $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
 
         // Update Order
         try {
@@ -270,7 +271,7 @@ class Payment
         $paymentService = Registry::get(ServiceFactory::class)->getPaymentService();
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
-        $orderService->setTrackingId($this->getTrackingId());
+        $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
 
         // Capture Order
         try {
@@ -874,7 +875,7 @@ class Payment
     public function fetchOrderFields(string $paypalOrderId, string $fields = ''): Order
     {
         $orderService = $this->serviceFactory->getOrderService();
-        $orderService->setTrackingId($this->getTrackingId());
+        $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
 
         return $orderService
             ->showOrderDetails(

@@ -27,4 +27,10 @@ trait AccountControllerTrait
             );
         }
     }
+
+    public function clearVaultedTokenCache(): void
+    {
+        $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+        $vaultingService->clearVaultedTokenCache();
+    }
 }

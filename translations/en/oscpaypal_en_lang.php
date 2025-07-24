@@ -60,6 +60,7 @@ $aLang = [
     'OSC_PAYPAL_VAULTING_SUCCESS'                   => 'You used your saved payment data when paying. If this is your first time, you\'ll see these data in your shop account in about 15 minutes.',
     'OSC_PAYPAL_VAULTING_SAVE'                      => 'Save payment',
     'OSC_PAYPAL_VAULTING_DELETE'                    => 'Delete payment',
+    'OSC_PAYPAL_VAULTING_REFRESH_CACHE'              => 'Refresh payment methods',
     'OSC_PAYPAL_CONTINUE_TO_NEXT_STEP'              => 'Continue with saved payment method',
     'OSC_PAYPAL_CARD_ENDING_IN'                     => 'ending in ●●●',
     'OSC_PAYPAL_CARD_PAYPAL_PAYMENT'                => 'PayPal payment with',
