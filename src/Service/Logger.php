@@ -10,18 +10,18 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Service;
 
 use OxidEsales\Eshop\Core\Registry;
-use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerInterface as PsrLoggerInterface;
 
 /**
  * Service Logger
  */
-class Logger
+class Logger implements LoggerInterface
 {
-    /** @var LoggerInterface $moduleLogger */
+    /** @var PsrLoggerInterface $moduleLogger */
     private $moduleLogger;
 
     public function __construct(
-        LoggerInterface $moduleLogger
+        PsrLoggerInterface $moduleLogger
     ) {
         $this->moduleLogger = $moduleLogger;
     }

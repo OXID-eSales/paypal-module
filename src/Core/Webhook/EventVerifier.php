@@ -12,6 +12,7 @@ use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Service\GenericService;
 use OxidSolutionCatalysts\PayPal\Core\Config;
+use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventVerificationException;
 
@@ -21,7 +22,7 @@ use OxidSolutionCatalysts\PayPal\Exception\WebhookEventVerificationException;
  * @see https://developer.paypal.com/docs/api-basics/notifications/webhooks/notification-messages/#event-headers
  * @see https://developer.paypal.com/docs/api/webhooks/v1/#verify-webhook-signature
  */
-class EventVerifier
+class EventVerifier implements EventVerifierInterface
 {
     private const VERIFICATION_STATUS_SUCCESS = 'SUCCESS';
 
@@ -34,12 +35,26 @@ class EventVerifier
     ];
 
     /**
+     * Verify a webhook event
+     *
+     * @param RequestReader $requestReader The request reader containing webhook data
+     * @return bool True if the webhook is verified, false otherwise
+     * @throws \Exception If verification fails due to an error
+     */
+    public function verify(RequestReader $requestReader): bool
+    {
+        return $this->verifyLegacy($requestReader->getHeaders(), $requestReader->getRawPost());
+    }
+
+    /**
+     * Legacy verify method for backward compatibility
+     *
      * @param array $headers Event request headers
      * @param string $body Event request body
      *
      * @throws ApiException|WebhookEventVerificationException
      */
-    public function verify(array $headers, string $body): bool
+    public function verifyLegacy(array $headers, string $body): bool
     {
         $config = new Config();
 

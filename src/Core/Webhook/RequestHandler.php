@@ -13,7 +13,7 @@ use JsonException;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher as WebhookDispatcher;
-use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier as VerificationService;
+use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifierInterface as VerificationService;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -53,11 +53,8 @@ final class RequestHandler
         $logger = $this->getServiceFromContainer(Logger::class);
 
         try {
-            $requestBody = $this->requestReader->getRawPost();
-            $headers = $this->requestReader->getHeaders();
-
-            $this->verificationService->verify($headers, $requestBody);
-            $this->processEvent($requestBody);
+            $this->verificationService->verify($this->requestReader);
+            $this->processEvent($this->requestReader->getRawPost());
 
             $result = true;
         } catch (WebhookEventException | WebhookEventTypeException $exception) {

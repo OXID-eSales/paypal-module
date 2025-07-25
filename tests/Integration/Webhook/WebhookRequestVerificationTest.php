@@ -14,6 +14,7 @@ use PHPUnit\Framework\TestCase;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventVerificationException;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier as WebhookRequestValidator;
+use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPalApi\Service\GenericService;
 
 final class WebhookRequestVerificationTest extends TestCase
@@ -33,7 +34,7 @@ final class WebhookRequestVerificationTest extends TestCase
         $this->expectException(WebhookEventVerificationException::class);
         $this->expectExceptionMessage(WebhookEventVerificationException::missingHeaders()->getMessage());
 
-        $validator->verify([], '');
+        $validator->verifyLegacy([], '');
     }
 
     public function testInvalidRequestIncorrectHeaders(): void
@@ -44,7 +45,7 @@ final class WebhookRequestVerificationTest extends TestCase
         $this->expectException(WebhookEventVerificationException::class);
         $this->expectExceptionMessage(WebhookEventVerificationException::missingHeaders()->getMessage());
 
-        $validator->verify($headers, '');
+        $validator->verifyLegacy($headers, '');
     }
 
     public function testInvalidRequestCorrectHeadersMissingStatus(): void
@@ -55,7 +56,7 @@ final class WebhookRequestVerificationTest extends TestCase
         $this->expectException(WebhookEventVerificationException::class);
         $this->expectExceptionMessage(WebhookEventVerificationException::verificationFailed()->getMessage());
 
-        $validator->verify($this->defaultHeaders, '');
+        $validator->verifyLegacy($this->defaultHeaders, '');
     }
 
     public function testInvalidRequestNoSuccessStatus(): void
@@ -66,7 +67,7 @@ final class WebhookRequestVerificationTest extends TestCase
         $this->expectException(WebhookEventVerificationException::class);
         $this->expectExceptionMessage(WebhookEventVerificationException::verificationFailed()->getMessage());
 
-        $validator->verify($this->defaultHeaders, '');
+        $validator->verifyLegacy($this->defaultHeaders, '');
     }
 
     public function testValidRequest(): void
@@ -74,7 +75,7 @@ final class WebhookRequestVerificationTest extends TestCase
         $validator = oxNew(WebhookRequestValidator::class);
         $this->setServiceFactoryMock(['verification_status' => 'SUCCESS']);
 
-        $this->assertTrue($validator->verify($this->defaultHeaders, ''));
+        $this->assertTrue($validator->verifyLegacy($this->defaultHeaders, ''));
     }
 
     private function setServiceFactoryMock(array $verificationResponse): void

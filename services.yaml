@@ -52,6 +52,11 @@ services:
     arguments:
       Psr\Log\LoggerInterface: '@OxidSolutionCatalysts\PayPal\Logger'
 
+  # Logger interface binding
+  OxidSolutionCatalysts\PayPal\Service\LoggerInterface:
+    alias: OxidSolutionCatalysts\PayPal\Service\Logger
+    public: true
+
   OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface:
     class:  OxidSolutionCatalysts\PayPal\Service\SCAValidator
     public: true
@@ -61,13 +66,18 @@ services:
     class: OxidSolutionCatalysts\PayPal\Controller\WebhookController
     public: true
     arguments:
-      $logger: '@OxidSolutionCatalysts\PayPal\Service\Logger'
-      $eventVerifier: '@OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier'
+      $logger: '@OxidSolutionCatalysts\PayPal\Service\LoggerInterface'
+      $eventVerifier: '@OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifierInterface'
       $eventDispatcher: '@OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher'
 
   # Webhook related services
   OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier:
     class: OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier
+    public: true
+
+  # EventVerifier interface binding
+  OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifierInterface:
+    alias: OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier
     public: true
 
   OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher:
