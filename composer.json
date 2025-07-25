@@ -24,8 +24,11 @@
         "php": ">=8.0",
         "viison/address-splitter": "^0.3.4",
         "webmozart/path-util": "^2.3.0",
-        "oxid-solution-catalysts/paypal-client": "v3.0.17",
-        "brick/phonenumber": "^0.5.0"
+        "brick/phonenumber": "^0.5.0",
+        "guzzlehttp/guzzle": "~7",
+        "psr/log": "^1.1",
+        "league/oauth2-client": "^2.4",
+        "webmozart/assert": "^1.7 || ^1.8 || ^1.9"
     },
     "require-dev": {
         "codeception/module-rest": "^3.3.0",
@@ -44,6 +47,7 @@
     "autoload": {
         "psr-4": {
             "OxidSolutionCatalysts\\PayPal\\": "src/",
+            "OxidSolutionCatalysts\\PayPalApi\\": "src/PayPalApi/",
             "OxidSolutionCatalysts\\PayPal\\Tests\\": "tests/"
         }
     },
