@@ -11,15 +11,6 @@
         "forum": "https://forum.oxid-esales.com",
         "docs": "https://docs.oxid-esales.com/modules/paypal-checkout/en/latest"
     },
-    "extra": {
-        "oxideshop": {
-            "target-directory": "osc/paypal",
-            "blacklist-filter": [
-                "resources/**/*",
-                "tests/**/*"
-            ]
-        }
-    },
     "require": {
         "php": ">=8.0",
         "viison/address-splitter": "^0.3.4",
