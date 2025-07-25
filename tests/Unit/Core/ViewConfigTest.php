@@ -110,18 +110,17 @@ final class ViewConfigTest extends TestCase
     /**
      * Test case for ViewConfig::showPayPalBannerOnCheckoutPage()
      *
-     * @dataProvider providerBannerCheckoutPage
-     *
      * @param string $actionClassName
      * @param string $selectorSetting
      */
+    #[\PHPUnit\Framework\Attributes\DataProvider('providerBannerCheckoutPage')]
     public function showPayPalBannerOnCheckoutPage(string $actionClassName, string $selectorSetting): void
     {
         $viewMock = $this
             ->getMockBuilder(\OxidSolutionCatalysts\PayPal\Core\ViewConfig::class)
-            ->setMethods(['getActionClassName'])
+            ->onlyMethods(['getActionClassName'])
             ->getMock();
-        $viewMock->expects($this->once())->method('getActionClassName')->will($this->returnValue($actionClassName));
+        $viewMock->expects($this->once())->method('getActionClassName')->willReturn($actionClassName);
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', true);
         $this->updateModuleSetting('oscPayPalBannersCheckoutPage', true);
@@ -135,7 +134,7 @@ final class ViewConfigTest extends TestCase
         $this->assertFalse($viewMock->showPayPalCheckoutBannerOnCheckoutPage());
     }
 
-    public function providerBannerCheckoutPage(): array
+    public static function providerBannerCheckoutPage(): array
     {
         return [
             ['basket', 'oscPayPalBannersCartPageSelector'],
@@ -145,9 +144,8 @@ final class ViewConfigTest extends TestCase
 
     /**
      * Test case for ViewConfig::getPayPalBannersColorScheme()
-     *
-     * @dataProvider providerGetPayPalColorScheme
      */
+    #[\PHPUnit\Framework\Attributes\DataProvider('providerGetPayPalColorScheme')]
     public function testPayPalBannerColorScheme($colorScheme): void
     {
         $view = oxNew(\OxidEsales\Eshop\Core\ViewConfig::class);
@@ -156,7 +154,7 @@ final class ViewConfigTest extends TestCase
         $this->assertEquals($colorScheme, $view->getPayPalCheckoutBannersColorScheme());
     }
 
-    public function providerGetPayPalColorScheme(): array
+    public static function providerGetPayPalColorScheme(): array
     {
         return [
             ['blue'],

@@ -508,6 +508,7 @@ class OrderRequestFactory
         $country->load($user->getFieldData('oxcountryid'));
         $countryCode = $country->oxcountry__oxisoalpha2->value;
 
+        $type = null;
         foreach ($userPhoneFields as $numberField => $numberType) {
             $number = $user->getFieldData($numberField);
 
@@ -526,7 +527,7 @@ class OrderRequestFactory
             }
         }
 
-        if (!$number) {
+        if (!$number || !$type) {
             return null;
         }
 

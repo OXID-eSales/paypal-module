@@ -87,22 +87,7 @@ class WebhookHandlerBaseTestCase extends BaseTestCase
 
     protected function getPsrLoggerMock(): LoggerInterface
     {
-        $psrLogger = $this->getMockBuilder(LoggerInterface::class)
-            ->disableOriginalConstructor()
-            ->setMethods(
-                [
-                    'emergency',
-                    'alert',
-                    'critical',
-                    'error',
-                    'warning',
-                    'notice',
-                    'info',
-                    'debug',
-                    'log'
-                ]
-            )
-            ->getMock();
+        $psrLogger = $this->createMock(LoggerInterface::class);
 
         return $psrLogger;
     }

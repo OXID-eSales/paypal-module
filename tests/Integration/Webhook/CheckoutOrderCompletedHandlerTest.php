@@ -57,7 +57,7 @@ final class CheckoutOrderCompletedHandlerTest extends WebhookHandlerBaseTestCase
         $handler->handle($event);
     }
 
-    public function dataProviderWebhookEvent(): array
+    public static function dataProviderWebhookEvent(): array
     {
         return [
             'api_v1' => [
@@ -69,9 +69,7 @@ final class CheckoutOrderCompletedHandlerTest extends WebhookHandlerBaseTestCase
         ];
     }
 
-    /**
-     * @dataProvider dataProviderWebhookEvent
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('dataProviderWebhookEvent')]
     public function testCheckoutOrderCompleted(string $fixture): void
     {
         $data = $this->getRequestData($fixture);

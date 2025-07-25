@@ -59,22 +59,7 @@ abstract class BaseTestCase extends TestCase
 
     protected function getPsrLoggerMock(): LoggerInterface
     {
-        $psrLogger = $this->getMockBuilder(LoggerInterface::class)
-            ->disableOriginalConstructor()
-            ->setMethods(
-                [
-                    'emergency',
-                    'alert',
-                    'critical',
-                    'error',
-                    'warning',
-                    'notice',
-                    'info',
-                    'debug',
-                    'log'
-                ]
-            )
-            ->getMock();
+        $psrLogger = $this->createMock(LoggerInterface::class);
 
         return $psrLogger;
     }
@@ -82,34 +67,6 @@ abstract class BaseTestCase extends TestCase
     protected function updateModuleConfiguration(string $confName, $value): void
     {
         $this->getServiceFromContainer(ModuleSettings::class)->save($confName, $value);
-    }
-
-    /**
-     * @param string $needle
-     * @param string $haystack
-     * @param string $message
-     */
-    protected function doAssertStringNotContainsString($needle, $haystack, $message = '')
-    {
-        if (method_exists($this, 'assertStringNotContainsString')) {
-            parent::assertStringNotContainsString($needle, $haystack, $message);
-        } else {
-            parent::assertNotContains($needle, $haystack, $message);
-        }
-    }
-
-    /**
-     * @param string $needle
-     * @param string $haystack
-     * @param string $message
-     */
-    protected function doAssertStringContainsString($needle, $haystack, $message = '')
-    {
-        if (method_exists($this, 'assertStringContainsString')) {
-            parent::assertStringContainsString($needle, $haystack, $message);
-        } else {
-            parent::assertContains($needle, $haystack, $message);
-        }
     }
 
     private function importTestProducts(): void

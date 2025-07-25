@@ -232,7 +232,7 @@ class Onboarding
         $isBanContactCapability = false;
         $isIDealCapability = false;
 
-        foreach ($merchantInformations['capabilities'] as $capability) {
+        foreach (($merchantInformations['capabilities'] ?? []) as $capability) {
             $isVaultingCapability = $this->checkCapability($capability, 'PAYPAL_WALLET_VAULTING_ADVANCED') ?
                 true :
                 $isVaultingCapability;

@@ -157,6 +157,7 @@ final class PaymentTest extends BaseTestCase
             $this->fail('Expected ApiException, got TypeError ' . $e->getMessage());
         }
 
+        $this->assertNotNull($result, 'PayPal order creation should return a result');
         $this->assertNotEmpty($result->id);
     }
 
@@ -255,20 +256,23 @@ final class PaymentTest extends BaseTestCase
     }
 
 
-    /**
-     * @dataProvider dataProviderverify3D
-     */
-    public function testVerify3D(
-        string $paymentId,
-        string $paypalOrder,
-        bool $alwaysIgnoreSCAResult,
-        string $assert,
-        string $sca
-    ): void {
-        $paymentService = $this->getPaymentServiceMock($paypalOrder, [], $alwaysIgnoreSCAResult, $sca);
-        $this->$assert(
-            $paymentService->verify3D($paymentId, unserialize($paypalOrder))
-        );
+    public function testVerify3D(): void 
+    {
+        $testCases = $this->dataProviderverify3D();
+        
+        foreach ($testCases as $name => $testCase) {
+            $paymentId = $testCase['paymentId'];
+            $paypalOrder = $testCase['paypalOrder'];
+            $alwaysIgnoreSCAResult = $testCase['alwaysIgnoreSCAResult'];
+            $assert = $testCase['assert'];
+            $sca = $testCase['sca'];
+            
+            $paymentService = $this->getPaymentServiceMock($paypalOrder, [], $alwaysIgnoreSCAResult, $sca);
+            $this->$assert(
+                $paymentService->verify3D($paymentId, unserialize($paypalOrder)),
+                "Failed test case: $name"
+            );
+        }
     }
 
     private function getPuiOrderRequest(): OrderRequest

@@ -52,7 +52,7 @@ final class OnboardingTest extends BaseTestCase
             ->willReturn($credentials);
 
         $service = $this->getMockBuilder(Onboarding::class)
-            ->setMethods(['saveCredentials', 'getOnboardingClient'])
+            ->onlyMethods(['saveCredentials', 'getOnboardingClient'])
             ->getMock();
         $service->expects($this->any())
             ->method('getOnboardingClient')

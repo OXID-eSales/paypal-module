@@ -62,7 +62,7 @@ class User extends User_parent
         $year = $required['birthdate']['year'];
 
         $result = null;
-        if (checkdate($month, $day, $year)) {
+        if ($month !== null && $day !== null && $year !== null && checkdate($month, $day, $year)) {
             $result = (new DateTimeImmutable())->setDate($year, $month, $day);
             $result = $result->format('Y-m-d');
         }

@@ -33,7 +33,7 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
         $handler->handle($event);
     }
 
-    public function dataProviderWebhookEvent(): array
+    public static function dataProviderWebhookEvent(): array
     {
         return [
             'api_v1' => [
@@ -45,9 +45,7 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
         ];
     }
 
-    /**
-     * @dataProvider dataProviderWebhookEvent
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('dataProviderWebhookEvent')]
     public function testPayPalTransactionIdWithoutPayPalOrderId(string $fixture): void
     {
         $data = $this->getRequestData($fixture);

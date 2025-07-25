@@ -418,13 +418,16 @@ class CardValidationTest extends TestCase
         $this->assertSame(SCAValidator::ENROLLMENT_STATUS_YES, $validationResult->three_d_secure->enrollment_status);
     }
 
-    /**
-     * @dataProvider providerPayPalApiOrderResults
-     */
-    public function testIsCardSafeToUse(string $serializedOrder, string $assertMethod)
+    public function testIsCardSafeToUse()
     {
         $validator = new SCAValidator();
-        $this->{$assertMethod}($validator->isCardUsableForPayment(unserialize($serializedOrder)));
+        $testCases = $this->providerPayPalApiOrderResults();
+        
+        foreach ($testCases as $name => $testCase) {
+            $serializedOrder = $testCase['success'];
+            $assertMethod = $testCase['method'];
+            $this->{$assertMethod}($validator->isCardUsableForPayment(unserialize($serializedOrder)), "Failed test case: $name");
+        }
     }
 
     public function providerPayPalApiOrderResults(): array

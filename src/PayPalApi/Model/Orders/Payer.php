@@ -61,6 +61,7 @@ class Payer extends PayerBase implements JsonSerializable
 
     public function validate($from = null)
     {
+        parent::validate($from);
         $within = isset($from) ? "within $from" : "";
         !isset($this->name) || Assert::isInstanceOf(
             $this->name,

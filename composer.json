@@ -22,15 +22,24 @@
         "webmozart/assert": "^1.7 || ^1.8 || ^1.9"
     },
     "require-dev": {
-        "codeception/module-rest": "^3.3.0",
-        "codeception/module-phpbrowser": "^3.0.0",
-        "codeception/module-db": "^3.0.0",
-        "squizlabs/php_codesniffer": "3.*",
+        "codeception/codeception": "^5.0",
+        "codeception/module-asserts": "^3.0",
+        "codeception/module-db": "^3.0",
+        "codeception/module-filesystem": "^3.0",
+        "codeception/module-webdriver": "^4.0",
+        "composer/composer": "^2.0",
+        "incenteev/composer-parameter-handler": "^v2.1.4",
+        "mikey179/vfsstream": "~1.6.8",
+        "oxid-esales/codeception-modules": "dev-b-7.4.x",
+        "oxid-esales/codeception-page-objects": "dev-b-7.4.x",
+        "oxid-esales/developer-tools": "dev-b-7.4.x",
+        "oxid-esales/oxideshop-ide-helper": "dev-b-7.4.x",
         "oxid-esales/oxideshop-ce": "dev-b-7.4.x",
+        "phpspec/prophecy-phpunit": "^v2.0.1",
+        "phpunit/phpunit": "^11.4",
+        "squizlabs/php_codesniffer": "^3.5.4",
         "phpstan/phpstan": "^1.10",
-        "phpunit/phpunit": "^9.1.1",
-        "phpmd/phpmd": "^2.15",
-        "mikey179/vfsstream": "^1.6"
+        "phpmd/phpmd": "^2.15"
     },
     "conflicts": {
         "oxid-esales/oxideshop-ce": "<7.4"

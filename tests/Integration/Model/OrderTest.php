@@ -142,69 +142,67 @@ final class OrderTest extends BaseTestCase
         $this->assertSame('test-pui-1234', $order->getFieldData('oxinvoicenr'));
     }
 
-    public function dataProviderFinalizeOrder(): array
+    public static function dataProviderFinalizeOrder(): array
     {
         return [
             'wait_for_webhook' => [
-                'payment' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'isOrderFinished' => false,
-                'isOrderPaid' => false,
-                'isWaitForWebhookTimeoutReached' => false,
-                'hasOrderNumber' => false,
-                'orderInProgress' => true,
-                'expected' => 600 // PayPalExtendModelOrder::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS
+                PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
+                false,
+                false,
+                false,
+                false,
+                true,
+                600 // PayPalExtendModelOrder::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS
             ],
             'wait_timeout' => [
-                'payment' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'isOrderFinished' => false,
-                'isOrderPaid' => false,
-                'isWaitForWebhookTimeoutReached' => true,
-                'hasOrderNumber' => false,
-                'orderInProgress' => true,
-                'expected' => 900 //PayPalExtendModelOrder::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS
+                PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
+                false,
+                false,
+                true,
+                false,
+                true,
+                900 //PayPalExtendModelOrder::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS
             ],
             'need_call_finalize' => [
-                'payment' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'isOrderFinished' => true,
-                'isOrderPaid' => true,
-                'isWaitForWebhookTimeoutReached' => true,  //does not matter in this case
-                'hasOrderNumber' => false,
-                'orderInProgress' => true,
-                'expected' => 800 //PayPalExtendModelOrder::ORDER_STATE_NEED_CALL_ACDC_FINALIZE
+                PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
+                true,
+                true,
+                true,  //does not matter in this case
+                false,
+                true,
+                800 //PayPalExtendModelOrder::ORDER_STATE_NEED_CALL_ACDC_FINALIZE
             ],
             'wait_for_webhook_uapm_payment' => [
-                'payment' => PayPalDefinitions::GIROPAY_PAYPAL_PAYMENT_ID,
-                'isOrderFinished' => false,
-                'isOrderPaid' => false,
-                'isWaitForWebhookTimeoutReached' => false,
-                'hasOrderNumber' => false,
-                'orderInProgress' => true,
-                'expected' => 600 //PayPalExtendModelOrder::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS
+                PayPalDefinitions::GIROPAY_PAYPAL_PAYMENT_ID,
+                false,
+                false,
+                false,
+                false,
+                true,
+                600 //PayPalExtendModelOrder::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS
             ],
             'wait_for_webhook_standard_payment' => [
-                'payment' => 'oxidcashondel',
-                'isOrderFinished' => false,
-                'isOrderPaid' => false,
-                'isWaitForWebhookTimeoutReached' => false,
-                'hasOrderNumber' => false,
-                'orderInProgress' => true,
-                'expected' => 5 //EshopModelOrder::ORDER_STATE_INVALIDPAYMENT  //sure, we use empty basket
+                'oxidcashondel',
+                false,
+                false,
+                false,
+                false,
+                true,
+                5 //EshopModelOrder::ORDER_STATE_INVALIDPAYMENT  //sure, we use empty basket
             ],
             'non_dropoff_acdc' => [
-                'payment' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'isOrderFinished' => false,
-                'isOrderPaid' => false,
-                'isWaitForWebhookTimeoutReached' => false,
-                'hasOrderNumber' => false,
-                'orderInProgress' => false,
-                'expected' => 5 //EshopModelOrder::ORDER_STATE_INVALIDPAYMENT  //sure, we use empty basket
+                PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
+                false,
+                false,
+                false,
+                false,
+                false,
+                5 //EshopModelOrder::ORDER_STATE_INVALIDPAYMENT  //sure, we use empty basket
             ],
         ];
     }
 
-    /**
-     * @dataProvider dataProviderFinalizeOrder
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('dataProviderFinalizeOrder')]
     public function testFinalizeOrder(
         string $paymentId,
         bool $isOrderFinished,
@@ -534,13 +532,15 @@ final class OrderTest extends BaseTestCase
             ->willReturn($captureMock);
         $orderMock->expects($this->never())
             ->method('doExecutePayPalPayment');
-        $orderMock->expects($this->any())
+        $orderMock->expects($this->exactly(2))
             ->method('getServiceFromContainer')
-            ->withConsecutive(
-                [$this->equalTo(PaymentService::class)],
-                [$this->equalTo(ModuleSettings::class)]
-            )
-            ->willReturnOnConsecutiveCalls($paymentServiceMock, $moduleSettingsMock);
+            ->willReturnCallback(function ($service) use ($paymentServiceMock, $moduleSettingsMock) {
+                return match ($service) {
+                    PaymentService::class => $paymentServiceMock,
+                    ModuleSettings::class => $moduleSettingsMock,
+                    default => null
+                };
+            });
         $orderMock->expects($this->once())
             ->method('afterOrderCleanUp');
         $orderMock->expects($this->never())

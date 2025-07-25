@@ -359,7 +359,7 @@ class Payment
             $payPalTransactionId = $result && isset($result->purchase_units[0]->payments->captures[0]->id) ?
                 $result->purchase_units[0]->payments->captures[0]->id : '';
 
-            $status = $result && $result->purchase_units[0]->payments->captures[0]->status ?
+            $status = $result && isset($result->purchase_units[0]->payments->captures[0]->status) ?
                 $result->purchase_units[0]->payments->captures[0]->status : Order::STATUS_SAVED;
 
             /** @var PayPalOrderModel $paypalOrder */

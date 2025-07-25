@@ -25,7 +25,7 @@ class PaymentCaptureCompletedHandler extends WebhookHandlerBase
 
     protected function getPayPalTransactionIdFromResource(array $eventPayload): string
     {
-        return (string) $eventPayload['id'];
+        return (string) ($eventPayload['id'] ?? '');
     }
 
     protected function getStatusFromResource(array $eventPayload): string

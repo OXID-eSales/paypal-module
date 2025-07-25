@@ -57,23 +57,21 @@ final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
         $handler->handle($event);
     }
 
-    public function dataProviderWebhookEvent(): array
+    public static function dataProviderWebhookEvent(): array
     {
         return [
             'full' => [
-                'ordertotal' => 7.0,
-                'expected' => 'REFUNDED'
+                7.0,
+                'REFUNDED'
             ],
             'partial' => [
-                'ordertotal' => 70.0,
-                'expected' => 'PARTIALLY_REFUNDED'
+                70.0,
+                'PARTIALLY_REFUNDED'
             ]
         ];
     }
 
-    /**
-     * @dataProvider dataProviderWebhookEvent
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('dataProviderWebhookEvent')]
     public function testPaymentCaptureRefunded(float $orderTotal, string $expected): void
     {
         $data = $this->getRequestData(self::FIXTURE);

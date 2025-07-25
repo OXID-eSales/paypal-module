@@ -11,8 +11,8 @@ class LanguageLocaleMapperTest extends TestCase
     private const SUPPORTED_LOCALES = ['de_DE', 'en_US'];
     /**
      * @covers \OxidSolutionCatalysts\PayPal\Service\LanguageLocaleMapper::mapLanguageToLocale
-     * @dataProvider getTestData
      */
+    #[\PHPUnit\Framework\Attributes\DataProvider('getTestData')]
     public function testMapLanguageToLocale(string $givenLanguage, string $expectedLocale)
     {
         $moduleSettings = $this->getMockBuilder(ModuleSettings::class)
@@ -30,7 +30,7 @@ class LanguageLocaleMapperTest extends TestCase
         );
     }
 
-    public function getTestData(): array
+    public static function getTestData(): array
     {
         return [
             [ // first supported language

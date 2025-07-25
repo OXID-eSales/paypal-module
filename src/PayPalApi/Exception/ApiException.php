@@ -91,8 +91,10 @@ class ApiException extends \Exception
         $issue = '';
 
         if ($error = json_decode($this->response->getBody(), true)) {
-            $details = $error['details'][0];
-            $issue = $details['issue'];
+            if (isset($error['details']) && isset($error['details'][0])) {
+                $details = $error['details'][0];
+                $issue = $details['issue'] ?? '';
+            }
         }
 
         return $issue;

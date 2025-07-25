@@ -69,7 +69,7 @@ class EventVerifier
         $response = $notificationService->request('POST', $payload, [], $headers);
 
         if (
-            !$response['verification_status'] || (
+            !isset($response['verification_status']) || (
             $response['verification_status'] !== self::VERIFICATION_STATUS_SUCCESS)
         ) {
             throw new WebhookEventVerificationException('Event verification failed');

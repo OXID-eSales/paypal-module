@@ -59,7 +59,7 @@ class PayPalRequestAmountFactory
             '.',
             ''
         );
-        $amount->currency_code = $this->getCurrency()->name;
+        $amount->currency_code = $this->getCurrency()->name ?? 'EUR';
         //Breakdown provides details such as:
         //total item amount, total tax amount, shipping, handling, insurance, and discounts, if any.
         $amount->breakdown = $this->calculateBreakdown($amount->value);

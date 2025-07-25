@@ -48,7 +48,7 @@ class PriceToMoney
         $value = number_format($value, (int) $currency->decimal, '.', '');
 
         $money = new Money();
-        $money->currency_code = $currency->name;
+        $money->currency_code = $currency->name ?? 'EUR';
         $money->value = $value;
 
         return $money;

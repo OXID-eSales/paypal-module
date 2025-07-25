@@ -9,9 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 class Str2FloatTest extends TestCase
 {
-    /**
-     * @dataProvider dataSource
-     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('dataSource')]
     public function testStr2Float(string $input, ?float $expected): void
     {
         $converter = new Str2Float();
@@ -19,7 +17,7 @@ class Str2FloatTest extends TestCase
         $this->assertSame($expected, $result);
     }
 
-    public function dataSource(): array
+    public static function dataSource(): array
     {
         return [
             [

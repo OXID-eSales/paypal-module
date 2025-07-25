@@ -89,7 +89,7 @@ class PatchRequestFactory
 
         $address->admin_area_1 = $state->getFieldData('oxtitle');
         $address->admin_area_2 = $deliveryAddress->getFieldData('oxcity');
-        $address->country_code = $country->oxcountry__oxisoalpha2->value;
+        $address->country_code = $country->oxcountry__oxisoalpha2->value ?? '';
         $address->postal_code = $deliveryAddress->getFieldData('oxzip');
 
         $patch->value = $address;
@@ -99,7 +99,7 @@ class PatchRequestFactory
 
     public function getShippingNamePatch(Address $deliveryAddress): ?Patch
     {
-        $fullName = $deliveryAddress->oxaddress__oxfname->value . " " . $deliveryAddress->oxaddress__oxlname->value;
+        $fullName = ($deliveryAddress->oxaddress__oxfname->value ?? '') . " " . ($deliveryAddress->oxaddress__oxlname->value ?? '');
         $patch = new Patch();
         $patch->op = Patch::OP_REPLACE;
         $patch->path = "/purchase_units/@reference_id=='"
@@ -146,7 +146,7 @@ class PatchRequestFactory
 
         $basketItems = $this->basket->getContents();
         /** @var BasketItem $basketItem */
-        foreach ($basketItems as $basketItem) {
+        foreach (($basketItems ?? []) as $basketItem) {
             $item = new Item();
             $item->name = (new Truncate())->truncate($basketItem->getTitle());
             $basketArticle = $basketItem->getArticle();
