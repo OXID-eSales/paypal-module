@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Service;
 
 use OxidEsales\Eshop\Core\Registry;
-use Webmozart\PathUtil\Path;
+use Symfony\Component\Filesystem\Path;
 
 class Context
 {
@@ -19,11 +19,11 @@ class Context
      */
     public function getPayPalLogFilePath(): string
     {
-        return Path::join([
+        return Path::join(
             Registry::getConfig()->getLogsDir(),
             'paypal',
             $this->getPayPalLogFileName()
-        ]);
+        );
     }
 
     private function getPayPalLogFileName(): string
