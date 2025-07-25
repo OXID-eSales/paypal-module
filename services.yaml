@@ -55,3 +55,26 @@ services:
   OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface:
     class:  OxidSolutionCatalysts\PayPal\Service\SCAValidator
     public: true
+
+  # WebhookController registered as service
+  OxidSolutionCatalysts\PayPal\Controller\WebhookController:
+    class: OxidSolutionCatalysts\PayPal\Controller\WebhookController
+    public: true
+    arguments:
+      $logger: '@OxidSolutionCatalysts\PayPal\Service\Logger'
+      $eventVerifier: '@OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier'
+      $eventDispatcher: '@OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher'
+
+  # Webhook related services
+  OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier:
+    class: OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier
+    public: true
+
+  OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher:
+    class: OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher
+    public: true
+
+  # Controller route registration for webhook
+  oscpaypalwebhook:
+    alias: OxidSolutionCatalysts\PayPal\Controller\WebhookController
+    public: true
