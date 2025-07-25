@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.6.0] - 2025-??-??
+## [2.6.0] - 2025-07-28
 
 ### NEW
 
@@ -19,11 +19,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - switch to experience context and drop deprecated application_context
 - Better style and Localisations for ACDC and Vaulting
 - Saving vaulted payment methods is now only possible via checkout
-- Trim the item names for PayPal in a proper way
-- Switch to ServerSide-API-Calls instead deprecated ClientSide-API-Calls
+- Trim the item names for PayPal properly
+- Switch to ServerSide-API-Calls instead of deprecated ClientSide-API-Calls
 - use PayPal-Client v2.0.22
 - send PUI-Bankdata via eMail during Checkout
 - Googlepay payment 3ds support
+- Refresh button added in the customer account area to update the vaulted payment methods list
+- Added additional payment process tracking id for enhanced processes logging
 
 ### FIX
 
@@ -38,7 +40,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007769](https://bugs.oxid-esales.com/view.php?id=7769): Performance: Cache the Data-Client-Token for 24h & load SDK only if necessary
 - use PayPal-Client v2.0.19
 - set connect-timeout for 5 Seconds and request-timeout for 30 seconds
-- [0007771](https://bugs.oxid-esales.com/view.php?id=7771): Paypal can only work with two decimal places. For shops with configured additional decimal places, the corresponding rounding takes place
+- [0007771](https://bugs.oxid-esales.com/view.php?id=7771): PayPal can only work with two decimal places. For shops with configured additional decimal places, the corresponding rounding takes place
 - [0007772](https://bugs.oxid-esales.com/view.php?id=7772): Fix pay in nettomode
 - Fix line item amounts in case of discounts (Discussion here https://forum.oxid-esales.com/t/paypal-modul-2-5-1-fehler-bei-rabatten-fehler-die-1223354igste/99472)
 - Add stronger indication of required domain registration for Apple Pay
@@ -48,8 +50,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix The quantity is overlooked during PayPal checkout initiation from the product page
 - Fix Cancellation of PayPal Express Checkout deletes items stored in Cart
 - Fix Processes Duplicate Refunds on Rapid Refund Button Clicks
-- [0007776](https://bugs.oxid-esales.com/view.php?id=7776): Fix GooglePay and ApplePay always use first shipping method
-- [0007765](https://bugs.oxid-esales.com/view.php?id=7765): Fix Dont send order mails twice for Google- and ApplePay
+- [0007776](https://bugs.oxid-esales.com/view.php?id=7776): Fix Google Pay and Apple Pay always use the first shipping method
+- [0007765](https://bugs.oxid-esales.com/view.php?id=7765): Fix Don't send order mails twice for Google- and Apple Pay
 
 ### NEW
 
@@ -61,18 +63,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Catch possible thrown Error by getting DataClientToken
 - [0007719](https://bugs.oxid-esales.com/view.php?id=7719): Tracking code also be stored in standard DB field for backwards compatibility
-- add possibility to ignore cached tokens. It helps e.g. for webhook registration
+- add possibility to ignore cached tokens. It helps, e.g., for webhook registration
 - use PayPal-Client v2.0.18
-- [0007744](https://bugs.oxid-esales.com/view.php?id=7744): When using vouchers shop jumps back to payment selection
-- [0007745](https://bugs.oxid-esales.com/view.php?id=7745): Paypal checkout jumps back to step 2 with an error when an discount in relation to item value is used
+- [0007744](https://bugs.oxid-esales.com/view.php?id=7744): When using voucher shop jumps back to payment selection
+- [0007745](https://bugs.oxid-esales.com/view.php?id=7745): PayPal checkout jumps back to step 2 with an error when an discount in relation to item value is used
 - [0007742](https://bugs.oxid-esales.com/view.php?id=7742): You get stuck in the checkout if the "Save payment method" option is activated for credit card payment
 - [0007695](https://bugs.oxid-esales.com/view.php?id=7695): Explain better Pseudo delivery costs
 - Show vaulted Payments filtered by payment-method in account-view
-- fix issue with googlePay (await for the complete execution)
+- fix issue with Google Pay (await for the complete execution)
 - fix Remove SEPA payment method of it is not eligible, temporary solution
-- [0007760](https://bugs.oxid-esales.com/view.php?id=7760): Paypal return type and B2B Module
+- [0007760](https://bugs.oxid-esales.com/view.php?id=7760): PayPal return type and B2B Module
 - Change the onboarding process to "without return URL & return button"
-- [0007764](https://bugs.oxid-esales.com/view.php?id=7764): Fix TotalPrice for ApplePay
+- [0007764](https://bugs.oxid-esales.com/view.php?id=7764): Fix TotalPrice for Apple Pay
 
 ### NEW
 
@@ -89,7 +91,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix order of closing brackets in applepay-template
 - [0007711](https://bugs.oxid-esales.com/view.php?id=7711): Temporary orders that are no longer needed and already have an order number will be cancelled. Temporary orders without an order number will still be deleted
 - Provide BN codes even to previously overlooked API calls
-- [0007706](https://bugs.oxid-esales.com/view.php?id=7706): If Customer change the invoice-address on last page in checkout and use this address as deliveryaddress (checkbox invoiceaddress as deliveryaddress), then this changed address would be transferred to PayPal
+- [0007706](https://bugs.oxid-esales.com/view.php?id=7706): If a Customer changes the invoice-address on last page in checkout and uses this address as deliveryaddress (checkbox invoiceaddress as deliveryaddress), then this changed address would be transferred to PayPal
 - Fix PHP7.3 Compatibility-Issues (remove functionalities that comes with later PHP-Versions)
 
 ## [2.5.0] - 2024-08-16
@@ -150,9 +152,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - [0007537](https://bugs.oxid-esales.com/view.php?id=7537): Show PayNow-Button on PP-Standard instead of Continue-Button
 - [0007531](https://bugs.oxid-esales.com/view.php?id=7531): Correct Handling of Vouchers from Voucher-Series
-- [0007536](https://bugs.oxid-esales.com/view.php?id=7536): PayPal Checkout - Values are stored correctly in the YAML
+- [0007536](https://bugs.oxid-esales.com/view.php?id=7536): PayPal Checkout—Values are stored correctly in the YAML
 - [0007543](https://bugs.oxid-esales.com/view.php?id=7543): New Color-Codes for Banner: gray, monochrome, greyscale
-- [0007547](https://bugs.oxid-esales.com/view.php?id=7547): PayPal error messages are written into seperate log (/log/paypal/paypal_YYYY-MM-DD.log)
+- [0007547](https://bugs.oxid-esales.com/view.php?id=7547): PayPal error messages are written into separate log (/log/paypal/paypal_YYYY-MM-DD.log)
 
 ## [2.3.1] - 2023-08-17
 
@@ -174,9 +176,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - improved tests and static code analysis
 
 # Fixed
-- [0007468](https://bugs.oxid-esales.com/view.php?id=7468): Javascript Error - in checkout step 3 for the English language
+- [0007468](https://bugs.oxid-esales.com/view.php?id=7468): JavaScript error in checkout step 3 for the English language
 - [0007465](https://bugs.oxid-esales.com/view.php?id=7465): Creditcard input fields are not available in english language
-- [0007470](https://bugs.oxid-esales.com/view.php?id=7470): PayPal Express buttons are missing in english language
+- [0007470](https://bugs.oxid-esales.com/view.php?id=7470): PayPal Express buttons are missing in the english language
 - [0007467](https://bugs.oxid-esales.com/view.php?id=7467): Javascript Error - not clickable payment button
 - [0007466](https://bugs.oxid-esales.com/view.php?id=7466): SEPA / CC Fallback - Same name for different payment methods
 - [0007384](https://bugs.oxid-esales.com/view.php?id=7384): Order and Mail for rejected credit card payment
@@ -188,7 +190,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007451](https://bugs.oxid-esales.com/view.php?id=7451): Creditcard payment works without CVV and Name
 - [0007417](https://bugs.oxid-esales.com/view.php?id=7417): It is therefore not possible to order this intangible item
 - [0007464](https://bugs.oxid-esales.com/view.php?id=7464): Pending GiroPay payment leads to maintenance mode, after doing a log in
-- [0007470](https://bugs.oxid-esales.com/view.php?id=7470): PayPal Express buttons are missing in english language
+- [0007470](https://bugs.oxid-esales.com/view.php?id=7470): PayPal Express buttons are missing in the english language
 - [0007466](https://bugs.oxid-esales.com/view.php?id=7466): SEPA / CC Fallback - Same name for different payment methods
 - [0007390](https://bugs.oxid-esales.com/view.php?id=7390): New Installation - Save Configuration not possible
 - [0007465](https://bugs.oxid-esales.com/view.php?id=7465): Creditcard input fields are not available in english language
