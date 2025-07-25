@@ -1,6 +1,6 @@
 CypressTests/defineCypressVars.sh
 CypressTests/node_modules
-.env
+../.env
 e2e/playwright/.env
 e2e/playwright/_output
 e2e/playwright/_generated

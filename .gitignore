@@ -8,7 +8,7 @@ php-cs-fixer.phar
 /composer.lock
 /tests/Codeception/_output/
 /tests/Codeception/_support/_generated/
-/tests/.env
+/.env
 /tests/report
 /resources/node_modules/
 /resources/build/js/typescript-transpiled
