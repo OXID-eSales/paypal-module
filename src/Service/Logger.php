@@ -10,12 +10,13 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Service;
 
 use OxidEsales\Eshop\Core\Registry;
+use Psr\Log\AbstractLogger;
 use Psr\Log\LoggerInterface;
 
 /**
  * Service Logger
  */
-class Logger
+class Logger extends AbstractLogger
 {
     /** @var LoggerInterface $moduleLogger */
     private $moduleLogger;
@@ -33,7 +34,7 @@ class Logger
         'debug' => 100
     ];
 
-    public function log(string $level, string $message, array $exception = []): void
+    public function log($level, $message, array $exception = array()): void
     {
         if ($this->isLogLevel($level)) {
             $this->moduleLogger->$level($message, $exception);

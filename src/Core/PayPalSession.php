@@ -104,6 +104,7 @@ class PayPalSession
         }
         return false;
     }
+
     /**
      * Checks if active PayPalStandard Order exists
      *

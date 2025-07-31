@@ -15,7 +15,6 @@ use OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException;
 class EventDispatcher
 {
     /**
-     * @param Event $event
      * @throws \OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException
      */
     public function dispatch(Event $event): void

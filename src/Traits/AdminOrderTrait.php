@@ -32,7 +32,7 @@ trait AdminOrderTrait
     protected $isPayPalStandardManuallyCapture = null;
 
     /** @var bool|null  */
-    protected $isPayPalStandardOnDeliveryCapture = null;
+    protected $isPayPalOrderCaptureOnDelivery = null;
 
     /** @var bool|null  */
     protected $isPayPalStandardOrder = null;
@@ -54,7 +54,7 @@ trait AdminOrderTrait
      * @throws ApiException
      * @throws StandardException
      */
-    public function capturePayPalStandard(): void
+    public function capturePayPalOrder(): void
     {
         if (
             $this->getTimeLeftForPayPalCapture(false) > 0
@@ -68,7 +68,8 @@ trait AdminOrderTrait
             $result = $service->doCapturePayPalOrder(
                 $order,
                 $orderId,
-                PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID,
+                isset($paypalOrder->payment_source->card) ? //@TODO maybe there is smarter way to check if ACDC payment
+                    PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID : PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID,
                 $paypalOrder
             );
             if ($order->isPayPalOrderCompleted($result)) {
@@ -84,50 +85,35 @@ trait AdminOrderTrait
     }
 
     /**
-     * Template getter is it a Authorized PayPalStandardOrder
+     * Template getter is it a Authorized PayPalOrder (Standard or ACDC)
      */
-    public function isAuthorizedPayPalStandardOrder()
+    public function isAuthorizedPayPalOrder(): ?bool
     {
-        if (is_null($this->isAuthorizedPayPalStandardOrder)) {
-            $this->isAuthorizedPayPalStandardOrder = (
-                $this->isPayPalStandardOrder() &&
-                $this->getPayPalCheckoutOrder()->intent === Constants::PAYPAL_ORDER_INTENT_AUTHORIZE
-            );
+        try {
+            $isAuthorizedOrder = $this->getPayPalCheckoutOrder()->intent === Constants::PAYPAL_ORDER_INTENT_AUTHORIZE;
+        } catch (StandardException $e) {
+            return false;
+        } catch (ApiException $e) {
+            return false;
         }
-        return $this->isAuthorizedPayPalStandardOrder;
+
+        return $isAuthorizedOrder;
     }
 
-    public function isPayPalStandardOnDeliveryCapture()
+    public function isPayPalOrderCaptureOnDelivery(): ?bool
     {
-        if (is_null($this->isPayPalStandardOnDeliveryCapture)) {
-            $this->isPayPalStandardOnDeliveryCapture = false;
-            if ($this->isAuthorizedPayPalStandardOrder()) {
+        if (is_null($this->isPayPalOrderCaptureOnDelivery)) {
+            $this->isPayPalOrderCaptureOnDelivery = false;
+            if ($this->isAuthorizedPayPalOrder()) {
                 $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
                 if (
                     $moduleSettings->getPayPalStandardCaptureStrategy() === 'delivery'
                 ) {
-                    $this->isPayPalStandardOnDeliveryCapture = true;
+                    $this->isPayPalOrderCaptureOnDelivery = true;
                 }
             }
         }
-        return $this->isPayPalStandardOnDeliveryCapture;
-    }
-
-    public function isPayPalStandardManuallyCapture()
-    {
-        if (is_null($this->isPayPalStandardManuallyCapture)) {
-            $this->isPayPalStandardManuallyCapture = false;
-            $paypalOrder = $this->getPayPalCheckoutOrder();
-            if ($this->isAuthorizedPayPalStandardOrder()) {
-                $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-                if (
-                    $moduleSettings->getPayPalStandardCaptureStrategy() === 'manually'
-                ) {
-                    $this->isPayPalStandardManuallyCapture = true;
-                }
-            }
-        }
-        return $this->isPayPalStandardManuallyCapture;
+        return $this->isPayPalOrderCaptureOnDelivery;
     }
 
     /**
@@ -136,7 +122,7 @@ trait AdminOrderTrait
     public function getTimeLeftForPayPalCapture($roundAsDay = true)
     {
         $result = 0;
-        if ($this->isAuthorizedPayPalStandardOrder()) {
+        if ($this->isAuthorizedPayPalOrder()) {
             $result = time()
                 - strtotime($this->getPayPalCheckoutOrder()->create_time)
                 + Constants::PAYPAL_MAXIMUM_TIME_FOR_CAPTURE;

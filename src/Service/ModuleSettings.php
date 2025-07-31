@@ -338,6 +338,11 @@ class ModuleSettings
         return (string)$this->getSettingValue('oscPayPalButtonStyleLabel');
     }
 
+    public function getPayPalDebugLevel(): string
+    {
+        return (string)$this->getSettingValue('oscPayPalDebugLevel');
+    }
+
     public function loginWithPayPalEMail(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalLoginWithPayPalEMail');
@@ -624,13 +629,15 @@ class ModuleSettings
             $this->save('oscPayPalClientMerchantId', $merchantId);
         }
 
-        $this->logger->log(
-            'debug',
-            sprintf(
-                'Saving Merchant ID %s from onboarding',
-                $merchantId
-            )
-        );
+        if ($this->getPayPalDebugLevel() === 'debug') {
+            $this->logger->log(
+                'debug',
+                sprintf(
+                    'Saving Merchant ID %s from onboarding',
+                    $merchantId
+                )
+            );
+        }
     }
 
     public function saveAcdcEligibility(bool $eligibility): void

@@ -12,7 +12,6 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 class Constants
 {
     public const PAYPAL_JS_SDK_URL = 'https://www.paypal.com/sdk/js';
-    public const PAYPAL_SANDBOX_JS_SDK_URL = 'https://www.sandbox.paypal.com/sdk/js';
     public const PAYPAL_INTEGRATION_DATE = '2024-04-26';
     public const PAYPAL_ORDER_INTENT_CAPTURE = 'CAPTURE';
     public const PAYPAL_ORDER_INTENT_AUTHORIZE = 'AUTHORIZE';
