@@ -25,6 +25,7 @@ use OxidSolutionCatalysts\PayPal\Model\Basket;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Service\GooglePay\GooglePayPayPalService;
@@ -91,7 +92,7 @@ class OrderController extends OrderController_parent
         }
 
         $this->addTplParam('oscpaypal_executing_order', false);
-        $isRetry = $this->renderRetryOrderExecution();
+            $isRetry = $this->renderRetryOrderExecution();
 
         if (!$isRetry && $paymentService->isOrderExecutionInProgress()) {
             $displayError = oxNew(DisplayError::class);
@@ -109,6 +110,7 @@ class OrderController extends OrderController_parent
             $paymentService->removeTemporaryOrder();
         }
 
+
         $user = $this->getUser();
 
         if ($user) {
@@ -118,22 +120,32 @@ class OrderController extends OrderController_parent
             $isVaultingPossible = $moduleSettings->isVaultingAllowedForPayment($paymentId)
                 && $user->getFieldData('oxpassword');
 
+            //Disable save payments if a payment of the same type is already vaulted
+            $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+            if (
+                (PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID === $paymentId &&
+                 $vaultingService->isVaultedPaymentUsed(PayPalDefinitions::PAYMENT_SOURCE_PAYPAL, $this->getUser())) ||
+                (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId &&
+                 $vaultingService->isVaultedPaymentUsed(PayPalDefinitions::PAYMENT_SOURCE_CARD, $this->getUser()))
+            ) {
+                $isVaultingPossible = false;
+            }
+
             $this->addTplParam('oscpaypal_isVaultingPossible', $isVaultingPossible);
-
             $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
-
-                $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
+            $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
 
             if ($isVaultingPossible && $payPalCustomerId ) {
                 $paymentDescription = '';
+
                 // Vaulted Cards
                 if ($paymentId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) {
                     $vaultedPaymentTokenSelected = $vaultingService->fetchSelectedVaultedPaymentToken($this->getUser());
+
                     // the PaymentSourceIndex is set in Payment-Controller only by vaulted cards
                     if (!is_null($vaultedPaymentTokenSelected)) {
                         $paymentType = key($vaultedPaymentTokenSelected["payment_source"]);
                         $paymentSource = $vaultedPaymentTokenSelected["payment_source"][$paymentType];
-
                         // double check source type
                         if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
                             $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
@@ -142,17 +154,17 @@ class OrderController extends OrderController_parent
                     }
                 }
 
-                // Vaulted PP-Accounts?
-                if (
-                    $paymentId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID ||
-                    $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
-                ) {
-                    $vaultedPaymentTokenSelected = $vaultingService->fetchSelectedVaultedPaymentToken($this->getUser());
-                    if ($vaultedPaymentTokenSelected) {
-                        $paymentDescription = $lang->translateString("OSC_PAYPAL_VAULTING_USE_HINT");
-                    }
+            }
+
+            if (
+                $paymentId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID ||
+                $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
+            ) {
+                $vaultedPaymentTokenSelected = $vaultingService->fetchSelectedVaultedPaymentToken($this->getUser());
+                if ($vaultedPaymentTokenSelected) {
+                    $paymentDescription = $lang->translateString("OSC_PAYPAL_VAULTING_USE_HINT");
+                    $this->addTplParam("vaultedPaymentDescription", $paymentDescription);
                 }
-                $this->addTplParam("vaultedPaymentDescription", $paymentDescription);
             }
         }
 
@@ -285,10 +297,26 @@ class OrderController extends OrderController_parent
         ]);
     }
 
+    /**
+     * @throws \OxidSolutionCatalysts\PayPalApi\Exception\ApiException
+     * @throws \OxidSolutionCatalysts\PayPal\Exception\PayPalException
+     * @throws \JsonException
+     */
     public function captureGooglePayOrder(): void
     {
+        $sessionOrderId = Registry::getSession()->getVariable('sess_challenge');
+        $order = oxNew(EshopModelOrder::class);
+        $order->load($sessionOrderId);
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();
         $orderId = (string) Registry::getRequest()->getRequestParameter('orderID');
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $payPalApiOrder = $paymentService->fetchOrderFields($orderId);
+        $verify3DResult = $paymentService->verify3D(PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID, $payPalApiOrder);
+
+        if (!$verify3DResult) {
+            throw PayPalException::cannotFinalizeOrderAfterExternalPayment($orderId, PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID);
+        }
 
         $request = new OrderCaptureRequest();
         try {
@@ -394,11 +422,13 @@ class OrderController extends OrderController_parent
 
         $this->outputJson($result);
     }
+
     public function isPayPalCheckoutPayment(): bool
     {
         $payment = $this->getPayment();
         return $payment && PayPalDefinitions::isPayPalPayment($payment->getId());
     }
+
     public function createApplePayOrder(): void
     {
         try {
@@ -485,6 +515,7 @@ class OrderController extends OrderController_parent
 
         $this->outputJson($result);
     }
+
     public function finalizeapplepay(): string
     {
         $sessionOrderId = Registry::getSession()->getVariable('Sessionapplepay');
@@ -684,9 +715,26 @@ class OrderController extends OrderController_parent
         return parent::getNextStep($success);
     }
 
+    public function getCurrentTrackingId(): string
+    {
+        /** @var OrderProcessTrackingService $orderProcessTrackingService */
+        $orderProcessTrackingService = Registry::get(OrderProcessTrackingService::class);
+        return $orderProcessTrackingService->getTrackingId();
+    }
+
+    /**
+     * Probably deprecated, but used in the template: checkout_order_btn_submit_bottom.tpl
+     *
+     * @return string
+     */
     public function getPurchaseUnits(): string
     {
-        return Registry::get(PayPalPurchaseUnitsFactory::class)->getPurchaseUnits();
+        return json_encode(Registry::get(PayPalPurchaseUnitsFactory::class)->getPurchaseUnits());
+    }
+
+    public function getDeladrid(): string
+    {
+        return (string)Registry::getSession()->getVariable('deladrid');
     }
 
     public function getPayPalCustomerId(): string
@@ -699,6 +747,7 @@ class OrderController extends OrderController_parent
         }
         return $result;
     }
+
     /**
      * Used in the template: checkout_order_btn_submit_bottom.tpl to get the vaulted payment source
      *
@@ -711,11 +760,9 @@ class OrderController extends OrderController_parent
         $vaultedPaymentTokenSelected = $vaultingService->fetchSelectedVaultedPaymentToken($this->getUser());
 
         return !empty($vaultedPaymentTokenSelected) ? json_encode([
-
-
             "token" => [
                 "id" => $vaultedPaymentTokenSelected['id'],
-                "type"  => "SETUP_TOKEN",
+                "type" => "SETUP_TOKEN",
             ]
         ], JSON_THROW_ON_ERROR) : 'null';
     }

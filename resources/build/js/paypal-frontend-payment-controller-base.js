@@ -7,8 +7,8 @@
             paypal: null,
             vaultPayment: false
         };
-
         this.currentOrder = null;
+        this.currentError = null;
         this.reactOnPayPalOverlayClosed = false;
 
         this.getPaymentData = function () {
@@ -89,9 +89,27 @@
 
         // Common order processing methods
         this.patchOrder = async function (details) {
+            const shopOrderId = PayPalPayment.getCurrentOrderOxid();
+            const payPalOrderId = PayPalPayment.getCurrentPayPalOrderId();
+
+            if (!shopOrderId) {
+                console.error('Missing shop order ID for order patching');
+                return { error: 'Missing shop order ID' };
+            }
+
+            if (!payPalOrderId) {
+                console.error('Missing PayPal order ID for order patching');
+                return { error: 'Missing PayPal order ID' };
+            }
+
+            if (!PayPalPayment.currentOrder || typeof PayPalPayment.currentOrder.vaultPayment === 'undefined') {
+                console.error('Missing vault payment information for order patching');
+                return { error: 'Missing vault payment information' };
+            }
+
             return await PayPalPayment.backendRequest('shopOrderPatchingUrl', {}, {
-                'shopOrderId': PayPalPayment.getCurrentOrderOxid(),
-                'payPalOrderId': PayPalPayment.getCurrentPayPalOrderId(),
+                'shopOrderId': shopOrderId,
+                'payPalOrderId': payPalOrderId,
                 'vaultPayment': PayPalPayment.currentOrder.vaultPayment
             });
         };
@@ -135,7 +153,15 @@
         };
 
         this.afterCaptureOrder = async function (details) {
-            const {paypalOrderDetails} = await PayPalPayment.patchOrder(details);
+            const result = await PayPalPayment.patchOrder(details);
+
+            if (result.error) {
+                console.error('Failed to patch order:', result.error);
+                PayPalPayment.handleError();
+                return;
+            }
+
+            const {paypalOrderDetails} = result;
 
             if (paypalOrderDetails && paypalOrderDetails.payment_source) {
                 await PayPalPayment.vaultPayment(paypalOrderDetails);
@@ -146,13 +172,59 @@
 
         this.handlePaymentAuthorization = async function (details) {
             PayPalPayment.setCreatePayPalOrderResponse(details);
-            const {paypalOrderDetails} = await PayPalPayment.patchOrder(details);
+            const patchResult = await PayPalPayment.patchOrder(details);
 
-            if (paypalOrderDetails && paypalOrderDetails.payment_source) {
+            if (patchResult.error) {
+                console.error('Failed to patch order:', patchResult.error);
+                PayPalPayment.handleError();
+                return;
+            }
+
+            const {paypalOrderDetails} = patchResult;
+
+            if (PayPalPayment.currentOrder.vaultPayment && paypalOrderDetails && paypalOrderDetails.payment_source) {
                 await PayPalPayment.vaultPayment(paypalOrderDetails);
             }
 
-            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+            const result = await PayPalPayment.authorizeOrder(paypalOrderDetails);
+
+            if (result.paymentStatus === 'success' ){
+                window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+                return;
+            }
+
+            PayPalPayment.handleError();
+        };
+
+        this.authorizeOrder = async function (data) {
+            const orderId = data.id || PayPalPayment.getCurrentPayPalOrderId();
+            const shopOrderId = PayPalPayment.getCurrentOrderOxid();
+            const paymentId = PayPalPayment.getConfigValue('paymentId');
+
+            if (!orderId) {
+                console.error('No PayPal order ID available for authorization');
+                return;
+            }
+
+            try {
+                const result = await PayPalPayment.backendRequest('shopOrderAuthorizeUrl', {}, {
+                    'orderId': orderId,
+                    'shopOrderId': shopOrderId,
+                    'paymentId': paymentId
+                });
+
+                if (result.status !== 'success') {
+                    console.error('Order authorization failed:', result.message);
+                    PayPalPayment.handleError();
+                }
+
+                return result;
+            } catch (error) {
+                console.error('Error during order authorization:', error);
+                PayPalPayment.handleError();
+            }
+
+            return {status: 'error'};
         };
 
         this.cancelOrder = async function () {
@@ -171,6 +243,10 @@
         };
 
         this.handleError = async function (data) {
+            if ('undefined' !== data && data instanceof Error){
+                PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR);
+            }
+
             let shopOrderId = PayPalPayment.getCurrentOrderOxid();
             if (null == shopOrderId) {
                 return;
@@ -181,23 +257,29 @@
 
         // Common backend request method
         this.backendRequest = async function (urlSlug, headers, body) {
-            let response = await fetch(PayPalPayment.getConfigValue(urlSlug), {
-                method: 'post',
-                headers: Object.assign({
-                    'content-type': 'application/json',
-                }, headers),
-                body: JSON.stringify(body)
-            });
-
+            let response;
             let result = {status: 'pending'};
 
             try {
+                body.trackingId = PayPalPayment.getConfigValue('trackingId');
+                response = await fetch(PayPalPayment.getConfigValue(urlSlug), {
+                    method: 'post',
+                    headers: Object.assign({
+                        'content-type': 'application/json',
+                    }, headers),
+                    body: JSON.stringify(body)
+                });
+
                 result = await response.json();
-            } catch (e) {
+            } catch (error) {
+                console.error('Operation failed:', error);
                 result = {
                     status: 'error',
-                    error: e.message
+                    error: error.message
                 };
+                // Ensure order cancellation if operation fails
+                await PayPalPayment.handleError();
+                return result;
             }
 
             console.log(result.status, result.message, result.data);
@@ -356,6 +438,41 @@
                 PayPalPayment.getConfigValue('buttonSelector').split('#').reverse()[0]
             );
             PayPalPayment.addOverlay(submitButton.parentElement);
+        };
+
+        this.showErrorMessage = function (message, className) {
+            if(message.length === 0) {
+                message = PayPalI18n.OSC_PAYPAL_UNKNOWN_ERROR;
+            }
+
+            className = className || '';
+            const panelBody = document.querySelector("#orderPayment").querySelector(".panel-body");
+
+            // Remove existing error if present
+            this.removeErrorMessage(className);
+            PayPalPayment.currentError = message;
+            // Create and display a new error message
+            const errorMessage = document.createElement("div");
+            errorMessage.className = "error-message alert alert-danger " + className;
+            errorMessage.textContent = message;
+
+            panelBody.prepend(errorMessage);
+
+            errorMessage.scrollIntoView({
+                behavior: 'smooth'
+            });
+        };
+
+        this.removeErrorMessage = function (className) {
+            className = className || '';
+            const panelBody = document.querySelector("#orderPayment").querySelector(".panel-body");
+            if (panelBody) {
+                const existingError = panelBody.querySelector(".error-message" + (className ? '.' + className : ''));
+                if (existingError) {
+                    existingError.remove();
+                }
+            }
+            PayPalPayment.currentError = null;
         };
 
         // Common initialization

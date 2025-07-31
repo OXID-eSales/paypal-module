@@ -563,4 +563,8 @@ class Config
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getIsGooglePayDeliveryAddressActive();
     }
+    public function getPayPalDebugLevel(): string
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalDebugLevel();
+    }
 }

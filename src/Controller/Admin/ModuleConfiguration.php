@@ -163,14 +163,14 @@ class ModuleConfiguration extends ModuleConfiguration_parent
 
     /**
      * Saves configuration values
+     * @throws \OxidSolutionCatalysts\PayPal\Exception\OnboardingException
+     * @throws \OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Exception\ModuleSettingNotFountException
      */
     public function save()
     {
         $confArr = Registry::getRequest()->getRequestEscapedParameter('conf');
-
-        $confArr = $this->handleSpecialFields($confArr);
-
         if (is_array($confArr)) {
+            $confArr = $this->handleSpecialFields($confArr);
             $this->saveConfig($confArr);
             $this->checkEligibility($confArr);
         }
@@ -193,8 +193,8 @@ class ModuleConfiguration extends ModuleConfiguration_parent
     /**
      * check Eligibility if config would be changed
      *
-     * @param  $confArr array
-     * @throws OnboardingException
+     * @param $confArr array
+     * @throws OnboardingException|\OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Exception\ModuleSettingNotFountException
      */
     protected function checkEligibility(array $confArr): void
     {
@@ -384,6 +384,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
             $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', $exception->getMessage(), [$exception]);
         }
+
         $this->autoConfiguration();
         $this->registerWebhooks();
 
@@ -417,9 +418,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
     public function registerWebhooks(): void
     {
         try {
-            /** @var Webhook $handler */
-            $handler = oxNew(Webhook::class);
-            $webhookId = $handler->ensureWebhook();
+            (oxNew(Webhook::class))->ensureWebhook();
         } catch (OnboardingException $exception) {
             Registry::getUtilsView()->addErrorToDisplay($exception->getMessage());
         } catch (Exception $exception) {

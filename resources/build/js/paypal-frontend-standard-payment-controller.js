@@ -51,7 +51,8 @@
 
             // Create shop order first
             let shopOrderCreateResult = await PayPalPayment.backendRequest('shopOrderCreateUrl', {}, {
-                'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId')
+                'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId'),
+                'paymentId': PayPalPayment.getConfigValue('paymentId')
             });
 
             document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...shopOrderCreateResult}})));
@@ -60,7 +61,8 @@
             let payPalOrderCreateResult = await PayPalPayment.backendRequest('payPalOrderCreateUrl', {}, {
                 'shopOrderId': shopOrderCreateResult.shopOrderId,
                 'vaultPayment': PayPalPayment.currentOrder.vaultPayment,
-                'useVaultedPayment': PayPalPayment.config.vaultedPaymentSource
+                'useVaultedPayment': PayPalPayment.config.vaultedPaymentSource,
+                'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId')
             });
 
             document.dispatchEvent(new CustomEvent('payPalOrderCreated', new Object({detail: {...payPalOrderCreateResult.payPalOrder}})));
@@ -81,10 +83,11 @@
             //if we managed to get at this stage, closing the overlay not suppose to be watched anymore
             PayPalPayment.reactOnPayPalOverlayClosed = false;
             let result = await PayPalPayment.backendRequest('shopOrderCaptureUrl', {}, {
-                'orderId': data.orderID
+                'orderId': data.orderID,
+                'paymentId': PayPalPayment.getConfigValue('paymentId')
             });
 
-            if (result.status === 'success') {
+            if (result.paymentStatus === 'success') {
                 PayPalPayment.afterCaptureOrder();
             }
         };

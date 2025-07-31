@@ -19,8 +19,6 @@ use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
-use OxidEsales\EshopCommunity\Internal\Framework\Module\Facade\ModuleSettingServiceInterface;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
@@ -28,9 +26,9 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
-use OxidSolutionCatalysts\PayPal\Module;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Service\PayPalUrlService;
@@ -50,6 +48,14 @@ class ProxyController extends FrontendController
     use JsonTrait;
     use ServiceContainer;
 
+    private OrderProcessTrackingService $orderProcessTrackingService;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
+    }
+
     public function createOrder(): void
     {
         if (PayPalSession::isPayPalExpressOrderActive()) {
@@ -57,6 +63,8 @@ class ProxyController extends FrontendController
             //  $this->outputJson(['ERROR' => 'PayPal session already started.']);
         }
 
+        $session = Registry::getSession();
+        $basket = $session->getBasket();
         $config = Registry::getConfig();
         $this->addToBasket();
         $paymentId = Registry::getRequest()->getRequestParameter('paymentid');
@@ -65,13 +73,8 @@ class ProxyController extends FrontendController
         } else {
             $this->setPayPalPaymentMethod();
         }
-        $session = Registry::getSession();
-        $basket = $session->getBasket();
-
-        /** @var ModuleSettings $moduleSettings */
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $defaultShippingPriceExpress = (double) $moduleSettings->getDefaultShippingPriceForExpress();
-
+        $paymentId = $basket->getPaymentId();
+        $defaultShippingPriceExpress = (double) $config->getConfigParam('oscPayPalDefaultShippingPriceExpress');
         $calculateDelCostIfNotLoggedIn = (bool) $config->getConfigParam('blCalculateDelCostIfNotLoggedIn');
         $isDeliverySet = (bool) $session->getVariable('sShipSet');
         if ($basket && $defaultShippingPriceExpress && !$calculateDelCostIfNotLoggedIn && !$isDeliverySet) {
@@ -81,25 +84,29 @@ class ProxyController extends FrontendController
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
         }
 
+        /** @var ModuleSettings $moduleSettings */
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
-        $intent = OrderRequest::INTENT_AUTHORIZE;
-        if ($captureStrategy === 'directly') {
-            $intent = OrderRequest::INTENT_CAPTURE;
-        }
-        $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
+        $intent = $captureStrategy === 'directly' ? OrderRequest::INTENT_CAPTURE : OrderRequest::INTENT_AUTHORIZE;
+        $userAction = $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID ?
+            OrderRequestFactory::USER_ACTION_CONTINUE : OrderRequestFactory::USER_ACTION_PAY_NOW;
+        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
+        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
+        $response = $paymentService->doCreatePayPalOrder(
             $basket,
             $intent,
-            OrderRequestFactory::USER_ACTION_CONTINUE,
+            $userAction,
             null,
             '',
             '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-            null,
-            null,
+            $returnUrl,
+            $cancelUrl,
             false
         );
 
-        if ($response && $response->id) {
+        if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);
         }
 
@@ -146,7 +153,6 @@ class ProxyController extends FrontendController
         $payPalUrlService = $this->getServiceFromContainer(PayPalUrlService::class);
         $isLoggedIn = false;
         $nonGuestAccountDetected = false;
-
         $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
             $basket,
             OrderRequest::INTENT_CAPTURE,
@@ -159,7 +165,6 @@ class ProxyController extends FrontendController
             $payPalUrlService->getCancelUrl(),
             false
         );
-
 
         if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);
@@ -249,14 +254,16 @@ class ProxyController extends FrontendController
             //TODO: improve
             $this->outputJson(['ERROR' => 'OrderId not found in PayPal session.']);
         }
+
         /** @var ServiceFactory $serviceFactory */
         $serviceFactory = Registry::get(ServiceFactory::class);
-        $service = $serviceFactory->getOrderService();
+        $orderService = $serviceFactory->getOrderService();
+        $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
         $nonGuestAccountDetected = false;
         $isLoggedIn = false;
 
         try {
-            $response = $service->showOrderDetails(
+            $response = $orderService->showOrderDetails(
                 $orderId,
                 '',
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
@@ -266,6 +273,7 @@ class ProxyController extends FrontendController
             $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', "Error on order capture call.", [$exception]);
         }
+
         if (!$this->getUser() && $response) {
             $userRepository = $this->getServiceFromContainer(UserRepository::class);
             $paypalEmail = (string) $response->payer->email_address;
@@ -341,7 +349,7 @@ class ProxyController extends FrontendController
         $basket = Registry::getSession()->getBasket();
         $utilsView = Registry::getUtilsView();
         $aSel = Registry::getRequest()->getRequestParameter('sel');
-        $qty = (double)(Registry::getRequest()->getRequestParameter('amountToBasket') ?? 0);
+        $qty = (double)Registry::getRequest()->getRequestParameter('amountToBasket') ?? 0;
         if ($aid = (string)Registry::getRequest()->getRequestEscapedParameter('aid')) {
             try {
                 if (!$this->itemExists($basket, $aid, $qty)) {
@@ -539,8 +547,6 @@ class ProxyController extends FrontendController
             null,
             false
         );
-
-
         if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);
         }
@@ -600,9 +606,9 @@ class ProxyController extends FrontendController
 
                         $this->setPayPalPaymentMethod($paymentId);
                     } catch (StandardException $exception) {
-                        //   Registry::getUtilsView()->addErrorToDisplay($exception);
-                        // $response->status = 'ERROR';
-                        //     PayPalSession::unsetPayPalOrderId();
+                     //   Registry::getUtilsView()->addErrorToDisplay($exception);
+                       // $response->status = 'ERROR';
+                   //     PayPalSession::unsetPayPalOrderId();
                         Registry::getSession()->getBasket()->setPayment(null);
                     }
                 }
@@ -613,9 +619,9 @@ class ProxyController extends FrontendController
         } else {
             //TODO: we might end up in order step redirecting to start page without showing a message
             // if we have no user, we stop the process
-            ////     $response->status = 'ERROR';
-            //     PayPalSession::unsetPayPalOrderId();
-            //  Registry::getSession()->getBasket()->setPayment(null);
+       ////     $response->status = 'ERROR';
+       //     PayPalSession::unsetPayPalOrderId();
+          //  Registry::getSession()->getBasket()->setPayment(null);
         }
         $this->outputJson($response);
     }
@@ -632,7 +638,6 @@ class ProxyController extends FrontendController
                 return true;
             }
         }
-
 
         return false;
     }
