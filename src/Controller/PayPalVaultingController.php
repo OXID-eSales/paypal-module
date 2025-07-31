@@ -18,9 +18,9 @@ class PayPalVaultingController extends AccountController
 
     public function render()
     {
-
         $this->_aViewData['vaultingUserId'] = oxNew(Config::class)->getUserIdForVaulting();
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+
         if ($moduleSettings->isVaultingAllowedForPayPal()) {
             $this->_sThisTemplate = '@osc_paypal/frontend/account_vaulting_paypal';
         }

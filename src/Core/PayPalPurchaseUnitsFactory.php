@@ -28,12 +28,12 @@ class PayPalPurchaseUnitsFactory
      */
     private $basket;
 
-    public function getPurchaseUnits(): string
+    public function getPurchaseUnits(): array
     {
         $this->basket = Registry::getSession()->getBasket();
 
         if (null === $this->basket) {
-            return '';
+            return [];
         }
 
         $patchRequestFactory = Registry::get(PatchRequestFactory::class);
@@ -80,9 +80,7 @@ class PayPalPurchaseUnitsFactory
             $purchaseUnits['items'] = $items;
         }
 
-        $purchaseUnits = $this->addDeliveryAddress($purchaseUnits);
-
-        return json_encode($purchaseUnits);
+        return $this->addDeliveryAddress($purchaseUnits);
     }
 
     /**

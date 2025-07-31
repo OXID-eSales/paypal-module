@@ -38,3 +38,16 @@
         </div>
     </div>
 [{/if}]
+
+<div class="payment-method" style="margin-top: 20px; text-align: right;">
+    <form action="[{$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]" method="post">
+        <div class="hidden">
+            [{$oViewConf->getHiddenSid()}]
+            <input type="hidden" name="cl" value="[{$oViewConf->getActiveClassName()}]">
+            <input type="hidden" name="fnc" value="clearVaultedTokenCache">
+        </div>
+        <button type="submit" class="btn btn-info">
+            <i class="fa fa-refresh"></i> [{oxmultilang ident="OSC_PAYPAL_VAULTING_REFRESH_CACHE"}]
+        </button>
+    </form>
+</div>

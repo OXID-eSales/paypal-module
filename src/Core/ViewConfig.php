@@ -184,7 +184,11 @@ class ViewConfig extends ViewConfig_parent
      */
     public function getCancelPayPalPaymentUrl(): string
     {
-        return $this->getSslSelfLink() . 'cl=oscpaypalproxy&fnc=cancelPayPalPayment&redirect=1';
+        $link = $this->getSslSelfLink() . 'cl=oscpaypalproxy&fnc=cancelPayPalPayment&redirect=1';
+        if ($this->isPayPalSandbox()) {
+            $link .= "&XDEBUG_SESSION_START=1";
+        }
+        return $link;
     }
 
     /**
@@ -232,7 +236,7 @@ class ViewConfig extends ViewConfig_parent
         if ('directly' === $captureStrategy) {
             $params['intent'] = strtolower(Constants::PAYPAL_ORDER_INTENT_CAPTURE);
         }
-        $params['commit'] = $bCommitFlow ? 'true' : 'false';
+        $params['commit'] = $bCommitFlow ? 'true': 'false';
 
         if ($currency = $config->getActShopCurrencyObject()) {
             $params['currency'] = strtoupper($currency->name);
@@ -263,6 +267,11 @@ class ViewConfig extends ViewConfig_parent
         }
 
         $params['locale'] = $localeCode;
+
+        // Add parameters to the sandbox to test geoblocking features like PUI from anywhere
+        if ($moduleSettings->isSandbox()) {
+            $params['buyer-country'] = 'DE';
+        }
 
         return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
     }
@@ -547,10 +556,10 @@ class ViewConfig extends ViewConfig_parent
      *
      * @deprecated method will be removed because it only played a role in the Smarty template engine context.
      */
-    public function isFlowCompatibleTheme(): bool
+    public function isFlowCompatibleTheme()
     {
         if (is_null($this->isFlowCompatibleTheme)) {
-            $this->isFlowCompatibleTheme = $this->isThemeBasedOn('flow');
+            $this->isFlowCompatibleTheme = $this->isCompatibleTheme('flow');
         }
         return $this->isFlowCompatibleTheme;
     }
@@ -562,10 +571,10 @@ class ViewConfig extends ViewConfig_parent
      *
      * @deprecated method will be removed because it only played a role in the Smarty template engine context.
      */
-    public function isWaveCompatibleTheme(): bool
+    public function isWaveCompatibleTheme()
     {
         if (is_null($this->isWaveCompatibleTheme)) {
-            $this->isWaveCompatibleTheme = $this->isThemeBasedOn('wave');
+            $this->isWaveCompatibleTheme = $this->isCompatibleTheme('wave');
         }
         return $this->isWaveCompatibleTheme;
     }
@@ -573,13 +582,10 @@ class ViewConfig extends ViewConfig_parent
     /**
      * Template variable getter. Check if is a ??? Theme Compatible Theme
      *
-     * @param string $themeId
-     *
      * @return boolean
-     *
-     * @deprecated method will be removed because it only played a role in the Smarty template engine context.
+     * @psalm-suppress InternalMethod
      */
-    protected function isThemeBasedOn(string $themeId): bool
+    public function isCompatibleTheme($themeId = null)
     {
         $result = false;
         if ($themeId) {

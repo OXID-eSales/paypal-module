@@ -8,9 +8,11 @@
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 
-$sLangName = 'Deutsch';
+include_once __DIR__ . '/../../../translations/de/oscpaypal_de_lang.php';
 
-$aLang = [
+$aLang = array_merge(
+    $aLang ?? [],
+    [
     'charset'                                     => 'UTF-8',
     'paypal'                                      => 'PayPal',
     'tbclorder_oscpaypal'                         => 'PayPal Checkout',
@@ -132,6 +134,7 @@ $aLang = [
     'OSC_PAYPAL_CAPTURE'                          => 'Einziehen',
     'OSC_PAYPAL_REFUND'                           => 'Erstatten',
     'OSC_PAYPAL_CONFIRM_REFUND'                   => 'Möchten Sie wirklich einen Rückerlass beantragen?',
+    'OSC_PAYPAL_CONFIRM_CAPTURE'                  => 'Möchten Sie wirklich eine Geldabbuchung beantragen?',
     'OSC_PAYPAL_DETAILS'                          => 'Details',
     'OSC_PAYPAL_AUTHORIZATION'                    => 'Autorisierung',
     'OSC_PAYPAL_CANCEL_AUTHORIZATION'             => 'Stornieren',
@@ -154,10 +157,12 @@ $aLang = [
     'OSC_PAYPAL_STATUS_COMPLETED'                 => 'abgeschlossen',
     'OSC_PAYPAL_STATUS_CAPTURED'                  => 'eingezogen',
     'OSC_PAYPAL_STATUS_DECLINED'                  => 'abgelehnt',
+    'OSC_PAYPAL_STATUS_DENIED'                    => 'bestritten',
     'OSC_PAYPAL_STATUS_PARTIALLY_REFUNDED'        => 'Teilweise erstattet',
     'OSC_PAYPAL_STATUS_PENDING'                   => 'steht aus',
     'OSC_PAYPAL_STATUS_PENDING_APPROVAL'          => 'Genehmigung ausstehend',
     'OSC_PAYPAL_STATUS_REFUNDED'                  => 'Erstattet',
+    'OSC_PAYPAL_STATUS_ERROR'                     => 'es ist ein Fehler aufgetreten',
     'OSC_PAYPAL_STATUS_PAYER_ACTION_REQUIRED'     => 'Aktion des Käufers erforderlich',
     'OSC_PAYPAL_PAYMENT_METHOD'                   => 'Zahlungsart',
     'OSC_PAYPAL_COMMENT'                          => 'Kommentar',
@@ -181,12 +186,6 @@ $aLang = [
     'OSC_PAYPAL_COUNTRY_CODE'                     => 'Ländercode',
     'OSC_PAYPAL_SHIPPING'                         => 'Versand',
     'OSC_PAYPAL_BILLING'                          => 'Abrechnung',
-    'OSC_PAYPAL_PAYMENT_PUI'                      => 'Kauf auf Rechnung - Bankdaten',
-    'OSC_PAYPAL_PAYMENT_PUI_REFERENCE'            => 'Verwendungszweck',
-    'OSC_PAYPAL_PAYMENT_PUI_BIC'                  => 'BIC',
-    'OSC_PAYPAL_PAYMENT_PUI_IBAN'                 => 'IBAN',
-    'OSC_PAYPAL_PAYMENT_PUI_BANKNAME'             => 'Bankname',
-    'OSC_PAYPAL_PAYMENT_PUI_ACCOUNTHOLDER'        => 'Kontoinhaber',
 
     'OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'     => 'Einstellungen aus dem klassischen PayPal-Modul übernehmen',
     'OSC_PAYPAL_BANNER_TRANSFERREDOLDSETTINGS'     => 'Banner-Einstellungen wurden aus dem klassischen PayPal-Modul übertragen.',
@@ -218,6 +217,7 @@ $aLang = [
     'OSC_PAYPAL_BANNER_COLORSCHEMEGRAY'             => 'Grau',
     'OSC_PAYPAL_BANNER_COLORSCHEMEMONOCHROME'       => 'Einfarbig',
     'OSC_PAYPAL_BANNER_COLORSCHEMEGRAYSCALE'        => 'Graustufen',
+    'OSC_PAYPAL_CAPTURE_STRATEGY_TITLE'             => 'Strategie zur Gelderfassung',
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME'              => 'PayPal Standard - Geldeinzug',
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME_LABEL'        => 'Nur für PayPal Standard ist ein abweichender Geldeinzug zum Bestellzeitpunkt möglich. Alle anderen Zahlarten (inkl. PayPal Express) werden sofort eingezogen.',
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME_HELP'         => 'Bitte beachten! Die Autorisierung einer Bestellung gilt drei Tage. Sie wird maximal bis 29 Tage nach Bestellung automatisch aufgefrischt. Anschließend ist ein Geldeinzug nicht mehr möglich.',
@@ -312,16 +312,26 @@ $aLang = [
     'HELP_OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'    => 'Wiederholungskäufe leicht gemacht: Mit PayPal können Sie die bevorzugten Zahlarten Ihrer Kund:innen sicher speichern und so eine schnelle und einfache
                                                         Kaufabwicklung ermöglichen. Mit ihren gespeicherten Zahlungsdaten können Kund:innen mit nur wenigen Klicks Wiederholungskäufe tätigen. Dies kann für Sie
                                                         eine höhere Checkout-Conversion bedeuten.',
-    'OSC_PAYPAL_GOOGLEPAY_TITLE'                     => 'Google Pay Adresse',
-    'OSC_PAYPAL_EXPRESS_SHIPPING_TITLE'              => 'Pseudoversandkosten für PayPal Express',
+    'OSC_PAYPAL_GOOGLEPAY_TITLE'                    => 'Google Pay Adresse',
+    'OSC_PAYPAL_EXPRESS_SHIPPING_TITLE'             => 'Pseudoversandkosten für PayPal Express',
     'OSC_PAYPAL_EXPRESS_SHIPPING_DESC'              => 'PayPal Express benötigt für die Autorisierung des Warenkorbbetrages Versandkosten. Wenn ein Kunde sich im Shop weder eingeloggt noch seine Versandadresse angegeben hat, kann der Shop standardmäßig noch keine Versandkosten berechen. In den Shopeinstellungen (Stammdaten > Grundeinstellungen > Reiter Einstellungen > Abschnitt weitere Einstellungen) gibt es eine Option "Versandkosten auch dann berechnen, wenn der Kunde noch nicht eingeloggt ist". Damit kann OXID versuchen die Versandkosten für die Standardfälle zu ermitteln. Wenn man diese Option nicht nutzen möchte, besteht hier als letzte Möglichkeit Pseudoversandkosten zu hinterlegen. Die sollten Ihren meißt genutzten Versandkosten am nächsten kommen. Sobald sich der Kunde im Checkout befindet und seine Lieferadresse sowie seine gewünschte Versandart dem Shop bekannt sind, werden die tatsächlichen Versandkosten berechnet. Diese überschreiben alle vorher genutzten "Hilfs-"Versandkosten.',
-    'OSC_PAYPAL_GOOGLEPAY_ADDRESS_ACTIVATE'          => 'Speicherung der Adresse aktivieren',
-    'HELP_OSC_OSC_PAYPAL_GOOGLEPAY_ADRESS_ACTIVATE'  => 'Übernahme der Lieferadresse von GooglePay',
 
-    'OSC_PAYPAL_INSTALLPROCESS_FAILED'               => 'Da das Modul nicht korrekt per Composer installiert ist, sind Fehler bei der (De-)Aktivierung des Moduls aufgetreten. Bitte installieren Sie das Modul via Composer frisch und wiederholen den Vorgang.',
+    'OSC_PAYPAL_GOOGLEPAY_ADDRESS_ACTIVATE'         => 'Speicherung der Adresse aktivieren',
+    'HELP_OSC_OSC_PAYPAL_GOOGLEPAY_ADRESS_ACTIVATE' => 'Übernahme der Lieferadresse von GooglePay',
+
+    'OSC_PAYPAL_INSTALLPROCESS_FAILED'              => 'Da das Modul nicht korrekt per Composer installiert ist, sind Fehler bei der (De-)Aktivierung des Moduls aufgetreten. Bitte installieren Sie das Modul via Composer frisch und wiederholen den Vorgang.',
 
     // PayPal Payment
     'OSC_PAYPAL_PAYMENT_DEPRECATED'                 => 'Diese PayPal Zahlungsart kann nicht mehr aktiviert werden, da diese demnächst entfernt wird!',
+
     'OSC_PAYPAL_CUSTOM_ID_CONTENTS_TITLE'           => 'PayPal Inhalte des benutzerdefinierten ID-Feldes',
     'OSC_PAYPAL_CUSTOM_ID_CONTENTS_DESC'            => 'Das benutzerdefinierte PayPal-ID-Feld kann entweder nur den Bestellnummernwert oder ein JSON mit zusätzlichen Daten enthalten.',
-];
+
+    'OSC_PAYPAL_DEBUG_LEVEL_OVERRIDE_TITLE'         => 'Debug-Level',
+    'OSC_PAYPAL_DEBUG_LEVEL'                        => 'Debug-Level',
+    'OSC_PAYPAL_DEBUG_LEVEL_OFF'                    => 'Aus',
+    'OSC_PAYPAL_DEBUG_LEVEL_DEBUG'                  => 'Debug',
+    'OSC_PAYPAL_DEBUG_LEVEL_ERROR'                  => 'Fehler',
+    'HELP_OSC_PAYPAL_DEBUG_LEVEL'                   => 'Steuert die Protokollierungsstufe für PayPal-API-Aufrufe. "Aus" deaktiviert die Protokollierung, "Debug" protokolliert alle Anfragen und Antworten, "Fehler" protokolliert nur Fehler.',
+    ]
+);

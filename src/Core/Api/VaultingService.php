@@ -15,16 +15,30 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Service\BaseService;
+use Psr\Log\LoggerInterface;
 
 class VaultingService extends BaseService
 {
     use ServiceContainer;
+
+    private OrderProcessTrackingService $orderProcessTrackingService;
+
+    public function __construct(OrderProcessTrackingService $orderProcessTrackingService, \OxidSolutionCatalysts\PayPalApi\Client $client)
+    {
+        $this->orderProcessTrackingService = $orderProcessTrackingService;
+        parent::__construct($client);
+    }
+
+    public function getLogger(): LoggerInterface
+    {
+        return $this->getServiceFromContainer(Logger::class);
+    }
 
     public function generateUserIdToken($payPalCustomerId = false): array
     {
@@ -34,7 +48,7 @@ class VaultingService extends BaseService
 
         $params = [
             'response_type' => 'id_token',
-            'grant_type'    => 'client_credentials',
+            'grant_type' => 'client_credentials',
         ];
 
         if ($payPalCustomerId) {
@@ -50,7 +64,7 @@ class VaultingService extends BaseService
                 $body = $response->getBody();
             }
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (ApiException | JsonException $e) {
+        } catch (ApiException|JsonException $e) {
             $result = [];
         }
 
@@ -104,7 +118,7 @@ class VaultingService extends BaseService
                 $body = $response->getBody();
             }
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (ApiException | JsonException $e) {
+        } catch (ApiException|JsonException $e) {
             $result = [];
         }
 
@@ -118,9 +132,9 @@ class VaultingService extends BaseService
     public function getPaymentSourceForVaulting(string $paymentSourceId): array
     {
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $viewConf   = Registry::get(ViewConfig::class);
-        $config     = Registry::getConfig();
-        $user       = $viewConf->getUser();
+        $viewConf = Registry::get(ViewConfig::class);
+        $config = Registry::getConfig();
+        $user = $viewConf->getUser();
 
         $country = oxNew(Country::class);
         $country->load($user->getFieldData('oxcountryid'));
@@ -132,70 +146,90 @@ class VaultingService extends BaseService
         );
 
         $shopName = $moduleSettings->getShopName();
-        $lang = Registry::getLang();
-
-        $description = sprintf($lang->translateString('OSC_PAYPAL_DESCRIPTION'), $shopName);
-
-        $name                   = $user->getFieldData("oxfname");
-        $name                   .= $user->getFieldData("oxlname");
-        $address                = [
-            "address_line_1"    => $user->getFieldData('oxstreet') . " " . $user->getFieldData('oxstreetnr'),
-            "address_line_2"    => $user->getFieldData('oxcompany') . " " . $user->getFieldData('oxaddinfo'),
-            "admin_area_1"      => $state->getFieldData('oxtitle'),
-            "admin_area_2"      => $user->getFieldData('oxcity'),
-            "postal_code"       => $user->getFieldData('oxzip'),
-            "country_code"      => $country->oxcountry__oxisoalpha2->value,
+        $name = $user->getFieldData("oxfname");
+        $name .= $user->getFieldData("oxlname");
+        $billingAddress = [
+            "address_line_1" => $user->getFieldData('oxstreet') . " " . $user->getFieldData('oxstreetnr'),
+            "address_line_2" => $user->getFieldData('oxcompany') . " " . $user->getFieldData('oxaddinfo'),
+            "admin_area_1" => $state->getFieldData('oxtitle'),
+            "admin_area_2" => $user->getFieldData('oxcity'),
+            "postal_code" => $user->getFieldData('oxzip'),
+            "country_code" => $country->oxcountry__oxisoalpha2->value,
         ];
-        $locale                 =
+        $locale =
             strtolower($country->oxcountry__oxisoalpha2->value)
             . '-'
             . strtoupper($country->oxcountry__oxisoalpha2->value);
-        $experience_context     = [
-            "brand_name"          => $shopName,
-            "locale"              => $locale,
-            "return_url"          => $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession',
-            "cancel_url"          => $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
-//            "shipping_preference" => "SET_PROVIDED_ADDRESS",
+        $experience_context = [
+            "brand_name" => $shopName,
+            "locale" => $locale,
+            "return_url" => $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession',
+            "cancel_url" => $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
+            "shipping_preference" => "SET_PROVIDED_ADDRESS"
         ];
 
         $attributes = [];
-        if(Registry::getRequest()->getRequestParameter("vaultPayment") === "true"){
-            $attributes["vault"] = [
-                "store_in_vault" => "ON_SUCCESS",
-                "usage_type" => "MERCHANT",
-                "customer_type" => "CONSUMER",
-                "permit_multiple_payment_tokens" => false //Check: if this is set to 'false' either card od PP account can be vaulted
+        $vaultPaymentOnSuccess = Registry::getRequest()->getRequestParameter("vaultPayment");
+        if (filter_var($vaultPaymentOnSuccess, FILTER_VALIDATE_BOOLEAN)) {
+            $attributes = [
+                "customer" => [
+                    "id" => $user->getFieldData("oscpaypalcustomerid")
+                ],
+                "vault" => [
+                    "store_in_vault" => "ON_SUCCESS",
+                ]
             ];
+
+            if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL) {
+                //those 3 params should be only in PayPal Standard
+                $attributes['vault'] += [
+                    "usage_type" => "MERCHANT",
+                    "customer_type" => "CONSUMER",
+                    "permit_multiple_payment_tokens" => false
+                ];
+            }
+
+
         }
+
         if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
             $paymentSource = [
                 $paymentSourceId => [
                     "name" => $name,
-                    "billing_address"       => $address,
-                    "verification_method"   => "SCA_WHEN_REQUIRED",
-                    "experience_context"    => $experience_context,
-                    "attributes" => array_merge($attributes, [
-                        "verification" => [
-                            "method" => "SCA_WHEN_REQUIRED"
-                        ]
-                    ])
+                    "billing_address" => $billingAddress,
+                    "experience_context" => $experience_context,
                 ]
             ];
+
+            $paymentSource[$paymentSourceId]["attributes"] = array_merge($attributes,
+                [
+                    "verification" => [
+                        "method" => "SCA_WHEN_REQUIRED"
+                    ]
+                ]);
+
+            $paymentSource[$paymentSourceId]["stored_credential"] = [
+                "payment_initiator" => "CUSTOMER",
+                "payment_type" => "ONE_TIME",
+                "usage" => "FIRST"
+            ];
+
         } else {
             $paymentSource = [
                 $paymentSourceId => [
-                        "description"   => $description,
-                        "shipping"      => [
-                            "name"      => [
-                                "full name" => $name
-                            ],
-                            "address"   => $address
-                        ],
-                        "usage_pattern" => "IMMEDIATE",
-                    "experience_context" => $experience_context,
-                    "attributes" => $attributes
+                    "experience_context" => array_merge([
+                        'payment_method_preference' => 'UNRESTRICTED'
+                    ], $experience_context),
                 ]
             ];
+
+            if (!empty($attributes)) {
+                $paymentSource[$paymentSourceId]["attributes"] = $attributes;
+            }
+
+            if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL) {
+                $paymentSource[$paymentSourceId]["address"] = $billingAddress;
+            }
         }
 
         return $paymentSource;
@@ -210,8 +244,8 @@ class VaultingService extends BaseService
         $requestBody = [
             "payment_source" => [
                 "token" => [
-                    "id"    => $setupToken,
-                    "type"  => "SETUP_TOKEN",
+                    "id" => $setupToken,
+                    "type" => "SETUP_TOKEN",
                 ]
             ]
         ];
@@ -223,41 +257,148 @@ class VaultingService extends BaseService
                 $body = $response->getBody();
             }
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (ApiException | JsonException $e) {
+        } catch (ApiException|JsonException $e) {
             $result = [];
         }
 
         return is_array($result) ? $result : [];
     }
 
+    /**
+     * Check if a specific type of vaulted payment is used
+     * 
+     * @param string $paymentType The payment type to check (PayPalDefinitions::PAYMENT_SOURCE_PAYPAL or 'card')
+     * @param ?User $user The user to check
+     * @return bool True if the specified vaulted payment is used
+     */
+    public function isVaultedPaymentUsed(string $paymentType = PayPalDefinitions::PAYMENT_SOURCE_PAYPAL, ?User $user = null): bool
+    {
+        $payPalCustomerId = $user ? $user->getFieldData("oscpaypalcustomerid") : '';
+        if (empty($payPalCustomerId)) {
+            return false;
+        }
+
+        $vaultedPaymentTokens = $this->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"] ?? [];
+
+        if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL) {
+            // Check for PayPal payment source
+            return !empty(array_filter($vaultedPaymentTokens, function($token) {
+                return isset($token["payment_source"][PayPalDefinitions::PAYMENT_SOURCE_PAYPAL]);
+            }));
+        } else {
+            // Check for card payment source
+            $vaultedPaymentTokenSelected = $this->fetchSelectedVaultedPaymentToken($user);
+            if (empty($vaultedPaymentTokenSelected)) {
+                return false;
+            }
+
+            return in_array($vaultedPaymentTokenSelected['id'], array_column($vaultedPaymentTokens, 'id'));
+        }
+    }
+
     public function fetchSelectedVaultedPaymentToken(
-        ?User $user = null,
+        ?User   $user = null,
         ?string $id = null
-    ): ?array {
+    ): ?array
+    {
         $vaultedPaymentTokens = [];
         $payPalCustomerId = $user ? $user->getFieldData("oscpaypalcustomerid") : '';
-        if(!empty($payPalCustomerId)) {
+        if (!empty($payPalCustomerId)) {
             $vaultedPaymentTokens = $this->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"];
         }
         $selectedVaultedPaymentTokenId = $id ?? Registry::getSession()->getVariable("selectedVaultedPaymentTokenId");
         if (is_null($selectedVaultedPaymentTokenId)) {
             return null;
         }
+
         $vaultPaymentToken = null;
         foreach ($vaultedPaymentTokens as $vaultPaymentToken) {
             if ($vaultPaymentToken["id"] === $selectedVaultedPaymentTokenId) {
                 break;
             }
         }
+
         return is_array($vaultPaymentToken) ? $vaultPaymentToken : null;
     }
+
+    /**
+     * Get the cache key for vaulted tokens
+     * 
+     * @return string
+     */
+    protected function getVaultedTokenCacheKey(): string
+    {
+        $trackingId = $this->orderProcessTrackingService->getTrackingId();
+        return 'payPalPaymentVaultedTokenCache' . $trackingId;
+    }
+
+    /**
+     * Get vaulted token data from cache
+     * 
+     * @return array
+     */
+    public function getVaultedTokenFromCache(): array
+    {
+        $trackingId = $this->orderProcessTrackingService->getTrackingId();
+        if (empty($trackingId)) {
+            return [];
+        }
+
+        $cacheKey = $this->getVaultedTokenCacheKey();
+        return Registry::getSession()->getVariable($cacheKey) ?: [];
+    }
+
+    /**
+     * Store vaulted token data in cache
+     * 
+     * @param array $data
+     * @return void
+     */
+    public function storeVaultedTokenInCache(array $data): void
+    {
+        $trackingId = $this->orderProcessTrackingService->getTrackingId();
+        if (empty($trackingId)) {
+            return;
+        }
+
+        $cacheKey = $this->getVaultedTokenCacheKey();
+        Registry::getSession()->setVariable($cacheKey, $data);
+    }
+
+    /**
+     * Clear vaulted token cache
+     * 
+     * @return void
+     */
+    public function clearVaultedTokenCache(): void
+    {
+        $trackingId = $this->orderProcessTrackingService->getTrackingId();
+        if (empty($trackingId)) {
+            return;
+        }
+
+        $cacheKey = $this->getVaultedTokenCacheKey();
+        Registry::getSession()->deleteVariable($cacheKey);
+    }
+
+    /**
+     * Check if vaulting cache refresh is needed
+     * 
+     * @return bool True if refresh is needed, false otherwise
+     */
+    public function isVaultingCacheRefreshNeeded(): bool
+    {
+        return !$this->orderProcessTrackingService->isPaymentProcessStarted();
+    }
+
     public function getVaultPaymentTokens(string $paypalCustomerId): array
     {
         $viewConf = oxNew(ViewConfig::class);
         if (!$viewConf->getIsVaultingActive()) {
             return [];
         }
-
+        $currentTrackingId = (string)Registry::getSession()->getVariable('payPalPaymentProcessId');
+        $this->orderProcessTrackingService->setTrackingId($currentTrackingId);
         $headers = [];
         $headers['Content-Type'] = 'application/x-www-form-urlencoded';
         $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
@@ -265,16 +406,25 @@ class VaultingService extends BaseService
         $path = '/v3/vault/payment-tokens?customer_id=' . $paypalCustomerId;
 
         $body = '';
-        try {
-            $response = $this->send('GET', $path, [], $headers);
-            if ($response) {
-                $body = $response->getBody();
+        $cachedResult = $this->getVaultedTokenFromCache();
+
+        // If we're in the middle of a payment process, use cached results if available
+        // Is we're outside a payment process, or cache is empty, fetch fresh results
+        if (empty($cachedResult) || $this->isVaultingCacheRefreshNeeded()) {
+            try {
+                $response = $this->sendWithRequestResponseLogging('GET', $path, [], $headers);
+                if ($response) {
+                    $body = $response->getBody();
+                }
+                $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
+                $this->storeVaultedTokenInCache($result);
+            } catch (ApiException|JsonException $e) {
+                $this->getServiceFromContainer(Logger::class)
+                    ->log('error', __CLASS__ . ' ' . __FUNCTION__ . ' : ' . $e->getMessage());
+                $result = $cachedResult ?: [];
             }
-            $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (ApiException | JsonException $e) {
-            $this->getServiceFromContainer(Logger::class)
-                ->log('error', __CLASS__ . ' ' . __FUNCTION__ . ' : ' . $e->getMessage());
-            $result = [];
+        } else {
+            $result = $cachedResult;
         }
 
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);

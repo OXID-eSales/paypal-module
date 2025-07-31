@@ -8,9 +8,11 @@
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 
-$sLangName = 'English';
+include_once __DIR__ . '/../../../translations/en/oscpaypal_en_lang.php';
 
-$aLang = [
+$aLang = array_merge(
+    $aLang ?? [],
+    [
     'charset'                                     => 'UTF-8',
     'paypal'                                      => 'PayPal',
     'tbclorder_oscpaypal'                         => 'PayPal Checkout',
@@ -152,16 +154,19 @@ $aLang = [
     'OSC_PAYPAL_STATUS_COMPLETED'                 => 'Completed',
     'OSC_PAYPAL_STATUS_CAPTURED'                  => 'Captured',
     'OSC_PAYPAL_STATUS_DECLINED'                  => 'Declined',
+    'OSC_PAYPAL_STATUS_DENIED'                    => 'Denied',
     'OSC_PAYPAL_STATUS_PARTIALLY_REFUNDED'        => 'Partially refunded',
     'OSC_PAYPAL_STATUS_PENDING'                   => 'Pending',
     'OSC_PAYPAL_STATUS_PENDING_APPROVAL'          => 'Pending Approval',
     'OSC_PAYPAL_STATUS_REFUNDED'                  => 'Refunded',
+    'OSC_PAYPAL_STATUS_ERROR'                     => 'An error has occurred',
     'OSC_PAYPAL_STATUS_PAYER_ACTION_REQUIRED'     => 'Payer action required',
     'OSC_PAYPAL_PAYMENT_METHOD'                   => 'Payment method',
     'OSC_PAYPAL_COMMENT'                          => 'Comment',
     'OSC_PAYPAL_TRANSACTIONID'                    => 'Transaction ID',
     'OSC_PAYPAL_REFUND_AMOUNT'                    => 'Refund amount',
     'OSC_PAYPAL_CONFIRM_REFUND'                   => 'Do you really want to request a refund?',
+    'OSC_PAYPAL_CONFIRM_CAPTURE'                  => 'Do you really want to request a money capture?',
     'OSC_PAYPAL_INVOICE_ID'                       => 'Invoice No',
     'OSC_PAYPAL_NOTE_TO_BUYER'                    => 'Note to buyer',
     'OSC_PAYPAL_REFUND_ALL'                       => 'Refund all',
@@ -180,12 +185,6 @@ $aLang = [
     'OSC_PAYPAL_COUNTRY_CODE'                     => 'Country code',
     'OSC_PAYPAL_SHIPPING'                         => 'Shipping',
     'OSC_PAYPAL_BILLING'                          => 'Billing',
-    'OSC_PAYPAL_PAYMENT_PUI'                      => 'Pay upon Invoice - Bankdata',
-    'OSC_PAYPAL_PAYMENT_PUI_REFERENCE'            => 'Payment Reference',
-    'OSC_PAYPAL_PAYMENT_PUI_BIC'                  => 'BIC',
-    'OSC_PAYPAL_PAYMENT_PUI_IBAN'                 => 'IBAN',
-    'OSC_PAYPAL_PAYMENT_PUI_BANKNAME'             => 'Bankname',
-    'OSC_PAYPAL_PAYMENT_PUI_ACCOUNTHOLDER'        => 'Accountholder',
 
     'OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'     => 'Apply settings from the classic PayPal module',
     'OSC_PAYPAL_BANNER_TRANSFERREDOLDSETTINGS'     => 'Banner settings have been transferred from the classig PayPal module.',
@@ -217,6 +216,7 @@ $aLang = [
     'OSC_PAYPAL_BANNER_COLORSCHEMEGRAY'             => 'gray',
     'OSC_PAYPAL_BANNER_COLORSCHEMEMONOCHROME'       => 'monochrome',
     'OSC_PAYPAL_BANNER_COLORSCHEMEGRAYSCALE'        => 'grayscale',
+    'OSC_PAYPAL_CAPTURE_STRATEGY_TITLE'             => 'Capture money strategy',
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME'              => 'PayPal Standard - Capture money',
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME_LABEL'        => 'A deviating collection of money at the time of the order is only possible for PayPal Standard. All other payment methods (incl. PayPal Express) will be capture immediately.',
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME_HELP'         => 'Please note! The authorization of an order is valid for three days. It will be refreshed automatically for a maximum of 29 days after ordering. After that, it is no longer possible to capture the money.',
@@ -325,4 +325,12 @@ $aLang = [
 
     'OSC_PAYPAL_CUSTOM_ID_CONTENTS_TITLE'           => 'PayPal custom id field contents',
     'OSC_PAYPAL_CUSTOM_ID_CONTENTS_DESC'            => 'PayPal custom id field will be JSON encoded string with order number, shop version and the PayPal module version.',
-];
+
+    'OSC_PAYPAL_DEBUG_LEVEL_OVERRIDE_TITLE'         => 'Debug Level',
+    'OSC_PAYPAL_DEBUG_LEVEL'                        => 'Debug Level',
+    'OSC_PAYPAL_DEBUG_LEVEL_OFF'                    => 'Off',
+    'OSC_PAYPAL_DEBUG_LEVEL_DEBUG'                  => 'Debug',
+    'OSC_PAYPAL_DEBUG_LEVEL_ERROR'                  => 'Error',
+    'HELP_OSC_PAYPAL_DEBUG_LEVEL'                   => 'Controls the level of logging for PayPal API calls. "Off" disables logging, "Debug" logs all requests and responses, "Error" logs only errors.',
+    ]
+);

@@ -7,6 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Component;
 
+use Exception;
 use OxidEsales\Eshop\Core\Exception\UserException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\User;

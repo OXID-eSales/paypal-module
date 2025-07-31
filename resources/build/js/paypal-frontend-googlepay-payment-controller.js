@@ -49,6 +49,9 @@
         };
 
         this.onGooglePaymentButtonClicked = async function () {
+            PayPalPayment.removeErrorMessage();
+            PayPalPayment.addSubmitButtonOverlay();
+            PayPalPayment.reactOnPayPalOverlayClosed = true;
             let response = await fetch(PayPalPayment.getConfigValue('shopOrderCreateUrl'), {
                 method: 'post',
                 headers: Object.assign({
@@ -186,7 +189,8 @@
                     PayPalPayment.captureOrder(orderId);
                     return {transactionState: "SUCCESS"};
                 } else {
-                    console.error("Payment was not approved");
+                    PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR);
+                    PayPalPayment.handleError();
                     return {transactionState: "ERROR"};
                 }
             } catch (err) {
@@ -200,9 +204,12 @@
         };
         this.confirmOrder= async function (orderId, paymentData) {
             await new Promise(resolve => setTimeout(resolve, 1000));
-            const confirmOrderResponse = await paypal.Googlepay().confirmOrder({
+            confirmOrderResponse = await paypal.Googlepay().confirmOrder({
                 orderId: orderId,
                 paymentMethodData: paymentData.paymentMethodData
+            }).catch(function (PayPalGooglePayError) {
+                PayPalPayment.handleError(PayPalGooglePayError);
+                return;
             });
 
             if (confirmOrderResponse.status === "PAYER_ACTION_REQUIRED" || confirmOrderResponse.status === 'APPROVED') {

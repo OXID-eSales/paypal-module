@@ -11,9 +11,9 @@
     [{assign var="captureStrategy" value=$oPPconfig->getPayPalStandardCaptureStrategy()}]
 
     [{if $isSandBox}]
-    [{assign var="debug" value="&XDEBUG_SESSION=PHPSTORM"}]
-    [{else}]
-    [{assign var="debug" value=""}]
+        [{assign var="debug" value="&XDEBUG_SESSION=PHPSTORM"}]
+        [{else}]
+        [{assign var="debug" value=""}]
     [{/if}]
 
     <script>
@@ -24,43 +24,46 @@
             payPalOrderDetailsUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=fetchPayPalOrderDetails&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             errorLogUrl: '[{$sSelfLink|cat:"cl=payment&payerror=2&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             shopThankYouPageUrl: '[{$sSelfLink|cat:"cl=thankyou&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+            shopOrderAuthorizeUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=authorizePayment&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             deliveryAddressId: '[{$oView->getDeliveryAddressMD5()}]',
             purchaseUnits: [{$purchaseUnits}],
             vaultedPaymentSource: [{$vaultedPaymentSource}],
             language: '[{$oView->getActiveLangAbbr()|lower}]',
             currency: '[{$currency->name}]',
-            customerId: '[{$customerId}]'
+            customerId: '[{$customerId}]',
+            captureStrategy: '[{if $captureStrategy == 'directly'}]CAPTURE[{else}]AUTHORIZE[{/if}]',
+            trackingId: '[{$oView->getCurrentTrackingId()}]',
         }
 
-            [{if $paymentId == 'oscpaypal'}]
-        window.PayPalPaymentControllerConfigurator = function () {
-            return Object.assign (PayPalPaymentControllerConfiguratorDefaults, {
-                shopOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
-                payPalOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createPayPalOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
-                shopOrderCaptureUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=captureOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
-                shopOrderPatchingUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
-                updateOxUserWithPayPalCustomerIdUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=updateOxUserWithPayPalCustomerId&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
-                buttonSelector: '#[{$paymentId}]',
-                captureStrategy: '[{if $captureStrategy == 'directly'}]CAPTURE[{else}]AUTHORIZE[{/if}]',
-                paymentId: 'oscpaypal'
-            });
-        };
-        [{/if}]
+        [{if $paymentId == 'oscpaypal'}]
+                window.PayPalPaymentControllerConfigurator = function () {
+                return Object.assign (PayPalPaymentControllerConfiguratorDefaults, {
+                    shopOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    payPalOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createPayPalOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    shopOrderCaptureUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=captureOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    shopOrderPatchingUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    updateOxUserWithPayPalCustomerIdUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=updateOxUserWithPayPalCustomerId&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    buttonSelector: '#[{$paymentId}]',
+                    paymentId: 'oscpaypal'
+                });
+            };
+    [{/if}]
 
-        [{if $paymentId == 'oscpaypal_acdc'}]
-        window.PayPalPaymentControllerConfigurator = function () {
-            return Object.assign (PayPalPaymentControllerConfiguratorDefaults, {
-                shopOrderCaptureUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=captureOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
-                shopOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createAcdcOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
-                cardFields: true, //probably not needed when payment controller will be split
-                paymentId: '[{$paymentId}]', //probably not needed when payment controller will be split
-                buttonSelector: 'button#[{$paymentId}]'
-            });
-        };
-        [{/if}]
+    [{if $paymentId == 'oscpaypal_acdc'}]
+                window.PayPalPaymentControllerConfigurator = function () {
+                return Object.assign (PayPalPaymentControllerConfiguratorDefaults, {
+                    shopOrderCaptureUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=captureOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    shopOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createAcdcOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    shopOrderCompleteUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=completeOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    cardFields: true, //probably not needed when payment controller will be split
+                    paymentId: '[{$paymentId}]', //probably not needed when payment controller will be split
+                    buttonSelector: 'button#[{$paymentId}]'
+                });
+            };
+    [{/if}]
 
-        [{if $paymentId == 'oscpaypal_googlepay'}]
-            [{assign var="bGooglePayDelivery" value=$oConfig->getConfigParam('oscPayPalUseGooglePayAddress')}]
+    [{if $paymentId == 'oscpaypal_googlepay'}]
+        [{assign var="bGooglePayDelivery" value=$oConfig->getConfigParam('oscPayPalUseGooglePayAddress')}]
 
         window.PayPalPaymentControllerConfigurator = function () {
             return Object.assign (PayPalPaymentControllerConfiguratorDefaults, {
@@ -79,7 +82,7 @@
                 buttonSelector: 'div#[{$paymentId}]'
             });
         };
-        [{/if}]
+    [{/if}]
 
         if ('undefined' !== typeof PayPalPaymentControllerConfigurator) {
             window.PayPalPaymentControllerConfig = new PayPalPaymentControllerConfigurator();
@@ -89,4 +92,4 @@
         }
     </script>
 
-    [{/if}]
+[{/if}]

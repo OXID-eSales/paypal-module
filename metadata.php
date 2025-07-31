@@ -20,6 +20,7 @@ use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Application\Model\Payment;
 use OxidEsales\Eshop\Application\Model\PaymentGateway;
+use OxidEsales\Eshop\Core\Email;
 use OxidEsales\Eshop\Core\InputValidator;
 use OxidEsales\Eshop\Core\ShopControl;
 use OxidEsales\Eshop\Core\ViewConfig;
@@ -39,6 +40,7 @@ use OxidSolutionCatalysts\PayPal\Controller\ProxyController;
 use OxidSolutionCatalysts\PayPal\Controller\VaultingTokenController;
 use OxidSolutionCatalysts\PayPal\Controller\WebhookController;
 use OxidSolutionCatalysts\PayPal\Controller\PayPalVaultingController;
+use OxidSolutionCatalysts\PayPal\Core\Email as PayPalEmail;
 use OxidSolutionCatalysts\PayPal\Core\InputValidator as PayPalInputValidator;
 use OxidSolutionCatalysts\PayPal\Core\ShopControl as PayPalShopControl;
 use OxidSolutionCatalysts\PayPal\Core\ViewConfig as PayPalViewConfig;
@@ -75,6 +77,7 @@ $aModule = [
         InputValidator::class => PayPalInputValidator::class,
         ShopControl::class => PayPalShopControl::class,
         ViewConfig::class => PayPalViewConfig::class,
+        Email::class => PayPalEmail::class,
         Order::class => PayPalOrder::class,
         User::class => PayPalUser::class,
         Basket::class => PayPalBasket::class,
@@ -157,6 +160,9 @@ $aModule = [
         '@osc_paypal/frontend/account_vaulting_card.tpl'      => 'views/smarty/frontend/shared/page/account/account_vaulting_card.tpl',
         '@osc_paypal/frontend/flow/vaultedpaymentsources.tpl' => 'views/smarty/frontend/flow/vaulting/vaultedpaymentsources.tpl',
         '@osc_paypal/frontend/wave/vaultedpaymentsources.tpl' => 'views/smarty/frontend/wave/vaulting/vaultedpaymentsources.tpl',
+
+        '@osc_paypal/frontend/shared/email/html/pui_paymentinfo.tpl' => 'views/smarty/frontend/shared/email/html/pui_paymentinfo.tpl',
+        '@osc_paypal/frontend/shared/email/plain/pui_paymentinfo.tpl' => 'views/smarty/frontend/shared/email/plain/pui_paymentinfo.tpl',
     ],
     'blocks'    => [
         [
@@ -273,6 +279,16 @@ $aModule = [
             'template' => 'widget/minibasket/minibasket.tpl',
             'block' => 'dd_layout_page_header_icon_menu_minibasket_functions',
             'file' => 'views/smarty/extensions/themes/default/widget/minibasket/dd_layout_page_header_icon_menu_minibasket_functions.tpl',
+        ],
+        [
+            'template' => 'email/plain/order_cust.tpl',
+            'block' => 'email_plain_order_cust_paymentinfo',
+            'file' => 'views/smarty/extensions/themes/default/email/plain/email_plain_order_cust_paymentinfo.tpl'
+        ],
+        [
+            'template' => 'email/html/order_cust.tpl',
+            'block' => 'email_html_order_cust_paymentinfo',
+            'file' => 'views/smarty/extensions/themes/default/email/html/email_html_order_cust_paymentinfo.tpl'
         ],
     ],
     'settings' => [
@@ -455,7 +471,7 @@ $aModule = [
         [
             'name' => 'oscPayPalBannersColorScheme',
             'type' => 'select',
-            'constraints' => 'blue|black|white|white-no-border',
+            'constraints' => 'blue|black|white|gray|monochrome|grayscale',
             'value' => 'blue',
             'group' => null
         ],
@@ -678,6 +694,13 @@ $aModule = [
             'type' => 'select',
             'constraints' => 'paypal|checkout|buynow|pay|installment',
             'value' => 'paypal',
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalDebugLevel',
+            'type' => 'select',
+            'constraints' => 'off|debug|error',
+            'value' => 'off',
             'group' => null
         ],
     ],

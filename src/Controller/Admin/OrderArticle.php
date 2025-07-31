@@ -17,10 +17,10 @@ class OrderArticle extends OrderArticle_parent
     public function render()
     {
         $parent = parent::render();
+
         if ($order = $this->getEditObject()) {
-            if (
-                $order->paidWithPayPal() ||
-                 $order->paidWithPayPalPlus() ||
+            if ( $order->paidWithPayPal() ||
+                 $order->paidWithPayPalPlus()||
                  $order->paidWithPayPalSoap()
             ) {
                 $capture = $order->getOrderPaymentCapture();
@@ -29,6 +29,7 @@ class OrderArticle extends OrderArticle_parent
                 }
             }
         }
+
         return $parent;
     }
 }
