@@ -846,4 +846,11 @@ class Order extends Order_parent
 
         return parent::delete($sOxId);
     }
+
+    public function setOrderStatusNotFinished(): void
+    {
+        parent::setOrderStatus('NOT_FINISHED');
+    }
+
+
 }

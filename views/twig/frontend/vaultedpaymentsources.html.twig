@@ -39,3 +39,19 @@
         </div>
     </div>
 {% endif %}
+
+<div class="payment-method" style="margin-top: 20px; text-align: right;">
+    <form action="{{ oViewConf.getSslSelfLink()|replace({"&amp;": "&"}) }}" method="post">
+        <div class="hidden">
+            {{ oViewConf.getHiddenSid()|raw }}
+            <input type="hidden" name="cl" value="{{ oViewConf.getActiveClassName() }}">
+            <input type="hidden" name="fnc" value="clearVaultedTokenCache">
+        </div>
+        <button type="submit" class="btn btn-primary ms-lg-auto">
+            <svg aria-hidden="true">
+                <use xlink:href="#sync"></use>
+            </svg>
+            {{ translate({ ident: "OSC_PAYPAL_VAULTING_REFRESH_CACHE" }) }}
+        </button>
+    </form>
+</div>
