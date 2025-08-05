@@ -452,7 +452,7 @@ class AjaxPaymentController extends ProxyController
 
             //capture after shipment or manual
             if ($captureStrategy !== 'directly') {
-                $oOrder->setOrderStatus('NOT_FINISHED');
+                $oOrder->setOrderStatusNotFinished();
                 $oOrder->save();
                 //prepare capture tracking
                 $paymentService->trackPayPalOrder(

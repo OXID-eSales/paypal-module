@@ -6,6 +6,7 @@
     {% set purchaseUnits = oView.getPurchaseUnits() %}
     {% set vaultedPaymentSource = oView.getVaultedPaymentSource() %}
     {% set oPPconfig = oViewConf.getPayPalCheckoutConfig() %}
+    {% set customerId = oView.getPayPalCustomerId() %}
     {% set isSandBox = oPPconfig.isSandbox() %}
     {% set captureStrategy = oPPconfig.getPayPalStandardCaptureStrategy() %}
     {% set currency = oView.getActCurrency() %}
@@ -24,11 +25,15 @@
             payPalOrderDetailsUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=fetchPayPalOrderDetails&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
             errorLogUrl: '{{ (sSelfLink ~ "cl=payment&payerror=2&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
             shopThankYouPageUrl: '{{ (sSelfLink ~ "cl=thankyou&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
+            shopOrderAuthorizeUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=authorizePayment&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
             deliveryAddressId: '{{ oView.getDeliveryAddressMD5() }}',
             purchaseUnits: {{ purchaseUnits|raw }},
             vaultedPaymentSource: {{ vaultedPaymentSource|raw }},
             language: '{{ oView.getActiveLangAbbr()|lower }}',
-            currency: '{{ currency.name }}'
+            currency: '{{ currency.name }}',
+            customerId: '{{ customerId }}',
+            captureStrategy: '{% if captureStrategy == 'directly' %}CAPTURE{% else %}AUTHORIZE{% endif %}',
+            trackingId: '{{ oView.getCurrentTrackingId() }}',
         };
 
         {% if paymentId == 'oscpaypal' %}
@@ -40,8 +45,7 @@
                     shopOrderPatchingUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=patchShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
                     updateOxUserWithPayPalCustomerIdUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=updateOxUserWithPayPalCustomerId&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
                     buttonSelector: '#{{ paymentId }}',
-                    captureStrategy: '{% if captureStrategy == 'directly' %}CAPTURE{% else %}AUTHORIZE{% endif %}',
-                    paymentId: 'oscpaypal',
+                    paymentId: 'oscpaypal'
                 });
             };
         {% endif %}
@@ -51,15 +55,16 @@
                 return Object.assign(PayPalPaymentControllerConfiguratorDefaults, {
                     shopOrderCaptureUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=captureOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
                     shopOrderCreateUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=createAcdcOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
-                    cardFields: true,
-                    paymentId: '{{ paymentId }}',
+                    shopOrderCompleteUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=completeOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
+                    cardFields: true, //probably not needed when payment controller will be split
+                    paymentId: '{{ paymentId }}', //probably not needed when payment controller will be split
                     buttonSelector: 'button#{{ paymentId }}'
                 });
             };
         {% endif %}
 
         {% if paymentId == 'oscpaypal_googlepay' %}
-            {% set bGooglePayDelivery = oPPconfig.getIsGooglePayDeliveryAddressActive() %}
+            {% set bGooglePayDelivery = oConfig.getConfigParam('oscPayPalUseGooglePayAddress') %}
 
             window.PayPalPaymentControllerConfigurator = function () {
                 return Object.assign(PayPalPaymentControllerConfiguratorDefaults, {

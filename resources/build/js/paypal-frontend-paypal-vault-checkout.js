@@ -5,6 +5,14 @@ function deselectRadioButtons(selector) {
     });
 }
 
+/**
+ * Helper function to get the payment submit button
+ * @returns {Element|null} The payment submit button element or null if not found
+ */
+function getPaymentSubmitButton() {
+    return document.querySelector("button[onclick*=\"document.querySelector('#payment').requestSubmit()\"]");
+}
+
 function registerClickListenerForPaymentMethodsRadioButtons() {
     const paymentMethodsRadioButtons = document.getElementById('payment').querySelectorAll('[type="radio"]');
     paymentMethodsRadioButtons.forEach(function(paymentMethod) {
@@ -14,7 +22,7 @@ function registerClickListenerForPaymentMethodsRadioButtons() {
                 document.getElementById("paypalVaultCheckoutButton").disabled = true;
             }
             if (paymentMethod.checked) {
-                document.getElementById("paymentNextStepBottom").disabled = false;
+                getPaymentSubmitButton().disabled = false;
                 deselectRadioButtons(".vaulting_paymentsource");
             }
         };
@@ -28,7 +36,7 @@ function registerClickListenerForSavedVaultRadioButtons() {
             paymentsource.onclick = function() {
                 if (paymentsource.checked) {
                     document.getElementById("paypalVaultCheckoutButton").disabled = false;
-                    document.getElementById("paymentNextStepBottom").disabled = true;
+                    getPaymentSubmitButton().disabled = true;
                     deselectRadioButtons('#payment [type="radio"]');
                 }
             };
@@ -59,9 +67,10 @@ function registerClickListenerForTheVaultCheckoutButton() {
                         paymentIdInput.value = paymentId;
                         document.getElementById("payment").appendChild(paymentIdInput);
 
-                        document.getElementById("paymentNextStepBottom").disabled = false;
-                        document.getElementById("paymentNextStepBottom").click();
-                        document.getElementById("paymentNextStepBottom").disabled = true;
+                        let nextPaymentStepButton = getPaymentSubmitButton();
+                        nextPaymentStepButton.disabled = false;
+                        nextPaymentStepButton.click();
+                        nextPaymentStepButton.disabled = true;
                     }
                 });
             }

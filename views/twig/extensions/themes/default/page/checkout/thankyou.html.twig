@@ -3,12 +3,12 @@
 {% block checkout_thankyou_info %}
     {{ parent() }}
 
-    {% set vaultSuccess = viewConf.getSessionVaultSuccess() %}
+    {% set vaultSuccess = oViewConf.getSessionVaultSuccess() %}
 
     {% if vaultSuccess is not null %}
         {% if vaultSuccess %}
             <p class="alert alert-success">
-                {{ translate({ ident: "OSC_PAYPAL_VAULTING_SUCCESS_THANKYOU" }) }}
+                {{ translate({ ident: "OSC_PAYPAL_VAULTING_SUCCESS" }) }}
             </p>
         {% else %}
             <p class="alert alert-danger">

@@ -446,7 +446,7 @@
             }
 
             className = className || '';
-            const panelBody = document.querySelector("#orderPayment").querySelector(".panel-body");
+            const panelBody = document.querySelector("#orderPayment").parentElement;
 
             // Remove existing error if present
             this.removeErrorMessage(className);
@@ -465,7 +465,7 @@
 
         this.removeErrorMessage = function (className) {
             className = className || '';
-            const panelBody = document.querySelector("#orderPayment").querySelector(".panel-body");
+            const panelBody = document.querySelector("#orderPayment").parentElement;
             if (panelBody) {
                 const existingError = panelBody.querySelector(".error-message" + (className ? '.' + className : ''));
                 if (existingError) {

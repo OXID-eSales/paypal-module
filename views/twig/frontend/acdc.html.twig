@@ -3,19 +3,15 @@
     <div id="card_form">
         <div class="form-floating mb-3">
             <div id="card-number-field-container"></div>
-            <span>{{ translate({ ident: "OSC_PAYPAL_ACDC_CARD_NUMBER" }) }}</span>
         </div>
         <div class="form-floating mb-3">
             <div id="card-expiry-field-container"></div>
-            <span>{{ translate({ ident: "OSC_PAYPAL_ACDC_CARD_EXDATE" }) }}</span>
         </div>
         <div class="form-floating mb-3">
             <div id="card-cvv-field-container"></div>
-            <span>{{ translate({ ident: "OSC_PAYPAL_ACDC_CARD_CVV" }) }}</span>
         </div>
         <div class="form-floating mb-3">
             <div id="card-name-field-container"></div>
-            <span>{{ translate({ ident: "OSC_PAYPAL_ACDC_CARD_NAME_ON_CARD" }) }}</span>
         </div>
         {% if oscpaypal_isVaultingPossible %}
             <input type="checkbox" id="oscPayPalVaultPaymentCheckbox">
