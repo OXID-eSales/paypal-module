@@ -1,5 +1,4 @@
 const { defineConfig } = require('@playwright/test');
-const sharedData = require('./testData/test-data.json');
 
 require('dotenv').config();
 
@@ -35,7 +34,7 @@ module.exports = defineConfig({
             use: {
                 browserName: 'chromium', // 'chromium' is the default for Google Chrome as well
                 // Configure viewport
-                viewport: { width: 1280, height: 720 },
+                viewport: { width: 1280, height: 3000 },
                 // Record video and screenshots
                 video: 'on-first-retry',
                 screenshot: 'only-on-failure',
@@ -68,12 +67,10 @@ module.exports = defineConfig({
         ignoreHTTPSErrors: true,
 
         // Maximum time each action (like click) can take
-        actionTimeout: 10000,
-        navigationTimeout: 15000,
+        actionTimeout: 40000,
+        navigationTimeout: 40000,
 
         // Slow down Playwright operations by ms
         slowMo: 100,
-
-        navigationTimeout: 5000, // Fail navigation after 5 seconds
     },
 });

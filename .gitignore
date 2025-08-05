@@ -11,3 +11,10 @@ php-cs-fixer.phar
 /tests/.env
 /tests/report
 /resources/node_modules/
+/tests/e2e/playwright/.env
+/tests/e2e/playwright/node_modules
+/tests/e2e/playwright/_generated
+/tests/e2e/playwright/_data
+/tests/e2e/playwright/_output
+
+
