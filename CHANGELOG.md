@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.6.1] - 2025-??-??
+
+### FIX
+
+- [0007817](https://bugs.oxid-esales.com/view.php?id=7817): Fix: In step 4 (cl=order), the shop freezes with 500 errors - Internal Server Error on POST Request
+
 ## [2.6.0] - 2025-07-28
 
 ### NEW
