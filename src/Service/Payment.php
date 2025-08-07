@@ -956,9 +956,9 @@ class Payment
         $module->load(Module::MODULE_ID);
         /** @var Order $orderNumber */
         $orderNumber = $order instanceof EshopModelOrder ? $order->getFieldData('oxordernr') : '';
-        if($orderNumber == 0){
-            $order->setOrderNumber();
+        if($orderNumber == 0 || is_null($orderNumber)){
             $order->save();
+            $order->setOrderNumber();
             $orderNumber = $order->getFieldData('oxordernr');
         }
         if ($moduleSettings->isCustomIdSchemaStructural()) {
