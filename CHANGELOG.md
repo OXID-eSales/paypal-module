@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Saving vaulted payment methods is now only possible via checkout
 - Trim the item names for PayPal in a proper way
 - Switch to ServerSide-API-Calls instead deprecated ClientSide-API-Calls
-- use PayPal-Client v3.0.17
+- use PayPal-Client v3.0.18
 
 ### FIX
 
@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix: captured order could not be changed in the backend
 - use PayPal-Client v3.0.16
 - [0007797](https://bugs.oxid-esales.com/view.php?id=7797): Trim the item names for PayPal in a proper way
+- [0007817](https://bugs.oxid-esales.com/view.php?id=7817): Fix: In step 4 (cl=order), the shop freezes with 500 errors - Internal Server Error on POST Request
+
 
 ## [3.4.1] - 2025-04-08
 
