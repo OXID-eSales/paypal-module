@@ -23,18 +23,17 @@ jobs:
       - name: Clone the shop
         run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-6.5.x --single-branch source
 
-      - name: Cache current installation
-        uses: actions/cache@v4
-        with:
-          path: |
-            ./*
-          key: moduleDevelopmentInstallation-${{ matrix.php }}-${{ github.sha }}
+      - name: Download datagen
+        run: |
+          git clone https://${{ secrets.DATGEN_GH_TOKEN }}@github.com/dantweb/datagen.git \
+            source/extensions/datagen \
+            --branch=b-6.5.x-gha-plwrt-fork
 
       - name: Prepare container configuration
         run: |
           make setup
           make addbasicservices
-          make file=services/selenium-chrome.yml addservice
+
           perl -pi\
             -e "s#PHP_VERSION=.*#PHP_VERSION='${{ matrix.php }}'#g;"\
             .env
@@ -57,7 +56,7 @@ jobs:
                  -e 's/<dbName>/example/'\
                  -e 's/<dbPwd>/root/'\
                  -e 's/<dbPort>/3306/'\
-                 -e 's/<sShopURL>/http:\/\/localhost.local\//'\
+                 -e 's/<sShopURL>/https:\/\/${{ secrets.NGROK_CUSTOM_DOMAIN }}/'\
                  -e 's/<sShopDir>/\/var\/www\/source\//'\
                  -e 's/<sCompileDir>/\/var\/www\/source\/tmp\//'\
               source/source/config.inc.php
@@ -78,33 +77,116 @@ jobs:
             php composer require symfony/dotenv:* --no-update
           docker compose exec -T \
             php composer require codeception/module-rest:1.4.2 --no-update
+          
           docker compose exec -T \
             php composer require codeception/module-phpbrowser:^1.0.2 --no-update
+          
+          docker compose exec -T \
+            php composer require oxid-esales/flow-theme:^v3.4.1 --no-update
+          
           docker compose exec -T \
             php composer config repositories.${{ env.CLIENT_PACKAGE_NAME }} git ${{ env.CLIENT_REPO_NAME }}
+
           docker compose exec -T \
             php composer config repositories.${{ env.PACKAGE_NAME }} \
             --json '{"type":"path", "url":"./test-module", "options": {"symlink": true}}'
+          
           docker compose exec -T \
-            php composer require ${{ env.PACKAGE_NAME }}:* --no-interaction --no-update
+            php composer require ${{ env.CLIENT_PACKAGE_NAME }}:* --no-interaction --no-update
 
-      - name: Install dependencies and reset the shop
-        run: |
-          docker compose exec -T php composer update --no-interaction
-          docker compose exec -T php php vendor/bin/reset-shop
+          docker compose exec -T \
+            php composer require ${{ env.PACKAGE_NAME }}:* --no-interaction 
 
-      - name: Put module settings
+      - name: Reset shop
         continue-on-error: true
         run: |
+          set -x     
+          docker compose exec -T php php vendor/bin/reset-shop 2>&1
+
+      - name: Set module settings
+        continue-on-error: true
+        run: |
+          set -x
           mkdir -p source/var/configuration/environment/
           echo "${{ secrets.MODULE_SETTINGS }}" > source/var/configuration/environment/1.yaml
           echo "${{ secrets.MODULE_ENV }}" > source/vendor/${{ env.PACKAGE_NAME }}/tests/.env
-          docker compose exec -T php php bin/oe-console oe:module:apply-configuration
+
+      - name: Install Paypal module
+        continue-on-error: true
+        run: |
+          set -x
+          docker compose exec -T php bin/oe-console oe:module:install-configuration source/modules/osc/paypal
+
+
+      - name: Apply module configuration
+        continue-on-error: true
+        run: |
+          set -x
+          docker compose exec -T php php bin/oe-console oe:module:apply-configuration 
+      
+
+      - name: Activate Paypal module
+        continue-on-error: true
+        run: |
+          set -x
+          docker compose exec -T php bin/oe-console oe:module:activate osc_paypal 2>&1
+
+
+      - name: Install datagen and create user
+        run: |
+          set -x
+          docker compose exec -T \
+            php composer config repositories.dantweb/datagen \
+            --json '{"type":"path", "url":"./extensions/datagen", "options": { "symlink": true } }'
+          docker compose exec -T php composer require dantweb/datagen:dev-b-6.5.x-gha-plwrt-fork --no-interaction
+
+
+      - name: Configure datagen services
+        run: |
+          # Add datagen services to generated_services.yaml (from host)
+          echo "Configuring datagen services..."
+          SERVICES_FILE="source/var/generated/generated_services.yaml"
+
+          if [ -f "$SERVICES_FILE" ]; then
+              # Check if the datagen service is already configured
+              if ! grep -q "vendor/dantweb/datagen/services.yaml" "$SERVICES_FILE"; then
+                  echo "Adding datagen services to $SERVICES_FILE"
+                  cat >> "$SERVICES_FILE" << 'EOF'
+            - resource: ../../vendor/dantweb/datagen/services.yaml
+          EOF
+                  echo "Successfully added datagen services configuration"
+              else
+                  echo "Datagen services already configured"
+              fi
+          else
+              echo "Warning: $SERVICES_FILE not found"
+              echo "Available files in source/var/generated/:"
+              ls -la source/var/generated/ 2>/dev/null || echo "source/var/generated directory not found"
+          fi
+
+
+      - name: Cache current installation
+        uses: actions/cache@v4
+        with:
+          path: |
+            ./*
+          key: moduleDevelopmentInstallation-${{ matrix.php }}-${{ github.sha }}
 
       - name: Stop containers
         run: |
           docker compose down
           sleep 2
+
+      - name: Upload log artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: InstallShop-${{ matrix.php }}
+          path: |
+            source/var/*
+            source/source/log/oxideshop.log
+            source/composer.json
+            
 
   styles:
     strategy:
@@ -189,7 +271,6 @@ jobs:
             source/phpunit.xml
             source/source/log/oxideshop.log
 
-
   playwright:
     strategy:
       fail-fast: false
@@ -211,20 +292,6 @@ jobs:
         run: |
           docker compose up -d
           sleep 2
-
-      - name: Download detagen
-        run: |
-          git clone github.com/dantweb/datagen.git \
-            source/extensions/datagen \
-            --branch=b-6.5.x-gha-plwrt-fork
-
-      - name: Install datagen
-        run: |
-          docker compose exec -T \
-          php composer config repositories.oxid-esales/datagen \
-          --json '{"type":"path", "url":"./extensions/datagen", "options": { "symlink": true } }'
-          docker compose exec -T php composer require oxid-esales/datagen:dev-b-6.5.x-paypal-test-data
-
 
       - name: Set up ngrok
         run: |
@@ -265,6 +332,40 @@ jobs:
             exit 1
           fi
           echo "Environment variables successfully loaded."
+
+
+      - name: Set module settings
+        continue-on-error: true
+        run: |
+          set -x
+          mkdir -p source/var/configuration/environment/
+          echo "${{ secrets.MODULE_SETTINGS }}" > source/var/configuration/environment/1.yaml
+          ls -la source/var/configuration/environment/
+          cat source/var/configuration/environment/1.yaml
+          cat source/var/configuration/shops/1.yaml
+          echo "${{ secrets.MODULE_ENV }}" > source/vendor/${{ env.PACKAGE_NAME }}/tests/.env
+
+      - name: Apply module configuration
+        continue-on-error: true
+        run: |
+          set -x
+          docker compose exec -T php php bin/oe-console oe:module:apply-configuration 
+
+
+      - name: Activate Paypal module
+        continue-on-error: true
+        run: |
+          set -x
+          docker compose exec -T php bin/oe-console oe:module:activate osc_paypal 2>&1
+
+
+      - name: Create user
+        run: |
+          docker compose exec -T php  bin/oe-console datagen:shop:create_user ${{ secrets.SHOP_USER_EMAIL }} ${{ secrets.SHOP_USER_PASSWORD }} 
+
+      - name: Check container logs
+        if: failure()
+        run: docker compose logs php
 
       - name: Start ngrok with custom domain and keepalive
         run: |
@@ -316,6 +417,7 @@ jobs:
           chmod +x monitor_ngrok.sh
           ./monitor_ngrok.sh &
           echo "Ngrok monitor started"
+          
 
       - name: Install Playwright
         working-directory: source/test-module/tests/e2e/playwright
@@ -323,12 +425,6 @@ jobs:
           npm install dotenv --save-dev
           npm install
           npx playwright install
-
-      - name: Create user
-        run: |
-          docker compose exec -T php  bin/oe-console datagen:shop:create_user \
-            --user-email ${{ secrets.SHOP_USER_EMAIL }} \
-            --user-password ${{ secrets.SHOP_USER_PASSWORD }} 
 
 
       - name: Run Playwright tests
@@ -377,8 +473,9 @@ jobs:
         with:
           name: Playwright-${{ matrix.php }}
           path: |
-            source/test-module/tests/e2e/playwright/_generated/
-            source/coverage.xml
-            source/phpunit.xml
             source/source/log/oxideshop.log
             source/data/php/logs/error_log.txt
+            source/test-module/tests/e2e/playwright/_output/
+            source/test-module/tests/e2e/playwright/_generated/
+            source/test-module/tests/e2e/playwright/_screenshots/
+

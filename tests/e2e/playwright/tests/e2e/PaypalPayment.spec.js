@@ -28,6 +28,13 @@ test.describe('Simple PayPal payment test', () => {
         const shopHelper = new ShopHelper(page);
         const paypalHelper = new PaypalHelper(page, context);
 
+        await page.screenshot({
+            path: './_output/homepage.jpg',
+            fullPage: true,
+            type: 'jpeg',
+            quality: 60
+        });
+
         try {
             console.log('Step 1: Setting up the cart...');
             await shopHelper.loginUser();
@@ -64,6 +71,7 @@ test.describe('Simple PayPal payment test', () => {
                 } else {
                     throw new Error('PayPal popup was not detected');
                 }
+
             } catch (error) {
                 console.error('PayPal payment failed:', error.message);
 
