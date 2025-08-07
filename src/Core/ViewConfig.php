@@ -556,7 +556,7 @@ class ViewConfig extends ViewConfig_parent
      *
      * @deprecated method will be removed because it only played a role in the Smarty template engine context.
      */
-    public function isFlowCompatibleTheme()
+    public function isFlowCompatibleTheme(): bool
     {
         if (is_null($this->isFlowCompatibleTheme)) {
             $this->isFlowCompatibleTheme = $this->isCompatibleTheme('flow');
@@ -571,7 +571,7 @@ class ViewConfig extends ViewConfig_parent
      *
      * @deprecated method will be removed because it only played a role in the Smarty template engine context.
      */
-    public function isWaveCompatibleTheme()
+    public function isWaveCompatibleTheme(): bool
     {
         if (is_null($this->isWaveCompatibleTheme)) {
             $this->isWaveCompatibleTheme = $this->isCompatibleTheme('wave');
@@ -582,10 +582,11 @@ class ViewConfig extends ViewConfig_parent
     /**
      * Template variable getter. Check if is a ??? Theme Compatible Theme
      *
+     * @param null $themeId
      * @return boolean
      * @psalm-suppress InternalMethod
      */
-    public function isCompatibleTheme($themeId = null)
+    public function isCompatibleTheme($themeId = null): bool
     {
         $result = false;
         if ($themeId) {
