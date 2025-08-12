@@ -54,12 +54,12 @@ class PatchRequestFactory
         $order = oxNew(Order::class);
         $order->load($orderId);
 
-        /** @var PaymentService $paymentService */
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        // $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $patches = array_values(
             array_filter([
                 $this->getAmountPatch(),
-                $orderId ? $this->getCustomIdPatch($paymentService->getCustomIdParameter($order)) : null,
+                // patching the ordernumber is not necessary at the moment
+                // $orderId ? $this->getCustomIdPatch($paymentService->getCustomIdParameter($order)) : null,
                 $this->getPurchaseUnitsPatch()
             ])
         );
