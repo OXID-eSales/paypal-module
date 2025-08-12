@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Service\GooglePay;
 
 use Exception;
-use OxidEsales\PayPalModule\Model\Order;
+use OxidEsales\Eshop\Application\Model\Order;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 
