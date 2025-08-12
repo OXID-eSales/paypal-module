@@ -7,6 +7,8 @@
 
 namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
 
+use OxidEsales\Eshop\Core\Registry;
+
 /**
 * OrderArticle class
 *
@@ -26,6 +28,7 @@ class OrderArticle extends OrderArticle_parent
                 $capture = $order->getOrderPaymentCapture();
                 if (!is_null($capture)) {
                     $this->_aViewData["readonly"] = true;
+                    Registry::getUtilsView()->addErrorToDisplay('OSC_PAYPAL_CHANGE_ORDER_NOT_POSSIBLE');
                 }
             }
         }

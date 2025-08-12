@@ -185,6 +185,7 @@ $aLang = array_merge(
     'OSC_PAYPAL_COUNTRY_CODE'                     => 'Country code',
     'OSC_PAYPAL_SHIPPING'                         => 'Shipping',
     'OSC_PAYPAL_BILLING'                          => 'Billing',
+    'OSC_PAYPAL_CHANGE_ORDER_NOT_POSSIBLE'        => 'The payment for the PayPal order has already been debited. Changing the order is no longer possible.',
 
     'OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'     => 'Apply settings from the classic PayPal module',
     'OSC_PAYPAL_BANNER_TRANSFERREDOLDSETTINGS'     => 'Banner settings have been transferred from the classig PayPal module.',
