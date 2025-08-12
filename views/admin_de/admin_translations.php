@@ -186,6 +186,7 @@ $aLang = array_merge(
     'OSC_PAYPAL_COUNTRY_CODE'                     => 'Ländercode',
     'OSC_PAYPAL_SHIPPING'                         => 'Versand',
     'OSC_PAYPAL_BILLING'                          => 'Abrechnung',
+    'OSC_PAYPAL_CHANGE_ORDER_NOT_POSSIBLE'        => 'Das Geld für die PayPal-Bestellung wurde bereits eingezogen. Eine Änderung der Bestellung ist nicht mehr möglich.',
 
     'OSC_PAYPAL_BANNER_TRANSFERLEGACYSETTINGS'     => 'Einstellungen aus dem klassischen PayPal-Modul übernehmen',
     'OSC_PAYPAL_BANNER_TRANSFERREDOLDSETTINGS'     => 'Banner-Einstellungen wurden aus dem klassischen PayPal-Modul übertragen.',
