@@ -38,17 +38,6 @@ class PaymentCaptureRefundedHandler extends WebhookHandlerBase
         /** @var EshopModelOrder $order */
         $order = $this->getOrderByPayPalTransactionId($transactionId);
 
-        //track the refund
-        $this->getPaymentService()
-            ->trackPayPalOrder(
-                $order->getId(),
-                $this->getPayPalOrderIdByShopOrderId($order->getId()),
-                (string) $order->getFieldData('oxpaymenttype'),
-                $this->getStatusFromResource($eventPayload),
-                $this->getPayPalTransactionIdFromResource($eventPayload),
-                Constants::PAYPAL_TRANSACTION_TYPE_REFUND
-            );
-
         //mark the original capture transaction as (partially) refunded
         $status = $order->getTotalOrderSum() > $this->getAmountFromResource($eventPayload) ?
             'PARTIALLY_REFUNDED' : 'REFUNDED';
