@@ -92,7 +92,7 @@ jobs:
             --json '{"type":"path", "url":"./test-module", "options": {"symlink": true}}'
           
           docker compose exec -T \
-            php composer require ${{ env.CLIENT_PACKAGE_NAME }}:* --no-interaction --no-update
+            php composer require ${{ env.CLIENT_PACKAGE_NAME }}:dev-b-6.3.x-recipe-playwright-gha --no-interaction --no-update
 
           docker compose exec -T \
             php composer require ${{ env.PACKAGE_NAME }}:* --no-interaction 

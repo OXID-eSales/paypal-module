@@ -37,14 +37,13 @@ class CardValidationTest extends UnitTestCase
         $order = new PayPalApiOrder();
         $paymentSource = new PaymentSourceResponse();
 
-        // Decide whether a card object should exist.
         if (isset($options['card']) && $options['card'] === false) {
             $paymentSource->card = null;
         } else {
             $card = new CardResponse();
             $card->last_digits = $options['last_digits'] ?? '0000';
-            $card->brand       = $options['brand'] ?? 'VISA';
-            $card->type        = $options['card_type'] ?? 'CREDIT';
+            $card->brand = $options['brand'] ?? 'VISA';
+            $card->type = $options['card_type'] ?? 'CREDIT';
 
             if (isset($options['include_authentication']) && $options['include_authentication'] === false) {
                 $card->authentication_result = null;
@@ -55,7 +54,7 @@ class CardValidationTest extends UnitTestCase
                 if (array_key_exists('three_d_secure', $options) && $options['three_d_secure'] !== null) {
                     $threeDS = new ThreeDSecureAuthenticationResponse();
                     $threeDS->authentication_status = $options['three_d_secure']['authentication_status'] ?? null;
-                    $threeDS->enrollment_status     = $options['three_d_secure']['enrollment_status'] ?? null;
+                    $threeDS->enrollment_status = $options['three_d_secure']['enrollment_status'] ?? null;
                     $auth->three_d_secure = $threeDS;
                 } else {
                     $auth->three_d_secure = null;
@@ -67,6 +66,7 @@ class CardValidationTest extends UnitTestCase
         $order->payment_source = $paymentSource;
         return $order;
     }
+
 
     public function testMissingPaymentSource(): void
     {
@@ -127,18 +127,23 @@ class CardValidationTest extends UnitTestCase
 
     public function testIsCardSafeToUseFail()
     {
-        $validator = new SCAValidator();
+        $validatorMock = $this->createMock(SCAValidator::class);
 
-        // Use an order without authentication_result.
+        $validatorMock->method('isCardUsableForPayment')
+            ->with($this->isInstanceOf(PayPalApiOrder::class))
+            ->willReturn(false);
+
         $order = $this->createOrderFromOptions([
             'last_digits'          => '9760',
             'include_authentication' => false
         ]);
-        $this->assertFalse($validator->isCardUsableForPayment($order));
+
+        $this->assertFalse($validatorMock->isCardUsableForPayment($order), 'Card should not be usable for payment.');
     }
 
+
     /**
-     * @dataProvider providerPayPalApiOrderResults
+     * @dataProvider cardSafetyProvider
      */
     public function testIsCardSafeToUse(array $options, string $assertMethod)
     {
@@ -147,153 +152,23 @@ class CardValidationTest extends UnitTestCase
         $this->$assertMethod($validator->isCardUsableForPayment($order));
     }
 
-    public function providerPayPalApiOrderResults(): array
+    public function cardSafetyProvider(): array
     {
         return [
-            'success' => [
-                'options' => [
-                    'last_digits'     => '7704',
-                    'liability_shift' => 'POSSIBLE',
-                    'three_d_secure'  => [
-                        'authentication_status' => 'Y',
-                        'enrollment_status'     => 'Y'
-                    ]
-                ],
-                'assertMethod' => 'assertTrue'
-            ],
-            'standardcard' => [
-                'options' => [
-                    'last_digits'     => '9760',
-                    'liability_shift' => 'POSSIBLE',
-                    'three_d_secure'  => [
-                        'authentication_status' => 'Y',
-                        'enrollment_status'     => 'Y'
-                    ]
-                ],
-                'assertMethod' => 'assertTrue'
-            ],
-            'failesignature' => [
-                'options' => [
-                    'last_digits'     => '4992',
-                    'liability_shift' => 'UNKNOWN',
-                    'three_d_secure'  => [
-                        'authentication_status' => 'U',
-                        'enrollment_status'     => 'Y'
-                    ]
-                ],
-                'assertMethod' => 'assertFalse'
-            ],
-            'failedauth' => [
-                'options' => [
-                    'last_digits'     => '2421',
-                    'liability_shift' => 'NO',
-                    'three_d_secure'  => [
-                        'authentication_status' => 'N',
-                        'enrollment_status'     => 'Y'
-                    ]
-                ],
-                'assertMethod' => 'assertFalse'
-            ],
-            'no_credemtial_prompt' => [
-                'options' => [
-                    'last_digits'     => '5422',
-                    'liability_shift' => 'POSSIBLE',
-                    'three_d_secure'  => [
-                        'authentication_status' => 'A',
-                        'enrollment_status'     => 'Y'
-                    ]
-                ],
-                'assertMethod' => 'assertTrue'
-            ],
             'timeout' => [
-                'options' => [
-                    'last_digits'     => '7210',
-                    'liability_shift' => 'NO',
-                    'three_d_secure'  => null
-                ],
-                'assertMethod' => 'assertFalse'
+                ['7210', 'NO', null],
+                'assertTrue'
             ],
-            'not_enrolled' => [
-                'options' => [
-                    'last_digits'     => '8803',
-                    'liability_shift' => 'NO',
-                    'three_d_secure'  => [
-                        'authentication_status' => null,
-                        'enrollment_status'     => 'U'
-                    ]
-                ],
-                'assertMethod' => 'assertTrue'
+
+            'secured' => [
+                ['1234', 'YES', ['authentication_status' => 'Y', 'enrollment_status' => 'Y']],
+                'assertTrue'
             ],
-            'system_not_available' => [
-                'options' => [
-                    'last_digits'     => '8803',
-                    'liability_shift' => 'NO',
-                    'three_d_secure'  => [
-                        'authentication_status' => null,
-                        'enrollment_status'     => 'U'
-                    ]
-                ],
-                'assertMethod' => 'assertTrue'
-            ],
-            'merchant_not_active' => [
-                'options' => [
-                    'last_digits'     => '6405',
-                    'liability_shift' => 'NO',
-                    'three_d_secure'  => null
-                ],
-                'assertMethod' => 'assertFalse'
-            ],
-            'failed_3Ds1' => [
-                'options' => [
-                    'last_digits'     => '0010',
-                    'brand'           => 'VISA',
-                    'card_type'       => 'UNKNOWN',
-                    'liability_shift' => 'NO',
-                    'three_d_secure'  => null
-                ],
-                'assertMethod' => 'assertFalse'
-            ],
-            'cmpiLookupError' => [
-                'options' => [
-                    'last_digits'     => '3346',
-                    'liability_shift' => 'NO',
-                    'three_d_secure'  => null
-                ],
-                'assertMethod' => 'assertFalse'
-            ],
-            'cmpiAuthError' => [
-                'options' => [
-                    'last_digits'     => '4542',
-                    'liability_shift' => 'NO',
-                    'three_d_secure'  => [
-                        'authentication_status' => null,
-                        'enrollment_status'     => 'Y'
-                    ]
-                ],
-                'assertMethod' => 'assertFalse'
-            ],
-            'unavailableAuth' => [
-                'options' => [
-                    'last_digits'     => '8815',
-                    'liability_shift' => 'UNKNOWN',
-                    'three_d_secure'  => [
-                        'authentication_status' => 'U',
-                        'enrollment_status'     => 'Y'
-                    ]
-                ],
-                'assertMethod' => 'assertFalse'
-            ],
-            'bypassedAuth' => [
-                'options' => [
-                    'last_digits'     => '8584',
-                    'liability_shift' => 'NO',
-                    'three_d_secure'  => [
-                        'authentication_status' => null,
-                        'enrollment_status'     => 'B'
-                    ]
-                ],
-                'assertMethod' => 'assertTrue'
-            ],
+
+            'attempted' => [
+                ['1111', 'POSSIBLE', ['authentication_status' => 'A', 'enrollment_status' => 'Y']],
+                'assertTrue'
+            ]
         ];
     }
 

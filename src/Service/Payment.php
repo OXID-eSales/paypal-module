@@ -1026,4 +1026,14 @@ class Payment
 
         return $customId;
     }
+
+    public function setServiceFactory(ServiceFactory $serviceFactory): void
+    {
+        $this->serviceFactory = $serviceFactory;
+    }
+
+    public function setOrderProcessTrackingService(OrderProcessTrackingService $orderProcessTrackingService): void
+    {
+        $this->orderProcessTrackingService = $orderProcessTrackingService;
+    }
 }

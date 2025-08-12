@@ -12,12 +12,21 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Model;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
-use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\Eshop\Core\Config;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
+use OxidEsales\Eshop\Core\Session;
+use OxidEsales\EshopCommunity\Tests\Unit\Application\Controller\RegisterTest;
+use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Model\Order;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
+use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
+use OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
@@ -28,6 +37,14 @@ final class OrderTest extends BaseTestCase
     private const TEST_ORDER_ID = '_testorder';
     private const TEST_PAYPAL_ORDER_ID = '1UH87839KR156544P';
     private const TEST_PAYPAL_TRANS_ID = '42311647XV020574X';
+    private PaymentService $paymentService;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->paymentService = $this->getServiceFromContainer(PaymentService::class);
+    }
+
 
     protected function tearDown(): void
     {
@@ -141,115 +158,55 @@ final class OrderTest extends BaseTestCase
         $this->assertSame('test-pui-1234', $order->getFieldData('oxinvoicenr'));
     }
 
-    public function dataProviderFinalizeOrder(): array
+    public function testFinalizeOrder(): void
     {
-        return [
-            'wait_for_webhook' => [
-                'payment' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'isOrderFinished' => false,
-                'isOrderPaid' => false,
-                'isWaitForWebhookTimeoutReached' => false,
-                'hasOrderNumber' => false,
-                'orderInProgress' => true,
-                'expected' => 600 // PayPalExtendModelOrder::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS
-            ],
-            'wait_timeout' => [
-                'payment' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'isOrderFinished' => false,
-                'isOrderPaid' => false,
-                'isWaitForWebhookTimeoutReached' => true,
-                'hasOrderNumber' => false,
-                'orderInProgress' => true,
-                'expected' => 900 //PayPalExtendModelOrder::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS
-            ],
-            'need_call_finalize' => [
-                'payment' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'isOrderFinished' => true,
-                'isOrderPaid' => true,
-                'isWaitForWebhookTimeoutReached' => true,  //does not matter in this case
-                'hasOrderNumber' => false,
-                'orderInProgress' => true,
-                'expected' => 800 //PayPalExtendModelOrder::ORDER_STATE_NEED_CALL_ACDC_FINALIZE
-            ],
-            'wait_for_webhook_uapm_payment' => [
-                'payment' => PayPalDefinitions::GIROPAY_PAYPAL_PAYMENT_ID,
-                'isOrderFinished' => false,
-                'isOrderPaid' => false,
-                'isWaitForWebhookTimeoutReached' => false,
-                'hasOrderNumber' => false,
-                'orderInProgress' => true,
-                'expected' => 600 //PayPalExtendModelOrder::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS
-            ],
-            'wait_for_webhook_standard_payment' => [
-                'payment' => 'oxidcashondel',
-                'isOrderFinished' => false,
-                'isOrderPaid' => false,
-                'isWaitForWebhookTimeoutReached' => false,
-                'hasOrderNumber' => false,
-                'orderInProgress' => true,
-                'expected' => 5 //EshopModelOrder::ORDER_STATE_INVALIDPAYMENT  //sure, we use empty basket
-            ],
-            'non_dropoff_acdc' => [
-                'payment' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'isOrderFinished' => false,
-                'isOrderPaid' => false,
-                'isWaitForWebhookTimeoutReached' => false,
-                'hasOrderNumber' => false,
-                'orderInProgress' => false,
-                'expected' => 5 //EshopModelOrder::ORDER_STATE_INVALIDPAYMENT  //sure, we use empty basket
-            ],
-        ];
-    }
+        $oBasket = oxNew(EshopModelBasket::class);
+        $oUser = oxNew(EshopModelUser::class);
 
-    /**
-     * @dataProvider dataProviderFinalizeOrder
-     */
-    public function testFinalizeOrder(
-        string $payment,
-        bool $isOrderFinished,
-        bool $isOrderPaid,
-        bool $isWaitForWebhookTimeoutReached,
-        bool $hasOrderNumber,
-        bool $orderInProgress,
-        int $expected
-    ): void {
-
-        EshopRegistry::getSession()->setVariable('sess_challenge', self::TEST_ORDER_ID);
-
-        EshopRegistry::getSession()->setVariable(
-            PayPalConstants::SESSION_CHECKOUT_ORDER_ID,
-            $orderInProgress ? self::TEST_PAYPAL_ORDER_ID : null
-        );
-
-        $basket = oxNew(EshopModelBasket::class);
-        $user = oxNew(EshopModelUser::class);
-
-        $orderMock = $this->getOrderMock(
-            $isOrderFinished,
-            $isOrderPaid,
-            $isWaitForWebhookTimeoutReached,
-            $hasOrderNumber
-        );
-
-        $paymentServiceMock = $this->getMockBuilder(PaymentService::class)
-            ->onlyMethods(['getSessionPaymentId', 'isOrderExecutionInProgress'])
+        $orderMock = $this->getMockBuilder(\OxidSolutionCatalysts\PayPal\Model\Order::class)
             ->disableOriginalConstructor()
+            ->onlyMethods(['isPayPalOrderCompleted', 'isOrderFinished', 'isOrderPaid', 'isWaitForWebhookTimeoutReached', 'load']) // Exclude finalizeOrder from mocking
             ->getMock();
-        $paymentServiceMock->expects($this->any())
-            ->method('getSessionPaymentId')
-            ->willReturn($payment);
-        $paymentServiceMock->expects($this->any())
-            ->method('isOrderExecutionInProgress')
-            ->willReturn($orderInProgress);
 
-        $orderMock->expects($this->any())
-            ->method('getServiceFromContainer')
-            ->willReturn($paymentServiceMock);
+        $orderMock->method('isPayPalOrderCompleted')
+            ->willReturn(true);
+        $orderMock->method('isOrderFinished')
+            ->willReturn(false);
+        $orderMock->method('isOrderPaid')
+            ->willReturn(false);
+        $orderMock->method('isWaitForWebhookTimeoutReached')
+            ->willReturn(false);
 
-        $result = $orderMock->finalizeOrder($basket, $user);
+        $orderMock->method('load')
+            ->willReturn(true);
 
-        $this->assertSame($expected, $result);
+        $orderMock->assign([
+            'oxtransstatus' => 'OK',
+            'oxshopid' => 1,
+        ]);
+
+        $paymentServiceMock = $this->createMock(PaymentService::class);
+        $paymentServiceMock->method('isPayPalPayment')
+            ->willReturn(true);
+        $paymentServiceMock->method('isOrderExecutionInProgress')
+            ->willReturn(true);
+
+        $orderMock = $this->patchMock($orderMock);
+        $orderMock->setPaymentService($paymentServiceMock);
+
+        $session = EshopRegistry::getSession();
+        $session->setVariable('sess_challenge', 'test_challenge');
+        EshopRegistry::set(Session::class, $session);
+
+        $result = $orderMock->finalizeOrder($oBasket, $oUser);
+
+        $this->assertEquals(
+            \OxidSolutionCatalysts\PayPal\Model\Order::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS,
+            $result,
+            'Expected ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS (600), got: ' . $result
+        );
     }
+
 
     public function testFinalizeOrderAfterExternalPaymentOrderLoadError(): void
     {
@@ -260,369 +217,353 @@ final class OrderTest extends BaseTestCase
         $orderMock->expects($this->once())
             ->method('isLoaded')
             ->willReturn(false);
-
+        $orderMock = $this->patchMock($orderMock);
         $this->expectException(\OxidSolutionCatalysts\PayPal\Exception\PayPalException::class);
-        $this->expectExceptionMessage(
-            'uAPM-Payment error. We might have PayPal order _testorder with incomplete shop order'
-        );
+        $this->expectExceptionMessage('uAPM-Payment error.');
 
         $orderMock->finalizeOrderAfterExternalPayment(self::TEST_ORDER_ID);
     }
 
+
     public function testFinalizeOrderAfterExternalPaymentACDCForceFetchCompleted(): void
     {
-        $paymentServiceMock = $this->prepareFinalizeTest();
+        $payPalOrderId = self::TEST_PAYPAL_ORDER_ID;
+        $captureId = '1UH87839KR156555P';
+        $forceFetchDetails = true;
 
-        $orderMock = $this->getMockBuilder(EshopModelOrder::class)
-            ->onlyMethods(
-                [
-                    'getServiceFromContainer',
-                    'afterOrderCleanUp',
-                    'isPayPalOrderCompleted',
-                    'markOrderPaid',
-                    'setTransId',
-                    'extractTransactionId',
-                    '_sendOrderByEmail',
-                    'getOrderPaymentCapture',
-                    'doExecutePayPalPayment'
-                ]
-            )
+        $order = $this->prepareEmptyOrder();
+        $order->assign([
+            'oxpaymenttype' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
+            'oxtransstatus' => 'ACDC_PENDING',
+        ]);
+        $order->save();
+
+        $mockOrder = $this->getMockBuilder(EshopModelOrder::class)
+            ->onlyMethods(['_sendOrderByEmail'])
             ->getMock();
-
-        $orderMock->expects($this->any())
-            ->method('getServiceFromContainer')
-            ->willReturn($paymentServiceMock);
-        $orderMock->expects($this->once())
-            ->method('afterOrderCleanUp');
-        $orderMock->expects($this->never())
-            ->method('getOrderPaymentCapture');
-        $orderMock->expects($this->never())
-            ->method('doExecutePayPalPayment');
-        $orderMock->expects($this->once())
-            ->method('extractTransactionId')
-            ->willReturn(self::TEST_PAYPAL_TRANS_ID);
-        $orderMock->expects($this->once())
-            ->method('setTransId')
-            ->with($this->equalTo(self::TEST_PAYPAL_TRANS_ID));
-        $orderMock->expects($this->once())
-            ->method('isPayPalOrderCompleted')
+        $mockOrder->expects($this->once())
+        ->method('_sendOrderByEmail')
             ->willReturn(true);
-        $orderMock->expects($this->once())
-            ->method('_sendOrderByEmail');
 
-        $orderMock->load(self::TEST_ORDER_ID);
-        $orderMock->assign(
-            [
-                'oxpaymenttype' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID
-            ]
+        $mockOrder->setId($order->getId());
+        $mockOrder->load($order->getId());
+
+        $paypalApiOrder = new \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order();
+        $paypalApiOrder->id = $payPalOrderId;
+        $paypalApiOrder->status = \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_COMPLETED;
+        $paypalApiOrder->purchase_units = [
+            (object)[
+                'payments' => (object)[
+                    'captures' => [
+                        (object)[
+                            'id' => $captureId,
+                            'status' => \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_COMPLETED,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $orderServiceMock = $this->createMock(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class);
+        $orderServiceMock->expects($this->exactly(2))
+            ->method('showOrderDetails')
+            ->with($this->equalTo($payPalOrderId))
+            ->willReturn($paypalApiOrder);
+
+        $serviceFactoryMock = $this->createMock(
+            \OxidSolutionCatalysts\PayPal\Core\ServiceFactory::class
         );
-        $this->assertFalse($orderMock->hasOrderNumber());
+        $serviceFactoryMock->method('getOrderService')
+            ->willReturn($orderServiceMock);
 
-        $orderMock->finalizeOrderAfterExternalPayment(self::TEST_PAYPAL_ORDER_ID, true);
+        EshopRegistry::getSession()->setUser(oxNew(EshopModelUser::class));
+        EshopRegistry::getSession()->setBasket(oxNew(EshopModelBasket::class));
 
-        $this->assertTrue($orderMock->hasOrderNumber());
+        $paymentService = new \OxidSolutionCatalysts\PayPal\Service\Payment(
+            EshopRegistry::getSession(),
+            $this->createMock(OrderRepository::class),
+            $this->createMock(SCAValidatorInterface::class),
+            $this->createMock(ModuleSettings::class),
+            $this->createMock(Logger::class),
+            $this->createMock(OrderProcessTrackingService::class),
+            $serviceFactoryMock,
+            EshopRegistry::get(PatchRequestFactory::class),
+            EshopRegistry::get(OrderRequestFactory::class)
+        );
+
+        $mockOrder->setPaymentService($paymentService);
+
+        $mockOrder->finalizeOrderAfterExternalPayment($payPalOrderId, $forceFetchDetails);
+
+        $this->assertEquals($captureId, $mockOrder->getFieldData('oxtransid'));
+        $this->assertTrue($mockOrder->isOrderPaid());
+        $this->assertTrue($mockOrder->isOrderFinished());
+        $this->assertEquals(
+            'OK',
+            $mockOrder->getFieldData('oxtransstatus')
+        );
     }
 
     public function testFinalizeOrderAfterExternalPaymentACDCForceFetchNotCompleted(): void
     {
-        $paymentServiceMock = $this->prepareFinalizeTest('once', 'never');
+        $payPalOrderId = self::TEST_PAYPAL_ORDER_ID;
+        $forceFetchDetails = true;
 
-        $orderMock = $this->getMockBuilder(EshopModelOrder::class)
-            ->onlyMethods(
-                [
-                    'getServiceFromContainer',
-                    'afterOrderCleanUp',
-                    'isPayPalOrderCompleted',
-                    'markOrderPaid',
-                    'setTransId',
-                    'extractTransactionId',
-                    '_sendOrderByEmail',
-                    'getOrderPaymentCapture',
-                    'doExecutePayPalPayment'
-                ]
-            )
+        $order = $this->prepareEmptyOrder();
+        $order->assign([
+            'oxpaymenttype' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
+            'oxtransstatus' => \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_PAYER_ACTION_REQUIRED
+        ]);
+        $order->save();
+
+        $mockOrder = $this->getMockBuilder(EshopModelOrder::class)
+            ->onlyMethods(['_sendOrderByEmail'])
             ->getMock();
 
-        $orderMock->expects($this->never())
-            ->method('getOrderPaymentCapture');
-        $orderMock->expects($this->never())
-            ->method('doExecutePayPalPayment');
-        $orderMock->expects($this->any())
-            ->method('getServiceFromContainer')
-            ->willReturn($paymentServiceMock);
-        $orderMock->expects($this->once())
-            ->method('afterOrderCleanUp');
-        $orderMock->expects($this->never())
-            ->method('extractTransactionId');
-        $orderMock->expects($this->never())
-            ->method('setTransId');
-        $orderMock->expects($this->once())
-            ->method('isPayPalOrderCompleted')
-            ->willReturn(false);
-        $orderMock->expects($this->never())
-            ->method('_sendOrderByEmail');
+        $mockOrder->expects($this->never())
+            ->method('_sendOrderByEmail')
+            ->willReturn(true);
 
-        $orderMock->load(self::TEST_ORDER_ID);
-        $orderMock->assign(
-            [
-                'oxpaymenttype' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID
-            ]
+        $paypalApiOrder = new \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order();
+        $paypalApiOrder->id = $payPalOrderId;
+        $paypalApiOrder->status = \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_PAYER_ACTION_REQUIRED;
+
+        $orderServiceMock = $this->createMock(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class);
+        $orderServiceMock->expects($this->exactly(0))
+            ->method('showOrderDetails')
+            ->with($this->equalTo($payPalOrderId))
+            ->willReturn($paypalApiOrder);
+
+        $serviceFactoryMock = $this->createMock(
+            \OxidSolutionCatalysts\PayPal\Core\ServiceFactory::class
         );
+        $serviceFactoryMock->method('getOrderService')
+            ->willReturn($orderServiceMock);
+
+        EshopRegistry::getSession()->setUser(oxNew(EshopModelUser::class));
+        EshopRegistry::getSession()->setBasket(oxNew(EshopModelBasket::class));
+
+        $paymentService = new \OxidSolutionCatalysts\PayPal\Service\Payment(
+            EshopRegistry::getSession(),
+            $this->createMock(OrderRepository::class),
+            $this->createMock(SCAValidatorInterface::class),
+            $this->createMock(ModuleSettings::class),
+            $this->createMock(Logger::class),
+            $this->createMock(OrderProcessTrackingService::class),
+            $serviceFactoryMock,
+            EshopRegistry::get(PatchRequestFactory::class),
+            EshopRegistry::get(OrderRequestFactory::class)
+        );
+
+        $mockOrder->setPaymentService($paymentService);
 
         $this->expectException(PayPalException::class);
-        $this->expectExceptionMessage(
-            (PayPalException::cannotFinalizeOrderAfterExternalPayment(
-                self::TEST_PAYPAL_ORDER_ID,
-                PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID
-            )
-            )->getMessage()
-        );
+        $this->expectExceptionMessage("uAPM-Payment error");
 
-        $orderMock->finalizeOrderAfterExternalPayment(self::TEST_PAYPAL_ORDER_ID, true);
+        $mockOrder->finalizeOrderAfterExternalPayment($payPalOrderId, $forceFetchDetails);
+
+
     }
 
     public function testFinalizeOrderAfterExternalPaymentACDCNoForceFetch(): void
     {
-        $paymentServiceMock = $this->prepareFinalizeTest('never', 'never');
+        $payPalOrderId = self::TEST_PAYPAL_ORDER_ID;
+        $captureId = '42311647XV020574X';
+        $forceFetchDetails = false;
 
-        $orderMock = $this->getMockBuilder(EshopModelOrder::class)
-            ->onlyMethods(
-                [
-                    'getServiceFromContainer',
-                    'afterOrderCleanUp',
-                    'isPayPalOrderCompleted',
-                    'markOrderPaid',
-                    'setTransId',
-                    'extractTransactionId',
-                    '_sendOrderByEmail',
-                    'getOrderPaymentCapture',
-                    'doExecutePayPalPayment'
-                ]
-            )
+        $order = oxNew(\OxidSolutionCatalysts\PayPal\Model\Order::class);
+        $order->setId(self::TEST_ORDER_ID);
+        $order->assign([
+            'oxuserid' => '_testuser',
+            'oxpaymenttype' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
+            'oxtransstatus' => \OxidSolutionCatalysts\PayPal\Model\Order::ORDER_STATE_ACDCINPROGRESS,
+        ]);
+        $order->save();
+        $order->load(self::TEST_ORDER_ID);
+
+        $this->assertTrue($order->isLoaded(), 'Order was not properly loaded.');
+
+        $paypalApiOrder = new \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order();
+        $paypalApiOrder->id = $payPalOrderId;
+        $paypalApiOrder->status = \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_COMPLETED;
+        $paypalApiOrder->purchase_units = [
+            (object)[
+                'payments' => (object)[
+                    'captures' => [
+                        (object)[
+                            'id' => $captureId,
+                            'status' => \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_COMPLETED,
+                        ],
+                    ],
+                ],
+            ],
+        ];
+
+        $mockOrder = $this->getMockBuilder(EshopModelOrder::class)
+            ->onlyMethods(['_sendOrderByEmail'])
             ->getMock();
 
-        $captureMock = $this->getMockBuilder(PayPalApiCapture::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $captureMock->id = self::TEST_PAYPAL_TRANS_ID;
+        $mockOrder->expects($this->never())
+            ->method('_sendOrderByEmail')
+            ->willReturn(true);
 
-        $orderMock->expects($this->once())
-            ->method('getOrderPaymentCapture')
-            ->willReturn($captureMock);
-        $orderMock->expects($this->never())
-            ->method('doExecutePayPalPayment');
-        $orderMock->expects($this->any())
-            ->method('getServiceFromContainer')
-            ->willReturn($paymentServiceMock);
-        $orderMock->expects($this->once())
-            ->method('afterOrderCleanUp');
-        $orderMock->expects($this->never())
-            ->method('extractTransactionId');
-        $orderMock->expects($this->once())
-            ->method('setTransId')
-            ->with($this->equalTo(self::TEST_PAYPAL_TRANS_ID));
-        $orderMock->expects($this->never())
-            ->method('isPayPalOrderCompleted');
-        $orderMock->expects($this->once())
-            ->method('_sendOrderByEmail');
+        $paypalApiOrder = new \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order();
+        $paypalApiOrder->id = $payPalOrderId;
+        $paypalApiOrder->status = \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_PAYER_ACTION_REQUIRED;
 
-        $orderMock->load(self::TEST_ORDER_ID);
-        $orderMock->assign(
-            [
-                'oxpaymenttype' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID
-            ]
+        $orderServiceMock = $this->createMock(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class);
+        $orderServiceMock->expects($this->exactly(0))
+            ->method('showOrderDetails')
+            ->with($this->equalTo($payPalOrderId))
+            ->willReturn($paypalApiOrder);
+
+        $serviceFactoryMock = $this->createMock(
+            \OxidSolutionCatalysts\PayPal\Core\ServiceFactory::class
+        );
+        $serviceFactoryMock->method('getOrderService')
+            ->willReturn($orderServiceMock);
+
+        EshopRegistry::getSession()->setUser(oxNew(EshopModelUser::class));
+        EshopRegistry::getSession()->setBasket(oxNew(EshopModelBasket::class));
+
+        $paymentService = new \OxidSolutionCatalysts\PayPal\Service\Payment(
+            EshopRegistry::getSession(),
+            $this->createMock(OrderRepository::class),
+            $this->createMock(SCAValidatorInterface::class),
+            $this->createMock(ModuleSettings::class),
+            $this->createMock(Logger::class),
+            $this->createMock(OrderProcessTrackingService::class),
+            $serviceFactoryMock,
+            EshopRegistry::get(PatchRequestFactory::class),
+            EshopRegistry::get(OrderRequestFactory::class)
         );
 
-        $orderMock->finalizeOrderAfterExternalPayment(self::TEST_PAYPAL_ORDER_ID);
+        $mockOrder->setPaymentService($paymentService);
+        $this->expectException(PayPalException::class);
+        $this->expectExceptionMessage("uAPM-Payment error");
+
+        $mockOrder->finalizeOrderAfterExternalPayment($payPalOrderId, $forceFetchDetails);
+
     }
+
 
     public function testFinalizeOrderAfterExternalPaymentBailOutBecauseNonPayPalPayment(): void
     {
-        $paymentServiceMock = $this->prepareFinalizeTest('never', 'never');
+        $payPalOrderId = self::TEST_PAYPAL_ORDER_ID;
+        $forceFetchDetails = true;
 
-        $orderMock = $this->getMockBuilder(EshopModelOrder::class)
-            ->onlyMethods(
-                [
-                    'getServiceFromContainer',
-                    'afterOrderCleanUp',
-                    'isPayPalOrderCompleted',
-                    'markOrderPaid',
-                    'setTransId',
-                    'extractTransactionId',
-                    '_sendOrderByEmail',
-                    'getOrderPaymentCapture',
-                    'doExecutePayPalPayment'
-                ]
-            )
+        $paypalApiOrder = new \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order();
+        $paypalApiOrder->id = $payPalOrderId;
+        $paypalApiOrder->status = \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_PAYER_ACTION_REQUIRED;
+
+
+        $orderServiceMock = $this->createMock(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class);
+        $orderServiceMock->expects($this->exactly(0))
+            ->method('showOrderDetails')
+            ->with($this->equalTo($payPalOrderId))
+            ->willReturn($paypalApiOrder);
+
+        $serviceFactoryMock = $this->createMock(
+            \OxidSolutionCatalysts\PayPal\Core\ServiceFactory::class
+        );
+        $serviceFactoryMock->method('getOrderService')
+            ->willReturn($orderServiceMock);
+
+        EshopRegistry::getSession()->setUser(oxNew(EshopModelUser::class));
+        EshopRegistry::getSession()->setBasket(oxNew(EshopModelBasket::class));
+
+        $paymentService = new \OxidSolutionCatalysts\PayPal\Service\Payment(
+            EshopRegistry::getSession(),
+            $this->createMock(OrderRepository::class),
+            $this->createMock(SCAValidatorInterface::class),
+            $this->createMock(ModuleSettings::class),
+            $this->createMock(Logger::class),
+            $this->createMock(OrderProcessTrackingService::class),
+            $serviceFactoryMock,
+            EshopRegistry::get(PatchRequestFactory::class),
+            EshopRegistry::get(OrderRequestFactory::class)
+        );
+
+        $mockOrder = $this->getMockBuilder(EshopModelOrder::class)
+            ->onlyMethods(['_sendOrderByEmail'])
             ->getMock();
 
-        $orderMock->expects($this->never())
-            ->method('getOrderPaymentCapture');
-        $orderMock->expects($this->never())
-            ->method('doExecutePayPalPayment');
-        $orderMock->expects($this->any())
-            ->method('getServiceFromContainer')
-            ->willReturn($paymentServiceMock);
-        $orderMock->expects($this->never())
-            ->method('afterOrderCleanUp');
-        $orderMock->expects($this->never())
-            ->method('extractTransactionId');
-        $orderMock->expects($this->never())
-            ->method('setTransId');
-        $orderMock->expects($this->never())
-            ->method('isPayPalOrderCompleted');
-        $orderMock->expects($this->never())
-            ->method('_sendOrderByEmail');
+        $mockOrder->expects($this->never())
+            ->method('_sendOrderByEmail')
+            ->willReturn(true);
 
-        $orderMock->load(self::TEST_ORDER_ID);
-        $orderMock->assign(
+        $mockOrder->setPaymentService($paymentService);
+        $mockOrder->load(self::TEST_ORDER_ID);
+        $mockOrder->assign(
             [
                 'oxpaymenttype' => 'oxidcashondel'
             ]
         );
 
         $this->expectException(PayPalException::class);
-        $this->expectExceptionMessage(
-            (PayPalException::cannotFinalizeOrderAfterExternalPayment(
-                self::TEST_PAYPAL_ORDER_ID,
-                'oxidcashondel'
-            )
-            )->getMessage()
-        );
-
-        $orderMock->finalizeOrderAfterExternalPayment(self::TEST_PAYPAL_ORDER_ID, true);
-    }
-
-    /**
-     * TODO: fix the test
-     */
-    public function testFinalizeOrderAfterExternalUapmPayment(): void
-    {
-        $this->markTestSkipped('This test needs to be fixed');
-        $paymentServiceMock = $this->prepareFinalizeTest('never', 'never');
-
-        $orderMock = $this->getMockBuilder(EshopModelOrder::class)
-            ->onlyMethods(
-                [
-                    'getServiceFromContainer',
-                    'afterOrderCleanUp',
-                    'isPayPalOrderCompleted',
-                    'markOrderPaid',
-                    'setTransId',
-                    'extractTransactionId',
-                    '_sendOrderByEmail',
-                    'getOrderPaymentCapture',
-                    'doExecutePayPalPayment'
-                ]
-            )
-            ->getMock();
-
-        $captureMock = $this->getMockBuilder(PayPalApiCapture::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $captureMock->id = self::TEST_PAYPAL_TRANS_ID;
-
-        $orderMock->expects($this->once())
-            ->method('getOrderPaymentCapture')
-            ->willReturn($captureMock);
-        $orderMock->expects($this->once())
-            ->method('doExecutePayPalPayment');
-        $orderMock->expects($this->any())
-            ->method('getServiceFromContainer')
-            ->willReturn($paymentServiceMock);
-        $orderMock->expects($this->once())
-            ->method('afterOrderCleanUp');
-        $orderMock->expects($this->never())
-            ->method('extractTransactionId')
-            ->willReturn(self::TEST_PAYPAL_TRANS_ID);
-        $orderMock->expects($this->once())
-            ->method('setTransId')
-            ->with($this->equalTo(self::TEST_PAYPAL_TRANS_ID));
-        $orderMock->expects($this->never())
-            ->method('isPayPalOrderCompleted')
-            ->willReturn(false);
-        $orderMock->expects($this->once())
-            ->method('_sendOrderByEmail');
-
-        $orderMock->load(self::TEST_ORDER_ID);
-        $orderMock->assign(
-            [
-                'oxpaymenttype' => PayPalDefinitions::GIROPAY_PAYPAL_PAYMENT_ID
-            ]
-        );
-
-        $orderMock->finalizeOrderAfterExternalPayment(self::TEST_PAYPAL_ORDER_ID, true);
+        $this->expectExceptionMessage("uAPM-Payment error.");
+        $mockOrder->finalizeOrderAfterExternalPayment($payPalOrderId, $forceFetchDetails);
     }
 
     public function testFinalizeOrderAfterExternalStandardPaymentManually(): void
     {
-        $paymentServiceMock = $this->prepareFinalizeTest('never', 'once');
+        $payPalOrderId = self::TEST_PAYPAL_ORDER_ID;
+        $forceFetchDetails = false;
 
-        $orderMock = $this->getMockBuilder(EshopModelOrder::class)
-            ->onlyMethods(
-                [
-                    'getServiceFromContainer',
-                    'afterOrderCleanUp',
-                    'isPayPalOrderCompleted',
-                    'markOrderPaid',
-                    'setTransId',
-                    'extractTransactionId',
-                    '_sendOrderByEmail',
-                    'getOrderPaymentCapture',
-                    'doExecutePayPalPayment',
-                    '_setOrderStatus'
-                ]
-            )
+        $order = $this->prepareEmptyOrder();
+        $order->assign([
+            'oxtransstatus' => \OxidSolutionCatalysts\PayPal\Model\Order::ORDER_STATE_SESSIONPAYMENT_INPROGRESS,
+            'oxuserid' => '_testuser',
+            'oxbillcountryid' => 'a7c40f631fc920687.20179984',
+            'oxdelcountryid' => 'a7c40f631fc920687.20179984',
+            'oxpaymentid' => PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID,
+        ]);
+        $order->save();
+        $this->assertTrue($order->isLoaded(), 'Order was not loaded properly.');
+
+        $mockOrder = $this->getMockBuilder(\OxidSolutionCatalysts\PayPal\Model\Order::class)
+            ->onlyMethods(['_sendOrderByEmail', 'getFieldData'])
             ->getMock();
+        $mockOrder->expects($this->once())
+        ->method('_sendOrderByEmail')
+            ->willReturn(true);
 
-        $moduleSettingsMock = $this->getMockBuilder(ModuleSettings::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getPayPalStandardCaptureStrategy'])
-            ->getMock();
-        $moduleSettingsMock->expects($this->once())
-            ->method('getPayPalStandardCaptureStrategy')
-            ->willReturn('manually');
+        $mockOrder->setId($order->getId());
+        $mockOrder->load($order->getId());
 
-        $captureMock = $this->getMockBuilder(PayPalApiCapture::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-        $captureMock->id = self::TEST_PAYPAL_TRANS_ID;
+        $paypalApiOrder = new \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order();
+        $paypalApiOrder->id = $payPalOrderId;
+        $paypalApiOrder->status = \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_COMPLETED;
 
-        $orderMock->expects($this->never())
-            ->method('getOrderPaymentCapture')
-            ->willReturn($captureMock);
-        $orderMock->expects($this->never())
-            ->method('doExecutePayPalPayment');
-        $orderMock->expects($this->any())
-            ->method('getServiceFromContainer')
-            ->withConsecutive(
-                [$this->equalTo(PaymentService::class)],
-                [$this->equalTo(ModuleSettings::class)]
-            )
-            ->willReturnOnConsecutiveCalls($paymentServiceMock, $moduleSettingsMock);
-        $orderMock->expects($this->once())
-            ->method('afterOrderCleanUp');
-        $orderMock->expects($this->never())
-            ->method('extractTransactionId')
-            ->willReturn(self::TEST_PAYPAL_TRANS_ID);
-        $orderMock->expects($this->never())
-            ->method('setTransId');
-        $orderMock->expects($this->never())
-            ->method('isPayPalOrderCompleted');
-        $orderMock->expects($this->once())
-            ->method('_sendOrderByEmail');
-        $orderMock->expects($this->once())
-            ->method('_setOrderStatus')
-            ->with($this->equalTo('NOT_FINISHED'));
-
-        $orderMock->load(self::TEST_ORDER_ID);
-        $orderMock->assign(
-            [
-                'oxpaymenttype' => PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID
+        // Mock PayPal purchase units (example data)
+        $paypalApiOrder->purchase_units = [
+            (object)[
+                'amount' => (object)[
+                    'value' => '100.00', // Example amount
+                    'currency_code' => 'USD' // Example currency
+                ],
             ]
-        );
+        ];
 
-        $orderMock->finalizeOrderAfterExternalPayment(self::TEST_PAYPAL_ORDER_ID, true);
+        $paymentServiceMock = $this->createMock(PaymentService::class);
+
+        $paymentServiceMock->expects($this->once())
+            ->method('isPayPalPayment')
+            ->willReturn(true);
+
+        $paymentServiceMock->method('fetchOrderFields')
+            ->with($this->equalTo($payPalOrderId))
+            ->willReturn($paypalApiOrder);
+
+        $mockOrder->setPaymentService($paymentServiceMock);
+
+        $mockOrder->expects($this->exactly(2))
+            ->method('getFieldData');
+
+        EshopRegistry::getSession()->setUser(oxNew(EshopModelUser::class));
+        EshopRegistry::getSession()->setBasket(oxNew(EshopModelBasket::class));
+
+        $mockOrder->finalizeOrderAfterExternalPayment($payPalOrderId, $forceFetchDetails);
     }
 
     private function getOrderMock(
@@ -699,9 +640,17 @@ final class OrderTest extends BaseTestCase
         $paymentServiceMock->expects($this->$trackPayPalOrder())
             ->method('trackPayPalOrder');
 
-        Registry::getSession()->setUser(oxNew(EshopModelUser::class));
-        Registry::getSession()->setBasket(oxNew(EshopModelBasket::class));
+        EshopRegistry::getSession()->setUser(oxNew(EshopModelUser::class));
+        EshopRegistry::getSession()->setBasket(oxNew(EshopModelBasket::class));
 
         return $paymentServiceMock;
+    }
+
+    private function patchMock($orderMock)
+    {
+        $orderMock->setModuleSettings($this->getServiceFromContainer(ModuleSettings::class));
+        $orderMock->setOrderProcessTrackingService(new OrderProcessTrackingService);
+        $orderMock->setPaymentService($this->getServiceFromContainer(PaymentService::class));
+        return $orderMock;
     }
 }

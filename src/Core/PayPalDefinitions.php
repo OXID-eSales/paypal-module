@@ -137,7 +137,7 @@ final class PayPalDefinitions
                     'longdesc_beta' => 'Kaufen Sie jetzt und bezahlen sie später mit PayPal.'
                 ],
                 'en' => [
-                    'desc' => 'PayPal- pay later',
+                    'desc' => 'PayPal - pay later',
                     'longdesc' => '',
                     'longdesc_beta' => 'Buy now and pay later with PayPal.'
                 ]
