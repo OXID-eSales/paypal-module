@@ -3,7 +3,7 @@
 namespace OxidSolutionCatalysts\PayPal\Service\GooglePay;
 
 use Exception;
-use OxidSolutionCatalysts\PayPal\Model\Order;
+use OxidEsales\Eshop\Application\Model\Order;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 
