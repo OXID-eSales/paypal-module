@@ -10,7 +10,18 @@ function deselectRadioButtons(selector) {
  * @returns {Element|null} The payment submit button element or null if not found
  */
 function getPaymentSubmitButton() {
-    return document.querySelector("button[onclick*=\"document.querySelector('#payment').requestSubmit()\"]");
+
+    const smartyButton = document.getElementById('paymentNextStepBottom');
+    if (smartyButton) {
+        return smartyButton;
+    }
+
+    const apexButton = document.querySelector('button[onclick*="document.getElementById(\'payment\').submit()"]');
+    if (apexButton) {
+        return apexButton;
+    }
+
+    return null;
 }
 
 function registerClickListenerForPaymentMethodsRadioButtons() {
