@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Service\GooglePay;
 
 use Exception;
-use OxidSolutionCatalysts\PayPal\Model\Order;
+use OxidEsales\PayPalModule\Model\Order;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 
@@ -23,7 +23,6 @@ class GooglePayPayPalService
     public function finalizeGooglePay(string $oxidOrderId, string $payPalOrderId, bool $forceFetchDetails): bool
     {
         try {
-            /** @var Order $order */
             $order = oxNew(Order::class);
             $order->load($oxidOrderId);
             $order->finalizeOrderAfterExternalPayment($payPalOrderId, $forceFetchDetails);
