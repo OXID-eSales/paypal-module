@@ -27,7 +27,7 @@ class OrderArticle extends OrderArticle_parent
             ) {
                 $capture = $order->getOrderPaymentCapture();
                 if (!is_null($capture)) {
-                    $this->setViewData(['readonly' => true]);
+                    $this->addTplParam('readonly', true);
                     Registry::getUtilsView()->addErrorToDisplay('OSC_PAYPAL_CHANGE_ORDER_NOT_POSSIBLE');
                 }
             }
