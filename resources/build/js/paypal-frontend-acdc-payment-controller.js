@@ -160,6 +160,7 @@
                 createOrder: PayPalPayment.createOrder,
                 onApprove: PayPalPayment.handlePaymentAuthorization,
                 onError: PayPalPayment.handleError,
+                onCancel: PayPalPayment.cancelOrder,
                 inputEvents: {
                     onChange: (data) => {
                         PayPalPayment.cardFieldsState = data;

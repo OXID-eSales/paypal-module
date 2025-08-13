@@ -725,16 +725,49 @@ class Payment
                     Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                 );
                 $payPalOrder->intent = Constants::PAYPAL_ORDER_INTENT_AUTHORIZE;
+                $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
+
+                if($authorization->status === 'DENIED'){
+                    return [
+                        'status' => 'error',
+                        'message' => $language->translateString('OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR')
+                    ];
+                }
+
+                //here the attributes object of payment source is available, so we can check vaulting status
+                $session = Registry::getSession();
+                $vault = null;
+
+                if ($paypal = $payPalOrder->payment_source->paypal) {
+                    $vault = $paypal->attributes->vault;
+                } elseif ($card = $payPalOrder->payment_source->card) {
+                    $vault = $card->attributes->vault;
+                }
+
+                if ($vault->status === "VAULTED") {
+                    $vaultSuccess = false;
+
+                    if ($id = $vault->customer["id"]) {
+                        $user = Registry::getConfig()->getUser();
+
+                        $user->oxuser__oscpaypalcustomerid = new Field($id);
+
+                        if ($user->save()) {
+                            $vaultSuccess = true;
+                        }
+                    }
+
+                    if (!$vaultSuccess) {
+                        if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
+                            $this->logger->log('debug', "Vaulting was attempted but didn't succeed.");
+                        }
+                    }
+
+                    $session->setVariable("vaultSuccess", $vaultSuccess);
+                }
+
             }
 
-            $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
-
-            if($authorization->status === 'DENIED'){
-                return [
-                    'status' => 'error',
-                    'message' => $language->translateString('OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR')
-                ];
-            }
 
             $authorizationId = $authorization->id;
 
