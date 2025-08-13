@@ -386,8 +386,10 @@
             overlay.style.cursor = 'not-allowed';
 
             // Make sure the target element has position relative or absolute
-            const elementPosition = window.getComputedStyle(element).getPropertyValue('position');
-            if (elementPosition !== 'relative' && elementPosition !== 'absolute') {
+            const elementPosition = window.getComputedStyle(element).position;
+            const validPositions = ['relative', 'absolute', 'fixed', 'sticky'];
+
+            if (!validPositions.includes(elementPosition)) {
                 element.style.position = 'relative';
             }
 

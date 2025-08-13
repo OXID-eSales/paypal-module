@@ -16,7 +16,7 @@ function getPaymentSubmitButton() {
         return smartyButton;
     }
 
-    const apexButton = document.querySelector('button[onclick*="document.getElementById(\'payment\').submit()"]');
+    const apexButton = document.querySelector('button[onclick="document.querySelector(\'#payment\').requestSubmit();"]');
     if (apexButton) {
         return apexButton;
     }
