@@ -757,17 +757,14 @@ class Payment
                         }
                     }
 
-                    if (!$vaultSuccess) {
-                        if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
-                            $this->logger->log('debug', "Vaulting was attempted but didn't succeed.");
-                        }
+                    if (!$vaultSuccess && $this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
+                        $this->logger->log('debug', "Vaulting was attempted but didn't succeed.");
                     }
 
                     $session->setVariable("vaultSuccess", $vaultSuccess);
                 }
 
             }
-
 
             $authorizationId = $authorization->id;
 
