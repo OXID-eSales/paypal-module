@@ -954,12 +954,14 @@ class Payment
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $module = oxNew(\OxidEsales\Eshop\Core\Module\Module::class);
         $module->load(Module::MODULE_ID);
+        $orderNumber = '';
         /** @var Order $orderNumber */
-        $orderNumber = $order instanceof EshopModelOrder ? $order->getFieldData('oxordernr') : '';
-        if($orderNumber == 0 || is_null($orderNumber)){
-            $order->save();
-            $order->setOrderNumber();
-            $orderNumber = $order->getFieldData('oxordernr');
+        if ($order instanceof EshopModelOrder) {
+            $orderNumber = (int) $order->getFieldData('oxordernr');
+            if($orderNumber === 0) {
+                $order->setOrderNumber();
+                $orderNumber = $order->getFieldData('oxordernr');
+            }
         }
         if ($moduleSettings->isCustomIdSchemaStructural()) {
             $customID = [
