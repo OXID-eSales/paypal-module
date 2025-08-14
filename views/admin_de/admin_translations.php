@@ -283,6 +283,7 @@ $aLang = array_merge(
     'OSC_PAYPAL_ERROR_INVALID_RESOURCE_ID'          => 'Die PayPal-Checkout-Bestellung hat eine invalide Resource-ID',
     'OSC_PAYPAL_PAYPALPLUS_TABLE_DOES_NOT_EXISTS'   => 'Bestellung wurde mit dem PayPal-Plus-Modul bezahlt, aber die Datenbanken existieren nicht mehr',
     'OSC_PAYPAL_PAYPALSOAP_TABLE_DOES_NOT_EXISTS'   => 'Bestellung wurde mit dem PayPal-Soap-Modul bezahlt, aber die Datenbanken existieren nicht mehr',
+    'OSC_PAYPAL_CANCELED_DURING_CHECKOUT'           => 'Die Bestellung wurde während des Checkouts abgebrochen und automatisch storniert.',
 
     'OSC_PAYPAL_SCA_CONTINGENCY'                    => '3D Secure für Debit- und Kreditkarten',
     'OSC_PAYPAL_SCA_ALWAYS'                         => '3D Secure Abfrage für jede ACDC Transaktion',

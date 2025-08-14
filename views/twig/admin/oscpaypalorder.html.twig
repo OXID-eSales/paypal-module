@@ -10,7 +10,7 @@
     <div class="errorbox">{{ error }}</div>
 {% endif %}
 
-{% if order and payPalOrder %}
+{% if order and payPalOrder and oView.getPayPalPaymentStatus() %}
     {% set currency = oView.getPayPalCurrency() %}
     <table width="98%" cellspacing="0" cellpadding="0" border="0">
         <tbody>
