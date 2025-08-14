@@ -240,6 +240,7 @@
             });
 
             PayPalPayment.resetCurrentOrder();
+            window.location.reload();
         };
 
         this.handleError = async function (data) {
