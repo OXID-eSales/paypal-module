@@ -10,7 +10,7 @@
     <div class="errorbox">[{$error}]</div>
 [{/if}]
 
-[{if $order && $payPalOrder}]
+[{if $order && $payPalOrder && $oView->getPayPalPaymentStatus()}]
 
     [{assign var="currency" value=$oView->getPayPalCurrency()}]
 

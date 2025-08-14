@@ -173,6 +173,8 @@ class PayPalOrderController extends AdminDetailsController
             // old paypalsoap order
             $this->addTplParam('payPalOrder', $this->getPayPalSoapOrder());
             $result = "oscpaypalorder_pp.tpl";
+        } elseif (!$this->getPayPalPaymentStatus()) {
+            $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_CANCELED_DURING_CHECKOUT'));
         } else {
             $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'));
         }
@@ -280,7 +282,7 @@ class PayPalOrderController extends AdminDetailsController
     /**
      * Template getter getPayPalPaymentStatus
      */
-    public function getPayPalPaymentStatus(): string
+    public function getPayPalPaymentStatus(): ?string
     {
         return $this->getPayPalCheckoutOrder()->getCapturePaymentStatusString();
     }
