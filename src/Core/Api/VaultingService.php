@@ -170,7 +170,8 @@ class VaultingService extends BaseService
 
         $attributes = [];
         $vaultPaymentOnSuccess = Registry::getRequest()->getRequestParameter("vaultPayment");
-        if (filter_var($vaultPaymentOnSuccess, FILTER_VALIDATE_BOOLEAN)) {
+        $vaultPaymentOnSuccess = filter_var($vaultPaymentOnSuccess, FILTER_VALIDATE_BOOLEAN);
+        if ($vaultPaymentOnSuccess) {
             $attributes = [
                 "customer" => [
                     "id" => $user->getFieldData("oscpaypalcustomerid")
@@ -188,8 +189,6 @@ class VaultingService extends BaseService
                     "permit_multiple_payment_tokens" => false
                 ];
             }
-
-
         }
 
         if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
@@ -208,11 +207,14 @@ class VaultingService extends BaseService
                     ]
                 ]);
 
-            $paymentSource[$paymentSourceId]["stored_credential"] = [
-                "payment_initiator" => "CUSTOMER",
-                "payment_type" => "ONE_TIME",
-                "usage" => "FIRST"
-            ];
+            // only in vaulting-mode
+            if ($vaultPaymentOnSuccess) {
+                $paymentSource[$paymentSourceId]["stored_credential"] = [
+                    "payment_initiator" => "CUSTOMER",
+                    "payment_type" => "ONE_TIME",
+                    "usage" => "FIRST"
+                ];
+            }
 
         } else {
             $paymentSource = [
