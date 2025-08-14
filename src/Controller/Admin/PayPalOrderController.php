@@ -155,6 +155,9 @@ class PayPalOrderController extends AdminDetailsController
             } catch (ApiException $exception) {
                 $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()));
             }
+            if (!$this->getPayPalPaymentStatus()) {
+                $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_CANCELED_DURING_CHECKOUT'));
+            }
         } elseif (
             $order->getFieldData('oxpaymenttype') === $this->payPalPlusPaymentType &&
             !$order->tableExitsForPayPalPlus()
@@ -173,8 +176,6 @@ class PayPalOrderController extends AdminDetailsController
             // old paypalsoap order
             $this->addTplParam('payPalOrder', $this->getPayPalSoapOrder());
             $result = "oscpaypalorder_pp.tpl";
-        } elseif (!$this->getPayPalPaymentStatus()) {
-            $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_CANCELED_DURING_CHECKOUT'));
         } else {
             $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_NOT_PAID_WITH_PAYPAL'));
         }
