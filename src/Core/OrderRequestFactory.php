@@ -159,12 +159,13 @@ class OrderRequestFactory
     {
         $userName = $this->getUserNameFromBasket($basket);
         $country = $this->getCountryFromBasket($basket);
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
 
         return new PaymentSource([
             $requestName => [
                 "attributes" => [
                     "verification" => [
-                        "method" => Constants::PAYPAL_SCA_WHEN_REQUIRED
+                        "method" => $moduleSettings->getPayPalSCAContingency()
                     ]
                 ],
                 'name' => $userName,
@@ -619,7 +620,7 @@ class OrderRequestFactory
                     "vault_id" => $selectedPaymentToken["id"],
                     "attributes" => [
                         "verification" => [
-                            "method" => "SCA_WHEN_REQUIRED"
+                            "method" => $moduleSettings->getPayPalSCAContingency()
                         ],
                     ],
                     "experience_context" => [

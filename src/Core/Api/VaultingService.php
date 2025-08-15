@@ -203,7 +203,7 @@ class VaultingService extends BaseService
             $paymentSource[$paymentSourceId]["attributes"] = array_merge($attributes,
                 [
                     "verification" => [
-                        "method" => "SCA_WHEN_REQUIRED"
+                        "method" => $moduleSettings->getPayPalSCAContingency()
                     ]
                 ]);
 

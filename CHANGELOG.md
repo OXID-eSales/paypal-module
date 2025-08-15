@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Inform the customer that the order cannot be changed after capture
 - update the BN-Code to OXID_Cart_PPCP_fromv350
 - fix Maintenance for canceled PayPal-Orders in the Order-PayPal-Checkout-Tab
+- use Backend-Option SCA-Method for 3dS Handling
 
 ## [3.4.1] - 2025-04-08
 
