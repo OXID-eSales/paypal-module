@@ -112,7 +112,7 @@
                         {% if listitem.oxorderarticles__oxstorno.value == 1 %}
                             {% set listclass = "listitem3" %}
                         {% else %}
-                            {% set listclass = "listitem3"|cat(blWhite) %}
+                            {% set listclass = "listitem" ~ blWhite %}
                         {% endif %}
                         <tr id="art.{{ loop.index }}">
                             <td valign="top" class="{{ listclass }}">{{ listitem.oxorderarticles__oxamount.value }}</td>
@@ -161,14 +161,14 @@
                         <td class="listheader">{{ translate({ ident: "OSC_PAYPAL_AMOUNT" }) }}</td>
                         <td class="listheader">
                             {{ translate({ ident: "OSC_PAYPAL_HISTORY_PAYPAL_STATUS" }) }}
-                            {% include "inputhelp.html.twig" with {'sHelpId': help_id("OSC_PAYPAL_HISTORY_PAYPAL_STATUS_HELP"), 'sHelpText': help_text("OSC_PAYPAL_HISTORY_PAYPAL_STATUS_HELP")} %}
+                            {{ include("inputhelp.html.twig", {'ident': "OSC_PAYPAL_HISTORY_PAYPAL_STATUS_HELP"}) }}
                         </td>
                         <td class="listheader">{{ translate({ ident: "OSC_PAYPAL_TRANSACTIONID" }) }}</td>
                         <td class="listheader">{{ translate({ ident: "OSC_PAYPAL_INVOICE_ID" }) }}</td>
                         <td class="listheader">{{ translate({ ident: "OSC_PAYPAL_COMMENT" }) }}</td>
                     </tr>
                     {% for listitem in oView.getPayPalHistory() %}
-                        {% set class = smarty_cycle(["listitem", "listitem2"]) %}
+                        {% set class = cycle(["listitem", "listitem2"], loop.index0) %}
                         <tr>
                             <td valign="top" class="{{ class }}">{{ listitem.date }}</td>
                             <td valign="top" class="{{ class }}">{{ translate({ ident: "OSC_PAYPAL_"|cat(listitem.action) }) }}</td>
@@ -188,7 +188,7 @@
 
         </tbody>
     </table>
-    {% if (oView.getPayPalPaymentStatus() == 'COMPLETED' or oView.getPayPalPaymentStatus() == 'CAPTURED') and oView.getPayPalRemainingRefundAmount() %}
+    {% if oView.eligibleForRefund() %}
         <div style="margin-top: 10px">
             <p><b>{{ translate({ ident: "OSC_PAYPAL_ISSUE_REFUND" }) }}</b></p>
             <form action="{{ oViewConf.getSelfLink() }}" method="post">
@@ -208,7 +208,7 @@
                     </tr>
                     <tr>
                         <td><label for="noteToPayer">{{ translate({ ident: "OSC_PAYPAL_NOTE_TO_BUYER" }) }}</label></td>
-                        <td><textarea id="noteToPayer" name="noteToPayer" required maxlength="255"></textarea></td>
+                        <td><textarea id="noteToPayer" required name="noteToPayer" maxlength="255"></textarea></td>
                     </tr>
                     <tr>
                         <td><label for="refundAll">{{ translate({ ident: "OSC_PAYPAL_REFUND_ALL" }) }}</label></td>
@@ -222,7 +222,7 @@
                 </table>
             </form>
         </div>
-    {% elseif oView.getPayPalPaymentStatus() != 'COMPLETED' and oView.getPayPalPaymentStatus() != 'CAPTURED' %}
+    {% elseif oView.eligibleForCapture() %}
         <div style="margin-top: 10px">
             <p><b>{{ translate({ ident: "OSC_PAYPAL_ACTIONS", suffix: "COLON" }) }}</b></p>
             <form action="{{ oViewConf.getSelfLink() }}" method="post">
@@ -231,9 +231,11 @@
                 <input type="hidden" name="cl" value="oscpaypalorder">
                 <input type="hidden" name="oxid" value="{{ oxid }}">
                 <input type="hidden" name="language" value="{{ actlang }}">
-                <input type="submit" value="{{ translate({ ident: "OSC_PAYPAL_CAPTURE" }) }}">
+                <input type="submit"
+                       onclick="var really = confirm('{{ translate({ ident: "OSC_PAYPAL_CONFIRM_CAPTURE" }) }}'); if (really)  { this.setAttribute('disabled', true); this.form.submit();} else { return false;}"
+                       value="{{ translate({ ident: "OSC_PAYPAL_CAPTURE" }) }}">
             </form>
-            <p>{{ translate({ ident: "OSC_PAYPAL_CAPTURE_DAYS_LEFT", args: oView.getTimeLeftForPayPalCapture() }) }}</p>
+            <p>{{ translate({ ident: "OSC_PAYPAL_CAPTURE_DAYS_LEFT", args: [oView.getTimeLeftForPayPalCapture()] }) }}</p>
         </div>
     {% endif %}
 {% endif %}
