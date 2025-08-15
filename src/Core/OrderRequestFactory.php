@@ -157,6 +157,7 @@ class OrderRequestFactory
 
     protected function getSimplePaymentSource(Basket $basket, string $requestName): PaymentSource
     {
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $userName = $this->getUserNameFromBasket($basket);
         $country = $this->getCountryFromBasket($basket);
 
@@ -164,7 +165,7 @@ class OrderRequestFactory
             $requestName => [
                 "attributes" => [
                     "verification" => [
-                        "method" => Constants::PAYPAL_SCA_WHEN_REQUIRED
+                        "method" => $moduleSettings->getPayPalSCAContingency()
                     ]
                 ],
                 'name' => $userName,
@@ -620,7 +621,7 @@ class OrderRequestFactory
                     "vault_id" => $selectedPaymentToken["id"],
                     "attributes" => [
                         "verification" => [
-                            "method" => "SCA_WHEN_REQUIRED"
+                            "method" => $moduleSettings->getPayPalSCAContingency()
                         ],
                     ],
                     "experience_context" => [

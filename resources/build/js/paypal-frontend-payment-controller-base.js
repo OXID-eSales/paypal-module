@@ -228,7 +228,9 @@
         };
 
         this.cancelOrder = async function () {
-            PayPalPayment.removeSubmitButtonOverlay();
+            // Don't remove the overlay, as we'll reload the page at the end.
+            // During this time, no one should be able to click anything.
+            // PayPalPayment.removeSubmitButtonOverlay();
 
             let shopOrderId = PayPalPayment.getCurrentOrderOxid();
             if (null == shopOrderId) {
