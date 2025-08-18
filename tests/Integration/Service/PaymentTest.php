@@ -10,6 +10,7 @@ use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -392,7 +393,7 @@ final class PaymentTest extends BaseTestCase
                     new SCAValidator(),
                     $moduleSettingsService,
                     $logger,
-                    null,
+                    $this->getServiceFromContainer(OrderProcessTrackingService::class),
                     null,
                     null
                 ]

@@ -23,7 +23,6 @@ test.describe('Checking paypal banner', () => {
     });
 
     test('Should see PayPal banner', async () => {
-        test.setTimeout(10000);
 
         const shopHelper = new ShopHelper(page);
 
@@ -34,7 +33,7 @@ test.describe('Checking paypal banner', () => {
 
             await expect(bannerLocator).toBeVisible();
 
-            console.log('Payment successfully completed and thank you page displayed!');
+            console.log('Banner is displayed, which means the PP module is working properly');
 
         } catch (error) {
             console.error('Test failed:', error.message);

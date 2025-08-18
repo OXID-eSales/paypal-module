@@ -358,4 +358,155 @@ export class PaypalHelper {
         }
         return null;
     }
+
+    // Add this to your PaypalHelper class
+    // Improved handlePaypalPopupAndLogin function
+    async handlePaypalPopupAndLogin(popupPage) {
+        if (!popupPage) {
+            throw new Error('No popup page provided to handle PayPal login');
+        }
+
+        try {
+            console.log('PayPal popup detected, handling login...');
+
+            // Use a more lenient wait approach - wait for any content to appear instead
+            try {
+                // First try a shorter timeout with networkidle
+                await popupPage.waitForLoadState('networkidle', { timeout: 10000 });
+            } catch (loadError) {
+                console.log('Network idle timeout, continuing anyway as popup is visible');
+                // If networkidle fails, wait for domcontentloaded instead (more reliable)
+                await popupPage.waitForLoadState('domcontentloaded', { timeout: 20000 });
+            }
+
+            // Take a screenshot for debugging
+            await popupPage.screenshot({ path: 'paypal-popup-state.png' });
+
+            // Wait for any recognizable PayPal element to appear
+            const recognizableSelectors = [
+                '#email', '#password', // Login form
+                '#btnNext', '#btnLogin', // Login buttons
+                'button:has-text("Pay Now")', // Payment confirmation
+                'button:has-text("Continue")', // Continuation button
+                '#payment-submit-btn', // Submit button
+                '.paypal-button' // Any PayPal button
+            ];
+
+            let foundElement = false;
+            for (const selector of recognizableSelectors) {
+                if (await popupPage.locator(selector).count() > 0) {
+                    console.log(`Found PayPal element: ${selector}`);
+                    foundElement = true;
+                    break;
+                }
+            }
+
+            if (!foundElement) {
+                console.log('No recognizable PayPal elements found, but continuing');
+            }
+
+            // Check if we're on the login page by looking for email or password fields
+            const hasEmailField = await popupPage.locator('#email').count() > 0;
+            const hasPasswordField = await popupPage.locator('#password').count() > 0;
+
+            if (hasEmailField || hasPasswordField) {
+                console.log('Login form detected in PayPal popup');
+
+                // Fill email if the field exists
+                if (hasEmailField) {
+                    const emailField = popupPage.locator('#email');
+                    if (await emailField.isVisible()) {
+                        await emailField.fill(process.env.PAYPAL_EMAIL);
+                        console.log('Filled email field');
+
+                        // Check if there's a "Next" button
+                        const nextButton = popupPage.locator('#btnNext');
+                        if (await nextButton.isVisible()) {
+                            await nextButton.click();
+                            console.log('Clicked Next button');
+                            await popupPage.waitForTimeout(3000);
+                        }
+                    }
+                }
+
+                // Fill password if the field exists
+                if (hasPasswordField || await popupPage.locator('#password').isVisible()) {
+                    const passwordField = popupPage.locator('#password');
+                    try {
+                        await passwordField.waitFor({ state: 'visible', timeout: 10000 });
+                        await passwordField.fill(process.env.PAYPAL_PASSWORD);
+                        console.log('Filled password field');
+
+                        // Click login
+                        const loginButton = popupPage.locator('#btnLogin');
+                        if (await loginButton.isVisible()) {
+                            await loginButton.click();
+                            console.log('Clicked login button');
+                        }
+
+                        // Wait for login processing
+                        await popupPage.waitForTimeout(5000);
+                    } catch (passwordError) {
+                        console.log('Error filling password:', passwordError.message);
+                    }
+                }
+
+                // Wait for any popup changes after login
+                await popupPage.waitForTimeout(5000);
+            } else {
+                console.log('Not on PayPal login page, might be already logged in');
+            }
+
+            // Handle various UI elements that might appear in sequence
+            const uiElements = [
+                { selector: 'button:has-text("Not now")', name: 'Remember device prompt' },
+                { selector: 'button:has-text("Accept")', name: 'Accept cookies prompt' },
+                { selector: 'button:has-text("Pay Now")', name: 'Pay Now button' },
+                { selector: 'button:has-text("Continue")', name: 'Continue button' },
+                { selector: 'button:has-text("Agree & Continue")', name: 'Agree & Continue button' },
+                { selector: 'button:has-text("Complete Purchase")', name: 'Complete Purchase button' },
+                { selector: '#payment-submit-btn', name: 'Payment submit button' }
+            ];
+
+            for (const element of uiElements) {
+                try {
+                    const elementExists = await popupPage.locator(element.selector).count() > 0;
+                    if (elementExists) {
+                        const isVisible = await popupPage.locator(element.selector).isVisible();
+                        if (isVisible) {
+                            console.log(`Found and clicking: ${element.name}`);
+                            await popupPage.locator(element.selector).click();
+                            await popupPage.waitForTimeout(3000);
+                        }
+                    }
+                } catch (elementError) {
+                    console.log(`Error handling ${element.name}:`, elementError.message);
+                }
+            }
+
+            console.log('Waiting for PayPal popup to complete processing...');
+            await popupPage.waitForTimeout(10000);
+
+            try {
+                const url = await popupPage.url();
+                console.log(`Popup is still open. Current URL: ${url}`);
+                await popupPage.screenshot({ path: 'paypal-popup-final.png' });
+            } catch (urlError) {
+                console.log('Popup appears to be closed (error getting URL)');
+            }
+
+            console.log('PayPal popup handling completed');
+            return true;
+        } catch (error) {
+            console.error('Error handling PayPal popup:', error.message);
+
+            try {
+                await popupPage.screenshot({ path: 'paypal-popup-error.png' });
+            } catch (screenshotError) {
+                console.log('Failed to take popup screenshot:', screenshotError.message);
+            }
+
+            throw error;
+        }
+    }
 }

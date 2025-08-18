@@ -28,6 +28,13 @@ test.describe('Simple PayPal payment test', () => {
         const shopHelper = new ShopHelper(page);
         const paypalHelper = new PaypalHelper(page, context);
 
+        await page.screenshot({
+            path: './_output/homepage.jpg',
+            fullPage: true,
+            type: 'jpeg',
+            quality: 60
+        });
+
         try {
             console.log('Step 1: Setting up the cart...');
             await shopHelper.loginUser();
@@ -38,6 +45,7 @@ test.describe('Simple PayPal payment test', () => {
             await shopHelper.orderNow();
 
             // Step 2: Handle PayPal button click in iframe and process the popup
+            // Step 2: Handle PayPal button click in iframe and process the popup
             console.log('Step 2: Handling PayPal iframe and popup...');
             const paypalIframeSelectors = [
                 'iframe[title="PayPal"]',
@@ -46,12 +54,32 @@ test.describe('Simple PayPal payment test', () => {
                 'iframe[src*="paypal"]'
             ];
 
-            const popupPage = await paypalHelper.clickPaypalButtonInIframe(paypalIframeSelectors);
+            try {
+                // Get the popup page
+                const popupPage = await shopHelper.clickPaypalButtonAndGetPopup();
 
-            // This will handle the popup AND wait for the redirect after popup closes
-            await paypalHelper.handlePaypalPopup(popupPage, async (popup) => {
-                await paypalHelper.loginToPaypal(popup);
-            });
+                if (popupPage) {
+                    await paypalHelper.handlePaypalPopupAndLogin(popupPage);
+                    await popupPage.locator('button[data-id="payment-submit-btn"]').getByText('Pay').click();
+                    console.log('Waiting for redirect after PayPal payment...');
+                    await page.waitForSelector('#thankyouPage, .alert-success', {
+                        timeout: 60000,
+                        state: 'visible'
+                    });
+
+                    console.log('Payment successfully completed!');
+                } else {
+                    throw new Error('PayPal popup was not detected');
+                }
+
+            } catch (error) {
+                console.error('PayPal payment failed:', error.message);
+
+                // Take screenshot for debugging
+                await page.screenshot({ path: 'paypal-payment-failure.png' });
+
+                throw error;
+            }
 
             // Step 3: Verify the thank you page is displayed
             console.log('Step 3: Verifying thank you page...');
