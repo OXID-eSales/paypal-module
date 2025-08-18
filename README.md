@@ -4,17 +4,17 @@ PayPal checkout integration for OXID eShop 6.1 and above.
 
 ## Documentation
 
-* Official [German PayPal Checkout for OXID 6.1 to 6.2 documentation](https://docs.oxid-esales.com/modules/paypal-checkout/de/1.2/)
-* Official [German PayPal Checkout for OXID 6.3 to 6.5 documentation](https://docs.oxid-esales.com/modules/paypal-checkout/de/2.5/)
-* Official [German PayPal Checkout for OXID from 7.0 documentation](https://docs.oxid-esales.com/modules/paypal-checkout/de/3.3/)
-* Official [English PayPal Checkout for OXID 6.1 to 6.2 documentation](https://docs.oxid-esales.com/modules/paypal-checkout/en/1.2/)
-* Official [English PayPal Checkout for OXID 6.3 to 6.5 documentation](https://docs.oxid-esales.com/modules/paypal-checkout/en/2.5/)
-* Official [English PayPal Checkout for OXID from 7.0 documentation](https://docs.oxid-esales.com/modules/paypal-checkout/en/3.3/)
+* Official [German PayPal Checkout for OXID 6.1 to 6.2 documentation](https://docs.oxid-esales.com/modules/paypal-checkout/de/1.3/)
+* Official [German PayPal Checkout for OXID 6.3 to 6.5 documentation](https://docs.oxid-esales.com/modules/paypal-checkout/de/2.6/)
+* Official [German PayPal Checkout for OXID from 7.0 documentation](https://docs.oxid-esales.com/modules/paypal-checkout/de/3.5/)
+* Official [English PayPal Checkout for OXID 6.1 to 6.2 documentation](https://docs.oxid-esales.com/modules/paypal-checkout/en/1.3/)
+* Official [English PayPal Checkout for OXID 6.3 to 6.5 documentation](https://docs.oxid-esales.com/modules/paypal-checkout/en/2.6/)
+* Official [English PayPal Checkout for OXID from 7.0 documentation](https://docs.oxid-esales.com/modules/paypal-checkout/en/3.5/)
 
 
 ## Branch Compatibility
 
-* b-7.0.x module branch is compatible with OXID eShop compilation 7.0, 7.1
+* b-7.0.x module branch is compatible with OXID eShop compilation 7.0, 7.1, 7.2, 7.3, 7.4
 * b-6.3.x module branch is compatible with OXID eShop compilation 6.3, 6.4, 6.5
 * b-6.1.x module branch is compatible with OXID eShop compilation 6.1, 6.2
 
