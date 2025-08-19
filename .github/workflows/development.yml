@@ -109,8 +109,8 @@ jobs:
       - name: Install datagen
         run: |
           docker compose exec -T \
-          php composer config repositories.oxid-esales/datagen \
-          --json '{"type":"path", "url":"./extensions/datagen", "options": { "symlink": true } }'
+            php composer config repositories.oxid-esales/datagen \
+              --json '{"type":"path", "url":"./extensions/datagen", "options": { "symlink": true } }'
           docker compose exec -T php composer require oxid-esales/datagen:dev-b-7.0.x --no-update
 
       - name: Install dependencies and reset shop
@@ -366,7 +366,7 @@ jobs:
         run: |
           docker compose exec -T php  bin/oe-console datagen:shop:create_user \
             --user-email ${{ secrets.SHOP_USER_EMAIL }} \
-            --user-password ${{ secrets.SHOP_USER_PASSWORD }} \
+            --user-password ${{ secrets.SHOP_USER_PASSWORD }} 
 
 
       - name: Run Playwright tests

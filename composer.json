@@ -24,7 +24,7 @@
         "php": ">=8.0",
         "viison/address-splitter": "^0.3.4",
         "webmozart/path-util": "^2.3.0",
-        "oxid-solution-catalysts/paypal-client": "v3.0.18",
+        "oxid-solution-catalysts/paypal-client": "*",
         "brick/phonenumber": "^0.5.0"
     },
     "require-dev": {
