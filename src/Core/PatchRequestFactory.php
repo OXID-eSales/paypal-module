@@ -27,7 +27,7 @@ use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
  * Class PatchRequestFactory
  * @package OxidSolutionCatalysts\PayPal\Core
  */
-class PatchRequestFactory
+class   PatchRequestFactory
 {
     use ServiceContainer;
 

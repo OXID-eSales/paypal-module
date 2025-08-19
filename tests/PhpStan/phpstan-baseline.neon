@@ -1,2 +1,2976 @@
 parameters:
+	ignoreErrors:
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:changeBasket\\(\\) has parameter \\$aPersParam with no type specified\\.$#"
+			count: 1
+			path: ../../src/Component/BasketComponent.php
 
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:changeBasket\\(\\) has parameter \\$aSel with no type specified\\.$#"
+			count: 1
+			path: ../../src/Component/BasketComponent.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:changeBasket\\(\\) has parameter \\$blOverride with no type specified\\.$#"
+			count: 1
+			path: ../../src/Component/BasketComponent.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:changeBasket\\(\\) has parameter \\$dAmount with no type specified\\.$#"
+			count: 1
+			path: ../../src/Component/BasketComponent.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:changeBasket\\(\\) has parameter \\$sProductId with no type specified\\.$#"
+			count: 1
+			path: ../../src/Component/BasketComponent.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:toBasket\\(\\) has parameter \\$aPersParam with no type specified\\.$#"
+			count: 1
+			path: ../../src/Component/BasketComponent.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:toBasket\\(\\) has parameter \\$aSel with no type specified\\.$#"
+			count: 1
+			path: ../../src/Component/BasketComponent.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:toBasket\\(\\) has parameter \\$blOverride with no type specified\\.$#"
+			count: 1
+			path: ../../src/Component/BasketComponent.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:toBasket\\(\\) has parameter \\$dAmount with no type specified\\.$#"
+			count: 1
+			path: ../../src/Component/BasketComponent.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:toBasket\\(\\) has parameter \\$sProductId with no type specified\\.$#"
+			count: 1
+			path: ../../src/Component/BasketComponent.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:changeBasket\\(\\) calls parent\\:\\:changeBasket\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Component/BasketComponent.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:toBasket\\(\\) calls parent\\:\\:toBasket\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Component/BasketComponent.php
+
+		-
+			message: "#^Cannot access property \\$email_address on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Payer\\|null\\.$#"
+			count: 2
+			path: ../../src/Component/UserComponent.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\UserComponent\\:\\:login_noredirect\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Component/UserComponent.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\UserComponent\\:\\:render\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Component/UserComponent.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\UserComponent\\:\\:login_noredirect\\(\\) calls parent\\:\\:login_noredirect\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\UserComponent does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Component/UserComponent.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\UserComponent\\:\\:render\\(\\) calls parent\\:\\:render\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\UserComponent does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Component/UserComponent.php
+
+		-
+			message: "#^Parameter \\#1 \\$className of function oxNew expects class\\-string\\<Register\\>, string given\\.$#"
+			count: 1
+			path: ../../src/Component/UserComponent.php
+
+		-
+			message: "#^Parameter \\#1 \\$oParent of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Controller\\\\BaseController\\:\\:setParent\\(\\) expects OxidEsales\\\\Eshop\\\\Core\\\\Controller\\\\BaseController\\|null, Register given\\.$#"
+			count: 1
+			path: ../../src/Component/UserComponent.php
+
+		-
+			message: "#^Parameter \\#1 \\$sUrl of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Utils\\:\\:redirect\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Component/UserComponent.php
+
+		-
+			message: "#^Parameter \\#1 \\$userName of method OxidEsales\\\\EshopCommunity\\\\Application\\\\Model\\\\User\\:\\:login\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Component/UserComponent.php
+
+		-
+			message: "#^Parameter \\#3 \\$setSessionCookie of method OxidEsales\\\\EshopCommunity\\\\Application\\\\Model\\\\User\\:\\:login\\(\\) expects bool, mixed given\\.$#"
+			count: 1
+			path: ../../src/Component/UserComponent.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:\\$oxorder__oxpaymenttype\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:doProvidePayPalTrackingCarrier\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:getPayPalCheckoutOrder\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:getPayPalTrackingCarrier\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:getPayPalTrackingCode\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:isPayPalOrderCompleted\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:markOrderPaid\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:paidWithPayPal\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:setPayPalTracking\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:setTransId\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Cannot access property \\$captures on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentCollection\\|null\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Cannot call method getFieldData\\(\\) on null\\.$#"
+			count: 3
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Cannot call method getId\\(\\) on null\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain\\:\\:getPayPalDefaultCarrierSelection\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain\\:\\:getPayPalOrderCountryCode\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain\\:\\:getPayPalTrackingCarrierProvider\\(\\) has parameter \\$countryCode with no type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain\\:\\:getTimeLeftForPayPalCapture\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain\\:\\:getTimeLeftForPayPalCapture\\(\\) has parameter \\$roundAsDay with no type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain\\:\\:isAuthorizedPayPalStandardOrder\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain\\:\\:isPayPalStandardManuallyCapture\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain\\:\\:isPayPalStandardOnDeliveryCapture\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain\\:\\:isPayPalStandardOrder\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain\\:\\:onOrderSend\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain\\:\\:save\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Offset 0 does not exist on array\\<OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Capture\\>\\|null\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain\\:\\:onOrderSend\\(\\) calls parent\\:\\:onOrderSend\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain\\:\\:save\\(\\) calls parent\\:\\:save\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderMain does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Parameter \\#1 \\$oxid of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Model\\\\BaseModel\\:\\:load\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Parameter \\#1 \\$time of function strtotime expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Parameter \\#2 \\$checkoutOrderId of method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:doCapturePayPalOrder\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderMain.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:\\$oxorder__oxpaymenttype\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:getPayPalCheckoutOrder\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:isPayPalOrderCompleted\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:markOrderPaid\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:paidWithPayPal\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:setTransId\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Cannot access property \\$captures on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentCollection\\|null\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderOverview\\:\\:getTimeLeftForPayPalCapture\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderOverview\\:\\:getTimeLeftForPayPalCapture\\(\\) has parameter \\$roundAsDay with no type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderOverview\\:\\:isAuthorizedPayPalStandardOrder\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderOverview\\:\\:isPayPalStandardManuallyCapture\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderOverview\\:\\:isPayPalStandardOnDeliveryCapture\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderOverview\\:\\:isPayPalStandardOrder\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderOverview\\:\\:sendorder\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Offset 0 does not exist on array\\<OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Capture\\>\\|null\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderOverview\\:\\:sendorder\\(\\) calls parent\\:\\:sendorder\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\OrderOverview does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Parameter \\#1 \\$time of function strtotime expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Parameter \\#2 \\$checkoutOrderId of method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:doCapturePayPalOrder\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/OrderOverview.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalConfigController\\:\\:autoConfigurationFromCallback\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalConfigController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalConfigController\\:\\:createNonce\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalConfigController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalConfigController\\:\\:save\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalConfigController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalConfigController\\:\\:transferBannerSettings\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalConfigController.php
+
+		-
+			message: "#^Parameter \\#1 \\$conf of method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalConfigController\\:\\:handleSpecialFields\\(\\) expects array, mixed given\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalConfigController.php
+
+		-
+			message: "#^Parameter \\#1 \\$exception of method OxidEsales\\\\EshopCommunity\\\\Core\\\\UtilsView\\:\\:addErrorToDisplay\\(\\) expects OxidEsales\\\\Eshop\\\\Core\\\\Contract\\\\IDisplayError\\|OxidEsales\\\\Eshop\\\\Core\\\\Exception\\\\StandardException\\|string, array\\|string given\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalConfigController.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:\\$oxorder__oxcurrency\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:\\$oxorder__oxpaymenttype\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:getOrderPaymentCapture\\(\\)\\.$#"
+			count: 2
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:getPayPalCheckoutOrder\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:isPayPalOrderCompleted\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:markOrderPaid\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:paidWithPayPal\\(\\)\\.$#"
+			count: 2
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:paidWithPayPalPlus\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:paidWithPayPalSoap\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:setTransId\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:tableExitsForPayPalPlus\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:tableExitsForPayPalSoap\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Cannot access property \\$authorizations on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentCollection\\|null\\.$#"
+			count: 3
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Cannot access property \\$breakdown on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AmountWithBreakdown\\|null\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Cannot access property \\$captures on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentCollection\\|null\\.$#"
+			count: 4
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Cannot access property \\$currency_code on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Money\\|null\\.$#"
+			count: 2
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Cannot access property \\$currency_code on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Payments\\\\Money\\|null\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Cannot access property \\$decimal on stdClass\\|null\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Cannot access property \\$item_total on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AmountBreakdown\\|null\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Cannot access property \\$refunds on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentCollection\\|null\\.$#"
+			count: 3
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Cannot access property \\$value on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AmountWithBreakdown\\|null\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Cannot access property \\$value on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Money\\|null\\.$#"
+			count: 6
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Cannot access property \\$value on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Payments\\\\Money\\|null\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 2
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Dead catch \\- OxidSolutionCatalysts\\\\PayPalApi\\\\Exception\\\\ApiException is never thrown in the try block\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalOrderController\\:\\:executeFunction\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalOrderController\\:\\:formatDate\\(\\) has parameter \\$date with no type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalOrderController\\:\\:formatDate\\(\\) has parameter \\$forSort with no type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalOrderController\\:\\:getPayPalAuthorizationAmount\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalOrderController\\:\\:getPayPalCapturedAmount\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalOrderController\\:\\:getPayPalCurrency\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalOrderController\\:\\:getPayPalPaymentStatus\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalOrderController\\:\\:getPayPalRefundedAmount\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalOrderController\\:\\:getPayPalRemainingRefundAmount\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalOrderController\\:\\:getPayPalResultedAmount\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalOrderController\\:\\:getPayPalTotalOrderSum\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalOrderController\\:\\:getTimeLeftForPayPalCapture\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalOrderController\\:\\:getTimeLeftForPayPalCapture\\(\\) has parameter \\$roundAsDay with no type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalOrderController\\:\\:isAuthorizedPayPalStandardOrder\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalOrderController\\:\\:isPayPalStandardManuallyCapture\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalOrderController\\:\\:isPayPalStandardOnDeliveryCapture\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PayPalOrderController\\:\\:isPayPalStandardOrder\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Offset 0 does not exist on array\\<OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Capture\\>\\|null\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Parameter \\#1 \\$time of function strtotime expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Parameter \\#2 \\$checkoutOrderId of method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:doCapturePayPalOrder\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Parameter \\#2 \\$paypalOrderId of method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\OrderRepository\\:\\:paypalOrderByOrderIdAndPayPalId\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Parameter \\#3 \\$payPalTransactionId of method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\OrderRepository\\:\\:paypalOrderByOrderIdAndPayPalId\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Parameter \\#3 \\$payPalTransactionId of method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\OrderRepository\\:\\:paypalOrderByOrderIdAndPayPalId\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Payments\\\\RefundRequest\\:\\:\\$invoice_id \\(string\\|null\\) does not accept mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Payments\\\\RefundRequest\\:\\:\\$note_to_payer \\(string\\|null\\) does not accept mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Variable \\$paymentService in PHPDoc tag @var does not match assigned variable \\$apiPaymentService\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PayPalOrderController.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:\\$oxorder__oxpaymenttype\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:getPayPalCheckoutOrder\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:isPayPalOrderCompleted\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:markOrderPaid\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:paidWithPayPal\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:setTransId\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^Cannot access property \\$captures on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentCollection\\|null\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PaymentMain\\:\\:getTimeLeftForPayPalCapture\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PaymentMain\\:\\:getTimeLeftForPayPalCapture\\(\\) has parameter \\$roundAsDay with no type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PaymentMain\\:\\:isAuthorizedPayPalStandardOrder\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PaymentMain\\:\\:isPayPalStandardManuallyCapture\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PaymentMain\\:\\:isPayPalStandardOnDeliveryCapture\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PaymentMain\\:\\:isPayPalStandardOrder\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^Offset 0 does not exist on array\\<OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Capture\\>\\|null\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PaymentMain\\:\\:save\\(\\) calls parent\\:\\:save\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\Admin\\\\PaymentMain does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^Parameter \\#1 \\$time of function strtotime expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^Parameter \\#2 \\$checkoutOrderId of method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:doCapturePayPalOrder\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Controller/Admin/PaymentMain.php
+
+		-
+			message: "#^Binary operation \"\\.\" between array\\|string and ' ' results in an error\\.$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Binary operation \"\\.\" between non\\-falsy\\-string and array\\|string results in an error\\.$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:finalizeOrderAfterExternalPayment\\(\\)\\.$#"
+			count: 3
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Call to protected method getUtilsObjectInstance\\(\\) of class OxidEsales\\\\EshopCommunity\\\\Application\\\\Controller\\\\OrderController\\.$#"
+			count: 2
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 14
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\OrderController\\:\\:_getNextStep\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\OrderController\\:\\:_getNextStep\\(\\) has parameter \\$success with no type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\OrderController\\:\\:captureApplePayOrder\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\OrderController\\:\\:render\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\OrderController\\:\\:_getNextStep\\(\\) calls parent\\:\\:_getNextStep\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\OrderController does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\OrderController\\:\\:render\\(\\) calls parent\\:\\:render\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\OrderController does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^PHPDoc tag @var has invalid value \\(\\$result ApiOrderModel\\)\\: Unexpected token \"\\$result\", expected type at offset 9$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Parameter \\#1 \\$message of method OxidEsales\\\\EshopCommunity\\\\Core\\\\DisplayError\\:\\:setMessage\\(\\) expects string, array\\|string given\\.$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Parameter \\#1 \\$oxid of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Model\\\\BaseModel\\:\\:load\\(\\) expects string, mixed given\\.$#"
+			count: 4
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Parameter \\#1 \\$oxid of static method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\PayPalDefinitions\\:\\:isButtonPayment\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Parameter \\#1 \\$oxidOrderId of method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\GooglePay\\\\GooglePayPayPalService\\:\\:finalizeGooglePay\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Parameter \\#1 \\$paypalCustomerId of method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Api\\\\VaultingService\\:\\:getVaultPaymentTokenByIndex\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Parameter \\#2 \\$checkoutOrderId of method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:doPatchPayPalOrder\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Parameter \\#2 \\$index of method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Api\\\\VaultingService\\:\\:getVaultPaymentTokenByIndex\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\OrderController\\:\\:\\$removeTemporaryOrderOnRetry has no type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\OrderController\\:\\:\\$retryPaymentMessages has no type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Variable \\$logger might not be defined\\.$#"
+			count: 1
+			path: ../../src/Controller/OrderController.php
+
+		-
+			message: "#^Parameter \\#1 \\$exception of method OxidEsales\\\\EshopCommunity\\\\Core\\\\UtilsView\\:\\:addErrorToDisplay\\(\\) expects OxidEsales\\\\Eshop\\\\Core\\\\Contract\\\\IDisplayError\\|OxidEsales\\\\Eshop\\\\Core\\\\Exception\\\\StandardException\\|string, array\\|string given\\.$#"
+			count: 1
+			path: ../../src/Controller/PayPalVaultingCardController.php
+
+		-
+			message: "#^Parameter \\#1 \\$paymentTokenId of method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Api\\\\VaultingService\\:\\:deleteVaultedPayment\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Controller/PayPalVaultingCardController.php
+
+		-
+			message: "#^Parameter \\#1 \\$exception of method OxidEsales\\\\EshopCommunity\\\\Core\\\\UtilsView\\:\\:addErrorToDisplay\\(\\) expects OxidEsales\\\\Eshop\\\\Core\\\\Contract\\\\IDisplayError\\|OxidEsales\\\\Eshop\\\\Core\\\\Exception\\\\StandardException\\|string, array\\|string given\\.$#"
+			count: 1
+			path: ../../src/Controller/PayPalVaultingController.php
+
+		-
+			message: "#^Parameter \\#1 \\$paymentTokenId of method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Api\\\\VaultingService\\:\\:deleteVaultedPayment\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Controller/PayPalVaultingController.php
+
+		-
+			message: "#^Access to an undefined property OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\PaymentController\\:\\:\\$_sPaymentErrorText\\.$#"
+			count: 1
+			path: ../../src/Controller/PaymentController.php
+
+		-
+			message: "#^Binary operation \"\\.\" between array\\|string and ' ' results in an error\\.$#"
+			count: 1
+			path: ../../src/Controller/PaymentController.php
+
+		-
+			message: "#^Binary operation \"\\.\" between non\\-falsy\\-string and array\\|string results in an error\\.$#"
+			count: 1
+			path: ../../src/Controller/PaymentController.php
+
+		-
+			message: "#^Call to an undefined method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\PaymentController\\:\\:addTplParam\\(\\)\\.$#"
+			count: 2
+			path: ../../src/Controller/PaymentController.php
+
+		-
+			message: "#^Call to an undefined method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\PaymentController\\:\\:getUser\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/PaymentController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\PaymentController\\:\\:render\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/PaymentController.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\PaymentController\\:\\:getPaymentList\\(\\) calls parent\\:\\:getPaymentList\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\PaymentController does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Controller/PaymentController.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\PaymentController\\:\\:render\\(\\) calls parent\\:\\:render\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\PaymentController does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Controller/PaymentController.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\PaymentController\\:\\:validatePayment\\(\\) calls parent\\:\\:validatePayment\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\PaymentController does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Controller/PaymentController.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Address\\:\\:\\$oxaddress__oxcountryid\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\User\\:\\:\\$oxuser__oxcountryid\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\User\\:\\:\\$oxuser__oxusername\\.$#"
+			count: 3
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Component\\\\UserComponent\\:\\:createPayPalGuestUser\\(\\)\\.$#"
+			count: 3
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Component\\\\UserComponent\\:\\:loginPayPalCustomer\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Basket\\:\\:addShippingPriceForExpress\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\User\\:\\:getInvoiceAddress\\(\\)\\.$#"
+			count: 3
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access offset 'address3' on mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access offset 'addressLines' on mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access offset 'administrativeArea' on mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access offset 'countryCode' on mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access offset 'data' on mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access offset 'email' on mixed\\.$#"
+			count: 2
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access offset 'emailAddress' on mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access offset 'locality' on mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access offset 'name' on mixed\\.$#"
+			count: 2
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access offset 'orderID' on mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access offset 'phoneNumber' on mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access offset 'postalCode' on mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access offset 'shippingContact' on mixed\\.$#"
+			count: 10
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access offset 0 on mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access property \\$address on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\ShippingDetail\\|null\\.$#"
+			count: 2
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access property \\$email_address on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Payer\\|null\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access property \\$full_name on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Name4\\|null\\.$#"
+			count: 4
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access property \\$name on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\ShippingDetail\\|null\\.$#"
+			count: 2
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot access property \\$phone_number on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PhoneWithType\\|null\\.$#"
+			count: 2
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 3
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\ProxyController\\:\\:approveOrder\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\ProxyController\\:\\:cancelPayPalPayment\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\ProxyController\\:\\:createApplepayOrder\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\ProxyController\\:\\:getActiveShippingSetId\\(\\) has parameter \\$basket with no type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\ProxyController\\:\\:getActiveShippingSetId\\(\\) has parameter \\$session with no type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\ProxyController\\:\\:getActiveShippingSetId\\(\\) has parameter \\$user with no type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\ProxyController\\:\\:getPaymentRequestLines\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\ProxyController\\:\\:getRequestedPayPalPaymentId\\(\\) has parameter \\$defaultPayPalPaymentId with no type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\ProxyController\\:\\:setPayPalPaymentMethod\\(\\) has parameter \\$defaultPayPalPaymentId with no type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
+			count: 2
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Parameter \\#1 \\$oxid of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Model\\\\BaseModel\\:\\:load\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Parameter \\#1 \\$userEmail of method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\UserRepository\\:\\:userAccountExists\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Parameter \\#3 \\$amountToBasket of method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\ProxyController\\:\\:itemExists\\(\\) expects int\\|null, float given\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable\\:\\:\\$address_line_1 \\(string\\|null\\) does not accept mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable\\:\\:\\$address_line_2 \\(string\\|null\\) does not accept mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable\\:\\:\\$address_line_3 \\(string\\|null\\) does not accept mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable\\:\\:\\$admin_area_1 \\(string\\|null\\) does not accept mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable\\:\\:\\$admin_area_2 \\(string\\|null\\) does not accept mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable\\:\\:\\$country_code \\(string\\) does not accept mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable\\:\\:\\$postal_code \\(string\\|null\\) does not accept mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Order\\:\\:\\$purchase_units \\(array\\<OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PurchaseUnit\\>\\) does not accept array\\<int, OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PurchaseUnitRequest\\>\\.$#"
+			count: 2
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PayerBase\\:\\:\\$email_address \\(string\\|null\\) does not accept mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Phone2\\:\\:\\$national_number \\(string\\) does not accept mixed\\.$#"
+			count: 1
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\ShippingDetail\\:\\:\\$address \\(OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable3\\|null\\) does not accept OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable\\.$#"
+			count: 2
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Variable \\$countryId might not be defined\\.$#"
+			count: 2
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Variable \\$response might not be defined\\.$#"
+			count: 5
+			path: ../../src/Controller/ProxyController.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\User\\:\\:\\$oxuser__oscpaypalcustomerid\\.$#"
+			count: 1
+			path: ../../src/Controller/VaultingTokenController.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\User\\:\\:\\$oxuser__oscpaypalvaultsetuptoken\\.$#"
+			count: 1
+			path: ../../src/Controller/VaultingTokenController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\VaultingTokenController\\:\\:generateSetupToken\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/VaultingTokenController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\VaultingTokenController\\:\\:getVaultingService\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/VaultingTokenController.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\VaultingTokenController\\:\\:\\$vaultingService has no type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/VaultingTokenController.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Controller\\\\WebhookController\\:\\:init\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Controller/WebhookController.php
+
+		-
+			message: "#^Cannot access offset 'client_token' on mixed\\.$#"
+			count: 1
+			path: ../../src/Core/Api/IdentityService.php
+
+		-
+			message: "#^Cannot access offset 'timestamp' on mixed\\.$#"
+			count: 1
+			path: ../../src/Core/Api/IdentityService.php
+
+		-
+			message: "#^Cannot access offset 'token' on mixed\\.$#"
+			count: 1
+			path: ../../src/Core/Api/IdentityService.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Api\\\\IdentityService\\:\\:__construct\\(\\) has parameter \\$client with no type specified\\.$#"
+			count: 1
+			path: ../../src/Core/Api/IdentityService.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Api\\\\IdentityService\\:\\:getCachedToken\\(\\) should return string\\|null but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Core/Api/IdentityService.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Api\\\\IdentityService\\:\\:requestClientToken\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Core/Api/IdentityService.php
+
+		-
+			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|false given\\.$#"
+			count: 1
+			path: ../../src/Core/Api/IdentityService.php
+
+		-
+			message: "#^Parameter \\#1 \\$token of method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Api\\\\IdentityService\\:\\:cacheToken\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Core/Api/IdentityService.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Country\\:\\:\\$oxcountry__oxisoalpha2\\.$#"
+			count: 3
+			path: ../../src/Core/Api/VaultingService.php
+
+		-
+			message: "#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\\.$#"
+			count: 2
+			path: ../../src/Core/Api/VaultingService.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\State\\:\\:loadByIdAndCountry\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/Api/VaultingService.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Core\\\\ViewConfig\\:\\:getIsVaultingActive\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/Api/VaultingService.php
+
+		-
+			message: "#^Cannot access offset 'email_address' on mixed\\.$#"
+			count: 1
+			path: ../../src/Core/Api/VaultingService.php
+
+		-
+			message: "#^Cannot access offset 'payer_id' on mixed\\.$#"
+			count: 1
+			path: ../../src/Core/Api/VaultingService.php
+
+		-
+			message: "#^Cannot access offset 'payment_source' on mixed\\.$#"
+			count: 1
+			path: ../../src/Core/Api/VaultingService.php
+
+		-
+			message: "#^Cannot access offset 'payment_tokens' on mixed\\.$#"
+			count: 2
+			path: ../../src/Core/Api/VaultingService.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 4
+			path: ../../src/Core/Api/VaultingService.php
+
+		-
+			message: "#^Left side of && is always true\\.$#"
+			count: 1
+			path: ../../src/Core/Api/VaultingService.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Api\\\\VaultingService\\:\\:generateUserIdToken\\(\\) has parameter \\$payPalCustomerId with no type specified\\.$#"
+			count: 1
+			path: ../../src/Core/Api/VaultingService.php
+
+		-
+			message: "#^Parameter \\#1 \\$format of function sprintf expects string, array\\|string given\\.$#"
+			count: 1
+			path: ../../src/Core/Api/VaultingService.php
+
+		-
+			message: "#^Parameter \\#1 \\$oxid of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Model\\\\BaseModel\\:\\:load\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Core/Api/VaultingService.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ConfirmOrderRequestFactory\\:\\:getPaymentSource\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/ConfirmOrderRequestFactory.php
+
+		-
+			message: "#^PHPDoc tag @throws with type OxidEsales\\\\Eshop\\\\Core\\\\Exception\\\\LanguageNotFoundException is not subtype of Throwable$#"
+			count: 2
+			path: ../../src/Core/ConfirmOrderRequestFactory.php
+
+		-
+			message: "#^Parameter \\#1 \\$oxid of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Model\\\\BaseModel\\:\\:load\\(\\) expects string, mixed given\\.$#"
+			count: 3
+			path: ../../src/Core/ConfirmOrderRequestFactory.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ConfirmOrderRequestFactory\\:\\:\\$request is never read, only written\\.$#"
+			count: 1
+			path: ../../src/Core/ConfirmOrderRequestFactory.php
+
+		-
+			message: "#^Parameter \\#2 \\$moduleSettings of class OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\StaticContent constructor expects OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\ModuleSettings, OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\ModuleSettings\\|null given\\.$#"
+			count: 1
+			path: ../../src/Core/Events/Events.php
+
+		-
+			message: "#^Parameter \\#5 \\$userRepository of class OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\ModuleSettings constructor expects OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\UserRepository, mixed given\\.$#"
+			count: 1
+			path: ../../src/Core/Events/Events.php
+
+		-
+			message: "#^Access to an undefined property OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator\\:\\:\\$_aInputValidationErrors\\.$#"
+			count: 2
+			path: ../../src/Core/InputValidator.php
+
+		-
+			message: "#^Call to an undefined method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator\\:\\:_addValidationError\\(\\)\\.$#"
+			count: 2
+			path: ../../src/Core/InputValidator.php
+
+		-
+			message: "#^Call to an undefined method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator\\:\\:getFieldValidationErrors\\(\\)\\.$#"
+			count: 2
+			path: ../../src/Core/InputValidator.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator\\:\\:checkCountries\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/InputValidator.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator\\:\\:checkCountries\\(\\) has parameter \\$deliveryAddress with no type specified\\.$#"
+			count: 1
+			path: ../../src/Core/InputValidator.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator\\:\\:checkCountries\\(\\) has parameter \\$invAddress with no type specified\\.$#"
+			count: 1
+			path: ../../src/Core/InputValidator.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator\\:\\:checkCountries\\(\\) has parameter \\$user with no type specified\\.$#"
+			count: 1
+			path: ../../src/Core/InputValidator.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator\\:\\:checkRequiredFields\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/InputValidator.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator\\:\\:checkCountries\\(\\) calls parent\\:\\:checkCountries\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Core/InputValidator.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator\\:\\:checkRequiredFields\\(\\) calls parent\\:\\:checkRequiredFields\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\InputValidator does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Core/InputValidator.php
+
+		-
+			message: "#^Parameter \\#1 \\$sMessage of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Exception\\\\StandardException\\:\\:setMessage\\(\\) expects string, array\\|string given\\.$#"
+			count: 2
+			path: ../../src/Core/InputValidator.php
+
+		-
+			message: "#^Cannot call method isActive\\(\\) on mixed\\.$#"
+			count: 1
+			path: ../../src/Core/LegacyOeppModuleDetails.php
+
+		-
+			message: "#^Cannot access offset 'authCode' on mixed\\.$#"
+			count: 1
+			path: ../../src/Core/Onboarding/Onboarding.php
+
+		-
+			message: "#^Cannot access offset 'isSandBox' on mixed\\.$#"
+			count: 1
+			path: ../../src/Core/Onboarding/Onboarding.php
+
+		-
+			message: "#^Cannot access offset 'sharedId' on mixed\\.$#"
+			count: 1
+			path: ../../src/Core/Onboarding/Onboarding.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Onboarding\\\\Onboarding\\:\\:getOnboardingPayload\\(\\) should return array but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Core/Onboarding/Onboarding.php
+
+		-
+			message: "#^PHPDoc tag @param references unknown parameter\\: \\$config$#"
+			count: 1
+			path: ../../src/Core/Onboarding/Onboarding.php
+
+		-
+			message: "#^PHPDoc tag @param references unknown parameter\\: \\$environment$#"
+			count: 1
+			path: ../../src/Core/Onboarding/Onboarding.php
+
+		-
+			message: "#^Parameter \\#1 \\$json of function json_decode expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Core/Onboarding/Onboarding.php
+
+		-
+			message: "#^Parameter \\#1 \\$serviceName of method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Onboarding\\\\Onboarding\\:\\:getServiceFromContainer\\(\\) expects class\\-string\\<OxidSolutionCatalysts\\\\PayPal\\\\Logger\\>, string given\\.$#"
+			count: 1
+			path: ../../src/Core/Onboarding/Onboarding.php
+
+		-
+			message: "#^Parameter \\#3 \\$sellerNonce of method OxidSolutionCatalysts\\\\PayPalApi\\\\Onboarding\\:\\:authAfterWebLogin\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Core/Onboarding/Onboarding.php
+
+		-
+			message: "#^Variable \\$notificationService in PHPDoc tag @var does not match assigned variable \\$webhookService\\.$#"
+			count: 3
+			path: ../../src/Core/Onboarding/Webhook.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Address\\:\\:\\$oxaddress__oxfname\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Address\\:\\:\\$oxaddress__oxlname\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Country\\:\\:\\$oxcountry__oxisoalpha2\\.$#"
+			count: 3
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$address\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$birth_date\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$email_address\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Access to an undefined property object\\:\\:\\$phone\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Basket\\:\\:getPayPalCheckoutDiscount\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Basket\\:\\:getPayPalCheckoutGiftCard\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Basket\\:\\:getPayPalCheckoutPayment\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Basket\\:\\:getPayPalCheckoutRoundDiff\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Basket\\:\\:getPayPalCheckoutWrapping\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Basket\\:\\:isEntirelyVirtualPayPalBasket\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\State\\:\\:loadByIdAndCountry\\(\\)\\.$#"
+			count: 2
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\User\\:\\:getBirthDateForPuiRequest\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\User\\:\\:getPhoneNumberForPuiRequest\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Call to an undefined method object\\:\\:initName\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Call to method isVirtualPayPalArticle\\(\\) on an unknown class OxidEsales\\\\EshopCommunity\\\\Application\\\\Model\\\\oxOrderArticle\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Cannot access property \\$address_line_1 on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable3\\|null\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Cannot access property \\$address_line_2 on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable3\\|null\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Cannot access property \\$admin_area_2 on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable3\\|null\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Cannot access property \\$country_code on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable3\\|null\\.$#"
+			count: 3
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Cannot access property \\$postal_code on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable3\\|null\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\OrderRequestFactory\\:\\:getApplePayPaymentSource\\(\\) has parameter \\$basket with no type specified\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\OrderRequestFactory\\:\\:getApplePayPaymentSource\\(\\) has parameter \\$requestName with no type specified\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\OrderRequestFactory\\:\\:getGooglePayPaymentSource\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\OrderRequestFactory\\:\\:getGooglePayPaymentSource\\(\\) has parameter \\$basket with no type specified\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\OrderRequestFactory\\:\\:getGooglePayPaymentSource\\(\\) has parameter \\$requestName with no type specified\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\OrderRequestFactory\\:\\:getPayer\\(\\) should return OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Payer but returns object\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\OrderRequestFactory\\:\\:getUsersPayPalCustomerId\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\OrderRequestFactory\\:\\:getVaultingService\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\OrderRequestFactory\\:\\:modifyPaymentSourceForVaulting\\(\\) has parameter \\$useCard with no type specified\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Parameter \\#1 \\$format of function sprintf expects string, array\\|string given\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Parameter \\#1 \\$numberToParse of method libphonenumber\\\\PhoneNumberUtil\\:\\:parse\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Parameter \\#1 \\$oxid of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Model\\\\BaseModel\\:\\:load\\(\\) expects string, mixed given\\.$#"
+			count: 11
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable3\\:\\:\\$admin_area_1 \\(string\\|null\\) does not accept mixed\\.$#"
+			count: 2
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable3\\:\\:\\$admin_area_2 \\(string\\|null\\) does not accept mixed\\.$#"
+			count: 2
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable3\\:\\:\\$postal_code \\(string\\|null\\) does not accept mixed\\.$#"
+			count: 2
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Item\\:\\:\\$name \\(string\\) does not accept array\\|string\\.$#"
+			count: 5
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\OrderRequest\\:\\:\\$payment_source \\(OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentSource\\|null\\) does not accept array\\<string, array\\<string, mixed\\>\\>\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Phone2\\:\\:\\$national_number \\(string\\) does not accept mixed\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Pui\\\\PuiPaymentSource\\:\\:\\$email \\(string\\) does not accept string\\|null\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Variable \\$type might not be defined\\.$#"
+			count: 1
+			path: ../../src/Core/OrderRequestFactory.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Address\\:\\:\\$oxaddress__oxfname\\.$#"
+			count: 1
+			path: ../../src/Core/PatchRequestFactory.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Address\\:\\:\\$oxaddress__oxlname\\.$#"
+			count: 1
+			path: ../../src/Core/PatchRequestFactory.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Country\\:\\:\\$oxcountry__oxisoalpha2\\.$#"
+			count: 1
+			path: ../../src/Core/PatchRequestFactory.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Basket\\:\\:getPayPalCheckoutDiscount\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/PatchRequestFactory.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Basket\\:\\:getPayPalCheckoutGiftCard\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/PatchRequestFactory.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Basket\\:\\:getPayPalCheckoutPayment\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/PatchRequestFactory.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Basket\\:\\:getPayPalCheckoutRoundDiff\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/PatchRequestFactory.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Basket\\:\\:getPayPalCheckoutWrapping\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/PatchRequestFactory.php
+
+		-
+			message: "#^Parameter \\#1 \\$oxid of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Model\\\\BaseModel\\:\\:load\\(\\) expects string, mixed given\\.$#"
+			count: 3
+			path: ../../src/Core/PatchRequestFactory.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable\\:\\:\\$admin_area_1 \\(string\\|null\\) does not accept mixed\\.$#"
+			count: 1
+			path: ../../src/Core/PatchRequestFactory.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable\\:\\:\\$admin_area_2 \\(string\\|null\\) does not accept mixed\\.$#"
+			count: 1
+			path: ../../src/Core/PatchRequestFactory.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable\\:\\:\\$postal_code \\(string\\|null\\) does not accept mixed\\.$#"
+			count: 1
+			path: ../../src/Core/PatchRequestFactory.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Item\\:\\:\\$name \\(string\\) does not accept array\\|string\\.$#"
+			count: 5
+			path: ../../src/Core/PatchRequestFactory.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\PayPalDefinitions\\:\\:getPayPalDefinitions\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/PayPalDefinitions.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\PayPalDefinitions\\:\\:getPayPalStaticContents\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/PayPalDefinitions.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\PayPalDefinitions\\:\\:getPaymentSourceRequestName\\(\\) should return string but returns array\\<int\\|string, array\\<string, string\\>\\|float\\|int\\|string\\>\\|bool\\|string\\.$#"
+			count: 1
+			path: ../../src/Core/PayPalDefinitions.php
+
+		-
+			message: "#^Binary operation \"\\-\" between float and string results in an error\\.$#"
+			count: 2
+			path: ../../src/Core/PayPalRequestAmountFactory.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Basket\\:\\:getPayPalCheckoutDeliveryCosts\\(\\)\\.$#"
+			count: 2
+			path: ../../src/Core/PayPalRequestAmountFactory.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Basket\\:\\:getPayPalCheckoutDiscount\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/PayPalRequestAmountFactory.php
+
+		-
+			message: "#^Cannot access property \\$currency_code on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Money\\|null\\.$#"
+			count: 2
+			path: ../../src/Core/PayPalRequestAmountFactory.php
+
+		-
+			message: "#^Cannot access property \\$discount on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AmountBreakdown\\|null\\.$#"
+			count: 1
+			path: ../../src/Core/PayPalRequestAmountFactory.php
+
+		-
+			message: "#^Cannot access property \\$handling on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AmountBreakdown\\|null\\.$#"
+			count: 2
+			path: ../../src/Core/PayPalRequestAmountFactory.php
+
+		-
+			message: "#^Cannot access property \\$item_total on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AmountBreakdown\\|null\\.$#"
+			count: 1
+			path: ../../src/Core/PayPalRequestAmountFactory.php
+
+		-
+			message: "#^Cannot access property \\$shipping_discount on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AmountBreakdown\\|null\\.$#"
+			count: 2
+			path: ../../src/Core/PayPalRequestAmountFactory.php
+
+		-
+			message: "#^Cannot access property \\$value on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Money\\|null\\.$#"
+			count: 4
+			path: ../../src/Core/PayPalRequestAmountFactory.php
+
+		-
+			message: "#^Cannot call method initHandling\\(\\) on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AmountBreakdown\\|null\\.$#"
+			count: 1
+			path: ../../src/Core/PayPalRequestAmountFactory.php
+
+		-
+			message: "#^Cannot call method initShippingDiscount\\(\\) on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AmountBreakdown\\|null\\.$#"
+			count: 1
+			path: ../../src/Core/PayPalRequestAmountFactory.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Money\\:\\:\\$value \\(string\\) does not accept float\\.$#"
+			count: 1
+			path: ../../src/Core/PayPalRequestAmountFactory.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 2
+			path: ../../src/Core/PayPalSession.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\PayPalSession\\:\\:getOnboardingPayload\\(\\) should return string\\|null but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Core/PayPalSession.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\PayPalSession\\:\\:unsetPayPalOrderId\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/PayPalSession.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\PayPalSession\\:\\:unsetPayPalPuiCmId\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/PayPalSession.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\PayPalSession\\:\\:unsetPayPalSession\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/PayPalSession.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\RequestReader\\:\\:getRawPost\\(\\) should return string but returns string\\|false\\.$#"
+			count: 1
+			path: ../../src/Core/RequestReader.php
+
+		-
+			message: "#^Parameter \\#1 \\$serviceName of method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ServiceFactory\\:\\:getServiceFromContainer\\(\\) expects class\\-string\\<OxidSolutionCatalysts\\\\PayPal\\\\Logger\\>, string given\\.$#"
+			count: 1
+			path: ../../src/Core/ServiceFactory.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ShopControl\\:\\:_handleBaseException\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/ShopControl.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ShopControl\\:\\:_handleBaseException\\(\\) calls parent\\:\\:_handleBaseException\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ShopControl does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Core/ShopControl.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ShopControl\\:\\:handleCustomPayPalException\\(\\) calls parent\\:\\:_handleBaseException\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ShopControl does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Core/ShopControl.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Tracker\\\\Tracker\\:\\:\\$defaultStatus has no type specified\\.$#"
+			count: 1
+			path: ../../src/Core/Tracker/Tracker.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Tracker\\\\Tracker\\:\\:\\$possibleStatus has no type specified\\.$#"
+			count: 1
+			path: ../../src/Core/Tracker/Tracker.php
+
+		-
+			message: "#^Variable \\$notificationService in PHPDoc tag @var does not match assigned variable \\$trackerService\\.$#"
+			count: 1
+			path: ../../src/Core/Tracker/Tracker.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Country\\:\\:\\$oxcountry__oxtitle\\.$#"
+			count: 1
+			path: ../../src/Core/Utils/PayPalAddressResponseToOxidAddress.php
+
+		-
+			message: "#^Cannot access property \\$address on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\ShippingDetail\\|null\\.$#"
+			count: 1
+			path: ../../src/Core/Utils/PayPalAddressResponseToOxidAddress.php
+
+		-
+			message: "#^Cannot access property \\$address_line_1 on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable3\\|null\\.$#"
+			count: 1
+			path: ../../src/Core/Utils/PayPalAddressResponseToOxidAddress.php
+
+		-
+			message: "#^Cannot access property \\$address_line_2 on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable3\\|null\\.$#"
+			count: 1
+			path: ../../src/Core/Utils/PayPalAddressResponseToOxidAddress.php
+
+		-
+			message: "#^Cannot access property \\$admin_area_2 on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable3\\|null\\.$#"
+			count: 1
+			path: ../../src/Core/Utils/PayPalAddressResponseToOxidAddress.php
+
+		-
+			message: "#^Cannot access property \\$country_code on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable3\\|null\\.$#"
+			count: 1
+			path: ../../src/Core/Utils/PayPalAddressResponseToOxidAddress.php
+
+		-
+			message: "#^Cannot access property \\$full_name on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Name4\\|null\\.$#"
+			count: 1
+			path: ../../src/Core/Utils/PayPalAddressResponseToOxidAddress.php
+
+		-
+			message: "#^Cannot access property \\$name on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\ShippingDetail\\|null\\.$#"
+			count: 1
+			path: ../../src/Core/Utils/PayPalAddressResponseToOxidAddress.php
+
+		-
+			message: "#^Cannot access property \\$postal_code on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AddressPortable3\\|null\\.$#"
+			count: 1
+			path: ../../src/Core/Utils/PayPalAddressResponseToOxidAddress.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Utils\\\\PayPalAddressResponseToOxidAddress\\:\\:getFirstName\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/Utils/PayPalAddressResponseToOxidAddress.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Utils\\\\PayPalAddressResponseToOxidAddress\\:\\:getFirstName\\(\\) has parameter \\$name with no type specified\\.$#"
+			count: 1
+			path: ../../src/Core/Utils/PayPalAddressResponseToOxidAddress.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Utils\\\\PayPalAddressResponseToOxidAddress\\:\\:getLastName\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/Utils/PayPalAddressResponseToOxidAddress.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Utils\\\\PayPalAddressResponseToOxidAddress\\:\\:getLastName\\(\\) has parameter \\$name with no type specified\\.$#"
+			count: 1
+			path: ../../src/Core/Utils/PayPalAddressResponseToOxidAddress.php
+
+		-
+			message: "#^PHPDoc tag @return with type array\\|bool is not subtype of native type array\\.$#"
+			count: 1
+			path: ../../src/Core/Utils/PayPalAddressResponseToOxidAddress.php
+
+		-
+			message: "#^Parameter \\#1 \\$address of static method VIISON\\\\AddressSplitter\\\\AddressSplitter\\:\\:splitAddress\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Core/Utils/PayPalAddressResponseToOxidAddress.php
+
+		-
+			message: "#^Class OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\PayPalSession referenced with incorrect case\\: OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\PaypalSession\\.$#"
+			count: 1
+			path: ../../src/Core/ViewConfig.php
+
+		-
+			message: "#^If condition is always true\\.$#"
+			count: 2
+			path: ../../src/Core/ViewConfig.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ViewConfig\\:\\:filterVaultPaymentTokensByController\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/ViewConfig.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ViewConfig\\:\\:filterVaultPaymentTokensByController\\(\\) has parameter \\$vaultPaymentTokens with no type specified\\.$#"
+			count: 1
+			path: ../../src/Core/ViewConfig.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ViewConfig\\:\\:getCheckoutOrderId\\(\\) should return string\\|null but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Core/ViewConfig.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ViewConfig\\:\\:getGeneratePaymentTokenLink\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/ViewConfig.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ViewConfig\\:\\:getGenerateSetupTokenLink\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/ViewConfig.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ViewConfig\\:\\:getGenerateSetupTokenLink\\(\\) has parameter \\$card with no type specified\\.$#"
+			count: 1
+			path: ../../src/Core/ViewConfig.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ViewConfig\\:\\:getSessionVaultSuccess\\(\\) should return bool\\|null but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Core/ViewConfig.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\ViewConfig\\:\\:isCompatibleTheme\\(\\) has parameter \\$themeId with no type specified\\.$#"
+			count: 1
+			path: ../../src/Core/ViewConfig.php
+
+		-
+			message: "#^Parameter \\#1 \\$paypalCustomerId of method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Api\\\\VaultingService\\:\\:getVaultPaymentTokens\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Core/ViewConfig.php
+
+		-
+			message: "#^Cannot call method handle\\(\\) on string\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/EventDispatcher.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Webhook\\\\EventDispatcher\\:\\:dispatch\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/EventDispatcher.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Webhook\\\\EventDispatcher\\:\\:oxNew\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/EventDispatcher.php
+
+		-
+			message: "#^Parameter \\#1 \\$className of function oxNew expects class\\-string\\<mixed\\>, string given\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/EventDispatcher.php
+
+		-
+			message: "#^Unable to resolve the template type T in call to function oxNew$#"
+			count: 1
+			path: ../../src/Core/Webhook/EventDispatcher.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:setOrderNumber\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/Handler/CheckoutOrderApprovedHandler.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Webhook\\\\Handler\\\\CheckoutOrderApprovedHandler\\:\\:capturePayment\\(\\) is unused\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/Handler/CheckoutOrderApprovedHandler.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:markOrderPaymentFailed\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/Handler/PaymentCaptureDeniedHandler.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:setTransId\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/Handler/PaymentCaptureDeniedHandler.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 2
+			path: ../../src/Core/Webhook/Handler/PaymentCaptureRefundedHandler.php
+
+		-
+			message: "#^Variable \\$order in PHPDoc tag @var does not match assigned variable \\$orderId\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/Handler/PaymentCaptureRefundedHandler.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:markOrderPaid\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/Handler/WebhookHandlerBase.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:setTransId\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/Handler/WebhookHandlerBase.php
+
+		-
+			message: "#^Parameter \\#1 \\$puiAccountHolderName of method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalOrder\\:\\:setPuiAccountHolderName\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/Handler/WebhookHandlerBase.php
+
+		-
+			message: "#^Parameter \\#1 \\$puiBankName of method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalOrder\\:\\:setPuiBankName\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/Handler/WebhookHandlerBase.php
+
+		-
+			message: "#^Parameter \\#1 \\$puiBic of method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalOrder\\:\\:setPuiBic\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/Handler/WebhookHandlerBase.php
+
+		-
+			message: "#^Parameter \\#1 \\$puiIban of method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalOrder\\:\\:setPuiIban\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/Handler/WebhookHandlerBase.php
+
+		-
+			message: "#^Parameter \\#1 \\$puiPaymentReference of method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalOrder\\:\\:setPuiPaymentReference\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/Handler/WebhookHandlerBase.php
+
+		-
+			message: "#^Variable \\$paypalOrderModel in PHPDoc tag @var does not exist\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/Handler/WebhookHandlerBase.php
+
+		-
+			message: "#^Cannot access offset 'event_type' on mixed\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/RequestHandler.php
+
+		-
+			message: "#^Parameter \\#1 \\$data of class OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Webhook\\\\Event constructor expects array, mixed given\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/RequestHandler.php
+
+		-
+			message: "#^Parameter \\#2 \\$eventType of class OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Webhook\\\\Event constructor expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Core/Webhook/RequestHandler.php
+
+		-
+			message: "#^Access to an undefined property OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Article\\:\\:\\$oxarticles__oxisdownloadable\\.$#"
+			count: 1
+			path: ../../src/Model/Article.php
+
+		-
+			message: "#^Access to an undefined property OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Article\\:\\:\\$oxarticles__oxnonmaterial\\.$#"
+			count: 1
+			path: ../../src/Model/Article.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Article\\:\\:isBuyable\\(\\) calls parent\\:\\:isBuyable\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Article does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Model/Article.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Article\\:\\:isVisible\\(\\) calls parent\\:\\:isVisible\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Article does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Model/Article.php
+
+		-
+			message: "#^Cannot call method getBruttoPrice\\(\\) on array\\|OxidEsales\\\\Eshop\\\\Core\\\\Price\\.$#"
+			count: 4
+			path: ../../src/Model/Basket.php
+
+		-
+			message: "#^Cannot cast mixed to float\\.$#"
+			count: 1
+			path: ../../src/Model/Basket.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Category\\:\\:getCategories\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Model/Category.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Category\\:\\:getTypes\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Model/Category.php
+
+		-
+			message: "#^Access to an undefined property OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order\\:\\:\\$oxorder__oxpaid\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Access to an undefined property OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order\\:\\:\\$oxorder__oxtransid\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Call to protected method _getCounterIdent\\(\\) of class OxidEsales\\\\EshopCommunity\\\\Application\\\\Model\\\\Order\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Call to protected method _markVouchers\\(\\) of class OxidEsales\\\\EshopCommunity\\\\Application\\\\Model\\\\Order\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Call to protected method _sendOrderByEmail\\(\\) of class OxidEsales\\\\EshopCommunity\\\\Application\\\\Model\\\\Order\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Call to protected method _setNumber\\(\\) of class OxidEsales\\\\EshopCommunity\\\\Application\\\\Model\\\\Order\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Call to protected method _setOrderStatus\\(\\) of class OxidEsales\\\\EshopCommunity\\\\Application\\\\Model\\\\Order\\.$#"
+			count: 4
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Call to protected method _updateNoticeList\\(\\) of class OxidEsales\\\\EshopCommunity\\\\Application\\\\Model\\\\Order\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Call to protected method _updateWishlist\\(\\) of class OxidEsales\\\\EshopCommunity\\\\Application\\\\Model\\\\Order\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Cannot access property \\$captures on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentCollection\\|null\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Cannot cast mixed to int\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 3
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order\\:\\:doExecutePayPalPayment\\(\\) has parameter \\$payPalOrderId with no type specified\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order\\:\\:finalizeOrder\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order\\:\\:finalizeOrder\\(\\) has parameter \\$recalculatingOrder with no type specified\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order\\:\\:finalizeOrder\\(\\) has parameter \\$user with no type specified\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order\\:\\:getOrderPaymentCapture\\(\\) has parameter \\$payPalOrderId with no type specified\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order\\:\\:getPayPalCheckoutOrder\\(\\) has parameter \\$payPalOrderId with no type specified\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order\\:\\:setTransId\\(\\) has parameter \\$sTransId with no type specified\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Offset 0 does not exist on array\\<OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Capture\\>\\|null\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order\\:\\:_executePayment\\(\\) calls parent\\:\\:_executePayment\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order\\:\\:delete\\(\\) calls parent\\:\\:delete\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order\\:\\:finalizeOrder\\(\\) calls parent\\:\\:finalizeOrder\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Parameter \\#1 \\$order of method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:doCapturePayPalOrder\\(\\) expects OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order, \\$this\\(OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order\\) given\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Parameter \\#1 \\$order of method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:doExecuteStandardPayment\\(\\) expects OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order, \\$this\\(OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order\\) given\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Parameter \\#1 \\$order of method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:doExecuteUAPMPayment\\(\\) expects OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order, \\$this\\(OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Order\\) given\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Parameter \\#1 \\$oxid of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Model\\\\BaseModel\\:\\:load\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Parameter \\#1 \\$sOxId of method OxidEsales\\\\EshopCommunity\\\\Application\\\\Model\\\\UserPayment\\:\\:load\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Parameter \\#2 \\$count of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Counter\\:\\:update\\(\\) expects int, mixed given\\.$#"
+			count: 1
+			path: ../../src/Model/Order.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 7
+			path: ../../src/Model/PayPalOrder.php
+
+		-
+			message: "#^Cannot cast mixed to float\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusOrder.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalPlusOrder\\:\\:_throwCouldNotLoadOrderError\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusOrder.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalPlusOrder\\:\\:getCurrency\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusOrder.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalPlusOrder\\:\\:getDateCreated\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusOrder.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalPlusOrder\\:\\:getOrderId\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusOrder.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalPlusOrder\\:\\:getPaymentId\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusOrder.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalPlusOrder\\:\\:getPaymentInstructions\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusOrder.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalPlusOrder\\:\\:getSaleId\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusOrder.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalPlusOrder\\:\\:getStatus\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusOrder.php
+
+		-
+			message: "#^Cannot cast mixed to float\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusPui.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 8
+			path: ../../src/Model/PayPalPlusPui.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalPlusPui\\:\\:loadByReferenceNumber\\(\\) has parameter \\$sReferenceNumber with no type specified\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusPui.php
+
+		-
+			message: "#^PHPDoc tag @param references unknown parameter\\: \\$sPaymentId$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusPui.php
+
+		-
+			message: "#^Cannot cast mixed to float\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusRefund.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalPlusRefund\\:\\:getCurrency\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusRefund.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalPlusRefund\\:\\:getDateCreated\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusRefund.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalPlusRefund\\:\\:getRefundId\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusRefund.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalPlusRefund\\:\\:getRefundObject\\(\\) should return object but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusRefund.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalPlusRefund\\:\\:getSaleId\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusRefund.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalPlusRefund\\:\\:getStatus\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusRefund.php
+
+		-
+			message: "#^Parameter \\#1 \\$string of function htmlspecialchars_decode expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusRefund.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalPlusRefundList\\:\\:loadRefundsBySaleId\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalPlusRefundList.php
+
+		-
+			message: "#^Cannot cast mixed to float\\.$#"
+			count: 4
+			path: ../../src/Model/PayPalSoapOrder.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 4
+			path: ../../src/Model/PayPalSoapOrder.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 4
+			path: ../../src/Model/PayPalSoapOrderComment.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalSoapOrderCommentList\\:\\:load\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalSoapOrderCommentList.php
+
+		-
+			message: "#^Cannot cast mixed to float\\.$#"
+			count: 2
+			path: ../../src/Model/PayPalSoapOrderPayment.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 8
+			path: ../../src/Model/PayPalSoapOrderPayment.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalSoapOrderPaymentList\\:\\:load\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalSoapOrderPaymentList.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 3
+			path: ../../src/Model/PayPalTrackingCarrier.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PayPalTrackingCarrierList\\:\\:loadTrackingCarriers\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Model/PayPalTrackingCarrierList.php
+
+		-
+			message: "#^Call to an undefined method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\Payment\\:\\:getId\\(\\)\\.$#"
+			count: 3
+			path: ../../src/Model/Payment.php
+
+		-
+			message: "#^Access to protected property OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PaymentGateway\\:\\:\\$_sLastError\\.$#"
+			count: 1
+			path: ../../src/Model/PaymentGateway.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:getOrderPaymentCapture\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Model/PaymentGateway.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:markOrderPaid\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Model/PaymentGateway.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:setOrderNumber\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Model/PaymentGateway.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:setTransId\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Model/PaymentGateway.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PaymentGateway\\:\\:executePayment\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Model/PaymentGateway.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PaymentGateway\\:\\:executePayment\\(\\) calls parent\\:\\:executePayment\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\PaymentGateway does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Model/PaymentGateway.php
+
+		-
+			message: "#^Parameter \\#1 \\$oxid of static method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\PayPalDefinitions\\:\\:isButtonPayment\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Model/PaymentGateway.php
+
+		-
+			message: "#^Parameter \\#2 \\$checkoutOrderId of method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:doCapturePayPalOrder\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Model/PaymentGateway.php
+
+		-
+			message: "#^Parameter \\#2 \\$checkoutOrderId of method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:doPatchPayPalOrder\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Model/PaymentGateway.php
+
+		-
+			message: "#^Access to an undefined property OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\State\\:\\:\\$_isLoaded\\.$#"
+			count: 1
+			path: ../../src/Model/State.php
+
+		-
+			message: "#^Call to an undefined method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\State\\:\\:assignRecord\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Model/State.php
+
+		-
+			message: "#^Call to an undefined method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\State\\:\\:buildSelectString\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Model/State.php
+
+		-
+			message: "#^Call to an undefined method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\State\\:\\:getViewName\\(\\)\\.$#"
+			count: 2
+			path: ../../src/Model/State.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\State\\:\\:loadByIdAndCountry\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Model/State.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\State\\:\\:loadByIdAndCountry\\(\\) has parameter \\$countryID with no type specified\\.$#"
+			count: 1
+			path: ../../src/Model/State.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\State\\:\\:loadByIdAndCountry\\(\\) has parameter \\$oxIsoAlpha2 with no type specified\\.$#"
+			count: 1
+			path: ../../src/Model/State.php
+
+		-
+			message: "#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Cannot access offset 'birthdate' on mixed\\.$#"
+			count: 3
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Cannot access offset 'day' on mixed\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Cannot access offset 'month' on mixed\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Cannot access offset 'phonenumber' on mixed\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Cannot access offset 'year' on mixed\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\User\\:\\:onLogin\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\User\\:\\:onOrderExecute\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\User\\:\\:onOrderExecute\\(\\) has parameter \\$basket with no type specified\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\User\\:\\:onOrderExecute\\(\\) has parameter \\$success with no type specified\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\User\\:\\:onLogin\\(\\) calls parent\\:\\:onLogin\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\User does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\User\\:\\:onOrderExecute\\(\\) calls parent\\:\\:onOrderExecute\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\User does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\User\\:\\:updateGetOrdersQuery\\(\\) calls parent\\:\\:updateGetOrdersQuery\\(\\) but OxidSolutionCatalysts\\\\PayPal\\\\Model\\\\User does not extend any class\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Parameter \\#1 \\$month of function checkdate expects int, mixed given\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Parameter \\#1 \\$numberToParse of method libphonenumber\\\\PhoneNumberUtil\\:\\:parse\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Parameter \\#1 \\$oxid of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Model\\\\BaseModel\\:\\:load\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Parameter \\#1 \\$year of method DateTimeImmutable\\:\\:setDate\\(\\) expects int, mixed given\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Parameter \\#2 \\$day of function checkdate expects int, mixed given\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Parameter \\#2 \\$defaultRegion of method libphonenumber\\\\PhoneNumberUtil\\:\\:parse\\(\\) expects string\\|null, mixed given\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Parameter \\#2 \\$month of method DateTimeImmutable\\:\\:setDate\\(\\) expects int, mixed given\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Parameter \\#3 \\$day of method DateTimeImmutable\\:\\:setDate\\(\\) expects int, mixed given\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Parameter \\#3 \\$year of function checkdate expects int, mixed given\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Phone\\:\\:\\$national_number \\(string\\) does not accept string\\|null\\.$#"
+			count: 1
+			path: ../../src/Model/User.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 1
+			path: ../../src/Service/Logger.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Payment\\:\\:\\$oxpayments__oxactive\\.$#"
+			count: 2
+			path: ../../src/Service/ModuleSettings.php
+
+		-
+			message: "#^Cannot cast mixed to int\\.$#"
+			count: 1
+			path: ../../src/Service/ModuleSettings.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 21
+			path: ../../src/Service/ModuleSettings.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\ModuleSettings\\:\\:getPaymentFailureThreshold\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Service/ModuleSettings.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\ModuleSettings\\:\\:getSupportedLocalesCommaSeparated\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Service/ModuleSettings.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\ModuleSettings\\:\\:save\\(\\) has parameter \\$value with no type specified\\.$#"
+			count: 1
+			path: ../../src/Service/ModuleSettings.php
+
+		-
+			message: "#^Parameter \\#1 \\$sShipSet of method OxidEsales\\\\EshopCommunity\\\\Application\\\\Model\\\\DeliverySetList\\:\\:getDeliverySetData\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Service/ModuleSettings.php
+
+		-
+			message: "#^Parameter \\#3 \\$oBasket of method OxidEsales\\\\EshopCommunity\\\\Application\\\\Model\\\\DeliverySetList\\:\\:getDeliverySetData\\(\\) expects float, OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Basket given\\.$#"
+			count: 1
+			path: ../../src/Service/ModuleSettings.php
+
+		-
+			message: "#^Cannot call method fetch\\(\\) on Doctrine\\\\DBAL\\\\ForwardCompatibility\\\\Result\\|int\\|string\\.$#"
+			count: 4
+			path: ../../src/Service/OrderRepository.php
+
+		-
+			message: "#^Cannot call method fetchAllAssociative\\(\\) on Doctrine\\\\DBAL\\\\ForwardCompatibility\\\\Result\\|int\\|string\\.$#"
+			count: 1
+			path: ../../src/Service/OrderRepository.php
+
+		-
+			message: "#^Cannot cast mixed to int\\.$#"
+			count: 1
+			path: ../../src/Service/OrderRepository.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 4
+			path: ../../src/Service/OrderRepository.php
+
+		-
+			message: "#^Parameter \\#1 \\$oxid of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Model\\\\BaseModel\\:\\:load\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Service/OrderRepository.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\User\\:\\:\\$oxuser__oscpaypalcustomerid\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:hasOrderNumber\\(\\)\\.$#"
+			count: 2
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:isPayPalOrderCompleted\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:markOrderPaid\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:savePuiInvoiceNr\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:setOrderNumber\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:setTransId\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Cannot access property \\$authorizations on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentCollection\\|null\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Cannot access property \\$captures on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentCollection\\|null\\.$#"
+			count: 2
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Cannot access property \\$card on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentSourceResponse\\|null\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Cannot access property \\$customer on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\VaultResponse\\|null\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Cannot access property \\$paypal on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaymentSourceResponse\\|null\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Cannot access property \\$status on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\VaultResponse\\|null\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Cannot access property \\$vault on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\CardAttributesResponse\\|null\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Cannot access property \\$vault on OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\PaypalWalletAttributesResponse\\|null\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Dead catch \\- Exception is never thrown in the try block\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:doCreatePayPalOrder\\(\\) should return OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Order but returns array\\|OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Order\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:doExecuteStandardPayment\\(\\) has parameter \\$intent with no type specified\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:getCustomIdParameter\\(\\) should return string but returns mixed\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:getCustomIdParameter\\(\\) should return string but returns string\\|false\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:getPayPalCheckoutOrder\\(\\) has no return type specified\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Offset 0 does not exist on array\\<OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\AuthorizationWithAdditionalData\\>\\|null\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Offset 0 does not exist on array\\<OxidSolutionCatalysts\\\\PayPalApi\\\\Model\\\\Orders\\\\Capture\\>\\|null\\.$#"
+			count: 2
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^PHPDoc tag @return with type mixed is not subtype of native type string\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^PHPDoc tag @var has invalid value \\(\\$result Order\\)\\: Unexpected token \"\\$result\", expected type at offset 9$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Parameter \\#1 \\$exception of method OxidEsales\\\\EshopCommunity\\\\Core\\\\UtilsView\\:\\:addErrorToDisplay\\(\\) expects OxidEsales\\\\Eshop\\\\Core\\\\Contract\\\\IDisplayError\\|OxidEsales\\\\Eshop\\\\Core\\\\Exception\\\\StandardException\\|string, array\\|string given\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Parameter \\#1 \\$oxid of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Model\\\\BaseModel\\:\\:load\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Parameter \\#2 \\.\\.\\.\\$values of function sprintf expects bool\\|float\\|int\\|string\\|null, mixed given\\.$#"
+			count: 2
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Parameter \\#4 \\$status of method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:trackPayPalOrder\\(\\) expects string, string\\|null given\\.$#"
+			count: 3
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Parameter \\#5 \\$payPalTransactionId of method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:trackPayPalOrder\\(\\) expects string, string\\|null given\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\Payment\\:\\:\\$logger has no type specified\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Variable \\$payPalOrder in PHPDoc tag @var does not exist\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Variable \\$payPalOrderId might not be defined\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Variable \\$paypalOrder in PHPDoc tag @var does not exist\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Variable \\$redirectLink might not be defined\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Variable \\$result might not be defined\\.$#"
+			count: 1
+			path: ../../src/Service/Payment.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\SCAValidator\\:\\:\\$okToProceed has no type specified\\.$#"
+			count: 1
+			path: ../../src/Service/SCAValidator.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Payment\\:\\:\\$oxpayments__oxactive\\.$#"
+			count: 1
+			path: ../../src/Service/StaticContent.php
+
+		-
+			message: "#^Cannot access offset 'oxid' on mixed\\.$#"
+			count: 2
+			path: ../../src/Service/StaticContent.php
+
+		-
+			message: "#^Cannot call method fetchAll\\(\\) on Doctrine\\\\DBAL\\\\ForwardCompatibility\\\\Result\\|int\\|string\\.$#"
+			count: 1
+			path: ../../src/Service/StaticContent.php
+
+		-
+			message: "#^Property OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\StaticContent\\:\\:\\$moduleSettings is never read, only written\\.$#"
+			count: 1
+			path: ../../src/Service/StaticContent.php
+
+		-
+			message: "#^Variable \\$result might not be defined\\.$#"
+			count: 1
+			path: ../../src/Service/StaticContent.php
+
+		-
+			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\State\\:\\:loadByIdAndCountry\\(\\)\\.$#"
+			count: 1
+			path: ../../src/Service/UserRepository.php
+
+		-
+			message: "#^Cannot call method fetch\\(\\) on Doctrine\\\\DBAL\\\\ForwardCompatibility\\\\Result\\|int\\|string\\.$#"
+			count: 1
+			path: ../../src/Service/UserRepository.php
+
+		-
+			message: "#^Cannot cast mixed to string\\.$#"
+			count: 3
+			path: ../../src/Service/UserRepository.php
+
+		-
+			message: "#^Parameter \\#1 \\$oxid of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Model\\\\BaseModel\\:\\:load\\(\\) expects string, mixed given\\.$#"
+			count: 1
+			path: ../../src/Service/UserRepository.php
