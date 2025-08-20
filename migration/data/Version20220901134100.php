@@ -38,26 +38,20 @@ final class Version20220901134100 extends AbstractMigration
      */
     protected function updatePayPalOrderTable(Schema $schema): void
     {
+        // Check if table exists first
+        if (!$schema->hasTable('oscpaypal_order')) {
+            return;
+        }
+
         $order = $schema->getTable('oscpaypal_order');
+
+        // Fix: Replace changeColumn() with raw SQL using addSql()
         if ($order->hasColumn('OSCPAYPALTRANSACTIONID')) {
-            $order->changeColumn(
-                'OSCPAYPALTRANSACTIONID',
-                [
-                    'notnull' => true,
-                    'default' => ''
-                ]
-            );
+            $this->addSql('ALTER TABLE oscpaypal_order MODIFY COLUMN OSCPAYPALTRANSACTIONID VARCHAR(255) NOT NULL DEFAULT ""');
         }
 
         if ($order->hasColumn('OSCPAYPALSTATUS')) {
-            $order->changeColumn(
-                'OSCPAYPALSTATUS',
-                [
-                    'columnDefinition' => 'varchar(255) collate latin1_general_ci',
-                    'notnull' => true,
-                    'default' => ''
-                ]
-            );
+            $this->addSql('ALTER TABLE oscpaypal_order MODIFY COLUMN OSCPAYPALSTATUS VARCHAR(255) COLLATE latin1_general_ci NOT NULL DEFAULT ""');
         }
     }
 }

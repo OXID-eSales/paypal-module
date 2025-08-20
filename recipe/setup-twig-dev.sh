@@ -82,8 +82,20 @@ $PROJECT_ROOT/source/extensions/paypal/recipe/parts/shared/require_twig_componen
 echo "Adding require_theme_dev..."
 $PROJECT_ROOT/source/extensions/paypal/recipe/parts/shared/require_theme_dev.sh -t"apex" -b"b-8.0.x"
 
-echo "Adding demodata dependancies..."
+echo "Adding demodata dependencies..."
 $PROJECT_ROOT/source/extensions/paypal/recipe/parts/shared/require_demodata_package.sh -e"${edition}" -b"b-8.0.x"
+
+echo "Adding OXID eShop PayPal module dependencies to composer.json"
+
+docker compose exec -T \
+  php composer config repositories.oxid-solution-catalysts/paypal \
+  --json '{"type":"path", "url":"./extensions/paypal", "options": {"symlink": true}}' || exit 1
+docker compose exec -T php composer require oxid-solution-catalysts/paypal-module:* --no-update || exit 1
+
+docker compose exec -T \
+  php composer config repositories.oxid-solution-catalysts/paypal-client \
+  --json '{"type":"git", "url":"https://github.com/OXID-eSales/paypal-client" }'
+docker compose exec -T php composer require oxid-solution-catalysts/paypal-client:* --no-update || exit 1
 
 echo "Run composer update to install all dependencies..."
 docker compose exec -T php composer update --no-interaction
@@ -97,26 +109,14 @@ docker compose exec -T php bin/oe-console oe:setup:demodata
 echo "Turning on twig Apex theme..."
 docker compose exec -T php bin/oe-console oe:theme:activate apex
 
-echo "Adding OXID eShop PayPal module dependancies to composer.json"
-
-docker compose exec -T \
-  php composer config repositories.oxid-solution-catalysts/paypal \
-  --json '{"type":"path", "url":"./extensions/paypal", "options": {"symlink": true}}' || exit 1
-docker compose exec -T php composer require oxid-solution-catalysts/paypal-module:* --no-update || exit 1
-
-docker compose exec -T \
-  php composer config repositories.oxid-solution-catalysts/paypal-client \
-  --json '{"type":"git", "url":"https://github.com/OXID-eSales/paypal-client" }'
-docker compose exec -T php composer require oxid-solution-catalysts/paypal-client:* --no-update || exit 1
-
-echo "Running composer update to install OXID eShop PayPal module dependencies"
-docker compose exec -T php composer update --no-interaction
-
 echo "Installing OXID eShop PayPal module..."
 docker compose exec -T php bin/oe-console oe:module:install extensions/paypal
 
 echo "Activating OXID eShop PayPal module..."
 docker compose exec -T php bin/oe-console oe:module:activate osc_paypal
+
+echo "Creating admin and password (noreply@oxid-esales.com admin)..."
+docker compose exec -T php bin/oe-console oe:admin:create noreply@oxid-esales.com admin
 
 echo "Setting up OXID eShop PayPal module..."
 $PROJECT_ROOT/source/extensions/paypal/recipe/parts/shared/create_admin.sh
@@ -135,6 +135,6 @@ echo -e "\033[1;37m\033[1;42mYou can now access your shop at http://localhost.lo
 echo -e "\033[1;37m\033[1;42mShop admin at http://localhost.local/admin\033[0m\n"
 echo -e "\033[1;37m\033[1;42mYou can access the Adminer at http://localhost.local:8080/\033[0m\n"
 
-#rm -rf "$MODULE_ROOT"
+rm -rf "$MODULE_ROOT"
 
 exit 0

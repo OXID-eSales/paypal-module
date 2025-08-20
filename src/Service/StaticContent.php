@@ -22,18 +22,10 @@ use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInt
 //NOTE: later we will do this on module installation, for now on first activation
 class StaticContent
 {
-    /** @var QueryBuilderFactoryInterface */
-    private $queryBuilderFactory;
-
-    /** @var ModuleSettings */
-    private $moduleSettings;
-
     public function __construct(
-        QueryBuilderFactoryInterface $queryBuilderFactory,
-        ModuleSettings $moduleSettings
+        private QueryBuilderFactoryInterface $queryBuilderFactory,
+        private ModuleSettings $moduleSettings
     ) {
-        $this->queryBuilderFactory = $queryBuilderFactory;
-        $this->moduleSettings = $moduleSettings;
     }
 
     public function ensurePayPalPaymentMethods(): void
@@ -174,8 +166,8 @@ class StaticContent
             ->select('oxid')
             ->from('oxdeliveryset')
             ->where('oxactive = 1')
-            ->execute()
-            ->fetchAll(PDO::FETCH_ASSOC);
+            ->executeQuery()
+            ->fetchAllAssociative();
 
         foreach ($fromDb as $row) {
             $result[$row['oxid']] = $row['oxid'];

@@ -40,8 +40,8 @@ jobs:
 
       - name: Download detagen
         run: |
-          git clone --depth 1 https://${{ secrets.DATGEN_GH_TOKEN }}@github.com/OXID-eSales/datagen.git source/extensions/datagen --branch=b-.0.x
-8
+          git clone --depth 1 https://${{ secrets.DATGEN_GH_TOKEN }}@github.com/OXID-eSales/datagen.git source/extensions/datagen --branch=b-8.0.x
+
       - name: Cache current installation
         uses: actions/cache@v4
         with:
@@ -114,7 +114,7 @@ jobs:
         continue-on-error: true
         run: |
           mkdir -p source/var/configuration/environment/shops/1/modules
-          echo "${{ secrets.MODULE_SETTINGS_OXID7 }}" > source/var/configuration/environment/shops/1/modules/osc_paypal.yaml
+          echo "${{ secrets.MODULE_SETTINGS_OXID8 }}" > source/var/configuration/environment/shops/1/modules/osc_paypal.yaml
           echo "${{ secrets.MODULE_ENV }}" > source/vendor/${{ env.PACKAGE_NAME }}/tests/.env
           docker compose exec -T php php bin/oe-console oe:module:activate osc_paypal
 
