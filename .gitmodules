@@ -1,3 +1,4 @@
 [submodule "recipe/parts"]
 	path = recipe/parts
 	url = https://github.com/OXID-eSales/docker-eshop-sdk-recipe-parts.git
+	branch = detached

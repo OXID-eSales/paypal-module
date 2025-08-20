@@ -33,15 +33,15 @@ jobs:
           ls -la ./
 
       - name: Clone testing environment
-        run: git clone https://github.com/OXID-eSales/docker-eshop-sdk.git .
+        run: git clone https://github.com/OXID-eSales/docker-eshop-sdk.git . --branch b-8.0.x --single-branch
 
       - name: Clone the shop
-        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-7.0.x --single-branch source
+        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-8.0.x --single-branch source
 
       - name: Download detagen
         run: |
-          git clone --depth 1 https://${{ secrets.DATGEN_GH_TOKEN }}@github.com/OXID-eSales/datagen.git source/extensions/datagen --branch=b-7.0.x
-
+          git clone --depth 1 https://${{ secrets.DATGEN_GH_TOKEN }}@github.com/OXID-eSales/datagen.git source/extensions/datagen --branch=b-.0.x
+8
       - name: Cache current installation
         uses: actions/cache@v4
         with:
@@ -65,20 +65,6 @@ jobs:
           perl -pi\
             -e 's#/var/www/#/var/www/source/#g;'\
             containers/httpd/project.conf
-
-      - name: Prepare shop configuration
-        run: |
-          cp source/source/config.inc.php.dist source/source/config.inc.php
-          sed -i "1s+^+SetEnvIf Authorization "\(.*\)" HTTP_AUTHORIZATION=\$1\n\n+" source/source/.htaccess
-          sed -i -e 's/<dbHost>/mysql/'\
-                 -e 's/<dbUser>/root/'\
-                 -e 's/<dbName>/example/'\
-                 -e 's/<dbPwd>/root/'\
-                 -e 's/<dbPort>/3306/'\
-                 -e 's/<sShopURL>/https:\/\/${{ secrets.NGROK_CUSTOM_DOMAIN }}\//'\
-                 -e 's/<sShopDir>/\/var\/www\/source\//'\
-                 -e 's/<sCompileDir>/\/var\/www\/source\/tmp\//'\
-              source/source/config.inc.php
 
       - name: Start containers
         run: |
@@ -104,22 +90,22 @@ jobs:
             php composer config repositories.oxid-esales/oxideshop-demodata-ce \
             --json '{"type":"git", "url":"https://github.com/OXID-eSales/oxideshop_demodata_ce"}'
           docker compose exec -T php composer require oxid-esales/oxideshop-demodata-ce:dev-master --no-update
-          docker compose exec -T php composer require oxid-esales/apex-theme:dev-b-7.0.x --no-update
+          docker compose exec -T php composer require oxid-esales/apex-theme:dev-b-8.0.x --no-update
 
       - name: Install datagen
         run: |
           docker compose exec -T \
           php composer config repositories.oxid-esales/datagen \
           --json '{"type":"path", "url":"./extensions/datagen", "options": { "symlink": true } }'
-          docker compose exec -T php composer require oxid-esales/datagen:dev-b-7.0.x --no-update
+          docker compose exec -T php composer require oxid-esales/datagen:dev-b-8.0.x --no-update
 
       - name: Install dependencies and reset shop
         run: |
           docker compose exec -T php composer update --no-interaction
-          docker compose exec -T php bin/oe-console oe:database:reset \
-            --db-host=mysql --db-port=3306 --db-name=example --db-user=root --db-password=root --force
+          docker compose exec -T php bin/oe-console oe:setup:shop
           docker compose exec -T php bin/oe-console oe:setup:demodata
           docker compose exec -T php bin/oe-console oe:theme:activate apex
+          docker compose exec -T php bin/oe-console oe:module:install test-module
           docker compose exec -T php bin/oe-console oe:module:activate osc_paypal
           ls -la
           ls -la source

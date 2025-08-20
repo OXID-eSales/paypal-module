@@ -31,8 +31,6 @@ services:
   OxidSolutionCatalysts\PayPal\Logger\Factory:
     class: OxidEsales\EshopCommunity\Internal\Framework\Logger\Factory\MonologLoggerFactory
     public: true
-    arguments:
-      $configuration: '@OxidSolutionCatalysts\PayPal\Logger\Configuration'
 
   OxidSolutionCatalysts\PayPal\Logger\Configuration:
     class: OxidEsales\EshopCommunity\Internal\Framework\Logger\Configuration\MonologConfiguration

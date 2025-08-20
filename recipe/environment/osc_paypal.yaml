@@ -1,4 +1,6 @@
 id: osc_paypal
+version: v8.0.0
+activated: true
 moduleSettings:
   oscPayPalSandboxMode:
     type: bool

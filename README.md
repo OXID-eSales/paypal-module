@@ -26,11 +26,11 @@ PayPal checkout integration for OXID eShop 6.1 and above.
 
 1. Download SDK
     ```
-     echo oxidshop && git clone git@github.com:OXID-eSales/docker-eshop-sdk.git $_ && cd $_
+     echo oxidshop && git clone git@github.com:OXID-eSales/docker-eshop-sdk.git $_  --branch=b-8.0.x && cd $_
     ```
 2. Download Paypal Module into temporary folder 
     ```
-     git clone --recurse-submodules git@github.com:OXID-eSales/paypal-module.git extensions/paypal --branch=b-7.0.x
+     git clone --recurse-submodules git@github.com:OXID-eSales/paypal-module.git extensions/paypal --branch=b-8.0.x
     ```
   
 3. Check if you have all submodules:
@@ -56,13 +56,6 @@ PayPal checkout integration for OXID eShop 6.1 and above.
 
   ```
 
-  * SMARTY version is available only for OXID 7.0.x
-    ```
-    ./extensions/paypal/recipe/setup-smarty-dev.sh
-    ```
-    
-
-
 
 ## Limitations
 
@@ -70,8 +63,8 @@ PayPal checkout integration for OXID eShop 6.1 and above.
 
 ## Merging Strategy
 
-* The b-6.3.x branch is compatible with OXID6.3 to 6.5 and will not be merged automatically into the b-7.0.x branch
-* if something changes in the b-6.3.x main branch, it must be ported to the b-7.0.x branch
+* The b-6.3.x branch is compatible with OXID6.3 to 6.5 and will not be merged automatically into the b-7.0.x branch, b-7.0.x -> b-7.1.x -> b-7.2.x -> ... -> b-8.0.y
+* if something changes in the b-6.3.x main branch, it must be ported to the b-7.0.x branch and up
 
 ## Running tests
 
