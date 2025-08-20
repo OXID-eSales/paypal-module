@@ -118,9 +118,6 @@ docker compose exec -T php bin/oe-console oe:module:activate osc_paypal
 echo "Creating admin and password (noreply@oxid-esales.com admin)..."
 docker compose exec -T php bin/oe-console oe:admin:create noreply@oxid-esales.com admin
 
-echo "Setting up OXID eShop PayPal module..."
-$PROJECT_ROOT/source/extensions/paypal/recipe/parts/shared/create_admin.sh
-
 echo "IDE tweaking: Register all related project packages git repositories"
 mkdir -p .idea; mkdir -p source/.idea; cp "$PROJECT_ROOT/source/extensions/paypal/recipe/parts/bases/vcs.xml.base" .idea/vcs.xml
 perl -pi\
