@@ -40,7 +40,7 @@ jobs:
 
       - name: Download detagen
         run: |
-          git clone --depth 1 https://${{ secrets.DATGEN_GH_TOKEN }}@github.com/OXID-eSales/datagen.git source/extensions/datagen --branch=b-8.0.x
+          git clone --depth 1 https://${{ secrets.DATGEN_GH_TOKEN }}@github.com/OXID-eSales/datagen.git source/extensions/datagen --branch=b-8.0.x-compatibility
 
       - name: Cache current installation
         uses: actions/cache@v4
