@@ -135,6 +135,6 @@ echo -e "\033[1;37m\033[1;42mYou can now access your shop at http://localhost.lo
 echo -e "\033[1;37m\033[1;42mShop admin at http://localhost.local/admin\033[0m\n"
 echo -e "\033[1;37m\033[1;42mYou can access the Adminer at http://localhost.local:8080/\033[0m\n"
 
-#rm -rf "$MODULE_ROOT"
+rm -rf "$MODULE_ROOT"
 
 exit 0
