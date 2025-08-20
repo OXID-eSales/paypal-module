@@ -97,9 +97,22 @@ final class Version20220112120100 extends AbstractMigration
                 ['columnDefinition' => 'timestamp default current_timestamp on update current_timestamp']
             );
         }
-        if (!$order->hasPrimaryKey('OXID')) {
-            $order->setPrimaryKey(['OXID']);
+
+        // Fixed: Replace hasPrimaryKey() with proper primary key check
+        try {
+            $primaryKey = $order->getPrimaryKey();
+            if ($primaryKey === null || !in_array('OXID', $primaryKey->getColumns())) {
+                $order->setPrimaryKey(['OXID']);
+            }
+        } catch (\Exception $e) {
+            // If there's any issue checking the primary key, just try to set it
+            try {
+                $order->setPrimaryKey(['OXID']);
+            } catch (\Exception $setPrimaryKeyException) {
+                // Primary key might already exist, ignore the exception
+            }
         }
+
         if (!$order->hasIndex('ORDERID_PAYPALORDERID')) {
             $order->addUniqueIndex(['OXORDERID', 'OXPAYPALORDERID'], 'ORDERID_PAYPALORDERID');
         }

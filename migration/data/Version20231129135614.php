@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
+ */
+
 declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Migrations;
@@ -28,21 +33,20 @@ final class Version20231129135614 extends AbstractMigration
 
     protected function updateUserTable(Schema $schema)
     {
-        $user = $schema->getTable('oxuser');
-        if (!$user->hasColumn('OSCPAYPALVAULTSETUPTOKEN')) {
-            $user->addColumn(
-                'OSCPAYPALVAULTSETUPTOKEN',
-                'string',
-                ['columnDefinition' => 'char(32) collate latin1_general_ci default NULL']
-            );
+        // Check if table exists first
+        if (!$schema->hasTable('oxuser')) {
+            return;
         }
+
+        $user = $schema->getTable('oxuser');
+
+        // Add columns using raw SQL to avoid type issues
+        if (!$user->hasColumn('OSCPAYPALVAULTSETUPTOKEN')) {
+            $this->addSql('ALTER TABLE oxuser ADD COLUMN OSCPAYPALVAULTSETUPTOKEN CHAR(32) COLLATE latin1_general_ci DEFAULT NULL');
+        }
+
         if (!$user->hasColumn('OSCPAYPALCUSTOMERID')) {
-            $user->addColumn(
-                'OSCPAYPALCUSTOMERID',
-                'string',
-                ['columnDefinition' => 'char(32) collate latin1_general_ci default NULL',
-                 'comment' => 'PayPal Customer ID used for Vaulting ']
-            );
+            $this->addSql('ALTER TABLE oxuser ADD COLUMN OSCPAYPALCUSTOMERID CHAR(32) COLLATE latin1_general_ci DEFAULT NULL COMMENT "PayPal Customer ID used for Vaulting"');
         }
     }
 }

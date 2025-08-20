@@ -35,7 +35,7 @@ final class Version20230316122302 extends AbstractMigration
     }
 
     /**
-     * update paypal order table
+     * create paypal tracking carrier table
      */
     protected function createPayPalTrackingCarrierTable(Schema $schema): void
     {
@@ -89,9 +89,19 @@ final class Version20230316122302 extends AbstractMigration
                 ['columnDefinition' => 'timestamp default current_timestamp on update current_timestamp']
             );
         }
-        if (!$carrierTable->hasPrimaryKey('OXID')) {
-            $carrierTable->setPrimaryKey(['OXID']);
+
+        try {
+            $primaryKey = $carrierTable->getPrimaryKey();
+            if ($primaryKey === null || !in_array('OXID', $primaryKey->getColumns())) {
+                $carrierTable->setPrimaryKey(['OXID']);
+            }
+        } catch (\Exception $e) {
+            try {
+                $carrierTable->setPrimaryKey(['OXID']);
+            } catch (\Exception $setPrimaryKeyException) {
+            }
         }
+
         if (!$carrierTable->hasIndex('OXKEY')) {
             $carrierTable->addUniqueIndex(['OXKEY'], 'OXKEY');
         }
