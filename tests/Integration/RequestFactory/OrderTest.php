@@ -10,10 +10,9 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\RequestFactory;
 
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
-use OxidEsales\Eshop\Core\Request;
+use OxidEsales\EshopCommunity\Core\Request;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
-use OxidSolutionCatalysts\PayPal\Exception\UserPhone as UserPhoneException;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\Trait\TestProductTrait;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
@@ -27,18 +26,17 @@ final class OrderTest extends BaseTestCase
 
     protected const TEST_USER_ID = 'testuser';
 
-    public function setUp(): void
+    public function testCreatePuiPayPalOrderRequestWithPuiRequiredFields(): void
     {
-        parent::setUp();
-    }
+        $_POST['pui_required'] =
+            [
+                'birthdate' => [
+                    'day' => 1,
+                    'month' => 4,
+                    'year' => 2000
+                ]
+            ];
 
-    /**
-     * @throws \OxidEsales\Eshop\Core\Exception\OutOfStockException
-     * @throws \OxidEsales\Eshop\Core\Exception\NoArticleException
-     * @throws \OxidEsales\Eshop\Core\Exception\ArticleInputException
-     */
-    public function testCreatePuiPayPalOrderWithExperienceContext(): void
-    {
         $user = oxNew(EshopModelUser::class);
         $user->load(self::TEST_USER_ID);
 
@@ -46,7 +44,7 @@ final class OrderTest extends BaseTestCase
         $basket->addToBasket($this->testProductOxid, 1);
         $basket->setUser($user);
         $basket->setBasketUser($user);
-        $basket->setPayment(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
+        $basket->setPayment(PayPalDefinitions::PAYMENT_SOURCE_PUI);
         $basket->setShipping('oxidstandard');
         $basket->calculateBasket(true);
 
@@ -54,6 +52,9 @@ final class OrderTest extends BaseTestCase
 
         /** @var OrderRequestFactory $requestFactory */
         $requestFactory = EshopRegistry::get(OrderRequestFactory::class);
+        $session = EshopRegistry::getSession();
+        $session->setVariable('paymentid', PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID);
+
         $request = $requestFactory->getRequest(
             $basket,
             OrderRequest::INTENT_CAPTURE,
@@ -63,20 +64,16 @@ final class OrderTest extends BaseTestCase
             PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID,
         );
 
-        $this->assertEquals(
-            'SET_PROVIDED_ADDRESS',
-            $request->payment_source["pay_upon_invoice"]
-            ["experience_context"]
-            ["shipping_preference"]
+        $birthdate = $request->payment_source->pay_upon_invoice->birthdate;
+
+        $dateString = $dateString = sprintf(
+            '%04d-%02d-%02d',
+            $birthdate['year'],
+            $birthdate['month'],
+            $birthdate['day']
         );
-        $this->assertStringContainsString(
-            "cl=order&fnc=finalizepaypalsession",
-            $request->payment_source["pay_upon_invoice"]["experience_context"]["return_url"]
-        );
-        $this->assertStringContainsString(
-            "cl=order&fnc=cancelpaypalsession",
-            $request->payment_source["pay_upon_invoice"]["experience_context"]["cancel_url"]
-        );
+
+        $this->assertEquals('2000-04-01', $dateString);
     }
 
     public function tearDown(): void

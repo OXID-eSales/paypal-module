@@ -75,7 +75,10 @@ docker compose exec -T \
   --json '{"type":"git", "url":"https://github.com/OXID-eSales/oxideshop_demodata_ee"}'
 docker compose exec -T php composer require oxid-esales/oxideshop-demodata-ee:dev-b-7.0.x --no-update
 
-# Install all preconfigured dependencies
+echo "composer require symfony/dotenv"
+docker compose exec -T php composer require symfony/dotenv --no-interaction --no-update
+
+echo "composer update"
 docker compose exec -T php composer update --no-interaction
 
 $PROJECT_ROOT/source/extensions/paypal/recipe/parts/shared/setup_database.sh

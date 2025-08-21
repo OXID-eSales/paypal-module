@@ -818,6 +818,7 @@ class Payment
 
         $payPalOrderId = '';
         try {
+            echo "aaaaaaaa";
             $result = $this->doCreatePayPalOrder(
                 $basket,
                 Constants::PAYPAL_ORDER_INTENT_CAPTURE,
@@ -827,10 +828,12 @@ class Payment
                 $payPalClientMetadataId,
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
+            var_dump($result);
             if ($result) {
                 $payPalOrderId = $result->id;
             }
         } catch (Exception $exception) {
+            echo "bbbbbbbb " . $exception->getMessage();
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_GENERIC);
             if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug' || $this->moduleSettingsService->getPayPalDebugLevel() === 'error') {
                 $this->logger->log('error', 'Error on pui order creation call.', [$exception]);

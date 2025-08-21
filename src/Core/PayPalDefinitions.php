@@ -527,6 +527,10 @@ final class PayPalDefinitions
             self::PAYMENT_SOURCE_CARD => 'oscpaypal_acdc'
         ];
 
+        if ($oxid === self::PAYMENT_SOURCE_PUI) {
+            $oxid = self::PUI_PAYPAL_PAYMENT_ID;
+        }
+
         $return = array_key_exists($oxid, self::PAYPAL_DEFINTIONS) ?
             self::PAYPAL_DEFINTIONS[$oxid]['paymentsource'] :
             self::PAYPAL_DEFINTIONS[$mapping[$oxid]]['paymentsource'];

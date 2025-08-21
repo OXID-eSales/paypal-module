@@ -102,7 +102,6 @@ class OrderRequestFactory
 
         $paymentId = Registry::getSession()->getVariable('paymentid');
         $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName($paymentId);
-
         $request->payment_source = $this->getSimplePaymentSource($basket, $paymentSourceId);
 
         if (PayPalDefinitions::isUAPMPayment($paymentId)) {
@@ -147,7 +146,7 @@ class OrderRequestFactory
         }
 
         if ($paymentSource === PayPalDefinitions::PAYMENT_SOURCE_PUI) {
-            /** @var PaymentSource $puiPaymentSource */
+            /** @var PuiPaymentSource $puiPaymentSource */
             $puiPaymentSource = $this->getPuiPaymentSource();
             $request->payment_source = $puiPaymentSource;
         }
@@ -155,13 +154,13 @@ class OrderRequestFactory
         return $request;
     }
 
-    protected function getSimplePaymentSource(Basket $basket, string $requestName): PaymentSource
+    public function getSimplePaymentSource(Basket $basket, string $requestName): PaymentSource
     {
         $userName = $this->getUserNameFromBasket($basket);
         $country = $this->getCountryFromBasket($basket);
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
 
-        return new PaymentSource([
+        $paymentData = [
             $requestName => [
                 "attributes" => [
                     "verification" => [
@@ -171,7 +170,13 @@ class OrderRequestFactory
                 'name' => $userName,
                 'country_code' => $country->getFieldData('oxisoalpha2')
             ]
-        ]);
+        ];
+
+        if (array_key_exists('pui_required', $_POST) && is_array($_POST['pui_required'])) {
+            $paymentData[$requestName] = array_merge($paymentData[$requestName], $_POST['pui_required']);
+        }
+
+        return new PaymentSource($paymentData);
     }
 
     protected function getSimplePaymentSourceWithEMail(Basket $basket, string $requestName): PaymentSource
@@ -644,7 +649,7 @@ class OrderRequestFactory
                     "usage" => "SUBSEQUENT"
                 ];
             }
-            $request->payment_source = $newPaymentSource;
+            $request->payment_source = new PaymentSource($newPaymentSource);
 
         } elseif ($user) {
             //save during purchase
@@ -699,7 +704,7 @@ class OrderRequestFactory
         $newPaymentSource[$paymentSourceId]["experience_context"]["user_action"]
             = $userAction ?? self::USER_ACTION_PAY_NOW;
 
-        $request->payment_source = $newPaymentSource;
+        $request->payment_source = new PaymentSource($newPaymentSource);
         }
 
         //express payments
