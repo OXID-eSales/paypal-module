@@ -66,7 +66,7 @@ final class OrderTest extends BaseTestCase
 
         $birthdate = $request->payment_source->pay_upon_invoice->birthdate;
 
-        $dateString = $dateString = sprintf(
+        $dateString = sprintf(
             '%04d-%02d-%02d',
             $birthdate['year'],
             $birthdate['month'],

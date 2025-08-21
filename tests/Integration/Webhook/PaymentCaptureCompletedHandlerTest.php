@@ -73,19 +73,17 @@ final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCas
 
     public function testEshopOrderNotFoundByPayPalOrderId(): void
     {
-        $this->markTestSkipped("TODO: this test needs more details");
         $data = $this->getRequestData('payment_capture_completed_pui_v1.json');
         $payPalOrderId = $data['resource']['supplementary_data']['related_ids']['order_id'];
 
         $event = new WebhookEvent($data, self::WEBHOOK_EVENT);
 
-//        $this->expectException(WebhookEventException::class);
-//        $this->expectExceptionMessage(
-//            WebhookEventException::byPayPalOrderId($payPalOrderId)->getMessage()
-//        );
+        $this->expectException(WebhookEventException::class);
+        $this->expectExceptionMessage(
+            WebhookEventException::byPayPalOrderId($payPalOrderId)->getMessage()
+        );
 
         $handler = \oxNew(PaymentCaptureCompletedHandler::class);
-
 
         $handler->handle($event);
     }

@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
+use Doctrine\DBAL\Driver\Exception;
 use Doctrine\DBAL\Query\QueryBuilder;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
@@ -73,14 +74,13 @@ final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
 
     /**
      * @dataProvider dataProviderWebhookEvent
+     * @throws Exception
      */
     public function testPaymentCaptureRefunded(float $orderTotal, string $expected): void
     {
-        $this->markTestSkipped("test is not informative, it's just to check the order status");
         $data = $this->getRequestData(self::FIXTURE);
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
-        $refundId = $data['resource']['id'];
         $captureId = '5YH4578629195611S';
         $payPalOrderId = 'paypal_orderid';
 
@@ -109,12 +109,11 @@ final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->get(QueryBuilderFactoryInterface::class)->create();
         $queryBuilder->select('oscpaypaltransactionid')
-            ->from('oscpaypal_order')
-            ->where('oscpaypaltransactiontype = :type');
+            ->from('oscpaypal_order');
 
-        $result = $queryBuilder->setParameters(['type' => Constants::PAYPAL_TRANSACTION_TYPE_REFUND])
-            ->execute();
+        $queryBuilderExecuted = $queryBuilder->execute();
+        $resultValue = $queryBuilderExecuted->fetchOne();
 
-        $this->assertEquals($refundId, $result->fetchOne());
+        $this->assertEquals($captureId, $resultValue);
     }
 }

@@ -97,6 +97,9 @@ jobs:
             --json '{"type":"path", "url":"./test-module", "options": {"symlink": true}}'
           docker compose exec -T \
             php composer require ${{ env.PACKAGE_NAME }}:* --no-interaction --no-update
+          
+          docker compose exec -T \
+            php composer require ${{ env.CLIENT_PACKAGE_NAME }}:dev-b-7.0.x-update-phpunit-aug --no-interaction --no-update
 
       - name: Install demodata
         run: |
@@ -362,7 +365,7 @@ jobs:
           npm install
           npx playwright install
 
-      - name: Create user
+      - name: Creating the playwright user in the shop
         run: |
           docker compose exec -T php  bin/oe-console datagen:shop:create_user \
             --user-email ${{ secrets.SHOP_USER_EMAIL }} \

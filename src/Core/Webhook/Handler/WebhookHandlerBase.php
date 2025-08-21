@@ -42,7 +42,6 @@ abstract class WebhookHandlerBase
 
         //Depending on payment method, there might not be an order id in that result
         $payPalOrderId = $this->getPayPalOrderIdFromResource($eventPayload);
-
         if ($payPalOrderId !== '') {
             /** @var EshopModelOrder $order */
             $order = $this->getOrderByPayPalOrderId($payPalOrderId);

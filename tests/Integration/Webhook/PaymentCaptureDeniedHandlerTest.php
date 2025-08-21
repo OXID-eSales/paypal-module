@@ -24,12 +24,12 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
 
     public function testRequestMissingData(): void
     {
-        $event = new WebhookEvent([], static::WEBHOOK_EVENT);
+        $event = new WebhookEvent([], self::WEBHOOK_EVENT);
 
         $this->expectException(WebhookEventException::class);
         $this->expectExceptionMessage(WebhookEventException::mandatoryDataNotFound()->getMessage());
 
-        $handler = oxNew(static::HANDLER_CLASS);
+        $handler = oxNew(self::HANDLER_CLASS);
         $handler->handle($event);
     }
 
@@ -83,7 +83,7 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
             WebhookEventException::byPayPalOrderId($payPalOrderId)->getMessage()
         );
 
-        $handler = oxNew(static::HANDLER_CLASS);
+        $handler = oxNew(self::HANDLER_CLASS);
         $handler->handle($event);
     }
 
@@ -99,7 +99,7 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
         $event = new WebhookEvent($data, self::WEBHOOK_EVENT);
 
         // this state is when PayPal send the order completed webhook
-        $handler = oxNew(static::HANDLER_CLASS);
+        $handler = oxNew(self::HANDLER_CLASS);
         $handler->handle($event);
 
         // we now have two PayPal order entries

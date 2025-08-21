@@ -17,8 +17,8 @@ test.describe('Simple PayPal payment test', () => {
 
         await context.clearCookies();
         page = await context.newPage();
-        page.setDefaultTimeout(45000); // Increased timeout
-        page.setDefaultNavigationTimeout(45000); // Increased timeout
+        page.setDefaultTimeout(45000);
+        page.setDefaultNavigationTimeout(45000);
         await page.goto(process.env.BASE_URL);
     });
 
