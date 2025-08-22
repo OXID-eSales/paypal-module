@@ -37,6 +37,7 @@ $aLang = [
     'OSC_PAYPAL_PUI_PHONENUMBER'                   => 'Phoneno.',
     'OSC_PAYPAL_PUI_PHONENUMBER_PLACEHOLDER'       => '+49 30 123456789',
     'OSC_PAYPAL_PUI_PLEASE_RETRY'                  => 'Please enter your data once again.',
+    'OSC_PAYPAL_PUI_AGE_WARNING'                   => 'You must be at least 18 years old to make a purchase on account.',
     'PAYPAL_PAYMENT_ERROR_PUI_GENRIC'              => 'Customer data validation for PayPal Pay Upon Invoice with RatePay failed',
     'PUI_PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED'   => 'The combination of your name and address could not be validated for PayPal Pay Upon Invoice. Please correct your data and try again. You can find further information in the <a href="https://www.ratepay.com/en/ratepay-data-privacy-statement/">Ratepay Data Privacy Statement</a> or you can contact Ratepay using this <a href="https://www.ratepay.com/en/contact/">contact form</a>.',
     'PUI_PAYMENT_SOURCE_DECLINED_BY_PROCESSOR'     => 'It is not possible to use the selected payment method PayPal Pay Upon Invoice. This decision is based on automated data processing. You can find further information in the  <a href="https://www.ratepay.com/en/ratepay-data-privacy-statement/">Ratepay Data Privacy Statement</a> or you can contact Ratepay using this <a href="https://www.ratepay.com/en/contact/">contact form</a>.',
