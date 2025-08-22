@@ -49,13 +49,31 @@ var paypalGetSubmitButton = function (){
     return button;
 }
 
+// Function for age calculation
+function calculateAge(birthDate) {
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+        age--;
+    }
+
+    return age;
+}
+
 let button = paypalGetSubmitButton();
 if (button !== null) {
     button.onclick = null;
     button.addEventListener('click', async e => {
-        // Validierung HIER im Button-Handler durchführen
         let dontStopSubmit = true;
         let puiInputs = document.querySelectorAll("#pui_form [id^=pui_required_]");
+
+        // Hide all error messages initially
+        document.querySelectorAll('#pui_form .help-block .text-danger').forEach(function(element) {
+            element.classList.add('visually-hidden');
+        });
 
         for (let i = 0; i < puiInputs.length; i++) {
             let help = document.querySelector('#pui_form .' + puiInputs[i].id + '_help > div.text-danger');
@@ -68,16 +86,35 @@ if (button !== null) {
             document.querySelector('#orderConfirmAgbBottom input[name="' + puiInputs[i].name + '"]').value = puiInputs[i].value;
         }
 
-        // Nur submitten wenn Validierung erfolgreich
+        // Additional age validation for birth date
+        let dayInput = document.getElementById('pui_required_birthdate_day');
+        let monthInput = document.getElementById('pui_required_birthdate_month');
+        let yearInput = document.getElementById('pui_required_birthdate_year');
+        let ageErrorElement = document.getElementById('age-error-message');
+
+        if (dayInput.value && monthInput.value && yearInput.value) {
+            // Construct the birth date
+            let birthDateString = yearInput.value + '-' + monthInput.value.padStart(2, '0') + '-' + dayInput.value.padStart(2, '0');
+            let age = calculateAge(birthDateString);
+
+            if (age < 18) {
+                dontStopSubmit = false;
+                ageErrorElement.classList.remove('visually-hidden');
+            } else {
+                ageErrorElement.classList.add('visually-hidden');
+            }
+        }
+
+        // Only submit if validation is successful
         if (!dontStopSubmit) {
             document.getElementById("pui_form").scrollIntoView({
                 behavior: 'smooth',
                 block: 'start'
             });
-            return; // Stoppe hier - kein Submit
+            return; // Stop here - no submit
         }
 
-        // Validierung erfolgreich - jetzt submitten
+        // Validation successful - now submit
         document.getElementById('orderConfirmAgbBottom').dispatchEvent(new Event('submit'));
     });
 }
@@ -110,6 +147,23 @@ if (button !== null) {
     {% set iBirthdayYear = 0 %}
 {% endif %}
 
+{# Calculate age for initial display #}
+{% set isUnder18 = false %}
+{% if iBirthdayDay > 0 and iBirthdayMonth > 0 and iBirthdayYear > 0 %}
+    {% set currentYear = "now"|date("Y")|number_format(0, '', '') %}
+    {% set currentMonth = "now"|date("n")|number_format(0, '', '') %}
+    {% set currentDay = "now"|date("j")|number_format(0, '', '') %}
+
+    {% set age = currentYear - iBirthdayYear %}
+    {% if currentMonth < iBirthdayMonth or (currentMonth == iBirthdayMonth and currentDay < iBirthdayDay) %}
+        {% set age = age - 1 %}
+    {% endif %}
+
+    {% if age < 18 %}
+        {% set isUnder18 = true %}
+    {% endif %}
+{% endif %}
+
 {% set phonenumber = "" %}
 {% if invadr.oxuser__oxfon is defined %}
     {% set phonenumber = invadr.oxuser__oxfon %}
@@ -120,7 +174,7 @@ if (button !== null) {
 <p class="mt-4">{{ translate({ ident: "OSC_PAYPAL_PUI_HELP" }) }}</p>
 <div id="card_container" class="card_container">
     <form id="pui_form" class="needs-validation">
-        <div class="mb-3 oxDate {% if not iBirthdayMonth or not iBirthdayDay or not iBirthdayYear %}text-danger{% else %}text-success{% endif %}">
+        <div class="mb-3 oxDate {% if not iBirthdayMonth or not iBirthdayDay or not iBirthdayYear or isUnder18 %}text-danger{% else %}text-success{% endif %}">
             <label class="">{{ translate({ ident: "OSC_PAYPAL_PUI_BIRTHDAY" }) }}</label>
             <div class="row gx-2">
                 <div class="col-3">
@@ -151,6 +205,11 @@ if (button !== null) {
                 <div class="col-lg-offset-3 col-lg-9 col-xs-12">
                     <div class="help-block pui_required_birthdate_day_help pui_required_birthdate_month_help pui_required_birthdate_year_help">
                         <div class="text-danger visually-hidden">{{ translate({ ident: "DD_FORM_VALIDATION_REQUIRED" }) }}</div>
+                    </div>
+                    <div class="help-block">
+                        <div id="age-error-message" class="text-danger {% if not isUnder18 %}visually-hidden{% endif %}">
+                            {{ translate({ ident: "OSC_PAYPAL_PUI_AGE_WARNING" }) }}
+                        </div>
                     </div>
                 </div>
             </div>
