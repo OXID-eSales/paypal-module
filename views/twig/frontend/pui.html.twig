@@ -132,8 +132,6 @@ if (button !== null) {
         // Validation successful - now submit
         document.getElementById('orderConfirmAgbBottom').dispatchEvent(new Event('submit'));
     });
-}
-
 {% endset %}
 {{ script({ add: oscpaypalpui_requiredfields_script.__toString(), priority: 10, dynamic: __oxid_include_dynamic }) }}
 
