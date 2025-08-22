@@ -33,34 +33,30 @@
 {{ script({ add: oscpaypalpui_hidden_inputs.__toString(), priority: 10, dynamic: __oxid_include_dynamic }) }}
 
 {% set oscpaypalpui_requiredfields_script %}
-    var paypalGetSubmitButton = function (){
-        let button = null;
-
-        let result = document.querySelectorAll("button.btn.btn-highlight.btn-lg.w-100");
-        if (result.length === 1 && result[0].onclick !== null) {
-            button = result[0];
-        } else {
-            for (var i = 0; i < result.length; i++) {
-                if(result[i].onclick !== null) {
-                    button = result[i];
-                    break;
-                }
+var paypalGetSubmitButton = function (){
+    let button = null;
+    let result = document.querySelectorAll("button.btn.btn-highlight.btn-lg.w-100");
+    if (result.length === 1 && result[0].onclick !== null) {
+        button = result[0];
+    } else {
+        for (var i = 0; i < result.length; i++) {
+            if(result[i].onclick !== null) {
+                button = result[i];
+                break;
             }
         }
-        return button;
     }
+    return button;
+}
 
-    let button = paypalGetSubmitButton();
-    if (button !== null) {
-        button.onclick = null; // remove on click event from button and add an extended on click event which also submits the form
-        button.addEventListener('click', async e => {
-            document.getElementById('orderConfirmAgbBottom').dispatchEvent(new Event('submit'));
-        });
-    }
-
-    document.querySelector("#orderConfirmAgbBottom").addEventListener('submit', (event) => {
+let button = paypalGetSubmitButton();
+if (button !== null) {
+    button.onclick = null;
+    button.addEventListener('click', async e => {
+        // Validierung HIER im Button-Handler durchführen
         let dontStopSubmit = true;
         let puiInputs = document.querySelectorAll("#pui_form [id^=pui_required_]");
+
         for (let i = 0; i < puiInputs.length; i++) {
             let help = document.querySelector('#pui_form .' + puiInputs[i].id + '_help > div.text-danger');
             if (!puiInputs[i].value) {
@@ -71,12 +67,21 @@
             }
             document.querySelector('#orderConfirmAgbBottom input[name="' + puiInputs[i].name + '"]').value = puiInputs[i].value;
         }
+
+        // Nur submitten wenn Validierung erfolgreich
         if (!dontStopSubmit) {
-            document.getElementById("pui_form").scrollIntoView(true);
-            return false;
+            document.getElementById("pui_form").scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+            return; // Stoppe hier - kein Submit
         }
-        event.target.submit();
+
+        // Validierung erfolgreich - jetzt submitten
+        document.getElementById('orderConfirmAgbBottom').dispatchEvent(new Event('submit'));
     });
+}
+
 {% endset %}
 {{ script({ add: oscpaypalpui_requiredfields_script.__toString(), priority: 10, dynamic: __oxid_include_dynamic }) }}
 
