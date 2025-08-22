@@ -33,21 +33,22 @@
 {{ script({ add: oscpaypalpui_hidden_inputs.__toString(), priority: 10, dynamic: __oxid_include_dynamic }) }}
 
 {% set oscpaypalpui_requiredfields_script %}
-var paypalGetSubmitButton = function (){
-    let button = null;
-    let result = document.querySelectorAll("button.btn.btn-highlight.btn-lg.w-100");
-    if (result.length === 1 && result[0].onclick !== null) {
-        button = result[0];
-    } else {
-        for (var i = 0; i < result.length; i++) {
-            if(result[i].onclick !== null) {
-                button = result[i];
-                break;
+    var paypalGetSubmitButton = function (){
+        let button = null;
+
+        let result = document.querySelectorAll("button.btn.btn-highlight.btn-lg.w-100");
+        if (result.length === 1 && result[0].onclick !== null) {
+            button = result[0];
+        } else {
+            for (var i = 0; i < result.length; i++) {
+                if(result[i].onclick !== null) {
+                    button = result[i];
+                    break;
+                }
             }
         }
+        return button;
     }
-    return button;
-}
 
 // Function for age calculation
 function calculateAge(birthDate) {
