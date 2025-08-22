@@ -75,7 +75,7 @@
                 </div>
                 <div class="help-block">
                     <p id="age-error-message" class="text-danger [{if !$isUnder18}]hidden[{/if}]">
-                        Sie müssen mindestens 18 Jahre alt sein, um einen Kauf auf Rechnung durchzuführen.
+                        [{oxmultilang ident="OSC_PAYPAL_PUI_AGE_WARNING"}]
                     </p>
                 </div>
             </div>
