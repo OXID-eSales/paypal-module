@@ -34,7 +34,7 @@ class Logger extends AbstractLogger
         'debug' => 100
     ];
 
-    public function log($level, $message, array $exception = array()): void
+    public function log($level, $message, array $exception = []): void
     {
         if ($this->isLogLevel($level)) {
             $this->moduleLogger->$level($message, $exception);

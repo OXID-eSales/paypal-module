@@ -67,7 +67,7 @@ class PaymentController extends PaymentController_parent
                     $uniquePaypalVaultedPaymentSources = [];
                     foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
                         foreach ($vaultedPaymentToken["payment_source"] as $paymentId => $paymentSource) {
-                            $paymentTokenId= $vaultedPaymentToken['id'];
+                            $paymentTokenId = $vaultedPaymentToken['id'];
                             $label = '';
 
                             if ($paymentId === PayPalDefinitions::PAYMENT_SOURCE_CARD && $moduleSettings->isVaultingAllowedForACDC()) {

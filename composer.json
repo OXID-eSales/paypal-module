@@ -57,7 +57,7 @@
         "phpcs": "./.github/scripts/codestyle_check.sh phpcs",
         "phpcs-commit": "./.github/scripts/codestyle_check.sh phpcs commit",
         "style": "./.github/scripts/codestyle_check.sh all",
-        "style-commit":  "./.github/scripts/codestyle_check.sh all commit",
+        "style-commit":  "./.github/scripts/codestyle_check.sh all commit || exit 1",
         "phpcbf": "phpcbf --standard=tests/phpcs.xml",
         "static": [
             "@phpcs",

@@ -110,7 +110,7 @@ class AjaxPaymentController extends ProxyController
             'paymentStatus' => '',
         ];
 
-        if($capturePaymentForOrder){
+        if ($capturePaymentForOrder) {
             $response['paymentStatus'] = $capturePaymentForOrder->getCapturePaymentStatus() ? 'success' : 'error';
         }
 
@@ -221,7 +221,6 @@ class AjaxPaymentController extends ProxyController
                 ],
                 'payPalOrder' => $response,
             ]);
-
         }
 
         $this->outputJson([
@@ -248,7 +247,7 @@ class AjaxPaymentController extends ProxyController
         $user = oxNew(User::class);
         /** @var Basket $basket */
         $basket = $session->getBasket();
-        if(null === $basket->getPaymentId()){
+        if (null === $basket->getPaymentId()) {
             $basket->setPayment($paymentId);
             $session->setBasket($basket);
             $session->setVariable('paymentid', $paymentId);
@@ -469,7 +468,7 @@ class AjaxPaymentController extends ProxyController
             ]);
         }
 
-        if($vaultPayment) {
+        if ($vaultPayment) {
             //assuming that if there is no error during the request and vaulted was requested it went fine
             Registry::getSession()->setVariable("vaultSuccess", true);
         }
@@ -494,7 +493,7 @@ class AjaxPaymentController extends ProxyController
         }
 
         $basket = Registry::getSession()->getBasket();
-        if(empty($basket->getPaymentId()) && !empty($data['paymentId'])){
+        if (empty($basket->getPaymentId()) && !empty($data['paymentId'])) {
             $basket->setPaymentId($data['paymentId']);
         }
 
@@ -561,7 +560,8 @@ class AjaxPaymentController extends ProxyController
 
         /** @var \OxidSolutionCatalysts\PayPal\Model\Order $oOrder */
         $order->sendPayPalOrderByEmail(
-            $user, $basket
+            $user,
+            $basket
         );
     }
 

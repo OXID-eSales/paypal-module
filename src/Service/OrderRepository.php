@@ -164,7 +164,7 @@ class OrderRepository
             ->andWhere('oxstorno = :oxstorno')
             ->andWhere($queryBuilder->expr()->like(
                 'oxpaymenttype',
-                $queryBuilder->expr()->literal( $parameters['oxpaymenttype'] . '%')
+                $queryBuilder->expr()->literal($parameters['oxpaymenttype'] . '%')
             ))
             ->andWhere('oxorderdate < now() - interval :sessiontime MINUTE');
 

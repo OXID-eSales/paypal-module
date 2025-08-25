@@ -433,7 +433,7 @@ class CardValidationTest extends TestCase
 
         $validator->expects($this->any())
             ->method('getCardAuthenticationResult')
-            ->willReturn(new AuthenticationResponse);
+            ->willReturn(new AuthenticationResponse());
 
         $this->{$assertMethod}($validator->isCardUsableForPayment(unserialize($serializedOrder)));
     }

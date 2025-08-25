@@ -185,8 +185,9 @@ jobs:
 
       - name: Codestyle check of the affected files (phpcs, phpmd, phpstan)
         id: phpcs
+        continue-on-error: false
         working-directory: source/test-module
-        run: composer style-commit  # Runs oll style checks
+        run: composer style-commit || exit 1
 
       - name: Upload log artifact
         if: always()
