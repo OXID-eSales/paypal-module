@@ -15,9 +15,11 @@ use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidEsales\Eshop\Core\ShopVersion;
+use OxidSolutionCatalysts\PayPal\Core\BasketOrderDataMapper;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactoryV2;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
@@ -128,6 +130,13 @@ class Payment
         $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
         $customId = $this->getCurrentOrderNumber($basket);
 
+        /** @var BasketOrderDataMapper $basketOrderDataMapper */
+        $basketOrderDataMapper = oxNew(BasketOrderDataMapper::class);
+        /** @var OrderRequestFactoryV2 $orderRequestFactoryV2 */
+        $orderRequestFactoryV2 = oxNew(OrderRequestFactoryV2::class);
+        $orderData = $basketOrderDataMapper->createOrderData($basket);
+        $orderRequest = $orderRequestFactoryV2->createOrder($orderData);
+        $r=1;
         $request = $this->orderRequestFactory->getRequest(
             $basket,
             $intent,
@@ -140,8 +149,12 @@ class Payment
             $cancelUrl,
             $setProvidedAddress
         );
-
+        $purchase_units = $request->purchase_units;
+        $orderRequest->purchase_units[0]->shipping = $purchase_units[0]->shipping;
+        $request->purchase_units = $orderRequest->purchase_units;
         $response = null;
+        $request->purchase_units[0]->amount->breakdown->shipping->value = '0';
+        $request->purchase_units[0]->amount->value = '142.8';
         try {
             $response = $orderService->createOrder(
                 $request,

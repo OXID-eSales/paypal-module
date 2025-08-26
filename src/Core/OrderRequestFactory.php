@@ -22,6 +22,7 @@ use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Helper\Truncate;
+use OxidSolutionCatalysts\PayPal\Service\BasketSummaryService;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
@@ -198,6 +199,8 @@ class OrderRequestFactory
         bool $withItems = false
     ): array {
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        /** @var BasketSummaryService $basketSummaryService */
+        $basketSummaryService = $this->getServiceFromContainer(BasketSummaryService::class);
         $purchaseUnit = new PurchaseUnitRequest();
         $shopName = $moduleSettings->getShopName();
         $lang = Registry::getLang();
@@ -217,7 +220,7 @@ class OrderRequestFactory
         if ($this->basket->getBasketUser()) {
             $purchaseUnit->shipping = $this->getShippingAddress();
         }
-
+        $basketSummary = $basketSummaryService->getSummary();
         return [$purchaseUnit];
     }
 

@@ -85,6 +85,12 @@ class PayPalRequestAmountFactory
         $breakdown->tax_total =
             PriceToMoney::convert(0, $this->getCurrency());
 
+        /*
+         * The subtotal for all items.
+         * Required if the request includes purchase_units[].items[].unit_amount.
+         * Must equal the sum of (items[].unit_amount * items[].quantity) for all items.
+         * item_total.value can not be a negative number.
+         */
         $breakdown->item_total = PriceToMoney::convert(
             $amount +
             (float)$breakdown->discount->value -
