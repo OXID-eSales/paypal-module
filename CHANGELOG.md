@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### NEW
 
 - add Age Control (min age 18) for PUI
+- [0007785](https://bugs.oxid-esales.com/view.php?id=7785): Fix: If you only fill in one of the fields Tracking carrier or code for PayPal orders, the changes are discarded
 
 ## [2.6.1] - 2025-08-18
 
