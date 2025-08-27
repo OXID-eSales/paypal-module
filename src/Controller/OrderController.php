@@ -728,7 +728,7 @@ class OrderController extends OrderController_parent
      */
     public function getPurchaseUnits(): string
     {
-        return json_encode(Registry::get(PayPalPurchaseUnitsFactory::class)->getPurchaseUnits());
+        return json_encode(Registry::get(PayPalPurchaseUnitsFactory::class)->getPurchaseUnitsArray());
     }
 
     public function getDeladrid(): string

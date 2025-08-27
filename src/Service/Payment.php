@@ -22,6 +22,7 @@ use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactoryV2;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Core\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
@@ -130,6 +131,8 @@ class Payment
         $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
         $customId = $this->getCurrentOrderNumber($basket);
 
+        /** @var PayPalPurchaseUnitsFactory $basketOrderDataMapper */
+        $payPalPurchaseUnitsFactory = oxNew(PayPalPurchaseUnitsFactory::class);
         /** @var BasketOrderDataMapper $basketOrderDataMapper */
         $basketOrderDataMapper = oxNew(BasketOrderDataMapper::class);
         /** @var OrderRequestFactoryV2 $orderRequestFactoryV2 */
@@ -143,7 +146,6 @@ class Payment
         ];
         $orderData = $basketOrderDataMapper->createOrderData($basket, $options);
         $orderRequest = $orderRequestFactoryV2->createOrder($orderData);
-        $r=1;
         $request = $this->orderRequestFactory->getRequest(
             $basket,
             $intent,
@@ -160,6 +162,10 @@ class Payment
         $orderRequest->purchase_units[0]->shipping = $purchase_units[0]->shipping;
         $request->purchase_units = $orderRequest->purchase_units;
         $response = null;
+        $purchaseUnitsV2 = $payPalPurchaseUnitsFactory->getPurchaseUnitsArray();
+        $purchaseUnitsV3 = $payPalPurchaseUnitsFactory->getPurchaseUnitsObject();
+        $request->purchase_units = $purchaseUnitsV3;
+        $r=1;
         try {
             $response = $orderService->createOrder(
                 $request,

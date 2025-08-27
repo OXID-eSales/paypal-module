@@ -200,7 +200,7 @@ class OrderRequestFactory
     ): array {
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         /** @var BasketSummaryService $basketSummaryService */
-        $basketSummaryService = $this->getServiceFromContainer(BasketSummaryService::class);
+
         $purchaseUnit = new PurchaseUnitRequest();
         $shopName = $moduleSettings->getShopName();
         $lang = Registry::getLang();
@@ -220,7 +220,7 @@ class OrderRequestFactory
         if ($this->basket->getBasketUser()) {
             $purchaseUnit->shipping = $this->getShippingAddress();
         }
-        $basketSummary = $basketSummaryService->getSummary();
+
         return [$purchaseUnit];
     }
 
