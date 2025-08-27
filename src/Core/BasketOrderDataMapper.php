@@ -26,6 +26,14 @@ use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
  */
 class BasketOrderDataMapper
 {
+    /** @var Basket|null */
+    private ?Basket $basket = null;
+
+    public function __construct(?Basket $basket = null)
+    {
+        $this->basket = $basket;
+    }
+
     /**
      * Create the orderData array from a Basket.
      *
@@ -37,8 +45,15 @@ class BasketOrderDataMapper
      *  - with_items: bool|null (default: true when shop is in gross mode)
      *  - auto_adjust_breakdown: bool (default: false) - let V2 factory compute item_total from items if needed
      */
-    public function createOrderData(Basket $basket, array $options = []): array
+    public function createOrderData(Basket $basket = null, array $options = []): array
     {
+        if ($basket !== null) {
+            $this->basket = $basket;
+        }
+        if (!$this->basket) {
+            throw new \InvalidArgumentException('BasketOrderDataMapper requires a Basket instance.');
+        }
+
         $intent = (string)($options['intent'] ?? 'CAPTURE');
         $customId = $options['custom_id'] ?? null;
         $invoiceId = $options['invoice_id'] ?? null;
@@ -49,21 +64,18 @@ class BasketOrderDataMapper
         $withItems = $options['with_items'] ?? true;
 
         // Currency context (2 decimals supported by PayPal)
-        $currency = $basket->getBasketCurrency();
+        $currency = $this->basket->getBasketCurrency();
         if ($currency) {
             $currency->decimal = 2;
         }
 
-        // Build amount via existing factory to keep parity with current PayPal request logic
-        /** @var PayPalRequestAmountFactory $amountFactory */
-        $amountFactory = Registry::get(PayPalRequestAmountFactory::class);
-        $amountModel = $amountFactory->getAmount($basket);
-        $amountArr = $this->modelToArray($amountModel);
+        // Build amount directly here mirroring PayPalRequestAmountFactory logic
+        $amountArr = $this->buildAmountArray();
 
         // Build items array directly from basket
         $itemsArr = [];
         if ($withItems) {
-            $itemsArr = $this->mapItems($basket);
+            $itemsArr = $this->mapItems();
         }
 
         // Assemble purchase unit
@@ -84,6 +96,23 @@ class BasketOrderDataMapper
             $purchaseUnit['items'] = $itemsArr;
         }
 
+        // Mirror shipping costs and discounts from amount.breakdown for convenience (non-API helper fields)
+        if (isset($amountArr['breakdown']) && is_array($amountArr['breakdown'])) {
+            if (isset($amountArr['breakdown']['shipping']) && is_array($amountArr['breakdown']['shipping'])) {
+                // Do not collide with 'shipping' address key; use 'shipping_costs'
+                $purchaseUnit['shipping_costs'] = [
+                    'currency_code' => (string)($amountArr['breakdown']['shipping']['currency_code'] ?? ($amountArr['currency_code'] ?? '')),
+                    'value' => (string)($amountArr['breakdown']['shipping']['value'] ?? '0.00'),
+                ];
+            }
+            if (isset($amountArr['breakdown']['discount']) && is_array($amountArr['breakdown']['discount'])) {
+                $purchaseUnit['discounts'] = [
+                    'currency_code' => (string)($amountArr['breakdown']['discount']['currency_code'] ?? ($amountArr['currency_code'] ?? '')),
+                    'value' => (string)($amountArr['breakdown']['discount']['value'] ?? '0.00'),
+                ];
+            }
+        }
+
         $orderData = [
             'intent' => $intent,
             'purchase_units' => [ $purchaseUnit ],
@@ -99,10 +128,10 @@ class BasketOrderDataMapper
     /**
      * Map basket contents to PayPal items array.
      */
-    private function mapItems(Basket $basket): array
+    private function mapItems(): array
     {
         $items = [];
-        $currency = $basket->getBasketCurrency();
+        $currency = $this->basket->getBasketCurrency();
         if ($currency) {
             $currency->decimal = 2;
         }
@@ -110,7 +139,7 @@ class BasketOrderDataMapper
         $isNetMode = (bool)Registry::getConfig()->getConfigParam('blShowNetPrice');
 
         /** @var BasketItem $basketItem */
-        foreach ($basket->getContents() as $basketItem) {
+        foreach ($this->basket->getContents() as $basketItem) {
             if (!($basketItem instanceof BasketItem)) {
                 continue;
             }
@@ -175,11 +204,68 @@ class BasketOrderDataMapper
     }
 
     /**
-     * Convert a (simple) model object produced by our API layer to array.
-     * Uses json encode/decode to retain nested structure.
+     * Build amount with breakdown directly within the mapper, mirroring
+     * PayPalRequestAmountFactory::getAmount() and related helpers.
      */
-    private function modelToArray($model): array
+    private function buildAmountArray(): array
     {
-        return json_decode(json_encode($model, JSON_UNESCAPED_UNICODE), true) ?: [];
+        $currency = $this->basket->getBasketCurrency();
+        // clone to avoid side effects and ensure 2 decimals for PayPal
+        $currency = $currency ? clone $currency : (object)[];
+        if (isset($currency->decimal)) {
+            $currency->decimal = 2;
+        }
+
+        // Total order amount (PayPal expects 2-decimal precision)
+        $total = (float) number_format(
+            $this->basket->getPrice()->getBruttoPrice(),
+            2,
+            '.',
+            ''
+        );
+
+        // Breakdown components
+        // shipping and discount come from extended Basket helpers used by the factory
+        $shippingMoney = PriceToMoney::convert($this->basket->getPayPalCheckoutDeliveryCosts(), $currency);
+        $discountMoney = PriceToMoney::convert($this->basket->getPayPalCheckoutDiscountBrutto(), $currency);
+        $taxTotalMoney = PriceToMoney::convert(0, $currency);
+
+        // item_total equals sum(unit_price * quantity) where unit_price respects shop price mode
+        $itemTotal = 0.0;
+        foreach ((array) $this->basket->getContents() as $basketItem) {
+            $unitPrice = $basketItem->getUnitPrice();
+            if ($unitPrice) {
+                $qty = (float) $basketItem->getAmount();
+                $val = (float) $unitPrice->getPrice();
+                $itemTotal += $qty * $val;
+            }
+        }
+        $itemTotalMoney = PriceToMoney::convert($itemTotal, $currency);
+
+        $amount = [
+            'value' => $total,
+            'currency_code' => $currency->name ?? '',
+            'breakdown' => [
+                'shipping' => [
+                    'currency_code' => $shippingMoney->currency_code,
+                    'value' => $shippingMoney->value,
+                ],
+                'discount' => [
+                    'currency_code' => $discountMoney->currency_code,
+                    'value' => $discountMoney->value,
+                ],
+                'tax_total' => [
+                    'currency_code' => $taxTotalMoney->currency_code,
+                    'value' => $taxTotalMoney->value,
+                ],
+                'item_total' => [
+                    'currency_code' => $itemTotalMoney->currency_code,
+                    'value' => $itemTotalMoney->value,
+                ],
+            ],
+        ];
+
+        return $amount;
     }
+
 }

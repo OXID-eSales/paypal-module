@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use InvalidArgumentException;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
@@ -19,7 +20,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PhoneWithType;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
+use OxidSolutionCatalysts\PayPal\Service\VatOptionsService;
 
 /**
  * OrderRequestFactoryV2
@@ -70,6 +71,8 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
  */
 class OrderRequestFactoryV2
 {
+    use ServiceContainer;
+
     private const DECIMALS = 2;
 
     /**
@@ -128,14 +131,16 @@ class OrderRequestFactoryV2
 
                 // If item_total is missing but items provided, compute it as sum(items[].unit_amount * quantity)
                 if ($autoAdjustBreakdown) {
-                    $this->autoFillItemTotalFromItems($unit);
-                    $this->autoFillTaxTotalFromItems($unit);
+                    $this->autoFillTaxTotalFromItems($unit); // this should be refined. Unit should have taxes correctly filled from the start
                 }
             }
 
-            // Shipping
-            if (!empty($unitArr['shipping']) && is_array($unitArr['shipping'])) {
-                $unit->shipping = $this->mapShipping($unitArr['shipping']);
+            // Shipping costs: map into amount.breakdown.shipping
+            if (!empty($unitArr['shipping_costs']) && is_array($unitArr['shipping_costs'])) {
+                if (!isset($unit->amount->breakdown)) {
+                    $unit->amount->breakdown = new AmountBreakdown();
+                }
+                $unit->amount->breakdown->shipping = $this->mapShipping($unitArr['shipping_costs']);
             }
 
             /*// Optional: run array-based Core PayPalAmountValidator to reconcile tiny rounding diffs
@@ -182,9 +187,10 @@ class OrderRequestFactoryV2
             }*/
 
             // After all auto adjustments, ensure amount.value equals the sum of breakdown components
-            if ($autoAdjustBreakdown && isset($unit->amount) && isset($unit->amount->breakdown)) {
-                $unit->amount->value = $this->toMoneyValue($this->sumBreakdown($unit->amount->breakdown));
-            }
+            //harmles because the unit->amount->value shoudl have basket total gross value
+            //if ($autoAdjustBreakdown && isset($unit->amount) && isset($unit->amount->breakdown)) {
+            //    $unit->amount->value = $this->toMoneyValue($this->sumBreakdown($unit->amount->breakdown));
+            //}
 
             $result[] = $unit;
         }
@@ -245,26 +251,15 @@ class OrderRequestFactoryV2
 
         if (isset($itemArr['tax_rate'])) { $item->tax_rate = (string)$itemArr['tax_rate']; }
         return $item;
-    }
+    }  
 
-    private function mapShipping(array $shippingArr): ShippingDetail
+    private function mapShipping(array $shippingArr): \stdClass
     {
-        $shipping = new ShippingDetail();
-        if (!empty($shippingArr['name']) && is_array($shippingArr['name'])) {
-            $shipping->name = (object) ['full_name' => (string)($shippingArr['name']['full_name'] ?? '')];
-        }
-        if (!empty($shippingArr['address']) && is_array($shippingArr['address'])) {
-            $addr = new AddressPortable3();
-            foreach ([
-                'address_line_1','address_line_2','admin_area_1','admin_area_2','postal_code','country_code'
-            ] as $k) {
-                if (isset($shippingArr['address'][$k])) {
-                    $addr->{$k} = (string)$shippingArr['address'][$k];
-                }
-            }
-            $shipping->address = $addr;
-        }
-        return $shipping;
+        // Map shipping costs money object: ['currency_code' => 'EUR', 'value' => '2.34']
+        $money = new \stdClass();
+        $money->currency_code = (string)($shippingArr['currency_code'] ?? 'USD');
+        $money->value = $this->toMoneyValue((float)($shippingArr['value'] ?? 0.0));
+        return $money;
     }
 
     private function mapPayer(array $payerArr): Payer
@@ -302,32 +297,6 @@ class OrderRequestFactoryV2
             $payer->address = $addr;
         }
         return $payer;
-    }
-
-    /**
-     * Compute item_total when items exist and assign into breakdown if not present.
-     */
-    private function autoFillItemTotalFromItems(PurchaseUnitRequest $unit): void
-    {
-        if (!is_array($unit->items) || empty($unit->items)) {
-            return;
-        }
-        $sum = 0.0;
-        $currency = $unit->amount->currency_code ?? 'USD';
-        foreach ($unit->items as $it) {
-            $qty = (float)($it->quantity ?? 1);
-            $val = isset($it->unit_amount->value) ? (float)$it->unit_amount->value : 0.0;
-            $sum += $qty * $val;
-        }
-        $sum = $this->round2($sum);
-        if (!isset($unit->amount->breakdown)) {
-            $unit->amount->breakdown = new AmountBreakdown();
-        }
-        // Always set/override item_total to reflect sum(unit_amount * quantity)
-        $unit->amount->breakdown->item_total = (object) [
-            'currency_code' => $currency,
-            'value' => $this->toMoneyValue($sum),
-        ];
     }
 
     /**
@@ -371,6 +340,15 @@ class OrderRequestFactoryV2
     }
 
     /**
+     * Resolve VAT percent exclusively via VatOptionsService.
+     * No fallback to item tax_rate or other heuristics is applied.
+     */
+    private function resolveVatPercent(): float
+    {
+        return $this->getServiceFromContainer(VatOptionsService::class)->getDefaultVatRate();
+    }
+
+    /**
      * Sum breakdown components according to PayPal formula:
      * item_total + tax_total + shipping + handling + insurance - shipping_discount - discount
      */
@@ -381,11 +359,15 @@ class OrderRequestFactoryV2
         };
         $itemTotal = $get($bd, 'item_total');
         $shipping = $get($bd, 'shipping');
-        $taxTotal = $get($bd, 'tax_total');
         $handling = $get($bd, 'handling');
         $insurance = $get($bd, 'insurance');
         $discount = $get($bd, 'discount');
         $shippingDiscount = $get($bd, 'shipping_discount');
+
+        // Calculate VAT amount from discount
+        $discountVatAmount = $discount * ($this->resolveVatPercent() / 100.0);
+        $taxTotal = $get($bd, 'tax_total') - $discountVatAmount;
+
         $sum = $itemTotal + $taxTotal + $shipping + $handling + $insurance - $shippingDiscount - $discount;
         return $this->round2($sum);
     }
