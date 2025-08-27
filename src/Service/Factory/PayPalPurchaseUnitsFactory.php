@@ -6,17 +6,23 @@
 
 declare(strict_types=1);
 
-namespace OxidSolutionCatalysts\PayPal\Core;
+namespace OxidSolutionCatalysts\PayPal\Service\Factory;
 
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown as ApiAmountBreakdown;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown as ApiAmountWithBreakdown;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item as ApiItem;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\Money as ApiMoney;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest as ApiPurchaseUnitRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail as ApiShippingDetail;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3 as ApiAddressPortable3;
+use OxidEsales\Eshop\Application\Model\Address as EshopAddress;
+use OxidEsales\Eshop\Application\Model\Country as EshopCountry;
+use OxidSolutionCatalysts\PayPal\Model\State as EshopState;
 
 /**
  * PayPalPurchaseUnitsFactory
@@ -29,6 +35,17 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest as ApiPurch
  */
 class PayPalPurchaseUnitsFactory
 {
+    const DECIMALS = 2;
+    /**
+     * @var \OxidSolutionCatalysts\PayPal\Service\ModuleSettings
+     */
+    private ModuleSettings $moduleSettings;
+
+    public function __construct(ModuleSettings $moduleSettings)
+    {
+        $this->moduleSettings = $moduleSettings;
+    }
+
     /**
      * Build purchase_units for the current basket.
      *
@@ -80,10 +97,11 @@ class PayPalPurchaseUnitsFactory
 
     /**
      * Build and return a PurchaseUnitRequest API model for the current basket.
+     * Mirrors OrderRequestFactory::getPurchaseUnits in principle.
      *
-     * @return ApiPurchaseUnitRequest
+     * @return ApiPurchaseUnitRequest[]
      */
-    public function getPurchaseUnitsObject(bool $withItems = true): ApiPurchaseUnitRequest
+    public function getPurchaseUnitsObject(?string $transactionId = null, ?string $invoiceId = null, bool $withItems = true): array
     {
         $basket = $this->getBasket();
 
@@ -93,25 +111,13 @@ class PayPalPurchaseUnitsFactory
             $currency->decimal = 2;
         }
 
-        // First map items (used for tax_total computation)
+        // Build items first (needed to compute tax_total from items)
         $itemsArr = $withItems ? $this->mapItems($basket) : [];
+        // Build amount (tax_total will be computed from itemsArr)
         $amountArr = $this->buildAmountArray($basket, $itemsArr);
+        $amount = $this->mapAmountWithBreakdown($amountArr);
 
-        // Map amount array to API models
-        $amount = new ApiAmountWithBreakdown([
-            'currency_code' => (string)($amountArr['currency_code'] ?? ''),
-            'value' => number_format((float)($amountArr['value'] ?? 0.0), 2, '.', ''),
-        ]);
-        if (!empty($amountArr['breakdown']) && is_array($amountArr['breakdown'])) {
-            $amount->breakdown = new ApiAmountBreakdown([
-                'shipping' => $amountArr['breakdown']['shipping'] ?? null,
-                'discount' => $amountArr['breakdown']['discount'] ?? null,
-                'tax_total' => $amountArr['breakdown']['tax_total'] ?? null,
-                'item_total' => $amountArr['breakdown']['item_total'] ?? null,
-            ]);
-        }
-
-        // Map items
+        // Items
         $items = [];
         if (!empty($itemsArr)) {
             foreach ($itemsArr as $it) {
@@ -141,7 +147,24 @@ class PayPalPurchaseUnitsFactory
             $unit->items = $items;
         }
 
-        return $unit;
+        // Add IDs and description similar to OrderRequestFactory
+        if ($transactionId !== null) {
+            $unit->custom_id = $transactionId;
+        }
+        if ($invoiceId !== null) {
+            $unit->invoice_id = $invoiceId;
+        }
+
+        $shopName = $this->moduleSettings->getShopName();
+        $lang = Registry::getLang();
+        $unit->description = sprintf($lang->translateString('OSC_PAYPAL_DESCRIPTION'), $shopName);
+
+        // Shipping address when user is present
+        if ($basket->getBasketUser()) {
+            $unit->shipping = $this->buildShippingDetail($basket);
+        }
+
+        return [$unit];
     }
 
     private function getBasket(): Basket
@@ -149,6 +172,78 @@ class PayPalPurchaseUnitsFactory
         /** @var Basket $basket */
         $basket = Registry::getSession()->getBasket();
         return $basket;
+    }
+
+    /**
+     * Build ShippingDetail similar to OrderRequestFactory::getShippingAddress
+     */
+    private function buildShippingDetail(Basket $basket): ?ApiShippingDetail
+    {
+        $user = $basket->getBasketUser();
+        if (!$user) {
+            return null;
+        }
+        $deliveryId = Registry::getSession()->getVariable('deladrid');
+        $deliveryAddress = new EshopAddress();
+        $shipping = new ApiShippingDetail();
+        $name = $shipping->initName();
+
+        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
+            $fullName = $deliveryAddress->oxaddress__oxfname->value . ' ' . $deliveryAddress->oxaddress__oxlname->value;
+            $name->full_name = $fullName;
+
+            $address = new ApiAddressPortable3();
+
+            $state = new EshopState();
+            $state->loadByIdAndCountry(
+                $deliveryAddress->getFieldData('oxstateid'),
+                $deliveryAddress->getFieldData('oxcountryid')
+            );
+
+            $country = new EshopCountry();
+            $country->load($deliveryAddress->getFieldData('oxcountryid'));
+
+            $addressLine = $deliveryAddress->getFieldData('oxstreet') . ' ' . $deliveryAddress->getFieldData('oxstreetnr');
+            $address->address_line_1 = $addressLine;
+
+            $addinfoLine = $deliveryAddress->getFieldData('oxcompany') . ' ' . $deliveryAddress->getFieldData('oxaddinfo');
+            $address->address_line_2 = $addinfoLine;
+
+            $address->admin_area_1 = $state->getFieldData('oxtitle');
+            $address->admin_area_2 = $deliveryAddress->getFieldData('oxcity');
+            $address->country_code = $country->oxcountry__oxisoalpha2->value;
+            $address->postal_code = $deliveryAddress->getFieldData('oxzip');
+
+            $shipping->address = $address;
+        } else {
+            $fullName = $user->getFieldData('oxfname') . ' ' . $user->getFieldData('oxlname');
+            $name->full_name = $fullName;
+            $shipping->address = $this->buildBillingAddress($user);
+        }
+
+        return $shipping;
+    }
+
+    private function buildBillingAddress($user): ApiAddressPortable3
+    {
+        $state = new EshopState();
+        $state->loadByIdAndCountry(
+            $user->getFieldData('oxstateid'),
+            $user->getFieldData('oxcountryid')
+        );
+
+        $country = new EshopCountry();
+        $country->load($user->getFieldData('oxcountryid'));
+
+        $address = new ApiAddressPortable3();
+        $address->address_line_1 = $user->getFieldData('oxstreet') . ' ' . $user->getFieldData('oxstreetnr');
+        $address->address_line_2 = $user->getFieldData('oxcompany') . ' ' . $user->getFieldData('oxaddinfo');
+        $address->admin_area_1 = $state->getFieldData('oxtitle');
+        $address->admin_area_2 = $user->getFieldData('oxcity');
+        $address->country_code = $country->oxcountry__oxisoalpha2->value;
+        $address->postal_code = $user->getFieldData('oxzip');
+
+        return $address;
     }
 
     /**
@@ -309,5 +404,42 @@ class PayPalPurchaseUnitsFactory
         }
         // round to two decimals to mimic money rounding
         return round($sum, 2);
+    }
+
+    private function mapAmountWithBreakdown(array $amountArr): AmountWithBreakdown
+    {
+        $amount = new AmountWithBreakdown();
+        $amount->currency_code = (string)($amountArr['currency_code'] ?? 'USD');
+        $amount->value = $this->toMoneyValue((float)($amountArr['value'] ?? 0.0));
+
+        if (!empty($amountArr['breakdown']) && is_array($amountArr['breakdown'])) {
+            $amount->breakdown = $this->mapAmountBreakdown($amountArr['breakdown'], $amount->currency_code);
+        }
+        return $amount;
+    }
+
+    private function mapAmountBreakdown(array $bdArr, string $currency): AmountBreakdown
+    {
+        $bd = new AmountBreakdown();
+        // Known components per PayPal docs
+        foreach (['item_total','shipping','tax_total','handling','insurance','shipping_discount','discount'] as $key) {
+            if (isset($bdArr[$key]) && is_array($bdArr[$key])) {
+                $money = new \stdClass();
+                $money->currency_code = (string)($bdArr[$key]['currency_code'] ?? $currency);
+                $money->value = $this->toMoneyValue((float)($bdArr[$key]['value'] ?? 0.0));
+                $bd->{$key} = $money;
+            }
+        }
+        return $bd;
+    }
+
+    private function round2(float $v): float
+    {
+        return round($v, self::DECIMALS);
+    }
+
+    private function toMoneyValue(float $v): string
+    {
+        return number_format($this->round2($v), self::DECIMALS, '.', '');
     }
 }

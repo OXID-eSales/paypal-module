@@ -18,16 +18,16 @@ use OxidEsales\Eshop\Core\ShopVersion;
 use OxidSolutionCatalysts\PayPal\Core\BasketOrderDataMapper;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactoryV2;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
-use OxidSolutionCatalysts\PayPal\Core\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Module;
+use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
@@ -108,7 +108,8 @@ class Payment
         $this->orderProcessTrackingService = $orderProcessTrackingService;
         $this->serviceFactory = $serviceFactory ?: Registry::get(ServiceFactory::class);
         $this->patchRequestFactory = $patchRequestFactory ?: Registry::get(PatchRequestFactory::class);
-        $this->orderRequestFactory = $orderRequestFactory ?: Registry::get(OrderRequestFactory::class);
+        $this->orderRequestFactory = $orderRequestFactory ?:
+            $this->getServiceFromContainer(OrderRequestFactory::class);
     }
 
     public function doCreatePayPalOrder(
@@ -132,7 +133,8 @@ class Payment
         $customId = $this->getCurrentOrderNumber($basket);
 
         /** @var PayPalPurchaseUnitsFactory $basketOrderDataMapper */
-        $payPalPurchaseUnitsFactory = oxNew(PayPalPurchaseUnitsFactory::class);
+        $payPalPurchaseUnitsFactory = $this->getServiceFromContainer(PayPalPurchaseUnitsFactory::class);
+
         /** @var BasketOrderDataMapper $basketOrderDataMapper */
         $basketOrderDataMapper = oxNew(BasketOrderDataMapper::class);
         /** @var OrderRequestFactoryV2 $orderRequestFactoryV2 */
@@ -158,13 +160,18 @@ class Payment
             $cancelUrl,
             $setProvidedAddress
         );
-        $purchase_units = $request->purchase_units;
-        $orderRequest->purchase_units[0]->shipping = $purchase_units[0]->shipping;
-        $request->purchase_units = $orderRequest->purchase_units;
-        $response = null;
-        $purchaseUnitsV2 = $payPalPurchaseUnitsFactory->getPurchaseUnitsArray();
-        $purchaseUnitsV3 = $payPalPurchaseUnitsFactory->getPurchaseUnitsObject();
-        $request->purchase_units = $purchaseUnitsV3;
+     //   $purchase_units = $request->purchase_units;
+     //   $orderRequest->purchase_units[0]->shipping = $purchase_units[0]->shipping;
+     //   $purchaseUnitsV1 = $orderRequest->purchase_units;
+     //   $response = null;
+     //   $purchaseUnitsV2 = $payPalPurchaseUnitsFactory->getPurchaseUnitsArray();
+     //   $purchaseUnitsV3 = $payPalPurchaseUnitsFactory->getPurchaseUnitsObject($customId);
+     //   //dziala
+     //   $request->purchase_units = $purchaseUnitsV1;
+//
+     //   // --- dziala
+     //   $request->purchase_units = $purchaseUnitsV3;
+
         $r=1;
         try {
             $response = $orderService->createOrder(

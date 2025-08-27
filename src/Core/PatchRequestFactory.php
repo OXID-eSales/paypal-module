@@ -59,7 +59,7 @@ class   PatchRequestFactory
                 $this->getAmountPatch(),
                 // patching the ordernumber is not necessary at the moment
                 // $orderId ? $this->getCustomIdPatch($paymentService->getCustomIdParameter($order)) : null,
-                $this->getPurchaseUnitsPatch()
+                //$this->getPurchaseUnitsPatch()
             ])
         );
 

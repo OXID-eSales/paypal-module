@@ -55,3 +55,7 @@ services:
   OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface:
     class:  OxidSolutionCatalysts\PayPal\Service\SCAValidator
     public: true
+
+  OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory:
+    class: OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory
+    public: true
