@@ -23,6 +23,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3 as ApiAddressP
 use OxidEsales\Eshop\Application\Model\Address as EshopAddress;
 use OxidEsales\Eshop\Application\Model\Country as EshopCountry;
 use OxidSolutionCatalysts\PayPal\Model\State as EshopState;
+use OxidEsales\EshopCommunity\modules\osc\paypal\src\Core\PayPalAmountValidator;
 
 /**
  * PayPalPurchaseUnitsFactory
@@ -47,61 +48,12 @@ class PayPalPurchaseUnitsFactory
     }
 
     /**
-     * Build purchase_units for the current basket.
-     *
-     * @param bool $withItems Whether to include individual line items.
-     * @return array A plain array structure representing purchase_units.
-     */
-    public function getPurchaseUnitsArray(bool $withItems = true): array
-    {
-        $basket = $this->getBasket();
-
-        // Ensure PayPal compatible precision
-        $currency = $basket->getBasketCurrency();
-        if ($currency) {
-            $currency->decimal = 2;
-        }
-
-        // Build items first (needed to compute tax_total from items)
-        $itemsArr = $withItems ? $this->mapItems($basket) : [];
-        // Build amount (tax_total will be computed from itemsArr)
-        $amountArr = $this->buildAmountArray($basket, $itemsArr);
-
-        // Assemble purchase unit
-        $purchaseUnit = [
-            'reference_id' => Constants::PAYPAL_ORDER_REFERENCE_ID,
-            'amount' => $amountArr,
-        ];
-        if (!empty($itemsArr)) {
-            $purchaseUnit['items'] = $itemsArr;
-        }
-
-        // Mirror some breakdown info for convenience (non-API helper fields)
-        if (isset($amountArr['breakdown']) && is_array($amountArr['breakdown'])) {
-            if (isset($amountArr['breakdown']['shipping']) && is_array($amountArr['breakdown']['shipping'])) {
-                $purchaseUnit['shipping_costs'] = [
-                    'currency_code' => (string)($amountArr['breakdown']['shipping']['currency_code'] ?? ($amountArr['currency_code'] ?? '')),
-                    'value' => (string)($amountArr['breakdown']['shipping']['value'] ?? '0.00'),
-                ];
-            }
-            if (isset($amountArr['breakdown']['discount']) && is_array($amountArr['breakdown']['discount'])) {
-                $purchaseUnit['discounts'] = [
-                    'currency_code' => (string)($amountArr['breakdown']['discount']['currency_code'] ?? ($amountArr['currency_code'] ?? '')),
-                    'value' => (string)($amountArr['breakdown']['discount']['value'] ?? '0.00'),
-                ];
-            }
-        }
-
-        return [ $purchaseUnit ];
-    }
-
-    /**
      * Build and return a PurchaseUnitRequest API model for the current basket.
      * Mirrors OrderRequestFactory::getPurchaseUnits in principle.
      *
      * @return ApiPurchaseUnitRequest[]
      */
-    public function getPurchaseUnitsObject(?string $transactionId = null, ?string $invoiceId = null, bool $withItems = true): array
+    public function getPurchaseUnits(?string $transactionId = null, ?string $invoiceId = null, bool $withItems = true): array
     {
         $basket = $this->getBasket();
 
@@ -115,7 +67,10 @@ class PayPalPurchaseUnitsFactory
         $itemsArr = $withItems ? $this->mapItems($basket) : [];
         // Build amount (tax_total will be computed from itemsArr)
         $amountArr = $this->buildAmountArray($basket, $itemsArr);
-        $amount = $this->mapAmountWithBreakdown($amountArr);
+        // Adjust breakdown with PayPalAmountValidator to avoid rounding issues
+        $adjusted = $this->applyAmountValidator($itemsArr, $amountArr);
+        $amount = $this->mapAmountWithBreakdown($adjusted['amount']);
+        $itemsArr = $adjusted['items'] ?? $itemsArr;
 
         // Items
         $items = [];
@@ -416,6 +371,40 @@ class PayPalPurchaseUnitsFactory
             $amount->breakdown = $this->mapAmountBreakdown($amountArr['breakdown'], $amount->currency_code);
         }
         return $amount;
+    }
+
+    /**
+     * Use PayPalAmountValidator to adjust breakdown to resolve rounding issues.
+     * If items array is empty, validator will no-op and return original data.
+     */
+    private function applyAmountValidator(array $itemsArr, array $amountArr): array
+    {
+        try {
+            $validator = new PayPalAmountValidator();
+        } catch (\Throwable $e) {
+            // If validator class cannot be instantiated for any reason, return original
+            return $amountArr;
+        }
+
+        $orderData = [
+            'items' => $itemsArr,
+            'breakdown' => $amountArr['breakdown'] ?? [],
+            'amount_value' => $amountArr['value'] ?? 0.0,
+        ];
+
+        try {
+            $adjusted = $validator->validateAndAdjustOrder($orderData);
+            if (is_array($adjusted) && isset($adjusted['breakdown']) && is_array($adjusted['breakdown'])) {
+                $amountArr['breakdown'] = $adjusted['breakdown'];
+            }
+        } catch (\Throwable $e) {
+            // Fallback silently in case of any unexpected error
+        }
+
+        return [
+            "items" => $adjusted['items'] ?? [],
+            "amount" => $amountArr
+        ];
     }
 
     private function mapAmountBreakdown(array $bdArr, string $currency): AmountBreakdown

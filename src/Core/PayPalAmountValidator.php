@@ -3,6 +3,7 @@
 namespace OxidEsales\EshopCommunity\modules\osc\paypal\src\Core;
 
 use InvalidArgumentException;
+use OxidEsales\EshopCommunity\Core\Registry;
 
 class PayPalAmountValidator
 {
@@ -51,6 +52,38 @@ class PayPalAmountValidator
             return $orderData;
         }
 
+        // Ensure item_total in breakdown matches sum of item unit amounts
+        $computedItemTotal = $this->roundToPayPalPrecision($this->calculateItemTotalFromItems($items));
+        $currentItemTotal = isset($orderData['breakdown']['item_total']['value'])
+            ? $this->roundToPayPalPrecision((float)$orderData['breakdown']['item_total']['value'])
+            : null;
+        if ($currentItemTotal === null || $currentItemTotal !== $computedItemTotal) {
+            $itemCurrencyCode = $orderData['breakdown']['item_total']['currency_code']
+                ?? ($orderData['items'][0]['unit_amount']['currency_code']
+                    ?? ($orderData['breakdown']['shipping']['currency_code'] ?? 'USD'));
+            $orderData['breakdown']['item_total'] = [
+                'currency_code' => $itemCurrencyCode,
+                'value' => $this->formatAmount($computedItemTotal)
+            ];
+        }
+
+        // Ensure tax_total in breakdown matches sum of item taxes
+        $computedTaxTotal = $this->roundToPayPalPrecision($this->calculateTaxTotalFromItems($items));
+        $currentTaxTotal = isset($orderData['breakdown']['tax_total']['value'])
+            ? $this->roundToPayPalPrecision((float)$orderData['breakdown']['tax_total']['value'])
+            : null;
+        if ($currentTaxTotal === null || $currentTaxTotal !== $computedTaxTotal) {
+            // Determine currency code for tax_total
+            $currencyCode = $orderData['breakdown']['tax_total']['currency_code']
+                ?? ($orderData['items'][0]['unit_amount']['currency_code']
+                    ?? ($orderData['breakdown']['item_total']['currency_code']
+                        ?? ($orderData['breakdown']['shipping']['currency_code'] ?? 'USD')));
+            $orderData['breakdown']['tax_total'] = [
+                'currency_code' => $currencyCode,
+                'value' => $this->formatAmount($computedTaxTotal)
+            ];
+        }
+
         // Get breakdown/total from already calculated purchaseUnits amount if provided, otherwise compute
         $amountValue = isset($orderData['amount_value']) ? (float)$orderData['amount_value'] : null;
         $breakdownTotal = $this->calculateBreakdownTotal($orderData['breakdown'] ?? [], $amountValue);
@@ -60,6 +93,26 @@ class PayPalAmountValidator
 
         if (abs($difference) > 0) {
             $orderData = $this->adjustAmounts($orderData, $difference);
+
+            // After adjustments (e.g., rounding adjustment item), recompute and correct item_total and tax_total
+            $recomputedItems = $orderData['items'] ?? [];
+            $recomputedItemTotal = $this->roundToPayPalPrecision($this->calculateItemTotalFromItems($recomputedItems));
+            $itemCurrencyCode = $orderData['breakdown']['item_total']['currency_code']
+                ?? ($recomputedItems[0]['unit_amount']['currency_code'] ?? ($orderData['breakdown']['shipping']['currency_code'] ?? 'USD'));
+            $orderData['breakdown']['item_total'] = [
+                'currency_code' => $itemCurrencyCode,
+                'value' => $this->formatAmount($recomputedItemTotal)
+            ];
+
+            $recomputedTaxTotal = $this->roundToPayPalPrecision($this->calculateTaxTotalFromItems($recomputedItems));
+            $taxCurrencyCode = $orderData['breakdown']['tax_total']['currency_code']
+                ?? ($recomputedItems[0]['unit_amount']['currency_code']
+                    ?? ($orderData['breakdown']['item_total']['currency_code']
+                        ?? ($orderData['breakdown']['shipping']['currency_code'] ?? 'USD')));
+            $orderData['breakdown']['tax_total'] = [
+                'currency_code' => $taxCurrencyCode,
+                'value' => $this->formatAmount($recomputedTaxTotal)
+            ];
         }
 
         // Sanitize transient keys we might have received in breakdown (not part of PayPal API)
@@ -81,7 +134,7 @@ class PayPalAmountValidator
         foreach ($items as $item) {
             $quantity = (int)($item['quantity'] ?? 1);
             $unitAmount = (float)($item['unit_amount']['value'] ?? 0);
-            $total += $quantity * $unitAmount;
+            $total += $quantity * ($unitAmount + (float)$item['tax']["value"]);
         }
 
         // Include shipping costs if present in breakdown (no intermediate rounding)
@@ -135,6 +188,34 @@ class PayPalAmountValidator
     }
 
     /**
+     * Calculate tax_total from items (sum of per-unit tax multiplied by quantity)
+     */
+    private function calculateTaxTotalFromItems(array $items): float
+    {
+        $sum = 0.0;
+        foreach ($items as $item) {
+            $qty = (int)($item['quantity'] ?? 1);
+            $taxPerUnit = isset($item['tax']['value']) ? (float)$item['tax']['value'] : 0.0;
+            $sum += $qty * $taxPerUnit;
+        }
+        return $this->roundToPayPalPrecision($sum);
+    }
+
+    /**
+     * Calculate item_total from items (sum of per-unit amount multiplied by quantity)
+     */
+    private function calculateItemTotalFromItems(array $items): float
+    {
+        $sum = 0.0;
+        foreach ($items as $item) {
+            $qty = (int)($item['quantity'] ?? 1);
+            $unitAmount = isset($item['unit_amount']['value']) ? (float)$item['unit_amount']['value'] : 0.0;
+            $sum += $qty * $unitAmount;
+        }
+        return $this->roundToPayPalPrecision($sum);
+    }
+
+    /**
      * Adjust amounts to resolve rounding differences
      */
     private function adjustAmounts(array $orderData, float $difference): array
@@ -151,8 +232,8 @@ class PayPalAmountValidator
             // Items total is higher than provided amount: decrease breakdown via shipping_discount
             $orderData = $this->addShippingDiscount($orderData, $absoluteDifference);
         } else {
-            // Items total is lower than provided amount: increase breakdown via handling
-            $orderData = $this->addHandling($orderData, $absoluteDifference);
+            // Items total is lower than provided amount: add a dummy item to increase items total
+            $orderData = $this->addAdjustmentItem($orderData, $absoluteDifference);
         }
 
         return $orderData;
@@ -237,7 +318,12 @@ class PayPalAmountValidator
             'unit_amount' => [
                 'currency_code' => $currencyCode,
                 'value' => $this->formatAmount($adjustmentValue)
-            ]
+            ],
+            'tax' => [
+                'currency_code' => $currencyCode,
+                'value' => $this->formatAmount(0.0)
+            ],
+            'tax_rate' => '0'
         ];
 
         $orderData['items'][] = $adjustmentItem;

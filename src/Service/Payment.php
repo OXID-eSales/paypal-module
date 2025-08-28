@@ -131,23 +131,6 @@ class Payment
         $orderService = $this->serviceFactory->getOrderService();
         $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
         $customId = $this->getCurrentOrderNumber($basket);
-
-        /** @var PayPalPurchaseUnitsFactory $basketOrderDataMapper */
-        $payPalPurchaseUnitsFactory = $this->getServiceFromContainer(PayPalPurchaseUnitsFactory::class);
-
-        /** @var BasketOrderDataMapper $basketOrderDataMapper */
-        $basketOrderDataMapper = oxNew(BasketOrderDataMapper::class);
-        /** @var OrderRequestFactoryV2 $orderRequestFactoryV2 */
-        $orderRequestFactoryV2 = oxNew(OrderRequestFactoryV2::class);
-        // Prepare options for V2 order data to mirror legacy request inputs (for future factory switch)
-        $options = [
-            'intent' => $intent,
-            'custom_id' => $customId,
-            // The amount factory now computes item_total correctly; prevent V2 from overriding
-            'auto_adjust_breakdown' => false,
-        ];
-        $orderData = $basketOrderDataMapper->createOrderData($basket, $options);
-        $orderRequest = $orderRequestFactoryV2->createOrder($orderData);
         $request = $this->orderRequestFactory->getRequest(
             $basket,
             $intent,
@@ -160,19 +143,7 @@ class Payment
             $cancelUrl,
             $setProvidedAddress
         );
-     //   $purchase_units = $request->purchase_units;
-     //   $orderRequest->purchase_units[0]->shipping = $purchase_units[0]->shipping;
-     //   $purchaseUnitsV1 = $orderRequest->purchase_units;
-     //   $response = null;
-     //   $purchaseUnitsV2 = $payPalPurchaseUnitsFactory->getPurchaseUnitsArray();
-     //   $purchaseUnitsV3 = $payPalPurchaseUnitsFactory->getPurchaseUnitsObject($customId);
-     //   //dziala
-     //   $request->purchase_units = $purchaseUnitsV1;
-//
-     //   // --- dziala
-     //   $request->purchase_units = $purchaseUnitsV3;
 
-        $r=1;
         try {
             $response = $orderService->createOrder(
                 $request,
