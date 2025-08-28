@@ -84,7 +84,8 @@ class Payment
 
     private $logger;
 
-    private OrderProcessTrackingService $orderProcessTrackingService;
+    /** @var \OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService */
+    private $orderProcessTrackingService;
 
     public function __construct(
         EshopSession $eshopSession,
@@ -120,7 +121,6 @@ class Payment
         string $cancelUrl = null,
         bool $setProvidedAddress = true
     ): ?Order {
-        //TODO return value
         $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
 
         /** @var ApiOrderService $orderService */
@@ -137,8 +137,7 @@ class Payment
             $paymentSource,
             null,
             $returnUrl,
-            $cancelUrl,
-            $setProvidedAddress
+            $cancelUrl
         );
 
         $response = null;

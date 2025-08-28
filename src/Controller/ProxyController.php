@@ -508,6 +508,7 @@ class ProxyController extends FrontendController
             $this->outputJson(['ERROR' => $e->getMessage()]);
         }
     }
+
     public function createApplepayOrder()
     {
         $data = json_decode(file_get_contents('php://input'), true);
@@ -535,6 +536,7 @@ class ProxyController extends FrontendController
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
         }
 
+        $payPalUrlService = $this->getServiceFromContainer(PayPalUrlService::class);
         $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
             $basket,
             OrderRequest::INTENT_CAPTURE,
@@ -543,8 +545,8 @@ class ProxyController extends FrontendController
             '',
             '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-            null,
-            null,
+             $payPalUrlService->getReturnUrl(),
+             $payPalUrlService->getCancelUrl(),
             false
         );
         if ($response->id) {
@@ -568,11 +570,9 @@ class ProxyController extends FrontendController
 
             $nonGuestAccountDetected = false;
             if ($userRepository->userAccountExists($paypalEmail)) {
-                //got a non-guest account, so either we log in or redirect customer to login step
                 $isLoggedIn = $this->handleUserLogin($response);
                 $nonGuestAccountDetected = true;
             } else {
-                //we need to use a guest account
                 $userComponent = oxNew(UserComponent::class);
                 $userComponent->createPayPalGuestUser($response);
             }
