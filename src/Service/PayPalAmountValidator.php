@@ -9,164 +9,348 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
-use OxidEsales\Eshop\Core\Registry;
+use InvalidArgumentException;
+use OxidEsales\EshopCommunity\Core\Registry;
 
-/**
- * PayPalAmountValidator (Service)
- *
- * Responsibilities:
- *  - Use BasketSummaryService (NET mode) and VatOptionsService to derive the expected
- *    purchase unit total from the current basket.
- *  - Compare that expected total against the provided purchaseUnits amount.value and compute
- *    a rounding difference (2 decimals).
- *  - Optionally adjust the provided purchaseUnits breakdown using handling or shipping_discount
- *    to reconcile the difference.
- */
 class PayPalAmountValidator
 {
-    private const DECIMALS = 2;
+    private const DECIMAL_PRECISION = 2;
+    private const MAX_DECIMALS = 2;
+    private const ROUNDING_ADJUSTMENT = 0.01;
 
     /**
-     * Calculate the difference between the expected NET total (from basket summary)
-     * and the provided purchase unit amount.value.
-     *
-     * Returns: expectedTotal - amountValue (rounded to 2 decimals).
+     * Validate and adjust PayPal order amounts to prevent rounding errors
      */
-    public function calculateDifference(\OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest $unit): float
+    public function validateAndAdjustOrder(array $orderData): array
     {
-        // amount.value is BRUT value; compute a BRUT items-derived total for a fair comparison
-        $amountValue = (float)($unit->amount->value ?? 0.0);
-        $itemsBrutTotal = $this->calculateItemsBruttoTotal($unit);
-        // Difference is itemsDerivedTotal - amountValue
-        return $this->round2($itemsBrutTotal - $amountValue);
-    }
-
-    /**
-     * Adjust the purchase unit breakdown to match the expected NET total.
-     * If expected > amount.value -> add shipping_discount = diff (reduces total);
-     * If expected < amount.value -> add handling = abs(diff) (increases total).
-     */
-    public function adjustPurchaseUnits(\OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest $unit): \OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest
-    {
-        // Ensure amount and breakdown exist
-        if (!isset($unit->amount) || !isset($unit->amount->breakdown)) {
-            return $unit;
-        }
-        // Only adjust when items exist (NET items mode)
-        if (empty($unit->items)) {
-            return $unit;
-        }
-
-        $diff = $this->calculateDifference($unit);
-        if ($diff === 0.0) {
-            return $unit;
-        }
-
-        $currency = $unit->amount->currency_code ??
-            ($unit->amount->breakdown->item_total->currency_code ??
-            ($unit->amount->breakdown->shipping->currency_code ?? 'USD'));
-
-        if ($diff > 0) {
-            // expected is higher than provided amount => reduce breakdown via shipping_discount
-            $unit->amount->breakdown->initShippingDiscount();
-            $current = (float)($unit->amount->breakdown->shipping_discount->value ?? 0.0);
-            $unit->amount->breakdown->shipping_discount->value = $this->round2($current + abs($diff));
-            $unit->amount->breakdown->shipping_discount->currency_code = $currency;
-        } else {
-            // expected is lower than provided amount => increase breakdown via handling
-            $unit->amount->breakdown->initHandling();
-            $current = (float)($unit->amount->breakdown->handling->value ?? 0.0);
-            $unit->amount->breakdown->handling->value = $this->round2($current + abs($diff));
-            $unit->amount->breakdown->handling->currency_code = $currency;
-        }
-
-        return $unit;
-    }
-
-    /**
-     * Compute expected NET total using BasketNetSummaryService & VatOptionsService.
-     * Formula (NET): items + wrapping + giftcard + payment + shipping - discounts.
-     * If blShowVATForPayCharge is enabled, subtract the VAT part of payment costs from shipping portion.
-     */
-    private function calculateExpectedNetTotal(): float
-    {
-        /** @var BasketSummaryService $netSvc */
-        $netSvc = Registry::get(BasketSummaryService::class);
-        $summary = $netSvc->getNetSummary();
-
-        $totals = $summary['totals'] ?? [];
-        $items = (float)($totals['items_net_total'] ?? 0.0);
-        $shipping = (float)($totals['shipping_net'] ?? 0.0);
-        $payment = (float)($totals['payment_net'] ?? 0.0);
-        $wrapping = (float)($totals['wrapping_net'] ?? 0.0);
-        $giftcard = (float)($totals['giftcard_net'] ?? 0.0);
-        $discounts = (float)($totals['discounts_net'] ?? 0.0);
-
-        /** @var VatOptionsService $vatSvc */
-        $vatSvc = Registry::get(VatOptionsService::class);
-        $paymentVatPercent = (float)($summary['vat']['payment_vat'] ?? 0.0);
-
-        // If VAT in payment is displayed, subtract VAT part (amount) from shipping component for PayPal schema
-        if ($paymentVatPercent > 0 && $vatSvc->isPaymentVatVisible()) {
-            $paymentVatAmount = ($paymentVatPercent / 100.0) * $payment;
-            $shipping = max(0.0, $shipping - $paymentVatAmount);
-        }
-
-        $expected = $items + $wrapping + $giftcard + $payment + $shipping - $discounts;
-        return $this->round2($expected);
-    }
-
-    /**
-     * Compute BRUT items-derived total from the model purchase unit for comparison with amount.value
-     */
-    private function calculateItemsBruttoTotal(\OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest $unit): float
-    {
-        $total = 0.0;
-        // Items (unit amounts are BRUT in our model building)
-        if (is_array($unit->items)) {
-            foreach ($unit->items as $item) {
-                $qty = (float)($item->quantity ?? 1);
-                $unitVal = isset($item->unit_amount->value) ? (float)$item->unit_amount->value : 0.0;
-                $total += $qty * $unitVal;
-            }
-        }
-        // Shipping (BRUT)
-        $shipping = isset($unit->amount->breakdown->shipping->value) ? (float)$unit->amount->breakdown->shipping->value : 0.0;
-        // Discounts (BRUT)
-        $discount = isset($unit->amount->breakdown->discount->value) ? (float)$unit->amount->breakdown->discount->value : 0.0;
-        $shippingDiscount = isset($unit->amount->breakdown->shipping_discount->value) ? (float)$unit->amount->breakdown->shipping_discount->value : 0.0;
-
-        // If shop displays VAT contained in Payment Method Charges, subtract payment VAT from shipping portion
+        // Enrich breakdown using services if Basket is present
         try {
-            /** @var VatOptionsService $vatSvc */
-            $vatSvc = Registry::get(VatOptionsService::class);
-            if ($vatSvc->isPaymentVatVisible()) {
-                $session = Registry::getSession();
-                $basket = $session ? $session->getBasket() : null;
-                if ($basket) {
+            // Fetch basket directly from session; do not rely on orderData['basket']
+            $session = \OxidEsales\Eshop\Core\Registry::getSession();
+            $basket = $session ? $session->getBasket() : null;
+            if ($basket instanceof \OxidEsales\Eshop\Application\Model\Basket) {
+                /** @var \OxidSolutionCatalysts\PayPal\Service\VatOptionsService $vatSvc */
+                $vatSvc = \OxidEsales\Eshop\Core\Registry::get(\OxidSolutionCatalysts\PayPal\Service\VatOptionsService::class);
+                // Attach payment VAT to breakdown if configured
+                if ($vatSvc->isPaymentVatVisible()) {
                     $paymentVat = (float)$vatSvc->getPaymentVatAmount($basket);
                     if ($paymentVat > 0) {
-                        $shipping = max(0.0, $shipping - $paymentVat);
+                        $orderData['breakdown']['payment_vat'] = $paymentVat;
                     }
                 }
+                // Initialize BasketSummaryService for potential NET computations (not directly used here)
+                /** @var \OxidSolutionCatalysts\PayPal\Service\BasketSummaryService $netSvc */
+                $netSvc = \OxidEsales\Eshop\Core\Registry::get(\OxidSolutionCatalysts\PayPal\Service\BasketSummaryService::class);
+                // $netSummary = $netSvc->getNetSummary($basket); // intentionally not used to avoid changing amount.value rules
             }
         } catch (\Throwable $e) {
-            // ignore VAT adjustments on failure
+            // Do not block checkout on service retrieval issues
         }
 
+        // Calculate items total (including subtracting discounts if provided in breakdown)
+        $items = $orderData['items'] ?? [];
+        $itemsTotal = $this->calculateItemsTotal($items, $orderData['breakdown'] ?? []);
+
+        // If no items are present, we are not in NET items mode; do not adjust amounts
+        if (empty($items)) {
+            if (isset($orderData['breakdown']['payment_vat'])) {
+                unset($orderData['breakdown']['payment_vat']);
+            }
+            return $orderData;
+        }
+
+        // Ensure item_total in breakdown matches sum of item unit amounts
+        $computedItemTotal = $this->roundToPayPalPrecision($this->calculateItemTotalFromItems($items));
+        $currentItemTotal = isset($orderData['breakdown']['item_total']['value'])
+            ? $this->roundToPayPalPrecision((float)$orderData['breakdown']['item_total']['value'])
+            : null;
+        if ($currentItemTotal === null || $currentItemTotal !== $computedItemTotal) {
+            $itemCurrencyCode = $orderData['breakdown']['item_total']['currency_code']
+                ?? ($orderData['items'][0]['unit_amount']['currency_code']
+                    ?? ($orderData['breakdown']['shipping']['currency_code'] ?? 'USD'));
+            $orderData['breakdown']['item_total'] = [
+                'currency_code' => $itemCurrencyCode,
+                'value' => $this->formatAmount($computedItemTotal)
+            ];
+        }
+
+        // Ensure tax_total in breakdown matches sum of item taxes
+        $computedTaxTotal = $this->roundToPayPalPrecision($this->calculateTaxTotalFromItems($items));
+        $currentTaxTotal = isset($orderData['breakdown']['tax_total']['value'])
+            ? $this->roundToPayPalPrecision((float)$orderData['breakdown']['tax_total']['value'])
+            : null;
+        if ($currentTaxTotal === null || $currentTaxTotal !== $computedTaxTotal) {
+            // Determine currency code for tax_total
+            $currencyCode = $orderData['breakdown']['tax_total']['currency_code']
+                ?? ($orderData['items'][0]['unit_amount']['currency_code']
+                    ?? ($orderData['breakdown']['item_total']['currency_code']
+                        ?? ($orderData['breakdown']['shipping']['currency_code'] ?? 'USD')));
+            $orderData['breakdown']['tax_total'] = [
+                'currency_code' => $currencyCode,
+                'value' => $this->formatAmount($computedTaxTotal)
+            ];
+        }
+
+        // Get breakdown/total from already calculated purchaseUnits amount if provided, otherwise compute
+        $amountValue = isset($orderData['amount_value']) ? (float)$orderData['amount_value'] : null;
+        $breakdownTotal = $this->calculateBreakdownTotal($orderData['breakdown'] ?? [], $amountValue);
+
+        // Check if adjustment is needed
+        $difference = round($itemsTotal - $breakdownTotal, self::DECIMAL_PRECISION);
+
+        if (abs($difference) > 0) {
+            $orderData = $this->adjustAmounts($orderData, $difference);
+
+            // After adjustments (e.g., rounding adjustment item), recompute and correct item_total and tax_total
+            $recomputedItems = $orderData['items'] ?? [];
+            $recomputedItemTotal = $this->roundToPayPalPrecision($this->calculateItemTotalFromItems($recomputedItems));
+            $itemCurrencyCode = $orderData['breakdown']['item_total']['currency_code']
+                ?? ($recomputedItems[0]['unit_amount']['currency_code'] ?? ($orderData['breakdown']['shipping']['currency_code'] ?? 'USD'));
+            $orderData['breakdown']['item_total'] = [
+                'currency_code' => $itemCurrencyCode,
+                'value' => $this->formatAmount($recomputedItemTotal)
+            ];
+
+            $recomputedTaxTotal = $this->roundToPayPalPrecision($this->calculateTaxTotalFromItems($recomputedItems));
+            $taxCurrencyCode = $orderData['breakdown']['tax_total']['currency_code']
+                ?? ($recomputedItems[0]['unit_amount']['currency_code']
+                    ?? ($orderData['breakdown']['item_total']['currency_code']
+                        ?? ($orderData['breakdown']['shipping']['currency_code'] ?? 'USD')));
+            $orderData['breakdown']['tax_total'] = [
+                'currency_code' => $taxCurrencyCode,
+                'value' => $this->formatAmount($recomputedTaxTotal)
+            ];
+        }
+
+        // Sanitize transient keys we might have received in breakdown (not part of PayPal API)
+        if (isset($orderData['breakdown']['payment_vat'])) {
+            unset($orderData['breakdown']['payment_vat']);
+        }
+
+        return $orderData;
+    }
+
+    /**
+     * Calculate total from items
+     * Note: do not round per-item or per-component; only round at final comparison stage.
+     */
+    private function calculateItemsTotal(array $items, array $breakdown = []): float
+    {
+        $total = 0.0;
+
+        foreach ($items as $item) {
+            $quantity = (int)($item['quantity'] ?? 1);
+            $unitAmount = (float)($item['unit_amount']['value'] ?? 0);
+            $total += $quantity * ($unitAmount + (float)$item['tax']["value"]);
+        }
+
+        // Include shipping costs if present in breakdown (no intermediate rounding)
+        $shipping = isset($breakdown['shipping']['value']) ? (float)$breakdown['shipping']['value'] : 0.0;
         $total += $shipping;
+
+        // Subtract discounts if present in breakdown (no intermediate rounding)
+        $discount = isset($breakdown['discount']['value']) ? (float)$breakdown['discount']['value'] : 0.0;
+        $shippingDiscount = isset($breakdown['shipping_discount']['value']) ? (float)$breakdown['shipping_discount']['value'] : 0.0;
         $total -= ($discount + $shippingDiscount);
 
-        return $this->round2($total);
+        // If enabled in shop config, subtract VAT contained in Payment Method Charges from shipping
+        // We expect factories to inject the numeric amount in breakdown['payment_vat'] when the flag blShowVATForPayCharge is on.
+        $paymentVat = isset($breakdown['payment_vat']) ? (float)$breakdown['payment_vat'] : 0.0;
+        if ($paymentVat > 0) {
+            $total -= $paymentVat;
+        }
+
+        // Return raw total; final rounding happens when comparing with amount total.
+        return $total;
     }
 
-    private function round2(float $v): float
+    /**
+     * Calculate total from breakdown
+     */
+    private function calculateBreakdownTotal(array $breakdown, ?float $amountValue = null): float
     {
-        return round($v, self::DECIMALS);
+        // If an already computed purchaseUnits amount value is provided, prefer it
+        if ($amountValue !== null) {
+            return $this->roundToPayPalPrecision($amountValue);
+        }
+
+        // Fallback: compute from breakdown components if amount value is not provided
+        $itemTotal        = $this->roundToPayPalPrecision((float)($breakdown['item_total']['value'] ?? 0));
+        $shipping         = $this->roundToPayPalPrecision((float)($breakdown['shipping']['value'] ?? 0));
+        $taxTotal         = $this->roundToPayPalPrecision((float)($breakdown['tax_total']['value'] ?? 0));
+        $handling         = $this->roundToPayPalPrecision((float)($breakdown['handling']['value'] ?? 0));
+        $insurance        = $this->roundToPayPalPrecision((float)($breakdown['insurance']['value'] ?? 0));
+        $discount         = $this->roundToPayPalPrecision((float)($breakdown['discount']['value'] ?? 0));
+        $shippingDiscount = $this->roundToPayPalPrecision((float)($breakdown['shipping_discount']['value'] ?? 0));
+
+        $total = $itemTotal
+            + $shipping
+            + $taxTotal
+            + $handling
+            + $insurance
+            - $discount
+            - $shippingDiscount;
+
+        return $this->roundToPayPalPrecision($total);
     }
 
-    private function format2(float $v): string
+    /**
+     * Calculate tax_total from items (sum of per-unit tax multiplied by quantity)
+     */
+    private function calculateTaxTotalFromItems(array $items): float
     {
-        return number_format($this->round2($v), self::DECIMALS, '.', '');
+        $sum = 0.0;
+        foreach ($items as $item) {
+            $qty = (int)($item['quantity'] ?? 1);
+            $taxPerUnit = isset($item['tax']['value']) ? (float)$item['tax']['value'] : 0.0;
+            $sum += $qty * $taxPerUnit;
+        }
+        return $this->roundToPayPalPrecision($sum);
+    }
+
+    /**
+     * Calculate item_total from items (sum of per-unit amount multiplied by quantity)
+     */
+    private function calculateItemTotalFromItems(array $items): float
+    {
+        $sum = 0.0;
+        foreach ($items as $item) {
+            $qty = (int)($item['quantity'] ?? 1);
+            $unitAmount = isset($item['unit_amount']['value']) ? (float)$item['unit_amount']['value'] : 0.0;
+            $sum += $qty * $unitAmount;
+        }
+        return $this->roundToPayPalPrecision($sum);
+    }
+
+    /**
+     * Adjust amounts to resolve rounding differences
+     */
+    private function adjustAmounts(array $orderData, float $difference): array
+    {
+        // Difference is itemsTotal - amountValue
+        $absoluteDifference = $this->roundToPayPalPrecision(abs($difference));
+
+        // Adjust for the full absolute difference; round to PayPal precision.
+        if ($absoluteDifference === 0.0) {
+            return $orderData;
+        }
+
+        if ($difference > 0) {
+            // Items total is higher than provided amount: decrease breakdown via shipping_discount
+            $orderData = $this->addShippingDiscount($orderData, $absoluteDifference);
+        } else {
+            // Items total is lower than provided amount: add a dummy item to increase items total
+            $orderData = $this->addAdjustmentItem($orderData, $absoluteDifference);
+        }
+
+        return $orderData;
+    }
+
+    /**
+     * Add shipping discount to balance amounts
+     */
+    private function addShippingDiscount(array $orderData, float $discountValue): array
+    {
+        // Initialize shipping discount if not exists
+        if (!isset($orderData['breakdown']['shipping_discount'])) {
+            $currencyCode = $orderData['items'][0]['unit_amount']['currency_code']
+                ?? ($orderData['breakdown']['item_total']['currency_code'] ?? ($orderData['breakdown']['shipping']['currency_code'] ?? 'USD'));
+            $orderData['breakdown']['shipping_discount'] = [
+                'currency_code' => $currencyCode,
+                'value' => '0.00'
+            ];
+        }
+
+        // Add discount (reduces breakdown total)
+        $currentDiscount = (float)$orderData['breakdown']['shipping_discount']['value'];
+        $newDiscount = $this->roundToPayPalPrecision($currentDiscount + $discountValue);
+
+        $orderData['breakdown']['shipping_discount']['value'] = $this->formatAmount($newDiscount);
+
+        return $orderData;
+    }
+
+    /**
+     * Add handling to balance amounts (increases breakdown total)
+     */
+    private function addHandling(array $orderData, float $handlingValue): array
+    {
+        if (!isset($orderData['breakdown']['handling'])) {
+            $currencyCode = $orderData['items'][0]['unit_amount']['currency_code']
+                ?? ($orderData['breakdown']['item_total']['currency_code'] ?? ($orderData['breakdown']['shipping']['currency_code'] ?? 'USD'));
+            $orderData['breakdown']['handling'] = [
+                'currency_code' => $currencyCode,
+                'value' => '0.00'
+            ];
+        }
+
+        $currentHandling = (float)$orderData['breakdown']['handling']['value'];
+        $newHandling = $this->roundToPayPalPrecision($currentHandling + $handlingValue);
+        $orderData['breakdown']['handling']['value'] = $this->formatAmount($newHandling);
+
+        return $orderData;
+    }
+
+    /**
+     * Adjust item price to balance amounts
+     */
+    private function adjustItemPrice(array $orderData, float $adjustmentValue): array
+    {
+        // Find the first item with sufficient value to adjust
+        foreach ($orderData['items'] as &$item) {
+            $currentPrice = (float)$item['unit_amount']['value'];
+
+            if ($currentPrice >= $adjustmentValue) {
+                $newPrice = $this->roundToPayPalPrecision($currentPrice + $adjustmentValue);
+                $item['unit_amount']['value'] = $this->formatAmount($newPrice);
+                return $orderData;
+            }
+        }
+
+        // If no suitable item found, create a small adjustment item
+        return $this->addAdjustmentItem($orderData, $adjustmentValue);
+    }
+
+    /**
+     * Add a small adjustment item for very small amounts
+     */
+    private function addAdjustmentItem(array $orderData, float $adjustmentValue): array
+    {
+        $currencyCode = $orderData['items'][0]['unit_amount']['currency_code'] ?? 'USD';
+
+        $adjustmentItem = [
+            'name' => 'Rounding Adjustment',
+            'quantity' => 1,
+            'category' => 'DIGITAL_GOODS',
+            'unit_amount' => [
+                'currency_code' => $currencyCode,
+                'value' => $this->formatAmount($adjustmentValue)
+            ],
+            'tax' => [
+                'currency_code' => $currencyCode,
+                'value' => $this->formatAmount(0.0)
+            ],
+            'tax_rate' => '0'
+        ];
+
+        $orderData['items'][] = $adjustmentItem;
+
+        return $orderData;
+    }
+
+    /**
+     * Round amount to PayPal's 2-decimal precision
+     */
+    private function roundToPayPalPrecision(float $amount): float
+    {
+        return round($amount, self::MAX_DECIMALS);
+    }
+
+    /**
+     * Format amount as string with 2 decimals
+     */
+    private function formatAmount(float $amount): string
+    {
+        return number_format($amount, self::DECIMAL_PRECISION, '.', '');
     }
 }

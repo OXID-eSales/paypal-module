@@ -23,7 +23,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3 as ApiAddressP
 use OxidEsales\Eshop\Application\Model\Address as EshopAddress;
 use OxidEsales\Eshop\Application\Model\Country as EshopCountry;
 use OxidSolutionCatalysts\PayPal\Model\State as EshopState;
-use OxidEsales\EshopCommunity\modules\osc\paypal\src\Core\PayPalAmountValidator;
+use OxidSolutionCatalysts\PayPal\Service\PayPalAmountValidator;
 
 /**
  * PayPalPurchaseUnitsFactory
@@ -380,7 +380,7 @@ class PayPalPurchaseUnitsFactory
     private function applyAmountValidator(array $itemsArr, array $amountArr): array
     {
         try {
-            $validator = new PayPalAmountValidator();
+            $validator = Registry::get(PayPalAmountValidator::class);
         } catch (\Throwable $e) {
             // If validator class cannot be instantiated for any reason, return original
             return $amountArr;

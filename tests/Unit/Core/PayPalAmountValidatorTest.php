@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OxidEsales\EshopCommunity\modules\osc\paypal\tests\Unit\Core;
 
-use OxidEsales\EshopCommunity\modules\osc\paypal\src\Core\PayPalAmountValidator;
+use OxidSolutionCatalysts\PayPal\Service\PayPalAmountValidator;
 use PHPUnit\Framework\TestCase;
 
 class PayPalAmountValidatorTest extends TestCase
