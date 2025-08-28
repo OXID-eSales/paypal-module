@@ -30,7 +30,7 @@ class LanguageLocaleMapperTest extends TestCase
         );
     }
 
-    public function getTestData(): array
+    public static function getTestData(): array
     {
         return [
             [ // first supported language

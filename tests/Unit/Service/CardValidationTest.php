@@ -35,7 +35,7 @@ class CardValidationTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->initSerializedVariables();
+        self::initSerializedVariables();
     }
 
     private static function initSerializedVariables(): void
@@ -389,6 +389,7 @@ class CardValidationTest extends TestCase
         $validator->getCardAuthenticationResult(new PayPalApiOrder());
     }
 
+
     public function testNonCardPaymentSource(): void
     {
         $validator = new SCAValidator();
@@ -396,14 +397,14 @@ class CardValidationTest extends TestCase
         $this->expectException(CardValidationException::class);
         $this->expectExceptionMessage(CardValidationException::byPaymentSource()->getMessage());
 
-        $validator->getCardAuthenticationResult(unserialize($this->nonCardPaymentSource));
+        $validator->getCardAuthenticationResult(unserialize(self::$nonCardPaymentSource));
     }
 
     public function testMissingCardAutentication(): void
     {
         $validator = new SCAValidator();
 
-        $order = unserialize($this->missingCardAuthentication);
+        $order = unserialize(self::$missingCardAuthentication);
         $this->assertNull($validator->getCardAuthenticationResult($order));
     }
 
@@ -411,7 +412,7 @@ class CardValidationTest extends TestCase
     {
         $validator = new SCAValidator();
 
-        $order = unserialize($this->success3DCard);
+        $order = unserialize(self::$success3DCard);
         $validationResult = $validator->getCardAuthenticationResult($order);
         $this->assertSame(SCAValidator::LIABILITY_SHIFT_POSSIBLE, $validationResult->liability_shift);
         $this->assertSame(SCAValidator::AUTH_STATUS_SUCCESS, $validationResult->three_d_secure->authentication_status);
@@ -427,7 +428,7 @@ class CardValidationTest extends TestCase
         $this->{$assertMethod}($validator->isCardUsableForPayment(unserialize($serializedOrder)));
     }
 
-    public function providerPayPalApiOrderResults(): array
+    public static function providerPayPalApiOrderResults(): array
     {
         self::initSerializedVariables();
         return [
@@ -451,6 +452,6 @@ class CardValidationTest extends TestCase
     public function testIsCardSafeToUseFail()
     {
         $validator = new SCAValidator();
-        $this->assertFalse($validator->isCardUsableForPayment(unserialize($this->missingCardAuthentication)));
+        $this->assertFalse($validator->isCardUsableForPayment(unserialize(self::$missingCardAuthentication)));
     }
 }

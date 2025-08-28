@@ -37,6 +37,7 @@ abstract class BaseTestCase extends TestCase
         $this->updateModuleConfiguration('oscPayPalSandboxMode', true);
         $this->updateModuleConfiguration('oscPayPalSandboxClientSecret', $_ENV['oscPayPalSandboxClientSecret']);
         $this->queryBuilderFactory = $this->getServiceFromContainer(QueryBuilderFactoryInterface::class);
+
         $this->importTestProducts();
         $this->updateViews();
     }
@@ -114,6 +115,51 @@ abstract class BaseTestCase extends TestCase
 
     private function importTestProducts(): void
     {
+        try {
+            $dumpFilePath = $this->getDumpFilePath();
+            $sqlContent = $this->readDumpFile($dumpFilePath);
+            $sqlStatements = $this->splitSqlStatements($sqlContent);
+
+            // Get a database connection from the DatabaseProvider
+            $connection = DatabaseProvider::getDb();
+
+            $connection->startTransaction(); // Begin a transaction
+            try {
+                foreach ($sqlStatements as $statement) {
+                    $this->executeSqlStatement($connection, $statement);
+                }
+                $connection->commitTransaction(); // Commit all successfully executed statements
+            } catch (\Exception $e) {
+                $connection->rollbackTransaction(); // Rollback if there is an error
+                throw new Exception("Error importing SQL dump: " . $e->getMessage());
+            }
+        } catch (Exception $e) {
+            throw new Exception("Error during test product import: " . $e->getMessage());
+        }
+    }
+
+    private function executeSqlStatement($connection, string $statement): void
+    {
+        if (empty($statement) || stripos($statement, 'OXPIXIEXPORT') !== false) {
+            return;
+        }
+
+        try {
+            // Execute the raw SQL statement
+            $connection->execute($statement);
+        } catch (\Exception $e) {
+            // Ignore duplicate entry errors
+            if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
+                return;
+            }
+
+            // Log or handle other errors
+            echo "Error during SQL execution: " . $e->getMessage();
+        }
+    }
+
+    private function getDumpFilePath(): string
+    {
         $testsDir = realpath(__DIR__ . '/../../tests');
         if ($testsDir === false) {
             throw new Exception("Unable to locate the tests directory.");
@@ -124,30 +170,17 @@ abstract class BaseTestCase extends TestCase
             throw new Exception("SQL dump file not found at: {$dumpFilePath}");
         }
 
-        $sqlContent = file_get_contents($dumpFilePath);
+        return $dumpFilePath;
+    }
+
+    private function readDumpFile(string $filePath): string
+    {
+        $sqlContent = file_get_contents($filePath);
         if ($sqlContent === false) {
-            throw new Exception("Error reading SQL dump file from: {$dumpFilePath}");
+            throw new Exception("Error reading SQL dump file from: {$filePath}");
         }
 
-        $sqlStatements = $this->splitSqlStatements($sqlContent);
-        $queryBuilder = $this->queryBuilderFactory->create();
-        $connection = $queryBuilder->getConnection();
-
-        foreach ($sqlStatements as $statement) {
-            if (!empty($statement)) {
-                if (stripos($statement, 'OXPIXIEXPORT') !== false) {
-                    continue;
-                }
-                try {
-                    $connection->executeStatement($statement);
-                } catch (\Exception $e) {
-                    if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
-                        continue;
-                    }
-                    echo "Error during SQL dump import: " . $e->getMessage();
-                }
-            }
-        }
+        return $sqlContent;
     }
 
     private function splitSqlStatements(string $sql): array

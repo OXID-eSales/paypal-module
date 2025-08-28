@@ -142,7 +142,7 @@ final class OrderTest extends BaseTestCase
         $this->assertSame('test-pui-1234', $order->getFieldData('oxinvoicenr'));
     }
 
-    public function dataProviderFinalizeOrder(): array
+    public static function dataProviderFinalizeOrder(): array
     {
         return [
             'wait_for_webhook' => [
