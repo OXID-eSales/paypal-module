@@ -63,7 +63,7 @@
     [{/if}]
 
     [{if $paymentId == 'oscpaypal_googlepay'}]
-        [{assign var="bGooglePayDelivery" value=$oConfig->getConfigParam('oscPayPalUseGooglePayAddress')}]
+        [{assign var="bGooglePayDelivery" value=$oPPconfig->getIsGooglePayDeliveryAddressActive()}]
 
         window.PayPalPaymentControllerConfigurator = function () {
             return Object.assign (PayPalPaymentControllerConfiguratorDefaults, {
@@ -73,8 +73,8 @@
                 googlePayOrderCreateUrl: '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                 shopOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
 
-                isSandbox: !![{$isSandBox}],
-                useGooglePayAddress: !!'[{$bGooglePayDelivery}]',
+                isSandbox: [{if $isSandBox}]true[{else}]false[{/if}],
+                useGooglePayAddress: [{if $bGooglePayDelivery}]true[{else}]false[{/if}]',
                 merchantName: '[{$oxcmp_shop->oxshops__oxname->value|oxescape}]',
                 totalPrice: '[{$oxcmp_basket->getPriceForPayment()}]',
                 paymentId: '[{$paymentId}]',
