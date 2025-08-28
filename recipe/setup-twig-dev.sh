@@ -38,6 +38,9 @@ fi
 cd "$PROJECT_ROOT" || exit 1
 git clone https://github.com/OXID-eSales/oxideshop_ce.git --branch=b-8.0.x source
 
+cd extensions/paypal/recipe/parts
+git checkout detached
+
 make setup
 make addbasicservices
 make file=services/adminer.yml addservice

@@ -156,7 +156,7 @@ final class ViewConfigTest extends TestCase
         $this->assertEquals($colorScheme, $view->getPayPalCheckoutBannersColorScheme());
     }
 
-    public function providerGetPayPalColorScheme(): array
+    public static function providerGetPayPalColorScheme(): array
     {
         return [
             ['blue'],

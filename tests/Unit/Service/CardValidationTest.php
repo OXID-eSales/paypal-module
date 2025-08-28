@@ -16,51 +16,51 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Giropay;
 
 class CardValidationTest extends TestCase
 {
-    private string $missingCardAuthentication;
-    private string $nonCardPaymentSource;
-    private string $standardCard3D;
-    private string $success3DCard;
-    private string $failedSignature;
-    private string $failedAuthentication;
-    private string $noPrompt;
-    private string $timeout;
-    private string $notEnrolled;
-    private string $systemNotAvailable;
-    private string $merchantNotActive;
-    private string $failedSignature3DS1;
-    private string $cmpiLookupError;
-    private string $cmpiAuthError;
-    private string $unavailableAuth;
-    private string $bypassedAuth;
+    private static string $missingCardAuthentication;
+    private static string $nonCardPaymentSource;
+    private static string $standardCard3D;
+    private static string $success3DCard;
+    private static string $failedSignature;
+    private static string $failedAuthentication;
+    private static string $noPrompt;
+    private static string $timeout;
+    private static string $notEnrolled;
+    private static string $systemNotAvailable;
+    private static string $merchantNotActive;
+    private static string $failedSignature3DS1;
+    private static string $cmpiLookupError;
+    private static string $cmpiAuthError;
+    private static string $unavailableAuth;
+    private static string $bypassedAuth;
 
     protected function setUp(): void
     {
         $this->initSerializedVariables();
     }
 
-    private function initSerializedVariables(): void
+    private static function initSerializedVariables(): void
     {
-        $this->missingCardAuthentication = $this->getSerializedMissingCardAuthObject();
-        $this->nonCardPaymentSource       = $this->getSerializedNonCardPaymentSourceObject();
-        $this->standardCard3D             = $this->getSerializedStandardCard3DObject();
-        $this->success3DCard              = $this->getSerializedSuccess3DCardObject();
-        $this->failedSignature            = $this->getSerializedFailedSignatureObject();
-        $this->failedAuthentication       = $this->getSerializedFailedAuthenticationObject();
-        $this->noPrompt                   = $this->getSerializedNoPromptObject();
-        $this->timeout                    = $this->getSerializedTimeoutObject();
-        $this->notEnrolled                = $this->getSerializedNotEnrolledObject();
-        $this->systemNotAvailable         = $this->getSerializedSystemNotAvailableObject();
-        $this->merchantNotActive          = $this->getSerializedMerchantNotActiveObject();
-        $this->failedSignature3DS1        = $this->getSerializedFailedSignature3DS1Object();
-        $this->cmpiLookupError            = $this->getSerializedCmpiLookupErrorObject();
-        $this->cmpiAuthError              = $this->getSerializedCmpiAuthErrorObject();
-        $this->unavailableAuth            = $this->getSerializedUnavailableAuthObject();
-        $this->bypassedAuth               = $this->getSerializedBypassedAuthObject();
+        self::$missingCardAuthentication  = self::getSerializedMissingCardAuthObject();
+        self::$nonCardPaymentSource       = self::getSerializedNonCardPaymentSourceObject();
+        self::$standardCard3D             = self::getSerializedStandardCard3DObject();
+        self::$success3DCard              = self::getSerializedSuccess3DCardObject();
+        self::$failedSignature            = self::getSerializedFailedSignatureObject();
+        self::$failedAuthentication       = self::getSerializedFailedAuthenticationObject();
+        self::$noPrompt                   = self::getSerializedNoPromptObject();
+        self::$timeout                    = self::getSerializedTimeoutObject();
+        self::$notEnrolled                = self::getSerializedNotEnrolledObject();
+        self::$systemNotAvailable         = self::getSerializedSystemNotAvailableObject();
+        self::$merchantNotActive          = self::getSerializedMerchantNotActiveObject();
+        self::$failedSignature3DS1        = self::getSerializedFailedSignature3DS1Object();
+        self::$cmpiLookupError            = self::getSerializedCmpiLookupErrorObject();
+        self::$cmpiAuthError              = self::getSerializedCmpiAuthErrorObject();
+        self::$unavailableAuth            = self::getSerializedUnavailableAuthObject();
+        self::$bypassedAuth               = self::getSerializedBypassedAuthObject();
     }
 
     // Each of the following private methods builds a PayPalApiOrder with the desired properties and then serializes it.
 
-    private function getSerializedMissingCardAuthObject(): string
+    private static function getSerializedMissingCardAuthObject(): string
     {
         $order = new PayPalApiOrder();
         $paymentSource = $order->initPaymentSource();
@@ -75,7 +75,7 @@ class CardValidationTest extends TestCase
         return serialize($order);
     }
 
-    private function getSerializedNonCardPaymentSourceObject(): string
+    private static function getSerializedNonCardPaymentSourceObject(): string
     {
         $order = new PayPalApiOrder();
         $paymentSource = $order->initPaymentSource();
@@ -92,7 +92,7 @@ class CardValidationTest extends TestCase
         return serialize($order);
     }
 
-    private function getSerializedStandardCard3DObject(): string
+    private static function getSerializedStandardCard3DObject(): string
     {
         $order = new PayPalApiOrder();
         $paymentSource = $order->initPaymentSource();
@@ -114,7 +114,7 @@ class CardValidationTest extends TestCase
         return serialize($order);
     }
 
-    private function getSerializedSuccess3DCardObject(): string
+    private static function getSerializedSuccess3DCardObject(): string
     {
         $order = new PayPalApiOrder();
         $paymentSource = $order->initPaymentSource();
@@ -136,7 +136,7 @@ class CardValidationTest extends TestCase
         return serialize($order);
     }
 
-    private function getSerializedFailedSignatureObject(): string
+    private static function getSerializedFailedSignatureObject(): string
     {
         $order = new PayPalApiOrder();
         $paymentSource = $order->initPaymentSource();
@@ -158,7 +158,7 @@ class CardValidationTest extends TestCase
         return serialize($order);
     }
 
-    private function getSerializedFailedAuthenticationObject(): string
+    private static function getSerializedFailedAuthenticationObject(): string
     {
         $order = new PayPalApiOrder();
         $paymentSource = $order->initPaymentSource();
@@ -180,7 +180,7 @@ class CardValidationTest extends TestCase
         return serialize($order);
     }
 
-    private function getSerializedNoPromptObject(): string
+    private static function getSerializedNoPromptObject(): string
     {
         $order = new PayPalApiOrder();
         $paymentSource = $order->initPaymentSource();
@@ -202,7 +202,7 @@ class CardValidationTest extends TestCase
         return serialize($order);
     }
 
-    private function getSerializedTimeoutObject(): string
+    private static function getSerializedTimeoutObject(): string
     {
         $order = new PayPalApiOrder();
         $paymentSource = $order->initPaymentSource();
@@ -222,7 +222,7 @@ class CardValidationTest extends TestCase
         return serialize($order);
     }
 
-    private function getSerializedNotEnrolledObject(): string
+    private static function getSerializedNotEnrolledObject(): string
     {
         $order = new PayPalApiOrder();
         $paymentSource = $order->initPaymentSource();
@@ -244,13 +244,13 @@ class CardValidationTest extends TestCase
         return serialize($order);
     }
 
-    private function getSerializedSystemNotAvailableObject(): string
+    private static function getSerializedSystemNotAvailableObject(): string
     {
         // In this simulation, system not available mirrors the not-enrolled state.
-        return $this->getSerializedNotEnrolledObject();
+        return self::getSerializedNotEnrolledObject();
     }
 
-    private function getSerializedMerchantNotActiveObject(): string
+    private static function getSerializedMerchantNotActiveObject(): string
     {
         $order = new PayPalApiOrder();
         $paymentSource = $order->initPaymentSource();
@@ -270,7 +270,7 @@ class CardValidationTest extends TestCase
         return serialize($order);
     }
 
-    private function getSerializedFailedSignature3DS1Object(): string
+    private static function getSerializedFailedSignature3DS1Object(): string
     {
         $order = new PayPalApiOrder();
         $paymentSource = $order->initPaymentSource();
@@ -290,7 +290,7 @@ class CardValidationTest extends TestCase
         return serialize($order);
     }
 
-    private function getSerializedCmpiLookupErrorObject(): string
+    private static function getSerializedCmpiLookupErrorObject(): string
     {
         $order = new PayPalApiOrder();
         $paymentSource = $order->initPaymentSource();
@@ -309,7 +309,7 @@ class CardValidationTest extends TestCase
         return serialize($order);
     }
 
-    private function getSerializedCmpiAuthErrorObject(): string
+    private static function getSerializedCmpiAuthErrorObject(): string
     {
         $order = new PayPalApiOrder();
         $paymentSource = $order->initPaymentSource();
@@ -331,7 +331,7 @@ class CardValidationTest extends TestCase
         return serialize($order);
     }
 
-    private function getSerializedUnavailableAuthObject(): string
+    private static function getSerializedUnavailableAuthObject(): string
     {
         $order = new PayPalApiOrder();
         $paymentSource = $order->initPaymentSource();
@@ -353,7 +353,7 @@ class CardValidationTest extends TestCase
         return serialize($order);
     }
 
-    private function getSerializedBypassedAuthObject(): string
+    private static function getSerializedBypassedAuthObject(): string
     {
         $order = new PayPalApiOrder();
         $paymentSource = $order->initPaymentSource();
@@ -429,22 +429,22 @@ class CardValidationTest extends TestCase
 
     public function providerPayPalApiOrderResults(): array
     {
-        $this->initSerializedVariables();
+        self::initSerializedVariables();
         return [
-            'success'            => ['success' => $this->success3DCard,       'method' => 'assertTrue'],
-            'standardcard'       => ['success' => $this->standardCard3D,       'method' => 'assertTrue'],
-            'failesignature'     => ['success' => $this->failedSignature,      'method' => 'assertFalse'],
-            'failedauth'         => ['success' => $this->failedAuthentication, 'method' => 'assertFalse'],
-            'no_credemtial_prompt' => ['success' => $this->noPrompt,            'method' => 'assertTrue'],
-            'timeout'            => ['success' => $this->timeout,             'method' => 'assertFalse'],
-            'not_enrolled'       => ['success' => $this->notEnrolled,         'method' => 'assertTrue'],
-            'system_not_available' => ['success' => $this->systemNotAvailable,  'method' => 'assertTrue'],
-            'merchant_not_active' => ['success' => $this->merchantNotActive,   'method' => 'assertFalse'],
-            'failed_3Ds1'        => ['success' => $this->failedSignature3DS1,   'method' => 'assertFalse'],
-            'cmpiLookupError'    => ['success' => $this->cmpiLookupError,       'method' => 'assertFalse'],
-            'cmpiAuthError'      => ['success' => $this->cmpiAuthError,         'method' => 'assertFalse'],
-            'unavailableAuth'    => ['success' => $this->unavailableAuth,       'method' => 'assertFalse'],
-            'bypassedAuth'       => ['success' => $this->bypassedAuth,          'method' => 'assertTrue'],
+            'success'            => ['success' => self::$success3DCard,       'method' => 'assertTrue'],
+            'standardcard'       => ['success' => self::$standardCard3D,       'method' => 'assertTrue'],
+            'failesignature'     => ['success' => self::$failedSignature,      'method' => 'assertFalse'],
+            'failedauth'         => ['success' => self::$failedAuthentication, 'method' => 'assertFalse'],
+            'no_credemtial_prompt' => ['success' => self::$noPrompt,            'method' => 'assertTrue'],
+            'timeout'            => ['success' => self::$timeout,             'method' => 'assertFalse'],
+            'not_enrolled'       => ['success' => self::$notEnrolled,         'method' => 'assertTrue'],
+            'system_not_available' => ['success' => self::$systemNotAvailable,  'method' => 'assertTrue'],
+            'merchant_not_active' => ['success' => self::$merchantNotActive,   'method' => 'assertFalse'],
+            'failed_3Ds1'        => ['success' => self::$failedSignature3DS1,   'method' => 'assertFalse'],
+            'cmpiLookupError'    => ['success' => self::$cmpiLookupError,       'method' => 'assertFalse'],
+            'cmpiAuthError'      => ['success' => self::$cmpiAuthError,         'method' => 'assertFalse'],
+            'unavailableAuth'    => ['success' => self::$unavailableAuth,       'method' => 'assertFalse'],
+            'bypassedAuth'       => ['success' => self::$bypassedAuth,          'method' => 'assertTrue'],
         ];
     }
 

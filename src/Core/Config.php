@@ -18,6 +18,7 @@ use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Client;
 use RuntimeException;
+use Symfony\Component\Filesystem\Path;
 
 /**
  * Class Config
@@ -25,7 +26,15 @@ use RuntimeException;
 class Config
 {
     use ServiceContainer;
+    
 
+
+    public function __construct(private ?ModuleSettings $moduleSettings = null)
+    {
+        $this->moduleSettings = $this->moduleSettings
+            ?? $this->getServiceFromContainer(ModuleSettings::class);
+    }
+    
     /**
      * Checks if module configurations are valid
      *
@@ -33,7 +42,7 @@ class Config
      */
     public function checkHealth(): void
     {
-        if (!$this->getServiceFromContainer(ModuleSettings::class)->checkHealth()) {
+        if (!$this->moduleSettings->checkHealth()) {
             throw oxNew(
                 StandardException::class
             );
@@ -59,7 +68,7 @@ class Config
      */
     public function isSandbox(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandbox();
+        return $this->moduleSettings->isSandbox();
     }
 
     /**
@@ -67,17 +76,17 @@ class Config
      */
     public function getClientId(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getClientId();
+        return $this->moduleSettings->getClientId();
     }
 
     public function getLiveClientId(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getLiveClientId();
+        return  $this->moduleSettings->getLiveClientId();
     }
 
     public function getSandboxClientId(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxClientId();
+        return  $this->moduleSettings->getSandboxClientId();
     }
 
     /**
@@ -85,17 +94,17 @@ class Config
      */
     public function getClientSecret(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getClientSecret();
+        return  $this->moduleSettings->getClientSecret();
     }
 
     public function getLiveClientSecret(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getLiveClientSecret();
+        return $this->moduleSettings->getLiveClientSecret();
     }
 
     public function getSandboxClientSecret(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxClientSecret();
+        return $this->moduleSettings->getSandboxClientSecret();
     }
 
     /**
@@ -103,32 +112,32 @@ class Config
      */
     public function getMerchantId(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getMerchantId();
+        return $this->moduleSettings->getMerchantId();
     }
 
     public function getLiveMerchantId(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getLiveMerchantId();
+        return $this->moduleSettings->getLiveMerchantId();
     }
 
     public function getSandboxMerchantId(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxMerchantId();
+        return $this->moduleSettings->getSandboxMerchantId();
     }
 
     public function getWebhookId(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getWebhookId();
+        return $this->moduleSettings->getWebhookId();
     }
 
     public function getLiveWebhookId(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getLiveWebhookId();
+        return $this->moduleSettings->getLiveWebhookId();
     }
 
     public function getSandboxWebhookId(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxWebhookId();
+        return $this->moduleSettings->getSandboxWebhookId();
     }
 
     /**
@@ -136,296 +145,296 @@ class Config
      */
     public function isAcdcEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isAcdcEligibility();
+        return $this->moduleSettings->isAcdcEligibility();
     }
 
     public function isLiveAcdcEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveAcdcEligibility();
+        return $this->moduleSettings->isLiveAcdcEligibility();
     }
 
     public function isSandboxAcdcEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxAcdcEligibility();
+        return $this->moduleSettings->isSandboxAcdcEligibility();
     }
 
     public function isPuiEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isPuiEligibility();
+        return $this->moduleSettings->isPuiEligibility();
     }
 
     public function isLivePuiEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isLivePuiEligibility();
+        return $this->moduleSettings->isLivePuiEligibility();
     }
 
     public function isSandboxPuiEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxPuiEligibility();
+        return $this->moduleSettings->isSandboxPuiEligibility();
     }
 
     public function isVaultingEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isVaultingEligibility();
+        return $this->moduleSettings->isVaultingEligibility();
     }
 
     public function isLiveVaultingEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveVaultingEligibility();
+        return $this->moduleSettings->isLiveVaultingEligibility();
     }
 
     public function isSandboxVaultingEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxVaultingEligibility();
+        return $this->moduleSettings->isSandboxVaultingEligibility();
     }
 
     public function isLiveApplePayEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveApplePayEligibility();
+        return $this->moduleSettings->isLiveApplePayEligibility();
     }
 
     public function isSandboxApplePayEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxApplePayEligibility();
+        return $this->moduleSettings->isSandboxApplePayEligibility();
     }
 
     public function isLiveGooglePayEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveGooglePayEligibility();
+        return $this->moduleSettings->isLiveGooglePayEligibility();
     }
 
     public function isSandboxGooglePayEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxGooglePayEligibility();
+        return $this->moduleSettings->isSandboxGooglePayEligibility();
     }
 
     public function isLiveEpsEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveEpsEligibility();
+        return $this->moduleSettings->isLiveEpsEligibility();
     }
 
     public function isSandboxEpsEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxEpsEligibility();
+        return $this->moduleSettings->isSandboxEpsEligibility();
     }
 
     public function isLivePrzelewy24Eligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isLivePrzelewy24Eligibility();
+        return $this->moduleSettings->isLivePrzelewy24Eligibility();
     }
 
     public function isSandboxPrzelewy24Eligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxPrzelewy24Eligibility();
+        return $this->moduleSettings->isSandboxPrzelewy24Eligibility();
     }
 
     public function isLiveSepaEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveSepaEligibility();
+        return $this->moduleSettings->isLiveSepaEligibility();
     }
 
     public function isSandboxSepaEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxSepaEligibility();
+        return $this->moduleSettings->isSandboxSepaEligibility();
     }
 
     public function isLiveBlikEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveBlikEligibility();
+        return $this->moduleSettings->isLiveBlikEligibility();
     }
 
     public function isSandboxBlikEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxBlikEligibility();
+        return $this->moduleSettings->isSandboxBlikEligibility();
     }
 
     public function isLiveBanContactEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveBanContactEligibility();
+        return $this->moduleSettings->isLiveBanContactEligibility();
     }
 
     public function isSandboxBanContactEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxBanContactEligibility();
+        return $this->moduleSettings->isSandboxBanContactEligibility();
     }
 
     public function isLiveIDealEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isLiveIDealEligibility();
+        return $this->moduleSettings->isLiveIDealEligibility();
     }
 
     public function isSandboxIDealEligibility(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isSandboxIDealEligibility();
+        return $this->moduleSettings->isSandboxIDealEligibility();
     }
 
     public function getSupportedLocales(): array
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getSupportedLocales();
+        return $this->moduleSettings->getSupportedLocales();
     }
 
     public function getSupportedLocalesCommaSeparated(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getSupportedLocalesCommaSeparated();
+        return $this->moduleSettings->getSupportedLocalesCommaSeparated();
     }
 
     public function showPayPalBasketButton(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalBasketButton();
+        return $this->moduleSettings->showPayPalBasketButton();
     }
 
     public function showPayPalMiniBasketButton(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalMiniBasketButton();
+        return $this->moduleSettings->showPayPalMiniBasketButton();
     }
 
     public function showPayPalPayLaterButton(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalPayLaterButton();
+        return $this->moduleSettings->showPayPalPayLaterButton();
     }
 
     public function showPayPalProductDetailsButton(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalProductDetailsButton();
+        return $this->moduleSettings->showPayPalProductDetailsButton();
     }
 
     public function loginWithPayPalEMail(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->loginWithPayPalEMail();
+        return $this->moduleSettings->loginWithPayPalEMail();
     }
 
     public function getAutoBillOutstanding(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getAutoBillOutstanding();
+        return $this->moduleSettings->getAutoBillOutstanding();
     }
 
     public function getSetupFeeFailureAction(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getSetupFeeFailureAction();
+        return $this->moduleSettings->getSetupFeeFailureAction();
     }
 
     public function getPaymentFailureThreshold(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getPaymentFailureThreshold();
+        return $this->moduleSettings->getPaymentFailureThreshold();
     }
 
     public function showAllPayPalBanners(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->showAllPayPalBanners();
+        return $this->moduleSettings->showAllPayPalBanners();
     }
 
     public function showBannersOnStartPage(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->showBannersOnStartPage();
+        return $this->moduleSettings->showBannersOnStartPage();
     }
 
     public function getStartPageBannerSelector(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getStartPageBannerSelector();
+        return $this->moduleSettings->getStartPageBannerSelector();
     }
     public function getDefaultShippingPriceForExpress(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getDefaultShippingPriceForExpress();
+        return $this->moduleSettings->getDefaultShippingPriceForExpress();
     }
 
     public function showBannersOnCategoryPage(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->showBannersOnCategoryPage();
+        return $this->moduleSettings->showBannersOnCategoryPage();
     }
 
     public function getCategoryPageBannerSelector(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getCategoryPageBannerSelector();
+        return $this->moduleSettings->getCategoryPageBannerSelector();
     }
 
     public function showBannersOnSearchPage(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->showBannersOnSearchPage();
+        return $this->moduleSettings->showBannersOnSearchPage();
     }
 
     public function getSearchPageBannerSelector(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getSearchPageBannerSelector();
+        return $this->moduleSettings->getSearchPageBannerSelector();
     }
 
     public function showBannersOnProductDetailsPage(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->showBannersOnProductDetailsPage();
+        return $this->moduleSettings->showBannersOnProductDetailsPage();
     }
 
     public function getProductDetailsPageBannerSelector(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getProductDetailsPageBannerSelector();
+        return $this->moduleSettings->getProductDetailsPageBannerSelector();
     }
 
     public function showBannersOnCheckoutPage(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->showBannersOnCheckoutPage();
+        return $this->moduleSettings->showBannersOnCheckoutPage();
     }
 
     public function getPayPalCheckoutBannerCartPageSelector(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalCheckoutBannerCartPageSelector();
+        return $this->moduleSettings->getPayPalCheckoutBannerCartPageSelector();
     }
 
     public function getPayPalCheckoutBannerPaymentPageSelector(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalCheckoutBannerPaymentPageSelector();
+        return $this->moduleSettings->getPayPalCheckoutBannerPaymentPageSelector();
     }
 
     public function getPayPalCheckoutBannerColorScheme(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalCheckoutBannerColorScheme();
+        return $this->moduleSettings->getPayPalCheckoutBannerColorScheme();
     }
 
     public function getPayPalButtonStyleLayout(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalButtonStyleLayout();
+        return $this->moduleSettings->getPayPalButtonStyleLayout();
     }
 
     public function getPayPalButtonStyleColor(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalButtonStyleColor();
+        return $this->moduleSettings->getPayPalButtonStyleColor();
     }
 
     public function getPayPalButtonStyleShape(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalButtonStyleShape();
+        return $this->moduleSettings->getPayPalButtonStyleShape();
     }
 
     public function getPayPalButtonStyleLabel(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalButtonStyleLabel();
+        return $this->moduleSettings->getPayPalButtonStyleLabel();
     }
 
     public function getPayPalStandardCaptureStrategy(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalStandardCaptureStrategy();
+        return $this->moduleSettings->getPayPalStandardCaptureStrategy();
     }
 
     public function getPayPalSCAContingency(): string
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getPayPalSCAContingency();
+        return $this->moduleSettings->getPayPalSCAContingency();
     }
 
     public function alwaysIgnoreSCAResult(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->alwaysIgnoreSCAResult();
+        return $this->moduleSettings->alwaysIgnoreSCAResult();
     }
 
     public function cleanUpNotFinishedOrdersAutomaticlly(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->cleanUpNotFinishedOrdersAutomaticlly();
+        return $this->moduleSettings->cleanUpNotFinishedOrdersAutomaticlly();
     }
 
     public function getStartTimeCleanUpOrders(): int
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getStartTimeCleanUpOrders();
+        return $this->moduleSettings->getStartTimeCleanUpOrders();
     }
 
     public function isCustomIdSchemaStructural(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->isCustomIdSchemaStructural();
+        return $this->moduleSettings->isCustomIdSchemaStructural();
     }
 
     public function tableExists(string $tableName = ''): bool
@@ -459,8 +468,7 @@ class Config
      */
     public function getCacheDir(): string
     {
-        $dir = Registry::getConfig()->getConfigParam('sCompileDir')
-            . DIRECTORY_SEPARATOR . Module::MODULE_ID . DIRECTORY_SEPARATOR;
+        $dir = Path::join(getenv('OXID_BUILD_DIRECTORY'),  Module::MODULE_ID);
         if ((file_exists($dir) === false) && !mkdir($dir) && !is_dir($dir)) {
             throw new RuntimeException(sprintf('Directory "%s" was not created', $dir));
         }
@@ -537,7 +545,7 @@ class Config
 
     public function getIsVaultingActive(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getIsVaultingActive();
+        return $this->moduleSettings->getIsVaultingActive();
     }
 
     public function getUserIdForVaulting(): string
@@ -561,6 +569,6 @@ class Config
 
     public function getIsGooglePayDeliveryAdressActive(): bool
     {
-        return $this->getServiceFromContainer(ModuleSettings::class)->getIsGooglePayDeliveryAddressActive();
+        return $this->moduleSettings->getIsGooglePayDeliveryAddressActive();
     }
 }
