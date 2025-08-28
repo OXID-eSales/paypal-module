@@ -75,6 +75,7 @@ class ProxyController extends FrontendController
         }
         $paymentId = $basket->getPaymentId();
 
+        /** @var ModuleSettings $moduleSettings */
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
 
         $defaultShippingPriceExpress = (double) $moduleSettings->getDefaultShippingPriceForExpress();
