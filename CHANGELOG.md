@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - add Age Control (min age 18) for PUI
 - [0007785](https://bugs.oxid-esales.com/view.php?id=7785): Fix: If you only fill in one of the fields Tracking carrier or code for PayPal orders, an alert inform that you need all fields
 - show Express-Buttons only if Basket > 0 or ArticlePrice > 0
+- fixes an error in the display of the GooglePay button
 
 ### FIX
 
