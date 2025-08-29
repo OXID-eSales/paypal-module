@@ -24,6 +24,76 @@
                     document.getElementById("paypaltrackingcarrierprovider").innerHTML = providerHtml;
                 });
             }
+
+            // Validation function for PayPal tracking fields
+            function validatePayPalTrackingFields() {
+                const countryField = document.querySelector('select[name="paypaltrackingcarriercountry"]');
+                const providerField = document.querySelector('select[name="paypaltrackingcarrier"]');
+                const trackingCodeField = document.querySelector('input[name="paypaltrackingcode"]');
+
+                const countryValue = countryField ? countryField.value.trim() : '';
+                const providerValue = providerField ? providerField.value.trim() : '';
+                const trackingCodeValue = trackingCodeField ? trackingCodeField.value.trim() : '';
+
+                // Check if provider or tracking code is filled
+                const hasProviderOrCode = providerValue !== '' || trackingCodeValue !== '';
+
+                if (hasProviderOrCode) {
+                    // If one field is filled, all three must be filled
+                    if (countryValue === '' || providerValue === '' || trackingCodeValue === '') {
+                        alert('{{ translate({ ident: "OSC_PAYPAL_TRACKING_VALIDATION_ERROR" }) }}');
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            // Add event listeners for real-time validation feedback
+            function addPayPalTrackingValidation() {
+                const providerField = document.querySelector('select[name="paypaltrackingcarrier"]');
+                const trackingCodeField = document.querySelector('input[name="paypaltrackingcode"]');
+
+                if (providerField) {
+                    providerField.addEventListener('change', function() {
+                        // Optional: Add visual feedback here if needed
+                    });
+                }
+
+                if (trackingCodeField) {
+                    trackingCodeField.addEventListener('blur', function() {
+                        // Optional: Add visual feedback here if needed
+                    });
+                }
+            }
+
+            // Initialize validation when DOM is ready
+            document.addEventListener('DOMContentLoaded', function() {
+                addPayPalTrackingValidation();
+
+                // Attach validation to external submit button if it exists
+                const externalSaveButton = document.getElementById('saveFormButton');
+                if (externalSaveButton) {
+                    // Store original onclick handler if exists
+                    const originalOnclick = externalSaveButton.onclick;
+
+                    externalSaveButton.onclick = function(event) {
+                        // Run validation first
+                        if (!validatePayPalTrackingFields()) {
+                            event.preventDefault();
+                            return false;
+                        }
+
+                        // Execute original onclick handler if it exists
+                        if (originalOnclick) {
+                            return originalOnclick.call(this, event);
+                        }
+
+                        return true;
+                    };
+                }
+            });
+
             {% if phpStorm %}</script>{% endif %}
         {% endset %}
         {{ script({ add: populateCarrierScript.__toString(), priority: 10, dynamic: __oxid_include_dynamic }) }}
@@ -87,7 +157,7 @@
                 {% include "inputhelp.html.twig" with {'sHelpId': help_id("HELP_ORDER_MAIN_DELTYPE"), 'sHelpText': help_text("HELP_ORDER_MAIN_DELTYPE")} %}
             </td>
             <td>
-                <input type="submit" class="edittext" name="save" id="shippNowButton" onclick="document.myedit.sendorder.value=1;document.myedit.submit();return false;" value="&nbsp;&nbsp;{{ translate({ ident: "GENERAL_NOWSEND" }) }}&nbsp;&nbsp;" {{ readonly }}>
+                <input type="submit" class="edittext" name="save" id="shippNowButton" onclick="if(!validatePayPalTrackingFields()) return false; document.myedit.sendorder.value=1;document.myedit.submit();return false;" value="&nbsp;&nbsp;{{ translate({ ident: "GENERAL_NOWSEND" }) }}&nbsp;&nbsp;" {{ readonly }}>
                 <input id='sendmail' class="edittext" type="checkbox" name="sendmail" value='1' {{ readonly }}> {{ translate({ ident: "GENERAL_SENDEMAIL" }) }}
                 <input type="hidden" name="sendorder" value='0'>
             </td>

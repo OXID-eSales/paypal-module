@@ -3,9 +3,7 @@
 {% block basket_btn_next_bottom %}
     {{ parent() }}
     {% if oViewConf.getActiveClassName() == 'basket' %}
-        {% set config = oViewConf.getPayPalCheckoutConfig() %}
-        {% set className = oViewConf.getTopActiveClassName() %}
-        {% if config.isActive() and not oViewConf.isPayPalExpressSessionActive() and config.showPayPalBasketButton() %}
+        {% if oViewConf.showPayPalExpressInBasket() %}
             {% include "@osc_paypal/frontend/paymentbuttons.html.twig" with {
                 'buttonId': 'PayPalPayButtonNextCart2',
                 'buttonClass': 'paypal-button-wrapper'

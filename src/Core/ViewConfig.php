@@ -285,10 +285,12 @@ class ViewConfig extends ViewConfig_parent
         $configShowMiniBasketButton = $payPalConfig->showPayPalMiniBasketButton();
         $ppExpressSessionActive = $this->isPayPalExpressSessionActive();
         $acdcSessionActive = $this->isPayPalACDCSessionActive();
+        $isBasketTotalSumGreaterZero = $this->isBasketTotalSumGreaterZero();
         if (
             $className !== 'payment' &&
             $ppActive &&
             $configShowMiniBasketButton &&
+            $isBasketTotalSumGreaterZero &&
             !$ppExpressSessionActive &&
             (
                 (
@@ -297,6 +299,25 @@ class ViewConfig extends ViewConfig_parent
                 ) ||
                 $className !== 'order'
             )
+        ) {
+            $showButton = true;
+        }
+        return $showButton;
+    }
+
+    public function showPayPalExpressInBasket(): bool
+    {
+        $showButton = false;
+        $payPalConfig = $this->getPayPalCheckoutConfig();
+        $ppActive = $payPalConfig->isActive();
+        $configShowPayPalBasketButton = $payPalConfig->showPayPalBasketButton();
+        $ppExpressSessionActive = $this->isPayPalExpressSessionActive();
+        $isBasketTotalSumGreaterZero = $this->isBasketTotalSumGreaterZero();
+        if (
+            $ppActive &&
+            $configShowPayPalBasketButton &&
+            $isBasketTotalSumGreaterZero &&
+            !$ppExpressSessionActive
         ) {
             $showButton = true;
         }
@@ -686,5 +707,14 @@ class ViewConfig extends ViewConfig_parent
     public function getConfig(): \OxidEsales\Eshop\Core\Config
     {
         return Registry::getConfig();
+    }
+
+    private function isBasketTotalSumGreaterZero(): bool
+    {
+        $basket = Registry::getSession()->getBasket();
+        if (!$basket) {
+            return false;
+        }
+        return ($basket->isPriceViewModeNetto && $basket->getNettoSum() > 0) || $basket->getBruttoSum() > 0;
     }
 }
