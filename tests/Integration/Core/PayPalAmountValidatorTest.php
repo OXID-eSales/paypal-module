@@ -57,14 +57,14 @@ class PayPalAmountValidatorTest extends TestCase
 
     /**
      * If items-derived total is below amount.value by 0.01 due to >2 decimals,
-     * validator should add a handling of 0.01 to increase breakdown.
+     * validator should add a small adjustment item to increase the items total, not handling.
      */
-    public function testAddsHandlingWhenItemsSumBelowAmountByOneCent(): void
+    public function testAddsAdjustmentItemWhenItemsSumBelowAmountByOneCent(): void
     {
         $validator = new PayPalAmountValidator();
 
         // Items: 1.994 (qty 1) + 1.996 (qty 1) = 3.99 raw; amount.value is 4.00
-        // Difference = -0.01 => expect handling = 0.01
+        // Difference = -0.01 => expect a rounding adjustment item of 0.01 to be added
         $orderData = [
             'items' => [
                 [
@@ -90,10 +90,13 @@ class PayPalAmountValidatorTest extends TestCase
         $adjusted = $validator->validateAndAdjustOrder($orderData);
 
         $this->assertArrayHasKey('breakdown', $adjusted);
-        $this->assertArrayHasKey('handling', $adjusted['breakdown']);
-        $this->assertSame('USD', $adjusted['breakdown']['handling']['currency_code']);
-        $this->assertSame('0.01', $adjusted['breakdown']['handling']['value']);
+        // No handling should be added anymore
+        $this->assertArrayNotHasKey('handling', $adjusted['breakdown']);
         // No shipping discount should be added in this case
         $this->assertArrayNotHasKey('shipping_discount', $adjusted['breakdown']);
+        // Expect an extra adjustment item to be added and item_total updated to the amount value
+        $this->assertCount(3, $adjusted['items']);
+        $this->assertSame('4.00', $adjusted['breakdown']['item_total']['value']);
+        $this->assertSame('USD', $adjusted['breakdown']['item_total']['currency_code']);
     }
 }

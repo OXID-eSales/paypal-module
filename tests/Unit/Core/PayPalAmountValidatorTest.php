@@ -34,7 +34,7 @@ class PayPalAmountValidatorTest extends TestCase
             ],
             'breakdown' => [
                 // Deliberately wrong tax_total and currency
-                'tax_total' => ['currency_code' => 'USD', 'value' => '0.00'],
+                'tax_total' => ['currency_code' => 'EUR', 'value' => '0.00'],
                 // Other keys optional; we provide empty or zero values so they don't affect amount
                 'item_total' => ['currency_code' => 'EUR', 'value' => '3.00'],
                 'shipping' => ['currency_code' => 'EUR', 'value' => '0.00'],
@@ -79,7 +79,7 @@ class PayPalAmountValidatorTest extends TestCase
             ],
             'breakdown' => [
                 // Deliberately wrong item_total and currency to be corrected
-                'item_total' => ['currency_code' => 'USD', 'value' => '0.00'],
+                'item_total' => ['currency_code' => 'EUR', 'value' => '0.00'],
                 'tax_total' => ['currency_code' => 'EUR', 'value' => '0.00'],
                 'shipping' => ['currency_code' => 'EUR', 'value' => '0.00'],
                 'discount' => ['currency_code' => 'EUR', 'value' => '0.00'],
