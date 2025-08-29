@@ -308,6 +308,7 @@ $aLang = array_merge(
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_COUNTRY'    => 'Versanddienstleister (Land)',
     'OSC_PAYPAL_ORDER_MAIN_TRACKCARRIER_PROVIDER'   => 'Versanddienstleister (Anbieter)',
     'OSC_PAYPAL_TRACKCARRIER_GLOBAL'                => 'weltweit',
+    'OSC_PAYPAL_TRACKING_VALIDATION_ERROR'          => 'Wenn Tracking-Anbieter oder Tracking-Code ausgefüllt wird, müssen alle drei PayPal-Tracking-Felder (Land, Anbieter, Code) vollständig ausgefüllt werden.',
 
     'OSC_PAYPAL_VAULTING_TITLE'                     => 'PayPal Vaulting',
     'OSC_PAYPAL_VAULTING_ACTIVATE_VAULTING'         => 'PayPal Vaulting aktivieren',
