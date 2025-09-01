@@ -216,20 +216,10 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
     {
         $factory = $this->makeFactory();
 
-        // Fake Config to force net mode
-        $fakeConfig = new class(true) extends Config {
-            private bool $net;
-            public function __construct(bool $net) { $this->net = $net; }
-            public function getConfigParam($name)
-            {
-                if ($name === 'blShowNetPrice') {
-                    return $this->net;
-                }
-                return null;
-            }
-        };
-        $prevConfig = Registry::getConfig();
-        Registry::set(Config::class, $fakeConfig);
+        // Set Config to force net mode using existing Config instance
+        $config = Registry::getConfig();
+        $prevShowNetPrice = $config->getConfigParam('blShowNetPrice');
+        $config->setConfigParam('blShowNetPrice', true);
 
         try {
             // Basket mock with one item: netto 100, brutto 119, VAT 19%, qty 2
@@ -252,15 +242,12 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
                 public function getPrice() { return 100.00; } // used by buildAmountArray item_total sum in net mode context
             };
 
-            // BasketItem stub must be instanceof real BasketItem, create subclass
-            $basketItem = new class('Item A', 2, $unitPrice) extends \OxidEsales\Eshop\Application\Model\BasketItem {
-                private $t; private $q; private $u;
-                public function __construct($t,$q,$u){ $this->t=$t; $this->q=$q; $this->u=$u; }
-                public function getTitle(){ return $this->t; }
-                public function getAmount(){ return (string)$this->q; }
-                public function getUnitPrice(){ return $this->u; }
-                public function getArticle(){ return new class { public function isVirtualPayPalArticle(){ return false; } }; }
-            };
+            // BasketItem mock: use PHPUnit mock of real BasketItem class to satisfy instanceof checks
+            $basketItem = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
+            $basketItem->method('getTitle')->willReturn('Item A');
+            $basketItem->method('getAmount')->willReturn(2);
+            $basketItem->method('getUnitPrice')->willReturn($unitPrice);
+            $basketItem->method('getArticle')->willReturn(new class { public function isVirtualPayPalArticle(){ return false; } });
             $basket->method('getContents')->willReturn([$basketItem]);
 
             // Map items (net mode should compute per-unit tax = 19.00)
@@ -278,7 +265,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $this->assertSame('EUR', $amountArr['breakdown']['tax_total']['currency_code']);
         } finally {
             // restore config
-            Registry::set(Config::class, $prevConfig);
+            $config->setConfigParam('blShowNetPrice', $prevShowNetPrice);
         }
     }
 
@@ -286,20 +273,10 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
     {
         $factory = $this->makeFactory();
 
-        // Fake Config to force gross mode
-        $fakeConfig = new class(false) extends Config {
-            private bool $net;
-            public function __construct(bool $net) { $this->net = $net; }
-            public function getConfigParam($name)
-            {
-                if ($name === 'blShowNetPrice') {
-                    return $this->net;
-                }
-                return null;
-            }
-        };
-        $prevConfig = Registry::getConfig();
-        Registry::set(Config::class, $fakeConfig);
+        // Set Config to force gross mode using existing Config instance
+        $config = Registry::getConfig();
+        $prevShowNetPrice = $config->getConfigParam('blShowNetPrice');
+        $config->setConfigParam('blShowNetPrice', false);
 
         try {
             $basket = $this->getMockBuilder(Basket::class)
@@ -320,14 +297,11 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
                 public function getPrice() { return 119.00; }
             };
 
-            $basketItem = new class('Item A', 1, $unitPrice) extends \OxidEsales\Eshop\Application\Model\BasketItem {
-                private $t; private $q; private $u;
-                public function __construct($t,$q,$u){ $this->t=$t; $this->q=$q; $this->u=$u; }
-                public function getTitle(){ return $this->t; }
-                public function getAmount(){ return (string)$this->q; }
-                public function getUnitPrice(){ return $this->u; }
-                public function getArticle(){ return new class { public function isVirtualPayPalArticle(){ return false; } }; }
-            };
+            $basketItem = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
+            $basketItem->method('getTitle')->willReturn('Item A');
+            $basketItem->method('getAmount')->willReturn(1);
+            $basketItem->method('getUnitPrice')->willReturn($unitPrice);
+            $basketItem->method('getArticle')->willReturn(new class { public function isVirtualPayPalArticle(){ return false; } });
             $basket->method('getContents')->willReturn([$basketItem]);
 
             $itemsArr = $this->callPrivate($factory, 'mapItems', [$basket]);
@@ -341,7 +315,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $amountArr = $this->callPrivate($factory, 'buildAmountArray', [$basket, $itemsArr]);
             $this->assertSame('0.00', $amountArr['breakdown']['tax_total']['value']);
         } finally {
-            Registry::set(Config::class, $prevConfig);
+            $config->setConfigParam('blShowNetPrice', $prevShowNetPrice);
         }
     }
 
@@ -385,18 +359,10 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
     {
         $factory = $this->makeFactory();
 
-        // Force net mode
-        $fakeConfig = new class(true) extends Config {
-            private bool $net;
-            public function __construct(bool $net) { $this->net = $net; }
-            public function getConfigParam($name)
-            {
-                if ($name === 'blShowNetPrice') { return $this->net; }
-                return null;
-            }
-        };
-        $prevConfig = Registry::getConfig();
-        Registry::set(Config::class, $fakeConfig);
+        // Set Config to force net mode using existing Config instance
+        $config = Registry::getConfig();
+        $prevShowNetPrice = $config->getConfigParam('blShowNetPrice');
+        $config->setConfigParam('blShowNetPrice', true);
 
         try {
             $basket = $this->getMockBuilder(Basket::class)
@@ -424,22 +390,16 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
                 public function getPrice() { return 1.999999999; }
             };
 
-            $basketItem1 = new class('A', 9, $unitPrice1) extends \OxidEsales\Eshop\Application\Model\BasketItem {
-                private $t; private $q; private $u;
-                public function __construct($t,$q,$u){ $this->t=$t; $this->q=$q; $this->u=$u; }
-                public function getTitle(){ return $this->t; }
-                public function getAmount(){ return (string)$this->q; }
-                public function getUnitPrice(){ return $this->u; }
-                public function getArticle(){ return new class { public function isVirtualPayPalArticle(){ return false; } }; }
-            };
-            $basketItem2 = new class('B', 3, $unitPrice2) extends \OxidEsales\Eshop\Application\Model\BasketItem {
-                private $t; private $q; private $u;
-                public function __construct($t,$q,$u){ $this->t=$t; $this->q=$q; $this->u=$u; }
-                public function getTitle(){ return $this->t; }
-                public function getAmount(){ return (string)$this->q; }
-                public function getUnitPrice(){ return $this->u; }
-                public function getArticle(){ return new class { public function isVirtualPayPalArticle(){ return false; } }; }
-            };
+            $basketItem1 = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
+            $basketItem1->method('getTitle')->willReturn('A');
+            $basketItem1->method('getAmount')->willReturn(9);
+            $basketItem1->method('getUnitPrice')->willReturn($unitPrice1);
+            $basketItem1->method('getArticle')->willReturn(new class { public function isVirtualPayPalArticle(){ return false; } });
+            $basketItem2 = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
+            $basketItem2->method('getTitle')->willReturn('B');
+            $basketItem2->method('getAmount')->willReturn(3);
+            $basketItem2->method('getUnitPrice')->willReturn($unitPrice2);
+            $basketItem2->method('getArticle')->willReturn(new class { public function isVirtualPayPalArticle(){ return false; } });
             $basket->method('getContents')->willReturn([$basketItem1, $basketItem2]);
 
             // Map items and verify per-unit taxes were rounded to 2 decimals
@@ -454,7 +414,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $amountArr = $this->callPrivate($factory, 'buildAmountArray', [$basket, $itemsArr]);
             $this->assertSame('0.60', $amountArr['breakdown']['tax_total']['value']);
         } finally {
-            Registry::set(Config::class, $prevConfig);
+            $config->setConfigParam('blShowNetPrice', $prevShowNetPrice);
         }
     }
 
@@ -484,13 +444,10 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
     {
         $factory = $this->makeFactory();
 
-        // Force net mode to include tax_total from items
-        $fakeConfig = new class(true) extends Config {
-            private bool $net; public function __construct(bool $net){$this->net=$net;}
-            public function getConfigParam($name){ return $name==='blShowNetPrice' ? $this->net : null; }
-        };
-        $prevConfig = Registry::getConfig();
-        Registry::set(Config::class, $fakeConfig);
+        // Set Config to force net mode using existing Config instance
+        $config = Registry::getConfig();
+        $prevShowNetPrice = $config->getConfigParam('blShowNetPrice');
+        $config->setConfigParam('blShowNetPrice', true);
 
         try {
             $basket = $this->getMockBuilder(Basket::class)
@@ -507,14 +464,16 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $unitPrice1 = new class { public function getNettoPrice(){return 0.123456789;} public function getBruttoPrice(){return 0.147;} public function getVat(){return 19.0;} public function getPrice(){return 0.123456789;} };
             $unitPrice2 = new class { public function getNettoPrice(){return 1.999999999;} public function getBruttoPrice(){return 2.139999999;} public function getVat(){return 7.0;} public function getPrice(){return 1.999999999;} };
 
-            $basketItem1 = new class('A', 9, $unitPrice1) extends \OxidEsales\Eshop\Application\Model\BasketItem {
-                private $t; private $q; private $u; public function __construct($t,$q,$u){$this->t=$t;$this->q=$q;$this->u=$u;}
-                public function getTitle(){return $this->t;} public function getAmount(){return (string)$this->q;} public function getUnitPrice(){return $this->u;} public function getArticle(){return new class{ public function isVirtualPayPalArticle(){return false;} };}
-            };
-            $basketItem2 = new class('B', 3, $unitPrice2) extends \OxidEsales\Eshop\Application\Model\BasketItem {
-                private $t; private $q; private $u; public function __construct($t,$q,$u){$this->t=$t;$this->q=$q;$this->u=$u;}
-                public function getTitle(){return $this->t;} public function getAmount(){return (string)$this->q;} public function getUnitPrice(){return $this->u;} public function getArticle(){return new class{ public function isVirtualPayPalArticle(){return false;} };}
-            };
+            $basketItem1 = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
+            $basketItem1->method('getTitle')->willReturn('A');
+            $basketItem1->method('getAmount')->willReturn(9);
+            $basketItem1->method('getUnitPrice')->willReturn($unitPrice1);
+            $basketItem1->method('getArticle')->willReturn(new class { public function isVirtualPayPalArticle(){ return false; } });
+            $basketItem2 = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
+            $basketItem2->method('getTitle')->willReturn('B');
+            $basketItem2->method('getAmount')->willReturn(3);
+            $basketItem2->method('getUnitPrice')->willReturn($unitPrice2);
+            $basketItem2->method('getArticle')->willReturn(new class { public function isVirtualPayPalArticle(){ return false; } });
             $basket->method('getContents')->willReturn([$basketItem1, $basketItem2]);
 
             // Expected parts:
@@ -537,7 +496,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $this->assertSame('0.00', $amount->breakdown->discount->value);
             $this->assertSame('7.72', $amount->value);
         } finally {
-            Registry::set(Config::class, $prevConfig);
+            $config->setConfigParam('blShowNetPrice', $prevShowNetPrice);
         }
     }
 
@@ -545,10 +504,10 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
     {
         $factory = $this->makeFactory();
 
-        // Force net mode
-        $fakeConfig = new class(true) extends Config { private bool $net; public function __construct(bool $net){$this->net=$net;} public function getConfigParam($n){return $n==='blShowNetPrice' ? $this->net : null;} };
-        $prevConfig = Registry::getConfig();
-        Registry::set(Config::class, $fakeConfig);
+        // Set Config to force net mode using existing Config instance
+        $config = Registry::getConfig();
+        $prevShowNetPrice = $config->getConfigParam('blShowNetPrice');
+        $config->setConfigParam('blShowNetPrice', true);
 
         try {
             $basket = $this->getMockBuilder(Basket::class)
@@ -564,14 +523,16 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $unitPrice1 = new class { public function getNettoPrice(){return 0.3333333;} public function getBruttoPrice(){return 0.3966666;} public function getVat(){return 19.0;} public function getPrice(){return 0.3333333;} };
             $unitPrice2 = new class { public function getNettoPrice(){return 0.6666667;} public function getBruttoPrice(){return 0.7133333;} public function getVat(){return 7.0;} public function getPrice(){return 0.6666667;} };
 
-            $basketItem1 = new class('X', 3, $unitPrice1) extends \OxidEsales\Eshop\Application\Model\BasketItem {
-                private $t; private $q; private $u; public function __construct($t,$q,$u){$this->t=$t;$this->q=$q;$this->u=$u;}
-                public function getTitle(){return $this->t;} public function getAmount(){return (string)$this->q;} public function getUnitPrice(){return $this->u;} public function getArticle(){return new class{ public function isVirtualPayPalArticle(){return false;} };}
-            };
-            $basketItem2 = new class('Y', 3, $unitPrice2) extends \OxidEsales\Eshop\Application\Model\BasketItem {
-                private $t; private $q; private $u; public function __construct($t,$q,$u){$this->t=$t;$this->q=$q;$this->u=$u;}
-                public function getTitle(){return $this->t;} public function getAmount(){return (string)$this->q;} public function getUnitPrice(){return $this->u;} public function getArticle(){return new class{ public function isVirtualPayPalArticle(){return false;} };}
-            };
+            $basketItem1 = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
+            $basketItem1->method('getTitle')->willReturn('X');
+            $basketItem1->method('getAmount')->willReturn(3);
+            $basketItem1->method('getUnitPrice')->willReturn($unitPrice1);
+            $basketItem1->method('getArticle')->willReturn(new class { public function isVirtualPayPalArticle(){ return false; } });
+            $basketItem2 = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
+            $basketItem2->method('getTitle')->willReturn('Y');
+            $basketItem2->method('getAmount')->willReturn(3);
+            $basketItem2->method('getUnitPrice')->willReturn($unitPrice2);
+            $basketItem2->method('getArticle')->willReturn(new class { public function isVirtualPayPalArticle(){ return false; } });
             $basket->method('getContents')->willReturn([$basketItem1, $basketItem2]);
 
             // Expected: item_total = (0.3333333*3 + 0.6666667*3) = 3.0 -> 3.00
@@ -592,7 +553,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $this->assertSame('0.01', $amount->breakdown->discount->value);
             $this->assertSame('3.33', $amount->value);
         } finally {
-            Registry::set(Config::class, $prevConfig);
+            $config->setConfigParam('blShowNetPrice', $prevShowNetPrice);
         }
     }
 
@@ -600,13 +561,10 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
     {
          $factory = $this->makeFactory();
 
-        // Force gross mode (blShowNetPrice = false)
-        $fakeConfig = new class(false) extends Config {
-            private bool $net; public function __construct(bool $net){$this->net=$net;}
-            public function getConfigParam($name){ return $name==='blShowNetPrice' ? $this->net : null; }
-        };
-        $prevConfig = Registry::getConfig();
-        Registry::set(Config::class, $fakeConfig);
+        // Set Config to force gross mode using existing Config instance
+        $config = Registry::getConfig();
+        $prevShowNetPrice = $config->getConfigParam('blShowNetPrice');
+        $config->setConfigParam('blShowNetPrice', false);
 
         try {
             $basketMock = $this->getMockBuilder(Basket::class)
@@ -673,7 +631,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $this->assertSame('244.53', $amount->value, 'amount value should equal rounded gross total');
             $this->assertEquals(244.53, (float)$sumItemsStr, 'sum of rounded unit amounts should be 244.53');
         } finally {
-            Registry::set(Config::class, $prevConfig);
+            $config->setConfigParam('blShowNetPrice', $prevShowNetPrice);
         }
     }
 
@@ -681,13 +639,10 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
     {
         $factory = $this->makeFactory();
 
-        // Force net mode (blShowNetPrice = true)
-        $fakeConfig = new class(true) extends Config {
-            private bool $net; public function __construct(bool $net){$this->net=$net;}
-            public function getConfigParam($name){ return $name==='blShowNetPrice' ? $this->net : null; }
-        };
-        $prevConfig = Registry::getConfig();
-        Registry::set(Config::class, $fakeConfig);
+        // Set Config to force net mode using existing Config instance
+        $config = Registry::getConfig();
+        $prevShowNetPrice = $config->getConfigParam('blShowNetPrice');
+        $config->setConfigParam('blShowNetPrice', true);
 
         try {
             $basket = $this->getMockBuilder(Basket::class)
@@ -719,14 +674,12 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
 
             // BasketItem stubs must extend real BasketItem for instanceof checks
             $makeBasketItem = function(string $title, int $qty, $unitPrice) {
-                return new class($title, $qty, $unitPrice) extends \OxidEsales\Eshop\Application\Model\BasketItem {
-                    private $t; private $q; private $u;
-                    public function __construct($t,$q,$u){ $this->t=$t; $this->q=$q; $this->u=$u; }
-                    public function getTitle(){ return $this->t; }
-                    public function getAmount(){ return (string)$this->q; }
-                    public function getUnitPrice(){ return $this->u; }
-                    public function getArticle(){ return new class { public function isVirtualPayPalArticle(){ return false; } }; }
-                };
+                $basketItem = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
+                $basketItem->method('getTitle')->willReturn($title);
+                $basketItem->method('getAmount')->willReturn($qty);
+                $basketItem->method('getUnitPrice')->willReturn($unitPrice);
+                $basketItem->method('getArticle')->willReturn(new class { public function isVirtualPayPalArticle(){ return false; } });
+                return $basketItem;
             };
 
             $item1 = $makeBasketItem('Transportcontainer THE BARREL', 5, $unitA);
@@ -757,7 +710,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $this->assertSame('0.00', $amount->breakdown->discount->value, 'discount should be 0.00');
             $this->assertSame('412.25', $amount->value, 'amount value should equal rounded basket gross total');
         } finally {
-            Registry::set(Config::class, $prevConfig);
+            $config->setConfigParam('blShowNetPrice', $prevShowNetPrice);
         }
     }
 }
