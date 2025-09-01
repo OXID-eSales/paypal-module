@@ -75,8 +75,18 @@ class PayPalRequestAmountFactory
         $breakdown = new AmountBreakdown();
 
         $currency = $this->getCurrency();
+
+        // Shipping costs (rounded to currency precision)
         $breakdown->shipping = PriceToMoney::convert($this->basket->getPayPalCheckoutDeliveryCosts(), $currency);
-        $breakdown->discount = PriceToMoney::convert($this->basket->getPayPalCheckoutDiscountBrutto(), $currency);
+
+        // Discount: use basket API value; in gross mode, negative discount should not increase total
+        $discount = (float)$this->basket->getPayPalCheckoutDiscount();
+        if (!$this->basket->isCalculationModeNetto() && $discount < 0) {
+            $discount = 0.0;
+        }
+        $breakdown->discount = PriceToMoney::convert($discount, $currency);
+
+        // Tax total is zero for gross mode in this factory; NET handling is done elsewhere if needed
         $breakdown->tax_total = PriceToMoney::convert(0, $currency);
 
         /*
@@ -85,16 +95,7 @@ class PayPalRequestAmountFactory
          * Must equal the sum of (items[].unit_amount * items[].quantity) for all items.
          * item_total.value can not be a negative number.
          */
-        $itemTotal = 0.0;
-        foreach ((array)$this->basket->getContents() as $basketItem) {
-            // Each $basketItem is \OxidEsales\Eshop\Application\Model\BasketItem
-            $unitPrice = $basketItem->getUnitPrice();
-            if ($unitPrice) {
-                $qty = (float)$basketItem->getAmount();
-                $val = (float)$unitPrice->getPrice(); // net or gross depending on shop mode
-                $itemTotal += $qty * $val;
-            }
-        }
+        $itemTotal = (float)$this->basket->getPayPalCheckoutItems();
         $breakdown->item_total = PriceToMoney::convert($itemTotal, $currency);
 
         return $breakdown;

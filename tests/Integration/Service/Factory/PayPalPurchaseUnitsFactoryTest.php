@@ -609,58 +609,54 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
         Registry::set(Config::class, $fakeConfig);
 
         try {
-            $basket = $this->getMockBuilder(Basket::class)
+            $basketMock = $this->getMockBuilder(Basket::class)
                 ->disableOriginalConstructor()
                 ->onlyMethods(['getBasketCurrency','getContents','getPrice','getPayPalCheckoutDeliveryCosts','getPayPalCheckoutDiscountBrutto'])
                 ->getMock();
             $currency = (object)['name'=>'EUR','decimal'=>2];
-            $basket->method('getBasketCurrency')->willReturn($currency);
-            $basket->method('getPayPalCheckoutDeliveryCosts')->willReturn(0.0);
-            $basket->method('getPayPalCheckoutDiscountBrutto')->willReturn(0.0);
+            $basketMock->method('getBasketCurrency')->willReturn($currency);
+            $basketMock->method('getPayPalCheckoutDeliveryCosts')->willReturn(0.0);
+            $basketMock->method('getPayPalCheckoutDiscountBrutto')->willReturn(0.0);
             // Total gross from issue: 244.52679 -> PayPal money rounds to 244.53
-            $priceStub = new class { public function getBruttoPrice(){ return 244.52679; } };
-            $basket->method('getPrice')->willReturn($priceStub);
+            $priceMockTotal = $this->createMock(\OxidEsales\Eshop\Core\Price::class);
+            $priceMockTotal->method('getBruttoPrice')->willReturn(244.52679);
+            $basketMock->method('getPrice')->willReturn($priceMockTotal);
 
-            // UnitPrice stubs return gross price and getPrice() returns gross too (gross mode)
+            // UnitPrice mocks: use oxprice-like mocks as in PatchRequestFactoryTest
             $makeUnitPrice = function(float $gross) {
-                return new class($gross) {
-                    private float $g; public function __construct($g){$this->g=$g;}
-                    public function getNettoPrice(){ return $this->g / 1.19; }
-                    public function getBruttoPrice(){ return $this->g; }
-                    public function getVat(){ return 19.0; }
-                    public function getPrice(){ return $this->g; } // used by buildAmountArray in our implementation
-                };
+                $price = $this->getMock('oxprice');
+                $price->expects($this->any())->method('getPrice')->will($this->returnValue($gross));
+                $price->expects($this->any())->method('getBruttoPrice')->will($this->returnValue($gross));
+                return $price;
             };
 
             $unit1 = $makeUnitPrice(29.93445); // qty 3 => 89.80335 gross
             $unit2 = $makeUnitPrice(129.76789); // qty 1 => 129.76789 gross
             $unit3 = $makeUnitPrice(24.95555); // qty 1 => 24.95555 gross
 
-            // BasketItem stubs must extend real BasketItem for instanceof checks
+            // BasketItem mocks
             $makeBasketItem = function(string $title, int $qty, $unitPrice) {
-                return new class($title, $qty, $unitPrice) extends \OxidEsales\Eshop\Application\Model\BasketItem {
-                    private $t; private $q; private $u;
-                    public function __construct($t,$q,$u){ $this->t=$t; $this->q=$q; $this->u=$u; }
-                    public function getTitle(){ return $this->t; }
-                    public function getAmount(){ return (string)$this->q; }
-                    public function getUnitPrice(){ return $this->u; }
-                    public function getArticle(){ return new class { public function isVirtualPayPalArticle(){ return false; } }; }
-                };
+                $basketItem = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
+                $basketItem->method('getTitle')->willReturn($title);
+                $basketItem->method('getArticle')->willReturn(oxNew(\OxidEsales\Eshop\Application\Model\Article::class));
+                $basketItem->method('getAmount')->willReturn($qty);
+                $basketItem->method('getUnitPrice')->willReturn($unitPrice);
+                return $basketItem;
             };
 
             $item1 = $makeBasketItem('Kuyichi Ledergürtel JEVER', 3, $unit1);
             $item2 = $makeBasketItem('Trapez ION SOL KITE 2011', 1, $unit2);
             $item3 = $makeBasketItem('Transportcontainer THE BARREL', 1, $unit3);
-            $basket->method('getContents')->willReturn([$item1, $item2, $item3]);
+            $basketMock->method('getContents')->willReturn([$item1, $item2, $item3]);
 
             // Build amount (gross mode => tax_total should be 0.00; item_total sums gross unit*qty, rounded to 2 decimals)
-            $amountArr = $this->callPrivate($factory, 'buildAmountArray', [$basket, []]);
+            $amountArr = $this->callPrivate($factory, 'buildAmountArray', [$basketMock, []]);
             /** @var AmountWithBreakdown $amount */
             $amount = $this->callPrivate($factory, 'mapAmountWithBreakdown', [$amountArr]);
-            Registry::getSession()->setBasket($basket);
+            Registry::getSession()->setBasket($basketMock);
+            $factory->setBasket($basketMock);
             $purchaseUnitRequests = $factory->getPurchaseUnits(null, null, true);
             // Additionally compute per-item sum using mapItems (rounded per-unit values times quantity)
-            //$itemsArr = $this->callPrivate($factory, 'mapItems', [$basket]);
             $itemsArr = $purchaseUnitRequests[0]->items;
             $sumItems = 0.0;
 

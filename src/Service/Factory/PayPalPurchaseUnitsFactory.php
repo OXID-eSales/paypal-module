@@ -41,6 +41,10 @@ class PayPalPurchaseUnitsFactory
      * @var \OxidSolutionCatalysts\PayPal\Service\ModuleSettings
      */
     private ModuleSettings $moduleSettings;
+    /**
+     * @var \OxidEsales\Eshop\Application\Model\Basket|null
+     */
+    private ?Basket $basket = null;
 
     public function __construct(ModuleSettings $moduleSettings)
     {
@@ -122,11 +126,9 @@ class PayPalPurchaseUnitsFactory
         return [$unit];
     }
 
-    private function getBasket(): Basket
+    private function getBasket(): ?Basket
     {
-        /** @var Basket $basket */
-        $basket = Registry::getSession()->getBasket();
-        return $basket;
+        return null === $this->basket ? Registry::getSession()->getBasket() : $this->basket;
     }
 
     /**
@@ -223,7 +225,7 @@ class PayPalPurchaseUnitsFactory
         // Breakdown components
         $shippingMoney = PriceToMoney::convert($basket->getPayPalCheckoutDeliveryCosts(), $currency);
         $discountMoney = PriceToMoney::convert($basket->getPayPalCheckoutDiscountBrutto(), $currency);
-        // tax_total derived from items (per-unit tax * quantity), like OrderRequestFactoryV2::autoFillTaxTotalFromItems
+        // tax_total derived from items (per-unit tax * quantity), like OrderRequestFactory::autoFillTaxTotalFromItems
         $taxTotalFloat = $this->sumTaxFromItems($itemsForTax);
         $taxTotalMoney = PriceToMoney::convert($taxTotalFloat, $currency);
 
@@ -337,7 +339,7 @@ class PayPalPurchaseUnitsFactory
     }
 
     /**
-     * Ported from OrderRequestFactoryV2::autoFillTaxTotalFromItems logic.
+     * Ported from OrderRequestFactory::autoFillTaxTotalFromItems logic.
      * Sum per-item tax (per-unit tax * quantity) from items array.
      */
     private function sumTaxFromItems(array $items): float
@@ -430,5 +432,10 @@ class PayPalPurchaseUnitsFactory
     private function toMoneyValue(float $v): string
     {
         return number_format($this->round2($v), self::DECIMALS, '.', '');
+    }
+
+    public function setBasket(Basket $basket)
+    {
+        $this->basket = $basket;
     }
 }

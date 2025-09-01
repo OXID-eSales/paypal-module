@@ -109,8 +109,7 @@ class OrderRequestFactory
         bool $setProvidedAddress = true
     ): OrderRequest {
         $request = $this->request = new OrderRequest();
-        $this->basket = $basket;
-        $withItems = !$this->basket->isCalculationModeNetto();
+        $this->setBasket($basket);
 
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $setVaulting = $moduleSettings->getIsVaultingActive();
@@ -128,7 +127,6 @@ class OrderRequestFactory
 
         $request->intent = $intent;
         $request->purchase_units = $this->purchaseUnitsFactory->getPurchaseUnits($customId);
-           // $this->getPurchaseUnits($customId, $invoiceId, $withItems);
         $vaultingService = $this->getVaultingService();
         $user = Registry::getConfig()->getUser() instanceof User ? Registry::getConfig()->getUser() : null;
         $selectedPaymentToken = $vaultingService->fetchSelectedVaultedPaymentToken(
@@ -749,5 +747,11 @@ class OrderRequestFactory
     private function getArrayFromPaymentSource(OrderRequest $request, string $paymentSourceId): array {
         $encodedData = json_encode($request->payment_source->{$paymentSourceId}, JSON_THROW_ON_ERROR);
         return json_decode($encodedData, true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    public function setBasket(Basket $basket): void
+    {
+        $this->basket = $basket;
+        $this->purchaseUnitsFactory->setBasket($basket);
     }
 }

@@ -15,11 +15,9 @@ use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidEsales\Eshop\Core\ShopVersion;
-use OxidSolutionCatalysts\PayPal\Core\BasketOrderDataMapper;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
-use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactoryV2;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
@@ -131,6 +129,7 @@ class Payment
         $orderService = $this->serviceFactory->getOrderService();
         $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
         $customId = $this->getCurrentOrderNumber($basket);
+        $this->orderRequestFactory->setBasket($basket);
         $request = $this->orderRequestFactory->getRequest(
             $basket,
             $intent,

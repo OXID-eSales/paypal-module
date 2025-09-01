@@ -126,6 +126,7 @@ class   PatchRequestFactory
         /** @var PayPalPurchaseUnitsFactory $puFactory */
         $puFactory = $this->getServiceFromContainer(PayPalPurchaseUnitsFactory::class);
         // We want items considered so that tax_total and validator adjustments are consistent
+        $puFactory->setBasket($this->basket);
         $units = $puFactory->getPurchaseUnits(null, null, true);
         $unit = $units[0] ?? null;
         $value = $unit ? $unit->amount : null;
