@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - show Express-Buttons only if Basket > 0 or ArticlePrice > 0
 - fixes an error in the display of the GooglePay button
 - [0007821](https://bugs.oxid-esales.com/view.php?id=7821): use finalizeOrder for all payments again
-
+- fix PUI-EMail-Handling
 
 ### FIX
 
