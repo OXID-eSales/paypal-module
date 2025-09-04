@@ -337,7 +337,8 @@ class Order extends Order_parent
      */
     protected function executePayment(Basket $basket, $userpayment)
     {
-        $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
 
         $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($sessionPaymentId);
 
@@ -348,7 +349,7 @@ class Order extends Order_parent
                 $this->setOrderNumber();
 
                 if ($isPayPalUAPM) {
-                    $redirectLink = $this->paymentService->doExecuteUAPMPayment($this, $basket);
+                    $redirectLink = $paymentService->doExecuteUAPMPayment($this, $basket);
                 }
                 PayPalSession::setSessionRedirectLink($redirectLink);
 
@@ -397,7 +398,6 @@ class Order extends Order_parent
 
     protected function doExecutePayPalPayment($payPalOrderId): bool
     {
-        /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
         $success = false;
@@ -648,6 +648,7 @@ class Order extends Order_parent
      */
     public function finalizeOrder(Basket $basket, $user, $recalculatingOrder = false)
     {
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
         /** @var Logger $logger */
         $logger = $this->getServiceFromContainer(Logger::class);
         $logger->log('debug', 'finalizeOrder');
@@ -656,14 +657,14 @@ class Order extends Order_parent
 
         //we might have the case that the order is already stored but we are waiting for webhook events
         if (
-            $this->paymentService->isPayPalPayment()
+            $paymentService->isPayPalPayment()
         ) {
             //order payment is being processed
             $oOrderId = $oSession->getVariable('sess_challenge');
             $isLoaded = $this->load($oOrderId);
             if (
                 $isLoaded &&
-                $this->paymentService->isOrderExecutionInProgress() &&
+                $paymentService->isOrderExecutionInProgress() &&
                 !$this->isOrderFinished() &&
                 !$this->isOrderPaid() &&
                 !$this->isWaitForWebhookTimeoutReached()
@@ -676,7 +677,7 @@ class Order extends Order_parent
 
         $result = parent::finalizeOrder($basket, $user, $recalculatingOrder);
 
-        if ($this->paymentService->isPayPalPayment()) {
+        if ($paymentService->isPayPalPayment()) {
             $oSession->deleteVariable('isPayPalPaymentCheckout');
         }
 
