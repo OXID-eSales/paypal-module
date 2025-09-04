@@ -8,7 +8,7 @@
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 
-include_once __DIR__ . '/../../../translations/en/oscpaypal_en_lang.php';
+include_once __DIR__ . '/../../translations/en/oscpaypal_en_lang.php';
 
 $aLang = array_merge(
     $aLang ?? [],
