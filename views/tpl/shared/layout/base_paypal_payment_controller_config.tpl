@@ -74,7 +74,7 @@
                 shopOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
 
                 isSandbox: [{if $isSandBox}]true[{else}]false[{/if}],
-                useGooglePayAddress: [{if $bGooglePayDelivery}]true[{else}]false[{/if}]',
+                useGooglePayAddress: [{if $bGooglePayDelivery}]true[{else}]false[{/if}],
                 merchantName: '[{$oxcmp_shop->oxshops__oxname->value|oxescape}]',
                 totalPrice: '[{$oxcmp_basket->getPriceForPayment()}]',
                 paymentId: '[{$paymentId}]',
