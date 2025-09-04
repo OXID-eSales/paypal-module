@@ -718,7 +718,6 @@ class Order extends Order_parent
         ) {
             //order payment is being processed
             if (
-                $isLoaded &&
                 $this->paymentService->isOrderExecutionInProgress() &&
                 !$this->isOrderFinished() &&
                 !$this->isOrderPaid() &&
