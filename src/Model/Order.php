@@ -244,11 +244,7 @@ class Order extends Order_parent
         }
     }
 
-    /**
-     * send Order By Email without Stock-Check
-     * @param User $user
-     * @param Basket $basket
-     */
+    /** @inheritDoc */
     public function sendPayPalOrderByEmail(User $user, Basket $basket): void
     {
         $userPayment = oxNew(UserPayment::class);
@@ -257,24 +253,6 @@ class Order extends Order_parent
         Registry::getSession()->setVariable('blDontCheckProductStockForPayPalMails', true);
         $this->sendOrderByEmail($user, $basket, $userPayment);
         Registry::getSession()->deleteVariable('blDontCheckProductStockForPayPalMails');
-    }
-
-    /**
-     * @inheritDoc
-     *
-     * @param \OxidEsales\Eshop\Application\Model\User        $oUser    order user
-     * @param \OxidEsales\Eshop\Application\Model\Basket      $oBasket  current order basket
-     * @param \OxidEsales\Eshop\Application\Model\UserPayment $oPayment order payment
-     *
-     * @return bool
-     */
-    protected function sendOrderByEmail($oUser = null, $oBasket = null, $oPayment = null)
-    {
-        if (Registry::getSession()->getVariable('isPayPalPaymentCheckout')) {
-            return self::ORDER_STATE_OK;
-        }
-
-        return parent::sendOrderByEmail($oUser, $oBasket, $oPayment);
     }
 
     //TODO: this place should be refactored in shop core
@@ -288,7 +266,7 @@ class Order extends Order_parent
     }
 
     /**
-     * Executes payment. Additionally, loads oxPaymentGateway object, initiates
+     * Executes payment. Additionally loads oxPaymentGateway object, initiates
      * it by adding payment parameters (oxPaymentGateway::setPaymentParams())
      * and finally executes it (oxPaymentGateway::executePayment()). On failure -
      * deletes order and returns * error code 2.
@@ -304,43 +282,54 @@ class Order extends Order_parent
         $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
 
         $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($sessionPaymentId);
+        $isPayPalACDC = $sessionPaymentId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
+        $isPayPalStandard = $sessionPaymentId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
 
-        //catch UAPM
-        if ($isPayPalUAPM) {
+        if ($isPayPalUAPM || $isPayPalStandard) {
             try {
-                //order number needs to be set before the payment is requested
                 $this->setOrderNumber();
 
-                $redirectLink = $this->paymentService->doExecuteUAPMPayment($this, $basket);
+                if ($isPayPalUAPM) {
+                    $redirectLink = $this->paymentService->doExecuteUAPMPayment($this, $basket);
+                } else {
+                    $intent = $this->moduleSettings
+                        ->getPayPalStandardCaptureStrategy() === 'directly' ?
+                        Constants::PAYPAL_ORDER_INTENT_CAPTURE :
+                        Constants::PAYPAL_ORDER_INTENT_AUTHORIZE;
 
+                    $redirectLink = $this->paymentService->doExecuteStandardPayment($this, $basket, $intent);
+                }
                 PayPalSession::setSessionRedirectLink($redirectLink);
 
                 return self::ORDER_STATE_SESSIONPAYMENT_INPROGRESS;
             } catch (Exception $exception) {
                 $this->delete();
+                /** @var Logger $logger */
                 $logger = $this->getServiceFromContainer(Logger::class);
                 $logger->log('error', $exception->getMessage(), [$exception]);
             }
             return self::ORDER_STATE_PAYMENTERROR;
+        } elseif ($isPayPalACDC) {
+            if (
+                Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS) ===
+                Constants::PAYPAL_STATUS_COMPLETED
+            ) {
+                return self::ORDER_STATE_ACDCCOMPLETED;
+            }
+            return self::ORDER_STATE_ACDCINPROGRESS;
+        } else {
+            return parent::executePayment($basket, $userpayment);
         }
-
-        // for all other PayPal-Payments ignore the _executePayment, because it is handle before
-        if (Registry::getSession()->getVariable('isPayPalPaymentCheckout')) {
-            return true;
-        }
-
-        return parent::executePayment($basket, $userpayment);
     }
 
     /**
      * Get PayPal order object for the current active order object
      * Result is cached and returned on subsequent calls
      *
-     * @param string $payPalOrderId
      * @return PayPalApiOrder
      * @throws ApiException
      */
-    public function getPayPalCheckoutOrder(string $payPalOrderId = ''): PayPalApiOrder
+    public function getPayPalCheckoutOrder($payPalOrderId = ''): PayPalApiOrder
     {
         $payPalOrderId = $payPalOrderId ?: $this->getPayPalOrderIdForOxOrderId();
         if (!$this->payPalApiOrder) {
@@ -358,9 +347,11 @@ class Order extends Order_parent
         return $this->payPalApiOrder;
     }
 
-    protected function doExecutePayPalPayment(string $payPalOrderId): bool
+    protected function doExecutePayPalPayment($payPalOrderId): bool
     {
-        $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
         $success = false;
 
         try {
@@ -598,6 +589,90 @@ class Order extends Order_parent
         return 0 < (int) $this->getFieldData('oxordernr');
     }
 
+    public function finalizePayPalOrder(Basket $oBasket, $oUser, $blRecalculatingOrder = false)
+    {
+        // check if this order is already stored
+        $orderId = \OxidEsales\Eshop\Core\Registry::getSession()->getVariable('sess_challenge');
+        if ($this->checkOrderExist($orderId)) {
+            \OxidEsales\Eshop\Core\Registry::getLogger()->debug(
+                'finalizeOrder: Order already exists: ' . $orderId,
+                [$oBasket, $oUser]
+            );
+            // we might use this later, this means that somebody clicked like mad on order button
+            return self::ORDER_STATE_ORDEREXISTS;
+        }
+
+        // if not recalculating order, use sess_challenge id, else leave old order id
+        if (!$blRecalculatingOrder) {
+            // use this ID
+            $this->setId($orderId);
+
+            // validating various order/basket parameters before finalizing
+            if ($iOrderState = $this->validateOrder($oBasket, $oUser)) {
+                return $iOrderState;
+            }
+        }
+
+        // copies user info
+        $this->assignUserInformation($oUser);
+
+        // copies basket info
+        $this->loadFromBasket($oBasket);
+
+        $this->oxorder__oxuserid = oxNew('oxfield', $oUser->getId());
+
+        // payment information
+        $oUserPayment = $this->setPayment($oBasket->getPaymentId());
+
+        // set folder information, if order is new
+        // #M575 in recalculating order case folder must be the same as it was
+        if (!$blRecalculatingOrder) {
+            $this->setFolder();
+        }
+
+        // marking as not finished
+        $this->setOrderStatus('NOT_FINISHED');
+
+        //saving all order data to DB
+        $this->save();
+
+        if (!$this->oxorder__oxordernr->value) {
+            $this->setNumber();
+        } else {
+            oxNew(\OxidEsales\Eshop\Core\Counter::class)
+                ->update($this->getCounterIdent(), $this->oxorder__oxordernr->value);
+        }
+
+        // deleting remark info only when order is finished
+        \OxidEsales\Eshop\Core\Registry::getSession()->deleteVariable('ordrem');
+
+        //#4005: Order creation time is not updated when order processing is complete
+        if (!$blRecalculatingOrder) {
+            $this->updateOrderDate();
+        }
+
+        // updating order trans status (success status)
+        $this->setOrderStatus('OK');
+
+        // store orderid
+        $oBasket->setOrderId($this->getId());
+
+        // updating wish lists
+        $this->updateWishlist($oBasket->getContents(), $oUser);
+
+        // updating users notice list
+        $this->updateNoticeList($oBasket->getContents(), $oUser);
+
+        // marking vouchers as used and sets them to $this->aVoucherList (will be used in order email)
+        // skipping this action in case of order recalculation
+        if (!$blRecalculatingOrder) {
+            $this->markVouchers($oBasket, $oUser);
+        }
+
+        return self::ORDER_STATE_OK;
+    }
+
+
     /**
      * @inheritdoc
      * @throws Exception
@@ -611,14 +686,12 @@ class Order extends Order_parent
 
         //we might have the case that the order is already stored but we are waiting for webhook events
         if (
-            $this->paymentService->isPayPalPayment()
+            $this->paymentService->isPayPalPayment() &&
+            $this->paymentService->isOrderExecutionInProgress() &&
+            $this->load(Registry::getSession()->getVariable('sess_challenge'))
         ) {
             //order payment is being processed
-            $oOrderId = $oSession->getVariable('sess_challenge');
-            $isLoaded = $this->load($oOrderId);
             if (
-                $isLoaded &&
-                $this->paymentService->isOrderExecutionInProgress() &&
                 !$this->isOrderFinished() &&
                 !$this->isOrderPaid() &&
                 !$this->isWaitForWebhookTimeoutReached()
@@ -626,16 +699,27 @@ class Order extends Order_parent
                 return self::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS;
             }
 
-            $oSession->setVariable('isPayPalPaymentCheckout', true);
+            if (
+                (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $this->paymentService->getSessionPaymentId()) &&
+                $this->isOrderFinished() &&
+                $this->isOrderPaid() &&
+                !$this->hasOrderNumber()
+            ) {
+                return self::ORDER_STATE_NEED_CALL_ACDC_FINALIZE;
+            }
+
+            if (
+                (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $this->paymentService->getSessionPaymentId()) &&
+                !$this->isOrderFinished() &&
+                !$this->isOrderPaid() &&
+                !$this->hasOrderNumber() &&
+                $this->isWaitForWebhookTimeoutReached()
+            ) {
+                return self::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS;
+            }
         }
 
-        $result = parent::finalizeOrder($basket, $user, $recalculatingOrder);
-
-        if ($this->paymentService->isPayPalPayment()) {
-            $oSession->deleteVariable('isPayPalPaymentCheckout');
-        }
-
-        return $result;
+        return parent::finalizeOrder($basket, $user, $recalculatingOrder);
     }
 
     public function isPayPalOrderCompleted(PayPalApiOrder $apiOrder): bool
@@ -725,5 +809,18 @@ class Order extends Order_parent
         parent::setOrderStatus('NOT_FINISHED');
     }
 
+    public function setOrderProcessTrackingService(OrderProcessTrackingService $orderProcessTrackingService): void
+    {
+        $this->orderProcessTrackingService = $orderProcessTrackingService;
+    }
 
+    public function setModuleSettings(ModuleSettings $moduleSettings): void
+    {
+        $this->moduleSettings = $moduleSettings;
+    }
+
+    public function setPaymentService(PaymentService $paymentService): void
+    {
+        $this->paymentService = $paymentService;
+    }
 }
