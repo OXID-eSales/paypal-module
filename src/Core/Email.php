@@ -25,14 +25,14 @@ class Email extends Email_parent
      *
      * @var string
      */
-    protected $_sPuiTplHtml = "@osc_paypal/frontend/shared/email/html/pui_paymentinfo.tpl";
+    protected $sPuiTplHtml = "@osc_paypal/frontend/email/html/pui_paymentinfo";
 
     /**
      * PUI Payment Information - Plain
      *
      * @var string
      */
-    protected $_sPuiTplPlain = "@osc_paypal/frontend/shared/email/plain/pui_paymentinfo.tpl";
+    protected $sPuiTplPlain = "@osc_paypal/frontend/email/plain/pui_paymentinfo";
 
     /**
      * Sets mailer additional settings and sends pui info mail to user.
@@ -44,8 +44,8 @@ class Email extends Email_parent
      */
     public function sendPuiInfo(Order $order, Pui $puiPaymentDetails)
     {
-        $shop = $this->_getShop();
-        $this->_setMailParams($shop);
+        $shop = $this->getShop();
+        $this->setMailParams($shop);
 
         $this->setViewData("order", $order);
         $this->setViewData("puiPaymentDetails", $puiPaymentDetails);
@@ -55,10 +55,10 @@ class Email extends Email_parent
         $renderer = $this->getRenderer();
 
         // Process view data array through oxOutput processor
-        $this->_processViewArray();
+        $this->processViewArray();
 
-        $this->setBody($renderer->renderTemplate($this->_sPuiTplHtml, $this->getViewData()));
-        $this->setAltBody($renderer->renderTemplate($this->_sPuiTplPlain, $this->getViewData()));
+        $this->setBody($renderer->renderTemplate($this->sPuiTplHtml, $this->getViewData()));
+        $this->setAltBody($renderer->renderTemplate($this->sPuiTplPlain, $this->getViewData()));
 
         //Sets subject to email
         $lang = Registry::getLang();
