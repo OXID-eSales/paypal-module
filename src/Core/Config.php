@@ -558,7 +558,7 @@ class Config
         return $response["id_token"] ?? "";
     }
 
-    public function getIsGooglePayDeliveryAdressActive(): bool
+    public function getIsGooglePayDeliveryAddressActive(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getIsGooglePayDeliveryAddressActive();
     }
