@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007785](https://bugs.oxid-esales.com/view.php?id=7785): Fix: If you only fill in one of the fields Tracking carrier or code for PayPal orders, an alert inform that you need all fields
 - show Express-Buttons only if Basket > 0 or ArticlePrice > 0
 - fixes an error in the display of the GooglePay button
+- [0007821](https://bugs.oxid-esales.com/view.php?id=7821): use finalizeOrder for all payments again
+
 
 ### FIX
 
