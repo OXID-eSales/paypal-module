@@ -164,8 +164,8 @@ $aModule = [
         '@osc_paypal/frontend/flow/vaultedpaymentsources.tpl' => 'views/smarty/frontend/flow/vaulting/vaultedpaymentsources.tpl',
         '@osc_paypal/frontend/wave/vaultedpaymentsources.tpl' => 'views/smarty/frontend/wave/vaulting/vaultedpaymentsources.tpl',
 
-        '@osc_paypal/frontend/shared/email/html/pui_paymentinfo.tpl' => 'views/smarty/frontend/shared/email/html/pui_paymentinfo.tpl',
-        '@osc_paypal/frontend/shared/email/plain/pui_paymentinfo.tpl' => 'views/smarty/frontend/shared/email/plain/pui_paymentinfo.tpl',
+        '@osc_paypal/frontend/email/html/pui_paymentinfo.tpl' => 'views/smarty/frontend/shared/email/html/pui_paymentinfo.tpl',
+        '@osc_paypal/frontend/email/plain/pui_paymentinfo.tpl' => 'views/smarty/frontend/shared/email/plain/pui_paymentinfo.tpl',
     ],
     'blocks'    => [
         [
