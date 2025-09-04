@@ -735,15 +735,15 @@ class Order extends Order_parent
                 return self::ORDER_STATE_NEED_CALL_ACDC_FINALIZE;
             }
 
-        $result = parent::finalizeOrder($basket, $user, $recalculatingOrder);
-
-        if ($this->paymentService->isPayPalPayment() &&
-            !$this->isOrderFinished() &&
-            !$this->isOrderPaid() &&
-            !$this->hasOrderNumber() &&
-            $this->isWaitForWebhookTimeoutReached()
-        ) {
-            return self::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS;
+            if (
+                (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $this->paymentService->getSessionPaymentId()) &&
+                !$this->isOrderFinished() &&
+                !$this->isOrderPaid() &&
+                !$this->hasOrderNumber() &&
+                $this->isWaitForWebhookTimeoutReached()
+            ) {
+                return self::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS;
+            }
         }
 
         return parent::finalizeOrder($basket, $user, $recalculatingOrder);
