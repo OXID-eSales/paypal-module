@@ -47,11 +47,13 @@ class Order extends Order_parent
 {
     use ServiceContainer;
 
-    private ?OrderProcessTrackingService $orderProcessTrackingService;
+    private OrderProcessTrackingService $orderProcessTrackingService;
 
-    private ?ModuleSettings $moduleSettings;
-
-    private ?PaymentService $paymentService;
+    public function __construct()
+    {
+        parent::__construct();
+        $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
+    }
 
     /**
      * Uapm payment in progress
@@ -139,10 +141,9 @@ class Order extends Order_parent
         }
 
         $paymentsId = (string) $this->getFieldData('oxpaymenttype');
-        if (!$this->paymentService->isPayPalPayment($paymentsId)) {
+        if (!$paymentService->isPayPalPayment($paymentsId)) {
             throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
         }
-
         $payPalApiOrder = $this->paymentService->fetchOrderFields($payPalOrderId);
         $basket = Registry::getSession()->getBasket();
         $user = Registry::getSession()->getUser();
