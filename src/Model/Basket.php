@@ -179,6 +179,39 @@ class Basket extends Basket_parent
     }
 
     /**
+     * Returns the sum of all discounts (basket discounts and vouchers)
+     * calculated strictly in Brutto (gross), regardless of shop net/gross mode.
+     */
+    public function getPayPalCheckoutDiscountBrutto(): float
+    {
+        $netMode = $this->isCalculationModeNetto();
+        $config = Registry::getConfig();
+        $defaultVAT = $config->getConfigParam('dDefaultVAT');
+        $discount = 0.0;
+
+        $totalDiscount = $this->getTotalDiscount();
+        if ($totalDiscount) {
+            $discount += $totalDiscount->getBruttoPrice();
+        }
+
+        if ($netMode){
+            $discount *= 1.0 + $defaultVAT / 100;
+        }
+
+        // vouchers
+        $vouchers = $this->getVouchers();
+        foreach ($vouchers as $voucher) {
+            $voucherPrice = oxNew(Price::class);
+            // Force brutto mode for voucher price calculation
+            $voucherPrice->setNettoMode(false);
+            $voucherPrice->setPrice($voucher->dVoucherdiscount, (float)$defaultVAT);
+            $discount += $voucherPrice->getBruttoPrice();
+        }
+
+        return $discount;
+    }
+
+    /**
      * Collect the brut-sum of all articles in Basket.
      */
     public function getPayPalCheckoutItems(bool $isOxidSum = true): float
