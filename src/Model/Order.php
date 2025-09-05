@@ -47,13 +47,11 @@ class Order extends Order_parent
 {
     use ServiceContainer;
 
-    private OrderProcessTrackingService $orderProcessTrackingService;
+    private ?OrderProcessTrackingService $orderProcessTrackingService;
 
-    public function __construct()
-    {
-        parent::__construct();
-        $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
-    }
+    private ?ModuleSettings $moduleSettings;
+
+    private ?PaymentService $paymentService;
 
     /**
      * Uapm payment in progress
@@ -141,9 +139,10 @@ class Order extends Order_parent
         }
 
         $paymentsId = (string) $this->getFieldData('oxpaymenttype');
-        if (!$paymentService->isPayPalPayment($paymentsId)) {
+        if (!$this->paymentService->isPayPalPayment($paymentsId)) {
             throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
         }
+
         $payPalApiOrder = $this->paymentService->fetchOrderFields($payPalOrderId);
         $basket = Registry::getSession()->getBasket();
         $user = Registry::getSession()->getUser();
@@ -260,6 +259,24 @@ class Order extends Order_parent
         Registry::getSession()->deleteVariable('blDontCheckProductStockForPayPalMails');
     }
 
+    /**
+     * @inheritDoc
+     *
+     * @param \OxidEsales\Eshop\Application\Model\User        $oUser    order user
+     * @param \OxidEsales\Eshop\Application\Model\Basket      $oBasket  current order basket
+     * @param \OxidEsales\Eshop\Application\Model\UserPayment $oPayment order payment
+     *
+     * @return bool
+     */
+    protected function sendOrderByEmail($oUser = null, $oBasket = null, $oPayment = null)
+    {
+        if (Registry::getSession()->getVariable('isPayPalPaymentCheckout')) {
+            return self::ORDER_STATE_OK;
+        }
+
+        return parent::sendOrderByEmail($oUser, $oBasket, $oPayment);
+    }
+
     //TODO: this place should be refactored in shop core
     protected function afterOrderCleanUp(Basket $basket, User $user): void
     {
@@ -271,7 +288,7 @@ class Order extends Order_parent
     }
 
     /**
-     * Executes payment. Additionally, loads oxPaymentGateway object, initiates
+     * Executes payment. Additionally loads oxPaymentGateway object, initiates
      * it by adding payment parameters (oxPaymentGateway::setPaymentParams())
      * and finally executes it (oxPaymentGateway::executePayment()). On failure -
      * deletes order and returns * error code 2.
@@ -284,6 +301,10 @@ class Order extends Order_parent
      */
     protected function executePayment(Basket $basket, $userpayment)
     {
+        if (Registry::getSession()->getVariable('isProxyControllerPayment')) {
+            return true;
+        }
+
         $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
 
         $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($sessionPaymentId);
@@ -354,9 +375,7 @@ class Order extends Order_parent
 
     protected function doExecutePayPalPayment($payPalOrderId): bool
     {
-        /** @var PaymentService $paymentService */
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
+        $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
         $success = false;
 
         try {
@@ -698,6 +717,8 @@ class Order extends Order_parent
         ) {
             //order payment is being processed
             if (
+                $isLoaded &&
+                $this->paymentService->isOrderExecutionInProgress() &&
                 !$this->isOrderFinished() &&
                 !$this->isOrderPaid() &&
                 !$this->isWaitForWebhookTimeoutReached()

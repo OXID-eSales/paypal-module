@@ -28,12 +28,13 @@ class PaymentGateway extends PaymentGateway_parent
 {
      use ServiceContainer;
 
-     /**
+    /**
      * Executes payment, returns true on success.
      *
-     * @param double          $amount Goods amount
-     * @param EshopModelOrder $order  User ordering object
+     * @param double $amount Goods amount
+     * @param EshopModelOrder $order User ordering object
      *
+     * @throws Exception
      */
     public function executePayment($amount, &$order)
     {

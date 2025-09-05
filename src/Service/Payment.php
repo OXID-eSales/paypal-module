@@ -549,7 +549,9 @@ class Payment
         return $sessionOrderId &&
             $payPalOrderId &&
             $paymentId &&
-            PayPalDefinitions::isUAPMPayment($paymentId);
+            ((PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId) ||
+                PayPalDefinitions::isUAPMPayment($paymentId)
+            );
     }
 
     /**
@@ -589,73 +591,6 @@ class Payment
             ) {
                 $this->logger->log('error', $exception->getMessage(), [$exception]);
             }
-        }
-
-        //NOTE: payment not fully executed, we need customer interaction first
-        return $redirectLink;
-    }
-
-    /**
-     * @throws PayPalException
-     */
-    public function doExecuteStandardPayment(
-        EshopModelOrder $order,
-        EshopModelBasket $basket,
-        $intent = Constants::PAYPAL_ORDER_INTENT_CAPTURE
-    ): string {
-
-        $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
-
-        //For Standard payment we should not yet have a paypal order in session.
-        //We create a fresh paypal order at this point
-        $config = Registry::getConfig();
-        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
-        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
-
-        $response = $this->doCreatePayPalOrder(
-            $basket,
-            $intent,
-            OrderRequestFactory::USER_ACTION_PAY_NOW,
-            null,
-            null,
-            '',
-            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-            $returnUrl,
-            $cancelUrl,
-            false
-        );
-
-        $orderId = '';
-        if ($response) {
-            $orderId = $response->id ?: '';
-        }
-
-        if (!$orderId) {
-            $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
-            throw PayPalException::createPayPalOrderFail();
-        }
-
-        PayPalSession::storePayPalOrderId($orderId);
-
-        if (!isset($response->links)) {
-            throw PayPalException::sessionPaymentMalformedResponse();
-        }
-        foreach ($response->links as $links) {
-            if ($links['rel'] === 'approve' || $links['rel'] === 'payer-action') {
-                $redirectLink = $links['href'];
-                break;
-            }
-        }
-
-        //no customer interaction needed if a vaulted payment is used
-        if ($response->status === Constants::PAYPAL_STATUS_COMPLETED) {
-            return $returnUrl . "&vaulting=true";
-        }
-
-        if (!$redirectLink) {
-            PayPalSession::unsetPayPalSession();
-            $this->removeTemporaryOrder();
-            throw PayPalException::sessionPaymentMissingRedirectLink();
         }
 
         //NOTE: payment not fully executed, we need customer interaction first
