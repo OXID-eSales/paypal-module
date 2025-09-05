@@ -252,7 +252,8 @@ class Order extends Order_parent
     public function sendPayPalOrderByEmail(User $user, Basket $basket): void
     {
         $userPayment = oxNew(UserPayment::class);
-        $userPayment->load($this->getFieldData('oxpaymentid'));
+        $paymentId = $this->getFieldData('oxpaymentid');
+        $userPayment->load($paymentId);
 
         Registry::getSession()->setVariable('blDontCheckProductStockForPayPalMails', true);
         $this->sendOrderByEmail($user, $basket, $userPayment);
@@ -270,7 +271,7 @@ class Order extends Order_parent
      */
     protected function sendOrderByEmail($oUser = null, $oBasket = null, $oPayment = null)
     {
-        if (Registry::getSession()->getVariable('isPayPalPaymentCheckout')) {
+        if (Registry::getSession()->getVariable('isProxyControllerPayment')) {
             return self::ORDER_STATE_OK;
         }
 
@@ -301,9 +302,14 @@ class Order extends Order_parent
      */
     protected function executePayment(Basket $basket, $userpayment)
     {
+        if (Registry::getSession()->getVariable('isProxyControllerPayment')) {
+            return true;
+        }
+
         $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
 
         $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($sessionPaymentId);
+        $isPayPalACDC = $sessionPaymentId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
 
         //catch UAPM
         if ($isPayPalUAPM) {
@@ -312,7 +318,6 @@ class Order extends Order_parent
                 $this->setOrderNumber();
 
                 $redirectLink = $this->paymentService->doExecuteUAPMPayment($this, $basket);
-
                 PayPalSession::setSessionRedirectLink($redirectLink);
 
                 return self::ORDER_STATE_SESSIONPAYMENT_INPROGRESS;
@@ -324,13 +329,19 @@ class Order extends Order_parent
             return self::ORDER_STATE_PAYMENTERROR;
         }
 
-        // for all other PayPal-Payments ignore the _executePayment, because it is handle before
-        if (Registry::getSession()->getVariable('isPayPalPaymentCheckout')) {
-            return true;
+        if ($isPayPalACDC) {
+            if (
+                Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS) ===
+                Constants::PAYPAL_STATUS_COMPLETED
+            ) {
+                return self::ORDER_STATE_ACDCCOMPLETED;
+            }
+            return self::ORDER_STATE_ACDCINPROGRESS;
         }
 
         return parent::executePayment($basket, $userpayment);
     }
+
 
     /**
      * Get PayPal order object for the current active order object
@@ -613,6 +624,8 @@ class Order extends Order_parent
         if (
             $this->paymentService->isPayPalPayment()
         ) {
+            $sessionPaymentId = $this->paymentService->getSessionPaymentId();
+
             //order payment is being processed
             $oOrderId = $oSession->getVariable('sess_challenge');
             $isLoaded = $this->load($oOrderId);
@@ -626,13 +639,15 @@ class Order extends Order_parent
                 return self::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS;
             }
 
-            $oSession->setVariable('isPayPalPaymentCheckout', true);
+            if (PayPalDefinitions::isProxyControllerPayment($sessionPaymentId)) {
+                $oSession->setVariable('isProxyControllerPayment', true);
+            }
         }
 
         $result = parent::finalizeOrder($basket, $user, $recalculatingOrder);
 
         if ($this->paymentService->isPayPalPayment()) {
-            $oSession->deleteVariable('isPayPalPaymentCheckout');
+            $oSession->deleteVariable('isProxyControllerPayment');
         }
 
         return $result;
