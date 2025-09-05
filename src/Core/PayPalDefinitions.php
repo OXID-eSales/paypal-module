@@ -270,7 +270,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
             'buttonpayment' => false,
-            'proxycontroller' => true,
+            'proxycontroller' => false,
             'defaulton' => true,
             'vaultingtype' => self::PAYMENT_SOURCE_CARD,
             'paymentsource' => self::PAYMENT_SOURCE_CARD
