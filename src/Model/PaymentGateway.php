@@ -28,12 +28,13 @@ class PaymentGateway extends PaymentGateway_parent
 {
      use ServiceContainer;
 
-     /**
+    /**
      * Executes payment, returns true on success.
      *
-     * @param double          $amount Goods amount
-     * @param EshopModelOrder $order  User ordering object
+     * @param double $amount Goods amount
+     * @param EshopModelOrder $order User ordering object
      *
+     * @throws Exception
      */
     public function executePayment($amount, &$order)
     {
@@ -150,7 +151,7 @@ class PaymentGateway extends PaymentGateway_parent
             $logger->log('error', 'Error on execute pui payment call.', [$exception]);
         }
         PayPalSession::unsetPayPalOrderId();
-        $this->_sLastError = $paymentService->getPaymentExecutionError();
+        $this->sLastError = $paymentService->getPaymentExecutionError();
 
         return $success;
     }
