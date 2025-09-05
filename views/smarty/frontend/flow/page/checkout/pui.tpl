@@ -24,6 +24,23 @@
     [{assign var="iBirthdayYear" value=0}]
 [{/if}]
 
+[{* Calculate age for initial display *}]
+[{assign var="isUnder18" value=false}]
+[{if $iBirthdayDay > 0 && $iBirthdayMonth > 0 && $iBirthdayYear > 0}]
+    [{assign var="currentYear" value=$smarty.now|date_format:"%Y"}]
+    [{assign var="currentMonth" value=$smarty.now|date_format:"%m"}]
+    [{assign var="currentDay" value=$smarty.now|date_format:"%d"}]
+
+    [{assign var="age" value=$currentYear-$iBirthdayYear}]
+    [{if $currentMonth < $iBirthdayMonth || ($currentMonth == $iBirthdayMonth && $currentDay < $iBirthdayDay)}]
+        [{assign var="age" value=$age-1}]
+    [{/if}]
+
+    [{if $age < 18}]
+        [{assign var="isUnder18" value=true}]
+    [{/if}]
+[{/if}]
+
 [{assign var="phonenumber" value=""}]
 [{if isset($invadr.oxuser__oxfon)}]
     [{assign var="phonenumber" value=$invadr.oxuser__oxfon}]
@@ -34,7 +51,7 @@
 
 <div id="card_container" class="card_container">
     <form id="pui_form">
-        <div class="form-group oxDate [{if !$iBirthdayMonth || !$iBirthdayDay || !$iBirthdayYear}]text-danger[{else}]text-success[{/if}]">
+        <div class="form-group oxDate [{if !$iBirthdayMonth || !$iBirthdayDay || !$iBirthdayYear || $isUnder18}]text-danger[{else}]text-success[{/if}]">
             <label class="control-label col-xs-12 col-lg-3 req">[{oxmultilang ident="OSC_PAYPAL_PUI_BIRTHDAY"}]</label>
             <div class="col-xs-3 col-lg-3">
                 <input id="pui_required_birthdate_day" class="oxDay form-control" name="pui_required[birthdate][day]" type="text" maxlength="2" value="[{if $iBirthdayDay > 0}][{$iBirthdayDay}][{/if}]" placeholder="[{oxmultilang ident="DAY"}]" required="" />
@@ -55,6 +72,11 @@
             <div class="col-lg-offset-3 col-lg-9 col-xs-12">
                 <div class="help-block pui_required_birthdate_day_help pui_required_birthdate_month_help pui_required_birthdate_year_help">
                     <p class="text-danger hidden">[{oxmultilang ident="DD_FORM_VALIDATION_REQUIRED"}]</p>
+                </div>
+                <div class="help-block">
+                    <p id="age-error-message" class="text-danger [{if !$isUnder18}]hidden[{/if}]">
+                        [{oxmultilang ident="OSC_PAYPAL_PUI_AGE_WARNING"}]
+                    </p>
                 </div>
             </div>
         </div>

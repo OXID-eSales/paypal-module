@@ -1,0 +1,64 @@
+{% set shop = oEmailView.getShop() %}
+{% set oViewConf = oEmailView.getViewConfig() %}
+
+{% block email_plain_pui_paymentinfo_billingheader %}
+    {{ translate({ ident: "ORDER_SHIPPED_TO", suffix: "COLON" }) }}
+{% endblock %}
+
+{% block email_plain_pui_paymentinfo_billingaddress %}
+    {{ order.oxorder__oxbillcompany.getRawValue() }}
+    {{ order.oxorder__oxbillfname.getRawValue() }} {{ order.oxorder__oxbilllname.getRawValue() }}
+    {{ order.oxorder__oxbillstreet.getRawValue() }} {{ order.oxorder__oxbillstreetnr.value }}
+    {{ order.oxorder__oxbillstateid.value }}
+    {{ order.oxorder__oxbillzip.value }} {{ order.oxorder__oxbillcity.getRawValue() }}
+{% endblock %}
+
+{% block email_plain_pui_paymentinfo_shippingheader %}
+    {{ translate({ ident: "SHIPPING_ADDRESS" }) }}
+{% endblock %}
+
+{% block email_plain_pui_paymentinfo_shippingaddress %}
+    {% if order.oxorder__oxdellname.value %}
+        {{ order.oxorder__oxdelcompany.getRawValue() }}
+        {{ order.oxorder__oxdelfname.getRawValue() }} {{ order.oxorder__oxdellname.getRawValue() }}
+        {{ order.oxorder__oxdelstreet.getRawValue() }} {{ order.oxorder__oxdelstreetnr.value }}
+        {{ order.oxorder__oxdelstateid.value }}
+        {{ order.oxorder__oxdelzip.value }} {{ order.oxorder__oxdelcity.getRawValue() }}
+    {% else %}
+        {{ order.oxorder__oxbillcompany.getRawValue() }}
+        {{ order.oxorder__oxbillfname.getRawValue() }} {{ order.oxorder__oxbilllname.getRawValue() }}
+        {{ order.oxorder__oxbillstreet.getRawValue() }} {{ order.oxorder__oxbillstreetnr.value }}
+        {{ order.oxorder__oxbillstateid.value }}
+        {{ order.oxorder__oxbillzip.value }} {{ order.oxorder__oxbillcity.getRawValue() }}
+    {% endif %}
+{% endblock %}
+
+{% block email_plain_pui_paymentinfo_paymentheader %}
+    {{ translate({ ident: "PAYMENT_INFORMATION" }) }}
+{% endblock %}
+
+{% block email_plain_pui_paymentinfo_paymentbody %}
+    {{ translate({ ident: "OSC_PAYPAL_PAYMENT_PUI_NOTE", suffix: "COLON" }) }}
+    {{ translate({ ident: "OSC_PAYPAL_PAYMENT_PUI_IBAN", suffix: "COLON" }) }} {{ puiPaymentDetails.iban }}
+    {{ translate({ ident: "OSC_PAYPAL_PAYMENT_PUI_BIC", suffix: "COLON" }) }} {{ puiPaymentDetails.bic }}
+    {{ translate({ ident: "OSC_PAYPAL_PAYMENT_PUI_BANKNAME", suffix: "COLON" }) }} {{ puiPaymentDetails.bank_name }}
+    {{ translate({ ident: "OSC_PAYPAL_PAYMENT_PUI_ACCOUNTHOLDER", suffix: "COLON" }) }} {{ puiPaymentDetails.account_holder_name }}
+    {{ translate({ ident: "OSC_PAYPAL_PAYMENT_PUI_REFERENCE", suffix: "COLON" }) }} {{ puiPaymentDetails.payment_reference }}
+    {{ translate({ ident: "GRAND_TOTAL", suffix: "COLON" }) }} {{ format_price(order.oxorder__oxtotalbrutsum.value, { currency: currency }) }}
+{% endblock %}
+
+{% block email_plain_pui_paymentinfo_oxordernr %}
+    {{ translate({ ident: "ORDER_NUMBER", suffix: "COLON" }) }} {{ order.oxorder__oxordernr.value }}
+{% endblock %}
+
+{% block email_plain_pui_paymentinfo_orderarticles %}
+    {% for oOrderArticle in order.getOrderArticles(true) %}
+        {{ oOrderArticle.oxorderarticles__oxamount.value }} {{ oOrderArticle.oxorderarticles__oxtitle.getRawValue() }} {{ oOrderArticle.oxorderarticles__oxselvariant.getRawValue() }}
+    {% endfor %}
+{% endblock %}
+
+{% block email_plain_pui_paymentinfo_infofooter %}
+    {{ translate({ ident: "YOUR_TEAM", args: shop.oxshops__oxname.getRawValue() }) }}
+{% endblock %}
+
+{% include_content 'oxemailfooterplain' %}

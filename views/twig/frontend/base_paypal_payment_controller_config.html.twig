@@ -64,7 +64,7 @@
         {% endif %}
 
         {% if paymentId == 'oscpaypal_googlepay' %}
-            {% set bGooglePayDelivery = oConfig.getConfigParam('oscPayPalUseGooglePayAddress') %}
+            {% set bGooglePayDelivery = oPPconfig.getIsGooglePayDeliveryAddressActive() %}
 
             window.PayPalPaymentControllerConfigurator = function () {
                 return Object.assign(PayPalPaymentControllerConfiguratorDefaults, {
@@ -74,8 +74,8 @@
                     googlePayOrderCreateUrl: '{{ (sSelfLink ~ "cl=oscpaypalproxy&fnc=createGooglePayOrder&paymentid=oscpaypal_googlepay&context=continue&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
                     shopOrderCreateUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=createShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
 
-                    isSandbox: !!{{ isSandBox ? 'true' : 'false' }},
-                    useGooglePayAddress: !!'{{ bGooglePayDelivery }}',
+                    isSandbox: {{ isSandBox ? 'true' : 'false' }},
+                    useGooglePayAddress: {{ bGooglePayDelivery ? 'true' : 'false' }},
                     merchantName: '{{ oxcmp_shop.oxshops__oxname.value|escape('js') }}',
                     totalPrice: '{{ oxcmp_basket.getPriceForPayment() }}',
                     paymentId: '{{ paymentId }}',

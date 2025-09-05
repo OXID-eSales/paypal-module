@@ -259,7 +259,7 @@ class AjaxPaymentController extends ProxyController
         $session->setVariable('sess_challenge', Registry::getUtilsObject()->generateUID());
         try {
             //finalizing ordering process (validating, storing order into DB, executing payment, setting status ...)
-            $iSuccess = $order->finalizePayPalOrder($basket, $user);
+            $iSuccess = $order->finalizeOrder($basket, $user);
 
             // performing special actions after user finishes order (assignment to special user groups)
             $user->onOrderExecute($basket, $iSuccess);
@@ -501,7 +501,7 @@ class AjaxPaymentController extends ProxyController
         Registry::getSession()->deleteVariable('sess_challenge');
 
         //finalizing an ordering process (validating, storing order into DB, setting status)
-        $success = $order->finalizePayPalOrder($basket, $user, false);
+        $success = $order->finalizeOrder($basket, $user, false);
 
         Registry::getSession()->setVariable('sess_challenge', $basket->getOrderId());
 
