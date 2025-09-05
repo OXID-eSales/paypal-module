@@ -352,10 +352,11 @@ class Order extends Order_parent
      * Get PayPal order object for the current active order object
      * Result is cached and returned on subsequent calls
      *
+     * @param string $payPalOrderId
      * @return PayPalApiOrder
      * @throws ApiException
      */
-    public function getPayPalCheckoutOrder($payPalOrderId = ''): PayPalApiOrder
+    public function getPayPalCheckoutOrder(string $payPalOrderId = ''): PayPalApiOrder
     {
         $payPalOrderId = $payPalOrderId ?: $this->getPayPalOrderIdForOxOrderId();
         if (!$this->payPalApiOrder) {
@@ -373,7 +374,7 @@ class Order extends Order_parent
         return $this->payPalApiOrder;
     }
 
-    protected function doExecutePayPalPayment($payPalOrderId): bool
+    protected function doExecutePayPalPayment(string $payPalOrderId): bool
     {
         $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
         $success = false;
