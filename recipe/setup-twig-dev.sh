@@ -58,18 +58,31 @@ $PROJECT_ROOT/source/extensions/paypal/recipe/parts/b-7.0.x/require_twig_compone
 
 # Require demodata package
 docker compose exec -T \
+  php composer config repositories.oxid-esales/oxideshop-demodata-ce \
+  --json '{"type":"git", "url":"https://github.com/OXID-eSales/oxideshop_demodata_ce"}'
+docker compose exec -T php composer require oxid-esales/oxideshop-demodata-ce:dev-b-7.0.x --no-update
+
+# Require demodata package
+docker compose exec -T \
+  php composer config repositories.oxid-esales/oxideshop-demodata-pe \
+  --json '{"type":"git", "url":"https://github.com/OXID-eSales/oxideshop_demodata_pe"}'
+docker compose exec -T php composer require oxid-esales/oxideshop-demodata-pe:dev-b-7.0.x --no-update
+
+
+# Require demodata package
+docker compose exec -T \
   php composer config repositories.oxid-esales/oxideshop-demodata-ee \
   --json '{"type":"git", "url":"https://github.com/OXID-eSales/oxideshop_demodata_ee"}'
 docker compose exec -T php composer require oxid-esales/oxideshop-demodata-ee:dev-b-7.0.x --no-update
 
-# Install all preconfigured dependencies
+echo "composer require symfony/dotenv"
+docker compose exec -T php composer require symfony/dotenv --no-interaction --no-update
+
+echo "composer update"
 docker compose exec -T php composer update --no-interaction
 
 $PROJECT_ROOT/source/extensions/paypal/recipe/parts/shared/setup_database.sh
 
-perl -pi\
-  -e 'print "SetEnvIf Authorization \"(.*)\" HTTP_AUTHORIZATION=\$1\n\n" if $. == 1'\
-  source/source/.htaccess
 
 # Configure module in composer
 docker compose exec -T \
@@ -86,7 +99,7 @@ docker compose exec -T php composer require oxid-solution-catalysts/paypal-clien
 make up
 # Install all preconfigured dependencies
 docker compose exec -T php composer update --no-interaction
-
+docker compose exec -T php bin/oe-console oe:setup:demodata
 docker compose exec -T php bin/oe-console oe:theme:activate apex
 docker compose exec -T php bin/oe-console oe:module:install extensions/paypal
 docker compose exec -T php bin/oe-console oe:module:activate osc_paypal
@@ -107,5 +120,7 @@ echo -e "\033[1;37m\033[1;42mShop admin at http://localhost.local/admin\033[0m\n
 echo -e "\033[1;37m\033[1;42mYou can access the Adminer at http://localhost.local:8080/\033[0m\n"
 
 rm -rf "$MODULE_ROOT"
+
+cp $PROJECT_ROOT/source/extensions/paypal/tests/.env.dist $PROJECT_ROOT/source/extensions/paypal/tests/.env
 
 exit 0

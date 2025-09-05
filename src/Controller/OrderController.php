@@ -134,7 +134,7 @@ class OrderController extends OrderController_parent
             $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
 
-            if ($isVaultingPossible && $payPalCustomerId ) {
+            if ($isVaultingPossible && $payPalCustomerId) {
                 $paymentDescription = '';
 
                 // Vaulted Cards
@@ -152,7 +152,6 @@ class OrderController extends OrderController_parent
                         }
                     }
                 }
-
             }
 
             if (

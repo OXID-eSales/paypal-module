@@ -53,12 +53,9 @@ test.describe('Simple PayPal payment test', () => {
                 await paypalHelper.loginToPaypal(popup);
             });
 
-            // Step 3: Verify the thank you page is displayed
             console.log('Step 3: Verifying thank you page...');
             await page.waitForSelector('#thankyouPage', { timeout: 60000 });
 
-            // The redirect should already be handled by handlePaypalPopup
-            // Just verify the thank you page is displayed
             const thankYouText = await page.locator('#thankyouPage').isVisible();
             expect(thankYouText).toBeTruthy();
 

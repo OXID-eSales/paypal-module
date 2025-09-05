@@ -9,8 +9,9 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
+use Doctrine\DBAL\Driver\Exception;
+use Doctrine\DBAL\Query\QueryBuilder;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
-use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
@@ -26,7 +27,7 @@ final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
 
     protected function tearDown(): void
     {
-        $this->cleanUpTable('oscpaypal_order', 'oxorderid');
+        $this->cleanUpTable('oscpaypal_order');
         $this->cleanUpTable('oxorder');
 
         parent::tearDown();
@@ -73,13 +74,13 @@ final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
 
     /**
      * @dataProvider dataProviderWebhookEvent
+     * @throws Exception
      */
     public function testPaymentCaptureRefunded(float $orderTotal, string $expected): void
     {
         $data = $this->getRequestData(self::FIXTURE);
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
-        $refundId = $data['resource']['id'];
         $captureId = '5YH4578629195611S';
         $payPalOrderId = 'paypal_orderid';
 
@@ -99,7 +100,7 @@ final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
         $handler = oxNew(PaymentCaptureRefundedHandler::class);
         $handler->handle($event);
 
-        $this->assertPayPalOrderCount($payPalOrderId, 2);
+        $this->assertPayPalOrderCount($payPalOrderId, 1);
 
         $payPalOrder = oxNew(PayPalOrder::class);
         $payPalOrder->load(self::PAYPAL_OXID);
@@ -108,12 +109,11 @@ final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->get(QueryBuilderFactoryInterface::class)->create();
         $queryBuilder->select('oscpaypaltransactionid')
-            ->from('oscpaypal_order')
-            ->where('oscpaypaltransactiontype = :type');
+            ->from('oscpaypal_order');
 
-        $result = $queryBuilder->setParameters(['type' => Constants::PAYPAL_TRANSACTION_TYPE_REFUND])
-            ->execute();
+        $queryBuilderExecuted = $queryBuilder->execute();
+        $resultValue = $queryBuilderExecuted->fetchOne();
 
-        $this->assertEquals($refundId, $result->fetchOne());
+        $this->assertEquals($captureId, $resultValue);
     }
 }

@@ -41,7 +41,7 @@ export class PaypalHelper {
             const iframe = document.querySelector(selector);
             if (!iframe?.contentDocument) return false;
 
-            const buttons = iframe.contentDocument.querySelectorAll('[data-funding-source="paypal"], [role="button"], .paypal-button, button');
+            const buttons = iframe.contentDocument.querySelectorAll('[data-funding-source="paypal"], [aria-label="PayPal"], [role="button"], .paypal-button, button');
             console.log('Found buttons in iframe:', buttons.length);
 
             if (buttons.length > 0) {

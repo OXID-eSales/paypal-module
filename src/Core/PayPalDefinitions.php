@@ -137,7 +137,7 @@ final class PayPalDefinitions
                     'longdesc_beta' => 'Kaufen Sie jetzt und bezahlen sie später mit PayPal.'
                 ],
                 'en' => [
-                    'desc' => 'PayPal- pay later',
+                    'desc' => 'PayPal - pay later',
                     'longdesc' => '',
                     'longdesc_beta' => 'Buy now and pay later with PayPal.'
                 ]
@@ -526,6 +526,10 @@ final class PayPalDefinitions
             self::PAYMENT_SOURCE_PAYPAL => 'oscpaypal',
             self::PAYMENT_SOURCE_CARD => 'oscpaypal_acdc'
         ];
+
+        if ($oxid === self::PAYMENT_SOURCE_PUI) {
+            $oxid = self::PUI_PAYPAL_PAYMENT_ID;
+        }
 
         $return = array_key_exists($oxid, self::PAYPAL_DEFINTIONS) ?
             self::PAYPAL_DEFINTIONS[$oxid]['paymentsource'] :

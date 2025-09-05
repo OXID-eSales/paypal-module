@@ -152,7 +152,10 @@ class Payment
         } catch (ApiException $exception) {
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
-            if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug' || $this->moduleSettingsService->getPayPalDebugLevel() === 'error') {
+            if (
+                $this->moduleSettingsService->getPayPalDebugLevel() === 'debug'
+                || $this->moduleSettingsService->getPayPalDebugLevel() === 'error'
+            ) {
                 $this->logger->log('error', 'Error on order create call.', [$exception->getMessage()]);
             }
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
@@ -172,8 +175,8 @@ class Payment
         $paymentId = Registry::getSession()->getVariable('paymentid');
         $userAction = $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID ?
             OrderRequestFactory::USER_ACTION_CONTINUE : OrderRequestFactory::USER_ACTION_PAY_NOW;
-        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc'.$debug;
-        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=ajaxpay&fnc=cancelShopOrder'.$debug;
+        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizeacdc' . $debug;
+        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=ajaxpay&fnc=cancelShopOrder' . $debug;
 
         // PatchOrders access an OrderCall that has taken place before.
         // For this reason, the payPalPartnerAttributionId does not have
@@ -216,7 +219,7 @@ class Payment
             'status' => $status
         ];
 
-        if($status === 'PAYER_ACTION_REQUIRED') {
+        if ($status === 'PAYER_ACTION_REQUIRED') {
             $return['links'] = $payPalOrder->links;
         }
 
@@ -228,8 +231,8 @@ class Payment
      */
     public function doPatchPayPalOrder(
         EshopModelBasket $basket,
-        string           $payPalOrderId,
-        string           $shopOrderId = ''
+        string $payPalOrderId,
+        string $shopOrderId = ''
     ): void {
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
@@ -243,7 +246,10 @@ class Payment
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
         } catch (Exception $exception) {
-            if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug' || $this->moduleSettingsService->getPayPalDebugLevel() === 'error') {
+            if (
+                $this->moduleSettingsService->getPayPalDebugLevel() === 'debug'
+                || $this->moduleSettingsService->getPayPalDebugLevel() === 'error'
+            ) {
                 $this->logger->log('error', 'Error on order patch call.', [$exception]);
             }
             throw $exception;
@@ -575,7 +581,10 @@ class Payment
             PayPalSession::unsetPayPalOrderId();
             $this->removeTemporaryOrder();
             //TODO: do we need to log this?
-            if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug' || $this->moduleSettingsService->getPayPalDebugLevel() === 'error') {
+            if (
+                $this->moduleSettingsService->getPayPalDebugLevel() === 'debug'
+                || $this->moduleSettingsService->getPayPalDebugLevel() === 'error'
+            ) {
                 $this->logger->log('error', $exception->getMessage(), [$exception]);
             }
         }
@@ -726,10 +735,12 @@ class Payment
 
                 $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
 
-                if($authorization->status === 'DENIED'){
+                if ($authorization->status === 'DENIED') {
                     return [
                         'status' => 'error',
-                        'message' => $language->translateString('OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR')
+                        'message' => $language->translateString(
+                            'OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR'
+                        )
                     ];
                 }
 
@@ -762,9 +773,8 @@ class Payment
 
                     $session->setVariable("vaultSuccess", $vaultSuccess);
                 }
-
             }
-            
+
             $authorizationId = $authorization->id;
 
             // check if we need a reauthorization
@@ -816,6 +826,7 @@ class Payment
 
         $payPalOrderId = '';
         try {
+            echo "aaaaaaaa";
             $result = $this->doCreatePayPalOrder(
                 $basket,
                 Constants::PAYPAL_ORDER_INTENT_CAPTURE,
@@ -830,7 +841,10 @@ class Payment
             }
         } catch (Exception $exception) {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_GENERIC);
-            if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug' || $this->moduleSettingsService->getPayPalDebugLevel() === 'error') {
+            if (
+                $this->moduleSettingsService->getPayPalDebugLevel() === 'debug'
+                || $this->moduleSettingsService->getPayPalDebugLevel() === 'error'
+            ) {
                 $this->logger->log('error', 'Error on pui order creation call.', [$exception]);
             }
         }
@@ -987,7 +1001,7 @@ class Payment
         /** @var Order $orderNumber */
         if ($order instanceof EshopModelOrder) {
             $orderNumber = (int) $order->getFieldData('oxordernr');
-            if($orderNumber === 0) {
+            if ($orderNumber === 0) {
                 $order->setOrderNumber();
                 $orderNumber = $order->getFieldData('oxordernr');
             }

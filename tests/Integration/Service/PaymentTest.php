@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
+use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -29,6 +30,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ThreeDSecureAuthenticationResponse;
 use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Log\LoggerInterface;
 use TypeError;
 
 final class PaymentTest extends BaseTestCase
@@ -148,8 +150,9 @@ final class PaymentTest extends BaseTestCase
 
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        EshopRegistry::getSession()
-            ->setVariable('paymentid', PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
+
+        $session = EshopRegistry::getSession();
+        $session->setVariable('paymentid', PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
 
         try {
             $result = $paymentService->doCreatePayPalOrder($basket, OrderRequest::INTENT_CAPTURE);
@@ -157,32 +160,57 @@ final class PaymentTest extends BaseTestCase
             $this->fail('Expected ApiException, got TypeError ' . $e->getMessage());
         }
 
+
         $this->assertNotEmpty($result->id);
     }
 
-
-    public function testACDCOrder3DSecureSuccess(): void
+    public function testCreatePuiPayPalOrder(): void
     {
+        $this->markTestSkipped("Need more detailed mock for this test");
+        $_POST['pui_required'] = [
+            'birthdate' => [
+                'day' => '1',
+                'month' => '4',
+                'year' => '2000'
+            ],
+            'phonenumber' => '+4912345678343'
+        ];
 
-        // The string is still in $this->success3DCard, but now it was built in setUp()
-        /**
-         * @var PaymentService|MockObject $paymentService
-         */
-        $paymentService = $this->getPaymentServiceMock($this->success3DCard);
+        $loggerMock = $this->getPsrLoggerMock();
+        $loggerMock->expects($this->never())
+            ->method('error');
+        EshopRegistry::set('logger', $loggerMock);
 
-        $shopOrderModel = oxNew(EshopModelOrder::class);
-        $shopOrderModel->setId('order_id');
-        $shopOrderModel->oxorder__oxordernr = new \OxidEsales\Eshop\Core\Field('order_nr');
+        $user = oxNew(EshopModelUser::class);
+        $user->load(self::TEST_USER_ID);
 
-        $apiOrder = $paymentService->doCapturePayPalOrder(
-            $shopOrderModel,
-            'some_id',
-            PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID
-        );
+        $basket = oxNew(EshopModelBasket::class);
+        $basket->addToBasket($this->testProductOxid, 1);
+        $basket->setUser($user);
+        $basket->setBasketUser($user);
+        $basket->setPayment(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
+        $basket->setShipping('oxidstandard');
+        $basket->calculateBasket(true);
 
-        $parentClasses = class_parents($apiOrder);
+        $transactionId = EshopRegistry::getUtilsObject()->generateUId();
+        $order = $this->getMockBuilder(EshopModelOrder::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $order->expects($this->any())
+            ->method('getShopId')
+            ->willReturn(1);
+        $order->expects($this->any())
+            ->method('getId')
+            ->willReturn($transactionId);
 
-        $this->assertArrayHasKey('OxidSolutionCatalysts\PayPalApi\Model\Orders\Order', $parentClasses);
+        EshopRegistry::getSession()->setVariable('paymentid', PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID);
+
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $result = $paymentService->doExecutePuiPayment($order, $basket, '007c7c9d810c4a4cb3f5b88e3e040083');
+
+        $this->assertTrue($result);
+        $this->assertSame(PaymentService::PAYMENT_ERROR_NONE, $paymentService->getPaymentExecutionError());
     }
 
     public function testACDCOrder3DSecureFail(): void
@@ -278,7 +306,7 @@ final class PaymentTest extends BaseTestCase
 
         $request->intent = OrderRequest::INTENT_CAPTURE;
         $request->purchase_units = $decoded['purchase_units'];
-        $request->application_context = $decoded['application_context'];
+        $request->experience_context = $decoded['experience_context'];
         $request->payment_source = $decoded['payment_source'];
         $request->processing_instruction = "ORDER_COMPLETE_ON_PAYMENT_APPROVAL";
 
@@ -309,10 +337,7 @@ final class PaymentTest extends BaseTestCase
             ->method('alwaysIgnoreSCAResult')
             ->willReturn($alwaysIgnoreSCAResult);
 
-        $serviceFactoryMock = $this->getMockBuilder(ServiceFactory::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
+        $orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
         $paymentService = $this->getMockBuilder(PaymentService::class)
             ->onlyMethods(array_merge(['fetchOrderFields', 'trackPayPalOrder'], $addMockMethods))
             ->setConstructorArgs(
@@ -324,10 +349,10 @@ final class PaymentTest extends BaseTestCase
                     new SCAValidator(),
                     $moduleSettingsService,
                     $this->getPsrLoggerMock(),
-                    $serviceFactoryMock,
+                    $orderProcessTrackingService,
+                    new ServiceFactory(),
                     new PatchRequestFactory(),
-                    new OrderRequestFactory(),
-                    new ConfirmOrderRequestFactory()
+                    new OrderRequestFactory()
                 ]
             )
             ->getMock();

@@ -27,22 +27,16 @@ module.exports = defineConfig({
         ['json', { outputFile: './_generated/report.json' }]
     ],
 
-    // Configure projects for browsers
     projects: [
         {
-            name: 'chrome', // Switch project name to 'chrome'
+            name: 'chrome',
             use: {
-                browserName: 'chromium', // 'chromium' is the default for Google Chrome as well
-                // Configure viewport
-                viewport: { width: 1280, height: 3000 },
-                // Record video and screenshots
+                browserName: 'chromium',
+                viewport: { width: 1280, height: 1000 },
                 video: 'on-first-retry',
                 screenshot: 'only-on-failure',
-                // Enable trace for debugging
                 trace: 'on-first-retry',
-                // Ignore HTTPS errors - most important setting for self-signed certs
                 ignoreHTTPSErrors: true,
-                // Add browser flags to launch Google Chrome (if you prefer)
                 launchOptions: {
                     args: [
                         '--ignore-certificate-errors',

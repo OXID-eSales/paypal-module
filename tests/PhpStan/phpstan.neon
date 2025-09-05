@@ -6,5 +6,9 @@ parameters:
     scanFiles:
         - ../../vendor/oxid-esales/oxideshop-ce/source/oxfunctions.php
         - ../../vendor/oxid-esales/oxideshop-ce/source/overridablefunctions.php
+    excludes_analyse:
+        - tests/Integration/*
+        - tests/Unit/*
+
 includes:
     - phpstan-baseline.neon

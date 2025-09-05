@@ -102,7 +102,6 @@ class OrderRequestFactory
 
         $paymentId = Registry::getSession()->getVariable('paymentid');
         $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName($paymentId);
-
         $request->payment_source = $this->getSimplePaymentSource($basket, $paymentSourceId);
 
         if (PayPalDefinitions::isUAPMPayment($paymentId)) {
@@ -116,7 +115,8 @@ class OrderRequestFactory
         $vaultingService = $this->getVaultingService();
         $user = Registry::getConfig()->getUser() instanceof User ? Registry::getConfig()->getUser() : null;
         $selectedPaymentToken = $vaultingService->fetchSelectedVaultedPaymentToken(
-            $user, $_POST["useVaultedPayment"]["token"]["id"] ?? null
+            $user,
+            $_POST["useVaultedPayment"]["token"]["id"] ?? null
         );
         $useVaultedPayment = $setVaulting && !is_null($selectedPaymentToken)
             && PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID !== $paymentId;
@@ -147,7 +147,7 @@ class OrderRequestFactory
         }
 
         if ($paymentSource === PayPalDefinitions::PAYMENT_SOURCE_PUI) {
-            /** @var PaymentSource $puiPaymentSource */
+            /** @var PuiPaymentSource $puiPaymentSource */
             $puiPaymentSource = $this->getPuiPaymentSource();
             $request->payment_source = $puiPaymentSource;
         }
@@ -155,13 +155,13 @@ class OrderRequestFactory
         return $request;
     }
 
-    protected function getSimplePaymentSource(Basket $basket, string $requestName): PaymentSource
+    public function getSimplePaymentSource(Basket $basket, string $requestName): PaymentSource
     {
         $userName = $this->getUserNameFromBasket($basket);
         $country = $this->getCountryFromBasket($basket);
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
 
-        return new PaymentSource([
+        $paymentData = [
             $requestName => [
                 "attributes" => [
                     "verification" => [
@@ -171,7 +171,13 @@ class OrderRequestFactory
                 'name' => $userName,
                 'country_code' => $country->getFieldData('oxisoalpha2')
             ]
-        ]);
+        ];
+
+        if (array_key_exists('pui_required', $_POST) && is_array($_POST['pui_required'])) {
+            $paymentData[$requestName] = array_merge($paymentData[$requestName], $_POST['pui_required']);
+        }
+
+        return new PaymentSource($paymentData);
     }
 
     protected function getSimplePaymentSourceWithEMail(Basket $basket, string $requestName): PaymentSource
@@ -441,7 +447,9 @@ class OrderRequestFactory
         $shipping = new ShippingDetail();
         $name = $shipping->initName();
         if ($deliveryId && $deliveryAddress->load($deliveryId)) {
-            $fullName = $deliveryAddress->oxaddress__oxfname->value . " " . $deliveryAddress->oxaddress__oxlname->value;
+            $fullName = $deliveryAddress->oxaddress__oxfname->value
+                . " "
+                . $deliveryAddress->oxaddress__oxlname->value;
             $name->full_name = $fullName;
 
             $address = new AddressPortable3();
@@ -456,11 +464,14 @@ class OrderRequestFactory
             $country->load($deliveryAddress->getFieldData('oxcountryid'));
 
             $addressLine =
-                $deliveryAddress->getFieldData('oxstreet') . " " . $deliveryAddress->getFieldData('oxstreetnr');
+                $deliveryAddress->getFieldData('oxstreet')
+                . " "
+                . $deliveryAddress->getFieldData('oxstreetnr');
             $address->address_line_1 = $addressLine;
 
-            $addinfoLine = $deliveryAddress->getFieldData('oxcompany') . " " .
-                $deliveryAddress->getFieldData('oxaddinfo');
+            $addinfoLine = $deliveryAddress->getFieldData('oxcompany')
+                . " "
+                . $deliveryAddress->getFieldData('oxaddinfo');
             $address->address_line_2 = $addinfoLine;
 
             $address->admin_area_1 = $state->getFieldData('oxtitle');
@@ -592,8 +603,7 @@ class OrderRequestFactory
         ?string $returnUrl = null,
         ?string $cancelUrl = null,
         ?string $userAction = null
-    ): void
-    {
+    ): void {
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $debug = '';
         if ($moduleSettings->isSandbox()) {
@@ -644,8 +654,7 @@ class OrderRequestFactory
                     "usage" => "SUBSEQUENT"
                 ];
             }
-            $request->payment_source = $newPaymentSource;
-
+            $request->payment_source = new PaymentSource($newPaymentSource);
         } elseif ($user) {
             //save during purchase
             $paypalCustomerId = $user->getFieldData("oscpaypalcustomerid");
@@ -670,7 +679,8 @@ class OrderRequestFactory
                 // it is possible that we have an existing payment_source. We must merge it
                 if (isset($request->payment_source->{$paymentSourceId})) {
                     $paymentSourceData = $this->getArrayFromPaymentSource($request, $paymentSourceId);
-                    $newPaymentSource[$paymentSourceId] = array_merge($paymentSourceData, $newPaymentSource[$paymentSourceId]);
+                    $newPaymentSource[$paymentSourceId]
+                        = array_merge($paymentSourceData, $newPaymentSource[$paymentSourceId]);
                 }
 
                 if (
@@ -681,7 +691,8 @@ class OrderRequestFactory
                         $vaultSuccess &&
                         !isset($request->payment_source->{$paymentSourceId}->attributes->vault)
                     ) {
-                        $newPaymentSource[$paymentSourceId]["attributes"]["vault"] = PayPalDefinitions::PAYMENT_VAULTING;
+                        $newPaymentSource[$paymentSourceId]["attributes"]["vault"]
+                            = PayPalDefinitions::PAYMENT_VAULTING;
                     }
 
                     if (
@@ -693,18 +704,18 @@ class OrderRequestFactory
                 }
             }
 
-        $newPaymentSource[$paymentSourceId]["experience_context"]["shipping_preference"]
+            $newPaymentSource[$paymentSourceId]["experience_context"]["shipping_preference"]
             = $shippingPreference;
 
-        $newPaymentSource[$paymentSourceId]["experience_context"]["user_action"]
+            $newPaymentSource[$paymentSourceId]["experience_context"]["user_action"]
             = $userAction ?? self::USER_ACTION_PAY_NOW;
 
-        $request->payment_source = $newPaymentSource;
+            $request->payment_source = new PaymentSource($newPaymentSource);
         }
 
         //express payments
-        if (!$user){
-            if (empty($request->payment_source->{$paymentSourceId}->experience_context)){
+        if (!$user) {
+            if (empty($request->payment_source->{$paymentSourceId}->experience_context)) {
                 $request->payment_source->{$paymentSourceId}->experience_context = [
                     "shipping_preference" => $shippingPreference,
                     "user_action" => $userAction ?? self::USER_ACTION_CONTINUE
@@ -727,7 +738,8 @@ class OrderRequestFactory
     /**
      * @throws JsonException
      */
-    private function getArrayFromPaymentSource(OrderRequest $request, string $paymentSourceId): array {
+    private function getArrayFromPaymentSource(OrderRequest $request, string $paymentSourceId): array
+    {
         $encodedData = json_encode($request->payment_source->{$paymentSourceId}, JSON_THROW_ON_ERROR);
         return json_decode($encodedData, true, 512, JSON_THROW_ON_ERROR);
     }

@@ -11,6 +11,7 @@ class PayPalUrlService
     public function __construct(private Config $config, private Session $session)
     {
     }
+
     public function getCancelUrl(): string
     {
         return $this->config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';

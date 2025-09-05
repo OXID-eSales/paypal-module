@@ -24,7 +24,7 @@
         "php": ">=8.0",
         "viison/address-splitter": "^0.3.4",
         "webmozart/path-util": "^2.3.0",
-        "oxid-solution-catalysts/paypal-client": "v3.0.18",
+        "oxid-solution-catalysts/paypal-client": "*",
         "brick/phonenumber": "^0.5.0"
     },
     "require-dev": {
@@ -57,7 +57,7 @@
         "phpcs": "./.github/scripts/codestyle_check.sh phpcs",
         "phpcs-commit": "./.github/scripts/codestyle_check.sh phpcs commit",
         "style": "./.github/scripts/codestyle_check.sh all",
-        "style-commit":  "./.github/scripts/codestyle_check.sh all commit",
+        "style-commit":  "./.github/scripts/codestyle_check.sh all commit || exit 1",
         "phpcbf": "phpcbf --standard=tests/phpcs.xml",
         "static": [
             "@phpcs",

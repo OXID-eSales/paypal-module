@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
-use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureCompletedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
@@ -85,6 +84,7 @@ final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCas
         );
 
         $handler = \oxNew(PaymentCaptureCompletedHandler::class);
+
         $handler->handle($event);
     }
 

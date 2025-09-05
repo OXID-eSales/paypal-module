@@ -151,7 +151,7 @@ export class ShopHelper {
         const paypalIframeLocator = await page.frameLocator('.component-frame.visible').nth(0);
         console.log('Targeting refined PayPal iframe selector.');
 
-        const paypalButtonLocator = paypalIframeLocator.locator('div.paypal-button');
+        const paypalButtonLocator = paypalIframeLocator.locator('div.paypal-button[data-funding-source="paypal"]');
 
         console.log('PayPal button is visible. Clicking...');
         await paypalButtonLocator.click();

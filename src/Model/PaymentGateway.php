@@ -97,19 +97,19 @@ class PaymentGateway extends PaymentGateway_parent
                 $logger->log('error', 'Error on order patch call.', [$exception]);
             }
 
-        if($intent === OrderRequest::INTENT_AUTHORIZE){
-            $paymentId = (string) $paymentService->getSessionPaymentId();
-            $result = $paymentService->doAuthorizePayment($checkoutOrderId, $order->getId(), $paymentId);
+            if ($intent === OrderRequest::INTENT_AUTHORIZE) {
+                $paymentId = (string) $paymentService->getSessionPaymentId();
+                $result = $paymentService->doAuthorizePayment($checkoutOrderId, $order->getId(), $paymentId);
 
-            if($result['paymentStatus'] === 'success' && $result['status'] === 'success'){
-                $success = true;
-                PayPalSession::unsetPayPalSession();
-            } else {
-                $logger->log('error', 'Error on order authorization call.', [$result]);
+                if ($result['paymentStatus'] === 'success' && $result['status'] === 'success') {
+                    $success = true;
+                    PayPalSession::unsetPayPalSession();
+                } else {
+                    $logger->log('error', 'Error on order authorization call.', [$result]);
+                }
             }
-        }
 
-        if($intent === OrderRequest::INTENT_CAPTURE){
+            if ($intent === OrderRequest::INTENT_CAPTURE) {
                 // Capture Order
                 try {
                     // At this point we only trigger the capture. We find out that order was really captured via the
@@ -149,9 +149,7 @@ class PaymentGateway extends PaymentGateway_parent
             $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', 'Error on execute pui payment call.', [$exception]);
         }
-        // destroy PayPal-Session
         PayPalSession::unsetPayPalOrderId();
-
         $this->_sLastError = $paymentService->getPaymentExecutionError();
 
         return $success;

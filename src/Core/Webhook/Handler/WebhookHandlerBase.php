@@ -42,7 +42,6 @@ abstract class WebhookHandlerBase
 
         //Depending on payment method, there might not be an order id in that result
         $payPalOrderId = $this->getPayPalOrderIdFromResource($eventPayload);
-
         if ($payPalOrderId !== '') {
             /** @var EshopModelOrder $order */
             $order = $this->getOrderByPayPalOrderId($payPalOrderId);
@@ -181,6 +180,7 @@ abstract class WebhookHandlerBase
             $paypalOrderModel->setPuiBankName($puiPaymentDetails->bank_name);
             $paypalOrderModel->setPuiAccountHolderName($puiPaymentDetails->account_holder_name);
 
+            /** @var \OxidSolutionCatalysts\PayPal\Core\Email $oxEmail */
             $oxEmail = oxNew(Email::class);
             $oxEmail->sendPuiInfo($order, $puiPaymentDetails);
         }

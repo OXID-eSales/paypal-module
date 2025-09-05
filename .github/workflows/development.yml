@@ -97,6 +97,9 @@ jobs:
             --json '{"type":"path", "url":"./test-module", "options": {"symlink": true}}'
           docker compose exec -T \
             php composer require ${{ env.PACKAGE_NAME }}:* --no-interaction --no-update
+          
+          docker compose exec -T \
+            php composer require ${{ env.CLIENT_PACKAGE_NAME }}:dev-b-7.0.x-update-phpunit-aug --no-interaction --no-update
 
       - name: Install demodata
         run: |
@@ -109,8 +112,8 @@ jobs:
       - name: Install datagen
         run: |
           docker compose exec -T \
-          php composer config repositories.oxid-esales/datagen \
-          --json '{"type":"path", "url":"./extensions/datagen", "options": { "symlink": true } }'
+            php composer config repositories.oxid-esales/datagen \
+              --json '{"type":"path", "url":"./extensions/datagen", "options": { "symlink": true } }'
           docker compose exec -T php composer require oxid-esales/datagen:dev-b-7.0.x --no-update
 
       - name: Install dependencies and reset shop
@@ -182,8 +185,9 @@ jobs:
 
       - name: Codestyle check of the affected files (phpcs, phpmd, phpstan)
         id: phpcs
+        continue-on-error: false
         working-directory: source/test-module
-        run: composer style-commit  # Runs oll style checks
+        run: composer style-commit || exit 1
 
       - name: Upload log artifact
         if: always()
@@ -362,11 +366,11 @@ jobs:
           npm install
           npx playwright install
 
-      - name: Create user
+      - name: Creating the playwright user in the shop
         run: |
           docker compose exec -T php  bin/oe-console datagen:shop:create_user \
             --user-email ${{ secrets.SHOP_USER_EMAIL }} \
-            --user-password ${{ secrets.SHOP_USER_PASSWORD }} \
+            --user-password ${{ secrets.SHOP_USER_PASSWORD }} 
 
 
       - name: Run Playwright tests

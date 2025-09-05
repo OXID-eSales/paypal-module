@@ -38,7 +38,7 @@ final class OnboardingTest extends BaseTestCase
             ->getMock();
         $apiClient->expects($this->once())
             ->method('authAfterWebLogin')
-            ->with($expected['authCode'], $expected['sharedId']);
+            ->with($expected['authCode'], $expected['sharedId'], $nonce);
         $apiClient->expects($this->once())
             ->method("getMerchantInformations")
             ->willReturn($expectedMaerchant);

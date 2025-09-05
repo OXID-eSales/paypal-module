@@ -542,7 +542,7 @@ class Config
     public function getUserIdForVaulting(): string
     {
         // In case of Standard PayPal we use vaulting via API not, via Buttons
-        if(PayPalSession::isPayPalStandardOrderActive()){
+        if (PayPalSession::isPayPalStandardOrderActive()) {
             return '';
         }
         $user = Registry::getConfig()->getUser();

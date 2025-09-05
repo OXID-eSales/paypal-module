@@ -63,9 +63,7 @@ class ServiceFactory
         );
     }
 
-    /**
-     * @return GenericService
-     */
+
     public function getWebhookService(string $uri = ''): GenericService
     {
         return oxNew(
