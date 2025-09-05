@@ -440,7 +440,7 @@ class Payment
         $redirectLink = '';
 
         /** @var OrderRequestFactory $requestFactory */
-        $requestFactory = Registry::get(ConfirmOrderRequestFactory::class);
+        $requestFactory = $this->getServiceFromContainer(OrderRequestFactory::class);
         /** @var ConfirmOrderRequest $request */
         $request = $requestFactory->getRequest(
             $basket,

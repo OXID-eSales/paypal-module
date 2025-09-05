@@ -26,5 +26,8 @@
         "postcss": "^8.4.14",
         "sass": "^1.90.0",
         "time-grunt": "^2.0.0"
+    },
+    "dependencies": {
+        "node-sass": "^9.0.0"
     }
 }
