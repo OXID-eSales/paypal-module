@@ -1,11 +1,11 @@
-const sass = require('node-sass');
+const sass = require('sass');
 
 module.exports = {
     moduledevelopment: {
         options: {
             implementation: sass,
             update: true,
-            outputStyle: 'nested'
+            outputStyle: 'expanded'
         },
         files: {
             "../assets/src/css/bootstrap.css": "node_modules/bootstrap/scss/bootstrap.scss",

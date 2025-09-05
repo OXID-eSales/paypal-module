@@ -31,7 +31,7 @@
     "mochawesome-report-generator": "^6.2.0",
     "popper.js": "^1.6.1",
     "postcss": "^8.4.14",
-    "sass": "^1.90.0",
+    "sass": "^1.92.0",
     "time-grunt": "^2.0.0"
   },
   "scripts": {
