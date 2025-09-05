@@ -13,7 +13,7 @@ use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Core\PayPalPurchaseUnitsFactory;
+use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
@@ -718,16 +718,6 @@ class OrderController extends OrderController_parent
         /** @var OrderProcessTrackingService $orderProcessTrackingService */
         $orderProcessTrackingService = Registry::get(OrderProcessTrackingService::class);
         return $orderProcessTrackingService->getTrackingId();
-    }
-
-    /**
-     * Probably deprecated, but used in the template: checkout_order_btn_submit_bottom.tpl
-     *
-     * @return string
-     */
-    public function getPurchaseUnits(): string
-    {
-        return json_encode(Registry::get(PayPalPurchaseUnitsFactory::class)->getPurchaseUnits());
     }
 
     public function getDeladrid(): string

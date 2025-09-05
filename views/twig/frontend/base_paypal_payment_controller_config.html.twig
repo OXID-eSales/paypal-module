@@ -3,7 +3,6 @@
     {% set paymentId = payment.getId() %}
     {% set sToken = oViewConf.getSessionChallengeToken() %}
     {% set sSelfLink = oViewConf.getSslSelfLink()|replace({"&amp;": "&"}) %}
-    {% set purchaseUnits = oView.getPurchaseUnits() %}
     {% set vaultedPaymentSource = oView.getVaultedPaymentSource() %}
     {% set oPPconfig = oViewConf.getPayPalCheckoutConfig() %}
     {% set customerId = oView.getPayPalCustomerId() %}
@@ -27,7 +26,6 @@
             shopThankYouPageUrl: '{{ (sSelfLink ~ "cl=thankyou&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
             shopOrderAuthorizeUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=authorizePayment&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
             deliveryAddressId: '{{ oView.getDeliveryAddressMD5() }}',
-            purchaseUnits: {{ purchaseUnits|raw }},
             vaultedPaymentSource: {{ vaultedPaymentSource|raw }},
             language: '{{ oView.getActiveLangAbbr()|lower }}',
             currency: '{{ currency.name }}',

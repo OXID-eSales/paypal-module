@@ -17,6 +17,7 @@ use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Helper\Truncate;
 use OxidEsales\Eshop\Application\Model\Order;
+use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item;
@@ -59,7 +60,7 @@ class PatchRequestFactory
                 $this->getAmountPatch(),
                 // patching the ordernumber is not necessary at the moment
                 // $orderId ? $this->getCustomIdPatch($paymentService->getCustomIdParameter($order)) : null,
-                $this->getPurchaseUnitsPatch()
+                //$this->getPurchaseUnitsPatch()
             ])
         );
 
@@ -121,8 +122,16 @@ class PatchRequestFactory
 
     public function getAmountPatch(): ?Patch
     {
-        $value = (Registry::get(PayPalRequestAmountFactory::class))->getAmount($this->basket);
-        if ((float)$value->value !== 0.00) {
+        // Build amount using the same logic as PurchaseUnitsFactory (items-first + validator)
+        /** @var PayPalPurchaseUnitsFactory $puFactory */
+        $puFactory = $this->getServiceFromContainer(PayPalPurchaseUnitsFactory::class);
+        // We want items considered so that tax_total and validator adjustments are consistent
+        $puFactory->setBasket($this->basket);
+        $units = $puFactory->getPurchaseUnits(null, null, true);
+        $unit = $units[0] ?? null;
+        $value = $unit ? $unit->amount : null;
+
+        if ($value && (float)$value->value !== 0.00) {
             $patch = new Patch();
             $patch->op = Patch::OP_REPLACE;
             $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/amount";
