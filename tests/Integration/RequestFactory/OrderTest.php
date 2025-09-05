@@ -12,9 +12,10 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Integration\RequestFactory;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\EshopCommunity\Core\Request;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\Trait\TestProductTrait;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
@@ -23,6 +24,7 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 final class OrderTest extends BaseTestCase
 {
     use TestProductTrait;
+    use ServiceContainer;
 
     protected const TEST_USER_ID = 'testuser';
 
@@ -51,7 +53,7 @@ final class OrderTest extends BaseTestCase
         EshopRegistry::getSession()->setVariable('paymentid', PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID);
 
         /** @var OrderRequestFactory $requestFactory */
-        $requestFactory = EshopRegistry::get(OrderRequestFactory::class);
+        $requestFactory = $this->getServiceFromContainer(\OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory::class);
         $session = EshopRegistry::getSession();
         $session->setVariable('paymentid', PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID);
 

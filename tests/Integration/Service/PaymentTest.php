@@ -10,8 +10,7 @@ use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
-use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
-use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
@@ -30,7 +29,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ThreeDSecureAuthenticationResponse;
 use PHPUnit\Framework\MockObject\MockObject;
-use Psr\Log\LoggerInterface;
 use TypeError;
 
 final class PaymentTest extends BaseTestCase
@@ -215,6 +213,7 @@ final class PaymentTest extends BaseTestCase
 
     public function testACDCOrder3DSecureFail(): void
     {
+        /** @var \OxidSolutionCatalysts\PayPal\Service\Payment|MockObject $paymentService */
         $paymentService = $this->getPaymentServiceMock(
             $this->failedAuthentication,
             [
@@ -338,6 +337,7 @@ final class PaymentTest extends BaseTestCase
             ->willReturn($alwaysIgnoreSCAResult);
 
         $orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
+        $orderRequestFactory = $this->getServiceFromContainer(OrderRequestFactory::class);
         $paymentService = $this->getMockBuilder(PaymentService::class)
             ->onlyMethods(array_merge(['fetchOrderFields', 'trackPayPalOrder'], $addMockMethods))
             ->setConstructorArgs(
@@ -352,7 +352,7 @@ final class PaymentTest extends BaseTestCase
                     $orderProcessTrackingService,
                     new ServiceFactory(),
                     new PatchRequestFactory(),
-                    new OrderRequestFactory()
+                    $orderRequestFactory
                 ]
             )
             ->getMock();
