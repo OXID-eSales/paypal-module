@@ -17,7 +17,7 @@ use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidEsales\Eshop\Core\ShopVersion;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
@@ -25,6 +25,7 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Module;
+use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
@@ -106,7 +107,8 @@ class Payment
         $this->orderProcessTrackingService = $orderProcessTrackingService;
         $this->serviceFactory = $serviceFactory ?: Registry::get(ServiceFactory::class);
         $this->patchRequestFactory = $patchRequestFactory ?: Registry::get(PatchRequestFactory::class);
-        $this->orderRequestFactory = $orderRequestFactory ?: Registry::get(OrderRequestFactory::class);
+        $this->orderRequestFactory = $orderRequestFactory ?:
+            $this->getServiceFromContainer(OrderRequestFactory::class);
     }
 
     public function doCreatePayPalOrder(
@@ -127,7 +129,7 @@ class Payment
         $orderService = $this->serviceFactory->getOrderService();
         $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
         $customId = $this->getCurrentOrderNumber($basket);
-
+        $this->orderRequestFactory->setBasket($basket);
         $request = $this->orderRequestFactory->getRequest(
             $basket,
             $intent,
@@ -733,9 +735,10 @@ class Payment
                 );
                 $payPalOrder->intent = Constants::PAYPAL_ORDER_INTENT_AUTHORIZE;
 
-                $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
 
-                if ($authorization->status === 'DENIED') {
+            $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
+
+                if($authorization->status === 'DENIED'){
                     return [
                         'status' => 'error',
                         'message' => $language->translateString(
@@ -773,6 +776,7 @@ class Payment
 
                     $session->setVariable("vaultSuccess", $vaultSuccess);
                 }
+
             }
 
             $authorizationId = $authorization->id;
@@ -826,7 +830,6 @@ class Payment
 
         $payPalOrderId = '';
         try {
-            echo "aaaaaaaa";
             $result = $this->doCreatePayPalOrder(
                 $basket,
                 Constants::PAYPAL_ORDER_INTENT_CAPTURE,
@@ -1020,7 +1023,7 @@ class Payment
     }
 
     /**
-     * @param \OxidEsales\Eshop\Application\Model\Basket $basket
+     * @param EshopModelBasket $basket
      * @return string
      */
     public function getCurrentOrderNumber(EshopModelBasket $basket): string
@@ -1038,5 +1041,15 @@ class Payment
         }
 
         return $customId;
+    }
+
+    public function setServiceFactory(ServiceFactory $serviceFactory): void
+    {
+        $this->serviceFactory = $serviceFactory;
+    }
+
+    public function setOrderProcessTrackingService(OrderProcessTrackingService $orderProcessTrackingService): void
+    {
+        $this->orderProcessTrackingService = $orderProcessTrackingService;
     }
 }
