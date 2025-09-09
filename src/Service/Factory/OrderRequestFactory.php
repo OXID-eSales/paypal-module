@@ -136,7 +136,8 @@ class OrderRequestFactory
         $vaultingService = $this->getVaultingService();
         $user = Registry::getConfig()->getUser() instanceof User ? Registry::getConfig()->getUser() : null;
         $selectedPaymentToken = $vaultingService->fetchSelectedVaultedPaymentToken(
-            $user, $_POST["useVaultedPayment"]["token"]["id"] ?? null
+            $user,
+            $_POST["useVaultedPayment"]["token"]["id"] ?? null
         );
         $isVaulting = $this->moduleSettings->getIsVaultingActive();
         $useVaultedPayment = $isVaulting && !is_null($selectedPaymentToken)
@@ -488,7 +489,8 @@ class OrderRequestFactory
             $country->load($deliveryAddress->getFieldData('oxcountryid'));
 
             $addressLine =
-                $deliveryAddress->getFieldData('oxstreet') . " " . $deliveryAddress->getFieldData('oxstreetnr');
+                $deliveryAddress->getFieldData('oxstreet')
+                . " " . $deliveryAddress->getFieldData('oxstreetnr');
             $address->address_line_1 = $addressLine;
 
             $addinfoLine = $deliveryAddress->getFieldData('oxcompany') . " " .
@@ -625,8 +627,7 @@ class OrderRequestFactory
         ?string $returnUrl = null,
         ?string $cancelUrl = null,
         ?string $userAction = null
-    ): void
-    {
+    ): void {
         $basket = Registry::getSession()->getBasket();
         $paymentId = $basket->getPaymentId();
 
@@ -670,7 +671,6 @@ class OrderRequestFactory
                 ];
             }
             $request->payment_source = $newPaymentSource;
-
         } elseif ($user) {
             $paypalCustomerId = $user->getFieldData("oscpaypalcustomerid");
 
@@ -694,8 +694,10 @@ class OrderRequestFactory
                     ]
                 ];
 
-                if (isset($request->payment_source->{$paymentSourceId})
-                    || isset($request->payment_source[$paymentSourceId])) {
+                if (
+                    isset($request->payment_source->{$paymentSourceId})
+                    || isset($request->payment_source[$paymentSourceId])
+                ) {
                     $paymentSourceData = $this->getArrayFromPaymentSource($request, $paymentSourceId);
                     $newPaymentSource[$paymentSourceId]
                         = array_merge($paymentSourceData, $newPaymentSource[$paymentSourceId]);
@@ -709,7 +711,8 @@ class OrderRequestFactory
                         $vaultSuccess &&
                         !isset($request->payment_source->{$paymentSourceId}->attributes->vault)
                     ) {
-                        $newPaymentSource[$paymentSourceId]["attributes"]["vault"] = PayPalDefinitions::PAYMENT_VAULTING;
+                        $newPaymentSource[$paymentSourceId]["attributes"]["vault"]
+                            = PayPalDefinitions::PAYMENT_VAULTING;
                     }
 
                     if (
@@ -731,8 +734,8 @@ class OrderRequestFactory
         }
 
         //express payments
-        if (!$user){
-            if (empty($request->payment_source->{$paymentSourceId}->experience_context)){
+        if (!$user) {
+            if (empty($request->payment_source->{$paymentSourceId}->experience_context)) {
                 $request->payment_source->{$paymentSourceId}->experience_context = [
                     "shipping_preference" => $shippingPreference,
                     "user_action" => $userAction ?? self::USER_ACTION_CONTINUE,
@@ -758,7 +761,8 @@ class OrderRequestFactory
     /**
      * @throws JsonException
      */
-    private function getArrayFromPaymentSource(OrderRequest $request, string $paymentSourceId): array {
+    private function getArrayFromPaymentSource(OrderRequest $request, string $paymentSourceId): array
+    {
         $encodedData = json_encode($request->payment_source->{$paymentSourceId}, JSON_THROW_ON_ERROR);
         return json_decode($encodedData, true, 512, JSON_THROW_ON_ERROR);
     }

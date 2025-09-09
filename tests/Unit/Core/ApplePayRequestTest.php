@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
  */
+
 declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Core;
@@ -587,7 +589,6 @@ class ApplePayRequestTest extends UnitTestCase
         $this->moduleSettingsMock->method('getShopName')
             ->willReturn('Test Shop');
         $this->mockRequiredBasketMethods();
-
     }
 
     private function setupMocksForVaultingRequest(): void

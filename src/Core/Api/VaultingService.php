@@ -20,6 +20,7 @@ use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\PayPalUrlService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPalApi\Client;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Service\BaseService;
 use Psr\Log\LoggerInterface;
@@ -30,7 +31,7 @@ class VaultingService extends BaseService
 
     private OrderProcessTrackingService $orderProcessTrackingService;
 
-    public function __construct(OrderProcessTrackingService $orderProcessTrackingService, \OxidSolutionCatalysts\PayPalApi\Client $client)
+    public function __construct(OrderProcessTrackingService $orderProcessTrackingService, Client $client)
     {
         $this->orderProcessTrackingService = $orderProcessTrackingService;
         parent::__construct($client);
@@ -65,7 +66,7 @@ class VaultingService extends BaseService
                 $body = $response->getBody();
             }
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (ApiException|JsonException $e) {
+        } catch (ApiException | JsonException $e) {
             $result = [];
         }
 
@@ -119,7 +120,7 @@ class VaultingService extends BaseService
                 $body = $response->getBody();
             }
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (ApiException|JsonException $e) {
+        } catch (ApiException | JsonException $e) {
             $result = [];
         }
 
@@ -150,8 +151,10 @@ class VaultingService extends BaseService
         $name = $user->getFieldData("oxfname");
         $name .= $user->getFieldData("oxlname");
         $billingAddress = [
-            "address_line_1" => $user->getFieldData('oxstreet') . " " . $user->getFieldData('oxstreetnr'),
-            "address_line_2" => $user->getFieldData('oxcompany') . " " . $user->getFieldData('oxaddinfo'),
+            "address_line_1" => $user->getFieldData('oxstreet')
+                . " " . $user->getFieldData('oxstreetnr'),
+            "address_line_2" => $user->getFieldData('oxcompany')
+                . " " . $user->getFieldData('oxaddinfo'),
             "admin_area_1" => $state->getFieldData('oxtitle'),
             "admin_area_2" => $user->getFieldData('oxcity'),
             "postal_code" => $user->getFieldData('oxzip'),
@@ -200,12 +203,14 @@ class VaultingService extends BaseService
                 ]
             ];
 
-            $paymentSource[$paymentSourceId]["attributes"] = array_merge($attributes,
+            $paymentSource[$paymentSourceId]["attributes"] = array_merge(
+                $attributes,
                 [
                     "verification" => [
                         "method" => $moduleSettings->getPayPalSCAContingency()
                     ]
-                ]);
+                ]
+            );
 
             // only in vaulting-mode
             if ($vaultPaymentOnSuccess) {
@@ -253,12 +258,19 @@ class VaultingService extends BaseService
 
         $body = '';
         try {
-            $response = $this->send('POST', $path, [], $headers, json_encode($requestBody, JSON_THROW_ON_ERROR));
+            $response = $this->send(
+                'POST',
+                $path,
+                [],
+                $headers,
+                json_encode($requestBody, JSON_THROW_ON_ERROR)
+            );
+
             if ($response) {
                 $body = $response->getBody();
             }
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
-        } catch (ApiException|JsonException $e) {
+        } catch (ApiException | JsonException $e) {
             $result = [];
         }
 
@@ -272,8 +284,10 @@ class VaultingService extends BaseService
      * @param ?User $user The user to check
      * @return bool True if the specified vaulted payment is used
      */
-    public function isVaultedPaymentUsed(string $paymentType = PayPalDefinitions::PAYMENT_SOURCE_PAYPAL, ?User $user = null): bool
-    {
+    public function isVaultedPaymentUsed(
+        string $paymentType = PayPalDefinitions::PAYMENT_SOURCE_PAYPAL,
+        ?User $user = null
+    ): bool {
         $payPalCustomerId = $user ? $user->getFieldData("oscpaypalcustomerid") : '';
         if (empty($payPalCustomerId)) {
             return false;
@@ -283,7 +297,7 @@ class VaultingService extends BaseService
 
         if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL) {
             // Check for PayPal payment source
-            return !empty(array_filter($vaultedPaymentTokens, function($token) {
+            return !empty(array_filter($vaultedPaymentTokens, function ($token) {
                 return isset($token["payment_source"][PayPalDefinitions::PAYMENT_SOURCE_PAYPAL]);
             }));
         } else {
@@ -298,10 +312,9 @@ class VaultingService extends BaseService
     }
 
     public function fetchSelectedVaultedPaymentToken(
-        ?User   $user = null,
+        ?User $user = null,
         ?string $id = null
-    ): ?array
-    {
+    ): ?array {
         $vaultedPaymentTokens = [];
         $payPalCustomerId = $user ? $user->getFieldData("oscpaypalcustomerid") : '';
         if (!empty($payPalCustomerId)) {
@@ -421,7 +434,7 @@ class VaultingService extends BaseService
                 }
                 $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
                 $this->storeVaultedTokenInCache($result);
-            } catch (ApiException|JsonException $e) {
+            } catch (ApiException | JsonException $e) {
                 $this->getServiceFromContainer(Logger::class)
                     ->log('error', __CLASS__ . ' ' . __FUNCTION__ . ' : ' . $e->getMessage());
                 $result = $cachedResult ?: [];
@@ -436,7 +449,10 @@ class VaultingService extends BaseService
         $uniquePaypalVaultedPaymentSources = [];
         foreach ($vaultedPaymentTokens as $vaultedPaymentToken) {
             foreach ($vaultedPaymentToken["payment_source"] as $paymentType => $paymentSource) {
-                if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL && $moduleSettings->isVaultingAllowedForPayPal()) {
+                if (
+                    $paymentType === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL
+                    && $moduleSettings->isVaultingAllowedForPayPal()
+                ) {
                     $email = $paymentSource["email_address"];
                     $payer_id = $paymentSource["payer_id"];
 

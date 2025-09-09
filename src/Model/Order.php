@@ -213,14 +213,12 @@ class Order extends Order_parent
                 /** @var Logger $logger */
                 $logger = $this->getServiceFromContainer(Logger::class);
                 if ($result['paymentStatus'] === 'success' && $result['status'] === 'success') {
-
                     PayPalSession::unsetPayPalSession();
                 } else {
                     $this->_setOrderStatus('ERROR');
                     $logger->log('error', 'Error on order authorization call.', [$result]);
                     throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
                 }
-
             } catch (Exception $exception) {
                 $this->_setOrderStatus('ERROR');
                 throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
@@ -245,7 +243,7 @@ class Order extends Order_parent
         if (is_null($transactionId) && $payPalApiOrder->intent === OrderRequest::INTENT_CAPTURE) {
             $capture = $this->getOrderPaymentCapture($payPalOrderId);
             $orderService = Registry::get(ServiceFactory::class)->getOrderService();
-            if($payPalPaymentSuccess){
+            if ($payPalPaymentSuccess) {
                 $request = new OrderCaptureRequest();
                 try {
                     $capture = $orderService->capturePaymentForOrder(
@@ -259,7 +257,6 @@ class Order extends Order_parent
                     $this->_setOrderStatus('ERROR');
                     throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
                 }
-
             }
 
             $this->setTransId($capture->id);
@@ -299,10 +296,10 @@ class Order extends Order_parent
         if (Registry::getSession()->getVariable('isPayPalPaymentCheckout')) {
             return self::ORDER_STATE_OK;
         }
-        
+
         return parent::_sendOrderByEmail($oUser, $oBasket, $oPayment);
     }
-    
+
     //TODO: this place should be refactored in shop core
     protected function afterOrderCleanUp(Basket $basket, User $user): void
     {

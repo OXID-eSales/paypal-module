@@ -121,9 +121,15 @@ class OrderController extends OrderController_parent
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
             if (
                 (PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID === $paymentId &&
-                 $vaultingService->isVaultedPaymentUsed(PayPalDefinitions::PAYMENT_SOURCE_PAYPAL, $this->getUser())) ||
+                 $vaultingService->isVaultedPaymentUsed(
+                     PayPalDefinitions::PAYMENT_SOURCE_PAYPAL,
+                     $this->getUser()
+                 )) ||
                 (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId &&
-                 $vaultingService->isVaultedPaymentUsed(PayPalDefinitions::PAYMENT_SOURCE_CARD, $this->getUser()))
+                 $vaultingService->isVaultedPaymentUsed(
+                     PayPalDefinitions::PAYMENT_SOURCE_CARD,
+                     $this->getUser()
+                 ))
             ) {
                 $isVaultingPossible = false;
             }
@@ -132,7 +138,7 @@ class OrderController extends OrderController_parent
             $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
 
-            if ($isVaultingPossible && $payPalCustomerId ) {
+            if ($isVaultingPossible && $payPalCustomerId) {
                 $paymentDescription = '';
 
                 // Vaulted Cards
@@ -146,11 +152,13 @@ class OrderController extends OrderController_parent
                         // double check source type
                         if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
                             $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
-                            $paymentDescription = $paymentSource["brand"] . " " . $string . $paymentSource["last_digits"];
+                            $paymentDescription = $paymentSource["brand"]
+                                . " "
+                                . $string
+                                . $paymentSource["last_digits"];
                         }
                     }
                 }
-
             }
 
             if (
@@ -185,7 +193,13 @@ class OrderController extends OrderController_parent
             Registry::getUtilsView()->addErrorToDisplay($displayError);
 
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
-            if (in_array((string)$paymentService->getSessionPaymentId(), $this->removeTemporaryOrderOnRetry, true)) {
+            if (
+                in_array(
+                    (string)$paymentService->getSessionPaymentId(),
+                    $this->removeTemporaryOrderOnRetry,
+                    true
+                )
+            ) {
                 $paymentService->removeTemporaryOrder();
             }
             return true;
@@ -228,7 +242,10 @@ class OrderController extends OrderController_parent
         try {
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
             $paymentService->removeTemporaryOrder();
-            Registry::getSession()->setVariable('sess_challenge', $this->getUtilsObjectInstance()->generateUID());
+            Registry::getSession()->setVariable(
+                'sess_challenge',
+                $this->getUtilsObjectInstance()->generateUID()
+            );
             $status = $this->execute();
         } catch (Exception $exception) {
             /** @var Logger $logger */
@@ -309,10 +326,16 @@ class OrderController extends OrderController_parent
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $payPalApiOrder = $paymentService->fetchOrderFields($orderId);
-        $verify3DResult = $paymentService->verify3D(PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID, $payPalApiOrder);
+        $verify3DResult = $paymentService->verify3D(
+            PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID,
+            $payPalApiOrder
+        );
 
         if (!$verify3DResult) {
-            throw PayPalException::cannotFinalizeOrderAfterExternalPayment($orderId, PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID);
+            throw PayPalException::cannotFinalizeOrderAfterExternalPayment(
+                $orderId,
+                PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID
+            );
         }
 
         $request = new OrderCaptureRequest();
@@ -432,7 +455,8 @@ class OrderController extends OrderController_parent
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
             $paymentService->removeTemporaryOrder();
             Registry::getSession()->setVariable(
-                'sess_challenge', $this->getUtilsObjectInstance()->generateUID()
+                'sess_challenge',
+                $this->getUtilsObjectInstance()->generateUID()
             );
             $_POST['sDeliveryAddressMD5'] = $this->getDeliveryAddressMD5();
             $status = $this->execute();
@@ -533,7 +557,8 @@ class OrderController extends OrderController_parent
                 'failure during finalizeOrderAfterExternalPayment',
                 [$exception]
             );
-            $this->getServiceFromContainer(OrderPayPalService::class)->cancelPayPalSession('cannot finalize order');
+            $this->getServiceFromContainer(OrderPayPalService::class)
+                ->cancelPayPalSession('cannot finalize order');
             $goNext = 'payment?payerror=2';
         }
 
@@ -584,7 +609,8 @@ class OrderController extends OrderController_parent
                 'PayPal Checkout error during order finalization ' . $exception->getMessage(),
                 [$exception]
             );
-            $this->getServiceFromContainer(OrderPayPalService::class)->cancelPayPalSession('cannot finalize order');
+            $this->getServiceFromContainer(OrderPayPalService::class)
+                ->cancelPayPalSession('cannot finalize order');
             return 'payment?payerror=2';
         }
 
@@ -611,7 +637,8 @@ class OrderController extends OrderController_parent
                 'failure during finalizeOrderAfterExternalPayment',
                 [$exception]
             );
-            $this->getServiceFromContainer(OrderPayPalService::class)->cancelPayPalSession('cannot finalize order');
+            $this->getServiceFromContainer(OrderPayPalService::class)
+                ->cancelPayPalSession('cannot finalize order');
             $goNext = 'payment?payerror=2';
         }
 
@@ -631,7 +658,8 @@ class OrderController extends OrderController_parent
 
         return $sucesss ?
             'thankyou' :
-            $this->getServiceFromContainer(OrderPayPalService::class)->cancelPayPalSession('cannot finalize order');
+            $this->getServiceFromContainer(OrderPayPalService::class)
+                ->cancelPayPalSession('cannot finalize order');
     }
 
     public function cancelpaypalsession(string $errorcode = null): string

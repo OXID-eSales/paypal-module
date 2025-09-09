@@ -545,8 +545,8 @@ class ProxyController extends FrontendController
             '',
             '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-             $payPalUrlService->getReturnUrl(),
-             $payPalUrlService->getCancelUrl(),
+            $payPalUrlService->getReturnUrl(),
+            $payPalUrlService->getCancelUrl(),
             false
         );
         if ($response->id) {

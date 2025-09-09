@@ -397,8 +397,10 @@ class OrderRequestFactoryTest extends UnitTestCase
 
             // Apple Pay typically should have shipping preference set
             if (isset($experienceContext['shipping_preference'])) {
-                $this->assertContains($experienceContext['shipping_preference'],
-                    ['SET_PROVIDED_ADDRESS', 'GET_FROM_FILE', 'NO_SHIPPING']);
+                $this->assertContains(
+                    $experienceContext['shipping_preference'],
+                    ['SET_PROVIDED_ADDRESS', 'GET_FROM_FILE', 'NO_SHIPPING']
+                );
             }
 
             // Check if brand_name is set in experience context
@@ -791,7 +793,8 @@ class OrderRequestFactoryTest extends UnitTestCase
                 $experienceContext = $puiSource->experience_context;
 
                 $this->assertIsObject($experienceContext);
-                $this->assertInstanceOf(OrderExperienceContext::class, $experienceContext);;
+                $this->assertInstanceOf(OrderExperienceContext::class, $experienceContext);
+                ;
 
                 $this->assertTrue(
                     !empty($experienceContext->brand_name) &&

@@ -20,7 +20,8 @@ class VaultingTokenController extends FrontendController
     {
         $vaultingService = $this->getVaultingService();
         $card = (bool)Registry::get(Request::class)->getRequestEscapedParameter("card");
-        $paymentTypeId =  $card ? PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID : PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
+        $paymentTypeId = $card ?
+            PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID : PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
 
         $setupToken = $vaultingService->createVaultSetupToken($paymentTypeId);
 

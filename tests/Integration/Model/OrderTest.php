@@ -365,8 +365,6 @@ final class OrderTest extends BaseTestCase
         $this->expectExceptionMessage("uAPM-Payment error");
 
         $mockOrder->finalizeOrderAfterExternalPayment($payPalOrderId, $forceFetchDetails);
-
-
     }
 
     public function testFinalizeOrderAfterExternalPaymentACDCNoForceFetch(): void
@@ -447,7 +445,6 @@ final class OrderTest extends BaseTestCase
         $this->expectExceptionMessage("uAPM-Payment error");
 
         $mockOrder->finalizeOrderAfterExternalPayment($payPalOrderId, $forceFetchDetails);
-
     }
 
 
@@ -653,7 +650,7 @@ final class OrderTest extends BaseTestCase
     private function patchMock($orderMock)
     {
         $orderMock->setModuleSettings($this->getServiceFromContainer(ModuleSettings::class));
-        $orderMock->setOrderProcessTrackingService(new OrderProcessTrackingService);
+        $orderMock->setOrderProcessTrackingService(new OrderProcessTrackingService());
         $orderMock->setPaymentService($this->getServiceFromContainer(PaymentService::class));
         return $orderMock;
     }

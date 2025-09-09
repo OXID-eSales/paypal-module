@@ -175,7 +175,9 @@ class BasketSummaryService
         $pureVatNet = ($basket->getNettoSum() - $discountsNet) * $defaultVAT / 100;
         // Discount percentage of the pre-discount base (items + shipping + payment + wrapping + giftcard)
         $discountBaseNet = $itemsNetTotal + $shippingNet + $wrappingNet + $giftCardNet;
-        $discountsPercentNet = $discountBaseNet > 0 ? round(($discountsNet / $discountBaseNet) * 100, 2) : 0.0;
+        $discountsPercentNet = $discountBaseNet > 0
+            ? round(($discountsNet / $discountBaseNet) * 100, 2)
+            : 0.0;
 
         return [
             'currency' => $currencyCode,
@@ -183,7 +185,8 @@ class BasketSummaryService
             'paypal' => [
                 //the amount = item_total + tax_total + shipping + handling + insurance - shipping_discount - discount.
                 'breakdown_amount' => ($itemsNetTotal + $shippingNet - $discountsNet) * (1 + $defaultVAT / 100),
-                // The subtotal for all items. Must equal sum(items[].unit_amount * items[].quantity) and be non-negative.
+                // The subtotal for all items.
+                // Must equal sum(items[].unit_amount * items[].quantity) and be non-negative.
                 'breakdown_item_total' => max(0.0, $itemsNetTotal * (1 + $defaultVAT / 100)),
             ],
             'totals' => [
@@ -348,7 +351,8 @@ class BasketSummaryService
         }
         // Discount percentage of the pre-discount base (items + shipping + wrapping + giftcard)
         $discountBaseBrut = $itemsBrutTotal + $shippingBrut + $wrappingBrut + $giftCardBrut;
-        $discountsPercentBrut = $discountBaseBrut > 0 ? round(($discountsBrut / $discountBaseBrut) * 100, 2) : 0.0;
+        $discountsPercentBrut = $discountBaseBrut > 0
+            ? round(($discountsBrut / $discountBaseBrut) * 100, 2) : 0.0;
 
         return [
             'currency' => $currencyCode,
@@ -357,7 +361,8 @@ class BasketSummaryService
                 //the amount = item_total + tax_total + shipping + handling + insurance - shipping_discount - discount.
                 // At this summary stage we consider items + shipping - discounts for BRUT values.
                 'breakdown_amount' => ($itemsBrutTotal + $shippingBrut - $discountsBrut),
-                // The subtotal for all items. Must equal sum(items[].unit_amount * items[].quantity) and be non-negative.
+                // The subtotal for all items.
+                // Must equal sum(items[].unit_amount * items[].quantity) and be non-negative.
                 'breakdown_item_total' => max(0.0, $itemsBrutTotal),
             ],
             'totals' => [

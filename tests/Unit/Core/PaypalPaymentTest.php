@@ -1,8 +1,10 @@
 <?php
+
 /**
  * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
  */
+
 declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Core;
@@ -288,7 +290,6 @@ class PaypalPaymentTest extends UnitTestCase
         ];
 
         try {
-
             $request = $this->orderRequestFactory->getRequest(
                 $this->basketMock,
                 OrderRequest::INTENT_CAPTURE,
@@ -494,5 +495,4 @@ class PaypalPaymentTest extends UnitTestCase
             ->willReturn($mockAmount);
         Registry::set('OxidSolutionCatalysts\PayPal\Core\PayPalRequestAmountFactory', $amountFactoryMock);
     }
-
 }

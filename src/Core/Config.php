@@ -125,7 +125,7 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->getLiveWebhookId();
     }
 
-        public function getSandboxWebhookId(): string
+    public function getSandboxWebhookId(): string
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->getSandboxWebhookId();
     }
@@ -545,7 +545,7 @@ class Config
     public function getUserIdForVaulting(): string
     {
         // In case of Standard PayPal we use vaulting via API not, via Buttons
-        if(PayPalSession::isPayPalStandardOrderActive()){
+        if (PayPalSession::isPayPalStandardOrderActive()) {
             return '';
         }
 
