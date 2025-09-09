@@ -191,7 +191,7 @@ final class PayPalDefinitions
             'countries' => ['DE'],
             'currencies' => ['EUR'],
             'constraints' => self::PAYMENT_CONSTRAINTS_PUI,
-            'onlybrutto' => true,
+            'onlybrutto' => false,
             'buttonpayment' => false,
             'defaulton' => true,
             'paymentsource' => self::PAYMENT_SOURCE_PUI
