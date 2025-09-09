@@ -51,7 +51,3 @@ services:
     public: true
     arguments:
       Psr\Log\LoggerInterface: '@OxidSolutionCatalysts\PayPal\Logger'
-
-  OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface:
-    class:  OxidSolutionCatalysts\PayPal\Service\SCAValidator
-    public: true

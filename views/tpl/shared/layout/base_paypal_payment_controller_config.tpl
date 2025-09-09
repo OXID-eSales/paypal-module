@@ -3,7 +3,6 @@
     [{assign var="paymentId" value=$payment->getId()}]
     [{assign var="sToken" value=$oViewConf->getSessionChallengeToken()}]
     [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
-    [{assign var="purchaseUnits" value=$oView->getPurchaseUnits()}]
     [{assign var="vaultedPaymentSource" value=$oView->getVaultedPaymentSource()}]
     [{assign var="oPPconfig" value=$oViewConf->getPayPalCheckoutConfig()}]
     [{assign var="customerId" value=$oView->getPayPalCustomerId()}]
@@ -26,7 +25,6 @@
             shopThankYouPageUrl: '[{$sSelfLink|cat:"cl=thankyou&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             shopOrderAuthorizeUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=authorizePayment&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
             deliveryAddressId: '[{$oView->getDeliveryAddressMD5()}]',
-            purchaseUnits: [{$purchaseUnits}],
             vaultedPaymentSource: [{$vaultedPaymentSource}],
             language: '[{$oView->getActiveLangAbbr()|lower}]',
             currency: '[{$currency->name}]',

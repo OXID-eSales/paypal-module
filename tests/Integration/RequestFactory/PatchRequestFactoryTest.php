@@ -32,13 +32,34 @@ class PatchRequestFactoryTest extends BaseTestCase
 
     public function testGetOrderPatches(): void
     {
+        $basketBackup = Registry::getSession()->getBasket();
+
         // Create price mock
         $priceMock = $this->createMock(Price::class);
         $priceMock->method('getBruttoPrice')->willReturn(10.00);
 
+        $articlePriceMock = $this->getMock('oxprice');
+        $articlePriceMock->expects($this->any())->method('getPrice')->will($this->returnValue(101.00));
+        $articlePriceMock->expects($this->any())->method('getBruttoPrice')->will($this->returnValue(101.00));
         //Currency object
         $currency = Registry::getConfig()->getCurrencyObject('EUR');
+
+        // Create basket item mock
+        $basketItem = $this->createMock(BasketItem::class);
+        $basketItem->method('getTitle')->willReturn('Test Item');
+        $article = oxNew(Article::class);
+        $basketItem->method('getArticle')->willReturn($article);
+        $basketItem->method('getAmount')->willReturn(1);
+        $basketItem->method('getUnitPrice')->willReturn($articlePriceMock);
+
+        // Create basket mock
         $basketMock = $this->createMock(Basket::class);
+        Registry::getSession()->setBasket($basketMock);
+
+        $basketMock->method('getContents')->willReturn([
+            $basketItem
+        ]);
+
         $basketMock->method('getBasketCurrency')->willReturn($currency);
         $basketMock->method('isCalculationModeNetto')->willReturn(false);
         $basketMock->method('getPrice')->willReturn($priceMock);
@@ -48,6 +69,8 @@ class PatchRequestFactoryTest extends BaseTestCase
 
         $this->assertIsArray($patches);
         $this->assertNotEmpty($patches);
+
+        Registry::getSession()->setBasket($basketBackup);
     }
 
     public function testGetShippingAddressPatch(): void
@@ -100,8 +123,10 @@ class PatchRequestFactoryTest extends BaseTestCase
     public function testGetAmountPatch(): void
     {
         $currency = Registry::getConfig()->getCurrencyObject('EUR');
-
+        $priceMock = $this->createMock(Price::class);
+        $priceMock->method('getBruttoPrice')->willReturn(1.0);
         $basketMock = $this->createMock(Basket::class);
+        $basketMock->method('getPrice')->willReturn($priceMock);
         $basketMock->method('getBasketCurrency')->willReturn($currency);
         $amountWithBreakdown = new AmountWithBreakdown();
         $amountWithBreakdown->value = 1.00;

@@ -13,7 +13,6 @@ use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Core\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
@@ -22,20 +21,19 @@ use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Exception\Redirect;
 use OxidSolutionCatalysts\PayPal\Exception\RedirectWithMessage;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModel;
+use OxidSolutionCatalysts\PayPal\Service\GooglePay\GooglePayPayPalService;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Service\OrderPayPalService;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
-use OxidSolutionCatalysts\PayPal\Service\GooglePay\GooglePayPayPalService;
-use OxidSolutionCatalysts\PayPal\Service\OrderPayPalService;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Payments\Item;
 
 /**
  * Class OrderController
@@ -720,16 +718,6 @@ class OrderController extends OrderController_parent
         /** @var OrderProcessTrackingService $orderProcessTrackingService */
         $orderProcessTrackingService = Registry::get(OrderProcessTrackingService::class);
         return $orderProcessTrackingService->getTrackingId();
-    }
-
-    /**
-     * Probably deprecated, but used in the template: checkout_order_btn_submit_bottom.tpl
-     *
-     * @return string
-     */
-    public function getPurchaseUnits(): string
-    {
-        return json_encode(Registry::get(PayPalPurchaseUnitsFactory::class)->getPurchaseUnits());
     }
 
     public function getDeladrid(): string

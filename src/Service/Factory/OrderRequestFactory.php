@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace OxidSolutionCatalysts\PayPal\Core;
+namespace OxidSolutionCatalysts\PayPal\Service\Factory;
 
 use DateTime;
 use JsonException;
@@ -21,7 +21,13 @@ use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\CustomerAddressHelper;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Core\PayPalRequestAmountFactory;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Helper\Truncate;
+use OxidSolutionCatalysts\PayPal\Service\BasketSummaryService;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
@@ -104,7 +110,8 @@ class OrderRequestFactory
         ?string $cancelUrl = null
     ): OrderRequest {
         $request = $this->request = new OrderRequest();
-        $this->basket = $basket;
+        $this->setBasket($basket);
+
         $withItems = !$this->basket->isCalculationModeNetto();
         $paymentId = Registry::getSession()->getVariable('paymentid');
         $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName($paymentId);
@@ -640,7 +647,7 @@ class OrderRequestFactory
                     "vault_id" => $selectedPaymentToken["id"],
                     "attributes" => [
                         "verification" => [
-                            "method" => $this->moduleSettings->getPayPalSCAContingency()
+                            "method" => $moduleSettings->getPayPalSCAContingency()
                         ],
                     ],
                     "experience_context" => [
@@ -755,5 +762,11 @@ class OrderRequestFactory
     private function getArrayFromPaymentSource(OrderRequest $request, string $paymentSourceId): array {
         $encodedData = json_encode($request->payment_source->{$paymentSourceId}, JSON_THROW_ON_ERROR);
         return json_decode($encodedData, true, 512, JSON_THROW_ON_ERROR);
+    }
+
+    public function setBasket(Basket $basket): void
+    {
+        $this->basket = $basket;
+        $this->purchaseUnitsFactory->setBasket($basket);
     }
 }

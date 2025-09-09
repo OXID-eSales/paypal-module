@@ -15,13 +15,14 @@ use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
 use OxidEsales\Eshop\Core\Config;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Core\Session;
+use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
 use OxidEsales\EshopCommunity\Tests\Unit\Application\Controller\RegisterTest;
-use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Model\Order;
+use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
@@ -29,11 +30,14 @@ use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture as PayPalApiCapture;
 
 final class OrderTest extends BaseTestCase
 {
+    use ServiceContainer;
+
     private const TEST_ORDER_ID = '_testorder';
     private const TEST_PAYPAL_ORDER_ID = '1UH87839KR156544P';
     private const TEST_PAYPAL_TRANS_ID = '42311647XV020574X';
@@ -288,7 +292,7 @@ final class OrderTest extends BaseTestCase
             $this->createMock(OrderProcessTrackingService::class),
             $serviceFactoryMock,
             EshopRegistry::get(PatchRequestFactory::class),
-            EshopRegistry::get(OrderRequestFactory::class)
+            $this->getServiceFromContainer(OrderRequestFactory::class)
         );
 
         $mockOrder->setPaymentService($paymentService);
@@ -352,7 +356,7 @@ final class OrderTest extends BaseTestCase
             $this->createMock(OrderProcessTrackingService::class),
             $serviceFactoryMock,
             EshopRegistry::get(PatchRequestFactory::class),
-            EshopRegistry::get(OrderRequestFactory::class)
+            $this->getServiceFromContainer(OrderRequestFactory::class)
         );
 
         $mockOrder->setPaymentService($paymentService);
@@ -435,7 +439,7 @@ final class OrderTest extends BaseTestCase
             $this->createMock(OrderProcessTrackingService::class),
             $serviceFactoryMock,
             EshopRegistry::get(PatchRequestFactory::class),
-            EshopRegistry::get(OrderRequestFactory::class)
+            $this->getServiceFromContainer(OrderRequestFactory::class)
         );
 
         $mockOrder->setPaymentService($paymentService);
@@ -481,7 +485,7 @@ final class OrderTest extends BaseTestCase
             $this->createMock(OrderProcessTrackingService::class),
             $serviceFactoryMock,
             EshopRegistry::get(PatchRequestFactory::class),
-            EshopRegistry::get(OrderRequestFactory::class)
+            $this->getServiceFromContainer(OrderRequestFactory::class)
         );
 
         $mockOrder = $this->getMockBuilder(EshopModelOrder::class)
