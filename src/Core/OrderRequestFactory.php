@@ -130,7 +130,8 @@ class OrderRequestFactory
             return $request;
         }
 
-        if (Registry::getRequest()->getRequestParameter("vaultPayment") === "true") {
+        $requestVaultPaymentParameter = Registry::getRequest()->getRequestParameter("vaultPayment");
+        if (filter_var($requestVaultPaymentParameter, FILTER_VALIDATE_BOOLEAN)) {
             $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName(
                 Registry::getRequest()->getRequestParameter("oscPayPalPaymentTypeForVaulting")
             );
