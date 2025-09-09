@@ -219,7 +219,7 @@ class Payment
             'status' => $status
         ];
 
-        if ($status === 'PAYER_ACTION_REQUIRED') {
+        if ($status === 'PAYER_ACTION_REQUIRED' || $status === 'CREATED') {
             $return['links'] = $payPalOrder->links;
         }
 

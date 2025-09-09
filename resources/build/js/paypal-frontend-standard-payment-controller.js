@@ -5,6 +5,7 @@
 
         // PayPal-specific payment source configuration
         this.getPaymentSource = function () {
+            debugger
             let paymentSource = {
                 paypal: {
                     experience_context: {
@@ -86,7 +87,7 @@
                 'orderId': data.orderID,
                 'paymentId': PayPalPayment.getConfigValue('paymentId')
             });
-
+debugger
             if (result.paymentStatus === 'success') {
                 PayPalPayment.afterCaptureOrder();
             }
