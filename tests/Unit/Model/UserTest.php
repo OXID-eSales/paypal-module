@@ -27,6 +27,7 @@ final class UserTest extends TestCase
                 'month' => 4,
                 'year' => 2000
             ],
+            'phonenumber' => '+49123456789'
         ];
 
         $request = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();
@@ -47,6 +48,7 @@ final class UserTest extends TestCase
                 'month' => null,
                 'year' => null
             ],
+            'phonenumber' => '+49123456789'
         ];
 
         $request = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();

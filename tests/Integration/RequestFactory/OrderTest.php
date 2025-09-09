@@ -30,14 +30,21 @@ final class OrderTest extends BaseTestCase
 
     public function testCreatePuiPayPalOrderRequestWithPuiRequiredFields(): void
     {
-        $_POST['pui_required'] =
+        $puiRequired =
             [
                 'birthdate' => [
                     'day' => 1,
                     'month' => 4,
                     'year' => 2000
-                ]
+                ],
+                'phonenumber' => '+49123456789'
             ];
+
+        $request = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();
+        $request->method('getRequestParameter')->willReturnCallback(function ($arg) use ($puiRequired) {
+            return $puiRequired;
+        });
+
 
         $user = oxNew(EshopModelUser::class);
         $user->load(self::TEST_USER_ID);
@@ -57,25 +64,20 @@ final class OrderTest extends BaseTestCase
         $session = EshopRegistry::getSession();
         $session->setVariable('paymentid', PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID);
 
+        EshopRegistry::set(\OxidEsales\Eshop\Core\Request::class, $request);
         $request = $requestFactory->getRequest(
             $basket,
             OrderRequest::INTENT_CAPTURE,
             OrderRequestFactory::USER_ACTION_CONTINUE,
             '',
             Constants::PAYPAL_PUI_PROCESSING_INSTRUCTIONS,
-            PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID,
+                        PayPalDefinitions::PAYMENT_SOURCE_PUI
         );
 
-        $birthdate = $request->payment_source->pay_upon_invoice->birthdate;
-
-        $dateString = sprintf(
-            '%04d-%02d-%02d',
-            $birthdate['year'],
-            $birthdate['month'],
-            $birthdate['day']
+        $this->assertEquals(
+            '2000-04-01',
+            $request->payment_source["pay_upon_invoice"]->birth_date
         );
-
-        $this->assertEquals('2000-04-01', $dateString);
     }
 
     public function tearDown(): void
