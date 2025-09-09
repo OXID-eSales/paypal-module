@@ -122,9 +122,9 @@ class OrderController extends OrderController_parent
             //Disable save payments if a payment of the same type is already vaulted
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
             if (
-                (PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID === $paymentId && 
+                (PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID === $paymentId &&
                  $vaultingService->isVaultedPaymentUsed(PayPalDefinitions::PAYMENT_SOURCE_PAYPAL, $this->getUser())) ||
-                (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId && 
+                (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId &&
                  $vaultingService->isVaultedPaymentUsed(PayPalDefinitions::PAYMENT_SOURCE_CARD, $this->getUser()))
             ) {
                 $isVaultingPossible = false;
@@ -433,8 +433,9 @@ class OrderController extends OrderController_parent
         try {
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
             $paymentService->removeTemporaryOrder();
-            Registry::getSession()->setVariable('sess_challenge', $this->getUtilsObjectInstance()->generateUID());
-
+            Registry::getSession()->setVariable(
+                'sess_challenge', $this->getUtilsObjectInstance()->generateUID()
+            );
             $_POST['sDeliveryAddressMD5'] = $this->getDeliveryAddressMD5();
             $status = $this->execute();
         } catch (Exception $exception) {
@@ -448,6 +449,7 @@ class OrderController extends OrderController_parent
         $response = $paymentService->doCreatePatchedOrder(
             Registry::getSession()->getBasket()
         );
+
         if (!($paypalOrderId = $response['id'])) {
             $this->outputJson(['error' => 'cannot create paypal order']);
             return;
@@ -463,7 +465,6 @@ class OrderController extends OrderController_parent
             $payPalOrder->setStatus($response['status']);
             $payPalOrder->save();
         }
-
 
         $this->outputJson($response);
     }

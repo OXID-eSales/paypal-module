@@ -153,10 +153,8 @@ final class PaymentTest extends BaseTestCase
         try {
             $result = $paymentService->doCreatePayPalOrder($basket, OrderRequest::INTENT_CAPTURE);
         } catch (TypeError $e) {
-            var_dump($e->getMessage());
-              $this->fail('Expected ApiException, got TypeError');
+            $this->fail('Expected ApiException, got TypeError');
         }
-
 
         $this->assertNotEmpty($result->id);
     }
@@ -349,7 +347,6 @@ final class PaymentTest extends BaseTestCase
 
         $request->intent = OrderRequest::INTENT_CAPTURE;
         $request->purchase_units = $decoded['purchase_units'];
-        $request->experience_context = $decoded['experience_context'];
         $request->payment_source = $decoded['payment_source'];
         $request->processing_instruction = "ORDER_COMPLETE_ON_PAYMENT_APPROVAL";
 

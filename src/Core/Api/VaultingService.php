@@ -18,6 +18,7 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
+use OxidSolutionCatalysts\PayPal\Service\PayPalUrlService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Service\BaseService;
@@ -182,7 +183,6 @@ class VaultingService extends BaseService
             ];
 
             if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL) {
-                //those 3 params should be only in PayPal Standard
                 $attributes['vault'] += [
                     "usage_type" => "MERCHANT",
                     "customer_type" => "CONSUMER",
@@ -215,7 +215,6 @@ class VaultingService extends BaseService
                     "usage" => "FIRST"
                 ];
             }
-
         } else {
             $paymentSource = [
                 $paymentSourceId => [
@@ -268,7 +267,7 @@ class VaultingService extends BaseService
 
     /**
      * Check if a specific type of vaulted payment is used
-     * 
+     *
      * @param string $paymentType The payment type to check (PayPalDefinitions::PAYMENT_SOURCE_PAYPAL or 'card')
      * @param ?User $user The user to check
      * @return bool True if the specified vaulted payment is used
@@ -327,7 +326,7 @@ class VaultingService extends BaseService
 
     /**
      * Get the cache key for vaulted tokens
-     * 
+     *
      * @return string
      */
     protected function getVaultedTokenCacheKey(): string
@@ -338,7 +337,7 @@ class VaultingService extends BaseService
 
     /**
      * Get vaulted token data from cache
-     * 
+     *
      * @return array
      */
     public function getVaultedTokenFromCache(): array
@@ -354,7 +353,7 @@ class VaultingService extends BaseService
 
     /**
      * Store vaulted token data in cache
-     * 
+     *
      * @param array $data
      * @return void
      */
@@ -371,7 +370,7 @@ class VaultingService extends BaseService
 
     /**
      * Clear vaulted token cache
-     * 
+     *
      * @return void
      */
     public function clearVaultedTokenCache(): void
@@ -387,7 +386,7 @@ class VaultingService extends BaseService
 
     /**
      * Check if vaulting cache refresh is needed
-     * 
+     *
      * @return bool True if refresh is needed, false otherwise
      */
     public function isVaultingCacheRefreshNeeded(): bool
