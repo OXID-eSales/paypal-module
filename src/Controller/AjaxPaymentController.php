@@ -180,10 +180,11 @@ class AjaxPaymentController extends ProxyController
     public function createPayPalOrder(): void
     {
         $data = $this->getRequestParameters();
+        $useVaultedPayment = $data['useVaultedPayment'];
         $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'];
         $_POST['vaultPayment'] = $data['vaultPayment'] ? "true" : "false";
         $_POST['oscPayPalPaymentTypeForVaulting'] = PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
-        $_POST['useVaultedPayment'] = $data['useVaultedPayment'];
+        $_POST['useVaultedPayment'] = $useVaultedPayment;
         $this->orderProcessTrackingService->setTrackingId($data['trackingId']);
         $this->addToBasket();
 
@@ -226,7 +227,11 @@ class AjaxPaymentController extends ProxyController
             $order = oxNew(Order::class);
             $order->load($sessionOrderId);
 
-            PayPalSession::unsetPayPalSession();
+            if(! $paymentId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID && $useVaultedPayment) {
+                PayPalSession::unsetPayPalSession();
+            } else {
+                PayPalSession::storePayPalOrderId($response->id);
+            }
 
             $this->outputJson([
                 'status' => 'success',

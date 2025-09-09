@@ -58,10 +58,11 @@
             document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...shopOrderCreateResult}})));
 
             // Create PayPal order
+            let useVaultedPayment = PayPalPayment.config.vaultedPaymentSource;
             let payPalOrderCreateResult = await PayPalPayment.backendRequest('payPalOrderCreateUrl', {}, {
                 'shopOrderId': shopOrderCreateResult.shopOrderId,
                 'vaultPayment': PayPalPayment.currentOrder.vaultPayment,
-                'useVaultedPayment': PayPalPayment.config.vaultedPaymentSource,
+                'useVaultedPayment': useVaultedPayment,
                 'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId')
             });
 
@@ -72,8 +73,17 @@
             }
 
             //if the vaulted payment source is used, go to finalize payment
-            if (null !== PayPalPayment.config.vaultedPaymentSource && payPalOrderCreateResult.payPalOrder.status === 'COMPLETED') {
+            if (null !== useVaultedPayment && payPalOrderCreateResult.payPalOrder.status === 'COMPLETED') {
                 PayPalPayment.afterCaptureOrder();
+            }
+
+            if (useVaultedPayment && payPalOrderCreateResult.payPalOrder.status === 'PAYER_ACTION_REQUIRED' ){
+                for (const i in payPalOrderCreateResult.payPalOrder.links) {
+                    if (payPalOrderCreateResult.payPalOrder.links[i].rel === 'payer-action'){
+                        window.location = payPalOrderCreateResult.payPalOrder.links[i].href;
+                        return;
+                    }
+                }
             }
 
             return payPalOrderCreateResult.payPalOrder.id;
