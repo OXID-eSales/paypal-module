@@ -54,6 +54,7 @@
                     shopOrderCaptureUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=captureOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
                     shopOrderCreateUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=createAcdcOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
                     shopOrderCompleteUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=completeOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
+                    shopOrderApproveUrl: '{{ (sSelfLink ~ "cl=oscpaypalproxy&fnc=approveOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
                     cardFields: true, //probably not needed when payment controller will be split
                     paymentId: '{{ paymentId }}', //probably not needed when payment controller will be split
                     buttonSelector: 'button#{{ paymentId }}'
