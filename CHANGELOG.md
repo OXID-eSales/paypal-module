@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - fixes an error in the display of the GooglePay button
 - [0007821](https://bugs.oxid-esales.com/view.php?id=7821): use finalizeOrder for all payments again
 - fix PUI-EMail-Handling
+- [0007822](https://bugs.oxid-esales.com/view.php?id=7822): use existing DeliveryAddresses instead creating new once
 
 ### FIX
 

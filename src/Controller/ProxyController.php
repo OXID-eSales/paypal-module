@@ -207,10 +207,8 @@ class ProxyController extends FrontendController
                 $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
                 if ($deliveryAddress['oxaddress__oxfname'] !== '' && $deliveryAddress['oxaddress__oxstreet'] !== '') {
                     try {
-                        $user->changeUserData(
+                        $user->changePayPalUserData(
                             $user->oxuser__oxusername->value,
-                            '',
-                            '',
                             $userInvoiceAddress,
                             $deliveryAddress
                         );
@@ -297,10 +295,8 @@ class ProxyController extends FrontendController
             // add PayPal-Address as Delivery-Address
             $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
             try {
-                $user->changeUserData(
+                $user->changePayPalUserData(
                     $user->oxuser__oxusername->value,
-                    '',
-                    '',
                     $userInvoiceAddress,
                     $deliveryAddress
                 );
@@ -595,10 +591,8 @@ class ProxyController extends FrontendController
                     && $deliveryAddress['oxaddress__oxstreet'] !== ''
                 ) {
                     try {
-                        $user->changeUserData(
+                        $user->changePayPalUserData(
                             $user->oxuser__oxusername->value,
-                            '',
-                            '',
                             $userInvoiceAddress,
                             $deliveryAddress
                         );
