@@ -78,9 +78,15 @@ class OrderRequestFactory
      */
     private $moduleSettings;
 
-    public function __construct()
+    /**
+     * @var \OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory
+     */
+    private PayPalPurchaseUnitsFactory $purchaseUnitsFactory;
+
+    public function __construct(PayPalPurchaseUnitsFactory $purchaseUnitsFactory, ModuleSettings $moduleSettings)
     {
-        $this->moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $this->moduleSettings = $moduleSettings;
+        $this->purchaseUnitsFactory = $purchaseUnitsFactory;
     }
 
 
@@ -400,14 +406,7 @@ class OrderRequestFactory
     }
 
     /**
-     * @param \OxidSolutionCatalysts\PayPal\Service\ModuleSettings $moduleSettings
-     */
-    public function setModuleSettings(ModuleSettings $moduleSettings): void
-    {
-        $this->moduleSettings = $moduleSettings;
-    }
-
-    /**
+     * @param string $payerClass
      * @return Payer
      */
     protected function getPayer(string $payerClass = Payer::class): Payer
@@ -647,7 +646,7 @@ class OrderRequestFactory
                     "vault_id" => $selectedPaymentToken["id"],
                     "attributes" => [
                         "verification" => [
-                            "method" => $moduleSettings->getPayPalSCAContingency()
+                            "method" => $this->moduleSettings->getPayPalSCAContingency()
                         ],
                     ],
                     "experience_context" => [

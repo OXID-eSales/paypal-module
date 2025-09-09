@@ -17,8 +17,9 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session;
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
-use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderExperienceContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
@@ -984,7 +985,12 @@ class OrderRequestFactoryTest extends UnitTestCase
 
     private function initMocks()
     {
+        $this->moduleSettingsMock = $this->createMock(ModuleSettings::class);
+
+        $mockPurchaseUnitsFactory = new PayPalPurchaseUnitsFactory($this->moduleSettingsMock);
+
         $this->orderRequestFactory = $this->getMockBuilder(OrderRequestFactory::class)
+            ->setConstructorArgs([$mockPurchaseUnitsFactory, $this->moduleSettingsMock])
             ->onlyMethods(
                 [
                     'getServiceFromContainer',
@@ -995,9 +1001,6 @@ class OrderRequestFactoryTest extends UnitTestCase
                     'getAmount',
                 ]
             )->getMock();
-
-        $this->moduleSettingsMock = $this->createMock(ModuleSettings::class);
-        $this->orderRequestFactory->setModuleSettings($this->moduleSettingsMock);
 
         $this->orderRequestFactory->method('getAmount')
             ->willReturn(new \OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown(

@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Model;
 
-use DateTimeImmutable;
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
 use OxidSolutionCatalysts\PayPal\Exception\UserPhone as UserPhoneException;

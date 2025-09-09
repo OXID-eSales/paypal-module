@@ -15,11 +15,11 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session;
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
-use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
-use oxuser;
 use PHPUnit\Framework\MockObject\MockObject;
 
 class ApplePayRequestTest extends UnitTestCase
@@ -51,7 +51,12 @@ class ApplePayRequestTest extends UnitTestCase
     {
         parent::setUp();
 
+        $this->moduleSettingsMock = $this->createMock(ModuleSettings::class);
+
+        $mockPurchaseUnitsFactory = new PayPalPurchaseUnitsFactory($this->moduleSettingsMock);
+
         $this->orderRequestFactory = $this->getMockBuilder(OrderRequestFactory::class)
+            ->setConstructorArgs([$mockPurchaseUnitsFactory, $this->moduleSettingsMock])
             ->onlyMethods([
                 'getServiceFromContainer',
                 'getUserNameFromBasket',
@@ -63,21 +68,23 @@ class ApplePayRequestTest extends UnitTestCase
             ->getMock();
 
         $this->moduleSettingsMock = $this->createMock(ModuleSettings::class);
-        $this->orderRequestFactory->setModuleSettings($this->moduleSettingsMock);
 
-        $this->orderRequestFactory->method('getAmount')
-            ->willReturn(new \OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown([
-                'breakdown' => [
-                    'item_total' => [
-                        'currency_code' => 'EUR',
-                        'value' => '100.00'
-                    ],
-                    'tax_total' => [
-                        'currency_code' => 'EUR',
-                        'value' => '0.00'
+
+        $this->orderRequestFactory->method('getPurchaseUnits')
+            ->willReturn([
+                [
+                    'breakdown' => [
+                        'item_total' => [
+                            'currency_code' => 'EUR',
+                            'value' => '100.00'
+                        ],
+                        'tax_total' => [
+                            'currency_code' => 'EUR',
+                        ]
                     ]
                 ]
-            ]));
+            ]);
+
 
         $this->vaultingServiceMock = $this->createMock(VaultingService::class);
         $this->basketMock = $this->createMock(Basket::class);
@@ -103,15 +110,6 @@ class ApplePayRequestTest extends UnitTestCase
         $this->countryMock->method('getFieldData')
             ->with('oxisoalpha2')
             ->willReturn('DE');
-        $this->orderRequestFactory->method('getPurchaseUnits')
-            ->willReturn([
-                [
-                    'amount' => [
-                        'currency_code' => 'EUR',
-                        'value' => '100.00'
-                    ]
-                ]
-            ]);
 
         Registry::set('oxsession', $this->sessionMock);
         Registry::set('oxconfig', $this->configMock);
@@ -123,7 +121,7 @@ class ApplePayRequestTest extends UnitTestCase
         $cancelUrl = 'https://example.com/cancel';
         $userAction = OrderRequestFactory::USER_ACTION_PAY_NOW;
 
-        $this->setupMocksForVaultedPayment(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
+        $this->setupMocksForVaultedPayment(PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID);
         $this->mockBasketAndAmountFactory();
 
         $vaultedToken = [
@@ -147,6 +145,7 @@ class ApplePayRequestTest extends UnitTestCase
 
         $paymentSourceArray = is_object($request->payment_source) ? $request->payment_source->jsonSerialize() : $request->payment_source;
         $cardSource = $paymentSourceArray['card'] ?? null;
+
         $this->assertNotNull($cardSource, 'Card payment source should be set');
 
         if (isset($cardSource['experience_context'])) {

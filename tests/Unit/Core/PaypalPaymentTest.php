@@ -15,13 +15,12 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session;
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
-use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderExperienceContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
-use OxidSolutionCatalysts\PayPalApi\Pui\ExperienceContext;
-use oxuser;
 use PHPUnit\Framework\MockObject\MockObject;
 
 class PaypalPaymentTest extends UnitTestCase
@@ -52,8 +51,12 @@ class PaypalPaymentTest extends UnitTestCase
     public function setUp(): void
     {
         parent::setUp();
+        $this->moduleSettingsMock = $this->createMock(ModuleSettings::class);
+
+        $mockPurchaseUnitsFactory = new PayPalPurchaseUnitsFactory($this->moduleSettingsMock);
 
         $this->orderRequestFactory = $this->getMockBuilder(OrderRequestFactory::class)
+            ->setConstructorArgs([ $mockPurchaseUnitsFactory, $this->moduleSettingsMock])
             ->onlyMethods([
                 'getServiceFromContainer',
                 'getUserNameFromBasket',
@@ -64,8 +67,8 @@ class PaypalPaymentTest extends UnitTestCase
             ])
             ->getMock();
 
-        $this->moduleSettingsMock = $this->createMock(ModuleSettings::class);
-        $this->orderRequestFactory->setModuleSettings($this->moduleSettingsMock);
+
+        $this->orderRequestFactory->setBasket(new Basket());
 
         $this->orderRequestFactory->method('getAmount')
             ->willReturn(new \OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown([
@@ -80,21 +83,6 @@ class PaypalPaymentTest extends UnitTestCase
                     ]
                 ]
             ]));
-
-        $this->orderRequestFactory->method('getPurchaseUnits')
-            ->willReturn([
-                new \OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnit([
-                    'reference_id' => '123',
-                    'amount' => [
-                        'breakdown' => [
-                            'item_total' => [
-                                'currency_code' => 'EUR',
-                                'value' => '100.00'
-                            ],
-                        ]
-                    ]
-                ])
-            ]);
 
         $this->vaultingServiceMock = $this->createMock(VaultingService::class);
         $this->basketMock = $this->createMock(Basket::class);
@@ -338,6 +326,22 @@ class PaypalPaymentTest extends UnitTestCase
     public function testGetRequestReturnsOrderRequestWithNullUrls(): void
     {
         $this->setupMocksForLoggedInPayment(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
+
+        $this->orderRequestFactory->method('getPurchaseUnits')
+            ->willReturn([
+               [
+                    'breakdown' => [
+                        'item_total' => [
+                            'currency_code' => 'EUR',
+                            'value' => '100.00'
+                        ],
+                        'tax_total' => [
+                            'currency_code' => 'EUR',
+                        ]
+                    ]
+                   ]
+            ]);
+
 
         $request = $this->orderRequestFactory->getRequest(
             $this->basketMock,
