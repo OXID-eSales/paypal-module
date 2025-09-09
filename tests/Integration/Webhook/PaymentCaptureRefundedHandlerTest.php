@@ -109,7 +109,7 @@ final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
         /** @var QueryBuilder $queryBuilder */
         $queryBuilder = $this->get(QueryBuilderFactoryInterface::class)->create();
         $queryBuilder->select('oscpaypaltransactionid')
-            ->from('oscpaypal_order');
+            ->from('oscpaypal_order')->where('oscpaypaltransactionid = "5YH4578629195611S"');
 
         $queryBuilderExecuted = $queryBuilder->execute();
         $resultValue = $queryBuilderExecuted->fetchOne();
