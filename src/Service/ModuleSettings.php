@@ -816,41 +816,18 @@ class ModuleSettings
     {
         $payment = oxNew(Payment::class);
         $payment->load($paymentId);
-        $paymentEnabled = (bool)$payment->oxpayments__oxactive->value;
-        $vaultingType = PayPalDefinitions::getPayPalDefinitions()[$paymentId]["vaultingtype"];
 
-        $session = Registry::getSession();
-        $actShipSet = $session->getVariable('sShipSet');
-        $basket = $session->getBasket();
-        $user = $session->getUser();
         $payPalDefinitions = PayPalDefinitions::getPayPalDefinitions();
-        $actShopCurrency = Registry::getConfig()->getActShopCurrencyObject();
-        $userCountryIso = $this->userRepository->getUserCountryIso();
+        $paymentDefinition = $payPalDefinitions[$paymentId] ?? [];
+        $vaultingType = $paymentDefinition['vaultingtype'] ?? null;
 
-        [, , $paymentList] =
-            Registry::get(DeliverySetList::class)->getDeliverySetData(
-                $actShipSet,
-                $user,
-                $basket
-            );
+        $isVaultingActive = $this->getIsVaultingActive();
+        $hasVaultingType = !empty($vaultingType);
+        $isVaultingPossible = PayPalDefinitions::isPayPalVaultingPossible($paymentId, $vaultingType);
 
-        if ($paymentList === null) {
-            return false;
-        }
-
-        return $paymentEnabled &&
-            $this->getIsVaultingActive() &&
-            $vaultingType &&
-            PayPalDefinitions::isPayPalVaultingPossible($paymentId, $vaultingType) &&
-            array_key_exists($paymentId, $paymentList) &&
-            (
-                empty($payPalDefinitions[$paymentId]['currencies']) ||
-                in_array($actShopCurrency->name, $payPalDefinitions[$paymentId]['currencies'], true)
-            ) &&
-            (
-                empty($payPalDefinitions[$paymentId]['countries']) ||
-                in_array($userCountryIso, $payPalDefinitions[$paymentId]['countries'], true)
-            );
+        return $isVaultingActive
+            && $hasVaultingType
+            && $isVaultingPossible;
     }
 
     /**
