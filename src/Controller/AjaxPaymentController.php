@@ -50,9 +50,13 @@ class AjaxPaymentController extends ProxyController
         $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
     }
 
+    /**
+     * @throws \JsonException
+     */
     public function captureOrder(): void
     {
         $data = $this->getRequestParameters();
+        $vaultPayment = filter_var($data['vaultPayment'], FILTER_VALIDATE_BOOLEAN);;
         $payPalOrderId = $data['orderId'];
         $paymentId = $data['paymentId'] ?? Registry::getSession()->getVariable('paymentid');
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();
@@ -103,6 +107,14 @@ class AjaxPaymentController extends ProxyController
         $order->load($sessionOrderId);
         $basket = Registry::getSession()->getBasket();
         $user = $basket->getUser();
+
+        if(
+            $vaultPayment &&
+            isset($capturePaymentForOrder->payment_source->card->attributes->vault->customer["id"])
+        ){
+            $payPalCustomerId = $capturePaymentForOrder->payment_source->card->attributes->vault->customer["id"];
+            $this->updateOxUserWithPayPalCustomerId(['payPalCustomerId' => $payPalCustomerId]);
+        }
 
         $this->sendPayPalOrderMail($order, $basket, $user);
 
@@ -535,9 +547,9 @@ class AjaxPaymentController extends ProxyController
     /**
      * @throws JsonException
      */
-    public function updateOxUserWithPayPalCustomerId(): void
+    public function updateOxUserWithPayPalCustomerId(?array $data = []): void
     {
-        $data = $this->getRequestParameters();
+        $data = $data ? $data : $this->getRequestParameters();
         $user = $this->getUser();
 
         if (!$user->loadActiveUser()) {
