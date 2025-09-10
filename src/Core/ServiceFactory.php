@@ -10,7 +10,9 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
+use OxidSolutionCatalysts\PayPal\Service\UserAddressPaypalService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Client;
 use OxidSolutionCatalysts\PayPalApi\Service\Partner;
@@ -121,6 +123,15 @@ class ServiceFactory
         );
     }
 
+    public function getUserAddressPaypalService(): UserAddressPaypalService
+    {
+        return oxNew(
+            UserAddressPaypalService::class,
+            $this->getQueryBuilder(),
+            $this->getClient()
+        );
+    }
+
     /**
      * Get PayPal client object
      *
@@ -164,5 +175,10 @@ class ServiceFactory
         }
 
         return $this->client;
+    }
+
+    private function getQueryBuilder(): QueryBuilderFactoryInterface
+    {
+        return $this->getServiceFromContainer(QueryBuilderFactoryInterface::class);
     }
 }
