@@ -5,6 +5,8 @@
  * See LICENSE file for license details.
  */
 
+declare(strict_types=1);
+
 namespace OxidSolutionCatalysts\PayPal\Core\Api;
 
 use JsonException;
@@ -18,7 +20,6 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
-use OxidSolutionCatalysts\PayPal\Service\PayPalUrlService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Client;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;

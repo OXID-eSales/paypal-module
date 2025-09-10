@@ -30,6 +30,7 @@ use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use OxidSolutionCatalysts\PayPal\Service\UserAddressPaypalService;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Service\PayPalUrlService;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
@@ -48,12 +49,15 @@ class ProxyController extends FrontendController
     use JsonTrait;
     use ServiceContainer;
 
+    private UserAddressPaypalService $userAddressPaypalService;
+
     private OrderProcessTrackingService $orderProcessTrackingService;
 
     public function __construct()
     {
         parent::__construct();
         $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
+        $this->userAddressPaypalService = $this->getServiceFromContainer(UserAddressPaypalService::class);
     }
 
     public function createOrder(): void
@@ -205,14 +209,11 @@ class ProxyController extends FrontendController
                 $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
                 if ($deliveryAddress['oxaddress__oxfname'] !== '' && $deliveryAddress['oxaddress__oxstreet'] !== '') {
                     try {
-                        $user->changeUserData(
-                            $user->oxuser__oxusername->value,
-                            '',
-                            '',
+                        $this->userAddressPaypalService->changePayPalUserData(
+                            $user,
                             $userInvoiceAddress,
                             $deliveryAddress
                         );
-
                         // use a deliveryaddress in oxid-checkout
                         Registry::getSession()->setVariable('blshowshipaddress', false);
 
@@ -295,12 +296,10 @@ class ProxyController extends FrontendController
             // add PayPal-Address as Delivery-Address
             $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
             try {
-                $user->changeUserData(
-                    $user->oxuser__oxusername->value,
-                    '',
-                    '',
+                $this->userAddressPaypalService->changePayPalUserData(
+                    $user,
                     $userInvoiceAddress,
-                    $deliveryAddress
+                    $deliveryAddress,
                 );
                 $paymentId = Registry::getSession()->getVariable('paymentid');
                 // use a deliveryaddress in oxid-checkout
