@@ -234,6 +234,7 @@ jobs:
             --bootstrap=/var/www/source/bootstrap.php \
             --verbose
 
+
       - name: Upload log artifact
         if: always()
         uses: actions/upload-artifact@v4
