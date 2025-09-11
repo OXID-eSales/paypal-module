@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - fix PUI-EMail-Handling
 
 ### FIX
-
+- [0007822](https://bugs.oxid-esales.com/view.php?id=7822): use existing DeliveryAddresses instead creating new once
 - [0007783](https://bugs.oxid-esales.com/view.php?id=7783): fix birthday validation for PUI (Maintenance-Mode)
  
 ## [3.5.0] - 2025-08-18
