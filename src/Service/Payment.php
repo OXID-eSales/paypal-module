@@ -25,7 +25,6 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Module;
-use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
@@ -40,6 +39,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Payments\CaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\ReauthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
 use OxidSolutionCatalysts\PayPalApi\Service\Payments as ApiPaymentService;
+use Psr\Log\LoggerInterface;
 
 class Payment
 {
@@ -92,7 +92,7 @@ class Payment
         OrderRepository $orderRepository,
         SCAValidatorInterface $scaValidator,
         ModuleSettings $moduleSettingsService,
-        Logger $logger,
+        LoggerInterface $logger,
         OrderProcessTrackingService $orderProcessTrackingService,
         ?ServiceFactory $serviceFactory = null,
         PatchRequestFactory $patchRequestFactory = null,
