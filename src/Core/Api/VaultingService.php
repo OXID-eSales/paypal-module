@@ -19,6 +19,7 @@ use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
+use OxidSolutionCatalysts\PayPal\Service\PayPalUrlService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Client;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
@@ -435,7 +436,7 @@ class VaultingService extends BaseService
                 $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
                 $this->storeVaultedTokenInCache($result);
             } catch (ApiException | JsonException $e) {
-                $this->getLogger()
+                $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger')
                     ->log('error', __CLASS__ . ' ' . __FUNCTION__ . ' : ' . $e->getMessage());
                 $result = $cachedResult ?: [];
             }
