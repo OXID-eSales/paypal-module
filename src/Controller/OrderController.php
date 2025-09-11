@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
@@ -323,6 +324,7 @@ class OrderController extends OrderController_parent
         $order->load($sessionOrderId);
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();
         $orderId = (string) Registry::getRequest()->getRequestParameter('orderID');
+        /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $payPalApiOrder = $paymentService->fetchOrderFields($orderId);
         $verify3DResult = $paymentService->verify3D(

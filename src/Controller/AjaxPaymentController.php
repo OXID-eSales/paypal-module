@@ -56,7 +56,6 @@ class AjaxPaymentController extends ProxyController
     {
         $data = $this->getRequestParameters();
         $vaultPayment = filter_var($data['vaultPayment'], FILTER_VALIDATE_BOOLEAN);
-        ;
         $payPalOrderId = $data['orderId'];
         $paymentId = $data['paymentId'] ?? Registry::getSession()->getVariable('paymentid');
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();
