@@ -15,7 +15,6 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
-use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -27,20 +26,18 @@ use Psr\Log\LoggerInterface;
 class VaultingService extends BaseService
 {
     use ServiceContainer;
-
     private OrderProcessTrackingService $orderProcessTrackingService;
-
     public function __construct(OrderProcessTrackingService $orderProcessTrackingService, Client $client)
     {
         $this->orderProcessTrackingService = $orderProcessTrackingService;
         parent::__construct($client);
     }
-
     public function getLogger(): LoggerInterface
     {
-        return $this->getServiceFromContainer(Logger::class);
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        return $logger;
     }
-
     public function generateUserIdToken($payPalCustomerId = false): array
     {
         $headers = [];
@@ -433,7 +430,7 @@ class VaultingService extends BaseService
                 $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
                 $this->storeVaultedTokenInCache($result);
             } catch (ApiException | JsonException $e) {
-                $this->getServiceFromContainer(Logger::class)
+                $this->getLogger()
                     ->log('error', __CLASS__ . ' ' . __FUNCTION__ . ' : ' . $e->getMessage());
                 $result = $cachedResult ?: [];
             }

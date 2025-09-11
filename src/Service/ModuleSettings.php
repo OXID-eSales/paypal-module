@@ -22,6 +22,7 @@ use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Module;
+use Psr\Log\LoggerInterface;
 
 class ModuleSettings
 {
@@ -91,7 +92,7 @@ class ModuleSettings
         ModuleSettingBridgeInterface $moduleSettingBridge,
         ContextInterface $context,
         ModuleConfigurationDaoBridgeInterface $moduleConfigurationDaoBridgeInterface,
-        Logger $logger,
+        LoggerInterface $logger,
         UserRepository $userRepository
     ) {
         $this->moduleSettingBridge = $moduleSettingBridge;

@@ -13,9 +13,9 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Theme;
 use OxidSolutionCatalysts\PayPal\Core\Api\IdentityService;
 use OxidSolutionCatalysts\PayPal\Service\LanguageLocaleMapper;
-use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use Psr\Log\LoggerInterface;
 
 /**
  * @mixin \OxidEsales\Eshop\Core\ViewConfig
@@ -379,8 +379,8 @@ class ViewConfig extends ViewConfig_parent
 
             $result = $identityService->requestClientToken();
         } catch (GuzzleException | Exception $exception) {
-            /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer(Logger::class);
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             $logger->log('error', $exception->getMessage(), [$exception]);
             $result = '';
         }

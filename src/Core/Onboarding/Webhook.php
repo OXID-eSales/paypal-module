@@ -9,7 +9,6 @@ namespace OxidSolutionCatalysts\PayPal\Core\Onboarding;
 
 use Exception;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventHandlerMapping;
@@ -18,6 +17,7 @@ use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Service\GenericService;
+use Psr\Log\LoggerInterface;
 
 class Webhook
 {
@@ -76,8 +76,8 @@ class Webhook
 
             $webhookId = $webHookResponse['id'] ?? '';
         } catch (Exception $exception) {
-            /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer(Logger::class);
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             $logger->log(
                 'error',
                 'PayPal Webhook creation failed: ' . $exception->getMessage(),
