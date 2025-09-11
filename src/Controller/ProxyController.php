@@ -21,11 +21,12 @@ use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -38,7 +39,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
-use Psr\Log\LoggerInterface;
 
 /**
  * Server side interface for PayPal smart buttons.
@@ -74,7 +74,10 @@ class ProxyController extends FrontendController
             $this->setPayPalPaymentMethod();
         }
         $paymentId = $basket->getPaymentId();
-        $defaultShippingPriceExpress = (double) $config->getConfigParam('oscPayPalDefaultShippingPriceExpress');
+
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+
+        $defaultShippingPriceExpress = (double) $moduleSettings->getDefaultShippingPriceForExpress();
         $calculateDelCostIfNotLoggedIn = (bool) $config->getConfigParam('blCalculateDelCostIfNotLoggedIn');
         $isDeliverySet = (bool) $session->getVariable('sShipSet');
         if ($basket && $defaultShippingPriceExpress && !$calculateDelCostIfNotLoggedIn && !$isDeliverySet) {
@@ -84,7 +87,6 @@ class ProxyController extends FrontendController
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
         }
 
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
         $intent = $captureStrategy === 'directly' ? OrderRequest::INTENT_CAPTURE : OrderRequest::INTENT_AUTHORIZE;
@@ -268,8 +270,8 @@ class ProxyController extends FrontendController
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
         } catch (Exception $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            /** @var Logger $logger */
+            $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', "Error on order capture call.", [$exception]);
         }
 

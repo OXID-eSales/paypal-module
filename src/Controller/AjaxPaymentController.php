@@ -15,11 +15,12 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Field;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -29,14 +30,13 @@ use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
-use Psr\Log\LoggerInterface;
 
 class AjaxPaymentController extends ProxyController
 {
     use JsonTrait;
     use ServiceContainer;
 
-    private LoggerInterface $logger;
+    private Logger $logger;
     private OrderProcessTrackingService $orderProcessTrackingService;
 
     public function __construct()
@@ -46,6 +46,7 @@ class AjaxPaymentController extends ProxyController
         /** @var LoggerInterface $logger */
         $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
         $this->logger = $logger;
+
         $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
     }
 
@@ -112,7 +113,7 @@ class AjaxPaymentController extends ProxyController
             'paymentStatus' => '',
         ];
 
-        if($capturePaymentForOrder){
+        if ($capturePaymentForOrder) {
             $response['paymentStatus'] = $capturePaymentForOrder->getCapturePaymentStatus() ? 'success' : 'error';
         }
 
@@ -223,7 +224,6 @@ class AjaxPaymentController extends ProxyController
                 ],
                 'payPalOrder' => $response,
             ]);
-
         }
 
         $this->outputJson([
@@ -244,11 +244,13 @@ class AjaxPaymentController extends ProxyController
         $session = Registry::getSession();
         $paymentId = $data['paymentId'] ?? $session->getVariable('paymentid');
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        /** @var Logger $logger */
+        $logger = $this->getServiceFromContainer(Logger::class);
         $order = oxNew(Order::class);
         $user = oxNew(User::class);
         /** @var Basket $basket */
         $basket = $session->getBasket();
-        if(null === $basket->getPaymentId()){
+        if (null === $basket->getPaymentId()) {
             $basket->setPayment($paymentId);
             $session->setBasket($basket);
             $session->setVariable('paymentid', $paymentId);
@@ -260,12 +262,12 @@ class AjaxPaymentController extends ProxyController
         $session->setVariable('sess_challenge', Registry::getUtilsObject()->generateUID());
         try {
             //finalizing ordering process (validating, storing order into DB, executing payment, setting status ...)
-            $iSuccess = $order->finalizePayPalOrder($basket, $user);
+            $iSuccess = $order->finalizeOrder($basket, $user);
 
             // performing special actions after user finishes order (assignment to special user groups)
             $user->onOrderExecute($basket, $iSuccess);
         } catch (Exception $exception) {
-            $this->logger->log('error', $exception->getMessage(), [$exception]);
+            $logger->log('error', $exception->getMessage(), [$exception]);
             $this->outputJson(['error' => 'failed to execute shop order']);
             return;
         }
@@ -452,7 +454,7 @@ class AjaxPaymentController extends ProxyController
 
             //capture after shipment or manual
             if ($captureStrategy !== 'directly') {
-                $oOrder->setOrderStatus('NOT_FINISHED');
+                $oOrder->setOrderStatusNotFinished();
                 $oOrder->save();
                 //prepare capture tracking
                 $paymentService->trackPayPalOrder(
@@ -469,7 +471,7 @@ class AjaxPaymentController extends ProxyController
             ]);
         }
 
-        if($vaultPayment) {
+        if ($vaultPayment) {
             //assuming that if there is no error during the request and vaulted was requested it went fine
             Registry::getSession()->setVariable("vaultSuccess", true);
         }
@@ -494,7 +496,7 @@ class AjaxPaymentController extends ProxyController
         }
 
         $basket = Registry::getSession()->getBasket();
-        if(empty($basket->getPaymentId()) && !empty($data['paymentId'])){
+        if (empty($basket->getPaymentId()) && !empty($data['paymentId'])) {
             $basket->setPaymentId($data['paymentId']);
         }
 
@@ -502,7 +504,7 @@ class AjaxPaymentController extends ProxyController
         Registry::getSession()->deleteVariable('sess_challenge');
 
         //finalizing an ordering process (validating, storing order into DB, setting status)
-        $success = $order->finalizePayPalOrder($basket, $user, false);
+        $success = $order->finalizeOrder($basket, $user, false);
 
         Registry::getSession()->setVariable('sess_challenge', $basket->getOrderId());
 
@@ -561,7 +563,8 @@ class AjaxPaymentController extends ProxyController
 
         /** @var \OxidSolutionCatalysts\PayPal\Model\Order $oOrder */
         $order->sendPayPalOrderByEmail(
-            $user, $basket
+            $user,
+            $basket
         );
     }
 

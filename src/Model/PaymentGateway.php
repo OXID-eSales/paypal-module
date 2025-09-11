@@ -10,13 +10,13 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 use Exception;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
-use Psr\Log\LoggerInterface;
 
 /**
  * Class PaymentGateway
@@ -73,15 +73,17 @@ class PaymentGateway extends PaymentGateway_parent
      */
     protected function doExecutePayPalExpressPayment(EshopModelOrder $order): bool
     {
+        /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        /** @var ModuleSettings $moduleSettings */
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
         $intent = $captureStrategy === 'directly' ? OrderRequest::INTENT_CAPTURE : OrderRequest::INTENT_AUTHORIZE;
         $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
         $success = false;
 
-        /** @var LoggerInterface $logger */
-        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        /** @var Logger $logger */
+        $logger = $this->getServiceFromContainer(Logger::class);
 
         if ($checkoutOrderId = PayPalSession::getCheckoutOrderId()) {
             // Update Order
@@ -95,19 +97,19 @@ class PaymentGateway extends PaymentGateway_parent
                 $logger->log('error', 'Error on order patch call.', [$exception]);
             }
 
-        if($intent === OrderRequest::INTENT_AUTHORIZE){
-            $paymentId = (string) $paymentService->getSessionPaymentId();
-            $result = $paymentService->doAuthorizePayment($checkoutOrderId, $order->getId(), $paymentId);
+            if ($intent === OrderRequest::INTENT_AUTHORIZE) {
+                $paymentId = (string) $paymentService->getSessionPaymentId();
+                $result = $paymentService->doAuthorizePayment($checkoutOrderId, $order->getId(), $paymentId);
 
-            if($result['paymentStatus'] === 'success' && $result['status'] === 'success'){
-                $success = true;
-                PayPalSession::unsetPayPalSession();
-            } else {
-                $logger->log('error', 'Error on order authorization call.', [$result]);
+                if ($result['paymentStatus'] === 'success' && $result['status'] === 'success') {
+                    $success = true;
+                    PayPalSession::unsetPayPalSession();
+                } else {
+                    $logger->log('error', 'Error on order authorization call.', [$result]);
+                }
             }
-        }
 
-        if($intent === OrderRequest::INTENT_CAPTURE){
+            if ($intent === OrderRequest::INTENT_CAPTURE) {
                 // Capture Order
                 try {
                     // At this point we only trigger the capture. We find out that order was really captured via the
@@ -129,6 +131,7 @@ class PaymentGateway extends PaymentGateway_parent
 
     protected function doExecutePuiPayment(EshopModelOrder $order): bool
     {
+        /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
         $success = false;
@@ -142,14 +145,12 @@ class PaymentGateway extends PaymentGateway_parent
             );
             PayPalSession::unsetPayPalPuiCmId();
         } catch (Exception $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            /** @var Logger $logger */
+            $logger = $this->getServiceFromContainer(Logger::class);
             $logger->log('error', 'Error on execute pui payment call.', [$exception]);
         }
-        // destroy PayPal-Session
         PayPalSession::unsetPayPalOrderId();
-
-        $this->_sLastError = $paymentService->getPaymentExecutionError();
+        $this->sLastError = $paymentService->getPaymentExecutionError();
 
         return $success;
     }
