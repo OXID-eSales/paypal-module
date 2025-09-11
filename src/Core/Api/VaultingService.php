@@ -433,7 +433,7 @@ class VaultingService extends BaseService
                 $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
                 $this->storeVaultedTokenInCache($result);
             } catch (ApiException | JsonException $e) {
-                $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger')
+                $this->getLogger()
                     ->log('error', __CLASS__ . ' ' . __FUNCTION__ . ' : ' . $e->getMessage());
                 $result = $cachedResult ?: [];
             }
