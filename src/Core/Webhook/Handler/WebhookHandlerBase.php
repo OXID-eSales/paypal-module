@@ -12,7 +12,6 @@ namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Email;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
@@ -198,7 +197,9 @@ abstract class WebhookHandlerBase
 
     protected function getLogger(): LoggerInterface
     {
-        return $this->getServiceFromContainer(Logger::class);
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        return $logger;
     }
 
     abstract protected function getPayPalTransactionIdFromResource(array $eventPayload): string;

@@ -20,7 +20,6 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
-use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -30,20 +29,23 @@ use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
+use Psr\Log\LoggerInterface;
 
 class AjaxPaymentController extends ProxyController
 {
     use JsonTrait;
     use ServiceContainer;
 
-    private Logger $logger;
+    private LoggerInterface $logger;
     private OrderProcessTrackingService $orderProcessTrackingService;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->logger = $this->getServiceFromContainer(Logger::class);
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        $this->logger = $logger;
         $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
     }
 
@@ -241,8 +243,6 @@ class AjaxPaymentController extends ProxyController
         $session = Registry::getSession();
         $paymentId = $data['paymentId'] ?? $session->getVariable('paymentid');
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        /** @var Logger $logger */
-        $logger = $this->getServiceFromContainer(Logger::class);
         $order = oxNew(Order::class);
         $user = oxNew(User::class);
         /** @var Basket $basket */
@@ -264,7 +264,7 @@ class AjaxPaymentController extends ProxyController
             // performing special actions after user finishes order (assignment to special user groups)
             $user->onOrderExecute($basket, $iSuccess);
         } catch (Exception $exception) {
-            $logger->log('error', $exception->getMessage(), [$exception]);
+            $this->logger->log('error', $exception->getMessage(), [$exception]);
             $this->outputJson(['error' => 'failed to execute shop order']);
             return;
         }

@@ -45,9 +45,3 @@ services:
   OxidSolutionCatalysts\PayPal\Service\:
     resource: 'src/Service/*'
     public: true
-
-  OxidSolutionCatalysts\PayPal\Service\Logger:
-    class: OxidSolutionCatalysts\PayPal\Service\Logger
-    public: true
-    arguments:
-      Psr\Log\LoggerInterface: '@OxidSolutionCatalysts\PayPal\Logger'
