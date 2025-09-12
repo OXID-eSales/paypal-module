@@ -61,7 +61,8 @@
             PayPalPayment.reactOnPayPalOverlayClosed = false;
             let result = await PayPalPayment.backendRequest('shopOrderCaptureUrl', {}, {
                 'orderId': data.orderID,
-                'paymentId': PayPalPayment.getConfigValue('paymentId')
+                'paymentId': PayPalPayment.getConfigValue('paymentId'),
+                'vaultPayment': PayPalPayment.currentOrder.vaultPayment
             });
 
             if (result.status === 'error' ){
