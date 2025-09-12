@@ -635,7 +635,8 @@ class Order extends Order_parent
 
         $result = parent::finalizeOrder($basket, $user, $recalculatingOrder);
 
-        if ($this->paymentService->isPayPalPayment() &&
+        if (
+            $this->paymentService->isPayPalPayment() &&
             !$this->isOrderFinished() &&
             !$this->isOrderPaid() &&
             !$this->hasOrderNumber() &&

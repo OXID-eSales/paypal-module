@@ -671,9 +671,9 @@ class Payment
                 $payPalOrder->intent = Constants::PAYPAL_ORDER_INTENT_AUTHORIZE;
 
 
-            $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
+                $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
 
-                if($authorization->status === 'DENIED'){
+                if ($authorization->status === 'DENIED') {
                     return [
                         'status' => 'error',
                         'message' => $language->translateString(
@@ -711,7 +711,6 @@ class Payment
 
                     $session->setVariable("vaultSuccess", $vaultSuccess);
                 }
-
             }
 
             $authorizationId = $authorization->id;
