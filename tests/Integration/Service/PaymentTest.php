@@ -34,11 +34,6 @@ final class PaymentTest extends BaseTestCase
 {
     protected const TEST_USER_ID = 'e7af1c3b786fd02906ccd75698f4e6b9';
     protected const TEST_PRODUCT_ID = 'dc5ffdf380e15674b56dd562a7cb6aec';
-
-    /**
-     * These properties will now be filled in setUp()
-     * by serializing real objects instead of using big hardcoded strings.
-     */
     private string $success3DCard;
     private string $failedAuthentication;
     private string $missingCardAuthentication;
@@ -46,18 +41,11 @@ final class PaymentTest extends BaseTestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        // Build real objects and then serialize them so the existing tests
-        // that call unserialize($this->...) remain unchanged.
-
         $this->success3DCard          = serialize($this->createSuccess3DCardOrder());
         $this->failedAuthentication   = serialize($this->createFailedAuthenticationOrder());
         $this->missingCardAuthentication = serialize($this->createMissingCardAuthenticationOrder());
     }
 
-    /**
-     * Example builder for a "success" 3D-secure card order.
-     */
     private function createSuccess3DCardOrder(): ApiOrderModel
     {
         $order = new ApiOrderModel();
@@ -377,7 +365,7 @@ final class PaymentTest extends BaseTestCase
             ->method('alwaysIgnoreSCAResult')
             ->willReturn($alwaysIgnoreSCAResult);
 
-        $logger = new Logger($this->createMock(LoggerInterface::class));
+        $logger = $this->createMock(LoggerInterface::class);
 
         $paymentService = $this->getMockBuilder(PaymentService::class)
             ->onlyMethods(array_merge(['fetchOrderFields', 'trackPayPalOrder'], $addMockMethods))
