@@ -20,6 +20,7 @@ php-cs-fixer.phar
  recipe/*
  !recipe/parts
  ngrok.yml
+/node_modules/
 /tests/e2e/playwright/.env
 /tests/e2e/playwright/_output
 /tests/e2e/playwright/_generated

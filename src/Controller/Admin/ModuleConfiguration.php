@@ -12,7 +12,6 @@ use GuzzleHttp\Exception\ClientException;
 use JsonException;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
 use OxidSolutionCatalysts\PayPal\Core\LegacyOeppModuleDetails;
@@ -26,6 +25,7 @@ use OxidSolutionCatalysts\PayPal\Module;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
+use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
@@ -225,8 +225,8 @@ class ModuleConfiguration extends ModuleConfiguration_parent
             }
         } catch (ClientException | ApiException $exception) {
 
-            /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer(Logger::class);
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             $logger->log('error', 'Error on checkEligibility', [$exception]);
         }
     }
@@ -380,8 +380,8 @@ class ModuleConfiguration extends ModuleConfiguration_parent
             $payload = $requestReader->getRawPost();
             PayPalSession::storeOnboardingPayload($payload);
         } catch (Exception $exception) {
-            /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer(Logger::class);
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             $logger->log('error', $exception->getMessage(), [$exception]);
         }
 
@@ -401,12 +401,11 @@ class ModuleConfiguration extends ModuleConfiguration_parent
         $credentials = [];
 
         try {
-            /** @var Onboarding $handler */
             $handler = oxNew(Onboarding::class);
             $credentials = $handler->autoConfigurationFromCallback();
         } catch (Exception $exception) {
-            /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer(Logger::class);
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             $logger->log('error', $exception->getMessage(), [$exception]);
         }
         return $credentials;
@@ -422,8 +421,8 @@ class ModuleConfiguration extends ModuleConfiguration_parent
         } catch (OnboardingException $exception) {
             Registry::getUtilsView()->addErrorToDisplay($exception->getMessage());
         } catch (Exception $exception) {
-            /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer(Logger::class);
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             $logger->log('error', $exception->getMessage(), [$exception]);
         }
     }

@@ -6,13 +6,14 @@ use Exception;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use Psr\Log\LoggerInterface;
 
 class GooglePayPayPalService
 {
-    private Logger $logger;
+    private LoggerInterface $logger;
     private ModuleSettings $moduleSettings;
 
-    public function __construct(Logger $logger, ModuleSettings $moduleSettings)
+    public function __construct(LoggerInterface $logger, ModuleSettings $moduleSettings)
     {
         $this->logger = $logger;
         $this->moduleSettings = $moduleSettings;
