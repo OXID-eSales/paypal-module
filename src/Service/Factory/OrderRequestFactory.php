@@ -130,7 +130,8 @@ class OrderRequestFactory
         $vaultingService = $this->getVaultingService();
         $user = Registry::getConfig()->getUser() instanceof User ? Registry::getConfig()->getUser() : null;
         $selectedPaymentToken = $vaultingService->fetchSelectedVaultedPaymentToken(
-            $user, $_POST["useVaultedPayment"]["token"]["id"] ?? null
+            $user,
+            $_POST["useVaultedPayment"]["token"]["id"] ?? null
         );
         $useVaultedPayment = $setVaulting && !is_null($selectedPaymentToken)
             && PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID !== $paymentId;
@@ -610,8 +611,7 @@ class OrderRequestFactory
         ?string $returnUrl = null,
         ?string $cancelUrl = null,
         ?string $userAction = null
-    ): void
-    {
+    ): void {
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $debug = '';
         if ($moduleSettings->isSandbox()) {
@@ -663,7 +663,6 @@ class OrderRequestFactory
                 ];
             }
             $request->payment_source = $newPaymentSource;
-
         } elseif ($user) {
             //save during purchase
             $paypalCustomerId = $user->getFieldData("oscpaypalcustomerid");
@@ -711,18 +710,18 @@ class OrderRequestFactory
                 }
             }
 
-        $newPaymentSource[$paymentSourceId]["experience_context"]["shipping_preference"]
+            $newPaymentSource[$paymentSourceId]["experience_context"]["shipping_preference"]
             = $shippingPreference;
 
-        $newPaymentSource[$paymentSourceId]["experience_context"]["user_action"]
+            $newPaymentSource[$paymentSourceId]["experience_context"]["user_action"]
             = $userAction ?? self::USER_ACTION_PAY_NOW;
 
-        $request->payment_source = $newPaymentSource;
+            $request->payment_source = $newPaymentSource;
         }
 
         //express payments
-        if (!$user){
-            if (empty($request->payment_source->{$paymentSourceId}->experience_context)){
+        if (!$user) {
+            if (empty($request->payment_source->{$paymentSourceId}->experience_context)) {
                 $request->payment_source->{$paymentSourceId}->experience_context = [
                     "shipping_preference" => $shippingPreference,
                     "user_action" => $userAction ?? self::USER_ACTION_CONTINUE
@@ -745,7 +744,8 @@ class OrderRequestFactory
     /**
      * @throws JsonException
      */
-    private function getArrayFromPaymentSource(OrderRequest $request, string $paymentSourceId): array {
+    private function getArrayFromPaymentSource(OrderRequest $request, string $paymentSourceId): array
+    {
         $encodedData = json_encode($request->payment_source->{$paymentSourceId}, JSON_THROW_ON_ERROR);
         return json_decode($encodedData, true, 512, JSON_THROW_ON_ERROR);
     }

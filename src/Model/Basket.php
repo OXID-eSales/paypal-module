@@ -194,7 +194,7 @@ class Basket extends Basket_parent
             $discount += $totalDiscount->getBruttoPrice();
         }
 
-        if ($netMode){
+        if ($netMode) {
             $discount *= 1.0 + $defaultVAT / 100;
         }
 
