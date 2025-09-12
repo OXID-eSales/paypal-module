@@ -268,7 +268,7 @@ final class OrderTest extends BaseTestCase
         ];
 
         $orderServiceMock = $this->createMock(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class);
-        $orderServiceMock->expects($this->exactly(1))
+        $orderServiceMock->expects($this->exactly(2))
             ->method('showOrderDetails')
             ->with($this->equalTo($payPalOrderId))
             ->willReturn($paypalApiOrder);
