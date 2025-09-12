@@ -85,8 +85,7 @@ class Payment
 
     private $logger;
 
-    /** @var \OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService */
-    private $orderProcessTrackingService;
+    private OrderProcessTrackingService $orderProcessTrackingService;
 
     public function __construct(
         EshopSession $eshopSession,
@@ -139,9 +138,11 @@ class Payment
             $paymentSource,
             null,
             $returnUrl,
-            $cancelUrl
+            $cancelUrl,
+            $setProvidedAddress
         );
 
+        $response = null;
         try {
             $response = $orderService->createOrder(
                 $request,
@@ -219,7 +220,7 @@ class Payment
             'status' => $status
         ];
 
-        if ($status === 'PAYER_ACTION_REQUIRED') {
+        if ($status === 'PAYER_ACTION_REQUIRED' || $status === 'CREATED') {
             $return['links'] = $payPalOrder->links;
         }
 
@@ -417,11 +418,7 @@ class Payment
             }
         } catch (Exception $exception) {
             if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
-                $this->logger->log(
-                    'debug',
-                    'Warning on order capture call.',
-                    [$exception->getMessage()]
-                );
+                $this->logger->log('debug', 'Warning on order capture call.', [$exception->getMessage()]);
             }
             throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
         }
@@ -442,7 +439,7 @@ class Payment
         $redirectLink = '';
 
         /** @var OrderRequestFactory $requestFactory */
-        $requestFactory = Registry::get(ConfirmOrderRequestFactory::class);
+        $requestFactory = $this->getServiceFromContainer(OrderRequestFactory::class);
         /** @var ConfirmOrderRequest $request */
         $request = $requestFactory->getRequest(
             $basket,
@@ -551,7 +548,9 @@ class Payment
         return $sessionOrderId &&
             $payPalOrderId &&
             $paymentId &&
-            PayPalDefinitions::isUAPMPayment($paymentId);
+            ((PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId) ||
+                PayPalDefinitions::isUAPMPayment($paymentId)
+            );
     }
 
     /**
@@ -591,73 +590,6 @@ class Payment
             ) {
                 $this->logger->log('error', $exception->getMessage(), [$exception]);
             }
-        }
-
-        //NOTE: payment not fully executed, we need customer interaction first
-        return $redirectLink;
-    }
-
-    /**
-     * @throws PayPalException
-     */
-    public function doExecuteStandardPayment(
-        EshopModelOrder $order,
-        EshopModelBasket $basket,
-        $intent = Constants::PAYPAL_ORDER_INTENT_CAPTURE
-    ): string {
-
-        $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
-
-        //For Standard payment we should not yet have a paypal order in session.
-        //We create a fresh paypal order at this point
-        $config = Registry::getConfig();
-        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
-        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
-
-        $response = $this->doCreatePayPalOrder(
-            $basket,
-            $intent,
-            OrderRequestFactory::USER_ACTION_PAY_NOW,
-            null,
-            null,
-            '',
-            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-            $returnUrl,
-            $cancelUrl,
-            false
-        );
-
-        $orderId = '';
-        if ($response) {
-            $orderId = $response->id ?: '';
-        }
-
-        if (!$orderId) {
-            $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
-            throw PayPalException::createPayPalOrderFail();
-        }
-
-        PayPalSession::storePayPalOrderId($orderId);
-
-        if (!isset($response->links)) {
-            throw PayPalException::sessionPaymentMalformedResponse();
-        }
-        foreach ($response->links as $links) {
-            if ($links['rel'] === 'approve' || $links['rel'] === 'payer-action') {
-                $redirectLink = $links['href'];
-                break;
-            }
-        }
-
-        //no customer interaction needed if a vaulted payment is used
-        if ($response->status === Constants::PAYPAL_STATUS_COMPLETED) {
-            return $returnUrl . "&vaulting=true";
-        }
-
-        if (!$redirectLink) {
-            PayPalSession::unsetPayPalSession();
-            $this->removeTemporaryOrder();
-            throw PayPalException::sessionPaymentMissingRedirectLink();
         }
 
         //NOTE: payment not fully executed, we need customer interaction first
@@ -933,12 +865,7 @@ class Payment
     public function verify3D(string $paymentId, Order $payPalOrder): bool
     {
         //no ACDC OR Gpay payment
-        if (
-            !in_array(
-                $paymentId,
-                [PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID, PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID]
-            )
-        ) {
+        if (!in_array($paymentId, [PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID, PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID])) {
             return true;
         }
         //case no check is needed
@@ -1027,8 +954,8 @@ class Payment
     }
 
     /**
-     * @param $basket
-     * @return array
+     * @param EshopModelBasket $basket
+     * @return string
      */
     public function getCurrentOrderNumber(EshopModelBasket $basket): string
     {

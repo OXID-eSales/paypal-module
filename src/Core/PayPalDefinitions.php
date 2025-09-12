@@ -80,6 +80,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
             'buttonpayment' => false,
+            'proxycontroller' => true,
             'defaulton' => true,
             'vaultingtype' => self::PAYMENT_SOURCE_PAYPAL,
             'paymentsource' => self::PAYMENT_SOURCE_PAYPAL
@@ -103,6 +104,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
             'buttonpayment' => false,
+            'proxycontroller' => true,
             'defaulton' => true,
             'paymentsource' => self::PAYMENT_SOURCE_GOOGLEPAY
         ],
@@ -125,6 +127,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
             'buttonpayment' => false,
+            'proxycontroller' => true,
             'defaulton' => true,
             'paymentsource' => self::PAYMENT_SOURCE_APPLEPAY
         ],
@@ -170,6 +173,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
             'buttonpayment' => true,
+            'proxycontroller' => false,
             'defaulton' => true,
             'paymentsource' => self::PAYMENT_SOURCE_PAYPAL
         ],
@@ -191,8 +195,9 @@ final class PayPalDefinitions
             'countries' => ['DE'],
             'currencies' => ['EUR'],
             'constraints' => self::PAYMENT_CONSTRAINTS_PUI,
-            'onlybrutto' => true,
+            'onlybrutto' => false,
             'buttonpayment' => false,
+            'proxycontroller' => false,
             'defaulton' => true,
             'paymentsource' => self::PAYMENT_SOURCE_PUI
         ],
@@ -216,6 +221,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
             'buttonpayment' => true,
+            'proxycontroller' => false,
             'defaulton' => true,
             'paymentsource' => self::PAYMENT_SOURCE_PAYPAL
         ],
@@ -239,6 +245,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
             'buttonpayment' => true,
+            'proxycontroller' => false,
             'defaulton' => false,
             'deprecated' => false,
             'paymentsource' => self::PAYMENT_SOURCE_PAYPAL
@@ -263,6 +270,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
             'buttonpayment' => false,
+            'proxycontroller' => false,
             'defaulton' => true,
             'vaultingtype' => self::PAYMENT_SOURCE_CARD,
             'paymentsource' => self::PAYMENT_SOURCE_CARD
@@ -299,6 +307,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,
             'onlybrutto' => false,
             'buttonpayment' => false,
+            'proxycontroller' => false,
             'defaulton' => true,
             'paymentsource' => 'bancontact'
         ],
@@ -336,6 +345,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,
             'onlybrutto' => false,
             'buttonpayment' => false,
+            'proxycontroller' => false,
             'defaulton' => true,
             'paymentsource' => 'blik'
         ],
@@ -368,6 +378,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,
             'onlybrutto' => false,
             'buttonpayment' => false,
+            'proxycontroller' => false,
             'defaulton' => true,
             'paymentsource' => 'eps'
         ],
@@ -401,6 +412,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,
             'onlybrutto' => false,
             'buttonpayment' => false,
+            'proxycontroller' => false,
             'defaulton' => false,
             'deprecated' => true,
             'paymentsource' => 'giropay'
@@ -438,6 +450,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,
             'onlybrutto' => false,
             'buttonpayment' => false,
+            'proxycontroller' => false,
             'defaulton' => true,
             'paymentsource' => 'ideal'
         ],
@@ -467,6 +480,7 @@ final class PayPalDefinitions
             'constraints' => self::PAYMENT_CONSTRAINTS_UAPM,
             'onlybrutto' => false,
             'buttonpayment' => false,
+            'proxycontroller' => false,
             'defaulton' => true,
             'paymentsource' => 'p24'
         ],
@@ -519,6 +533,12 @@ final class PayPalDefinitions
             false;
     }
 
+    public static function isProxyControllerPayment(string $oxid): bool
+    {
+        return (isset(self::PAYPAL_DEFINTIONS[$oxid])) ?
+            self::PAYPAL_DEFINTIONS[$oxid]['proxycontroller'] :
+            false;
+    }
     public static function getPaymentSourceRequestName(string $oxid): string
     {
         $mapping = [
@@ -527,6 +547,9 @@ final class PayPalDefinitions
             self::PAYMENT_SOURCE_CARD => 'oscpaypal_acdc'
         ];
 
+        if ($oxid === self::PAYMENT_SOURCE_PUI) {
+            $oxid = self::PUI_PAYPAL_PAYMENT_ID;
+        }
         $return = array_key_exists($oxid, self::PAYPAL_DEFINTIONS) ?
             self::PAYPAL_DEFINTIONS[$oxid]['paymentsource'] :
             self::PAYPAL_DEFINTIONS[$mapping[$oxid]]['paymentsource'];

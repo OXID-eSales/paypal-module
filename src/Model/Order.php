@@ -158,7 +158,6 @@ class Order extends Order_parent
             throw PayPalException::cannotFinalizeOrderAfterExternalPaymentSuccess($payPalOrderId);
         }
 
-        /** @var PaymentService $paymentService */
         $paymentsId = (string) $this->getFieldData('oxpaymenttype');
         if (!$this->paymentService->isPayPalPayment($paymentsId)) {
             throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
@@ -335,6 +334,10 @@ class Order extends Order_parent
     protected function _executePayment(Basket $basket, $userpayment)
     {
         $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
+
+        if (PayPalDefinitions::isProxyControllerPayment($sessionPaymentId)) {
+            return true;
+        }
 
         $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($sessionPaymentId);
 
@@ -676,8 +679,14 @@ class Order extends Order_parent
 
         $result = parent::finalizeOrder($basket, $user, $recalculatingOrder);
 
-        if ($this->paymentService->isPayPalPayment()) {
-            $oSession->deleteVariable('isPayPalPaymentCheckout');
+        if (
+            $this->paymentService->isPayPalPayment() &&
+            !$this->isOrderFinished() &&
+            !$this->isOrderPaid() &&
+            !$this->hasOrderNumber() &&
+            $this->isWaitForWebhookTimeoutReached()
+        ) {
+            return self::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS;
         }
 
         return $result;
@@ -763,6 +772,24 @@ class Order extends Order_parent
         }
 
         return parent::delete($sOxId);
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * @param string $sStatus order transaction status
+     */
+    protected function _setOrderStatus($sStatus)
+    {
+        // The status "OK" is set in PayPalCheckout by the markOrderAsPaid method.
+        // Therefore, it is intercepted here.
+        if (
+            $sStatus === 'OK' &&
+            Registry::getSession()->getVariable('isPayPalPaymentCheckout')
+        ) {
+            return;
+        }
+        parent::_setOrderStatus($sStatus);
     }
 
     public function setOrderProcessTrackingService(OrderProcessTrackingService $orderProcessTrackingService): void
