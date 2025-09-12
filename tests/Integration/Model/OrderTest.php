@@ -19,7 +19,6 @@ use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
-use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
@@ -29,6 +28,7 @@ use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPal\Model\Order as PaypalOrder;
+use Psr\Log\LoggerInterface;
 
 final class OrderTest extends BaseTestCase
 {
@@ -287,7 +287,7 @@ final class OrderTest extends BaseTestCase
             $this->createMock(OrderRepository::class),
             $this->createMock(SCAValidatorInterface::class),
             $this->createMock(ModuleSettings::class),
-            $this->createMock(Logger::class),
+            $this->createMock(LoggerInterface::class),
             $this->createMock(OrderProcessTrackingService::class),
             $serviceFactoryMock,
             EshopRegistry::get(PatchRequestFactory::class),
@@ -351,7 +351,7 @@ final class OrderTest extends BaseTestCase
             $this->createMock(OrderRepository::class),
             $this->createMock(SCAValidatorInterface::class),
             $this->createMock(ModuleSettings::class),
-            $this->createMock(Logger::class),
+            $this->createMock(LoggerInterface::class),
             $this->createMock(OrderProcessTrackingService::class),
             $serviceFactoryMock,
             EshopRegistry::get(PatchRequestFactory::class),
@@ -432,7 +432,7 @@ final class OrderTest extends BaseTestCase
             $this->createMock(OrderRepository::class),
             $this->createMock(SCAValidatorInterface::class),
             $this->createMock(ModuleSettings::class),
-            $this->createMock(Logger::class),
+            $this->createMock(LoggerInterface::class),
             $this->createMock(OrderProcessTrackingService::class),
             $serviceFactoryMock,
             EshopRegistry::get(PatchRequestFactory::class),
@@ -477,7 +477,7 @@ final class OrderTest extends BaseTestCase
             $this->createMock(OrderRepository::class),
             $this->createMock(SCAValidatorInterface::class),
             $this->createMock(ModuleSettings::class),
-            $this->createMock(Logger::class),
+            $this->createMock(LoggerInterface::class),
             $this->createMock(OrderProcessTrackingService::class),
             $serviceFactoryMock,
             EshopRegistry::get(PatchRequestFactory::class),
