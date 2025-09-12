@@ -192,12 +192,12 @@ class Order extends Order_parent
                 if ($result['paymentStatus'] === 'success' && $result['status'] === 'success') {
                     PayPalSession::unsetPayPalSession();
                 } else {
-                    $this->_setOrderStatus('ERROR');
+                    $this->setOrderStatus('ERROR');
                     $logger->log('error', 'Error on order authorization call.', [$result]);
                     throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
                 }
             } catch (Exception $exception) {
-                $this->_setOrderStatus('ERROR');
+                $this->setOrderStatus('ERROR');
                 throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
             }
 
