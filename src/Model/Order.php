@@ -726,6 +726,4 @@ class Order extends Order_parent
     {
         parent::setOrderStatus('NOT_FINISHED');
     }
-
-
 }

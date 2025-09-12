@@ -26,6 +26,7 @@ use Psr\Log\LoggerInterface;
 class VaultingService extends BaseService
 {
     use ServiceContainer;
+
     private OrderProcessTrackingService $orderProcessTrackingService;
     public function __construct(OrderProcessTrackingService $orderProcessTrackingService, Client $client)
     {
