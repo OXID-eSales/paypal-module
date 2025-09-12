@@ -14,7 +14,6 @@ use OxidSolutionCatalysts\PayPal\Core\Config as PayPalConfig;
 use OxidSolutionCatalysts\PayPal\Core\PartnerConfig;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
-use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
@@ -69,10 +68,8 @@ class Onboarding
 
             $credentials = $apiClient->getCredentials();
         } catch (ApiException $exception) {
-            /**
-             * @var Logger $logger
-            */
-            $logger = $this->getServiceFromContainer(Logger::class);
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             $logger->log('error', $exception->getMessage(), [$exception]);
         }
         return $credentials;
