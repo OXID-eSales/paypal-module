@@ -837,6 +837,24 @@ class Order extends Order_parent
         parent::setOrderStatus('NOT_FINISHED');
     }
 
+    /**
+     * @inheritdoc
+     *
+     * @param string $sStatus order transaction status
+     */
+    protected function setOrderStatus($sStatus)
+    {
+        // The status "OK" is set in PayPalCheckout by the markOrderAsPaid method.
+        // Therefore, it is intercepted here.
+        if (
+            $sStatus === 'OK' &&
+            Registry::getSession()->getVariable('isPayPalPaymentCheckout')
+        ) {
+            return;
+        }
+        parent::setOrderStatus($sStatus);
+    }
+
     public function setOrderProcessTrackingService(OrderProcessTrackingService $orderProcessTrackingService): void
     {
         $this->orderProcessTrackingService = $orderProcessTrackingService;
