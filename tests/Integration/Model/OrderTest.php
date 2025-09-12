@@ -196,7 +196,7 @@ final class OrderTest extends BaseTestCase
 
         $orderMock = $this->patchMock($orderMock);
         $orderMock->setPaymentService($paymentServiceMock);
-
+        $orderMock->setLogger($this->createMock(LoggerInterface::class));
         $session = EshopRegistry::getSession();
         $session->setVariable('sess_challenge', 'test_challenge');
         EshopRegistry::set(Session::class, $session);
