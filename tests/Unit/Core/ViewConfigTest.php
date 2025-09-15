@@ -17,9 +17,6 @@ use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Module as OscPayPalModule;
 use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
 
-/**
- * Testing \OxidSolutionCatalysts\PayPal\Core\ViewConfig class.
- */
 final class ViewConfigTest extends TestCase
 {
     /**
