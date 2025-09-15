@@ -725,7 +725,7 @@ class OrderRequestFactory
         }
     }
 
-    private function getVaultingService()
+    public function getVaultingService()
     {
         return Registry::get(ServiceFactory::class)->getVaultingService();
     }

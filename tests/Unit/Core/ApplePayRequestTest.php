@@ -15,39 +15,34 @@ use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Config;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session;
-use OxidEsales\TestingLibrary\UnitTestCase;
+use OxidEsales\EshopCommunity\Tests\ContainerTrait;
 use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
+use OxidSolutionCatalysts\PayPal\Core\Api\VaultingServiceInterface;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
 
-class ApplePayRequestTest extends UnitTestCase
+class ApplePayRequestTest extends TestCase
 {
-    use \OxidEsales\EshopCommunity\Tests\Integration\Internal\ContainerTrait;
+    use ContainerTrait;
 
-    /** @var OrderRequestFactory */
-    private $orderRequestFactory;
+    private OrderRequestFactory $orderRequestFactory;
 
-    /** @var MockObject|VaultingService */
-    private $vaultingServiceMock;
+    private VaultingServiceInterface $vaultingServiceMock;
 
-    /** @var MockObject|Basket */
-    private $basketMock;
+    private MockObject|Basket $basketMock;
 
-    /** @var MockObject|Session */
-    private $sessionMock;
+    private MockObject|Session  $sessionMock;
 
-    /** @var MockObject|Config */
-    private $configMock;
+    private MockObject|Config $configMock;
 
-    /** @var MockObject|Country */
-    private $countryMock;
+    private MockObject|Country $countryMock;
 
-    /** @var MockObject|ModuleSettings */
-    private $moduleSettingsMock;
+    private MockObject|ModuleSettings $moduleSettingsMock;
 
     public function setUp(): void
     {
@@ -88,7 +83,7 @@ class ApplePayRequestTest extends UnitTestCase
             ]);
 
 
-        $this->vaultingServiceMock = $this->createMock(VaultingService::class);
+        $this->vaultingServiceMock = $this->createMock(VaultingServiceInterface::class);
         $this->basketMock = $this->createMock(Basket::class);
         $this->userMock = oxNew(User::class);
         $this->userMock->assign([
