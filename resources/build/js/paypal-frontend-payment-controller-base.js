@@ -41,7 +41,6 @@
             }
 
             PayPalPayment.currentOrder[orderType] = response;
-            PayPalPayment.config.purchaseUnits.custom_id = response.customId;
         };
 
         this.getCurrentOrderData = function (name, orderType) {
