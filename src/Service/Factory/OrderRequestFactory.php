@@ -118,6 +118,8 @@ class OrderRequestFactory
         $request = $this->request = new OrderRequest();
         $this->setBasket($basket);
 
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $isVaulting = $moduleSettings->getIsVaultingActive();
         $withItems = !$this->basket->isCalculationModeNetto();
         $paymentId = Registry::getSession()->getVariable('paymentid');
         $paymentSourceId = PayPalDefinitions::getPaymentSourceRequestName($paymentId);

@@ -56,8 +56,7 @@ class InputValidator extends InputValidator_parent
                     'OSC_PAYPAL_PAY_EXPRESS_ERROR_INPUTVALIDATION'
                 )
             );
-            // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore: StandardException
-            $this->_addValidationError($validationErrorKey, $exception);
+            $this->addValidationError($validationErrorKey, $exception);
         }
     }
 }
