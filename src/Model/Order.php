@@ -413,6 +413,7 @@ class Order extends Order_parent
             $logger->log('error', "Error on order capture call.", [$exception]);
         }
 
+        // destroy PayPal-Session
         PayPalSession::unsetPayPalOrderId();
 
         return $success;
