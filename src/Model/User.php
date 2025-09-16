@@ -115,10 +115,16 @@ class User extends User_parent
         return $result;
     }
 
+    public function resetAddresses(): void
+    {
+        $this->_aAddresses = [];
+    }
+
     /**
      * @param string $userName
      *
      * @return false|string
+     * @throws \OxidEsales\Eshop\Core\Exception\DatabaseConnectionException
      */
     private function getUserIdByPayPalAddress(string $userName)
     {

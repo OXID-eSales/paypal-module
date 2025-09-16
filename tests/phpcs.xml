@@ -3,8 +3,7 @@
     <description>Oxid Coding Standard</description>
 
     <!-- Paths to check -->
-    <file>../src/</file>
-    <file>./</file>
+    <file>../src</file>
     <file>../translations</file>
     <file>../migration</file>
 

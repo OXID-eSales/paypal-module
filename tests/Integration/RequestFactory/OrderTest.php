@@ -23,6 +23,7 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 final class OrderTest extends BaseTestCase
 {
     use ServiceContainer;
+
     protected const TEST_USER_ID = 'e7af1c3b786fd02906ccd75698f4e6b9';
 
     protected const TEST_PRODUCT_ID = 'dc5ffdf380e15674b56dd562a7cb6aec';
@@ -100,7 +101,7 @@ final class OrderTest extends BaseTestCase
             OrderRequestFactory::USER_ACTION_CONTINUE,
             '',
             Constants::PAYPAL_PUI_PROCESSING_INSTRUCTIONS,
-            PayPalDefinitions::PAYMENT_SOURCE_PUI,
+            PayPalDefinitions::PAYMENT_SOURCE_PUI
         );
     }
 }

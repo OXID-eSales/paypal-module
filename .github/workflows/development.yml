@@ -226,6 +226,7 @@ jobs:
             source/test-module/tests/reports/phpstan.report.json
             source/test-module/tests/reports/phpmd.report.json
 
+
   unit_tests:
     strategy:
       fail-fast: false
@@ -478,4 +479,3 @@ jobs:
             source/test-module/tests/e2e/playwright/_output/
             source/test-module/tests/e2e/playwright/_generated/
             source/test-module/tests/e2e/playwright/_screenshots/
-

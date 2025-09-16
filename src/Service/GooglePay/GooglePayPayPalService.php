@@ -28,7 +28,10 @@ class GooglePayPayPalService
             $order->finalizeOrderAfterExternalPayment($payPalOrderId, $forceFetchDetails);
             return true;
         } catch (Exception $exception) {
-            if ($this->moduleSettings->getPayPalDebugLevel() === 'debug' || $this->moduleSettings->getPayPalDebugLevel() === 'error') {
+            if (
+                $this->moduleSettings->getPayPalDebugLevel() === 'debug'
+                || $this->moduleSettings->getPayPalDebugLevel() === 'error'
+            ) {
                 $this->logger->log(
                     'error',
                     __CLASS__ . ': failure during finalizeOrderAfterExternalPayment',
