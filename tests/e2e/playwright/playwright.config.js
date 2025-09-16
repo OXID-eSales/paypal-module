@@ -34,7 +34,7 @@ module.exports = defineConfig({
             use: {
                 browserName: 'chromium', // 'chromium' is the default for Google Chrome as well
                 // Configure viewport
-                viewport: { width: 1280, height: 3000 },
+                viewport: { width: 1380, height: 1000 },
                 // Record video and screenshots
                 video: 'on-first-retry',
                 screenshot: 'only-on-failure',
