@@ -19,8 +19,6 @@ use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Model\BaseModel;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Module;
-use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -38,6 +36,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders;
+use Psr\Log\LoggerInterface;
 
 /**
  * PayPal Eshop model order class
@@ -49,10 +48,17 @@ class Order extends Order_parent
     use ServiceContainer;
 
     private ?OrderProcessTrackingService $orderProcessTrackingService;
-
     private ?ModuleSettings $moduleSettings;
 
     private ?PaymentService $paymentService;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
+        $this->moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $this->paymentService = $this->getServiceFromContainer(PaymentService::class);
+    }
 
     /**
      * Uapm payment in progress
@@ -103,22 +109,35 @@ class Order extends Order_parent
      */
     public const ORDER_STATE_NEED_CALL_ACDC_FINALIZE = 800;
 
-    protected ?PayPalApiOrder $payPalApiOrder = null;
+    /**
+     * PayPal order information
+     * @var null|PayPalApiOrder $payPalApiOrder
+     */
+    protected $payPalApiOrder = null;
 
-    protected ?string $payPalOrderId = null;
+    /**
+     * PayPal order Id
+     * @var null|string
+     */
+    protected $payPalOrderId = null;
 
-    protected PayPalOrder $payPalOrder;
+    /**
+     * PayPal order Repo
+     * @var PayPalOrder $payPalOrder
+     */
+    protected $payPalOrder;
 
-    protected ?string $payPalPlusOrderId = null;
-    protected ?string $payPalSoapOrderId = null;
+    /**
+     * PayPalPlus order Id
+     * @var null|string
+     */
+    protected $payPalPlusOrderId = null;
 
-    public function __construct()
-    {
-        parent::__construct();
-        $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
-        $this->moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $this->paymentService = $this->getServiceFromContainer(PaymentService::class);
-    }
+    /**
+     * PayPalPlus order Id
+     * @var null|string
+     */
+    protected $payPalSoapOrderId = null;
 
     public function savePuiInvoiceNr(string $invoiceNr): void
     {
@@ -181,15 +200,16 @@ class Order extends Order_parent
             PayPalSession::unsetPayPalOrderId();
         } elseif (
             ($isPayPalStandard || $isPayPalACDC ) &&
-            $this->moduleSettings->getPayPalStandardCaptureStrategy() !== 'directly'
+            $this->moduleSettings
+                ->getPayPalStandardCaptureStrategy() !== 'directly'
         ) {
             $paymentId = (string) $this->paymentService->getSessionPaymentId();
 
             try {
                 $result = $this->paymentService->doAuthorizePayment($payPalOrderId, $this->getId(), $paymentId);
 
-                /** @var Logger $logger */
-                $logger = $this->getServiceFromContainer(Logger::class);
+                /** @var LoggerInterface $logger */
+                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
                 if ($result['paymentStatus'] === 'success' && $result['status'] === 'success') {
                     PayPalSession::unsetPayPalSession();
                 } else {
@@ -204,7 +224,7 @@ class Order extends Order_parent
 
             $transactionId = '';
 
-            $this->setOrderStatus('NOT_FINISHED');
+            $this->_setOrderStatus('NOT_FINISHED');
             $this->paymentService->trackPayPalOrder(
                 $this->getId(),
                 $payPalOrderId,
@@ -232,7 +252,7 @@ class Order extends Order_parent
                         Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                     );
                 } catch (ApiException $exception) {
-                    $this->setOrderStatus('ERROR');
+                    $this->_setOrderStatus('ERROR');
                     throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
                 }
             }
@@ -256,40 +276,50 @@ class Order extends Order_parent
         $userPayment->load($this->getFieldData('oxpaymentid'));
 
         Registry::getSession()->setVariable('blDontCheckProductStockForPayPalMails', true);
-        $this->sendOrderByEmail($user, $basket, $userPayment);
+        $this->_sendOrderByEmail($user, $basket, $userPayment);
         Registry::getSession()->deleteVariable('blDontCheckProductStockForPayPalMails');
     }
 
     /**
      * @inheritDoc
      *
-     * @param \OxidEsales\Eshop\Application\Model\User        $oUser    order user
+     * @param User $oUser    order user
      * @param \OxidEsales\Eshop\Application\Model\Basket      $oBasket  current order basket
      * @param \OxidEsales\Eshop\Application\Model\UserPayment $oPayment order payment
      *
      * @return bool
      */
-    protected function sendOrderByEmail($oUser = null, $oBasket = null, $oPayment = null)
+    protected function _sendOrderByEmail($oUser = null, $oBasket = null, $oPayment = null)
     {
         if (Registry::getSession()->getVariable('isPayPalPaymentCheckout')) {
             return self::ORDER_STATE_OK;
         }
 
-        return parent::sendOrderByEmail($oUser, $oBasket, $oPayment);
+        return parent::_sendOrderByEmail($oUser, $oBasket, $oPayment);
     }
 
     //TODO: this place should be refactored in shop core
     protected function afterOrderCleanUp(Basket $basket, User $user): void
     {
+        // deleting remark info only when order is finished
         Registry::getSession()->deleteVariable('ordrem');
+
+        // store orderid
         $basket->setOrderId($this->getId());
-        $this->updateWishlist($basket->getContents(), $user);
-        $this->updateNoticeList($basket->getContents(), $user);
-        $this->markVouchers($basket, $user);
+
+        // updating wish lists
+        $this->_updateWishlist($basket->getContents(), $user);
+
+        // updating users notice list
+        $this->_updateNoticeList($basket->getContents(), $user);
+
+        // marking vouchers as used and sets them to $this->_aVoucherList (will be used in order email)
+        // skipping this action in case of order recalculation
+        $this->_markVouchers($basket, $user);
     }
 
     /**
-     * Executes payment. Additionally, loads oxPaymentGateway object, initiates
+     * Executes payment. Additionally loads oxPaymentGateway object, initiates
      * it by adding payment parameters (oxPaymentGateway::setPaymentParams())
      * and finally executes it (oxPaymentGateway::executePayment()). On failure -
      * deletes order and returns * error code 2.
@@ -300,9 +330,14 @@ class Order extends Order_parent
      * @return  integer 2 or an error code
      * @deprecated underscore prefix violates PSR12, will be renamed to "executePayment" in next major
      */
-    protected function executePayment(Basket $basket, $userpayment)
+    // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+    protected function _executePayment(Basket $basket, $userpayment)
     {
         $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
+
+        if (PayPalDefinitions::isProxyControllerPayment($sessionPaymentId)) {
+            return true;
+        }
 
         $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($sessionPaymentId);
 
@@ -331,7 +366,7 @@ class Order extends Order_parent
             return true;
         }
 
-        return parent::executePayment($basket, $userpayment);
+        return parent::_executePayment($basket, $userpayment);
     }
 
     /**
@@ -365,15 +400,20 @@ class Order extends Order_parent
         $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
         $success = false;
 
+        // Capture Order
         try {
-            $this->paymentService->doCapturePayPalOrder($this, $payPalOrderId, $sessionPaymentId);
+            // At this point we only trigger the capture. We find out that order was really captured via the
+            // CHECKOUT.ORDER.COMPLETED webhook, where we mark the order as paid
+            $order = $this->paymentService->doCapturePayPalOrder($this, $payPalOrderId, $sessionPaymentId);
+            // success means at this point, that we triggered the capture without errors
             $success = true;
         } catch (Exception $exception) {
-            /** @var Logger $logger */
-            $logger = $this->getServiceFromContainer(Logger::class);
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             $logger->log('error', "Error on order capture call.", [$exception]);
         }
 
+        // destroy PayPal-Session
         PayPalSession::unsetPayPalOrderId();
 
         return $success;
@@ -405,7 +445,7 @@ class Order extends Order_parent
      */
     public function markOrderPaid(): void
     {
-        $this->setOrderStatus('OK');
+        $this->_setOrderStatus('OK');
 
         $db = DatabaseProvider::getDb();
         $utilsDate = Registry::getUtilsDate();
@@ -434,7 +474,7 @@ class Order extends Order_parent
 
     public function markOrderPaymentFailed(): void
     {
-        $this->setOrderStatus('ERROR');
+        $this->_setOrderStatus('ERROR');
     }
 
     /**
@@ -567,11 +607,16 @@ class Order extends Order_parent
     public function setOrderNumber(): void
     {
         if (!$this->hasOrderNumber()) {
-            $this->setNumber();
+            $this->_setNumber();
         } else {
             oxNew(EshopCoreCounter::class)
-                ->update($this->getCounterIdent(), $this->getFieldData('oxordernr'));
+                ->update($this->_getCounterIdent(), $this->getFieldData('oxordernr'));
         }
+    }
+
+    public function setOrderStatus($sStatus): void
+    {
+        $this->_setOrderStatus($sStatus);
     }
 
     public function isOrderFinished(): bool
@@ -606,7 +651,8 @@ class Order extends Order_parent
      */
     public function finalizeOrder(Basket $basket, $user, $recalculatingOrder = false)
     {
-        $logger = $this->getServiceFromContainer(Logger::class);
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
         $logger->log('debug', 'finalizeOrder');
 
         $oSession = Registry::getSession();
@@ -633,8 +679,14 @@ class Order extends Order_parent
 
         $result = parent::finalizeOrder($basket, $user, $recalculatingOrder);
 
-        if ($this->paymentService->isPayPalPayment()) {
-            $oSession->deleteVariable('isPayPalPaymentCheckout');
+        if (
+            $this->paymentService->isPayPalPayment() &&
+            !$this->isOrderFinished() &&
+            !$this->isOrderPaid() &&
+            !$this->hasOrderNumber() &&
+            $this->isWaitForWebhookTimeoutReached()
+        ) {
+            return self::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS;
         }
 
         return $result;
@@ -722,10 +774,36 @@ class Order extends Order_parent
         return parent::delete($sOxId);
     }
 
-    public function setOrderStatusNotFinished(): void
+    /**
+     * @inheritdoc
+     *
+     * @param string $sStatus order transaction status
+     */
+    protected function _setOrderStatus($sStatus)
     {
-        parent::setOrderStatus('NOT_FINISHED');
+        // The status "OK" is set in PayPalCheckout by the markOrderAsPaid method.
+        // Therefore, it is intercepted here.
+        if (
+            $sStatus === 'OK' &&
+            Registry::getSession()->getVariable('isPayPalPaymentCheckout')
+        ) {
+            return;
+        }
+        parent::_setOrderStatus($sStatus);
     }
 
+    public function setOrderProcessTrackingService(OrderProcessTrackingService $orderProcessTrackingService): void
+    {
+        $this->orderProcessTrackingService = $orderProcessTrackingService;
+    }
 
+    public function setModuleSettings(ModuleSettings $moduleSettings): void
+    {
+        $this->moduleSettings = $moduleSettings;
+    }
+
+    public function setPaymentService(PaymentService $paymentService): void
+    {
+        $this->paymentService = $paymentService;
+    }
 }

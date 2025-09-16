@@ -23,7 +23,7 @@ use OxidSolutionCatalysts\PayPal\Core\Constants as PayPalConstants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Model\Order;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
-use OxidSolutionCatalysts\PayPal\Service\Logger;
+use OxidSolutionCatalysts\PayPal\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;

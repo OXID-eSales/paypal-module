@@ -15,12 +15,11 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Field;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Core\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
-use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -30,13 +29,14 @@ use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
+use Psr\Log\LoggerInterface;
 
 class AjaxPaymentController extends ProxyController
 {
     use JsonTrait;
     use ServiceContainer;
 
-    private Logger $logger;
+    private LoggerInterface $logger;
     private OrderProcessTrackingService $orderProcessTrackingService;
 
     public function __construct()
@@ -46,7 +46,6 @@ class AjaxPaymentController extends ProxyController
         /** @var LoggerInterface $logger */
         $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
         $this->logger = $logger;
-
         $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
     }
 
@@ -244,8 +243,6 @@ class AjaxPaymentController extends ProxyController
         $session = Registry::getSession();
         $paymentId = $data['paymentId'] ?? $session->getVariable('paymentid');
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        /** @var Logger $logger */
-        $logger = $this->getServiceFromContainer(Logger::class);
         $order = oxNew(Order::class);
         $user = oxNew(User::class);
         /** @var Basket $basket */
@@ -267,7 +264,7 @@ class AjaxPaymentController extends ProxyController
             // performing special actions after user finishes order (assignment to special user groups)
             $user->onOrderExecute($basket, $iSuccess);
         } catch (Exception $exception) {
-            $logger->log('error', $exception->getMessage(), [$exception]);
+            $this->logger->log('error', $exception->getMessage(), [$exception]);
             $this->outputJson(['error' => 'failed to execute shop order']);
             return;
         }
@@ -333,7 +330,10 @@ class AjaxPaymentController extends ProxyController
 
         if (is_null($shopOrderId)) {
             $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-            if ($moduleSettings->getPayPalDebugLevel() === 'debug' || $moduleSettings->getPayPalDebugLevel() === 'error') {
+            if (
+                $moduleSettings->getPayPalDebugLevel() === 'debug'
+                || $moduleSettings->getPayPalDebugLevel() === 'error'
+            ) {
                 $this->logger->log('error', sprintf($message));
             }
             $this->outputJson([
@@ -349,7 +349,10 @@ class AjaxPaymentController extends ProxyController
 
         if ($order->oxorder__oxuserid->value !== $user->getId()) {
             $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-            if ($moduleSettings->getPayPalDebugLevel() === 'debug' || $moduleSettings->getPayPalDebugLevel() === 'error') {
+            if (
+                $moduleSettings->getPayPalDebugLevel() === 'debug'
+                || $moduleSettings->getPayPalDebugLevel() === 'error'
+            ) {
                 $this->logger->log('error', sprintf($message));
             }
             $this->outputJson([
@@ -370,8 +373,14 @@ class AjaxPaymentController extends ProxyController
         $shopOrderId = $data['shopOrderId'];
         if (empty($shopOrderId)) {
             $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-            if ($moduleSettings->getPayPalDebugLevel() === 'debug' || $moduleSettings->getPayPalDebugLevel() === 'error') {
-                $this->logger->log('error', __CLASS__ . '::' . __FUNCTION__ . '(): Shop order id is empty');
+            if (
+                $moduleSettings->getPayPalDebugLevel() === 'debug'
+                || $moduleSettings->getPayPalDebugLevel() === 'error'
+            ) {
+                $this->logger->log(
+                    'error',
+                    __CLASS__ . '::' . __FUNCTION__ . '(): Shop order id is empty'
+                );
             }
         }
 
@@ -454,7 +463,7 @@ class AjaxPaymentController extends ProxyController
 
             //capture after shipment or manual
             if ($captureStrategy !== 'directly') {
-                $oOrder->setOrderStatusNotFinished();
+                $oOrder->setOrderStatus('NOT_FINISHED');
                 $oOrder->save();
                 //prepare capture tracking
                 $paymentService->trackPayPalOrder(

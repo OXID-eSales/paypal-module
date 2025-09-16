@@ -10,7 +10,7 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 use Exception;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Service\Logger;
+use OxidSolutionCatalysts\PayPal\Logger;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;

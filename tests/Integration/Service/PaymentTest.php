@@ -19,7 +19,7 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings as ModuleSettingsService;
 use OxidSolutionCatalysts\PayPal\Service\SCAValidator;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
-use OxidSolutionCatalysts\PayPal\Service\Logger;
+use OxidSolutionCatalysts\PayPal\Logger;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse;
