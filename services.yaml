@@ -45,7 +45,3 @@ services:
   OxidSolutionCatalysts\PayPal\Service\:
     resource: 'src/Service/*'
     public: true
-
-  OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface:
-    class:  OxidSolutionCatalysts\PayPal\Service\SCAValidator
-    public: true
