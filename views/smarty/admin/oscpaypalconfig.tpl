@@ -28,7 +28,7 @@
         [{oxmultilang ident="OSC_PAYPAL_CONF_VALID"}]
         [{/if}]
     </div>
-    <div id="overlay"><div class="loader"></div></div>
+    <div id="paypal-overlay"><div class="loader"></div></div>
     <form id="configForm" name="configForm" action="[{$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]" method="post" autocomplete="off">
         [{$oViewConf->getHiddenSid()}]
         <input type="hidden" name="cl" value="[{$oViewConf->getActiveClassName()}]">
