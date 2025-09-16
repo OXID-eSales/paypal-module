@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Client;
@@ -164,5 +165,10 @@ class ServiceFactory
         }
 
         return $this->client;
+    }
+
+    private function getQueryBuilder(): QueryBuilderFactoryInterface
+    {
+        return $this->getServiceFromContainer(QueryBuilderFactoryInterface::class);
     }
 }

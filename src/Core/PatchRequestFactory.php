@@ -28,7 +28,7 @@ use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
  * Class PatchRequestFactory
  * @package OxidSolutionCatalysts\PayPal\Core
  */
-class   PatchRequestFactory
+class PatchRequestFactory
 {
     use ServiceContainer;
 

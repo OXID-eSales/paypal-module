@@ -25,14 +25,14 @@ class Email extends Email_parent
      *
      * @var string
      */
-    protected $_sPuiTplHtml = "modules/osc/paypal/email/html/pui_paymentinfo.tpl";
+    protected $sPuiTplHtml = "modules/osc/paypal/email/html/pui_paymentinfo.tpl";
 
     /**
      * PUI Payment Information - Plain
      *
      * @var string
      */
-    protected $_sPuiTplPlain = "modules/osc/paypal/plain/html/pui_paymentinfo.tpl";
+    protected $sPuiTplPlain = "modules/osc/paypal/plain/html/pui_paymentinfo.tpl";
 
     /**
      * Sets mailer additional settings and sends pui info mail to user.
@@ -57,8 +57,8 @@ class Email extends Email_parent
         // Process view data array through oxOutput processor
         $this->_processViewArray();
 
-        $this->setBody($renderer->renderTemplate($this->_sPuiTplHtml, $this->getViewData()));
-        $this->setAltBody($renderer->renderTemplate($this->_sPuiTplPlain, $this->getViewData()));
+        $this->setBody($renderer->renderTemplate($this->sPuiTplHtml, $this->getViewData()));
+        $this->setAltBody($renderer->renderTemplate($this->sPuiTplPlain, $this->getViewData()));
 
         //Sets subject to email
         $lang = Registry::getLang();

@@ -27,7 +27,7 @@ class ArticleDetails extends ArticleDetails_parent
      */
     protected $showPayPalExpressOnDetailsPage = null;
 
-     public function showPayPalExpressOnDetailsPage(): bool
+    public function showPayPalExpressOnDetailsPage(): bool
     {
         if (is_null($this->showPayPalExpressOnDetailsPage)) {
             $this->showPayPalExpressOnDetailsPage = false;
