@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### FIX
 
 - [0007783](https://bugs.oxid-esales.com/view.php?id=7783): fix birthday validation for PUI (Maintenance-Mode)
+- use the loading-animation from backend also in frontend
  
 ## [3.5.0] - 2025-08-18
 
