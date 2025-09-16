@@ -11,20 +11,6 @@ php-cs-fixer.phar
 /tests/.env
 /tests/report
 /resources/node_modules/
-/resources/build/js/typescript-transpiled
-/resources/package-lock.json
-*:Zone.Identifier
-/assets/js/*
-/assets/css/*
- # Ignore all files in recipe directory except parts
- recipe/*
- !recipe/parts
- ngrok.yml
-/node_modules/
-/tests/e2e/playwright/.env
-/tests/e2e/playwright/_output
-/tests/e2e/playwright/_generated
-
 /tests/e2e/playwright/.env
 /tests/e2e/playwright/node_modules
 /tests/e2e/playwright/_generated

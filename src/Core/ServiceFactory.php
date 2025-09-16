@@ -12,6 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
+use OxidSolutionCatalysts\PayPal\Service\UserAddressPaypalService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Client;
 use OxidSolutionCatalysts\PayPalApi\Service\Partner;
@@ -118,6 +119,15 @@ class ServiceFactory
     {
         return oxNew(
             IdentityService::class,
+            $this->getClient()
+        );
+    }
+
+    public function getUserAddressPaypalService(): UserAddressPaypalService
+    {
+        return oxNew(
+            UserAddressPaypalService::class,
+            $this->getQueryBuilder(),
             $this->getClient()
         );
     }
