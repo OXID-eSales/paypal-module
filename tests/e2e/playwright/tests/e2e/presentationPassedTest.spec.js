@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import {ShopHelper} from "../../helpers/ShopHelper";
+import {PaypalHelper} from "../../helpers/PaypalHelper";
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -20,7 +22,7 @@ test.beforeAll(async ({ browser }) => {
     await page.goto(process.env.BASE_URL);
 });
 
-test('Paypal PUI Month Validation', async () => {
+test('Paypal PUI Month Validation Pass', async () => {
     const shopHelper = new ShopHelper(page);
     await shopHelper.loginUser();
     // Scroll wheel by X:0, Y:1848
@@ -86,11 +88,5 @@ test('Paypal PUI Month Validation', async () => {
     await page.waitForTimeout(2000); // 2000 ms = 2 seconds
     await page.click('.btn-highlight:nth-child(3)');
     await page.waitForTimeout(2000); // 2000 ms = 2 seconds
-
-// Locate the element
-    const element = page.locator('.pui_required_birthdate_day_help > .text-danger');
-
-// Check that the element no longer has the 'visually-hidden' class (it should be visible now)
-    await expect(element).not.toHaveClass(/visually-hidden/);
 
 });

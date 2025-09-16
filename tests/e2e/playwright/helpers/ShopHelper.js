@@ -125,7 +125,11 @@ export class ShopHelper {
         // Select the PayPal radio button
         await page.locator(`input[type="radio"][value="oscpaypal"]`).click();
     }
-
+    async selectPaymentMethodCard() {
+        const { page } = this;
+        // Select the ACDC radio button
+        await page.locator(`input[type="radio"][value="oscpaypal_acdc"]`).click();
+    }
 
     async nextStep() {
         const { page } = this;
@@ -189,4 +193,8 @@ export class ShopHelper {
     async clickGooglePay(page) {
         await page.locator('[aria-label="Buy with GPay"]').click();
     }
+
+    async clickSavePayment(page) {
+        await page.click('label[for="oscPayPalVaultPaymentCheckbox"]')   }
+
 }
