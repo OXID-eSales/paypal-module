@@ -205,9 +205,6 @@ class OrderRequestFactory
         ]);
     }
 
-    /**
-     * @return PurchaseUnitRequest[]
-     */
     protected function getPurchaseUnits(
         ?string $transactionId,
         ?string $invoiceId,

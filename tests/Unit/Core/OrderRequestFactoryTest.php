@@ -762,6 +762,29 @@ class OrderRequestFactoryTest extends TestCase
             ]
         );
 
+        // Mock the PUI payment source to avoid database access
+        $mockPuiPaymentSource = [
+            PayPalDefinitions::PAYMENT_SOURCE_PUI => [
+                'name' => 'John Doe',
+                'billing_address' => [
+                    'address_line_1' => 'Test Street 1',
+                    'admin_area_2' => 'Test City',
+                    'postal_code' => '12345',
+                    'country_code' => 'DE'
+                ],
+                'phone' => [
+                    'national_number' => '040111222333'
+                ],
+                'experience_context' => [
+                    'brand_name' => 'Test Shop',
+                    'locale' => 'de-DE',
+                    'customer_service_instructions' => []
+                ]
+            ]
+        ];
+        $this->orderRequestFactory->method('getPuiPaymentSource')
+            ->willReturn($mockPuiPaymentSource);
+
         $request = $this->orderRequestFactory->getRequest(
             $this->basketMock,
             OrderRequest::INTENT_CAPTURE,
@@ -989,18 +1012,36 @@ class OrderRequestFactoryTest extends TestCase
     {
         $this->moduleSettingsMock = $this->createMock(ModuleSettings::class);
 
-        $mockPurchaseUnitsFactory = new PayPalPurchaseUnitsFactory($this->moduleSettingsMock);
+        $mockPurchaseUnitsFactory = $this->getMockBuilder(PayPalPurchaseUnitsFactory::class)
+            ->setConstructorArgs([$this->moduleSettingsMock])
+            ->onlyMethods(['getPurchaseUnits'])
+            ->getMock();
+
+        $mockPurchaseUnitsFactory->method('getPurchaseUnits')
+            ->willReturn([
+                new \OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnit([
+                    'reference_id' => '123',
+                    'amount' => [
+                        'breakdown' => [
+                            'item_total' => [
+                                'currency_code' => 'EUR',
+                                'value' => '100.00'
+                            ],
+                        ]
+                    ]
+                ])
+            ]);
 
         $this->orderRequestFactory = $this->getMockBuilder(OrderRequestFactory::class)
-            ->setConstructorArgs([$mockPurchaseUnitsFactory, $this->moduleSettingsMock])
+            ->setConstructorArgs([$mockPurchaseUnitsFactory])
             ->onlyMethods(
                 [
                     'getServiceFromContainer',
                     'getUserNameFromBasket',
                     'getCountryFromBasket',
                     'getVaultingService',
-                    'getPurchaseUnits',
                     'getAmount',
+                    'getPuiPaymentSource',
                 ]
             )->getMock();
 
@@ -1020,20 +1061,6 @@ class OrderRequestFactoryTest extends TestCase
                 ]
             ));
 
-        $this->orderRequestFactory->method('getPurchaseUnits')
-            ->willReturn([
-                new \OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnit([
-                    'reference_id' => '123',
-                    'amount' => [
-                        'breakdown' => [
-                            'item_total' => [
-                                'currency_code' => 'EUR',
-                                'value' => '100.00'
-                            ],
-                        ]
-                    ]
-                ])
-            ]);
 
         $this->vaultingServiceMock = $this->createMock(VaultingService::class);
         $this->basketMock = $this->createMock(Basket::class);
@@ -1065,5 +1092,15 @@ class OrderRequestFactoryTest extends TestCase
         $this->countryMock->method('getFieldData')
             ->with('oxisoalpha2')
             ->willReturn('DE');
+    }
+
+    public function setRequestParameter($name, $value): void
+    {
+        $requestMock = $this->getMockBuilder(\stdClass::class)
+            ->addMethods(['getRequestParameter'])
+            ->getMock();
+        $requestMock->method('getRequestParameter')
+            ->willReturn($value);
+        Registry::set('oxrequest', $requestMock);
     }
 }

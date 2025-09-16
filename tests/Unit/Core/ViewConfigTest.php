@@ -48,6 +48,7 @@ final class ViewConfigTest extends TestCase
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', true);
         $this->updateModuleSetting('oscPayPalBannersStartPage', true);
+        $this->updateModuleSetting('oscPayPalBannersStartPageSelector', '#start-paypal-installment-banner');
         $this->assertTrue($view->showPayPalCheckoutBannerOnStartPage());
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', false);
@@ -63,6 +64,7 @@ final class ViewConfigTest extends TestCase
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', true);
         $this->updateModuleSetting('oscPayPalBannersCategoryPage', true);
+        $this->updateModuleSetting('oscPayPalBannersCategoryPageSelector', '#category-paypal-banner');
         $this->assertTrue($view->showPayPalCheckoutBannerOnCategoryPage());
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', false);
@@ -78,6 +80,7 @@ final class ViewConfigTest extends TestCase
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', true);
         $this->updateModuleSetting('oscPayPalBannersSearchResultsPage', true);
+        $this->updateModuleSetting('oscPayPalBannersSearchResultsPageSelector', '#search-paypal-banner');
         $this->assertTrue($view->showPayPalCheckoutBannerOnSearchResultsPage());
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', false);
@@ -93,6 +96,7 @@ final class ViewConfigTest extends TestCase
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', true);
         $this->updateModuleSetting('oscPayPalBannersProductDetailsPage', true);
+        $this->updateModuleSetting('oscPayPalBannersProductDetailsPageSelector', '#product-paypal-banner');
         $this->assertTrue($view->showPayPalCheckoutBannerOnProductDetailsPage());
 
         $this->updateModuleSetting('oscPayPalBannersShowAll', false);

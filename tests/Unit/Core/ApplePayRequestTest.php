@@ -49,25 +49,12 @@ class ApplePayRequestTest extends TestCase
         parent::setUp();
 
         $this->moduleSettingsMock = $this->createMock(ModuleSettings::class);
-
-        $mockPurchaseUnitsFactory = new PayPalPurchaseUnitsFactory($this->moduleSettingsMock);
-
-        $this->orderRequestFactory = $this->getMockBuilder(OrderRequestFactory::class)
-            ->setConstructorArgs([$mockPurchaseUnitsFactory, $this->moduleSettingsMock])
-            ->onlyMethods([
-                'getServiceFromContainer',
-                'getUserNameFromBasket',
-                'getCountryFromBasket',
-                'getVaultingService',
-                'getAmount',
-                'getPurchaseUnits'
-            ])
+        $mockPurchaseUnitsFactory = $this->getMockBuilder(PayPalPurchaseUnitsFactory::class)
+            ->setConstructorArgs([$this->moduleSettingsMock])
+            ->onlyMethods(['getPurchaseUnits'])
             ->getMock();
 
-        $this->moduleSettingsMock = $this->createMock(ModuleSettings::class);
-
-
-        $this->orderRequestFactory->method('getPurchaseUnits')
+        $mockPurchaseUnitsFactory->method('getPurchaseUnits')
             ->willReturn([
                 [
                     'breakdown' => [
@@ -81,6 +68,17 @@ class ApplePayRequestTest extends TestCase
                     ]
                 ]
             ]);
+
+        $this->orderRequestFactory = $this->getMockBuilder(OrderRequestFactory::class)
+            ->setConstructorArgs([$mockPurchaseUnitsFactory])
+            ->onlyMethods([
+                'getServiceFromContainer',
+                'getUserNameFromBasket',
+                'getCountryFromBasket',
+                'getVaultingService',
+                'getAmount',
+            ])
+            ->getMock();
 
 
         $this->vaultingServiceMock = $this->createMock(VaultingServiceInterface::class);

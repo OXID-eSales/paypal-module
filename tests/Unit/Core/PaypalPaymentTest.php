@@ -56,22 +56,39 @@ class PaypalPaymentTest extends TestCase
         parent::setUp();
         $this->moduleSettingsMock = $this->createMock(ModuleSettings::class);
 
-        $mockPurchaseUnitsFactory = new PayPalPurchaseUnitsFactory($this->moduleSettingsMock);
+        $mockPurchaseUnitsFactory = $this->getMockBuilder(PayPalPurchaseUnitsFactory::class)
+            ->setConstructorArgs([$this->moduleSettingsMock])
+            ->onlyMethods(['getPurchaseUnits'])
+            ->getMock();
+
+        $mockPurchaseUnitsFactory->method('getPurchaseUnits')
+            ->willReturn([
+                [
+                    'breakdown' => [
+                        'item_total' => [
+                            'currency_code' => 'EUR',
+                            'value' => '100.00'
+                        ],
+                        'tax_total' => [
+                            'currency_code' => 'EUR',
+                        ]
+                    ]
+                ]
+            ]);
 
         $this->orderRequestFactory = $this->getMockBuilder(OrderRequestFactory::class)
-            ->setConstructorArgs([ $mockPurchaseUnitsFactory, $this->moduleSettingsMock])
+            ->setConstructorArgs([$mockPurchaseUnitsFactory])
             ->onlyMethods([
                 'getServiceFromContainer',
                 'getUserNameFromBasket',
                 'getCountryFromBasket',
                 'getVaultingService',
-                'getPurchaseUnits',
                 'getAmount',
+                'getPuiPaymentSource',
             ])
             ->getMock();
 
 
-        $this->orderRequestFactory->setBasket(new Basket());
 
         $this->orderRequestFactory->method('getAmount')
             ->willReturn(new \OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown([
@@ -290,6 +307,29 @@ class PaypalPaymentTest extends TestCase
             'phonenumber' => '040111222333'
         ];
 
+        // Mock the PUI payment source to avoid database access
+        $mockPuiPaymentSource = [
+            PayPalDefinitions::PAYMENT_SOURCE_PUI => [
+                'name' => 'John Doe',
+                'billing_address' => [
+                    'address_line_1' => 'Test Street 1',
+                    'admin_area_2' => 'Test City',
+                    'postal_code' => '12345',
+                    'country_code' => 'DE'
+                ],
+                'phone' => [
+                    'national_number' => '040111222333'
+                ],
+                'experience_context' => [
+                    'brand_name' => 'Test Shop',
+                    'locale' => 'de-DE',
+                    'customer_service_instructions' => []
+                ]
+            ]
+        ];
+        $this->orderRequestFactory->method('getPuiPaymentSource')
+            ->willReturn($mockPuiPaymentSource);
+
         try {
             $request = $this->orderRequestFactory->getRequest(
                 $this->basketMock,
@@ -329,20 +369,6 @@ class PaypalPaymentTest extends TestCase
     {
         $this->setupMocksForLoggedInPayment(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
 
-        $this->orderRequestFactory->method('getPurchaseUnits')
-            ->willReturn([
-               [
-                    'breakdown' => [
-                        'item_total' => [
-                            'currency_code' => 'EUR',
-                            'value' => '100.00'
-                        ],
-                        'tax_total' => [
-                            'currency_code' => 'EUR',
-                        ]
-                    ]
-                   ]
-            ]);
 
 
         $request = $this->orderRequestFactory->getRequest(
