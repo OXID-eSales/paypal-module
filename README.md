@@ -63,8 +63,6 @@ PayPal checkout integration for OXID eShop 6.1 and above.
     ```
     ./extensions/paypal/recipe/setup-smarty-dev.sh
     ```
-    
-
 
 
 ## Limitations
