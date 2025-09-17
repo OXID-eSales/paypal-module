@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\RequestFactory;
 
-use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Core\Config;
 use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;

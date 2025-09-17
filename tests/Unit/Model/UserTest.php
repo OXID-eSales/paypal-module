@@ -74,8 +74,16 @@ final class UserTest extends TestCase
 
         $user = oxNew(EshopModelUser::class);
         $user->assign([
-            'oxcountryid' => 'a7c40f631fc920687.20179984'
+            'oxcountryid' => 'test_country_id'
         ]);
+
+        $country = oxNew(\OxidEsales\EshopCommunity\Application\Model\Country::class);
+        $country->setId('test_country_id');
+        $country->assign([
+            'oxisoalpha2' => 'DE',
+            'oxphone' => '49'
+        ]);
+        $country->save();
 
         /** @var ApiModelPhone $apiPhone */
         $apiPhone = $user->getPhoneNumberForPuiRequest();
