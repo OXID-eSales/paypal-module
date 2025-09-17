@@ -337,7 +337,13 @@ final class OrderTest extends BaseTestCase
         $paypalApiOrder->id = $payPalOrderId;
         $paypalApiOrder->status = PayPalApiOrder::STATUS_PAYER_ACTION_REQUIRED;
 
-        $orderServiceMock = $this->createMock(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class);
+        $orderServiceMock = $this->getMockBuilder(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['showOrderDetails'])
+            ->addMethods(['setTrackingId'])
+            ->getMock();
+        $orderServiceMock->expects($this->any())
+            ->method('setTrackingId');
         $orderServiceMock->expects($this->exactly(0))
             ->method('showOrderDetails')
             ->with($this->equalTo($payPalOrderId))

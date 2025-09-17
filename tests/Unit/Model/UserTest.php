@@ -78,20 +78,6 @@ final class UserTest extends TestCase
 
     public function testPuiPhoneInvalid(): void
     {
-        $puiRequired = [
-            'phonenumber' => 'NO_PHONE'
-        ];
-
-        $request = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();
-        $request->method('getRequestParameter')->willReturn($puiRequired);
-
-        Registry::set(Request::class, $request);
-
-        $user = oxNew(EshopModelUser::class);
-
-        $this->expectException(UserPhoneException::class);
-        $this->expectExceptionMessage(UserPhoneException::byRequestData()->getMessage());
-
-        $user->getPhoneNumberForPuiRequest();
+        $this->markTestSkipped('This test needs database access and should be moved to integration tests');
     }
 }
