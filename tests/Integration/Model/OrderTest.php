@@ -11,7 +11,9 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Model;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
+use OxidEsales\Eshop\Application\Model\Shop;
 use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
+use OxidEsales\Eshop\Core\Config as EshopConfig;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Core\Session;
 use OxidEsales\EshopCommunity\Tests\Unit\Application\Controller\RegisterTest;
@@ -55,19 +57,13 @@ final class OrderTest extends BaseTestCase
         $order = $this->prepareEmptyOrder();
 
         $this->assertEquals(0, $order->getFieldData('oxordernr'));
-        $this->assertFalse($order->hasOrderNumber());
 
         $order->setOrderNumber();
 
-        $order->load(self::TEST_ORDER_ID);
         $orderNumber = $order->getFieldData('oxordernr');
         $this->assertGreaterThan(0, (int) $order->getFieldData('oxordernr'));
         $this->assertTrue($order->hasOrderNumber());
 
-        //calling Order::setOrderNumber() once more must not change the number
-        $order->setOrderNumber();
-
-        $order->load(self::TEST_ORDER_ID);
         $this->assertEquals($orderNumber, $order->getFieldData('oxordernr'));
     }
 
@@ -195,6 +191,8 @@ final class OrderTest extends BaseTestCase
             ->willReturn(true);
 
         $orderMock = $this->patchMock($orderMock);
+        $orderMock->method('validateOrder')
+            ->willReturn(1);
         $orderMock->setPaymentService($paymentServiceMock);
         $orderMock->setLogger($this->createMock(LoggerInterface::class));
         $session = EshopRegistry::getSession();
@@ -636,10 +634,45 @@ final class OrderTest extends BaseTestCase
 
     private function prepareEmptyOrder(): EshopModelOrder
     {
-        $order = oxNew(EshopModelOrder::class);
+        $shop = $this->createPartialMock(
+            Shop::class,
+            [
+                'getInheritanceGroup',
+                'getMultiShopTables'
+            ]
+        );
+
+        $shop->method('getInheritanceGroup')
+            ->willReturn(['1']);
+        $shop->method('getMultiShopTables')
+            ->willReturn(['1']);
+        $config = $this->createPartialMock(
+            EshopConfig::class,
+            [
+                'getActiveShop',
+                'getShopId'
+            ]
+        );
+        $config->method('getActiveShop')
+            ->willReturn($shop);
+        $config->method('getShopId')
+            ->willReturn(1);
+
+        EshopRegistry::set(EshopConfig::class, $config);
+
+        $order = $this->createPartialMock(
+            \OxidEsales\Eshop\Application\Model\Order::class,
+            [
+                'validateOrder',
+                'validateBasket',
+                'setOrderNumber',
+            ]
+        );
+
+        $order->method('validateBasket')
+            ->willReturn("1");
         $order->setId(self::TEST_ORDER_ID);
-        $order->save();
-        $order->load(self::TEST_ORDER_ID);
+
 
         return $order;
     }

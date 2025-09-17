@@ -36,9 +36,7 @@ final class UserTest extends TestCase
 
         Registry::set(Request::class, $request);
 
-        $user = $this->getMockBuilder(User::class)
-            ->onlyMethods([])
-            ->getMock();
+        $user = oxNew(User::class);
 
         $this->assertSame('2000-04-01', $user->getBirthDateForPuiRequest());
     }

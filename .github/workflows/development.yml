@@ -124,8 +124,6 @@ jobs:
           docker compose exec -T php bin/oe-console oe:setup:demodata
           docker compose exec -T php bin/oe-console oe:theme:activate apex
           docker compose exec -T php bin/oe-console oe:module:activate osc_paypal
-          ls -la
-          ls -la source
 
       - name: Put module settings
         continue-on-error: true

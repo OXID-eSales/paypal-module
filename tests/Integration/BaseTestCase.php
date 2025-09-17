@@ -272,7 +272,7 @@ abstract class BaseTestCase extends TestCase
                 try {
                     $db->execute($sql);
                 } catch (\Exception $e) {
-                    // Silent fail for view creation
+                    echo "Error updating view $viewTableName: " . $e->getMessage() . PHP_EOL;
                 }
             }
         }
