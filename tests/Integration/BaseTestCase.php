@@ -17,6 +17,8 @@ use PHPUnit\Framework\TestCase;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidEsales\Eshop\Core\DatabaseProvider;
+use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\Eshop\Application\Model\Shop;
 use Psr\Log\LoggerInterface;
 
 abstract class BaseTestCase extends TestCase
