@@ -246,7 +246,10 @@
 
         this.handleError = async function (data) {
             if ('undefined' !== data && data instanceof Error){
-                PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR);
+                PayPalPayment.showErrorMessage(
+                    PayPalPayment.currentError ?
+                        PayPalPayment.currentError : PayPalI18n.OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR
+                );
             }
 
             let shopOrderId = PayPalPayment.getCurrentOrderOxid();
@@ -451,7 +454,7 @@
             const panelBody = document.querySelector("#orderPayment").querySelector(".panel-body");
 
             // Remove existing error if present
-            this.removeErrorMessage(className);
+            PayPalPayment.removeErrorMessage(className);
             PayPalPayment.currentError = message;
             // Create and display a new error message
             const errorMessage = document.createElement("div");
@@ -475,6 +478,23 @@
                 }
             }
             PayPalPayment.currentError = null;
+        };
+
+        // Common initialization methods
+        this.checkTermsAndConditions = function () {
+            var checksOk = false;
+
+            if(PayPalPayment.config.confirmAGBRequired){
+                const checkAgbTop = document.getElementById('checkAgbTop');
+                checksOk = checkAgbTop?.checked ? true : false;
+            }
+
+            if(PayPalPayment.config.confirmAGBForIntangibleRequired){
+                const oxdownloadableproductsagreement = document.getElementById('oxdownloadableproductsagreement');
+                checksOk = oxdownloadableproductsagreement?.checked ? true : false;
+            }
+
+            return checksOk;
         };
 
         // Common initialization
