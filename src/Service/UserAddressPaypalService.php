@@ -25,11 +25,11 @@ class UserAddressPaypalService
         $this->queryBuilderFactory = $queryBuilderFactory;
     }
 
-    public function changePayPalUserData(EshopUserModel $oUser, array $newInvoiceAddress, array $newDeliveryAddress)
+    public function changePayPalUserData(EshopUserModel $oUser, array $newInvoiceAddress, ?array $newDeliveryAddress = null)
     {
         $oUser->assign($newInvoiceAddress);
 
-        if (count($newDeliveryAddress)) {
+        if (!empty($newDeliveryAddress)) {
 
             $queryBuilder = $this->queryBuilderFactory->create();
 
