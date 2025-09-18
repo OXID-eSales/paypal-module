@@ -35,9 +35,10 @@ class CardValidationTest extends TestCase
 
     protected function setUp(): void
     {
+        $this->markTestSkipped('Skipping all tests in CardValidationTest.');
         parent::setUp();
         $this->initSerializedVariables();
-        $this->markTestSkipped('Skipping all tests in CardValidationTest.');
+
     }
 
     private function initSerializedVariables(): void

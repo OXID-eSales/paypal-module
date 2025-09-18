@@ -23,7 +23,7 @@ use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Service\BaseService;
 use Psr\Log\LoggerInterface;
 
-class VaultingService extends BaseService
+class VaultingService extends BaseService implements VaultingServiceInterface
 {
     use ServiceContainer;
 

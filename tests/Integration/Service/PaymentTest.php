@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Service;
 
 use OxidEsales\Eshop\Application\Model\Article;
+use OxidEsales\Eshop\Core\Config;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidEsales\Eshop\Core\Session;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
@@ -22,6 +24,7 @@ use OxidSolutionCatalysts\PayPal\Service\ModuleSettings as ModuleSettingsService
 use OxidSolutionCatalysts\PayPal\Service\SCAValidator;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\Trait\TestProductTrait;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse;
@@ -34,6 +37,7 @@ use TypeError;
 final class PaymentTest extends BaseTestCase
 {
     use TestProductTrait;
+    use ServiceContainer;
 
     protected const TEST_USER_ID = 'testuser';
 
@@ -41,13 +45,27 @@ final class PaymentTest extends BaseTestCase
     private string $failedAuthentication;
     private string $missingCardAuthentication;
 
+    private $originalSession;
+    /**
+     * @var object|\OxidEsales\Eshop\Core\Config
+     */
+    private $originalConfig;
+
     protected function setUp(): void
     {
         parent::setUp();
-
+        $this->originalSession = EshopRegistry::getSession();
+        $this->originalConfig = EshopRegistry::getConfig();
         $this->success3DCard = serialize($this->createSuccess3DCardOrder());
         $this->failedAuthentication = serialize($this->createFailedAuthenticationOrder());
         $this->missingCardAuthentication = serialize($this->createMissingCardAuthenticationOrder());
+    }
+
+    public function tearDown(): void
+    {
+        EshopRegistry::set(Session::class, $this->originalSession);
+        EshopRegistry::set(Config::class, $this->originalConfig);
+        parent::tearDown();
     }
 
     /**

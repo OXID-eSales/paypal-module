@@ -13,9 +13,13 @@ use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+
 
 final class OrderRepositoryTest extends BaseTestCase
 {
+    use ServiceContainer;
+
     private const SHOP_ORDER_ID = 'shop_order_id';
     private const PAYMENT_METHOD = 'oscpaypal_pui';
     private const PAYPAL_ORDERID = '8S9298293T126730G';

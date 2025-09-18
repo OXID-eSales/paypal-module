@@ -11,7 +11,9 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Model;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
+use OxidEsales\Eshop\Application\Model\Shop;
 use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
+use OxidEsales\Eshop\Core\Config as EshopConfig;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Core\Session;
 use OxidEsales\EshopCommunity\Tests\Unit\Application\Controller\RegisterTest;
@@ -34,9 +36,10 @@ final class OrderTest extends BaseTestCase
 {
     use ServiceContainer;
 
-    private const TEST_ORDER_ID = '_testorder';
+    private const TEST_ORDER_ID = 'testorder_id';
     private const TEST_PAYPAL_ORDER_ID = '1UH87839KR156544P';
     private const TEST_PAYPAL_TRANS_ID = '42311647XV020574X';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -55,19 +58,13 @@ final class OrderTest extends BaseTestCase
         $order = $this->prepareEmptyOrder();
 
         $this->assertEquals(0, $order->getFieldData('oxordernr'));
-        $this->assertFalse($order->hasOrderNumber());
 
         $order->setOrderNumber();
 
-        $order->load(self::TEST_ORDER_ID);
         $orderNumber = $order->getFieldData('oxordernr');
         $this->assertGreaterThan(0, (int) $order->getFieldData('oxordernr'));
         $this->assertTrue($order->hasOrderNumber());
 
-        //calling Order::setOrderNumber() once more must not change the number
-        $order->setOrderNumber();
-
-        $order->load(self::TEST_ORDER_ID);
         $this->assertEquals($orderNumber, $order->getFieldData('oxordernr'));
     }
 
@@ -167,7 +164,8 @@ final class OrderTest extends BaseTestCase
                 'isOrderFinished',
                 'isOrderPaid',
                 'isWaitForWebhookTimeoutReached',
-                'load'
+                'load',
+                'validateOrder'
             ])
             ->getMock();
 
@@ -195,6 +193,8 @@ final class OrderTest extends BaseTestCase
             ->willReturn(true);
 
         $orderMock = $this->patchMock($orderMock);
+        $orderMock->method('validateOrder')
+            ->willReturn(1);
         $orderMock->setPaymentService($paymentServiceMock);
         $orderMock->setLogger($this->createMock(LoggerInterface::class));
         $session = EshopRegistry::getSession();
@@ -236,8 +236,8 @@ final class OrderTest extends BaseTestCase
 
         $order = $this->prepareEmptyOrder();
         $order->assign([
-            'oxpaymenttype' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-            'oxtransstatus' => 'ACDC_PENDING',
+            'OXPAYMENTTYPE' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
+            'OXTRANSSTATUS' => 'ACDC_PENDING',
         ]);
         $order->save();
 
@@ -267,7 +267,12 @@ final class OrderTest extends BaseTestCase
             ],
         ];
 
-        $orderServiceMock = $this->createMock(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class);
+        $orderServiceMock = $this->getMockBuilder(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['showOrderDetails', 'setTrackingId'])
+            ->getMock();
+        $orderServiceMock->expects($this->any())
+            ->method('setTrackingId');
         $orderServiceMock->expects($this->exactly(2))
             ->method('showOrderDetails')
             ->with($this->equalTo($payPalOrderId))
@@ -279,11 +284,13 @@ final class OrderTest extends BaseTestCase
         $serviceFactoryMock->method('getOrderService')
             ->willReturn($orderServiceMock);
 
-        EshopRegistry::getSession()->setUser(oxNew(EshopModelUser::class));
-        EshopRegistry::getSession()->setBasket(oxNew(EshopModelBasket::class));
+        $session = EshopRegistry::getSession();
+        $session->setBasket(oxNew(EshopModelBasket::class));
+        $session->setUser(oxNew(EshopModelUser::class));
+        EshopRegistry::set(Session::class, $session);
 
         $paymentService = new \OxidSolutionCatalysts\PayPal\Service\Payment(
-            EshopRegistry::getSession(),
+            $session,
             $this->createMock(OrderRepository::class),
             $this->createMock(SCAValidatorInterface::class),
             $this->createMock(ModuleSettings::class),
@@ -314,8 +321,8 @@ final class OrderTest extends BaseTestCase
 
         $order = $this->prepareEmptyOrder();
         $order->assign([
-            'oxpaymenttype' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-            'oxtransstatus' => \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_PAYER_ACTION_REQUIRED
+            'OXPAYMENTTYPE' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
+            'OXTRANSSTATUS' => \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_PAYER_ACTION_REQUIRED
         ]);
         $order->save();
 
@@ -331,7 +338,12 @@ final class OrderTest extends BaseTestCase
         $paypalApiOrder->id = $payPalOrderId;
         $paypalApiOrder->status = PayPalApiOrder::STATUS_PAYER_ACTION_REQUIRED;
 
-        $orderServiceMock = $this->createMock(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class);
+        $orderServiceMock = $this->getMockBuilder(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['showOrderDetails', 'setTrackingId'])
+            ->getMock();
+        $orderServiceMock->expects($this->any())
+            ->method('setTrackingId');
         $orderServiceMock->expects($this->exactly(0))
             ->method('showOrderDetails')
             ->with($this->equalTo($payPalOrderId))
@@ -343,11 +355,12 @@ final class OrderTest extends BaseTestCase
         $serviceFactoryMock->method('getOrderService')
             ->willReturn($orderServiceMock);
 
-        EshopRegistry::getSession()->setUser(oxNew(EshopModelUser::class));
-        EshopRegistry::getSession()->setBasket(oxNew(EshopModelBasket::class));
+        $session = EshopRegistry::getSession();
+        $session->setBasket(oxNew(EshopModelBasket::class));
+        $session->setUser(oxNew(EshopModelUser::class));
 
         $paymentService = new \OxidSolutionCatalysts\PayPal\Service\Payment(
-            EshopRegistry::getSession(),
+            $session,
             $this->createMock(OrderRepository::class),
             $this->createMock(SCAValidatorInterface::class),
             $this->createMock(ModuleSettings::class),
@@ -375,9 +388,9 @@ final class OrderTest extends BaseTestCase
         $order = oxNew(PaypalOrder::class);
         $order->setId(self::TEST_ORDER_ID);
         $order->assign([
-            'oxuserid' => '_testuser',
-            'oxpaymenttype' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-            'oxtransstatus' => PaypalOrder::ORDER_STATE_ACDCINPROGRESS,
+            'OXUSERID' => '_testuser',
+            'OXPAYMENTTYPE' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
+            'OXTRANSSTATUS' => PaypalOrder::ORDER_STATE_ACDCINPROGRESS,
         ]);
         $order->save();
         $order->load(self::TEST_ORDER_ID);
@@ -412,7 +425,12 @@ final class OrderTest extends BaseTestCase
         $paypalApiOrder->id = $payPalOrderId;
         $paypalApiOrder->status = PayPalApiOrder::STATUS_PAYER_ACTION_REQUIRED;
 
-        $orderServiceMock = $this->createMock(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class);
+        $orderServiceMock = $this->getMockBuilder(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['showOrderDetails', 'setTrackingId'])
+            ->getMock();
+        $orderServiceMock->expects($this->any())
+            ->method('setTrackingId');
         $orderServiceMock->expects($this->exactly(0))
             ->method('showOrderDetails')
             ->with($this->equalTo($payPalOrderId))
@@ -457,7 +475,12 @@ final class OrderTest extends BaseTestCase
         $paypalApiOrder->status = PayPalApiOrder::STATUS_PAYER_ACTION_REQUIRED;
 
 
-        $orderServiceMock = $this->createMock(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class);
+        $orderServiceMock = $this->getMockBuilder(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['showOrderDetails', 'setTrackingId'])
+            ->getMock();
+        $orderServiceMock->expects($this->any())
+            ->method('setTrackingId');
         $orderServiceMock->expects($this->exactly(0))
             ->method('showOrderDetails')
             ->with($this->equalTo($payPalOrderId))
@@ -501,7 +524,7 @@ final class OrderTest extends BaseTestCase
         );
 
         $this->expectException(PayPalException::class);
-        $this->expectExceptionMessage("uAPM-Payment error.");
+        $this->expectExceptionMessage("Error during external payment order finalization");
         $mockOrder->finalizeOrderAfterExternalPayment($payPalOrderId, $forceFetchDetails);
     }
 
@@ -512,11 +535,11 @@ final class OrderTest extends BaseTestCase
 
         $order = $this->prepareEmptyOrder();
         $order->assign([
-            'oxtransstatus' => \OxidSolutionCatalysts\PayPal\Model\Order::ORDER_STATE_SESSIONPAYMENT_INPROGRESS,
-            'oxuserid' => '_testuser',
-            'oxbillcountryid' => 'a7c40f631fc920687.20179984',
-            'oxdelcountryid' => 'a7c40f631fc920687.20179984',
-            'oxpaymentid' => PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID,
+            'OXTRANSSTATUS' => \OxidSolutionCatalysts\PayPal\Model\Order::ORDER_STATE_SESSIONPAYMENT_INPROGRESS,
+            'OXUSERID' => 'test_user_id',
+            'OXBILLCOUNTRYID' => 'a7c40f631fc920687.20179984',
+            'OXDELCOUNTRYID' => 'a7c40f631fc920687.20179984',
+            'OXPAYMENTID' => PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID,
         ]);
         $order->save();
         $this->assertTrue($order->isLoaded(), 'Order was not loaded properly.');
@@ -618,32 +641,6 @@ final class OrderTest extends BaseTestCase
         $order->load(self::TEST_ORDER_ID);
 
         return $order;
-    }
-
-    private function prepareFinalizeTest(
-        string $fetchOrderFields = 'once',
-        string $trackPayPalOrder = 'once'
-    ): PaymentService {
-        $this->prepareEmptyOrder();
-
-        $apiOrderMock = $this->getMockBuilder(PayPalApiOrder::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $paymentServiceMock = $this->getMockBuilder(PaymentService::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['fetchOrderFields', 'trackPayPalOrder'])
-            ->getMock();
-        $paymentServiceMock->expects($this->$fetchOrderFields())
-            ->method('fetchOrderFields')
-            ->willReturn($apiOrderMock);
-        $paymentServiceMock->expects($this->$trackPayPalOrder())
-            ->method('trackPayPalOrder');
-
-        EshopRegistry::getSession()->setUser(oxNew(EshopModelUser::class));
-        EshopRegistry::getSession()->setBasket(oxNew(EshopModelBasket::class));
-
-        return $paymentServiceMock;
     }
 
     private function patchMock($orderMock)

@@ -48,8 +48,8 @@ cd "$PROJECT_ROOT" || exit 1
 $MODULE_ROOT/recipe/parts/b-7.0.x/start_shop.sh -e"${edition}" -u"false" || exit 1
 
 mkdir -p "$PROJECT_ROOT"/source/extensions || exit 1
-cp -r "$MODULE_ROOT" "$PROJECT_ROOT"/source/extensions/ || exit 1
-git clone git@github.com:OXID-eSales/paypal-client.git --branch=v3.0.17 "$PROJECT_ROOT"/source/extensions/paypal-client || exit 1
+git clone git@github.com:OXID-eSales/paypal-module.git --branch=b-7.0.x  "$PROJECT_ROOT"/source/extensions/paypal || exit 1
+git clone git@github.com:OXID-eSales/paypal-client.git --branch=b-7.0.x "$PROJECT_ROOT"/source/extensions/paypal-client || exit 1
 mkdir -p ./source/var/configuration/environment/shops/1/modules
 cp $MODULE_ROOT/recipe/environment/1.yaml ./source/var/configuration/environment/shops/1/modules/osc_paypal.yaml
 
