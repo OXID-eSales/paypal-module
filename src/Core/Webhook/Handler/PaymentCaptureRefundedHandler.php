@@ -11,6 +11,7 @@ use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventRetryException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalModelOrder;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
@@ -94,7 +95,7 @@ class PaymentCaptureRefundedHandler extends WebhookHandlerBase
             $order = $this->getOrderRepository()
                 ->getShopOrderByPayPalTransactionId($captureId);
         } catch (NotFound $exception) {
-            throw WebhookEventException::byPayPalTransactionId($captureId);
+            throw WebhookEventRetryException::byPayPalTransactionId($captureId);
         }
 
         return $order;
@@ -107,7 +108,7 @@ class PaymentCaptureRefundedHandler extends WebhookHandlerBase
             $orderId = $this->getOrderRepository()
                 ->getPayPalOrderIdByShopOrderId($shopOrderId);
         } catch (NotFound $exception) {
-            throw WebhookEventException::byOrderId($shopOrderId);
+            throw WebhookEventRetryException::byOrderId($shopOrderId);
         }
 
         return $orderId;

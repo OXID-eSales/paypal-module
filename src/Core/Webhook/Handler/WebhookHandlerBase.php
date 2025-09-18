@@ -15,6 +15,7 @@ use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventRetryException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalModelOrder;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -137,7 +138,7 @@ abstract class WebhookHandlerBase
             $order = $this->getOrderRepository()
                 ->getShopOrderByPayPalOrderId($payPalOrderId);
         } catch (NotFound $exception) {
-            throw WebhookEventException::byPayPalOrderId($payPalOrderId);
+            throw WebhookEventRetryException::byPayPalOrderId($payPalOrderId);
         }
 
         return $order;
