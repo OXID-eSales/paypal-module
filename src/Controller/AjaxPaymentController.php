@@ -519,7 +519,7 @@ class AjaxPaymentController extends ProxyController
 
         $basket = Registry::getSession()->getBasket();
         if (empty($basket->getPaymentId()) && !empty($data['paymentId'])) {
-            $basket->setPaymentId($data['paymentId']);
+            $basket->setPayment($data['paymentId']);
         }
 
         $order = oxNew(Order::class);
