@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use Exception;
+use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Exception\StandardException;
@@ -790,5 +791,29 @@ class OrderController extends OrderController_parent
                 "type" => "SETUP_TOKEN",
             ]
         ], JSON_THROW_ON_ERROR) : 'null';
+    }
+
+    public function findNonMaterialItemsInBasket(): array
+    {
+        /** @var Basket $basket */
+        $basket = $this->getBasket();
+
+        $nonMaterialItems = [];
+        if ($basket) {
+            $contents = $basket->getContents();
+            foreach ($contents as $basketItem) {
+                $article = $basketItem->getArticle();
+                if ($article && $article->getFieldData('oxnonmaterial')) {
+                    $nonMaterialItems[] = $basketItem;
+                }
+            }
+        }
+
+        return $nonMaterialItems;
+    }
+
+    public function isNonMaterialItemInBasket(): bool
+    {
+        return 0 < count($this->findNonMaterialItemsInBasket());
     }
 }

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### FIX
 - [0007822](https://bugs.oxid-esales.com/view.php?id=7822): use existing DeliveryAddresses instead creating new once
+- use the loading-animation from backend also in frontend
 
 ## [2.6.1] - 2025-08-18
 

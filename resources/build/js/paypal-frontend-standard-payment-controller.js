@@ -46,8 +46,16 @@
 
         // PayPal-specific order creation
         this.createOrder = async function (data, actions) {
+            PayPalPayment.removeErrorMessage();
             PayPalPayment.addSubmitButtonOverlay();
             PayPalPayment.paypalOverlayWatcher();
+            let checkTermsAndConditions = PayPalPayment.checkTermsAndConditions();
+
+            if(false === checkTermsAndConditions) {
+                PayPalPayment.currentError = PayPalI18n.READ_AND_CONFIRM_TERMS;
+                PayPalPayment.removeSubmitButtonOverlay();
+                return;
+            }
 
             // Create shop order first
             let shopOrderCreateResult = await PayPalPayment.backendRequest('shopOrderCreateUrl', {}, {
