@@ -414,18 +414,17 @@
             PayPalPayment.currentError = null;
         };
 
-        // Common initialization methods
         this.checkTermsAndConditions = function () {
-            var checksOk = false;
+            var checksOk = true;
 
-            if(PayPalPayment.config.confirmAGBRequired){
+            if (PayPalPayment.config.confirmAGBRequired) {
                 const checkAgbTop = document.getElementById('checkAgbTop');
-                checksOk = checkAgbTop?.checked ? true : false;
+                checksOk = !!(checkAgbTop && checkAgbTop.checked);
             }
 
-            if(PayPalPayment.config.confirmAGBForIntangibleRequired){
+            if (PayPalPayment.config.confirmAGBForIntangibleRequired) {
                 const oxdownloadableproductsagreement = document.getElementById('oxdownloadableproductsagreement');
-                checksOk = oxdownloadableproductsagreement?.checked ? true : false;
+                checksOk = !!(oxdownloadableproductsagreement && oxdownloadableproductsagreement.checked);
             }
 
             return checksOk;
