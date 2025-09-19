@@ -194,10 +194,6 @@ class ExperienceContextTest extends TestCase
         }
     }
 
-
-
-
-
     public function testOrderRequestStructureForDifferentPaymentTypes(): void
     {
         $returnUrl = 'https://shop.com/success';
@@ -270,7 +266,7 @@ class ExperienceContextTest extends TestCase
         $this->assertInstanceOf(OrderRequest::class, $request);
         $this->assertNotNull($request->payment_source, "Payment source should not be null for {$paymentId}");
 
-        $paymentSourceArray = is_object($request->payment_source) ? $request->payment_source->jsonSerialize() : $request->payment_source;
+        $paymentSourceArray = $request->payment_source;
         $this->assertArrayHasKey(
             $expectedPaymentSource,
             $paymentSourceArray,
@@ -278,6 +274,7 @@ class ExperienceContextTest extends TestCase
         );
 
         $sourceData = $paymentSourceArray[$expectedPaymentSource];
+
         if ($shouldHaveExperienceContext) {
             $this->assertArrayHasKey(
                 'experience_context',
@@ -286,6 +283,7 @@ class ExperienceContextTest extends TestCase
             );
             $experienceContext = $sourceData['experience_context'];
             $this->assertIsArray($experienceContext, "Experience context should be an array for {$paymentId}");
+
             if ($shouldHaveUrls) {
                 $this->assertArrayHasKey('return_url', $experienceContext, "return_url should exist in experience_context for {$paymentId}");
                 $this->assertArrayHasKey('cancel_url', $experienceContext, "cancel_url should exist in experience_context for {$paymentId}");
@@ -374,7 +372,8 @@ class ExperienceContextTest extends TestCase
                 true,  // should have experience_context
                 true   // should have URLs
             ],
-//            TDOO: eeds more mocking in the basket
+////            TDOO: needs more mocking in the basket
+//
 //            'Przelewy24' => [
 //                PayPalDefinitions::PRZELEWY24_PAYPAL_PAYMENT_ID,
 //                'p24',
@@ -396,34 +395,6 @@ class ExperienceContextTest extends TestCase
                 true  // URLs are not in the standard experience_context for PUI
             ],
         ];
-    }
-
-    private function setupMocksForGuestPayment(string $paymentId): void
-    {
-        $this->sessionMock->method('getVariable')
-            ->willReturnMap([
-                ['paymentid', $paymentId],
-                ['vaultSuccess', false]
-            ]);
-        $this->sessionMock->method('getBasket')
-            ->willReturn($this->basketMock);
-        $this->basketMock->method('getPaymentId')
-            ->willReturn($paymentId);
-        $this->basketMock->method('isCalculationModeNetto')
-            ->willReturn(false);
-        $this->configMock->method('getUser')
-            ->willReturn(null);
-        $this->moduleSettingsMock->method('getIsVaultingActive')
-            ->willReturn(false);
-        $this->moduleSettingsMock->method('isSandbox')
-            ->willReturn(false);
-        $this->moduleSettingsMock->method('getPayPalSCAContingency')
-            ->willReturn('SCA_WHEN_REQUIRED');
-        $this->moduleSettingsMock->method('getShopName')
-            ->willReturn('Test Shop');
-        $this->vaultingServiceMock->method('fetchSelectedVaultedPaymentToken')
-            ->willReturn(null);
-        $this->mockRequiredBasketMethods();
     }
 
     private function setupMocksForLoggedInPayment(string $paymentId): void

@@ -716,6 +716,12 @@ class OrderRequestFactory
             $newPaymentSource[$paymentSourceId]["experience_context"]["user_action"]
             = $userAction ?? self::USER_ACTION_PAY_NOW;
 
+            $newPaymentSource[$paymentSourceId]["experience_context"]["return_url"]
+            = $returnUrl;
+
+            $newPaymentSource[$paymentSourceId]["experience_context"]["cancel_url"]
+            = $cancelUrl;
+
             $request->payment_source = $newPaymentSource;
         }
 
@@ -724,7 +730,9 @@ class OrderRequestFactory
             if (empty($request->payment_source->{$paymentSourceId}->experience_context)) {
                 $request->payment_source->{$paymentSourceId}->experience_context = [
                     "shipping_preference" => $shippingPreference,
-                    "user_action" => $userAction ?? self::USER_ACTION_CONTINUE
+                    "user_action" => $userAction ?? self::USER_ACTION_CONTINUE,
+                    "return_url" => $returnUrl,
+                    "cancel_url" => $cancelUrl
                 ];
             }
         }
