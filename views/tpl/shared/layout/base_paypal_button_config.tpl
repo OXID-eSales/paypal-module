@@ -26,6 +26,7 @@
                 OSC_PAYPAL_ACDC_ERROR_INBOX: "[{oxmultilang ident="OSC_PAYPAL_ACDC_ERROR_INBOX"}]",
                 OSC_PAYPAL_UNKNOWN_ERROR: "[{oxmultilang ident="OSC_PAYPAL_UNKNOWN_ERROR"}]",
                 OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR: "[{oxmultilang ident="OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR"}]",
+                READ_AND_CONFIRM_TERMS: "[{oxmultilang ident="READ_AND_CONFIRM_TERMS"}]",
             }
         }
 

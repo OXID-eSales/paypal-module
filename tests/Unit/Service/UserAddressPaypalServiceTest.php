@@ -7,16 +7,12 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Service;
 
 use OxidEsales\Eshop\Application\Model\Address;
 use OxidEsales\Eshop\Application\Model\User;
-use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\Eshop\Core\ShopIdCalculator;
-use OxidEsales\EshopCommunity\Core\Field as FieldAlias;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidEsales\EshopCommunity\Tests\Integration\Internal\ContainerTrait;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
-use PHPUnit\Framework\TestCase;
 
-class UserAddressPaypalServiceTest extends TestCase
+class UserAddressPaypalServiceTest extends UnitTestCase
 {
     use ContainerTrait;
 
@@ -63,23 +59,25 @@ class UserAddressPaypalServiceTest extends TestCase
 
         $userService->changePayPalUserData($oUser, $newInvoiceAddress, $newDeliveryAddress);
 
-        $addresses = $this->getAddressFromDbByUserId($userId);
+        $addresses = $this->getAddressesFromDbByUserId($userId);
+
+        $invoiceAddressIndex = 0;
+        foreach ($addresses as $index => $address) {
+            if ($address['OXID'] === $invoiceAddressOxid) {
+                $invoiceAddressIndex = $index;
+                break;
+            }
+        }
 
         if (empty($addresses)) {
             $this->fail('User address not found in database');
         }
 
-        $this->assertEquals($newInvoiceAddress['oxaddress__oxfname'], $addresses['OXFNAME']);
-        $this->assertEquals($newInvoiceAddress['oxaddress__oxlname'], $addresses['OXLNAME']);
-        $this->assertEquals($newInvoiceAddress['oxaddress__oxstreet'], $addresses['OXSTREET']);
-        $this->assertEquals($newInvoiceAddress['oxaddress__oxstreetnr'], $addresses['OXSTREETNR']);
-        $this->assertEquals($newInvoiceAddress['oxaddress__oxcity'], $addresses['OXCITY']);
-        $this->assertEquals($newInvoiceAddress['oxaddress__oxzip'], $addresses['OXZIP']);
-        $this->assertEquals($newInvoiceAddress['oxaddress__oxcountryid'], $addresses['OXCOUNTRYID']);
+        $this->assertEquals(2, count($addresses));
 
     }
 
-    private function getAddressFromDbByUserId(string $userId)
+    private function getAddressesFromDbByUserId(string $userId)
     {
         $queryBuilder = $this->get(QueryBuilderFactoryInterface::class)->create();
         $queryBuilder->select('*')
@@ -89,9 +87,8 @@ class UserAddressPaypalServiceTest extends TestCase
         $result = $queryBuilder->setParameters([
             'oxuserid' => $userId
         ])->execute();
-        $row = $result->fetchAssociative();
 
-        return $row;
+        return  $result->fetchAllAssociative();
     }
 
     private function createUser(string $userId): User

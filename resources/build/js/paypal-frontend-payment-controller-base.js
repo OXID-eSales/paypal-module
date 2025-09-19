@@ -41,7 +41,6 @@
             }
 
             PayPalPayment.currentOrder[orderType] = response;
-            PayPalPayment.config.purchaseUnits.custom_id = response.customId;
         };
 
         this.getCurrentOrderData = function (name, orderType) {
@@ -247,7 +246,10 @@
 
         this.handleError = async function (data) {
             if ('undefined' !== data && data instanceof Error){
-                PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR);
+                PayPalPayment.showErrorMessage(
+                    PayPalPayment.currentError ?
+                        PayPalPayment.currentError : PayPalI18n.OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR
+                );
             }
 
             let shopOrderId = PayPalPayment.getCurrentOrderOxid();
@@ -359,88 +361,22 @@
             });
         };
 
-        // Add a non-clickable overlay to a DOM element
-        // If an overlay already exists on the element, returns the existing overlay instead of creating a new one
-        this.addOverlay = function (element) {
-            if (!element) {
-                console.warn('No element provided to add overlay');
-                return null;
+        this.addSubmitButtonOverlay = function() {
+            const overlay = document.getElementById('paypal-overlay');
+            if (overlay) {
+                overlay.style.display = 'block';
+            } else {
+                console.warn('PayPal overlay element not found');
             }
-
-            // Check if overlay already exists
-            const existingOverlay = element.querySelector('.paypal-element-overlay');
-            if (existingOverlay) {
-                console.log('Overlay already exists, returning existing overlay');
-                return existingOverlay;
-            }
-
-            // Create overlay element
-            const overlay = document.createElement('div');
-            overlay.className = 'paypal-element-overlay';
-
-            // Set overlay styles
-            overlay.style.position = 'absolute';
-            overlay.style.top = '0';
-            overlay.style.left = '0';
-            overlay.style.width = '100%';
-            overlay.style.height = '100%';
-            overlay.style.backgroundColor = 'rgba(255, 255, 255, 0.5)';
-            overlay.style.zIndex = '1000';
-            overlay.style.cursor = 'not-allowed';
-
-            // Make sure the target element has position relative or absolute
-            const elementPosition = window.getComputedStyle(element).getPropertyValue('position');
-            if (elementPosition !== 'relative' && elementPosition !== 'absolute') {
-                element.style.position = 'relative';
-            }
-
-            // Add overlay to the element
-            element.appendChild(overlay);
-
-            return overlay;
-        };
-
-        // Remove overlay(s) from a DOM element
-        this.removeOverlay = function (element) {
-            if (!element) {
-                console.warn('No element provided to remove overlay from');
-                return false;
-            }
-
-            // Get the parent of the element
-            const parent = element.parentNode;
-            if (!parent) {
-                console.warn('Element has no parent node');
-                return false;
-            }
-
-            // Find all overlays within the parent element
-            const overlays = parent.querySelectorAll('.paypal-element-overlay');
-            if (!overlays || overlays.length === 0) {
-                console.warn('No overlays found in the parent of the provided element');
-                return false;
-            }
-
-            // Remove all overlay
-            overlays.forEach(overlay => {
-                parent.removeChild(overlay);
-            });
-
-            return true;
         };
 
         this.removeSubmitButtonOverlay = function() {
-            const submitButton = document.getElementById(
-                PayPalPayment.getConfigValue('buttonSelector').split('#').reverse()[0]
-            );
-            PayPalPayment.removeOverlay(submitButton);
-        };
-
-        this.addSubmitButtonOverlay = function() {
-            const submitButton = document.getElementById(
-                PayPalPayment.getConfigValue('buttonSelector').split('#').reverse()[0]
-            );
-            PayPalPayment.addOverlay(submitButton.parentElement);
+            const overlay = document.getElementById('paypal-overlay');
+            if (overlay) {
+                overlay.style.display = 'none';
+            } else {
+                console.warn('PayPal overlay element not found');
+            }
         };
 
         this.showErrorMessage = function (message, className) {
@@ -452,7 +388,7 @@
             const panelBody = document.querySelector("#orderPayment").querySelector(".panel-body");
 
             // Remove existing error if present
-            this.removeErrorMessage(className);
+            PayPalPayment.removeErrorMessage(className);
             PayPalPayment.currentError = message;
             // Create and display a new error message
             const errorMessage = document.createElement("div");
@@ -476,6 +412,22 @@
                 }
             }
             PayPalPayment.currentError = null;
+        };
+
+        this.checkTermsAndConditions = function () {
+            var checksOk = true;
+
+            if (PayPalPayment.config.confirmAGBRequired) {
+                const checkAgbTop = document.getElementById('checkAgbTop');
+                checksOk = !!(checkAgbTop && checkAgbTop.checked);
+            }
+
+            if (PayPalPayment.config.confirmAGBForIntangibleRequired) {
+                const oxdownloadableproductsagreement = document.getElementById('oxdownloadableproductsagreement');
+                checksOk = !!(oxdownloadableproductsagreement && oxdownloadableproductsagreement.checked);
+            }
+
+            return checksOk;
         };
 
         // Common initialization
