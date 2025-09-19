@@ -12,6 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutPaymentApprovalReverseHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventRetryException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 
@@ -39,9 +40,9 @@ final class CheckoutPaymentApprovalReverseHandlerTest extends WebhookHandlerBase
 
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
-        $this->expectException(WebhookEventException::class);
+        $this->expectException(WebhookEventRetryException::class);
         $this->expectExceptionMessage(
-            WebhookEventException::byPayPalOrderId($payPalOrderId)->getMessage()
+            WebhookEventRetryException::byPayPalOrderId($payPalOrderId)->getMessage()
         );
 
         $handler = oxNew(static::HANDLER_CLASS);
