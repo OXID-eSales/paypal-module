@@ -55,7 +55,8 @@ class AjaxPaymentController extends ProxyController
     public function captureOrder(): void
     {
         $data = $this->getRequestParameters();
-        $vaultPayment = filter_var($data['vaultPayment'], FILTER_VALIDATE_BOOLEAN);;
+        $vaultPayment = filter_var($data['vaultPayment'], FILTER_VALIDATE_BOOLEAN);
+        ;
         $payPalOrderId = $data['orderId'];
         $paymentId = $data['paymentId'] ?? Registry::getSession()->getVariable('paymentid');
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();
@@ -108,10 +109,10 @@ class AjaxPaymentController extends ProxyController
         $user = $basket->getUser();
 
         //here needs to check if vaulting was requested
-        if(
+        if (
             $vaultPayment &&
             isset($capturePaymentForOrder->payment_source->card->attributes->vault->customer["id"])
-        ){
+        ) {
             $payPalCustomerId = $capturePaymentForOrder->payment_source->card->attributes->vault->customer["id"];
             $this->updateOxUserWithPayPalCustomerId(['payPalCustomerId' => $payPalCustomerId]);
         }

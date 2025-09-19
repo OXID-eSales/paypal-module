@@ -14,7 +14,6 @@ use OxidEsales\Eshop\Application\Model\User as EshopUserModel;
 use OxidEsales\EshopCommunity\Core\Registry as EshopRegistry;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 
-
 class UserAddressPaypalService
 {
     private QueryBuilderFactoryInterface $queryBuilderFactory;
@@ -30,7 +29,6 @@ class UserAddressPaypalService
         $oUser->assign($newInvoiceAddress);
 
         if (count($newDeliveryAddress)) {
-
             $queryBuilder = $this->queryBuilderFactory->create();
 
             $queryBuilder
