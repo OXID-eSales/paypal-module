@@ -35,11 +35,9 @@ class VaultingService extends BaseService implements VaultingServiceInterface
     }
     public function getLogger(): LoggerInterface
     {
-        /** @var LoggerInterface $logger */
-        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-        return $logger;
+        return Registry::getLogger();
     }
-    public function generateUserIdToken($payPalCustomerId = false): array
+    public function generateUserIdToken(string $payPalCustomerId = ''): array
     {
         $headers = [];
         $headers['Content-Type'] = 'application/x-www-form-urlencoded';
@@ -59,9 +57,7 @@ class VaultingService extends BaseService implements VaultingServiceInterface
         $body = '';
         try {
             $response = $this->send('POST', $path, $params, $headers);
-            if ($response) {
-                $body = $response->getBody();
-            }
+            $body = $response->getBody();
             $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
         } catch (ApiException | JsonException $e) {
             $result = [];
@@ -285,7 +281,8 @@ class VaultingService extends BaseService implements VaultingServiceInterface
         string $paymentType = PayPalDefinitions::PAYMENT_SOURCE_PAYPAL,
         ?User $user = null
     ): bool {
-        $payPalCustomerId = $user ? $user->getFieldData("oscpaypalcustomerid") : '';
+        $fieldData = $user ? $user->getFieldData("oscpaypalcustomerid") : null;
+        $payPalCustomerId = is_string($fieldData) ? $fieldData : '';
         if (empty($payPalCustomerId)) {
             return false;
         }
@@ -313,7 +310,8 @@ class VaultingService extends BaseService implements VaultingServiceInterface
         ?string $id = null
     ): ?array {
         $vaultedPaymentTokens = [];
-        $payPalCustomerId = $user ? $user->getFieldData("oscpaypalcustomerid") : '';
+        $fieldData = $user ? $user->getFieldData("oscpaypalcustomerid") : null;
+        $payPalCustomerId = is_string($fieldData) ? $fieldData : '';
         if (!empty($payPalCustomerId)) {
             $vaultedPaymentTokens = $this->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"];
         }
@@ -357,7 +355,8 @@ class VaultingService extends BaseService implements VaultingServiceInterface
         }
 
         $cacheKey = $this->getVaultedTokenCacheKey();
-        return Registry::getSession()->getVariable($cacheKey) ?: [];
+        $cacheValue = Registry::getSession()->getVariable($cacheKey);
+        return is_array($cacheValue) ? $cacheValue : [];
     }
 
     /**
@@ -409,7 +408,8 @@ class VaultingService extends BaseService implements VaultingServiceInterface
         if (!$viewConf->getIsVaultingActive()) {
             return [];
         }
-        $currentTrackingId = (string)Registry::getSession()->getVariable('payPalPaymentProcessId');
+        $trackingIdValue = Registry::getSession()->getVariable('payPalPaymentProcessId');
+        $currentTrackingId = is_string($trackingIdValue) ? $trackingIdValue : '';
         $this->orderProcessTrackingService->setTrackingId($currentTrackingId);
         $headers = [];
         $headers['Content-Type'] = 'application/x-www-form-urlencoded';
@@ -428,7 +428,8 @@ class VaultingService extends BaseService implements VaultingServiceInterface
                 if ($response) {
                     $body = $response->getBody();
                 }
-                $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
+                $decodedResult = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
+                $result = is_array($decodedResult) ? $decodedResult : [];
                 $this->storeVaultedTokenInCache($result);
             } catch (ApiException | JsonException $e) {
                 $this->getLogger()
@@ -467,7 +468,7 @@ class VaultingService extends BaseService implements VaultingServiceInterface
         }
         $result['payment_tokens'] = $filteredVaultedPaymentTokens;
 
-        return is_array($result) ? $result : [];
+        return $result;
     }
 
     public function getVaultPaymentTokenByIndex(string $paypalCustomerId, string $index): array

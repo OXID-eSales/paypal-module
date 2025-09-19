@@ -15,7 +15,6 @@ use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
-
 final class OrderRepositoryTest extends BaseTestCase
 {
     use ServiceContainer;

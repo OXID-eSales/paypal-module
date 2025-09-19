@@ -35,7 +35,7 @@ class ApplePayRequestTest extends TestCase
 
     private MockObject|Basket $basketMock;
 
-    private MockObject|Session  $sessionMock;
+    private MockObject|Session $sessionMock;
 
     private MockObject|Config $configMock;
 

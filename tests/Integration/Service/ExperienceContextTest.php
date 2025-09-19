@@ -35,7 +35,7 @@ class ExperienceContextTest extends TestCase
 
     private MockObject|Basket $basketMock;
 
-    private MockObject|Session  $sessionMock;
+    private MockObject|Session $sessionMock;
 
     private MockObject|Config $configMock;
 
@@ -109,7 +109,7 @@ class ExperienceContextTest extends TestCase
             $this->originalConfig = Registry::getConfig();
             Registry::set(Session::class, $this->sessionMock);
             Registry::set(Config::class, $this->configMock);
-        }
+    }
 
     public function tearDown(): void
     {

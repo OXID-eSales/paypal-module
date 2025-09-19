@@ -1,6 +1,5 @@
 <?php
 
-
 /**
  * Copyright © OXID eSales AG. All rights reserved.
  * See LICENSE file for license details.
@@ -26,10 +25,9 @@ use Psr\Log\LoggerInterface;
 
 interface VaultingServiceInterface
 {
-
     public function getLogger(): LoggerInterface;
 
-    public function generateUserIdToken($payPalCustomerId = false): array;
+    public function generateUserIdToken(string $payPalCustomerId = ''): array;
 
     public function createVaultSetupToken(string $paymentTypeId): array;
 

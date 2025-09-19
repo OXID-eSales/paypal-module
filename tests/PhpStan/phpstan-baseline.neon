@@ -1260,10 +1260,6 @@ parameters:
 			count: 3
 			path: ../../src/Core/Api/VaultingService.php
 
-		-
-			message: "#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\\.$#"
-			count: 2
-			path: ../../src/Core/Api/VaultingService.php
 
 		-
 			message: "#^Call to an undefined method OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\State\\:\\:loadByIdAndCountry\\(\\)\\.$#"
@@ -1275,25 +1271,9 @@ parameters:
 			count: 1
 			path: ../../src/Core/Api/VaultingService.php
 
-		-
-			message: "#^Cannot access offset 'email_address' on mixed\\.$#"
-			count: 1
-			path: ../../src/Core/Api/VaultingService.php
 
-		-
-			message: "#^Cannot access offset 'payer_id' on mixed\\.$#"
-			count: 1
-			path: ../../src/Core/Api/VaultingService.php
 
-		-
-			message: "#^Cannot access offset 'payment_source' on mixed\\.$#"
-			count: 1
-			path: ../../src/Core/Api/VaultingService.php
 
-		-
-			message: "#^Cannot access offset 'payment_tokens' on mixed\\.$#"
-			count: 2
-			path: ../../src/Core/Api/VaultingService.php
 
 		-
 			message: "#^If condition is always true\\.$#"
@@ -1305,15 +1285,7 @@ parameters:
 			count: 1
 			path: ../../src/Core/Api/VaultingService.php
 
-		-
-			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Core\\\\Api\\\\VaultingService\\:\\:generateUserIdToken\\(\\) has parameter \\$payPalCustomerId with no type specified\\.$#"
-			count: 1
-			path: ../../src/Core/Api/VaultingService.php
 
-		-
-			message: "#^Parameter \\#1 \\$format of function sprintf expects string, array\\|string given\\.$#"
-			count: 1
-			path: ../../src/Core/Api/VaultingService.php
 
 		-
 			message: "#^Parameter \\#1 \\$oxid of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Model\\\\BaseModel\\:\\:load\\(\\) expects string, mixed given\\.$#"
@@ -2924,11 +2896,6 @@ parameters:
 			message: "#^Variable \\$result might not be defined\\.$#"
 			count: 1
 			path: ../../src/Service/Payment.php
-
-		-
-			message: "#^Property OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\SCAValidator\\:\\:\\$okToProceed has no type specified\\.$#"
-			count: 1
-			path: ../../src/Service/SCAValidator.php
 
 		-
 			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Payment\\:\\:\\$oxpayments__oxactive\\.$#"

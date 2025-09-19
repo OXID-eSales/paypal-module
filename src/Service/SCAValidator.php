@@ -135,14 +135,22 @@ class SCAValidator implements SCAValidatorInterface
 
         // If no authentication result is available, return null
         // According to PayPal docs, this is a valid scenario and should allow payment to proceed
-        if (
-            is_null($order->payment_source->card->authentication_result) &&
-            is_null($order->payment_source->google_pay->card->authentication_result)
-        ) {
+        $cardAuthResult = null;
+        $googlePayAuthResult = null;
+
+        if (!is_null($order->payment_source->card)) {
+            $cardAuthResult = $order->payment_source->card->authentication_result ?? null;
+        }
+
+        if (!is_null($order->payment_source->google_pay) && !is_null($order->payment_source->google_pay->card)) {
+            $googlePayAuthResult = $order->payment_source->google_pay->card->authentication_result ?? null;
+        }
+
+        if (is_null($cardAuthResult) && is_null($googlePayAuthResult)) {
             return null;
         }
 
-        return $order->payment_source->card->authentication_result ?? ($order->payment_source->google_pay->card->authentication_result ?? null);
+        return $cardAuthResult ?? $googlePayAuthResult;
     }
 
     /**

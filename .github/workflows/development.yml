@@ -99,7 +99,7 @@ jobs:
             php composer require ${{ env.PACKAGE_NAME }}:* --no-interaction --no-update
           
           docker compose exec -T \
-            php composer require ${{ env.CLIENT_PACKAGE_NAME }}:dev-b-7.0.x-update-phpunit-aug --no-interaction --no-update
+            php composer require ${{ env.CLIENT_PACKAGE_NAME }}:dev-b-7.0.x-apple-experience-PSPAYPAL-1145 --no-interaction --no-update
 
       - name: Install demodata
         run: |

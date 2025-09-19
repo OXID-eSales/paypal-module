@@ -37,7 +37,6 @@ class CardValidationTest extends TestCase
     {
         parent::setUp();
         $this->initSerializedVariables();
-
     }
 
     private function initSerializedVariables(): void
