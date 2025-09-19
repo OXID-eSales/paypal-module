@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\CheckoutOrderCompletedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventRetryException;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 
@@ -42,8 +43,8 @@ final class CheckoutOrderCompletedHandlerTest extends WebhookHandlerBaseTestCase
 
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
-        $this->expectException(WebhookEventException::class);
-        $this->expectExceptionMessage(WebhookEventException::byPayPalOrderId($payPalOrderId)->getMessage());
+        $this->expectException(WebhookEventRetryException::class);
+        $this->expectExceptionMessage(WebhookEventRetryException::byPayPalOrderId($payPalOrderId)->getMessage());
 
         $handler = oxNew(CheckoutOrderCompletedHandler::class);
         $handler->handle($event);

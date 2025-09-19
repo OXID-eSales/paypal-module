@@ -14,6 +14,7 @@ use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureDeniedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventRetryException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -80,9 +81,9 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
 
         $event = new WebhookEvent($data, self::WEBHOOK_EVENT);
 
-        $this->expectException(WebhookEventException::class);
+        $this->expectException(WebhookEventRetryException::class);
         $this->expectExceptionMessage(
-            WebhookEventException::byPayPalOrderId($payPalOrderId)->getMessage()
+            WebhookEventRetryException::byPayPalOrderId($payPalOrderId)->getMessage()
         );
 
         $handler = oxNew(static::HANDLER_CLASS);

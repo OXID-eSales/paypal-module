@@ -16,6 +16,7 @@ use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureRefundedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventRetryException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 
 final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
@@ -48,9 +49,9 @@ final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
         $data = $this->getRequestData(self::FIXTURE);
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
-        $this->expectException(WebhookEventException::class);
+        $this->expectException(WebhookEventRetryException::class);
         $this->expectExceptionMessage(
-            WebhookEventException::byPayPalTransactionId('5YH4578629195611S')->getMessage()
+            WebhookEventRetryException::byPayPalTransactionId('5YH4578629195611S')->getMessage()
         );
 
         $handler = oxNew(PaymentCaptureRefundedHandler::class);
