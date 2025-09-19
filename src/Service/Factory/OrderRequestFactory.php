@@ -729,7 +729,7 @@ class OrderRequestFactory
         }
     }
 
-    private function getVaultingService()
+    protected function getVaultingService()
     {
         return Registry::get(ServiceFactory::class)->getVaultingService();
     }

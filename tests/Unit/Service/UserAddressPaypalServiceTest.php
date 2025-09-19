@@ -10,6 +10,7 @@ use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidEsales\EshopCommunity\Tests\Integration\Internal\ContainerTrait;
+use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 
 class UserAddressPaypalServiceTest extends UnitTestCase
@@ -45,7 +46,7 @@ class UserAddressPaypalServiceTest extends UnitTestCase
         $oAddress = oxNew(Address::class);
         $oAddress->assign($newInvoiceAddress);
         $oAddress->save();
-
+        $invoiceAddressOxid = $oAddress->getId();
         $newDeliveryAddress = [
             'oxaddress__oxuserid' => $userId,
             'oxaddress__oxfname' => 'Johan',
