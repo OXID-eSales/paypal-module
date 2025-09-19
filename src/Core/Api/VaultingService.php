@@ -178,14 +178,18 @@ class VaultingService extends BaseService
         $vaultPaymentOnSuccess = Registry::getRequest()->getRequestParameter("vaultPayment");
         $vaultPaymentOnSuccess = filter_var($vaultPaymentOnSuccess, FILTER_VALIDATE_BOOLEAN);
         if ($vaultPaymentOnSuccess) {
+            $customerId = $user->getFieldData("oscpaypalcustomerid");
             $attributes = [
-                "customer" => [
-                    "id" => $user->getFieldData("oscpaypalcustomerid")
-                ],
                 "vault" => [
                     "store_in_vault" => "ON_SUCCESS",
                 ]
             ];
+
+            if (!empty($customerId)) {
+                $attributes['vault'] += [
+                    "customer_id" => $customerId,
+                ];
+            }
 
             if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL) {
                 $attributes['vault'] += [

@@ -73,6 +73,7 @@ class PayPalSession
     public static function unsetPayPalSession()
     {
         self::unsetPayPalOrderId();
+        self::unsetPayPalOrder();
 
         $session = Registry::getSession();
         $basket = $session->getBasket();

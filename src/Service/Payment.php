@@ -150,6 +150,9 @@ class Payment
                 $payPalClientMetadataId,
                 'return=minimal'
             );
+
+            $response->payment_source = $request->payment_source;
+            PayPalSession::storePayPalOrder((array)$response);
         } catch (ApiException $exception) {
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {

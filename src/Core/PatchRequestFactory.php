@@ -53,16 +53,7 @@ class PatchRequestFactory
         $deliveryAddress = oxNew(Address::class);
         $order = oxNew(Order::class);
         $order->load($orderId);
-
-        // $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        $patches = array_values(
-            array_filter([
-                $this->getAmountPatch(),
-                // patching the ordernumber is not necessary at the moment
-                // $orderId ? $this->getCustomIdPatch($paymentService->getCustomIdParameter($order)) : null,
-                //$this->getPurchaseUnitsPatch()
-            ])
-        );
+        $patches = [];
 
         if ($deliveryId && $deliveryAddress->load($deliveryId)) {
             $patches[] = $this->getShippingNamePatch($deliveryAddress);

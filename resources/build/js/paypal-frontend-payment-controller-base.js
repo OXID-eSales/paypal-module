@@ -113,59 +113,7 @@
             });
         };
 
-        this.vaultPayment = async function (details) {
-            try {
-                if (details.payment_source.paypal) {
-                    const vaultToken = details.payment_source.paypal.attributes.vault.id;
-
-                    if (!vaultToken) {
-                        console.warn('No PayPal vault token found in order details');
-                        return;
-                    }
-
-                    const result = await PayPalPayment.backendRequest('updateOxUserWithPayPalCustomerIdUrl', {}, {
-                        'payPalCustomerId': details.payment_source.paypal.attributes.vault.customer.id,
-                    });
-
-                    if (result.status !== 'success') {
-                        console.error('Failed to store PayPal vault token:', result.message);
-                    }
-                } else if (details.payment_source.card) {
-                    const cardToken = details.payment_source.card.attributes.vault.id;
-                    if (!cardToken) {
-                        console.warn('No card vault token found in order details');
-                        return;
-                    }
-
-                    const result = await PayPalPayment.backendRequest('updateOxUserWithCardTokenUrl', {}, {
-                        'cardToken': cardToken,
-                        'cardDetails': details.payment_source.card
-                    });
-
-                    if (result.status !== 'success') {
-                        console.error('Failed to store card vault token:', result.message);
-                    }
-                }
-            } catch (error) {
-                console.error('Error processing vault token:', error);
-            }
-        };
-
-        this.afterCaptureOrder = async function (details) {
-            const result = await PayPalPayment.patchOrder(details);
-
-            if (result.error) {
-                console.error('Failed to patch order:', result.error);
-                PayPalPayment.handleError();
-                return;
-            }
-
-            const {paypalOrderDetails} = result;
-
-            if (paypalOrderDetails && paypalOrderDetails.payment_source) {
-                await PayPalPayment.vaultPayment(paypalOrderDetails);
-            }
-
+        this.thankYouPageRedirect = async function () {
             window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
         };
 

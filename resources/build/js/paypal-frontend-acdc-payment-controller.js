@@ -125,23 +125,14 @@
 
         this.handlePaymentAuthorization = async function (details) {
             const result = await PayPalPayment.authorizeOrder({});
-//@TODO figure out how to handle overlay with intent authorize
-//PayPalPayment.reactOnPayPalOverlayClosed = false;
+
             if (result.status === 'error' ){
                 PayPalPayment.showErrorMessage(result.message);
                 PayPalPayment.handleError(result.message);
             }
 
             if (result.status === 'success' && result.paymentStatus === 'success'){
-                let result = await PayPalPayment.backendRequest('shopOrderCompleteUrl', {}, {
-                    'orderId': PayPalPayment.currentOrder.shop.shopOrderId
-                });
-                if ('success' !== result.status) {
-                    return false; //some better err handlig here should be added
-                }
-
-                window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
-                return;
+                PayPalPayment.thankYouPageRedirect();
             }
         };
 
