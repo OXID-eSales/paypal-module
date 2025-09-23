@@ -199,6 +199,7 @@ class AjaxPaymentController extends ProxyController
         $user = $basket->getUser();
 
         $this->sendPayPalOrderMail($order, $basket, $user);
+        $this->dispatcher->dispatch(PayPalOrderMailEvent::NAME, $mailEvent);
 
         PayPalSession::unsetPayPalSession();
 
