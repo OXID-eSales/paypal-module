@@ -31,6 +31,8 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use OxidSolutionCatalysts\PayPal\Event\PayPalOrderCompletedEvent;
 
 class AjaxPaymentController extends ProxyController
 {
@@ -52,6 +54,9 @@ class AjaxPaymentController extends ProxyController
      */
     private $paymentService;
 
+    /** @var EventDispatcherInterface */
+    private $dispatcher;
+
     public function __construct()
     {
         parent::__construct();
@@ -61,6 +66,7 @@ class AjaxPaymentController extends ProxyController
         $this->logger = $logger;
         $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
         $this->paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $this->dispatcher = $this->getServiceFromContainer('event_dispatcher');
     }
 
     /**
@@ -144,18 +150,17 @@ class AjaxPaymentController extends ProxyController
             $transactionId = (string)$payPalOrder->purchase_units[0]->payments->captures[0]->id;
             $response['status'] = 'success';
 
-            $order->markOrderPaid();
-            $order->setTransId($transactionId);
-            $paymentService->trackPayPalOrder(
+            // Dispatch event for order completion actions
+            $event = new PayPalOrderCompletedEvent(
+                $order,
+                $basket,
+                $user,
                 $shopOrderId,
                 $payPalOrderId,
                 $paymentsId,
-                PayPalApiOrder::STATUS_COMPLETED,
                 $transactionId
             );
-
-            $this->sendPayPalOrderMail($order, $basket, $user);
-            PayPalSession::unsetPayPalSession();
+            $this->dispatcher->dispatch(PayPalOrderCompletedEvent::NAME, $event);
 
             if ($capturePaymentForOrder) {
                 $response['paymentStatus'] = $capturePaymentForOrder->getCapturePaymentStatus() ? 'success' : 'error';
