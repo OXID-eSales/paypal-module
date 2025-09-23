@@ -1,0 +1,23 @@
+{
+  "name": "paypal-playwright",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@playwright/test": "^1.51.0",
+    "dotenv": "^17.0.1",
+    "mochawesome": "^7.1.3",
+    "mochawesome-merge": "^5.0.0",
+    "mochawesome-report-generator": "^6.2.0"
+  },
+  "dependencies": {
+    "playwright": "^1.53.2"
+  },
+  "scripts": {
+    "test:pw": "npm --prefix ./tests/e2e/playwright run test:pw",
+    "test:cy": "npm --prefix ./resources run test:cy",
+    "test:all": "npm run test:cy && npm run test:pw",
+    "test:pw:debug": "npm --prefix ./tests/e2e/playwright run test:pw:debug",
+    "test:pw2": "npm --prefix ./tests/e2e/playwright playwright test",
+    "test:all2": "npm --prefix ./tests/e2e/playwright run test:cy && npm run test:pw",
+    "test:pw:debug2": "npm --prefix ./tests/e2e/playwright playwright test --debug"
+  }
+}
