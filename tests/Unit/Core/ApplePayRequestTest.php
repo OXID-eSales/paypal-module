@@ -13,8 +13,10 @@ use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Config;
+use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session;
+use OxidEsales\EshopCommunity\Core\Language;
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
@@ -115,6 +117,21 @@ class ApplePayRequestTest extends UnitTestCase
 
         Registry::set('oxsession', $this->sessionMock);
         Registry::set('oxconfig', $this->configMock);
+
+        $mockLang = $this->createMock(\OxidEsales\Eshop\Core\Language::class);
+        $mockLang->method('translateString')
+            ->willReturnMap([
+                ['OSC_PAYPAL_DESCRIPTION', null, null, 'Payment at %s'],
+                // Add more keys if needed
+            ]);
+
+        Registry::set(\OxidEsales\Eshop\Core\Language::class, $mockLang);
+        // Create price mock
+        $priceMock = $this->createMock(Price::class);
+        $priceMock->method('getBruttoPrice')->willReturn(10.00);
+
+        Registry::getSession()->setBasket($this->basketMock);
+        $this->basketMock->method('getPrice')->willReturn($priceMock);
     }
 
     public function testExperienceContextForCardPaymentWithVaulting(): void
@@ -538,6 +555,7 @@ class ApplePayRequestTest extends UnitTestCase
         $userMock = $this->createMock(User::class);
         $userMock->method('getFieldData')
             ->willReturn('paypal_customer_123');
+
         $this->sessionMock->method('getVariable')
             ->willReturnMap([
                 ['paymentid', $paymentId],
@@ -547,10 +565,13 @@ class ApplePayRequestTest extends UnitTestCase
             ->willReturn($this->basketMock);
         $this->basketMock->method('getPaymentId')
             ->willReturn($paymentId);
+
         $this->basketMock->method('isCalculationModeNetto')
             ->willReturn(false);
+
         $this->configMock->method('getUser')
             ->willReturn($userMock);
+
         $this->moduleSettingsMock->method('getIsVaultingActive')
             ->willReturn(false);
         $this->moduleSettingsMock->method('isSandbox')
@@ -559,8 +580,10 @@ class ApplePayRequestTest extends UnitTestCase
             ->willReturn('SCA_WHEN_REQUIRED');
         $this->moduleSettingsMock->method('getShopName')
             ->willReturn('Test Shop');
+
         $this->vaultingServiceMock->method('fetchSelectedVaultedPaymentToken')
             ->willReturn(null);
+
         $this->mockRequiredBasketMethods();
     }
 
@@ -589,10 +612,31 @@ class ApplePayRequestTest extends UnitTestCase
         $this->moduleSettingsMock->method('getShopName')
             ->willReturn('Test Shop');
         $this->mockRequiredBasketMethods();
+
+        $mockLang = $this->createMock(\OxidEsales\Eshop\Core\Language::class);
+        $mockLang->method('translateString')
+            ->willReturnMap([
+                ['OSC_PAYPAL_DESCRIPTION', null, null, 'Payment at %s'],
+                // Add more keys if needed
+            ]);
+
+        Registry::set(\OxidEsales\Eshop\Core\Language::class, $mockLang);
+        // Create price mock
+        $priceMock = $this->createMock(Price::class);
+        $priceMock->method('getBruttoPrice')->willReturn(10.00);
+
+        Registry::getSession()->setBasket($this->basketMock);
+        $this->basketMock->method('getPrice')->willReturn($priceMock);
     }
 
     private function setupMocksForVaultingRequest(): void
     {
+        $mockLang = $this->createMock(\OxidEsales\Eshop\Core\Language::class);
+        $mockLang->method('translateString')
+            ->willReturnMap([
+                ['OSC_PAYPAL_DESCRIPTION', null, null, 'Payment at %s'],
+                // Add more keys if needed
+            ]);
         $userMock = $this->createMock(User::class);
         $requestMock = $this->getMockBuilder(\stdClass::class)
             ->addMethods(['getRequestParameter'])

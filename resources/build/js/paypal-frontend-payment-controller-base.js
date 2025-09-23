@@ -129,10 +129,6 @@
 
             const {paypalOrderDetails} = patchResult;
 
-            if (PayPalPayment.currentOrder.vaultPayment && paypalOrderDetails && paypalOrderDetails.payment_source) {
-                await PayPalPayment.vaultPayment(paypalOrderDetails);
-            }
-
             const result = await PayPalPayment.authorizeOrder(paypalOrderDetails);
 
             if (result.paymentStatus === 'success' ){

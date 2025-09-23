@@ -81,7 +81,7 @@ class OrderRequestFactory
     /**
      * @var \OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory
      */
-    private PayPalPurchaseUnitsFactory $purchaseUnitsFactory;
+    private $purchaseUnitsFactory;
 
     public function __construct(PayPalPurchaseUnitsFactory $purchaseUnitsFactory, ModuleSettings $moduleSettings)
     {
@@ -134,7 +134,7 @@ class OrderRequestFactory
         }
 
         $request->intent = $intent;
-        $request->purchase_units = $this->getPurchaseUnits($customId, $invoiceId, $withItems);
+        $request->purchase_units = $this->purchaseUnitsFactory->getPurchaseUnits($customId, $invoiceId);
         $vaultingService = $this->getVaultingService();
         $user = Registry::getConfig()->getUser() instanceof User ? Registry::getConfig()->getUser() : null;
         $selectedPaymentToken = $vaultingService->fetchSelectedVaultedPaymentToken(

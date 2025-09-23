@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Config;
+use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Session;
 use OxidEsales\TestingLibrary\UnitTestCase;
@@ -113,6 +114,21 @@ class PaypalPaymentTest extends UnitTestCase
 
         Registry::set('oxsession', $this->sessionMock);
         Registry::set('oxconfig', $this->configMock);
+
+        $mockLang = $this->createMock(\OxidEsales\Eshop\Core\Language::class);
+        $mockLang->method('translateString')
+            ->willReturnMap([
+                ['OSC_PAYPAL_DESCRIPTION', null, null, 'Payment at %s'],
+                // Add more keys if needed
+            ]);
+
+        Registry::set(\OxidEsales\Eshop\Core\Language::class, $mockLang);
+        // Create price mock
+        $priceMock = $this->createMock(Price::class);
+        $priceMock->method('getBruttoPrice')->willReturn(10.00);
+
+        Registry::getSession()->setBasket($this->basketMock);
+        $this->basketMock->method('getPrice')->willReturn($priceMock);
     }
 
     public function testGetRequest()
@@ -405,6 +421,7 @@ class PaypalPaymentTest extends UnitTestCase
                 }
             }
         }
+        Registry::getSession()->setBasket($basketBackup);
     }
 
 

@@ -627,13 +627,23 @@ class AjaxPaymentController extends ProxyController
         }
 
         try {
-            $result = $paymentService->doAuthorizePayment($checkoutOrderId, $shopOrderId, $paymentId);
+            $authorizePaymentResult = $paymentService->doAuthorizePayment($checkoutOrderId, $shopOrderId, $paymentId);
 
-            if($result["status"] === 'success' && $result["paymentStatus"] === 'success') {
-                $this->completeOrder(false);
+            if($authorizePaymentResult["status"] === 'success' && $authorizePaymentResult["paymentStatus"] === 'success') {
+                $completeOrderResult = $this->completeOrder(false);
+
+                if ($completeOrderResult["status"] === 'success') {
+                    $this->outputJson([
+                        'status' => 'success',
+                        'paymentStatus' => $authorizePaymentResult["paymentStatus"]
+                    ]);
+                }
             }
 
-            $this->outputJson($result);
+            $this->outputJson([
+                'status' => 'error',
+                'message' => 'OSC_PAYPAL_ORDEREXECUTION_ERROR'
+            ]);
         } catch (Exception $exception) {
             if ($moduleSettings->getPayPalDebugLevel() === 'debug') {
                 $this->logger->log('debug', 'Error during payment authorization.', [$exception->getMessage()]);
