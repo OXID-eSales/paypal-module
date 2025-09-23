@@ -792,6 +792,14 @@
         <button type="submit" class="btn btn-primary bottom-space">[{oxmultilang ident="GENERAL_SAVE"}]</button>
     </form>
 </div>
-[{include file="bottomitem.tpl"}]
-
+[{oxscript include="js/libs/jquery.min.js"}]
+[{oxscript include="js/libs/jquery-ui.min.js"}]
+[{oxscript include="js/widgets/oxmoduleconfiguration.js"}]
+[{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','src/js/bootstrap.min.js')|filemtime}]
+[{oxscript include=$oViewConf->getModuleUrl('osc_paypal','src/js/bootstrap.min.js')|cat:"?"|cat:$sFileMTime priority=6}]
+[{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','src/js/paypal-admin.min.js')|filemtime}]
+[{oxscript include=$oViewConf->getModuleUrl('osc_paypal','src/js/paypal-admin.min.js')|cat:"?"|cat:$sFileMTime priority=8}]
+[{oxscript add="$('#configForm').oxModuleConfiguration();" priority=10}]
 <script id="paypal-js" src="https://www.paypal.com/webapps/merchantboarding/js/lib/lightbox/partner.js"></script>
+
+[{include file="bottomitem.tpl"}]

@@ -87,6 +87,7 @@
 
         [{if $phpStorm}]</script>[{/if}]
     [{/capture}]
+    [{oxscript include="js/libs/jquery.min.js"}]
     [{oxscript add=$smarty.capture.populateCarrierScript}]
     <tr>
         <td class="edittext" colspan="3">

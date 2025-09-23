@@ -174,11 +174,6 @@ $aModule = [
             'file' => 'views/smarty/extensions/themes/admin/admin_headitem_inccss.tpl'
         ],
         [
-            'template' => 'headitem.tpl',
-            'block' => 'admin_headitem_incjs',
-            'file' => 'views/smarty/extensions/themes/admin/admin_headitem_incjs.tpl'
-        ],
-        [
             'template' => 'order_main.tpl',
             'block' => 'admin_order_main_form_shipping',
             'file' => 'views/smarty/extensions/themes/admin/admin_order_main_form_shipping.tpl'

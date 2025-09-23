@@ -10,24 +10,3 @@
     {% endif %}
     {{ parent() }}
 {% endblock %}
-
-{% block admin_headitem_incjs %}
-    {% if (
-        oViewConf.getTopActiveClassName()|lower == "module_config" and oModule.getInfo('id') == 'osc_paypal'
-        ) or oViewConf.getTopActiveClassName()|lower == "oscpaypalorder"
-    %}
-        {{ script({ include: "js/libs/jquery.min.js", dynamic: __oxid_include_dynamic }) }}
-        {{ script({ add: "$.noConflict();", priority: 10, dynamic: __oxid_include_dynamic }) }}
-        {% if oViewConf.getTopActiveClassName()|lower == "module_config" %}
-            {{ script({ include: "js/libs/jquery-ui.min.js", dynamic: __oxid_include_dynamic }) }}
-            {#
-            {{ script({ include: "js/widgets/oxmoduleconfiguration.js", dynamic: __oxid_include_dynamic }) }}
-
-            {{ script({ add: "$('#configForm').oxModuleConfiguration();", priority: 10, dynamic: __oxid_include_dynamic }) }}
-            {{ script({ add: "$.noConflict();", priority: 10, dynamic: __oxid_include_dynamic }) }}
-#}
-            {{ script({ include: oViewConf.getModuleUrl('osc_paypal','src/js/paypal-admin.min.js'), priority: 10, dynamic: __oxid_include_dynamic }) }}
-        {% endif %}
-    {% endif %}
-    {{ parent() }}
-{% endblock %}

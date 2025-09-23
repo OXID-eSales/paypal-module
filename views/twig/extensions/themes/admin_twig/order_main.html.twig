@@ -96,6 +96,7 @@
 
             {% if phpStorm %}</script>{% endif %}
         {% endset %}
+        {{ script({ include: "js/libs/jquery.min.js", dynamic: __oxid_include_dynamic }) }}
         {{ script({ add: populateCarrierScript.__toString(), priority: 10, dynamic: __oxid_include_dynamic }) }}
         <tr>
             <td class="edittext" colspan="3">
