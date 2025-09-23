@@ -186,7 +186,6 @@ jobs:
             source/var/*
             source/source/log/oxideshop.log
             source/composer.json
-            
 
   styles:
     strategy:

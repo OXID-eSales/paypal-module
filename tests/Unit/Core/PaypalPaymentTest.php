@@ -331,7 +331,7 @@ class PaypalPaymentTest extends UnitTestCase
             if (is_object($puiSource->experience_context)) {
                 $experienceContext = $puiSource->experience_context;
                 $this->assertIsObject($experienceContext);
-                $this->assertInstanceOf(OrderExperienceContext::class, $experienceContext);
+                $this->assertInstanceOf( \OxidSolutionCatalysts\PayPalApi\Pui\ExperienceContext::class, $experienceContext);
                 $this->assertTrue(
                     !empty($experienceContext->brand_name) && !empty($experienceContext->locale) && !empty($experienceContext->customer_service_instructions),
                     'PUI experience context should have PUI-specific properties'
