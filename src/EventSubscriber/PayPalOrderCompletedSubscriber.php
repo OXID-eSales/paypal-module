@@ -6,16 +6,21 @@ use OxidSolutionCatalysts\PayPal\Event\PayPalOrderCompletedEvent;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Event\PayPalVaultingSucceededEvent;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class PayPalOrderCompletedSubscriber implements EventSubscriberInterface
 {
     /** @var PaymentService */
     private $paymentService;
+    /** @var EventDispatcherInterface */
+    private $dispatcher;
 
-    public function __construct(PaymentService $paymentService)
+    public function __construct(PaymentService $paymentService, EventDispatcherInterface $dispatcher)
     {
         $this->paymentService = $paymentService;
+        $this->dispatcher = $dispatcher;
     }
 
     public static function getSubscribedEvents(): array
@@ -57,5 +62,11 @@ class PayPalOrderCompletedSubscriber implements EventSubscriberInterface
 
         // cleanup session
         PayPalSession::unsetPayPalSession();
+
+        $customerId = $event->getPayPalCustomerId();
+        if (!empty($customerId)) {
+            $vaultEvent = new PayPalVaultingSucceededEvent($user, $customerId);
+            $this->dispatcher->dispatch(PayPalVaultingSucceededEvent::NAME, $vaultEvent);
+        }
     }
 }

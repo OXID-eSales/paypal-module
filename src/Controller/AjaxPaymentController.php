@@ -15,6 +15,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Field;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Event\PayPalVaultingSucceededEvent;
 use OxidSolutionCatalysts\PayPal\Model\Order as ShopOrder;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -128,6 +129,7 @@ class AjaxPaymentController extends ProxyController
         $basket = Registry::getSession()->getBasket();
         $user = $basket->getUser();
 
+        $payPalCustomerId = null;
         if ($vaultPayment) {
             if (isset($capturePaymentForOrder->payment_source->paypal->attributes->vault->customer["id"])) {
                 $payPalCustomerId = $capturePaymentForOrder->payment_source->paypal->attributes->vault->customer["id"];
@@ -135,10 +137,6 @@ class AjaxPaymentController extends ProxyController
 
             if (isset($capturePaymentForOrder->payment_source->card->attributes->vault->customer["id"])) {
                 $payPalCustomerId = $capturePaymentForOrder->payment_source->card->attributes->vault->customer["id"];
-            }
-
-            if (!empty($payPalCustomerId)) {
-                $this->updateOxUserWithPayPalCustomerId(['payPalCustomerId' => $payPalCustomerId]);
             }
         }
 
@@ -158,7 +156,8 @@ class AjaxPaymentController extends ProxyController
                 $shopOrderId,
                 $payPalOrderId,
                 $paymentsId,
-                $transactionId
+                $transactionId,
+                $payPalCustomerId
             );
             $this->dispatcher->dispatch(PayPalOrderCompletedEvent::NAME, $event);
 
@@ -199,7 +198,6 @@ class AjaxPaymentController extends ProxyController
         $user = $basket->getUser();
 
         $this->sendPayPalOrderMail($order, $basket, $user);
-        $this->dispatcher->dispatch(PayPalOrderMailEvent::NAME, $mailEvent);
 
         PayPalSession::unsetPayPalSession();
 

@@ -18,6 +18,7 @@ class PayPalOrderCompletedEvent extends Event
     private $payPalOrderId;
     private $paymentsId;
     private $transactionId;
+    private $payPalCustomerId; // optional vaulting customer id
 
     public function __construct(
         Order $order,
@@ -26,7 +27,8 @@ class PayPalOrderCompletedEvent extends Event
         string $shopOrderId,
         string $payPalOrderId,
         string $paymentsId,
-        string $transactionId
+        string $transactionId,
+        ?string $payPalCustomerId = null
     ) {
         $this->order = $order;
         $this->basket = $basket;
@@ -35,6 +37,7 @@ class PayPalOrderCompletedEvent extends Event
         $this->payPalOrderId = $payPalOrderId;
         $this->paymentsId = $paymentsId;
         $this->transactionId = $transactionId;
+        $this->payPalCustomerId = $payPalCustomerId;
     }
 
     public function getOrder(): Order
@@ -70,5 +73,10 @@ class PayPalOrderCompletedEvent extends Event
     public function getTransactionId(): string
     {
         return $this->transactionId;
+    }
+
+    public function getPayPalCustomerId(): ?string
+    {
+        return $this->payPalCustomerId;
     }
 }
