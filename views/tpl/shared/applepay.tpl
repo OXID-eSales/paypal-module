@@ -219,8 +219,7 @@
                     [{/if}]
 
                     if (order_details.status === "APPROVED") {
-                        await onApprove(order_details);
-                        await onCreated(order_details);
+                        await onApprove(order_details).then(() => onCreated(order_details));
                     } else {
                         session.completePayment(session.STATUS_FAILURE);
                         throw new Error("payment was not completed, please view console for more information");
