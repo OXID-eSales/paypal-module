@@ -293,6 +293,7 @@
                 [{/if}]
                 const captureData = new FormData();
                 captureData.append('orderID', confirmOrderResponse.id);
+                debugger
                 return fetch('[{$sSelfLink|cat:"cl=order&fnc=captureApplePayOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken|cat:"&sDeliveryAddressMD5="|cat:$oView->getDeliveryAddressMD5()}]', {
                     method: 'post',
                     body: captureData
