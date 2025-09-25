@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\Application\Model\Order;
 
 class PayPalSession
 {
@@ -127,6 +128,18 @@ class PayPalSession
     public static function getCheckoutOrderId()
     {
         return Registry::getSession()->getVariable(Constants::SESSION_CHECKOUT_ORDER_ID);
+    }
+
+    public static function getCheckoutOrder(): ?Order
+    {
+        $payPalOrderId = self::getCheckoutOrderId();
+        $order = oxNew(Order::class);
+        $order->load($payPalOrderId);
+        if ($order->getId() == null) {
+            return null;
+        }
+
+        return $order;
     }
 
     public static function setSessionRedirectLink(string $link): void
