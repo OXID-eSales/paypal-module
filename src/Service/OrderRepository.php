@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
+use OxidEsales\Eshop\Application\Model\Order;
+use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use PDO;
 use Doctrine\DBAL\Query\QueryBuilder;
@@ -265,5 +267,22 @@ class OrderRepository
             ->fetch(PDO::FETCH_COLUMN);
 
         return (string) $id;
+    }
+
+    /**
+     * @return string
+     */
+    public function fetchCurrentShopOrderId(): string
+    {
+        return (string)Registry::getSession()->getVariable('sess_challenge');
+    }
+
+    public function fetchCurrentShopOrder(): Order
+    {
+        $shopOrderId = $this->fetchCurrentShopOrderId();
+        $order = oxNew(Order::class);
+        $order->load($shopOrderId);
+
+        return $order;
     }
 }

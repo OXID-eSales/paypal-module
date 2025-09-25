@@ -23,7 +23,9 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Service\OrderManager;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
+use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -58,6 +60,12 @@ class AjaxPaymentController extends ProxyController
     /** @var EventDispatcherInterface */
     private $dispatcher;
 
+    /** @var \OxidSolutionCatalysts\PayPal\Service\OrderRepository  */
+    private $orderRepository;
+
+    /** @var \OxidSolutionCatalysts\PayPal\Service\OrderManager */
+    private $orderManager;
+
     public function __construct()
     {
         parent::__construct();
@@ -68,6 +76,8 @@ class AjaxPaymentController extends ProxyController
         $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
         $this->paymentService = $this->getServiceFromContainer(PaymentService::class);
         $this->dispatcher = $this->getServiceFromContainer('event_dispatcher');
+        $this->orderRepository = $this->getServiceFromContainer(OrderRepository::class);
+        $this->orderManager = $this->getServiceFromContainer(OrderManager::class);
     }
 
     /**
@@ -123,9 +133,8 @@ class AjaxPaymentController extends ProxyController
                 'message' => $translatedErrorMessage
             ]);
         }
-        $shopOrderId = (string)Registry::getSession()->getVariable('sess_challenge');
-        $order = oxNew(Order::class);
-        $order->load($shopOrderId);
+        $shopOrderId = $this->fetchCurrentShopOrderId();
+        $order = $this->fetchCurrentShopOrder();
         $basket = Registry::getSession()->getBasket();
         $user = $basket->getUser();
 
@@ -191,9 +200,7 @@ class AjaxPaymentController extends ProxyController
             $this->logger->log('debug', sprintf('Order with id %s capture', $payPalOrderId));
         }
 
-        $sessionOrderId = (string)Registry::getSession()->getVariable('sess_challenge');
-        $order = oxNew(Order::class);
-        $order->load($sessionOrderId);
+        $order = $this->orderRepository->fetchCurrentShopOrder();
         $basket = Registry::getSession()->getBasket();
         $user = $basket->getUser();
 
@@ -265,9 +272,8 @@ class AjaxPaymentController extends ProxyController
         );
 
         if ($response->id) {
-            $sessionOrderId = $basket->getOrderId();
-            $order = oxNew(Order::class);
-            $order->load($sessionOrderId);
+            $sessionOrderId = $this->orderRepository->fetchCurrentShopOrderId();
+            $order = $this->orderRepository->fetchCurrentShopOrder();
 
             PayPalSession::unsetPayPalSession();
 
@@ -549,37 +555,16 @@ class AjaxPaymentController extends ProxyController
 
     public function createShopOrder(): void
     {
-        /** @var PaymentService $paymentService */
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $data = $this->getRequestParameters();
-        $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'];
+        $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'] ?? null;
+        $paymentId = $data['paymentId'] ?? null;
+        $order = $this->orderManager->createShopOrder($paymentId);
 
-        $user = $this->getUser();
-        if ($user && !$user->loadActiveUser()) {
-            $this->permissionsCheck();
+        if (null === $order) {
+            return;
         }
 
-        $basket = Registry::getSession()->getBasket();
-        if (empty($basket->getPaymentId()) && !empty($data['paymentId'])) {
-            $basket->setPaymentId($data['paymentId']);
-        }
-
-        $order = oxNew(Order::class);
-        Registry::getSession()->deleteVariable('sess_challenge');
-
-        //finalizing an ordering process (validating, storing order into DB, setting status)
-        $success = $order->finalizeOrder($basket, $user, false);
-
-        Registry::getSession()->setVariable('sess_challenge', $basket->getOrderId());
-
-        // performing special actions after user finishes order (assignment to special user groups)
-        $user->onOrderExecute($basket, $success);
-
-        $this->outputJson([
-            'status' => 'success',
-            'shopOrderId' => $order->getId(),
-            'customId' => $paymentService->getCustomIdParameter($order)
-        ]);
+        $this->outputJson(array_merge(['status' => 'success'], $order));
     }
 
     /**
