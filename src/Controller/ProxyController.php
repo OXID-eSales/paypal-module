@@ -548,7 +548,7 @@ class ProxyController extends FrontendController
             false
         );
         if ($response->id) {
-            PayPalSession::storePayPalOrderId($response->id);
+            PayPalSession::storePayPalOrder((array)$response);
         }
 
         if (!$this->getUser()) {

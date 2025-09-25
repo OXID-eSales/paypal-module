@@ -467,9 +467,7 @@ class OrderController extends OrderController_parent
             return;
         }
 
-        $response = $paymentService->doCreatePatchedOrder(
-            Registry::getSession()->getBasket()
-        );
+        $response = PayPalSession::getCheckoutOrder();
 
         if (!($paypalOrderId = $response['id'])) {
             $this->outputJson(['error' => 'cannot create paypal order']);
