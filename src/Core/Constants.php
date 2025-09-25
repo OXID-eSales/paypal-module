@@ -15,6 +15,7 @@ class Constants
     public const PAYPAL_INTEGRATION_DATE = '2024-04-26';
     public const PAYPAL_ORDER_INTENT_CAPTURE = 'CAPTURE';
     public const PAYPAL_ORDER_INTENT_AUTHORIZE = 'AUTHORIZE';
+    public const SESSION_CHECKOUT_ORDER = 'paypal-checkout-session-order';
     public const SESSION_CHECKOUT_ORDER_ID = 'paypal-checkout-session';
     public const SESSION_REDIRECTLINK = 'paypal-session-checkout-redirect';
     public const SESSION_PSEUDODELIVERYCOSTUSED = 'paypal-pseudodeliverycost-used';

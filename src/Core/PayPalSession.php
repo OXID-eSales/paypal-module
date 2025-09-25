@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\EshopCommunity\Application\Model\Order;
 
 class PayPalSession
 {
@@ -24,6 +23,40 @@ class PayPalSession
         Registry::getSession()->setVariable(
             Constants::SESSION_CHECKOUT_ORDER_ID,
             $checkoutOrderId
+        );
+    }
+
+    /**
+     * PayPal store checkoutOrderId
+     *
+     * @param $checkoutOrderId
+     */
+    public static function storePayPalOrder(array $checkoutOrder): void
+    {
+        self::storePayPalOrderId($checkoutOrder['id'] ?? '');
+        Registry::getSession()->setVariable(
+            Constants::SESSION_CHECKOUT_ORDER,
+            $checkoutOrder
+        );
+    }
+
+    /**
+     * PayPal checkout order getter
+     *
+     * @return mixed
+     */
+    public static function getCheckoutOrder()
+    {
+        return Registry::getSession()->getVariable(Constants::SESSION_CHECKOUT_ORDER);
+    }
+
+    /**
+     * PayPal remove checkoutOrder
+     */
+    public static function unsetPayPalOrder(): void
+    {
+        Registry::getSession()->deleteVariable(
+            Constants::SESSION_CHECKOUT_ORDER
         );
     }
 
@@ -128,18 +161,6 @@ class PayPalSession
     public static function getCheckoutOrderId()
     {
         return Registry::getSession()->getVariable(Constants::SESSION_CHECKOUT_ORDER_ID);
-    }
-
-    public static function getCheckoutOrder(): ?Order
-    {
-        $payPalOrderId = self::getCheckoutOrderId();
-        $order = oxNew(Order::class);
-        $order->load($payPalOrderId);
-        if ($order->getId() == null) {
-            return null;
-        }
-
-        return $order;
     }
 
     public static function setSessionRedirectLink(string $link): void
