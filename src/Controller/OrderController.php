@@ -489,9 +489,17 @@ class OrderController extends OrderController_parent
     }
     public function captureApplePayOrder()
     {
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
         $orderId = (string) Registry::getRequest()->getRequestEscapedParameter('orderID');
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();
         $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
+
+        if ($orderId === '' || $sessionOrderId === '') {
+            $logger->log('error', 'captureApplePayOrder missing orderID or sessionOrderId');
+            throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
+        }
+
         $request = new OrderCaptureRequest();
         /** @var LoggerInterface $logger */
         $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
@@ -505,8 +513,6 @@ class OrderController extends OrderController_parent
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
         } catch (ApiException $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             $logger->log('error', $exception->getMessage(), [$exception]);
 
             throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR' . $exception->getMessage());
