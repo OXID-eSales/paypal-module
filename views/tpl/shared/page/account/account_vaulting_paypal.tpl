@@ -1,4 +1,3 @@
-[{assign var="config" value=$oViewConf->getPayPalCheckoutConfig()}]
 [{capture append="oxidBlock_content"}]
     [{assign var="template_title" value="OSC_PAYPAL_VAULTING_MENU"|oxmultilangassign}]
 

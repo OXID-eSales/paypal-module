@@ -15,7 +15,7 @@
 
 [{block name="email_plain_pui_paymentinfo_shippingheader"}]
     [{oxmultilang ident="SHIPPING_ADDRESS"}]
-{/block}]
+[{/block}]
 
 [{block name="email_plain_pui_paymentinfo_shippingaddress"}]
     [{if $order->oxorder__oxdellname->value }]
