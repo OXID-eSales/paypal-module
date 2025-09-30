@@ -8,7 +8,7 @@
         <div class="card-body" id="savedPaymentCards">
             [{foreach from=$vaultedPaymentSources name=paymentTokens item=paymentToken}]
                 <div class="payment-method">
-                    <form action="[{$oViewConf->getSslSelfLink()}]" method="post">
+                    <form action="[{$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]" method="post">
                         <div class="d-none">
                             [{$oViewConf->getHiddenSid()}]
                             <input type="hidden" name="cl" value="[{$oViewConf->getActiveClassName()}]">
@@ -39,9 +39,9 @@
     </div>
 [{/if}]
 
-<div class="payment-method" style="margin-top: 20px; text-align: right;">
+<div class="payment-method mt-4 text-right">
     <form action="[{$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]" method="post">
-        <div class="hidden">
+        <div class="d-none">
             [{$oViewConf->getHiddenSid()}]
             <input type="hidden" name="cl" value="[{$oViewConf->getActiveClassName()}]">
             <input type="hidden" name="fnc" value="clearVaultedTokenCache">
