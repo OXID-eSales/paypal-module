@@ -1,4 +1,5 @@
 [{if $vaultedPaymentSources}]
+
     <div class="panel panel-default">
         <div class="panel-heading">
             <h3 id="paymentHeader" class="card-title">[{oxmultilang ident="OSC_PAYPAL_VAULTING_VAULTED_PAYMENTS"}]</h3>

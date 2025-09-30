@@ -4,7 +4,7 @@
         [{assign var="PayPalSDKJS" value=$oConfig->getGlobalParameter("PayPalSDKJS")}]
         [{if !$PayPalSDKJS}]
             [{capture assign="PayPalSDKJS"}]
-                [{include file="@osc_paypal/frontend/shared/layout/base_js.tpl" commitFlow=$commitFlow}]
+                [{include file="@osc_paypal/frontend/shared/layout/base_js.tpl" commitFlow=false}]
             [{/capture}]
             [{$oConfig->setGlobalParameter("PayPalSDKJS", $PayPalSDKJS)}]
         [{/if}]
@@ -219,8 +219,7 @@
                     [{/if}]
 
                     if (order_details.status === "APPROVED") {
-                        await onApprove(order_details);
-                        await onCreated(order_details);
+                        await onApprove(order_details).then(() => onCreated(order_details));
                     } else {
                         session.completePayment(session.STATUS_FAILURE);
                         throw new Error("payment was not completed, please view console for more information");
@@ -294,7 +293,7 @@
                 [{/if}]
                 const captureData = new FormData();
                 captureData.append('orderID', confirmOrderResponse.id);
-                return fetch('[{$sSelfLink|cat:"cl=order&fnc=captureApplePayOrder&context=continue&stoken="|cat:$sToken|cat:"&sDeliveryAddressMD5="|cat:$oView->getDeliveryAddressMD5()}]', {
+                return fetch('[{$sSelfLink|cat:"cl=order&fnc=captureApplePayOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken|cat:"&sDeliveryAddressMD5="|cat:$oView->getDeliveryAddressMD5()}]', {
                     method: 'post',
                     body: captureData
                 }).then(function (res) {

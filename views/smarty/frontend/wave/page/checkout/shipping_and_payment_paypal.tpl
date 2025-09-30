@@ -46,7 +46,7 @@
                     [{if $oscpaypal_isVaultingPossible}]
                         <br>
                         <br>
-                        <input type="checkbox" id="oscPayPalVaultPaymentCheckbox" onclick="setVaultingCheckbox()">
+                        <input type="checkbox" id="oscPayPalVaultPaymentCheckbox">
                         <label for="oscPayPalVaultPaymentCheckbox">[{oxmultilang ident="OSC_PAYPAL_VAULTING_SAVE"}]</label>
                     [{/if}]
                 </div>
@@ -54,5 +54,3 @@
         </form>
     </div>
 </div>
-
-

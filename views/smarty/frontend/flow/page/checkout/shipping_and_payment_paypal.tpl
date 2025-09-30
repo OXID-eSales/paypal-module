@@ -1,6 +1,6 @@
 <div class="row">
     <div class="col-xs-12 col-md-6" id="orderShipping">
-        <form action="[{$oViewConf->getSslSelfLink()}]" method="post">
+        <form action="[{$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]" method="post">
             <div class="hidden">
                 [{$oViewConf->getHiddenSid()}]
                 <input type="hidden" name="cl" value="payment">
@@ -24,7 +24,7 @@
         </form>
     </div>
     <div class="col-xs-12 col-md-6" id="orderPayment">
-        <form action="[{$oViewConf->getSslSelfLink()}]" method="post">
+        <form action="[{$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]" method="post">
             <div class="hidden">
                 [{$oViewConf->getHiddenSid()}]
                 <input type="hidden" name="cl" value="payment">
@@ -54,5 +54,3 @@
         </form>
     </div>
 </div>
-
-

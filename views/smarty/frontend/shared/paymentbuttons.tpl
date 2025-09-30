@@ -1,14 +1,17 @@
 [{block name="oscpaypal_paymentbuttons"}]
     [{oxhasrights ident="PAYWITHPAYPALEXPRESS"}]
-    [{assign var="oConfig" value=$oViewConf->getConfig()}]
-    [{assign var="PayPalSDKJS" value=$oConfig->getGlobalParameter("PayPalSDKJS")}]
-    [{if !$PayPalSDKJS}]
-        [{capture assign="PayPalSDKJS"}]
-            [{include file="@osc_paypal/frontend/shared/layout/base_js.tpl" commitFlow=false}]
-        [{/capture}]
-            [{assign var="oConfig" value=$oViewConf->getConfig()}]
-    [{$oConfig->setGlobalParameter("PayPalSDKJS", $PayPalSDKJS)}]
-    [{/if}]
+        [{assign var="oConfig" value=$oViewConf->getConfig()}]
+        [{assign var="sDebug" value=""}]
+        [{if $oViewConf->isPayPalSandbox()}]
+            [{assign var="sDebug" value="&XDEBUG_SESSION_START=1"}]
+        [{/if}]
+        [{assign var="PayPalSDKJS" value=$oConfig->getGlobalParameter("PayPalSDKJS")}]
+        [{if !$PayPalSDKJS}]
+            [{capture assign="PayPalSDKJS"}]
+                [{include file="@osc_paypal/frontend/shared/layout/base_js.tpl" commitFlow=false}]
+            [{/capture}]
+            [{$oConfig->setGlobalParameter("PayPalSDKJS", $PayPalSDKJS)}]
+        [{/if}]
         <div id="[{$buttonId}]" class="paypal-button-container [{$buttonClass}]"></div>
         [{if $phpStorm}]<script>[{/if}]
         [{capture assign="paypal_init"}]
@@ -30,7 +33,7 @@
                         style: PayPalButtonStyle,
                         fundingSource: fundingSource,
                         createOrder: function (data, actions) {
-                            return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&paymentid="|cat:$buttonId|cat:"&context=continue&stoken="|cat:$sToken}]', {
+                            return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&paymentid="|cat:$buttonId|cat:"&context=continue&stoken="|cat:$sToken|cat:$sDebug}]', {
                                 method: 'post',
                                 headers: {
                                     'content-type': 'application/json'
@@ -44,7 +47,7 @@
                         onApprove: async function (data, actions) {
                             captureData = new FormData();
                             captureData.append('orderID', data.orderID);
-                            return await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&paymentid="|cat:$buttonId|cat:"&context=continue&stoken="|cat:$sToken}]', {
+                            return await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&paymentid="|cat:$buttonId|cat:"&context=continue&stoken="|cat:$sToken|cat:$sDebug}]', {
                                 method: 'post',
                                 body: captureData
                             }).then(function (res) {
@@ -59,7 +62,7 @@
                         },
                         onCancel: async function (data, actions) {
                             try {
-                                const response = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
+                                const response = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"|cat:$sDebug}]');
                                 if (!response.ok) {
                                     console.error('Failed to cancel PayPal payment:', response.statusText);
                                 }
@@ -69,7 +72,7 @@
                         },
                         onError: async function (data) {
                             try {
-                                const response = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
+                                const response = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"|cat:$sDebug}]');
                                 if (!response.ok) {
                                     console.error('Failed to cancel PayPal payment:', response.statusText);
                                 }
@@ -113,8 +116,10 @@
                         let amountElement = document.getElementById("amountToBasket");
                         let amount = amountElement ? amountElement.value : 0;
                         params.append('amountToBasket', amount);
-                        let baseUrl = '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]';
+                        let baseUrl = '[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken|cat:$sDebug}]';
                         let url = baseUrl + (params.toString() ? '&' + params.toString() : '');
+                        window.PayPalExpressSession.started = true;
+                        window.history.pushState(null, ""); // needed to trigger the popstate event
                         return fetch(url , {
                                 method: 'post',
                                 headers: {
@@ -129,7 +134,7 @@
                     onApprove: async function (data, actions) {
                         captureData = new FormData();
                         captureData.append('orderID', data.orderID);
-                        return await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}]', {
+                        return await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=approveOrder&context=continue&aid="|cat:$aid|cat:"&stoken="|cat:$sToken|cat:$sDebug}]', {
                             method: 'post',
                             body: captureData
                         }).then(function (res) {
@@ -144,7 +149,7 @@
                     },
                     onCancel: async function (data, actions) {
                         try {
-                            const response = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
+                            const response = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"|cat:$sDebug}]');
                             if (!response.ok) {
                                 console.error('Failed to cancel PayPal payment:', response.statusText);
                             }
@@ -154,7 +159,7 @@
                     },
                     onError: async function (data) {
                         try {
-                            const response = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"}]');
+                            const response = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"|cat:$sDebug}]');
                         } catch (error) {
                             console.error('Error occurred while canceling PayPal payment:', error);
                         }
