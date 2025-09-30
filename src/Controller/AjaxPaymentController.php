@@ -103,7 +103,7 @@ class AjaxPaymentController extends ProxyController
         ];
 
         try {
-            $payPalOrder = new \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order(PayPalSession::getCheckoutOrder());
+            $payPalOrder = new PayPalApiOrder(PayPalSession::getCheckoutOrder());
 
             //Verify 3D result if acdc payment
             if (!$paymentService->verify3D($paymentId, $payPalOrder)) {
@@ -169,7 +169,7 @@ class AjaxPaymentController extends ProxyController
                 $transactionId,
                 $payPalCustomerId
             );
-            $this->dispatcher->dispatch(PayPalOrderCompletedEvent::NAME, $event);
+            $this->dispatcher->dispatch($event, PayPalOrderCompletedEvent::NAME);
 
             if ($capturePaymentForOrder) {
                 $response['paymentStatus'] = $capturePaymentForOrder->getCapturePaymentStatus() ? 'success' : 'error';
