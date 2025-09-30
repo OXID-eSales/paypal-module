@@ -248,6 +248,13 @@ jobs:
           docker compose up -d
           sleep 2    
 
+      - name: composer requires Symfony Event
+        run: |
+          docker compose exec -T \
+            php composer require symfony/event-dispatcher:^5.4 --no-interaction 
+          sleep 2
+
+
       - name: Run tests
         run: |
           docker compose exec -T \
