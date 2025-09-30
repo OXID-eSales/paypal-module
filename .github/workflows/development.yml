@@ -251,6 +251,8 @@ jobs:
       - name: Clean cache
         run: |
           rm -rf source/source/tmp/*
+          
+          
 
       - name: Run tests
         run: |
@@ -276,6 +278,7 @@ jobs:
             source/source/log/oxideshop.log
             source/composer.json
             source/composer.lock
+            source/vendor/composer
 
   playwright:
     strategy:
