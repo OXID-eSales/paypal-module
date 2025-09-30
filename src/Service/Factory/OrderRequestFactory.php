@@ -730,6 +730,12 @@ class OrderRequestFactory
             $newPaymentSource[$paymentSourceId]["experience_context"]["user_action"]
                 = $userAction ?? self::USER_ACTION_PAY_NOW;
 
+            $newPaymentSource[$paymentSourceId]["experience_context"]["return_url"]
+                = $returnUrl;
+
+            $newPaymentSource[$paymentSourceId]["experience_context"]["cancel_url"]
+                = $cancelUrl;
+
             $request->payment_source = $newPaymentSource;
         }
 
