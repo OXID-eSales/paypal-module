@@ -263,7 +263,7 @@ jobs:
             -e ADDITIONAL_TEST_PATHS='/var/www/vendor/oxid-solution-catalysts/paypal-module/tests' \
             php php vendor/bin/runtests \
               --log-junit=/var/www/phpunit.xml \
-              AllTestsUnit
+              AllTestsUnit --verbose 
 
       - name: Upload log artifact
         if: always()
