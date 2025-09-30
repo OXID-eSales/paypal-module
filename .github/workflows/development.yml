@@ -248,12 +248,9 @@ jobs:
           docker compose up -d
           sleep 2    
 
-      - name: composer requires Symfony Event
+      - name: Clean cache
         run: |
-          docker compose exec -T \
-            php composer require symfony/event-dispatcher:^5.4 --no-interaction 
-          sleep 2
-
+          rm -rf source/source/tmp/*
 
       - name: Run tests
         run: |
