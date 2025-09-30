@@ -21,7 +21,6 @@ use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Event\PayPalOrderCompletedEvent;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
@@ -141,7 +140,12 @@ class ProxyController extends FrontendController
      */
     public function createGooglePayOrder()
     {
-        $data = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
+        $data = json_decode(
+            file_get_contents('php://input'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
 
         $shippingAddress = new AddressPortable();
         $shippingAddress->address_line_1 = $data['shippingAddress']['address1'] ?? '';
@@ -367,7 +371,10 @@ class ProxyController extends FrontendController
                     $this->outputJson($response);
                 }
 
-                if (($response->intent === Constants::PAYPAL_ORDER_INTENT_CAPTURE) || ($captureStrategy === 'directly')) {
+                if (
+                    ($response->intent === Constants::PAYPAL_ORDER_INTENT_CAPTURE)
+                    || ($captureStrategy === 'directly')
+                ) {
                     // Capture payment now
                     $request = new OrderCaptureRequest();
                     try {
@@ -391,15 +398,18 @@ class ProxyController extends FrontendController
                     try {
                         $shopOrderId = (string)Registry::getSession()->getVariable('sess_challenge');
 
-                        if(null == $shopOrderId)
-                        {
+                        if (null == $shopOrderId) {
                             $shopOrder = $this->orderManager->createShopOrder();
                             $shopOrderId = $shopOrder['shopOrderId'];
                         }
 
-                        $authorizePaymentResult = $paymentService->doAuthorizePayment((string)$orderId, $shopOrderId, $paymentId);
+                        $authorizePaymentResult = $paymentService
+                            ->doAuthorizePayment((string)$orderId, $shopOrderId, $paymentId);
 
-                        if (!isset($authorizePaymentResult['status']) || $authorizePaymentResult['status'] !== 'success') {
+                        if (
+                            !isset($authorizePaymentResult['status'])
+                            || $authorizePaymentResult['status'] !== 'success'
+                        ) {
                             $response->status = 'ERROR';
                             PayPalSession::unsetPayPalOrderId();
                             Registry::getSession()->getBasket()->setPayment(null);
@@ -426,7 +436,11 @@ class ProxyController extends FrontendController
         PayPalSession::unsetPayPalSession();
         $redirect = Registry::getRequest()->getRequestParameter('redirect');
         if ($redirect === "1") {
-            Registry::getUtils()->redirect(Registry::getConfig()->getShopSecureHomeURL() . 'cl=payment', false, 301);
+            Registry::getUtils()->redirect(
+                Registry::getConfig()->getShopSecureHomeURL() . 'cl=payment',
+                false,
+                301
+            );
         }
         exit;
     }
@@ -539,8 +553,7 @@ class ProxyController extends FrontendController
 
     protected function getRequestedPayPalPaymentId(
         $defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
-    ): string
-    {
+    ): string {
         $paymentId = (string)Registry::getRequest()->getRequestEscapedParameter('paymentid');
         return PayPalDefinitions::isPayPalPayment($paymentId) ?
             $paymentId :
@@ -576,7 +589,12 @@ class ProxyController extends FrontendController
                 'lineItems' => [
                     [
                         'label' => 'Subtotal',
-                        'amount' => number_format((double)$basket->getBruttoSum(), 2, '.', ''),
+                        'amount' => number_format(
+                            (double)$basket->getBruttoSum(),
+                            2,
+                            '.',
+                            ''
+                        ),
                         'type' => 'final'
                     ],
                     [
@@ -586,7 +604,12 @@ class ProxyController extends FrontendController
                     ],
                     [
                         'label' => 'Shipping',
-                        'amount' => number_format($deliveryBruttoPrice, 2, '.', ''),
+                        'amount' => number_format(
+                            $deliveryBruttoPrice,
+                            2,
+                            '.',
+                            ''
+                        ),
                         'type' => 'final'
                     ]
                 ]

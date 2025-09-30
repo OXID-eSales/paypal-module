@@ -792,7 +792,7 @@ class OrderRequestFactoryTest extends UnitTestCase
                 $experienceContext = $puiSource->experience_context;
 
                 $this->assertIsObject($experienceContext);
-                $this->assertInstanceOf(\OxidSolutionCatalysts\PayPalApi\Pui\ExperienceContext::class, $experienceContext);
+                $this->assertInstanceOf( OrderExperienceContext::class, $experienceContext);
 
                 $this->assertTrue(
                     !empty($experienceContext->brand_name) &&

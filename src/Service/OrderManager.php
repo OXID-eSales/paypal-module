@@ -45,7 +45,8 @@ class OrderManager
         $this->queryBuilderFactory = $queryBuilderFactory;
         $this->config = $config;
         $this->paymentService = $paymentService;
-        $this->basket = Registry::getSession()->getBasket();;
+        $this->basket = Registry::getSession()->getBasket();
+        ;
     }
 
     /**

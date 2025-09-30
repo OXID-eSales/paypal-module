@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
+ */
+
+declare(strict_types=1);
+
 namespace OxidSolutionCatalysts\PayPal\EventSubscriber;
 
 use OxidSolutionCatalysts\PayPal\Event\PayPalOrderCompletedEvent;
@@ -12,10 +19,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class PayPalOrderCompletedSubscriber implements EventSubscriberInterface
 {
-    /** @var PaymentService */
-    private $paymentService;
-    /** @var EventDispatcherInterface */
-    private $dispatcher;
+    private PaymentService $paymentService;
+    private EventDispatcherInterface $dispatcher;
 
     public function __construct(PaymentService $paymentService, EventDispatcherInterface $dispatcher)
     {

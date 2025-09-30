@@ -15,7 +15,6 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Field;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Event\PayPalVaultingSucceededEvent;
 use OxidSolutionCatalysts\PayPal\Model\Order as ShopOrder;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -73,7 +72,9 @@ class AjaxPaymentController extends ProxyController
         /** @var LoggerInterface $logger */
         $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
         $this->logger = $logger;
-        $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
+        $this->orderProcessTrackingService = $this->getServiceFromContainer(
+            OrderProcessTrackingService::class
+        );
         $this->paymentService = $this->getServiceFromContainer(PaymentService::class);
         $this->dispatcher = $this->getServiceFromContainer('event_dispatcher');
         $this->orderRepository = $this->getServiceFromContainer(OrderRepository::class);
@@ -133,8 +134,8 @@ class AjaxPaymentController extends ProxyController
                 'message' => $translatedErrorMessage
             ]);
         }
-        $shopOrderId = $this->fetchCurrentShopOrderId();
-        $order = $this->fetchCurrentShopOrder();
+        $shopOrderId = $this->orderRepository->fetchCurrentShopOrderId();
+        $order = $this->orderRepository->fetchCurrentShopOrder();
         $basket = Registry::getSession()->getBasket();
         $user = $basket->getUser();
 
@@ -384,8 +385,7 @@ class AjaxPaymentController extends ProxyController
     public function permissionsCheck(
         ?string $shopOrderId = null,
         ?string $message = 'Operation not permitted'
-    ): void
-    {
+    ): void {
         $user = oxNew(User::class);
         $user->loadActiveUser();
 
@@ -643,7 +643,10 @@ class AjaxPaymentController extends ProxyController
         try {
             $authorizePaymentResult = $paymentService->doAuthorizePayment($checkoutOrderId, $shopOrderId, $paymentId);
 
-            if ($authorizePaymentResult["status"] === 'success' && $authorizePaymentResult["paymentStatus"] === 'success') {
+            if (
+                $authorizePaymentResult["status"] === 'success'
+                && $authorizePaymentResult["paymentStatus"] === 'success'
+            ) {
                 $completeOrderResult = $this->completeOrder(false);
 
                 if ($completeOrderResult["status"] === 'success') {
@@ -660,7 +663,11 @@ class AjaxPaymentController extends ProxyController
             ]);
         } catch (Exception $exception) {
             if ($moduleSettings->getPayPalDebugLevel() === 'debug') {
-                $this->logger->log('debug', 'Error during payment authorization.', [$exception->getMessage()]);
+                $this->logger->log(
+                    'debug',
+                    'Error during payment authorization.',
+                    [$exception->getMessage()]
+                );
             }
 
             $this->outputJson([

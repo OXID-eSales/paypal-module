@@ -246,7 +246,7 @@ jobs:
       - name: Start containers
         run: |
           docker compose up -d
-          sleep 2
+          sleep 2    
 
       - name: Run tests
         run: |
@@ -270,6 +270,11 @@ jobs:
             source/coverage.xml
             source/phpunit.xml
             source/source/log/oxideshop.log
+            source/composer.json
+            source/composer.lock
+            source/vendor/composer
+            source/vendor/autoload.php
+            source/vendor/symfony/event-dispatcher
 
   playwright:
     strategy:

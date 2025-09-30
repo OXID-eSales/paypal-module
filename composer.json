@@ -26,7 +26,8 @@
         "webmozart/path-util": "^2.3.0",
         "oxid-solution-catalysts/paypal-client": "^2.0.23|dev-b-6.3.x",
         "symfony/dotenv": "*",
-        "php": "^7.4|^8.0|^8.1"
+        "php": "^7.4|^8.0|^8.1",
+        "symfony/event-dispatcher": "^5.4"
     },
     "require-dev": {
         "codeception/module-rest": "^1.4.2",

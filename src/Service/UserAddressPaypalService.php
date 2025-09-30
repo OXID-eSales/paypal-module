@@ -29,7 +29,6 @@ class UserAddressPaypalService
         $oUser->assign($newInvoiceAddress);
 
         if (!empty($newDeliveryAddress)) {
-
             $queryBuilder = $this->queryBuilderFactory->create();
 
             $queryBuilder
