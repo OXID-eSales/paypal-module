@@ -272,9 +272,6 @@ jobs:
             source/source/log/oxideshop.log
             source/composer.json
             source/composer.lock
-            source/vendor/composer
-            source/vendor/autoload.php
-            source/vendor/symfony/event-dispatcher
 
   playwright:
     strategy:
