@@ -441,8 +441,7 @@ class Payment
     ): string {
         $redirectLink = '';
 
-        /** @var OrderRequestFactory $requestFactory */
-        $requestFactory = $this->getServiceFromContainer(OrderRequestFactory::class);
+        $requestFactory = $this->getServiceFromContainer(ConfirmOrderRequestFactory::class);
         /** @var ConfirmOrderRequest $request */
         $request = $requestFactory->getRequest(
             $basket,
@@ -457,7 +456,6 @@ class Payment
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
 
-        /** @var Order $response */
         $response = $orderService->confirmTheOrder(
             $payPalClientMetadataId,
             $checkoutOrderId,
