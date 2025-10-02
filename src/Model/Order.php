@@ -674,7 +674,11 @@ class Order extends Order_parent
                 return self::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS;
             }
 
-            $oSession->setVariable('isPayPalPaymentCheckout', true);
+            $paymentId = $this->paymentService->getSessionPaymentId();
+            $isPuiPayment = PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID === $paymentId;
+            if (!$isPuiPayment) {
+                $oSession->setVariable('isPayPalPaymentCheckout', true);
+            }
         }
 
         $result = parent::finalizeOrder($basket, $user, $recalculatingOrder);
@@ -688,6 +692,8 @@ class Order extends Order_parent
         ) {
             return self::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS;
         }
+
+        $oSession->deleteVariable('isPayPalPaymentCheckout');
 
         return $result;
     }
