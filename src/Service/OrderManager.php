@@ -66,12 +66,13 @@ class OrderManager
         }
 
         $order = oxNew(Order::class);
-        Registry::getSession()->deleteVariable('sess_challenge');
-
+        $session = Registry::getSession();
+        $session->deleteVariable('sess_challenge');
+        $session->setVariable('isPayPalPaymentCheckout', true);
         // finalizing an ordering process (validating, storing order into DB, setting status)
-        $success = $order->finalizeOrder($this->basket, $user, false);
-
-        Registry::getSession()->setVariable('sess_challenge', $this->basket->getOrderId());
+        $success = $order->finalizeOrder($this->basket, $user);
+        $session->deleteVariable('isPayPalPaymentCheckout');
+        $session->setVariable('sess_challenge', $this->basket->getOrderId());
 
         // performing special actions after user finishes order (assignment to special user groups)
         $user->onOrderExecute($this->basket, $success);

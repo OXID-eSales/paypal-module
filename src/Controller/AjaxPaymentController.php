@@ -322,7 +322,9 @@ class AjaxPaymentController extends ProxyController
         $session->setVariable('sess_challenge', Registry::getUtilsObject()->generateUID());
         try {
             //finalizing ordering process (validating, storing order into DB, executing payment, setting status ...)
+            $session->setVariable('isPayPalPaymentCheckout', true);
             $iSuccess = $order->finalizeOrder($basket, $user);
+            $session->deleteVariable('isPayPalPaymentCheckout');
 
             // performing special actions after user finishes order (assignment to special user groups)
             $user->onOrderExecute($basket, $iSuccess);
