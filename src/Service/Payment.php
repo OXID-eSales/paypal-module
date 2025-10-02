@@ -441,7 +441,7 @@ class Payment
     ): string {
         $redirectLink = '';
 
-        $requestFactory = $this->getServiceFromContainer(ConfirmOrderRequestFactory::class);
+        $requestFactory = Registry::get(ConfirmOrderRequestFactory::class);
         /** @var ConfirmOrderRequest $request */
         $request = $requestFactory->getRequest(
             $basket,
