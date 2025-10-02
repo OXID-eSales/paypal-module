@@ -675,8 +675,14 @@ class Order extends Order_parent
             }
 
             $paymentId = $this->paymentService->getSessionPaymentId();
-            $isPuiPayment = PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID === $paymentId;
-            if (!$isPuiPayment) {
+            $isNotForPayPalPaymentCheckout = in_array(
+                $paymentId, [
+                    PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID,
+                    PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
+                ],
+                true
+            );
+            if (!$isNotForPayPalPaymentCheckout) {
                 $oSession->setVariable('isPayPalPaymentCheckout', true);
             }
         }
