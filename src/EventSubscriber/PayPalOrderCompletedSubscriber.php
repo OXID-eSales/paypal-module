@@ -71,7 +71,7 @@ class PayPalOrderCompletedSubscriber implements EventSubscriberInterface
         $customerId = $event->getPayPalCustomerId();
         if (!empty($customerId)) {
             $vaultEvent = new PayPalVaultingSucceededEvent($user, $customerId);
-            $this->dispatcher->dispatch($vaultEvent, PayPalVaultingSucceededEvent::NAME);
+            $this->dispatcher->dispatch(PayPalVaultingSucceededEvent::NAME, $vaultEvent);
         }
     }
 }
