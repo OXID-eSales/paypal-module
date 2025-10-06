@@ -7,7 +7,7 @@
             paypal: null,
             vaultPayment: false
         };
-        this.currentOrder = null;
+        this.currentOrder = this.currentOrderDefaults;
         this.currentError = null;
         this.reactOnPayPalOverlayClosed = false;
 
