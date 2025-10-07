@@ -70,7 +70,10 @@ class PaymentController extends PaymentController_parent
                             $paymentTokenId = $vaultedPaymentToken['id'];
                             $label = '';
 
-                            if ($paymentId === PayPalDefinitions::PAYMENT_SOURCE_CARD && $moduleSettings->isVaultingAllowedForACDC()) {
+                            if (
+                                $paymentId === PayPalDefinitions::PAYMENT_SOURCE_CARD
+                                && $moduleSettings->isVaultingAllowedForACDC()
+                            ) {
                                 $labelPrefix = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
                                 $label = $paymentSource["brand"] . " " . $labelPrefix . $paymentSource["last_digits"];
                             }
@@ -140,35 +143,35 @@ class PaymentController extends PaymentController_parent
          */
 
         foreach ($paymentListRaw as $key => $payment) {
-            $paymentDefinitionExists = isset($payPalDefinitions[$key]);
-            $isExpressPayment = $key === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID;
+            if (
+                !isset($payPalDefinitions[$key]) ||
 
-            // If payment definition doesn't exist, include it (fallback)
-            if (!$paymentDefinitionExists) {
-                if (!$isExpressPayment || PayPalSession::isPayPalExpressOrderActive()) {
+                (
+                    $payPalHealth &&
+                    //dont add payment that is deprecated
+                    ( !PayPalDefinitions::isDeprecatedPayment($payment->getId()) ) &&
+                    (
+                        empty($payPalDefinitions[$key]['currencies']) ||
+                        in_array($actShopCurrency->name, $payPalDefinitions[$key]['currencies'], true)
+                    ) &&
+                    (
+                        empty($payPalDefinitions[$key]['countries']) ||
+                        in_array($userCountryIso, $payPalDefinitions[$key]['countries'], true)
+                    ) &&
+                    (
+                        $payPalDefinitions[$key]['onlybrutto'] === false ||
+                        (
+                            !$isCalculationModeNetto
+                        )
+                    )
+                )
+            ) {
+                if (
+                    $key !== PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
+                    || PayPalSession::isPayPalExpressOrderActive()
+                ) {
                     $paymentList[$key] = $payment;
                 }
-                continue;
-            }
-
-            // Check all PayPal conditions for existing definitions
-            $paymentNotDeprecated = !PayPalDefinitions::isDeprecatedPayment($payment->getId());
-            $currencySupported = empty($payPalDefinitions[$key]['currencies']) ||
-                in_array($actShopCurrency->name, $payPalDefinitions[$key]['currencies'], true);
-            $countrySupported = empty($payPalDefinitions[$key]['countries']) ||
-                in_array($userCountryIso, $payPalDefinitions[$key]['countries'], true);
-            $paymentModeCompatible = $payPalDefinitions[$key]['onlybrutto'] === false || !$isCalculationModeNetto;
-
-            $payPalConditionsMet = $payPalHealth &&
-                $paymentNotDeprecated &&
-                $currencySupported &&
-                $countrySupported &&
-                $paymentModeCompatible;
-
-            $expressPaymentValid = !$isExpressPayment || PayPalSession::isPayPalExpressOrderActive();
-
-            if ($payPalConditionsMet && $expressPaymentValid) {
-                $paymentList[$key] = $payment;
             }
         }
 

@@ -77,7 +77,7 @@ class ModuleSettings
     /** @var ContextInterface */
     private $context;
 
-    /** @var Logger */
+    /** @var LoggerInterface */
     private $logger;
 
     /** @var UserRepository */

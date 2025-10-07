@@ -15,6 +15,7 @@ use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventRetryException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalModelOrder;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -41,6 +42,7 @@ abstract class WebhookHandlerBase
 
         //Depending on payment method, there might not be an order id in that result
         $payPalOrderId = $this->getPayPalOrderIdFromResource($eventPayload);
+
         if ($payPalOrderId !== '') {
             /** @var EshopModelOrder $order */
             $order = $this->getOrderByPayPalOrderId($payPalOrderId);
@@ -136,7 +138,7 @@ abstract class WebhookHandlerBase
             $order = $this->getOrderRepository()
                 ->getShopOrderByPayPalOrderId($payPalOrderId);
         } catch (NotFound $exception) {
-            throw WebhookEventException::byPayPalOrderId($payPalOrderId);
+            throw WebhookEventRetryException::byPayPalOrderId($payPalOrderId);
         }
 
         return $order;
@@ -179,7 +181,6 @@ abstract class WebhookHandlerBase
             $paypalOrderModel->setPuiBankName($puiPaymentDetails->bank_name);
             $paypalOrderModel->setPuiAccountHolderName($puiPaymentDetails->account_holder_name);
 
-            /** @var \OxidSolutionCatalysts\PayPal\Core\Email $oxEmail */
             $oxEmail = oxNew(Email::class);
             $oxEmail->sendPuiInfo($order, $puiPaymentDetails);
         }

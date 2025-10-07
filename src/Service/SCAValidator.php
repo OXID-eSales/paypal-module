@@ -142,7 +142,8 @@ class SCAValidator implements SCAValidatorInterface
             return null;
         }
 
-        return $order->payment_source->card->authentication_result ?? ($order->payment_source->google_pay->card->authentication_result ?? null);
+        return $order->payment_source->card->authentication_result
+            ?? ($order->payment_source->google_pay->card->authentication_result ?? null);
     }
 
     /**

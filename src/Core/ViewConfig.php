@@ -75,14 +75,6 @@ class ViewConfig extends ViewConfig_parent
         return $this->getServiceFromContainer(ModuleSettings::class)->showPayPalProductDetailsButton();
     }
 
-    public function usePayPalUseGooglePayAddress(): bool
-    {
-        return $this->getServiceFromContainer(ModuleSettings::class)->usePayPalUseGooglePayAddress();
-    }
-
-    /**
-     * @return bool
-     */
     public function isPayPalSandbox(): bool
     {
         return $this->getServiceFromContainer(ModuleSettings::class)->isSandbox();

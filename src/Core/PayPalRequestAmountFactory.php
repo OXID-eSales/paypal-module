@@ -64,8 +64,6 @@ class PayPalRequestAmountFactory
         //total item amount, total tax amount, shipping, handling, insurance, and discounts, if any.
         $amount->breakdown = $this->calculateBreakdown($amount->value);
 
-        $this->roundingIssueSolutionHandling($amount);
-
         return $amount;
     }
 
@@ -76,59 +74,31 @@ class PayPalRequestAmountFactory
     {
         $breakdown = new AmountBreakdown();
 
-        $breakdown->shipping =
-            PriceToMoney::convert($this->basket->getPayPalCheckoutDeliveryCosts(), $this->getCurrency());
+        $currency = $this->getCurrency();
 
-        $breakdown->discount =
-            PriceToMoney::convert($this->basket->getPayPalCheckoutDiscount(), $this->getCurrency());
+        // Shipping costs (rounded to currency precision)
+        $breakdown->shipping = PriceToMoney::convert($this->basket->getPayPalCheckoutDeliveryCosts(), $currency);
 
-        $breakdown->tax_total =
-            PriceToMoney::convert(0, $this->getCurrency());
+        // Discount: use basket API value; in gross mode, negative discount should not increase total
+        $discount = (float)$this->basket->getPayPalCheckoutDiscount();
+        if (!$this->basket->isCalculationModeNetto() && $discount < 0) {
+            $discount = 0.0;
+        }
+        $breakdown->discount = PriceToMoney::convert($discount, $currency);
 
-        $breakdown->item_total = PriceToMoney::convert(
-            $amount +
-            (float)$breakdown->discount->value -
-            (float)$breakdown->shipping->value,
-            $this->getCurrency()
-        );
+        // Tax total is zero for gross mode in this factory; NET handling is done elsewhere if needed
+        $breakdown->tax_total = PriceToMoney::convert(0, $currency);
+
+        /*
+         * The subtotal for all items.
+         * Required if the request includes purchase_units[].items[].unit_amount.
+         * Must equal the sum of (items[].unit_amount * items[].quantity) for all items.
+         * item_total.value can not be a negative number.
+         */
+        $itemTotal = (float)$this->basket->getPayPalCheckoutItems();
+        $breakdown->item_total = PriceToMoney::convert($itemTotal, $currency);
 
         return $breakdown;
-    }
-
-    /**
-     * @param \OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown $amount
-     * @return void
-     */
-    public function roundingIssueSolutionHandling(AmountWithBreakdown $amount): void
-    {
-        $amountBreakdownValueCheck =
-            (float)number_format(
-                (float)$amount->breakdown->item_total->value
-                - $amount->breakdown->discount->value
-                + $this->basket->getPayPalCheckoutDeliveryCosts(),
-                2,
-                '.',
-                ''
-            );
-
-        $amountDiff = (float)number_format(
-            $amountBreakdownValueCheck - $amount->value,
-            2,
-            '.',
-            ''
-        );
-
-        if ($amountBreakdownValueCheck > $amount->value) {
-            $amount->breakdown->initShippingDiscount();
-            $amount->breakdown->shipping_discount->value = $amountDiff;
-            $amount->breakdown->shipping_discount->currency_code = $amount->currency_code;
-        }
-
-        if ($amountBreakdownValueCheck < $amount->value) {
-            $amount->breakdown->initHandling();
-            $amount->breakdown->handling->value = $amountDiff;
-            $amount->breakdown->handling->currency_code = $amount->currency_code;
-        }
     }
 
     /**

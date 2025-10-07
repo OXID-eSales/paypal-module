@@ -271,4 +271,18 @@ class OrderRepository
 
         return (string) $id;
     }
+    /**
+     * @return string
+     */
+    public function fetchCurrentShopOrderId(): string
+    {
+        return (string)Registry::getSession()->getVariable('sess_challenge');
+    }
+    public function fetchCurrentShopOrder(): Order
+    {
+        $shopOrderId = $this->fetchCurrentShopOrderId();
+        $order = oxNew(Order::class);
+        $order->load($shopOrderId);
+        return $order;
+    }
 }

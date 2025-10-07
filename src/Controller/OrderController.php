@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Controller;
 
 use Exception;
+use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Exception\StandardException;
@@ -22,12 +23,12 @@ use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Exception\Redirect;
 use OxidSolutionCatalysts\PayPal\Exception\RedirectWithMessage;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModel;
+use OxidSolutionCatalysts\PayPal\Service\GooglePay\GooglePayPayPalService;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Service\OrderPayPalService;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
-use OxidSolutionCatalysts\PayPal\Service\GooglePay\GooglePayPayPalService;
-use OxidSolutionCatalysts\PayPal\Service\OrderPayPalService;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
@@ -122,9 +123,15 @@ class OrderController extends OrderController_parent
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
             if (
                 (PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID === $paymentId &&
-                 $vaultingService->isVaultedPaymentUsed(PayPalDefinitions::PAYMENT_SOURCE_PAYPAL, $this->getUser())) ||
+                 $vaultingService->isVaultedPaymentUsed(
+                     PayPalDefinitions::PAYMENT_SOURCE_PAYPAL,
+                     $this->getUser()
+                 )) ||
                 (PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId &&
-                 $vaultingService->isVaultedPaymentUsed(PayPalDefinitions::PAYMENT_SOURCE_CARD, $this->getUser()))
+                 $vaultingService->isVaultedPaymentUsed(
+                     PayPalDefinitions::PAYMENT_SOURCE_CARD,
+                     $this->getUser()
+                 ))
             ) {
                 $isVaultingPossible = false;
             }
@@ -147,7 +154,10 @@ class OrderController extends OrderController_parent
                         // double check source type
                         if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
                             $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
-                            $paymentDescription = $paymentSource["brand"] . " " . $string . $paymentSource["last_digits"];
+                            $paymentDescription = $paymentSource["brand"]
+                                . " "
+                                . $string
+                                . $paymentSource["last_digits"];
                         }
                     }
                 }
@@ -185,7 +195,13 @@ class OrderController extends OrderController_parent
             Registry::getUtilsView()->addErrorToDisplay($displayError);
 
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
-            if (in_array((string)$paymentService->getSessionPaymentId(), $this->removeTemporaryOrderOnRetry, true)) {
+            if (
+                in_array(
+                    (string)$paymentService->getSessionPaymentId(),
+                    $this->removeTemporaryOrderOnRetry,
+                    true
+                )
+            ) {
                 $paymentService->removeTemporaryOrder();
             }
             return true;
@@ -228,7 +244,10 @@ class OrderController extends OrderController_parent
         try {
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
             $paymentService->removeTemporaryOrder();
-            Registry::getSession()->setVariable('sess_challenge', $this->getUtilsObjectInstance()->generateUID());
+            Registry::getSession()->setVariable(
+                'sess_challenge',
+                $this->getUtilsObjectInstance()->generateUID()
+            );
             $status = $this->execute();
         } catch (Exception $exception) {
             /** @var LoggerInterface $logger */
@@ -309,10 +328,16 @@ class OrderController extends OrderController_parent
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $payPalApiOrder = $paymentService->fetchOrderFields($orderId);
-        $verify3DResult = $paymentService->verify3D(PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID, $payPalApiOrder);
+        $verify3DResult = $paymentService->verify3D(
+            PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID,
+            $payPalApiOrder
+        );
 
         if (!$verify3DResult) {
-            throw PayPalException::cannotFinalizeOrderAfterExternalPayment($orderId, PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID);
+            throw PayPalException::cannotFinalizeOrderAfterExternalPayment(
+                $orderId,
+                PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID
+            );
         }
 
         $request = new OrderCaptureRequest();
@@ -432,8 +457,10 @@ class OrderController extends OrderController_parent
         try {
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
             $paymentService->removeTemporaryOrder();
-            Registry::getSession()->setVariable('sess_challenge', $this->getUtilsObjectInstance()->generateUID());
-
+            Registry::getSession()->setVariable(
+                'sess_challenge',
+                $this->getUtilsObjectInstance()->generateUID()
+            );
             $_POST['sDeliveryAddressMD5'] = $this->getDeliveryAddressMD5();
             $status = $this->execute();
         } catch (Exception $exception) {
@@ -444,9 +471,8 @@ class OrderController extends OrderController_parent
             return;
         }
 
-        $response = $paymentService->doCreatePatchedOrder(
-            Registry::getSession()->getBasket()
-        );
+        $response = PayPalSession::getCheckoutOrder();
+
         if (!($paypalOrderId = $response['id'])) {
             $this->outputJson(['error' => 'cannot create paypal order']);
             return;
@@ -468,9 +494,15 @@ class OrderController extends OrderController_parent
     }
     public function captureApplePayOrder()
     {
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
         $orderId = (string) Registry::getRequest()->getRequestEscapedParameter('orderID');
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();
         $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
+        if ($orderId === '' || $sessionOrderId === '') {
+            $logger->log('error', 'captureApplePayOrder missing orderID or sessionOrderId');
+            throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
+        }
         $request = new OrderCaptureRequest();
         /** @var LoggerInterface $logger */
         $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
@@ -535,7 +567,8 @@ class OrderController extends OrderController_parent
                 'failure during finalizeOrderAfterExternalPayment',
                 [$exception]
             );
-            $this->getServiceFromContainer(OrderPayPalService::class)->cancelPayPalSession('cannot finalize order');
+            $this->getServiceFromContainer(OrderPayPalService::class)
+                ->cancelPayPalSession('cannot finalize order');
             $goNext = 'payment?payerror=2';
         }
 
@@ -586,7 +619,8 @@ class OrderController extends OrderController_parent
                 'PayPal Checkout error during order finalization ' . $exception->getMessage(),
                 [$exception]
             );
-            $this->getServiceFromContainer(OrderPayPalService::class)->cancelPayPalSession('cannot finalize order');
+            $this->getServiceFromContainer(OrderPayPalService::class)
+                ->cancelPayPalSession('cannot finalize order');
             return 'payment?payerror=2';
         }
 
@@ -613,7 +647,8 @@ class OrderController extends OrderController_parent
                 'failure during finalizeOrderAfterExternalPayment',
                 [$exception]
             );
-            $this->getServiceFromContainer(OrderPayPalService::class)->cancelPayPalSession('cannot finalize order');
+            $this->getServiceFromContainer(OrderPayPalService::class)
+                ->cancelPayPalSession('cannot finalize order');
             $goNext = 'payment?payerror=2';
         }
 
@@ -633,7 +668,8 @@ class OrderController extends OrderController_parent
 
         return $sucesss ?
             'thankyou' :
-            $this->getServiceFromContainer(OrderPayPalService::class)->cancelPayPalSession('cannot finalize order');
+            $this->getServiceFromContainer(OrderPayPalService::class)
+                ->cancelPayPalSession('cannot finalize order');
     }
 
     public function cancelpaypalsession(string $errorcode = null): string
@@ -755,5 +791,25 @@ class OrderController extends OrderController_parent
                 "type" => "SETUP_TOKEN",
             ]
         ], JSON_THROW_ON_ERROR) : 'null';
+    }
+    public function findNonMaterialItemsInBasket(): array
+    {
+        /** @var Basket $basket */
+        $basket = $this->getBasket();
+        $nonMaterialItems = [];
+        if ($basket) {
+            $contents = $basket->getContents();
+            foreach ($contents as $basketItem) {
+                $article = $basketItem->getArticle();
+                if ($article && $article->getFieldData('oxnonmaterial')) {
+                    $nonMaterialItems[] = $basketItem;
+                }
+            }
+        }
+        return $nonMaterialItems;
+    }
+    public function isNonMaterialItemInBasket(): bool
+    {
+        return 0 < count($this->findNonMaterialItemsInBasket());
     }
 }

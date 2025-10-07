@@ -5,6 +5,8 @@
  * See LICENSE file for license details.
  */
 
+declare(strict_types=1);
+
 namespace OxidSolutionCatalysts\PayPal\Core\Api;
 
 use JsonException;
@@ -28,17 +30,20 @@ class VaultingService extends BaseService
     use ServiceContainer;
 
     private OrderProcessTrackingService $orderProcessTrackingService;
+
     public function __construct(OrderProcessTrackingService $orderProcessTrackingService, Client $client)
     {
         $this->orderProcessTrackingService = $orderProcessTrackingService;
         parent::__construct($client);
     }
+
     public function getLogger(): LoggerInterface
     {
         /** @var LoggerInterface $logger */
         $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
         return $logger;
     }
+
     public function generateUserIdToken($payPalCustomerId = false): array
     {
         $headers = [];
@@ -173,17 +178,20 @@ class VaultingService extends BaseService
         $vaultPaymentOnSuccess = Registry::getRequest()->getRequestParameter("vaultPayment");
         $vaultPaymentOnSuccess = filter_var($vaultPaymentOnSuccess, FILTER_VALIDATE_BOOLEAN);
         if ($vaultPaymentOnSuccess) {
+            $customerId = $user->getFieldData("oscpaypalcustomerid");
             $attributes = [
-                "customer" => [
-                    "id" => $user->getFieldData("oscpaypalcustomerid")
-                ],
                 "vault" => [
                     "store_in_vault" => "ON_SUCCESS",
                 ]
             ];
 
+            if (!empty($customerId)) {
+                $attributes['vault'] += [
+                    "customer_id" => $customerId,
+                ];
+            }
+
             if ($paymentSourceId === PayPalDefinitions::PAYMENT_SOURCE_PAYPAL) {
-                //those 3 params should be only in PayPal Standard
                 $attributes['vault'] += [
                     "usage_type" => "MERCHANT",
                     "customer_type" => "CONSUMER",
@@ -263,6 +271,7 @@ class VaultingService extends BaseService
                 $headers,
                 json_encode($requestBody, JSON_THROW_ON_ERROR)
             );
+
             if ($response) {
                 $body = $response->getBody();
             }
@@ -317,8 +326,9 @@ class VaultingService extends BaseService
         if (!empty($payPalCustomerId)) {
             $vaultedPaymentTokens = $this->getVaultPaymentTokens($payPalCustomerId)["payment_tokens"];
         }
-        $selectedVaultedPaymentTokenId = $id
-            ?? Registry::getSession()->getVariable("selectedVaultedPaymentTokenId");
+        $selectedVaultedPaymentTokenId = null === $id ?
+            Registry::getSession()->getVariable("selectedVaultedPaymentTokenId") : $id;
+
         if (is_null($selectedVaultedPaymentTokenId)) {
             return null;
         }
@@ -425,9 +435,7 @@ class VaultingService extends BaseService
         if (empty($cachedResult) || $this->isVaultingCacheRefreshNeeded()) {
             try {
                 $response = $this->sendWithRequestResponseLogging('GET', $path, [], $headers);
-                if ($response) {
-                    $body = $response->getBody();
-                }
+                $body = $response->getBody();
                 $result = json_decode((string)$body, true, 512, JSON_THROW_ON_ERROR);
                 $this->storeVaultedTokenInCache($result);
             } catch (ApiException | JsonException $e) {
@@ -456,7 +464,7 @@ class VaultingService extends BaseService
                         $uniquePaypalVaultedPaymentSources[$email] = [];
                     }
 
-                    if (in_array($payer_id, $uniquePaypalVaultedPaymentSources[$email], true)) {
+                    if (in_array($payer_id, $uniquePaypalVaultedPaymentSources[$email])) {
                         continue;
                     }
 

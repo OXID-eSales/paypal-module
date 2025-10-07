@@ -14,6 +14,7 @@ use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher as WebhookDispatcher;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier as VerificationService;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventRetryException;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
@@ -60,10 +61,10 @@ final class RequestHandler
             $this->processEvent($requestBody);
 
             $result = true;
-        } catch (WebhookEventException $exception) {
+        } catch (WebhookEventException | WebhookEventTypeException $exception) {
             //we could not handle the call and don't want to receive it again, log and be done
             $logger->log('error', $exception->getMessage(), [$exception]);
-        } catch (ApiException $exception) {
+        } catch (ApiException | WebhookEventRetryException $exception) {
             //we could not handle the call but want to retry, so log and rethrow
             $logger->log('error', $exception->getMessage(), [$exception]);
             throw $exception;

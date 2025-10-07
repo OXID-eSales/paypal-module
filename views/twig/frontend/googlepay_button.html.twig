@@ -19,7 +19,7 @@
          data-button-id="{{ buttonId }}"
          data-token="{{ sToken }}"
          data-self-link="{{ sSelfLink }}"
-         data-use-google-pay-address="{{ oPPconfig.usePayPalUseGooglePayAddress() }}"
+         data-use-google-pay-address="{{ oPPconfig.getIsGooglePayDeliveryAddressActive() }}"
          data-is-sandbox="{{ oPPconfig.isSandbox() }}"
          data-merchant-name="{{ oxcmp_shop.oxshops__oxname.value|json_encode }}"
          data-total-price="{{ oxcmp_basket.getPriceForPayment() }}"

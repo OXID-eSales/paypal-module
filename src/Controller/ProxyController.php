@@ -27,8 +27,11 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Service\OrderManager;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
+use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use OxidSolutionCatalysts\PayPal\Service\UserAddressPaypalService;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Service\PayPalUrlService;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
@@ -36,9 +39,11 @@ use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Server side interface for PayPal smart buttons.
@@ -48,12 +53,27 @@ class ProxyController extends FrontendController
     use JsonTrait;
     use ServiceContainer;
 
-    private OrderProcessTrackingService $orderProcessTrackingService;
+    /** @var UserAddressPaypalService */
+    private $userAddressPaypalService;
+    /** @var OrderProcessTrackingService */
+    private $orderProcessTrackingService;
+    /** @var EventDispatcherInterface */
+    private $dispatcher;
+    /**
+     * @var \OxidSolutionCatalysts\PayPal\Service\OrderRepository
+     */
+    private $orderRepository;
+    /** @var \OxidSolutionCatalysts\PayPal\Service\OrderManager */
+    private $orderManager;
 
     public function __construct()
     {
         parent::__construct();
         $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
+        $this->userAddressPaypalService = $this->getServiceFromContainer(UserAddressPaypalService::class);
+        $this->dispatcher = $this->getServiceFromContainer('event_dispatcher');
+        $this->orderRepository = $this->getServiceFromContainer(OrderRepository::class);
+        $this->orderManager = $this->getServiceFromContainer(OrderManager::class);
     }
 
     public function createOrder(): void
@@ -75,7 +95,6 @@ class ProxyController extends FrontendController
         }
         $paymentId = $basket->getPaymentId();
 
-        /** @var ModuleSettings $moduleSettings */
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
 
         $defaultShippingPriceExpress = (double) $moduleSettings->getDefaultShippingPriceForExpress();
@@ -120,7 +139,12 @@ class ProxyController extends FrontendController
      */
     public function createGooglePayOrder()
     {
-        $data = json_decode(file_get_contents('php://input'), true, 512, JSON_THROW_ON_ERROR);
+        $data = json_decode(
+            file_get_contents('php://input'),
+            true,
+            512,
+            JSON_THROW_ON_ERROR
+        );
 
         $shippingAddress = new AddressPortable();
         $shippingAddress->address_line_1 = $data['shippingAddress']['address1'] ?? '';
@@ -207,10 +231,8 @@ class ProxyController extends FrontendController
                 $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
                 if ($deliveryAddress['oxaddress__oxfname'] !== '' && $deliveryAddress['oxaddress__oxstreet'] !== '') {
                     try {
-                        $user->changeUserData(
-                            $user->oxuser__oxusername->value,
-                            '',
-                            '',
+                        $this->userAddressPaypalService->changePayPalUserData(
+                            $user,
                             $userInvoiceAddress,
                             $deliveryAddress
                         );
@@ -297,12 +319,10 @@ class ProxyController extends FrontendController
             // add PayPal-Address as Delivery-Address
             $deliveryAddress = PayPalAddressResponseToOxidAddress::mapUserDeliveryAddress($response);
             try {
-                $user->changeUserData(
-                    $user->oxuser__oxusername->value,
-                    '',
-                    '',
+                $this->userAddressPaypalService->changePayPalUserData(
+                    $user,
                     $userInvoiceAddress,
-                    $deliveryAddress
+                    $deliveryAddress,
                 );
                 $paymentId = Registry::getSession()->getVariable('paymentid');
                 // use a deliveryaddress in oxid-checkout
@@ -333,6 +353,74 @@ class ProxyController extends FrontendController
             PayPalSession::unsetPayPalOrderId();
             Registry::getSession()->getBasket()->setPayment(null);
         }
+        try {
+            if ($response && isset($response->status) && $response->status !== 'COMPLETED') {
+                /** @var PaymentService $paymentService */
+                $paymentService = $this->getServiceFromContainer(PaymentService::class);
+                /** @var ModuleSettings $moduleSettings */
+                $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+                $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
+                $paymentId = (string)Registry::getSession()->getVariable('paymentid');
+                // Verify 3D Secure where applicable
+                if (!$paymentService->verify3D($paymentId, $response)) {
+                    $response->status = 'ERROR';
+                    PayPalSession::unsetPayPalOrderId();
+                    Registry::getSession()->getBasket()->setPayment(null);
+                    $this->outputJson($response);
+                }
+                if (
+                    ($response->intent === Constants::PAYPAL_ORDER_INTENT_CAPTURE)
+                    || ($captureStrategy === 'directly')
+                ) {
+                    // Capture payment now
+                    $request = new OrderCaptureRequest();
+                    try {
+                        $orderService->capturePaymentForOrder(
+                            '',
+                            (string)$orderId,
+                            $request,
+                            '',
+                            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+                        );
+                    } catch (Exception $e) {
+                        /** @var LoggerInterface $logger */
+                        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\\PayPal\\Logger');
+                        $logger->log('error', $e->getMessage(), [$e]);
+                        $response->status = 'ERROR';
+                        PayPalSession::unsetPayPalOrderId();
+                        Registry::getSession()->getBasket()->setPayment(null);
+                    }
+                } else {
+                    // Authorize payment
+                    try {
+                        $shopOrderId = (string)Registry::getSession()->getVariable('sess_challenge');
+                        if (null == $shopOrderId) {
+                            $shopOrder = $this->orderManager->createShopOrder();
+                            $shopOrderId = $shopOrder['shopOrderId'];
+                        }
+                        $authorizePaymentResult = $paymentService
+                            ->doAuthorizePayment((string)$orderId, $shopOrderId, $paymentId);
+                        if (
+                            !isset($authorizePaymentResult['status'])
+                            || $authorizePaymentResult['status'] !== 'success'
+                        ) {
+                            $response->status = 'ERROR';
+                            PayPalSession::unsetPayPalOrderId();
+                            Registry::getSession()->getBasket()->setPayment(null);
+                        }
+                    } catch (Exception $e) {
+                        /** @var LoggerInterface $logger */
+                        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\\PayPal\\Logger');
+                        $logger->log('debug', 'Error during payment authorization.', [$e->getMessage()]);
+                        $response->status = 'ERROR';
+                        PayPalSession::unsetPayPalOrderId();
+                        Registry::getSession()->getBasket()->setPayment(null);
+                    }
+                }
+            }
+        } catch (Exception $e) {
+            // best-effort, do not block front flow
+        }
         $this->outputJson($response);
     }
 
@@ -341,7 +429,11 @@ class ProxyController extends FrontendController
         PayPalSession::unsetPayPalSession();
         $redirect = Registry::getRequest()->getRequestParameter('redirect');
         if ($redirect === "1") {
-            Registry::getUtils()->redirect(Registry::getConfig()->getShopSecureHomeURL() . 'cl=payment', false, 301);
+            Registry::getUtils()->redirect(
+                Registry::getConfig()->getShopSecureHomeURL() . 'cl=payment',
+                false,
+                301
+            );
         }
         exit;
     }
@@ -490,7 +582,12 @@ class ProxyController extends FrontendController
                 'lineItems' => [
                     [
                         'label' => 'Subtotal',
-                        'amount' => number_format((double) $basket->getBruttoSum(), 2, '.', ''),
+                        'amount' => number_format(
+                            (double)$basket->getBruttoSum(),
+                            2,
+                            '.',
+                            ''
+                        ),
                         'type' => 'final'
                     ],
                     [
@@ -500,7 +597,12 @@ class ProxyController extends FrontendController
                     ],
                     [
                         'label' => 'Shipping',
-                        'amount' => number_format($deliveryBruttoPrice, 2, '.', ''),
+                        'amount' => number_format(
+                            $deliveryBruttoPrice,
+                            2,
+                            '.',
+                            ''
+                        ),
                         'type' => 'final'
                     ]
                 ]
@@ -537,6 +639,7 @@ class ProxyController extends FrontendController
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
         }
 
+        $payPalUrlService = $this->getServiceFromContainer(PayPalUrlService::class);
         $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
             $basket,
             OrderRequest::INTENT_CAPTURE,
@@ -545,12 +648,12 @@ class ProxyController extends FrontendController
             '',
             '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-            null,
-            null,
+            $payPalUrlService->getReturnUrl(),
+            $payPalUrlService->getCancelUrl(),
             false
         );
         if ($response->id) {
-            PayPalSession::storePayPalOrderId($response->id);
+            PayPalSession::storePayPalOrder((array)$response);
         }
 
         if (!$this->getUser()) {
@@ -570,11 +673,9 @@ class ProxyController extends FrontendController
 
             $nonGuestAccountDetected = false;
             if ($userRepository->userAccountExists($paypalEmail)) {
-                //got a non-guest account, so either we log in or redirect customer to login step
                 $isLoggedIn = $this->handleUserLogin($response);
                 $nonGuestAccountDetected = true;
             } else {
-                //we need to use a guest account
                 $userComponent = oxNew(UserComponent::class);
                 $userComponent->createPayPalGuestUser($response);
             }

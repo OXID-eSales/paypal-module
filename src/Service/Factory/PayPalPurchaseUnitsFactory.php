@@ -58,8 +58,11 @@ class PayPalPurchaseUnitsFactory
      *
      * @return ApiPurchaseUnitRequest[]
      */
-    public function getPurchaseUnits(?string $transactionId = null, ?string $invoiceId = null, bool $withItems = true): array
-    {
+    public function getPurchaseUnits(
+        ?string $transactionId = null,
+        ?string $invoiceId = null,
+        bool $withItems = true
+    ): array {
         $basket = $this->getBasket();
 
         // Ensure PayPal compatible precision
@@ -84,7 +87,11 @@ class PayPalPurchaseUnitsFactory
                 $apiItem = new ApiItem([
                     'name' => (string)($it['name'] ?? ''),
                     'unit_amount' => [
-                        'currency_code' => (string)($it['unit_amount']['currency_code'] ?? ($amount->currency_code ?? '')),
+                        'currency_code' => (string)(
+                            $it['unit_amount']['currency_code']
+                                ?? ($amount->currency_code
+                                    ?? ''
+                        )),
                         'value' => (string)($it['unit_amount']['value'] ?? '0.00'),
                     ],
                     'quantity' => (string)($it['quantity'] ?? '1'),
@@ -161,10 +168,14 @@ class PayPalPurchaseUnitsFactory
             $country = new EshopCountry();
             $country->load($deliveryAddress->getFieldData('oxcountryid'));
 
-            $addressLine = $deliveryAddress->getFieldData('oxstreet') . ' ' . $deliveryAddress->getFieldData('oxstreetnr');
+            $addressLine = $deliveryAddress->getFieldData('oxstreet')
+                . ' '
+                . $deliveryAddress->getFieldData('oxstreetnr');
             $address->address_line_1 = $addressLine;
 
-            $addinfoLine = $deliveryAddress->getFieldData('oxcompany') . ' ' . $deliveryAddress->getFieldData('oxaddinfo');
+            $addinfoLine = $deliveryAddress->getFieldData('oxcompany')
+                . ' '
+                . $deliveryAddress->getFieldData('oxaddinfo');
             $address->address_line_2 = $addinfoLine;
 
             $address->admin_area_1 = $state->getFieldData('oxtitle');
@@ -330,7 +341,10 @@ class PayPalPurchaseUnitsFactory
     {
         try {
             $article = $basketItem->getArticle();
-            if ($article && method_exists($article, 'isVirtualPayPalArticle') && $article->isVirtualPayPalArticle()) {
+            if (
+                $article && method_exists($article, 'isVirtualPayPalArticle')
+                && $article->isVirtualPayPalArticle()
+            ) {
                 return \OxidSolutionCatalysts\PayPalApi\Model\Orders\Item::CATEGORY_DIGITAL_GOODS;
             }
         } catch (\Throwable $e) {

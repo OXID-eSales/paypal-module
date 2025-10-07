@@ -27,6 +27,40 @@ class PayPalSession
     }
 
     /**
+     * PayPal store checkoutOrderId
+     *
+     * @param $checkoutOrderId
+     */
+    public static function storePayPalOrder(array $checkoutOrder): void
+    {
+        self::storePayPalOrderId($checkoutOrder['id'] ?? '');
+        Registry::getSession()->setVariable(
+            Constants::SESSION_CHECKOUT_ORDER,
+            $checkoutOrder
+        );
+    }
+
+    /**
+     * PayPal checkout order getter
+     *
+     * @return mixed
+     */
+    public static function getCheckoutOrder()
+    {
+        return Registry::getSession()->getVariable(Constants::SESSION_CHECKOUT_ORDER);
+    }
+
+    /**
+     * PayPal remove checkoutOrder
+     */
+    public static function unsetPayPalOrder(): void
+    {
+        Registry::getSession()->deleteVariable(
+            Constants::SESSION_CHECKOUT_ORDER
+        );
+    }
+
+    /**
      * PayPal remove checkoutOrderId
      */
     public static function unsetPayPalOrderId()
@@ -39,6 +73,7 @@ class PayPalSession
     public static function unsetPayPalSession()
     {
         self::unsetPayPalOrderId();
+        self::unsetPayPalOrder();
 
         $session = Registry::getSession();
         $basket = $session->getBasket();

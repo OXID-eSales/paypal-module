@@ -25,7 +25,6 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Module;
-use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
@@ -151,6 +150,9 @@ class Payment
                 $payPalClientMetadataId,
                 'return=minimal'
             );
+
+            $response->payment_source = $request->payment_source;
+            PayPalSession::storePayPalOrder((array)$response);
         } catch (ApiException $exception) {
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
@@ -439,8 +441,7 @@ class Payment
     ): string {
         $redirectLink = '';
 
-        /** @var OrderRequestFactory $requestFactory */
-        $requestFactory = $this->getServiceFromContainer(OrderRequestFactory::class);
+        $requestFactory = Registry::get(ConfirmOrderRequestFactory::class);
         /** @var ConfirmOrderRequest $request */
         $request = $requestFactory->getRequest(
             $basket,
@@ -455,7 +456,6 @@ class Payment
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
 
-        /** @var Order $response */
         $response = $orderService->confirmTheOrder(
             $payPalClientMetadataId,
             $checkoutOrderId,
@@ -669,8 +669,6 @@ class Payment
                     Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                 );
                 $payPalOrder->intent = Constants::PAYPAL_ORDER_INTENT_AUTHORIZE;
-
-
                 $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
 
                 if ($authorization->status === 'DENIED') {
@@ -868,7 +866,12 @@ class Payment
     public function verify3D(string $paymentId, Order $payPalOrder): bool
     {
         //no ACDC OR Gpay payment
-        if (!in_array($paymentId, [PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID, PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID])) {
+        if (
+            !in_array($paymentId, [
+            PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
+            PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID
+            ], true)
+        ) {
             return true;
         }
         //case no check is needed
