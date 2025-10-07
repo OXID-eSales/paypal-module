@@ -57,11 +57,11 @@ trait CustomerAddressHelper
         $context->landing_page = 'LOGIN';
         $config = Registry::getConfig();
 
-        if ($returnUrl === null || $returnUrl === '') {
+        if (empty($returnUrl)) {
             $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
         }
 
-        if ($cancelUrl === null || $cancelUrl === '') {
+        if (empty($cancelUrl)) {
             $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
         }
 

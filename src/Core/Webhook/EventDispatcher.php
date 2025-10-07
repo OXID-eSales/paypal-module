@@ -9,6 +9,9 @@ namespace OxidSolutionCatalysts\PayPal\Core\Webhook;
 
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventTypeException;
 
+/**
+ * Delivers events to appropriate handlers
+ */
 class EventDispatcher
 {
     /**
@@ -30,7 +33,7 @@ class EventDispatcher
     /**
      * We need this method for proper mocking in tests
      * @param string $class
-     * @return string
+     * @return object
      */
     protected function oxNew(string $class)
     {
