@@ -49,7 +49,7 @@
                 {% if config.isSandbox() %}
                 console.log('--- Start preloadPaymentRequestData ---');
                 {% endif %}
-                let url = "{{ (sSelfLink ~ 'cl=oscpaypalproxy&fnc=getPaymentRequestLines&paymentid=' ~ paymentId ~ '&context=continue&stoken=' ~ sToken)|raw }}";
+                let url = "{{ (sSelfLink ~ 'cl=oscpaypalproxy&fnc=getPaymentRequestLines&paymentid=' ~ paymentId ~ '&context=continue&aid=' ~ aid ~ '&stoken=' ~ sToken)|raw }}";
                 {% if config.isSandbox() %}
                 console.log('Fetching payment request lines from URL:', url);
                 {% endif %}
@@ -165,7 +165,7 @@
                 let intent = 'captures';
                 let intent_object = intent === "authorize" ? "authorizations" : "captures";
 
-                const createOrderUrl = "{{ (sSelfLink ~ 'cl=oscpaypalproxy&fnc=createApplepayOrder&paymentid=' ~ paymentId ~ '&context=continue&stoken=' ~ sToken)|raw }}";
+                const createOrderUrl = "{{ (sSelfLink ~ 'cl=oscpaypalproxy&fnc=createApplepayOrder&paymentid=' ~ paymentId ~ '&context=continue&aid=' ~ aid ~ '&stoken=' ~ sToken)|raw }}";
                 {% if config.isSandbox() %}
                 console.log('Creating order with URL:', createOrderUrl);
                 {% endif %}
@@ -196,7 +196,7 @@
                         session.completePayment(session.STATUS_FAILURE);
                         return;
                     }
-                    const approve_order = "{{ (sSelfLink ~ 'cl=oscpaypalproxy&fnc=approveOrder&paymentid=' ~ paymentId ~ '&context=continue&stoken=' ~ sToken)|raw }}";
+                    const approve_order = "{{ (sSelfLink ~ 'cl=oscpaypalproxy&fnc=approveOrder&paymentid=' ~ paymentId ~ '&context=continue&aid=' ~ aid ~ '&stoken=' ~ sToken)|raw }}";
                     const approve_response = await fetch(approve_order, {
                         method: "post",
                         headers: { "Content-Type": "application/json; charset=utf-8" },
@@ -212,8 +212,7 @@
                     {% endif %}
 
                     if (order_details.status === "APPROVED") {
-                        await onApprove(order_details);
-                        await onCreated(order_details);
+                        await onApprove(order_details).then(() => onCreated(order_details));
                     } else {
                         session.completePayment(session.STATUS_FAILURE);
                         throw new Error("payment was not completed, please view console for more information");
@@ -254,7 +253,7 @@
                 {% if config.isSandbox() %}
                 console.log('--- Start onApprove ---');
                 {% endif %}
-                const url = "{{ (sSelfLink ~ 'cl=order&fnc=createApplePayOrder&context=continue&stoken=' ~ sToken ~ '&sDeliveryAddressMD5=' ~ oView.getDeliveryAddressMD5())|raw }}";
+                const url = "{{ (sSelfLink ~ 'cl=order&fnc=createApplePayOrder&context=continue&aid=' ~ aid ~ '&stoken=' ~ sToken ~ '&sDeliveryAddressMD5=' ~ oView.getDeliveryAddressMD5())|raw }}";
                 {% if config.isSandbox() %}
                 console.log('Approving order with URL:', url);
                 {% endif %}
@@ -287,7 +286,7 @@
                 {% endif %}
                 const captureData = new FormData();
                 captureData.append('orderID', confirmOrderResponse.id);
-                return fetch("{{ (sSelfLink ~ 'cl=order&fnc=captureApplePayOrder&context=continue&stoken=' ~ sToken ~ '&sDeliveryAddressMD5=' ~ oView.getDeliveryAddressMD5())|raw }}", {
+                return fetch("{{ (sSelfLink ~ 'cl=order&fnc=captureApplePayOrder&context=continue&aid=' ~ aid ~ '&stoken=' ~ sToken ~ '&sDeliveryAddressMD5=' ~ oView.getDeliveryAddressMD5())|raw }}", {
                     method: 'post',
                     body: captureData
                 }).then(function (res) {
