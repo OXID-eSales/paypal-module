@@ -24,7 +24,7 @@
         <i class="fa fa-check"></i> [{oxmultilang ident="SUBMIT_ORDER"}]
     </button>
     [{else}]
-        <div id="[{$paymentId}]" class="paypal-button-container float-right pull-right"></div>
+        <div id="[{$paymentId}]" class="paypal-button-container [{$buttonClass}] float-right pull-right"></div>
     [{/if}]
 [{/if}]
 
