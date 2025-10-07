@@ -1,0 +1,1579 @@
+@startuml PayPal Payment Flows - Accurate Implementation
+!theme plain
+skinparam backgroundColor white
+
+title PayPal Module - Complete Payment Flow Sequence Diagrams\n(Based on Actual JavaScript & PHP Implementation)
+
+' ============================================================================
+' STANDARD PAYPAL PAYMENT FLOW - DIRECT CAPTURE
+' ============================================================================
+
+@startuml Standard PayPal Payment - Direct Capture
+!theme plain
+
+title Standard PayPal Payment - Direct Capture\n(Using AJAX Controller)
+
+actor Customer
+participant "Browser\n(JS)" as JS
+participant "PayPal SDK" as SDK
+participant AjaxPaymentController as Ajax
+participant PaymentService
+participant OrderManager
+participant "PayPal API" as PayPalAPI
+participant WebhookController
+participant "Webhook Handler" as Handler
+database Database
+
+Customer -> JS: Clicks "Pay with PayPal"
+activate JS
+
+JS -> JS: validateTermsAndConditions()
+note right
+  Check if T&C accepted
+  Show error if not
+end note
+
+JS -> JS: addSubmitButtonOverlay()
+note right
+  Disable button,
+  show loading
+end note
+
+JS -> JS: paypalOverlayWatcher()
+note right
+  Watch for PayPal modal
+  close events
+end note
+
+== Create Shop Order ==
+
+JS -> Ajax: POST shopOrderCreateUrl
+note right
+  AJAX Request:
+  {
+    deliveryAddressId,
+    paymentId: "oscpaypal"
+  }
+end note
+activate Ajax
+
+Ajax -> OrderManager: createShopOrder(basket, user)
+activate OrderManager
+OrderManager -> Database: INSERT oxorder\n(transstatus: NOT_FINISHED)
+OrderManager --> Ajax: Shop Order ID
+deactivate OrderManager
+
+Ajax --> JS: { shopOrderId }
+deactivate Ajax
+
+JS -> JS: Fire event: 'shopOrderCreated'
+note right
+  Custom event with
+  shop order details
+end note
+
+== Create PayPal Order ==
+
+JS -> Ajax: POST payPalOrderCreateUrl
+note right
+  AJAX Request:
+  {
+    shopOrderId,
+    vaultPayment: true/false,
+    useVaultedPayment: token/null,
+    deliveryAddressId
+  }
+end note
+activate Ajax
+
+Ajax -> PaymentService: doCreatePayPalOrder()
+activate PaymentService
+
+PaymentService -> PaymentService: Build OrderRequest
+note right
+  Intent: CAPTURE
+  Purchase Units: basket items
+  Payment Source: paypal
+  Application Context:
+    - return_url
+    - cancel_url
+end note
+
+PaymentService -> PayPalAPI: POST /v2/checkout/orders
+activate PayPalAPI
+PayPalAPI --> PaymentService: PayPal Order\n{ id, status: CREATED }
+deactivate PayPalAPI
+
+PaymentService -> Database: INSERT oscpaypal_order
+note right
+  Links shop order
+  to PayPal order
+end note
+
+PaymentService --> Ajax: PayPal Order details
+deactivate PaymentService
+
+Ajax --> JS: {\n  payPalOrder: { id, status },\n  status: "success"\n}
+deactivate Ajax
+
+JS -> JS: Fire event: 'payPalOrderCreated'
+
+alt Vaulted Payment & COMPLETED
+    JS -> JS: thankYouPageRedirect()
+    JS -> Customer: Redirect to thank you page
+    note right
+      For vaulted payments,
+      already completed
+    end note
+else Regular Payment
+    JS -> SDK: Return PayPal Order ID
+    activate SDK
+
+    SDK -> Customer: Show PayPal modal
+    note right
+      PayPal login/approval screen
+    end note
+
+    Customer -> SDK: Logs in & approves
+    SDK -> PayPalAPI: Customer approval
+    activate PayPalAPI
+    PayPalAPI -> PayPalAPI: Capture payment\n(Intent: CAPTURE)
+    PayPalAPI --> SDK: Order captured
+    deactivate PayPalAPI
+
+    == Payment Approved - Capture ==
+
+    SDK -> JS: onApprove callback\n(if strategy: CAPTURE)
+    deactivate SDK
+
+    JS -> JS: reactOnPayPalOverlayClosed = false
+    note right
+      Disable overlay watcher
+      Payment successful
+    end note
+
+    JS -> Ajax: POST shopOrderCaptureUrl
+    note right
+      AJAX Request:
+      {
+        orderId: payPalOrderId,
+        paymentId: "oscpaypal",
+        vaultPayment: true/false
+      }
+    end note
+    activate Ajax
+
+    Ajax -> PaymentService: doCapturePayPalOrder()
+    activate PaymentService
+
+    PaymentService -> PayPalAPI: GET /v2/checkout/orders/{id}
+    activate PayPalAPI
+    PayPalAPI --> PaymentService: Order details\n{ status: COMPLETED }
+    deactivate PayPalAPI
+
+    PaymentService -> Database: UPDATE oscpaypal_order\n(status: COMPLETED,\n transaction_id: capture_id)
+
+    PaymentService --> Ajax: { status: "success",\n  paymentStatus: "success" }
+    deactivate PaymentService
+
+    Ajax --> JS: Success response
+    deactivate Ajax
+
+    JS -> JS: thankYouPageRedirect()
+    JS -> Customer: Redirect to thank you page
+end
+
+deactivate JS
+
+... Webhook (async) ...
+
+PayPalAPI -> WebhookController: POST webhook\nPAYMENT.CAPTURE.COMPLETED
+activate WebhookController
+WebhookController -> Handler: handle(event)
+activate Handler
+
+Handler -> Database: Query order by\nPayPal Order ID
+Handler -> Database: UPDATE oxorder\n(transstatus: OK,\n oxpaid: NOW(),\n oxtransid: capture_id)
+Handler -> Database: Send order email\n(if not sent)
+
+Handler --> WebhookController: Success
+deactivate Handler
+WebhookController --> PayPalAPI: HTTP 200 OK
+deactivate WebhookController
+
+@enduml
+
+' ============================================================================
+' ACDC (CARD) PAYMENT FLOW
+' ============================================================================
+
+@startuml ACDC Card Payment Flow
+!theme plain
+
+title ACDC (Card) Payment Flow with 3D Secure\n(Using AJAX Controller)
+
+actor Customer
+participant "Browser\n(JS)" as JS
+participant "PayPal SDK\n(CardFields)" as SDK
+participant "3DS Provider" as ThreeDS
+participant AjaxPaymentController as Ajax
+participant PaymentService
+participant SCAValidator
+participant "PayPal API" as PayPalAPI
+participant WebhookController
+database Database
+
+Customer -> JS: Enters card details\n(hosted fields)
+activate JS
+note right
+  PayPal CardFields:
+  - Card Number
+  - Expiry Date
+  - CVV
+  - Cardholder Name
+end note
+
+JS -> JS: onChange event
+note right
+  Real-time validation
+  cardFieldsState updated
+end note
+
+Customer -> JS: Clicks "Pay Now"
+
+JS -> JS: validateCardFields()
+note right
+  Check all fields valid:
+  - cardNumberField
+  - cardExpiryField
+  - cardCvvField
+  - cardNameField
+end note
+
+alt Fields Invalid
+    JS -> Customer: Show field errors
+    note right
+      Inline error messages
+      per field
+    end note
+else Fields Valid
+    JS -> JS: addSubmitButtonOverlay()
+    note right
+      Disable button,
+      show loading
+    end note
+
+    JS -> JS: paypalOverlayWatcher()
+    note right
+      Watch for 3DS modal
+      close events
+    end note
+
+    == Create Shop Order ==
+
+    JS -> SDK: cardFields.submit()
+    activate SDK
+
+    SDK -> JS: createOrder callback
+    note right
+      Triggered by SDK (new)
+      before authorization
+    end note
+
+    JS -> Ajax: POST shopOrderCreateUrl
+    note right
+      AJAX Request:
+      {
+        deliveryAddressId,
+        vaultPayment: true/false,
+        paymentId: "oscpaypal_acdc"
+      }
+    end note
+    activate Ajax
+
+    Ajax -> OrderManager: createShopOrder()
+    activate OrderManager
+    OrderManager -> Database: INSERT oxorder\n(transstatus: ACDCINPROGRESS/700)
+    note right
+      Special ACDC state
+    end note
+    OrderManager --> Ajax: Shop Order ID
+    deactivate OrderManager
+
+    Ajax -> PaymentService: doCreatePatchedOrder()
+    activate PaymentService
+
+    PaymentService -> PayPalAPI: POST /v2/checkout/orders
+    note right
+      Intent: CAPTURE
+      Payment source: card
+    end note
+    activate PayPalAPI
+    PayPalAPI --> PaymentService: PayPal Order ID
+    deactivate PayPalAPI
+
+    PaymentService -> PayPalAPI: PATCH /v2/checkout/orders/{id}
+    note right
+      Add shop order details:
+      - order number
+      - invoice_id
+      - custom_id
+    end note
+    activate PayPalAPI
+    PayPalAPI --> PaymentService: Order patched
+    deactivate PayPalAPI
+
+    PaymentService -> Database: INSERT oscpaypal_order
+
+    PaymentService --> Ajax: PayPal Order details
+    deactivate PaymentService
+
+    Ajax --> JS: {\n  shopOrder: { shopOrderId },\n  payPalOrder: { id, status }\n}
+    deactivate Ajax
+
+    JS -> JS: Fire events:\n  'shopOrderCreated'\n  'payPalOrderCreated'
+
+    alt Vaulted Payment & COMPLETED
+        JS -> Ajax: POST shopOrderCompleteUrl
+        Ajax -> Database: UPDATE order status
+        Ajax --> JS: Success
+        JS -> Customer: Redirect to thank you
+    else Requires Payer Action (3DS)
+        JS -> Customer: Redirect to payer-action URL
+        note right
+          3DS authentication
+          at issuing bank
+        end note
+    else Ready for Authorization
+        JS -> SDK: Return PayPal Order ID
+        SDK --> SDK: Process card
+    end
+
+    == 3D Secure Verification (if required) ==
+
+    alt 3DS Required
+        SDK -> ThreeDS: Initiate 3DS challenge
+        activate ThreeDS
+        ThreeDS -> Customer: Authentication prompt
+        note right
+          Bank authentication:
+          - PIN/Password
+          - SMS OTP
+          - Biometric
+        end note
+        Customer -> ThreeDS: Authenticates
+        ThreeDS --> SDK: Authentication result
+        deactivate ThreeDS
+        note right
+          Result includes:
+          - liability_shift
+          - authentication_status
+          - enrollment_status
+        end note
+    end
+
+    == Authorization/Capture ==
+
+    alt Capture Strategy
+        SDK -> JS: onApprove callback\n(if strategy: CAPTURE)
+        note right
+          Direct capture mode
+        end note
+    else Authorize Strategy
+        SDK -> JS: handlePaymentAuthorization
+        note right
+          Authorize mode
+        end note
+    end
+
+    deactivate SDK
+
+    JS -> Ajax: POST shopOrderCaptureUrl
+    note right
+      AJAX Request:
+      {
+        orderId: payPalOrderId,
+        paymentId: "oscpaypal_acdc",
+        vaultPayment: true/false
+      }
+    end note
+    activate Ajax
+
+    Ajax -> PaymentService: doCapturePayPalOrder()
+    activate PaymentService
+
+    PaymentService -> SCAValidator: verify3D(paymentId, payPalOrder)
+    activate SCAValidator
+
+    SCAValidator -> SCAValidator: Check authentication result
+    note right
+      Validate:
+      - liability_shift = POSSIBLE
+      - authentication_status = Y
+      - enrollment_status = Y
+      Based on SCA contingency setting
+    end note
+
+    alt 3DS Verification Failed
+        SCAValidator --> PaymentService: false
+        PaymentService --> Ajax: Error: 3DS failed
+        Ajax --> JS: { status: "error",\n  message: "3DS failed" }
+        JS -> Customer: Show error message
+        JS -> JS: removeSubmitButtonOverlay()
+    else 3DS Verified or Not Required
+        SCAValidator --> PaymentService: true
+        deactivate SCAValidator
+
+        PaymentService -> PayPalAPI: POST /v2/checkout/orders/{id}/capture
+        activate PayPalAPI
+        note right
+          Capture with 3DS result
+        end note
+
+        PayPalAPI --> PaymentService: Capture response
+        deactivate PayPalAPI
+        note right
+          Capture ID
+          Status: COMPLETED
+          Vault info (if applicable)
+        end note
+
+        PaymentService -> Database: UPDATE oscpaypal_order\n(transaction_id: capture_id,\n status: COMPLETED)
+
+        PaymentService -> Database: UPDATE oxorder\n(transstatus: ACDCCOMPLETED/750)
+
+        alt Vault Requested & Vaulted
+            PaymentService -> Database: UPDATE oxuser\n(oscpaypalcustomerid: customer_id)
+            note right
+              Save PayPal customer ID
+              for future vaulted payments
+            end note
+        end
+
+        PaymentService --> Ajax: { status: "success" }
+        deactivate PaymentService
+
+        Ajax --> JS: Success response
+        deactivate Ajax
+
+        JS -> JS: afterCaptureOrder()
+        JS -> JS: thankYouPageRedirect()
+
+        == Wait for Webhook ==
+
+        JS -> Database: UPDATE oxorder\n(transstatus: WAIT_FOR_WEBHOOK_EVENTS/600)
+        note right
+          Wait up to 60 seconds
+          for webhook confirmation
+        end note
+
+        alt Webhook Arrives in Time
+            PayPalAPI -> WebhookController: PAYMENT.CAPTURE.COMPLETED
+            activate WebhookController
+            WebhookController -> Database: UPDATE oxorder\n(transstatus: OK,\n oxpaid: NOW())
+            WebhookController --> PayPalAPI: HTTP 200
+            deactivate WebhookController
+
+            JS -> Customer: Show thank you page
+        else Webhook Timeout (60 sec)
+            JS -> Database: UPDATE oxorder\n(transstatus: TIMEOUT/900)
+            note right
+              Fallback mode activated
+            end note
+
+            JS -> Ajax: GET order status from API
+            Ajax -> PayPalAPI: GET /v2/checkout/orders/{id}
+            PayPalAPI --> Ajax: Order details
+            Ajax -> Database: UPDATE oxorder\n(transstatus: OK,\n oxpaid: NOW())
+            Ajax --> JS: Order completed
+
+            JS -> Customer: Show thank you page
+        end
+    end
+end
+
+deactivate JS
+
+@enduml
+
+' ============================================================================
+' AUTHORIZATION AND CAPTURE ON DELIVERY
+' ============================================================================
+
+@startuml Authorization with Capture on Delivery
+!theme plain
+
+title Authorization with Capture on Delivery\n(Using AJAX Controller)
+
+actor Customer
+actor Admin
+participant "Browser\n(JS)" as JS
+participant "PayPal SDK" as SDK
+participant AjaxPaymentController as Ajax
+participant PaymentService
+participant "PayPal API" as PayPalAPI
+participant OrderOverview
+participant WebhookController
+database Database
+
+Customer -> JS: Checkout with PayPal
+activate JS
+
+== Create Shop Order ==
+
+JS -> Ajax: POST shopOrderCreateUrl
+activate Ajax
+Ajax -> OrderManager: createShopOrder()
+OrderManager -> Database: INSERT oxorder
+Ajax --> JS: { shopOrderId }
+deactivate Ajax
+
+== Create PayPal Order (Intent: AUTHORIZE) ==
+
+JS -> Ajax: POST payPalOrderCreateUrl
+note right
+  With authorization intent
+end note
+activate Ajax
+
+Ajax -> PaymentService: doCreatePayPalOrder()
+activate PaymentService
+
+PaymentService -> PaymentService: Build OrderRequest
+note right
+  Intent: AUTHORIZE
+  (not CAPTURE!)
+end note
+
+PaymentService -> PayPalAPI: POST /v2/checkout/orders
+note right
+  {
+    intent: "AUTHORIZE",
+    purchase_units: [...]
+  }
+end note
+activate PayPalAPI
+PayPalAPI --> PaymentService: PayPal Order\n{ id, status: CREATED }
+deactivate PayPalAPI
+
+PaymentService -> Database: INSERT oscpaypal_order
+PaymentService --> Ajax: PayPal Order details
+deactivate PaymentService
+Ajax --> JS: { payPalOrder: { id } }
+deactivate Ajax
+
+== Customer Approval ==
+
+JS -> SDK: Show PayPal button
+activate SDK
+SDK -> Customer: PayPal modal
+Customer -> SDK: Approves payment
+SDK -> PayPalAPI: Customer approval
+PayPalAPI --> SDK: Order approved
+SDK -> JS: onApprove callback\n(handlePaymentAuthorization)
+deactivate SDK
+
+== Patch Order ==
+
+JS -> Ajax: POST shopOrderPatchingUrl
+note right
+  AJAX Request:
+  {
+    shopOrderId,
+    payPalOrderId,
+    vaultPayment
+  }
+end note
+activate Ajax
+
+Ajax -> PaymentService: Patch order with details
+PaymentService -> PayPalAPI: PATCH /v2/checkout/orders/{id}
+PayPalAPI --> PaymentService: Order updated
+PaymentService --> Ajax: { paypalOrderDetails }
+deactivate Ajax
+
+== Authorize Payment ==
+
+JS -> Ajax: POST shopOrderAuthorizeUrl
+note right
+  AJAX Request:
+  {
+    orderId: payPalOrderId,
+    shopOrderId,
+    paymentId: "oscpaypal"
+  }
+end note
+activate Ajax
+
+Ajax -> PaymentService: doAuthorizePayment()
+activate PaymentService
+
+PaymentService -> PayPalAPI: POST /v2/checkout/orders/{id}/authorize
+note right
+  Authorize payment
+  (does NOT capture!)
+end note
+activate PayPalAPI
+
+PayPalAPI --> PaymentService: Authorization details
+deactivate PayPalAPI
+note right
+  {
+    authorization_id,
+    status: CREATED,
+    create_time,
+    valid for: 3 days
+  }
+end note
+
+PaymentService -> Database: INSERT oscpaypal_order
+note right
+  transaction_id: auth_id
+  transaction_type: authorization
+  status: CREATED
+end note
+
+PaymentService -> Database: UPDATE oxorder\n(transstatus: NOT_FINISHED)
+note right
+  Order not paid yet,
+  waiting for capture
+end note
+
+PaymentService --> Ajax: {\n  status: "success",\n  paymentStatus: "success"\n}
+deactivate PaymentService
+
+Ajax --> JS: Success response
+deactivate Ajax
+
+JS -> Customer: Redirect to thank you page
+note right
+  Order confirmation,
+  but payment not captured
+end note
+
+deactivate JS
+
+... Days later: Admin prepares shipment ...
+
+Admin -> OrderOverview: Opens order in admin panel
+activate OrderOverview
+
+OrderOverview -> OrderOverview: Admin clicks "Send Now"
+
+OrderOverview -> OrderOverview: Check capture strategy
+note right
+  Config: oscPayPalStandardCaptureStrategy
+  Value: "delivery"
+  isPayPalOrderCaptureOnDelivery() = true
+end note
+
+OrderOverview -> PaymentService: capturePayPalOrder()
+activate PaymentService
+
+PaymentService -> Database: Query authorization details
+Database --> PaymentService: auth_id, create_time
+
+PaymentService -> PaymentService: Check authorization age
+note right
+  age = NOW() - create_time
+
+  If > 3 days and < 29 days:
+    Reauthorization needed
+  If > 29 days:
+    Cannot capture!
+end note
+
+alt Authorization Expired (> 3 days, < 29 days)
+    PaymentService -> PayPalAPI: POST /v2/payments/authorizations/{id}/reauthorize
+    note right
+      Extend validity by 3 days
+    end note
+    activate PayPalAPI
+    PayPalAPI --> PaymentService: New authorization
+    deactivate PayPalAPI
+    PaymentService -> Database: UPDATE authorization timestamp
+else Authorization Too Old (> 29 days)
+    PaymentService --> OrderOverview: Error: Authorization expired
+    OrderOverview -> Admin: Show error message
+    note right
+      Cannot capture,
+      authorization too old
+    end note
+end
+
+PaymentService -> PayPalAPI: POST /v2/payments/authorizations/{auth_id}/capture
+note right
+  Capture the authorized payment
+end note
+activate PayPalAPI
+
+PayPalAPI --> PaymentService: Capture response
+deactivate PayPalAPI
+note right
+  {
+    capture_id,
+    status: COMPLETED,
+    amount
+  }
+end note
+
+PaymentService -> Database: INSERT oscpaypal_order
+note right
+  transaction_id: capture_id
+  transaction_type: capture
+  status: COMPLETED
+end note
+
+PaymentService --> OrderOverview: Capture successful
+deactivate PaymentService
+
+OrderOverview -> Database: UPDATE oxorder\n(oxsenddate: NOW())
+OrderOverview -> Admin: Order marked as sent
+deactivate OrderOverview
+
+... Shortly after ...
+
+PayPalAPI -> WebhookController: PAYMENT.CAPTURE.COMPLETED
+activate WebhookController
+WebhookController -> Database: UPDATE oxorder\n(transstatus: OK,\n oxpaid: NOW(),\n oxtransid: capture_id)
+WebhookController --> PayPalAPI: HTTP 200 OK
+deactivate WebhookController
+
+@enduml
+
+' ============================================================================
+' GOOGLE PAY FLOW
+' ============================================================================
+
+@startuml Google Pay Flow
+!theme plain
+
+title Google Pay Payment Flow\n(Using AJAX Controller)
+
+actor Customer
+participant "Browser\n(JS)" as JS
+participant "Google Pay\nButton SDK" as GPay
+participant AjaxPaymentController as Ajax
+participant PaymentService
+participant SCAValidator
+participant "PayPal API" as PayPalAPI
+participant WebhookController
+database Database
+
+Customer -> JS: Clicks Google Pay button
+activate JS
+
+JS -> GPay: Initialize Google Pay
+activate GPay
+
+GPay -> Customer: Show Google Pay sheet
+note right
+  Native Google Pay UI:
+  - Select card/account
+  - Biometric auth (if available)
+end note
+
+Customer -> GPay: Selects payment & authenticates
+
+GPay -> GPay: Create payment token
+note right
+  Tokenized card data
+end note
+
+GPay -> JS: Payment token + billing details
+deactivate GPay
+
+== Create Shop Order ==
+
+JS -> Ajax: POST executeGooglePayOrder
+note right
+  AJAX Request:
+  {
+    paypalOrderId: from button,
+    deliveryAddressId,
+    paymentId: "oscpaypal_googlepay"
+  }
+end note
+activate Ajax
+
+Ajax -> OrderManager: createShopOrder()
+activate OrderManager
+OrderManager -> Database: INSERT oxorder\n(transstatus: NOT_FINISHED)
+OrderManager --> Ajax: Shop Order ID
+deactivate OrderManager
+
+Ajax -> PaymentService: Patch PayPal order
+note right
+  PayPal order already created
+  by Google Pay button integration
+end note
+activate PaymentService
+
+PaymentService -> PayPalAPI: PATCH /v2/checkout/orders/{id}
+note right
+  Add shop order details:
+  - order number
+  - custom_id
+  - invoice_id
+end note
+activate PayPalAPI
+PayPalAPI --> PaymentService: Order patched
+deactivate PayPalAPI
+
+PaymentService -> Database: INSERT oscpaypal_order
+
+PaymentService --> Ajax: Success
+deactivate PaymentService
+
+Ajax --> JS: { shopOrderId }
+deactivate Ajax
+
+== Capture Payment ==
+
+JS -> Ajax: POST captureGooglePayOrder
+note right
+  AJAX Request:
+  {
+    orderId: payPalOrderId,
+    paymentId: "oscpaypal_googlepay"
+  }
+end note
+activate Ajax
+
+Ajax -> PaymentService: doCapturePayPalOrder()
+activate PaymentService
+
+PaymentService -> SCAValidator: verify3D()
+note right
+  Verify 3DS result
+  from Google Pay token
+end note
+activate SCAValidator
+SCAValidator --> PaymentService: Verified
+deactivate SCAValidator
+
+PaymentService -> PayPalAPI: POST /v2/checkout/orders/{id}/capture
+activate PayPalAPI
+PayPalAPI --> PaymentService: Capture response
+deactivate PayPalAPI
+
+PaymentService -> Database: UPDATE oscpaypal_order\n(transaction_id, status: COMPLETED)
+
+PaymentService --> Ajax: Success
+deactivate PaymentService
+
+Ajax --> JS: { status: "success" }
+deactivate Ajax
+
+== Wait for Webhook ==
+
+JS -> Database: UPDATE oxorder\n(transstatus: WAIT_FOR_WEBHOOK_EVENTS/600)
+
+alt Webhook Arrives
+    PayPalAPI -> WebhookController: PAYMENT.CAPTURE.COMPLETED
+    WebhookController -> Database: UPDATE oxorder (OK, oxpaid)
+    WebhookController --> PayPalAPI: HTTP 200
+    JS -> Customer: Thank you page
+else Webhook Timeout
+    JS -> Ajax: Fetch order status (fallback)
+    Ajax -> PayPalAPI: GET order details
+    Ajax -> Database: UPDATE oxorder (OK, oxpaid)
+    JS -> Customer: Thank you page
+end
+
+deactivate JS
+
+@enduml
+
+' ============================================================================
+' REFUND FLOW
+' ============================================================================
+
+@startuml Refund Flow
+!theme plain
+
+title Refund Process Flow\n(Admin Interface)
+
+actor Admin
+participant AdminPanel
+participant PayPalOrderController
+participant PaymentService
+participant "PayPal API" as PayPalAPI
+participant WebhookController
+participant RefundHandler
+database Database
+
+Admin -> AdminPanel: Opens order in backend
+activate AdminPanel
+
+AdminPanel -> Database: Query order & PayPal order details
+Database --> AdminPanel: Order information
+
+AdminPanel -> PayPalOrderController: Render order details
+activate PayPalOrderController
+
+PayPalOrderController -> Database: Get capture details
+Database --> PayPalOrderController: Capture ID, amount
+
+PayPalOrderController -> PayPalOrderController: eligibleForRefund()
+note right
+  Check:
+  - Status: CAPTURED/COMPLETED
+  - Remaining refund amount > 0
+end note
+
+PayPalOrderController --> AdminPanel: Show refund form
+deactivate PayPalOrderController
+
+AdminPanel --> Admin: Display refund options
+deactivate AdminPanel
+
+Admin -> AdminPanel: Clicks "Refund"
+activate AdminPanel
+
+Admin -> AdminPanel: Enters refund details
+note right
+  - Amount (or "Refund All")
+  - Note to payer
+  - Invoice ID (optional)
+end note
+
+Admin -> AdminPanel: Submit refund
+
+AdminPanel -> PayPalOrderController: refund() method
+activate PayPalOrderController
+
+PayPalOrderController -> PayPalOrderController: Get request parameters
+note right
+  Extract:
+  - refundAmount
+  - invoiceId
+  - refundAll (boolean)
+  - noteToPayer
+end note
+
+PayPalOrderController -> Database: Query capture ID
+Database --> PayPalOrderController: capture_id
+
+PayPalOrderController -> PayPalOrderController: Build RefundRequest
+note right
+  RefundRequest:
+  {
+    note_to_payer: "...",
+    invoice_id: "..." (optional),
+    amount: {
+      currency_code: "EUR",
+      value: "50.00"
+    } (if partial)
+  }
+end note
+
+PayPalOrderController -> PayPalAPI: POST /v2/payments/captures/{id}/refunds
+note right
+  API call with RefundRequest
+  Partner Attribution ID included
+end note
+activate PayPalAPI
+
+PayPalAPI -> PayPalAPI: Process refund
+note right
+  PayPal validates and
+  processes the refund
+end note
+
+PayPalAPI --> PayPalOrderController: Refund response
+deactivate PayPalAPI
+note right
+  {
+    refund_id,
+    status: PENDING/COMPLETED,
+    amount: { value, currency },
+    create_time
+  }
+end note
+
+PayPalOrderController -> PaymentService: trackPayPalOrder()
+activate PaymentService
+
+PaymentService -> Database: INSERT oscpaypal_order
+note right
+  New transaction record:
+  - transaction_type: refund
+  - transaction_id: refund_id
+  - status: PENDING/COMPLETED
+  - Links to original order
+end note
+
+PaymentService --> PayPalOrderController: Tracked
+deactivate PaymentService
+
+PayPalOrderController -> PayPalOrderController: refreshOrder()
+note right
+  Reload order details
+  to show updated status
+end note
+
+PayPalOrderController --> AdminPanel: Refund initiated
+deactivate PayPalOrderController
+
+AdminPanel --> Admin: Show success message
+note right
+  "Refund processed"
+  Updated order display
+end note
+
+deactivate AdminPanel
+
+... PayPal processes refund ...
+
+PayPalAPI -> WebhookController: PAYMENT.CAPTURE.REFUNDED
+activate WebhookController
+
+WebhookController -> RefundHandler: handle(event)
+activate RefundHandler
+
+RefundHandler -> RefundHandler: Extract capture ID from event
+note right
+  Transaction ID in webhook
+  is the capture ID (not refund ID)
+end note
+
+RefundHandler -> Database: Query order by transaction ID
+Database --> RefundHandler: Order details
+
+RefundHandler -> RefundHandler: Calculate refund status
+note right
+  if (refund amount < total order amount):
+    status = PARTIALLY_REFUNDED
+  else:
+    status = REFUNDED
+end note
+
+RefundHandler -> Database: UPDATE oscpaypal_order
+note right
+  Update CAPTURE record:
+  - status: PARTIALLY_REFUNDED
+    or REFUNDED
+end note
+
+RefundHandler -> PaymentService: trackPayPalOrder()
+PaymentService -> Database: UPDATE refund transaction\n(status: COMPLETED)
+
+RefundHandler --> WebhookController: Success
+deactivate RefundHandler
+
+WebhookController --> PayPalAPI: HTTP 200 OK
+deactivate WebhookController
+
+note over Admin, Database
+  Note: Original shop order remains paid (oxpaid unchanged)
+  Refunds are tracked separately in oscpaypal_order table
+  Multiple partial refunds can be issued until total is refunded
+end note
+
+@enduml
+
+' ============================================================================
+' PUI (PAY UPON INVOICE) PAYMENT FLOW
+' ============================================================================
+
+@startuml PUI Payment Flow
+!theme plain
+
+title PUI (Pay Upon Invoice) Payment Flow\n(Bank Transfer Instructions via Email)
+
+actor Customer
+participant "Browser\n(JS)" as JS
+participant AjaxPaymentController as Ajax
+participant PaymentService
+participant "PayPal API" as PayPalAPI
+participant WebhookController
+participant "PUI Handler" as PuiHandler
+participant EmailService
+database Database
+
+Customer -> JS: Selects "Pay Upon Invoice"
+activate JS
+note right
+  Payment method: oscpaypal_pui
+  PUI eligibility checked
+end note
+
+JS -> JS: validateTermsAndConditions()
+
+== Create Shop Order ==
+
+JS -> Ajax: POST shopOrderCreateUrl
+note right
+  AJAX Request:
+  {
+    deliveryAddressId,
+    paymentId: "oscpaypal_pui"
+  }
+end note
+activate Ajax
+
+Ajax -> OrderManager: createShopOrder(basket, user)
+activate OrderManager
+OrderManager -> Database: INSERT oxorder\n(transstatus: NOT_FINISHED)
+OrderManager --> Ajax: Shop Order ID
+deactivate OrderManager
+
+Ajax --> JS: { shopOrderId }
+deactivate Ajax
+
+JS -> JS: Fire event: 'shopOrderCreated'
+
+== Execute PUI Payment ==
+
+JS -> Ajax: POST executePuiPayment
+note right
+  AJAX Request:
+  {
+    shopOrderId,
+    paymentId: "oscpaypal_pui"
+  }
+end note
+activate Ajax
+
+Ajax -> PaymentService: doExecutePuiPayment(basket, user)
+activate PaymentService
+
+PaymentService -> PaymentService: Build PUI OrderRequest
+note right
+  Special PUI configuration:
+
+  Intent: CAPTURE
+
+  Processing Instruction:
+  ORDER_COMPLETE_ON_PAYMENT_APPROVAL
+
+  Payment Source:
+  {
+    pay_upon_invoice: {
+      name: customer name,
+      email: customer email,
+      birth_date: customer DOB,
+      phone: phone number,
+      billing_address: {...},
+      experience_context: {
+        locale: "de_DE",
+        brand_name: shop name,
+        customer_service_instructions: [...]
+      }
+    }
+  }
+
+  Note: PUI auto-completes
+  without explicit capture call!
+end note
+
+PaymentService -> PayPalAPI: POST /v2/checkout/orders
+note right
+  Create PUI order
+end note
+activate PayPalAPI
+
+PayPalAPI -> PayPalAPI: Validate customer eligibility
+note right
+  PayPal checks:
+  - Customer credit rating
+  - Address verification
+  - Risk assessment
+end note
+
+alt Customer Not Eligible
+    PayPalAPI --> PaymentService: Error: Not eligible for PUI
+    deactivate PayPalAPI
+    PaymentService --> Ajax: { status: "error",\n  message: "PUI not available" }
+    Ajax --> JS: Error response
+    JS -> Customer: Show error message
+    note right
+      Customer must choose
+      different payment method
+    end note
+else Customer Eligible
+    PayPalAPI -> PayPalAPI: Auto-approve order
+    note right
+      Status: COMPLETED
+      (no customer action needed!)
+    end note
+
+    PayPalAPI --> PaymentService: Order response
+    deactivate PayPalAPI
+    note right
+      {
+        id: paypal_order_id,
+        status: COMPLETED,
+        payment_source: {
+          pay_upon_invoice: {
+            name: "...",
+            email: "...",
+            bic: "COBADEFFXXX",
+            iban: "DE...",
+            account_holder_name: "...",
+            bank_name: "Commerzbank",
+            payment_reference: "PP.1234.PP",
+            deposit_bank_details: {
+              bic: "...",
+              bank_name: "...",
+              iban: "...",
+              account_holder_name: "..."
+            }
+          }
+        }
+      }
+    end note
+
+    PaymentService -> Database: INSERT oscpaypal_order
+    note right
+      Links shop order to PayPal order
+      Stores PUI payment details:
+      - IBAN
+      - BIC
+      - Payment reference
+      - Bank name
+      - Account holder
+    end note
+
+    PaymentService -> Database: UPDATE oxorder\n(transstatus: WAIT_FOR_WEBHOOK_EVENTS/600)
+
+    PaymentService --> Ajax: {\n  status: "success",\n  payPalOrder: {...}\n}
+    deactivate PaymentService
+
+    Ajax --> JS: Success response
+    deactivate Ajax
+
+    JS -> Customer: Redirect to thank you page
+    note right
+      Shows order confirmation
+      "Payment instructions sent via email"
+    end note
+end
+
+deactivate JS
+
+... Shortly after (async) ...
+
+== Webhook Processing ==
+
+PayPalAPI -> WebhookController: POST webhook\nPAYMENT.CAPTURE.COMPLETED
+activate WebhookController
+
+WebhookController -> PuiHandler: handle(event)
+activate PuiHandler
+
+PuiHandler -> PuiHandler: Extract PayPal Order ID\nfrom webhook payload
+note right
+  Webhook resource contains:
+  - Capture ID
+  - Links to order
+  - PUI payment details
+end note
+
+PuiHandler -> Database: Query order by\nPayPal Order ID
+Database --> PuiHandler: Shop Order
+
+PuiHandler -> Database: Query PayPal order record
+Database --> PuiHandler: PayPal Order with PUI details
+
+PuiHandler -> Database: UPDATE oscpaypal_order
+note right
+  Update:
+  - status: COMPLETED
+  - transaction_id: capture_id
+  - Confirm PUI details stored
+end note
+
+PuiHandler -> Database: UPDATE oxorder
+note right
+  Update:
+  - transstatus: OK
+  - oxpaid: NOW()
+  - oxtransid: capture_id
+end note
+
+PuiHandler -> EmailService: Send PUI payment instructions
+activate EmailService
+note right
+  Email contains:
+  - Order confirmation
+  - Bank transfer details:
+    * Bank name
+    * IBAN
+    * BIC
+    * Account holder
+    * Payment reference
+    * Amount to transfer
+  - Payment deadline
+  - Instructions
+end note
+
+EmailService -> Customer: Email with bank details
+note right
+  Subject: "Payment Instructions for Order #123"
+
+  Body:
+  "Please transfer €99.99 to:
+
+  Bank: Commerzbank
+  IBAN: DE89370400440532013000
+  BIC: COBADEFFXXX
+  Account Holder: PayPal Europe S.à r.l. et Cie, S.C.A.
+  Payment Reference: PP.1234.PP
+
+  Important: Include payment reference!"
+end note
+
+EmailService --> PuiHandler: Email sent
+deactivate EmailService
+
+PuiHandler -> Database: Clean up unfinished orders
+
+PuiHandler --> WebhookController: Success
+deactivate PuiHandler
+
+WebhookController --> PayPalAPI: HTTP 200 OK
+deactivate WebhookController
+
+... Days later: Customer transfers money ...
+
+Customer -> Customer: Opens online banking
+Customer -> Customer: Transfers €99.99
+note right
+  Customer performs
+  bank transfer with
+  payment reference
+end note
+
+... PayPal receives bank transfer ...
+
+PayPalAPI -> PayPalAPI: Match payment reference\nto order
+note right
+  PayPal bank receives transfer
+  Matches PP.1234.PP reference
+  Confirms payment
+end note
+
+note over PayPalAPI, Database
+  Order now fully paid in PayPal system
+  Shop order already marked as paid
+  No further action needed in OXID
+end note
+
+@enduml
+
+' ============================================================================
+' uAPM (UNIVERSAL ALTERNATIVE PAYMENT METHODS) FLOW
+' ============================================================================
+
+@startuml uAPM Payment Flow
+!theme plain
+
+title uAPM (Universal Alternative Payment Methods) Flow\n(Giropay, SEPA, iDEAL, EPS, BLIK, Przelewy24, Bancontact)
+
+actor Customer
+participant "Browser\n(JS)" as JS
+participant AjaxPaymentController as Ajax
+participant PaymentService
+participant "PayPal API" as PayPalAPI
+participant "External\nPayment Provider" as Provider
+participant WebhookController
+database Database
+
+Customer -> JS: Selects uAPM method\n(e.g., Giropay, SEPA, iDEAL)
+activate JS
+note right
+  Payment methods:
+  - oscpaypal_giropay
+  - oscpaypal_sepa
+  - oscpaypal_ideal
+  - oscpaypal_eps
+  - oscpaypal_blik
+  - oscpaypal_przelewy24
+  - oscpaypal_bancontact
+end note
+
+JS -> JS: validateTermsAndConditions()
+
+== Create Shop Order ==
+
+JS -> Ajax: POST shopOrderCreateUrl
+activate Ajax
+
+Ajax -> OrderManager: createShopOrder(basket, user)
+OrderManager -> Database: INSERT oxorder\n(transstatus: NOT_FINISHED)
+Ajax --> JS: { shopOrderId }
+deactivate Ajax
+
+== Create uAPM Order ==
+
+JS -> Ajax: POST createUAPMOrder
+note right
+  AJAX Request:
+  {
+    shopOrderId,
+    paymentId: "oscpaypal_giropay",
+    deliveryAddressId
+  }
+end note
+activate Ajax
+
+Ajax -> PaymentService: doCreateUAPMOrder(basket, paymentId)
+activate PaymentService
+
+PaymentService -> PaymentService: Build OrderRequest
+note right
+  Intent: CAPTURE
+
+  Payment Source (example: Giropay):
+  {
+    giropay: {
+      name: customer name,
+      country_code: "DE",
+      experience_context: {
+        locale: "de-DE",
+        return_url: shop_url/finalize,
+        cancel_url: shop_url/cancel
+      }
+    }
+  }
+
+  Other sources: sepa_debit,
+  ideal, eps, blik, p24, bancontact
+end note
+
+PaymentService -> PayPalAPI: POST /v2/checkout/orders
+activate PayPalAPI
+PayPalAPI --> PaymentService: PayPal Order\n{ id, status: PAYER_ACTION_REQUIRED }
+deactivate PayPalAPI
+
+PaymentService -> Database: INSERT oscpaypal_order
+
+PaymentService --> Ajax: {\n  payPalOrder: { id, status },\n  payerActionRequired: true\n}
+deactivate PaymentService
+
+Ajax --> JS: Order details
+deactivate Ajax
+
+== Confirm Order (Get Redirect URL) ==
+
+JS -> Ajax: POST confirmUAPMOrder
+note right
+  AJAX Request:
+  {
+    payPalOrderId,
+    paymentId: "oscpaypal_giropay"
+  }
+end note
+activate Ajax
+
+Ajax -> PaymentService: doConfirmUAPM(payPalOrderId, paymentId)
+activate PaymentService
+
+PaymentService -> PayPalAPI: POST /v2/checkout/orders/{id}/confirm-payment-source
+note right
+  Confirm API specific to uAPM
+  Returns redirect link
+end note
+activate PayPalAPI
+
+PayPalAPI --> PaymentService: Confirmation response
+deactivate PayPalAPI
+note right
+  {
+    payer_action_required: true,
+    links: [{
+      rel: "payer-action",
+      href: "https://giropay.de/...",
+      method: "GET"
+    }]
+  }
+end note
+
+PaymentService --> Ajax: {\n  redirectUrl: "https://giropay.de/..."\n}
+deactivate PaymentService
+
+Ajax --> JS: Redirect URL
+deactivate Ajax
+
+== Customer Authentication at Provider ==
+
+JS -> Provider: window.location = redirectUrl
+deactivate JS
+activate Provider
+
+Provider -> Customer: Show Giropay login
+note right
+  External provider UI:
+  - Select bank
+  - Login to online banking
+  - Authorize payment
+end note
+
+Customer -> Provider: Authenticates & authorizes
+note right
+  Customer logs in to their
+  bank and confirms payment
+end note
+
+Provider -> PayPalAPI: Payment authorized
+activate PayPalAPI
+
+PayPalAPI -> PayPalAPI: Capture payment
+note right
+  Auto-capture when
+  Intent: CAPTURE
+end note
+
+PayPalAPI --> Provider: Payment captured
+deactivate PayPalAPI
+
+Provider -> JS: Redirect to return_url
+deactivate Provider
+activate JS
+
+== Finalize Order ==
+
+JS -> Ajax: GET finalizeUAPMOrder
+note right
+  Return URL hit:
+  shop.com/paypal/finalize?
+    payPalOrderId=xxx&
+    token=yyy
+end note
+activate Ajax
+
+Ajax -> PaymentService: finalizeUAPMPayment(payPalOrderId)
+activate PaymentService
+
+PaymentService -> PayPalAPI: GET /v2/checkout/orders/{id}
+note right
+  Fetch order status
+end note
+activate PayPalAPI
+PayPalAPI --> PaymentService: Order details\n{ status: COMPLETED }
+deactivate PayPalAPI
+
+PaymentService -> Database: UPDATE oscpaypal_order\n(status: COMPLETED,\n transaction_id: capture_id)
+
+PaymentService -> Database: UPDATE oxorder\n(transstatus: WAIT_FOR_WEBHOOK_EVENTS/600)
+
+PaymentService --> Ajax: Success
+deactivate PaymentService
+
+Ajax --> JS: Order completed
+deactivate Ajax
+
+JS -> Customer: Show thank you page
+deactivate JS
+
+... Webhook confirmation ...
+
+PayPalAPI -> WebhookController: PAYMENT.CAPTURE.COMPLETED
+WebhookController -> Database: UPDATE oxorder\n(transstatus: OK,\n oxpaid: NOW())
+WebhookController --> PayPalAPI: HTTP 200 OK
+
+@enduml
+
+@enduml

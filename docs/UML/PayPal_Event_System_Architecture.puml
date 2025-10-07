@@ -1,0 +1,462 @@
+@startuml Event System Components
+!theme plain
+
+title Event System - Component Architecture
+
+package "Event Dispatchers" #E6F2FF {
+    [Symfony EventDispatcher] as Symfony
+    note right of Symfony
+      OXID uses Symfony
+      EventDispatcher component
+      for event-driven architecture
+    end note
+}
+
+package "Event Publishers" #FFE6E6 {
+    [AjaxPaymentController] as Ajax
+    [PayPalOrderCompletedSubscriber] as OrderSub
+}
+
+package "Events" #FFF9E6 {
+    [PayPalOrderCompletedEvent\n<<Event>>] as OrderEvent
+    [PayPalVaultingSucceededEvent\n<<Event>>] as VaultEvent
+}
+
+package "Event Subscribers" #E6FFE6 {
+    [PayPalOrderCompletedSubscriber\n<<Subscriber>>] as OrderEventSub
+    [PayPalVaultingSubscriber\n<<Subscriber>>] as VaultEventSub
+}
+
+package "Business Services" #F0E6FF {
+    [Payment Service] as Payment
+    [OrderRepository] as OrderRepo
+    [UserRepository] as UserRepo
+}
+
+database "Database" as DB {
+    [oxorder] as Orders
+    [oscpaypal_order] as PayPalOrders
+    [oxuser] as Users
+}
+
+' Relationships
+Ajax ..> OrderEvent : creates & dispatches
+Ajax --> Symfony : dispatch(event)
+
+Symfony --> OrderEventSub : triggers
+OrderEventSub --> OrderEvent : listens to
+
+OrderEventSub --> OrderRepo : uses
+OrderEventSub --> Payment : uses
+OrderEventSub --> Orders : updates
+OrderEventSub --> PayPalOrders : updates
+
+OrderEventSub ..> VaultEvent : creates & dispatches\n(if vaulted)
+OrderEventSub --> Symfony : dispatch(vaulting event)
+
+Symfony --> VaultEventSub : triggers
+VaultEventSub --> VaultEvent : listens to
+
+VaultEventSub --> UserRepo : uses
+VaultEventSub --> Users : updates
+
+note right of Ajax
+  **Event Publisher**
+  Dispatches PayPalOrderCompletedEvent
+  after successful order capture
+end note
+
+note right of OrderEventSub
+  **Multi-responsibility Subscriber**
+  1. Marks order as paid
+  2. Sets transaction ID
+  3. Tracks PayPal order
+  4. Sends confirmation email
+  5. Dispatches vaulting event
+end note
+
+note right of VaultEventSub
+  **Single-responsibility Subscriber**
+  Saves PayPal customer ID
+  to user record for vaulting
+end note
+
+@enduml
+
+' ============================================================================
+' EVENT FLOW - ORDER COMPLETED
+' ============================================================================
+
+@startuml Order Completed Event Flow
+!theme plain
+
+title PayPalOrderCompletedEvent - Complete Flow
+
+participant AjaxPaymentController as Ajax
+participant "Symfony\nEventDispatcher" as Dispatcher
+participant PayPalOrderCompletedSubscriber as Subscriber
+participant OrderRepository
+participant "Payment Service" as Payment
+participant EmailService
+database Database
+
+Ajax -> Ajax: captureOrder() successful
+activate Ajax
+note right
+  Order captured successfully
+  Payment confirmed by PayPal
+end note
+
+== Create and Dispatch Event ==
+
+Ajax -> Ajax: Create PayPalOrderCompletedEvent
+note right
+  new PayPalOrderCompletedEvent(
+    order: $order,
+    basket: $basket,
+    user: $user,
+    shopOrderId: $shopOrderId,
+    payPalOrderId: $payPalOrderId,
+    paymentMethodId: $paymentMethodId,
+    transactionId: $transactionId,
+    payPalCustomerId: $payPalCustomerId
+  )
+end note
+
+Ajax -> Dispatcher: dispatch(event, 'osc.paypal.order.completed')
+activate Dispatcher
+note right
+  Event name:
+  'osc.paypal.order.completed'
+end note
+
+Dispatcher -> Subscriber: onOrderCompleted(event)
+deactivate Dispatcher
+activate Subscriber
+
+== Subscriber Processing ==
+
+Subscriber -> Subscriber: Extract event data
+note right
+  $order = $event->getOrder();
+  $shopOrderId = $event->getShopOrderId();
+  $payPalOrderId = $event->getPayPalOrderId();
+  $transactionId = $event->getTransactionId();
+  $payPalCustomerId = $event->getPayPalCustomerId();
+end note
+
+== Update Order Status ==
+
+Subscriber -> Database: UPDATE oxorder
+note right
+  UPDATE oxorder
+  SET transstatus = 'OK',
+      oxpaid = NOW(),
+      oxtransid = 'capture_id'
+  WHERE oxid = 'order_id'
+end note
+
+== Track PayPal Order ==
+
+Subscriber -> Payment: trackPayPalOrder()
+activate Payment
+
+Payment -> Database: INSERT/UPDATE oscpaypal_order
+note right
+  INSERT INTO oscpaypal_order
+  (
+    oxorderid,
+    oxpaypalorderid,
+    oscpaypaltransactionid,
+    oscpaypalstatus,
+    oscpaymentmethodid,
+    oscpaypaltransactiontype
+  )
+  VALUES
+  (
+    'order_id',
+    'paypal_order_id',
+    'capture_id',
+    'COMPLETED',
+    'oscpaypal',
+    'capture'
+  )
+end note
+
+Payment --> Subscriber: Tracked
+deactivate Payment
+
+== Send Confirmation Email ==
+
+alt Order Email Not Sent Yet
+    Subscriber -> EmailService: sendOrderConfirmationEmail(order)
+    activate EmailService
+
+    EmailService -> EmailService: Build email
+    note right
+      Email includes:
+      - Order details
+      - Payment confirmation
+      - Shipping information
+      - Invoice/Receipt
+    end note
+
+    EmailService -> EmailService: Send email
+    note right
+      Send to customer email
+    end note
+
+    EmailService -> Database: UPDATE oxorder\nSET oxsenddate = NOW()
+    note right
+      Mark email as sent
+    end note
+
+    EmailService --> Subscriber: Email sent
+    deactivate EmailService
+end
+
+== Handle Vaulting ==
+
+alt PayPal Customer ID Present (Vaulting)
+    Subscriber -> Subscriber: Create PayPalVaultingSucceededEvent
+    note right
+      new PayPalVaultingSucceededEvent(
+        user: $user,
+        payPalCustomerId: $payPalCustomerId
+      )
+    end note
+
+    Subscriber -> Dispatcher: dispatch(vaultingEvent,\n'osc.paypal.vaulting.succeeded')
+    activate Dispatcher
+    note right
+      Dispatch vaulting event
+      to save customer ID
+    end note
+
+    Dispatcher --> Subscriber: Event dispatched
+    deactivate Dispatcher
+    note right
+      VaultingSubscriber will handle
+      in separate flow
+    end note
+end
+
+Subscriber --> Ajax: Event handled
+deactivate Subscriber
+
+Ajax --> Ajax: Return success response
+deactivate Ajax
+
+@enduml
+
+' ============================================================================
+' EVENT FLOW - VAULTING SUCCEEDED
+' ============================================================================
+
+@startuml Vaulting Succeeded Event Flow
+!theme plain
+
+title PayPalVaultingSucceededEvent - Complete Flow
+
+participant PayPalOrderCompletedSubscriber as OrderSub
+participant "Symfony\nEventDispatcher" as Dispatcher
+participant PayPalVaultingSubscriber as VaultSub
+participant UserRepository
+database Database
+
+OrderSub -> OrderSub: Vaulting detected
+activate OrderSub
+note right
+  $payPalCustomerId present
+  in order capture response
+end note
+
+== Create and Dispatch Vaulting Event ==
+
+OrderSub -> OrderSub: Create PayPalVaultingSucceededEvent
+note right
+  new PayPalVaultingSucceededEvent(
+    user: $user,
+    payPalCustomerId: $payPalCustomerId
+  )
+
+  Example customer ID:
+  "customer_id_abc123xyz"
+end note
+
+OrderSub -> Dispatcher: dispatch(event,\n'osc.paypal.vaulting.succeeded')
+activate Dispatcher
+note right
+  Event name:
+  'osc.paypal.vaulting.succeeded'
+end note
+
+Dispatcher -> VaultSub: onVaultingSucceeded(event)
+deactivate Dispatcher
+deactivate OrderSub
+activate VaultSub
+
+== Subscriber Processing ==
+
+VaultSub -> VaultSub: Extract event data
+note right
+  $user = $event->getUser();
+  $payPalCustomerId = $event->getPayPalCustomerId();
+end note
+
+== Save Customer ID to User ==
+
+VaultSub -> UserRepository: updatePayPalCustomerId(user, customerId)
+activate UserRepository
+
+UserRepository -> Database: UPDATE oxuser
+note right
+  UPDATE oxuser
+  SET oscpaypalcustomerid = 'customer_id_abc123xyz'
+  WHERE oxid = 'user_id'
+end note
+
+UserRepository --> VaultSub: Updated
+deactivate UserRepository
+
+VaultSub -> VaultSub: Log success
+note right
+  Log: "PayPal customer ID saved
+  for user {user_id}"
+end note
+
+VaultSub --> Dispatcher: Event handled
+deactivate VaultSub
+
+note over OrderSub, Database
+  **Vaulting Complete**
+  Customer ID is now stored in oxuser table.
+  Future purchases can use vaulted payment methods
+  by referencing this customer ID.
+end note
+
+@enduml
+
+' ============================================================================
+' SUBSCRIBER REGISTRATION
+' ============================================================================
+
+@startuml Subscriber Registration
+!theme plain
+
+title Event Subscriber Registration - services.yaml
+
+package "OXID Module Configuration" {
+    [services.yaml] as Config
+}
+
+package "Symfony EventDispatcher" {
+    [EventDispatcher] as Dispatcher
+}
+
+package "Event Subscribers" {
+    [PayPalOrderCompletedSubscriber] as OrderSub
+    [PayPalVaultingSubscriber] as VaultSub
+}
+
+Config --> Dispatcher : registers subscribers
+Dispatcher --> OrderSub : listens to\n'osc.paypal.order.completed'
+Dispatcher --> VaultSub : listens to\n'osc.paypal.vaulting.succeeded'
+
+note right of Config
+  **services.yaml Configuration**
+
+  services:
+    OxidSolutionCatalysts\PayPal\EventSubscriber\
+      PayPalOrderCompletedSubscriber:
+      tags:
+        - { name: kernel.event_subscriber }
+
+    OxidSolutionCatalysts\PayPal\EventSubscriber\
+      PayPalVaultingSubscriber:
+      tags:
+        - { name: kernel.event_subscriber }
+end note
+
+note right of OrderSub
+  **getSubscribedEvents()**
+
+  return [
+    'osc.paypal.order.completed'
+      => 'onOrderCompleted'
+  ];
+end note
+
+note right of VaultSub
+  **getSubscribedEvents()**
+
+  return [
+    'osc.paypal.vaulting.succeeded'
+      => 'onVaultingSucceeded'
+  ];
+end note
+
+@enduml
+
+' ============================================================================
+' EVENT SYSTEM BENEFITS
+' ============================================================================
+
+@startuml Event System Benefits
+!theme plain
+
+title Benefits of Event-Driven Architecture
+
+package "Decoupling" #E6F2FF {
+    note as N1
+      **Loose Coupling**
+      - Controllers don't know about subscribers
+      - Subscribers don't know about each other
+      - Easy to add new subscribers
+      - No direct dependencies
+    end note
+}
+
+package "Extensibility" #FFE6E6 {
+    note as N2
+      **Easy Extension**
+      - Third-party modules can subscribe
+      - Add custom logic without modifying core
+      - Multiple subscribers per event
+      - Priority-based execution
+    end note
+}
+
+package "Testability" #E6FFE6 {
+    note as N3
+      **Improved Testing**
+      - Test subscribers in isolation
+      - Mock event dispatchers
+      - Test event creation separately
+      - No integration tests needed
+    end note
+}
+
+package "Maintainability" #FFF9E6 {
+    note as N4
+      **Easier Maintenance**
+      - Single Responsibility Principle
+      - Clear separation of concerns
+      - Event names document behavior
+      - Easy to trace event flow
+    end note
+}
+
+package "Flexibility" #F0E6FF {
+    note as N5
+      **Flexible Workflow**
+      - Conditional event dispatching
+      - Async event processing possible
+      - Event queuing for heavy tasks
+      - Retry logic per subscriber
+    end note
+}
+
+@enduml
+
+@enduml

@@ -1,0 +1,545 @@
+@startuml Webhook System Components
+!theme plain
+
+title Webhook System - Component Architecture
+
+package "PayPal" #FFE6E6 {
+    [PayPal Platform] as PPPlatform
+    [Event Emitter] as Emitter
+}
+
+package "HTTP Layer" #E6F2FF {
+    [WebhookController] as Controller
+    [RequestReader] as Reader
+}
+
+package "Verification" #E6FFE6 {
+    [EventVerifier] as Verifier
+    [Signature Validator] as SigValidator
+}
+
+package "Event Processing" #FFF9E6 {
+    [WebhookRequestHandler] as RequestHandler
+    [Event Object] as Event
+    [EventDispatcher] as Dispatcher
+}
+
+package "Handler Mapping" #F0E6FF {
+    [EventHandlerMapping] as Mapping
+    note right of Mapping
+      PAYMENT.CAPTURE.COMPLETED
+        → PaymentCaptureCompletedHandler
+
+      CHECKOUT.ORDER.COMPLETED
+        → CheckoutOrderCompletedHandler
+
+      CHECKOUT.ORDER.APPROVED
+        → CheckoutOrderApprovedHandler
+
+      PAYMENT.CAPTURE.REFUNDED
+        → PaymentCaptureRefundedHandler
+
+      PAYMENT.CAPTURE.DENIED
+        → PaymentCaptureDeniedHandler
+
+      CHECKOUT.PAYMENT-APPROVAL.REVERSED
+        → CheckoutPaymentApprovalReverseHandler
+    end note
+}
+
+package "Event Handlers" #FFEBE6 {
+    [WebhookHandlerBase\n<<abstract>>] as HandlerBase
+    [PaymentCaptureCompletedHandler] as CaptureHandler
+    [CheckoutOrderCompletedHandler] as OrderCompletedHandler
+    [CheckoutOrderApprovedHandler] as ApprovedHandler
+    [PaymentCaptureRefundedHandler] as RefundHandler
+    [PaymentCaptureDeniedHandler] as DeniedHandler
+    [CheckoutPaymentApprovalReverseHandler] as ReverseHandler
+}
+
+package "Business Logic" #E6FFFF {
+    [Payment Service] as PaymentSvc
+    [OrderRepository] as OrderRepo
+}
+
+database "Database" as DB {
+    [oxorder] as Orders
+    [oscpaypal_order] as PayPalOrders
+}
+
+' Relationships
+PPPlatform --> Emitter : emits events
+Emitter --> Controller : POST /webhook
+Controller --> Reader : reads request
+Reader --> Verifier : passes data
+Verifier --> SigValidator : validates signature
+Verifier --> RequestHandler : if valid
+RequestHandler --> Event : creates
+Event --> Dispatcher : dispatches
+Dispatcher --> Mapping : looks up handler
+Mapping --> HandlerBase : selects
+HandlerBase <|-- CaptureHandler
+HandlerBase <|-- OrderCompletedHandler
+HandlerBase <|-- ApprovedHandler
+HandlerBase <|-- RefundHandler
+HandlerBase <|-- DeniedHandler
+HandlerBase <|-- ReverseHandler
+
+CaptureHandler --> PaymentSvc : uses
+CaptureHandler --> OrderRepo : queries
+RefundHandler --> PaymentSvc : uses
+ApprovedHandler --> PaymentSvc : triggers capture
+
+PaymentSvc --> Orders : updates
+OrderRepo --> PayPalOrders : queries
+OrderRepo --> Orders : queries
+
+note right of Verifier
+  **Signature Verification**
+  - Validates PayPal signature
+  - Prevents webhook spoofing
+  - Uses webhook ID + headers
+  - Calls PayPal verify API
+end note
+
+note right of RequestHandler
+  **Error Handling**
+  - WebhookEventException: log, don't retry
+  - WebhookEventRetryException: retry
+  - WebhookEventTypeException: unknown event
+  - Always returns HTTP 200 to PayPal
+end note
+
+note right of HandlerBase
+  **Common Handler Logic**
+  - Extract PayPal order ID
+  - Find shop order
+  - Update order status
+  - Mark payment status
+  - Clean up unfinished orders
+end note
+
+@enduml
+
+' ============================================================================
+' WEBHOOK PROCESSING SEQUENCE
+' ============================================================================
+
+@startuml Webhook Processing Sequence
+!theme plain
+
+title Webhook Event Processing - Complete Flow
+
+participant "PayPal Platform" as PayPal
+participant WebhookController
+participant RequestReader
+participant EventVerifier
+participant WebhookRequestHandler
+participant Event
+participant EventDispatcher
+participant EventHandlerMapping
+participant "Handler\n(e.g., CaptureCompleted)" as Handler
+participant OrderRepository
+participant "Payment Service" as Payment
+database Database
+
+PayPal -> WebhookController: POST /webhook
+activate WebhookController
+note right
+  HTTP Headers:
+  - PAYPAL-TRANSMISSION-ID
+  - PAYPAL-TRANSMISSION-TIME
+  - PAYPAL-TRANSMISSION-SIG
+  - PAYPAL-CERT-URL
+  - PAYPAL-AUTH-ALGO
+
+  Body: JSON webhook event
+end note
+
+WebhookController -> WebhookController: init()
+note right
+  Entry point for all webhooks
+end note
+
+WebhookController -> RequestReader: new RequestReader()
+activate RequestReader
+
+RequestReader -> RequestReader: getRawPost()
+note right
+  Get raw HTTP POST body
+end note
+
+RequestReader -> RequestReader: getHeaders()
+note right
+  Extract webhook headers
+end note
+
+RequestReader --> WebhookController: RequestReader instance
+deactivate RequestReader
+
+== Signature Verification ==
+
+WebhookController -> EventVerifier: verify(requestReader)
+activate EventVerifier
+
+EventVerifier -> EventVerifier: Extract verification data
+note right
+  Extract:
+  - transmission_id (header)
+  - transmission_time (header)
+  - webhook_id (from config)
+  - event_body (raw POST)
+  - cert_url (header)
+  - actual_sig (header)
+  - auth_algo (header)
+end note
+
+EventVerifier -> PayPal: POST /v1/notifications/verify-webhook-signature
+note right
+  Request:
+  {
+    transmission_id: "...",
+    transmission_time: "...",
+    cert_url: "...",
+    auth_algo: "...",
+    transmission_sig: "...",
+    webhook_id: "...",
+    webhook_event: {...}
+  }
+end note
+activate PayPal
+
+PayPal -> PayPal: Verify signature
+note right
+  PayPal validates:
+  1. Signature matches
+  2. Webhook ID is valid
+  3. Certificate is authentic
+  4. Timestamp is recent
+end note
+
+alt Signature Valid
+    PayPal --> EventVerifier: {\n  verification_status: "SUCCESS"\n}
+    deactivate PayPal
+
+    EventVerifier --> WebhookController: true
+    deactivate EventVerifier
+else Signature Invalid
+    PayPal --> EventVerifier: {\n  verification_status: "FAILURE"\n}
+    deactivate PayPal
+
+    EventVerifier --> WebhookController: false
+    deactivate EventVerifier
+
+    WebhookController -> WebhookController: Log error
+    note right
+      Security warning:
+      Invalid webhook signature
+      Possible spoofing attempt
+    end note
+
+    WebhookController --> PayPal: HTTP 200 OK\n(to prevent retries)
+    deactivate WebhookController
+    note right
+      Return 200 even on error
+      to stop PayPal retries
+    end note
+end
+
+== Event Processing ==
+
+WebhookController -> WebhookRequestHandler: process()
+activate WebhookRequestHandler
+
+WebhookRequestHandler -> RequestReader: getRawPost()
+activate RequestReader
+RequestReader --> WebhookRequestHandler: JSON body
+deactivate RequestReader
+
+WebhookRequestHandler -> WebhookRequestHandler: json_decode(body)
+note right
+  Parse webhook event JSON:
+  {
+    id: "WH-xxx",
+    event_version: "1.0",
+    create_time: "2023-...",
+    resource_type: "capture",
+    event_type: "PAYMENT.CAPTURE.COMPLETED",
+    summary: "Payment completed",
+    resource: {
+      id: "capture_id",
+      status: "COMPLETED",
+      amount: {...},
+      ...
+    },
+    links: [...]
+  }
+end note
+
+WebhookRequestHandler -> Event: new Event(eventData)
+activate Event
+
+Event -> Event: Parse event
+note right
+  Extract:
+  - event_type
+  - resource (payload)
+  - resource_type
+  - summary
+end note
+
+Event --> WebhookRequestHandler: Event instance
+deactivate Event
+
+== Dispatch to Handler ==
+
+WebhookRequestHandler -> EventDispatcher: dispatch(event)
+activate EventDispatcher
+
+EventDispatcher -> Event: getEventType()
+activate Event
+Event --> EventDispatcher: "PAYMENT.CAPTURE.COMPLETED"
+deactivate Event
+
+EventDispatcher -> EventHandlerMapping: Get handler for event type
+activate EventHandlerMapping
+
+EventHandlerMapping -> EventHandlerMapping: Lookup in mapping
+note right
+  const MAPPING = [
+    'PAYMENT.CAPTURE.COMPLETED'
+      => PaymentCaptureCompletedHandler::class,
+    ...
+  ]
+end note
+
+alt Handler Found
+    EventHandlerMapping --> EventDispatcher: Handler class
+    deactivate EventHandlerMapping
+
+    EventDispatcher -> Handler: new Handler()
+    activate Handler
+
+    EventDispatcher -> Handler: handle(event)
+
+    == Handler Processing ==
+
+    Handler -> Handler: getPayPalOrderIdFromResource()
+    note right
+      Extract PayPal order ID
+      from event resource
+    end note
+
+    Handler -> OrderRepository: getShopOrderByPayPalOrderId()
+    activate OrderRepository
+    OrderRepository -> Database: Query oscpaypal_order\nJOIN oxorder
+    Database --> OrderRepository: Shop order
+    OrderRepository --> Handler: Order object
+    deactivate OrderRepository
+
+    Handler -> Handler: handleWebhookTasks()
+    note right
+      Handler-specific logic
+      (e.g., mark as paid)
+    end note
+
+    Handler -> Handler: markShopOrderPaymentStatus()
+    note right
+      Update order payment status
+    end note
+
+    Handler -> Database: UPDATE oxorder
+    note right
+      UPDATE oxorder
+      SET transstatus = 'OK',
+          oxpaid = NOW(),
+          oxtransid = 'capture_id'
+      WHERE oxid = 'order_id'
+    end note
+
+    Handler -> Database: UPDATE oscpaypal_order
+    note right
+      UPDATE oscpaypal_order
+      SET oscpaypalstatus = 'COMPLETED',
+          oscpaypaltransactionid = 'capture_id'
+      WHERE oxpaypalorderid = 'paypal_order_id'
+    end note
+
+    alt Additional Handler Tasks
+        Handler -> Payment: Send order confirmation email
+        Handler -> Database: Clean up unfinished orders
+    end
+
+    Handler --> EventDispatcher: Success
+    deactivate Handler
+
+    EventDispatcher --> WebhookRequestHandler: Event handled
+    deactivate EventDispatcher
+
+    WebhookRequestHandler --> WebhookController: Success
+    deactivate WebhookRequestHandler
+
+    WebhookController --> PayPal: HTTP 200 OK
+    deactivate WebhookController
+    note right
+      Always return 200
+      on successful processing
+    end note
+else Handler Not Found
+    EventHandlerMapping --> EventDispatcher: null
+    deactivate EventHandlerMapping
+
+    EventDispatcher -> EventDispatcher: Log warning
+    note right
+      Unknown event type:
+      No handler configured
+    end note
+
+    EventDispatcher -> EventDispatcher: Throw WebhookEventTypeException
+    note right
+      Exception includes:
+      - Event type
+      - Event data
+    end note
+
+    EventDispatcher --> WebhookRequestHandler: Exception
+    deactivate EventDispatcher
+
+    WebhookRequestHandler -> WebhookRequestHandler: Catch exception
+    WebhookRequestHandler -> WebhookRequestHandler: Log error
+    note right
+      Log unknown event type
+      but don't fail
+    end note
+
+    WebhookRequestHandler --> WebhookController: Success (logged)
+    deactivate WebhookRequestHandler
+
+    WebhookController --> PayPal: HTTP 200 OK
+    deactivate WebhookController
+    note right
+      Return 200 to prevent
+      PayPal from retrying
+      unknown events
+    end note
+end
+
+note over PayPal, Database
+  **Retry Logic**
+  PayPal retries webhooks 25 times over 3 days if:
+  - HTTP response is not 200
+  - Connection timeout
+  - Server error
+
+  Module strategy:
+  - Always return 200 (even on errors)
+  - Log errors for manual review
+  - Prevents infinite retry loops
+  - Fallback: Frontend timeout mechanism
+end note
+
+@enduml
+
+' ============================================================================
+' HANDLER BASE CLASS TEMPLATE METHOD
+' ============================================================================
+
+@startuml Webhook Handler Base Class
+!theme plain
+
+title WebhookHandlerBase - Template Method Pattern
+
+abstract class WebhookHandlerBase {
+    + handle(event: Event): void
+    # {abstract} handleWebhookTasks(...)
+    # {abstract} markShopOrderPaymentStatus(order, transId)
+    # getPayPalOrderIdFromResource(payload): string
+    # getPayPalTransactionIdFromResource(payload): string
+    # getOrderByPayPalOrderId(orderId): Order
+    # updateStatus(status, paypalOrder, order, details)
+    # cleanUpNotFinishedOrders()
+}
+
+class PaymentCaptureCompletedHandler {
+    # handleWebhookTasks(...)
+    # markShopOrderPaymentStatus(order, transId)
+    - extractPuiDetails(resource): array
+    - sendOrderConfirmationEmail(order)
+}
+
+class CheckoutOrderApprovedHandler {
+    # handleWebhookTasks(...)
+    - needsCapture(payload): bool
+}
+
+class PaymentCaptureRefundedHandler {
+    # handleWebhookTasks(...)
+    - getAmountFromResource(payload): float
+    - calculateRefundStatus(order, amount): string
+}
+
+class PaymentCaptureDeniedHandler {
+    # markShopOrderPaymentStatus(order, transId)
+}
+
+class CheckoutOrderCompletedHandler {
+    # markShopOrderPaymentStatus(order, transId)
+}
+
+class CheckoutPaymentApprovalReverseHandler {
+    # handleWebhookTasks(...)
+}
+
+WebhookHandlerBase <|-- PaymentCaptureCompletedHandler
+WebhookHandlerBase <|-- CheckoutOrderApprovedHandler
+WebhookHandlerBase <|-- PaymentCaptureRefundedHandler
+WebhookHandlerBase <|-- PaymentCaptureDeniedHandler
+WebhookHandlerBase <|-- CheckoutOrderCompletedHandler
+WebhookHandlerBase <|-- CheckoutPaymentApprovalReverseHandler
+
+note right of WebhookHandlerBase
+  **Template Method Pattern**
+
+  handle() method flow:
+  1. Extract PayPal order ID from resource
+  2. Get shop order by PayPal order ID
+  3. Call handleWebhookTasks() (abstract)
+  4. Update PayPal order status
+  5. Call markShopOrderPaymentStatus() (abstract)
+  6. Clean up unfinished orders
+
+  Subclasses implement:
+  - handleWebhookTasks(): Handler-specific logic
+  - markShopOrderPaymentStatus(): Order status update
+end note
+
+note bottom of PaymentCaptureCompletedHandler
+  **Payment Capture Completed**
+  - Marks order as paid (transstatus: OK)
+  - Sets oxpaid timestamp
+  - Sets transaction ID
+  - Sends order confirmation email
+  - Extracts PUI payment details if applicable
+  - Cleans up unfinished orders
+end note
+
+note bottom of PaymentCaptureRefundedHandler
+  **Payment Refunded**
+  - Does NOT change order paid status
+  - Updates capture status:
+    * PARTIALLY_REFUNDED (if partial)
+    * REFUNDED (if full refund)
+  - Tracks refund transaction separately
+  - Multiple refunds supported
+end note
+
+note bottom of CheckoutOrderApprovedHandler
+  **Order Approved**
+  - Checks if capture needed
+  - Triggers capture if configured
+  - Used for authorization flow
+end note
+
+@enduml
+
+@enduml

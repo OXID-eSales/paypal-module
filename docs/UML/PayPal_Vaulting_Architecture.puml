@@ -1,0 +1,585 @@
+@startuml Vaulting Architecture
+!theme plain
+
+title PayPal Vaulting System - Component Architecture
+
+package "Frontend" #E6F2FF {
+    [Payment Form] as Form
+    [Vaulting Checkbox] as Checkbox
+    [Account Page] as Account
+    [Saved Payment\nMethods List] as List
+}
+
+package "Controllers" #FFE6E6 {
+    [AjaxPaymentController] as Ajax
+    [PayPalVaultingController] as Vaulting
+    [PayPalVaultingCardController] as CardVaulting
+    [VaultingTokenController] as Token
+}
+
+package "Services" #E6FFE6 {
+    [Payment Service] as PaymentSvc
+    [VaultingService (API)] as VaultAPI
+}
+
+package "Event System" #FFF9E6 {
+    [PayPalOrderCompletedEvent] as OrderEvent
+    [PayPalVaultingSucceededEvent] as VaultEvent
+    [PayPalOrderCompletedSubscriber] as OrderSub
+    [PayPalVaultingSubscriber] as VaultSub
+}
+
+package "Models" #F0E6FF {
+    [User Model] as User
+    database "oscpaypalcustomerid\n(User field)" as CustomerID
+}
+
+package "PayPal API" #FFEBE6 {
+    [Orders API\n/v2/checkout/orders] as OrdersAPI
+    [Vaulting API\n/v1/vault/payment-tokens] as VaultingAPI
+}
+
+' Relationships
+Form --> Checkbox : includes
+Checkbox --> Ajax : vault=true
+Ajax --> PaymentSvc : createOrder(vaultPayment=true)
+PaymentSvc --> OrdersAPI : payment_source.paypal.vault
+OrdersAPI --> PaymentSvc : vault_status=VAULTED
+
+Ajax ..> OrderEvent : dispatches
+OrderEvent --> OrderSub : triggers
+OrderSub ..> VaultEvent : dispatches\n(if vaulted)
+VaultEvent --> VaultSub : triggers
+VaultSub --> User : save customer_id
+User --> CustomerID : stores
+
+Account --> Vaulting : displays PayPal tokens
+Account --> CardVaulting : displays card tokens
+List --> Token : delete token
+
+Vaulting --> VaultAPI : getPaymentTokens()
+CardVaulting --> VaultAPI : getPaymentTokens()
+Token --> VaultAPI : deleteToken()
+VaultAPI --> VaultingAPI : API calls
+
+note right of PaymentSvc
+  **Vaulting During Purchase**
+  When vaultPayment=true:
+  1. Include vault setup in request
+  2. PayPal creates customer_id
+  3. Returns vault_status
+  4. Event dispatched
+end note
+
+note right of VaultSub
+  **Saving Customer ID**
+  Stores PayPal customer_id
+  in oxuser.oscpaypalcustomerid
+  for future purchases
+end note
+
+note right of VaultAPI
+  **Managing Tokens**
+  - List all tokens
+  - Delete specific token
+  - Token includes:
+    * ID
+    * Payment source type
+    * Last4 digits
+    * Expiry date
+end note
+
+@enduml
+
+' ============================================================================
+' VAULTING FLOW - SAVE PAYMENT METHOD DURING PURCHASE
+' ============================================================================
+
+@startuml Vaulting During Purchase Flow
+!theme plain
+
+title Vaulting - Save Payment Method During Purchase
+
+actor Customer
+participant "Browser\n(JS)" as JS
+participant "Vaulting\nCheckbox" as Checkbox
+participant AjaxPaymentController as Ajax
+participant PaymentService
+participant "PayPal API" as PayPalAPI
+participant EventDispatcher
+participant OrderCompletedSubscriber
+participant VaultingSubscriber
+database Database
+
+Customer -> Checkbox: ✓ Save payment method
+activate Checkbox
+note right
+  Checkbox in payment form:
+  "Save for future purchases"
+end note
+
+Checkbox -> JS: vaultPayment = true
+deactivate Checkbox
+
+Customer -> JS: Clicks "Pay"
+activate JS
+
+== Create PayPal Order with Vaulting ==
+
+JS -> Ajax: POST createPayPalOrder
+note right
+  AJAX Request:
+  {
+    shopOrderId,
+    vaultPayment: true,  ← Vaulting flag!
+    paymentId: "oscpaypal"
+  }
+end note
+activate Ajax
+
+Ajax -> PaymentService: doCreatePayPalOrder(vaultPayment=true)
+activate PaymentService
+
+PaymentService -> PaymentService: Build OrderRequest with vault setup
+note right
+  OrderRequest includes:
+
+  payment_source: {
+    paypal: {
+      experience_context: {
+        vault: {
+          store_in_vault: "ON_SUCCESS",
+          usage_type: "MERCHANT",
+          customer_type: "CONSUMER"
+        }
+      }
+    }
+  }
+
+  OR for ACDC:
+  payment_source: {
+    card: {
+      vault: {
+        store_in_vault: "ON_SUCCESS"
+      }
+    }
+  }
+end note
+
+PaymentService -> PayPalAPI: POST /v2/checkout/orders
+activate PayPalAPI
+note right
+  Create order with vaulting enabled
+end note
+
+PayPalAPI --> PaymentService: Order created
+deactivate PayPalAPI
+
+PaymentService --> Ajax: { payPalOrder: { id, status } }
+deactivate PaymentService
+
+Ajax --> JS: Success
+deactivate Ajax
+
+== Customer Approves & Captures ==
+
+JS -> Customer: Show PayPal modal
+Customer -> JS: Approves payment
+
+JS -> Ajax: POST captureOrder
+activate Ajax
+
+Ajax -> PaymentService: doCapturePayPalOrder()
+activate PaymentService
+
+PaymentService -> PayPalAPI: POST /v2/checkout/orders/{id}/capture
+activate PayPalAPI
+
+PayPalAPI -> PayPalAPI: Capture & vault payment
+note right
+  PayPal:
+  1. Captures payment
+  2. Creates vault record
+  3. Generates customer_id
+  4. Links to merchant
+end note
+
+PayPalAPI --> PaymentService: Capture response
+deactivate PayPalAPI
+note right
+  {
+    status: "COMPLETED",
+    payment_source: {
+      paypal: {
+        email_address: "customer@example.com",
+        account_id: "ABC123",
+        account_status: "VERIFIED",
+        attributes: {
+          vault: {
+            id: "vault_token_id",
+            status: "VAULTED",
+            customer: {
+              id: "customer_id_12345"  ← Save this!
+            }
+          }
+        }
+      }
+    }
+  }
+end note
+
+PaymentService -> PaymentService: Extract vault info
+note right
+  Extract:
+  - vault_status: "VAULTED"
+  - customer_id: "customer_id_12345"
+  - vault_id: "vault_token_id"
+end note
+
+PaymentService --> Ajax: {\n  status: "success",\n  vault_status: "VAULTED",\n  customer_id: "customer_id_12345"\n}
+deactivate PaymentService
+
+== Event System Saves Customer ID ==
+
+Ajax -> EventDispatcher: dispatch(PayPalOrderCompletedEvent)
+activate EventDispatcher
+note right
+  Event includes:
+  - order
+  - user
+  - payPalCustomerId: "customer_id_12345"
+  - transactionId
+end note
+
+EventDispatcher -> OrderCompletedSubscriber: onOrderCompleted(event)
+activate OrderCompletedSubscriber
+
+OrderCompletedSubscriber -> Database: Mark order paid
+OrderCompletedSubscriber -> Database: Set transaction ID
+
+alt Vaulting Succeeded (customer_id present)
+    OrderCompletedSubscriber -> EventDispatcher: dispatch(\nPayPalVaultingSucceededEvent)
+    note right
+      Event includes:
+      - user
+      - payPalCustomerId
+    end note
+
+    EventDispatcher -> VaultingSubscriber: onVaultingSucceeded(event)
+    activate VaultingSubscriber
+
+    VaultingSubscriber -> Database: UPDATE oxuser\nSET oscpaypalcustomerid = 'customer_id_12345'\nWHERE oxid = user_id
+    note right
+      Save customer ID for future use!
+    end note
+
+    VaultingSubscriber --> EventDispatcher: Done
+    deactivate VaultingSubscriber
+end
+
+OrderCompletedSubscriber --> EventDispatcher: Done
+deactivate OrderCompletedSubscriber
+deactivate EventDispatcher
+
+Ajax --> JS: Order completed
+deactivate Ajax
+
+JS -> Customer: Redirect to thank you page
+note right
+  Message: "Payment method saved
+  for future purchases"
+end note
+
+deactivate JS
+
+@enduml
+
+' ============================================================================
+' USING VAULTED PAYMENT METHOD
+' ============================================================================
+
+@startuml Using Vaulted Payment Flow
+!theme plain
+
+title Using Vaulted Payment Method - Express Checkout
+
+actor Customer
+participant "Browser\n(JS)" as JS
+participant "Saved Payment\nButton" as Button
+participant AjaxPaymentController as Ajax
+participant PaymentService
+participant "PayPal API" as PayPalAPI
+database Database
+
+Customer -> Button: Clicks "Pay with saved PayPal"
+activate Button
+note right
+  Button shows:
+  "PayPal (****@example.com)"
+  from saved vault
+end note
+
+Button -> JS: useVaultedPayment = token_id
+deactivate Button
+activate JS
+
+JS -> Database: Query user.oscpaypalcustomerid
+Database --> JS: customer_id_12345
+
+== Create Order with Vaulted Payment ==
+
+JS -> Ajax: POST createPayPalOrder
+note right
+  AJAX Request:
+  {
+    shopOrderId,
+    useVaultedPayment: true,
+    vaultPaymentToken: "vault_token_id",
+    paymentId: "oscpaypal"
+  }
+end note
+activate Ajax
+
+Ajax -> PaymentService: doCreatePayPalOrder(\n  useVaultedPayment=true,\n  token="vault_token_id"\n)
+activate PaymentService
+
+PaymentService -> PaymentService: Build OrderRequest with vault token
+note right
+  OrderRequest includes:
+
+  payment_source: {
+    paypal: {
+      vault_id: "vault_token_id",
+      email_address: "customer@example.com",
+      experience_context: {
+        user_action: "PAY_NOW",
+        payment_method_preference: "IMMEDIATE_PAYMENT_REQUIRED"
+      }
+    }
+  }
+end note
+
+PaymentService -> PayPalAPI: POST /v2/checkout/orders
+activate PayPalAPI
+note right
+  Create order with vault reference
+end note
+
+PayPalAPI -> PayPalAPI: Process vault payment
+note right
+  PayPal:
+  1. Validates vault token
+  2. Verifies customer owns token
+  3. Auto-approves payment
+  4. Status: APPROVED or COMPLETED
+end note
+
+PayPalAPI --> PaymentService: Order response
+deactivate PayPalAPI
+note right
+  {
+    id: "order_id",
+    status: "APPROVED",
+    payment_source: {
+      paypal: {
+        email_address: "customer@example.com",
+        account_id: "ABC123",
+        name: { given_name: "John", surname: "Doe" }
+      }
+    }
+  }
+
+  Note: Status may be COMPLETED
+  if capture happened automatically!
+end note
+
+PaymentService -> Database: INSERT oscpaypal_order
+
+alt Order Already Completed
+    PaymentService -> Database: UPDATE oxorder (status: COMPLETED)
+    PaymentService --> Ajax: {\n  status: "success",\n  paymentStatus: "completed",\n  orderStatus: "COMPLETED"\n}
+    deactivate PaymentService
+
+    Ajax --> JS: Payment completed
+    deactivate Ajax
+
+    JS -> Customer: Redirect to thank you page
+    note right
+      No customer interaction needed!
+      Payment processed instantly
+    end note
+else Order Approved, Needs Capture
+    PaymentService --> Ajax: {\n  status: "success",\n  payPalOrder: { id, status: "APPROVED" }\n}
+    deactivate PaymentService
+
+    Ajax --> JS: Order approved
+    deactivate Ajax
+
+    JS -> Ajax: POST captureOrder
+    activate Ajax
+
+    Ajax -> PaymentService: doCapturePayPalOrder()
+    PaymentService -> PayPalAPI: POST /v2/checkout/orders/{id}/capture
+    PayPalAPI --> PaymentService: Captured
+    PaymentService --> Ajax: Success
+    deactivate Ajax
+
+    JS -> Customer: Redirect to thank you page
+end
+
+deactivate JS
+
+@enduml
+
+' ============================================================================
+' MANAGING VAULTED PAYMENTS - ACCOUNT PAGE
+' ============================================================================
+
+@startuml Managing Vaulted Payments
+!theme plain
+
+title Managing Vaulted Payment Methods - Account Page
+
+actor Customer
+participant "Browser" as Browser
+participant PayPalVaultingController
+participant VaultingService
+participant "PayPal API" as PayPalAPI
+database Database
+
+Customer -> Browser: Opens "Saved Payment Methods"
+activate Browser
+
+Browser -> PayPalVaultingController: GET /account/paypal-vaulting
+activate PayPalVaultingController
+
+PayPalVaultingController -> Database: Query user.oscpaypalcustomerid
+Database --> PayPalVaultingController: customer_id_12345
+
+alt Customer ID Exists
+    PayPalVaultingController -> VaultingService: getPaymentTokens(customer_id)
+    activate VaultingService
+
+    VaultingService -> PayPalAPI: GET /v1/vault/payment-tokens\n?customer_id=customer_id_12345
+    activate PayPalAPI
+    note right
+      Query parameters:
+      - customer_id
+      - page_size
+      - page (pagination)
+    end note
+
+    PayPalAPI --> VaultingService: Token list
+    deactivate PayPalAPI
+    note right
+      {
+        payment_tokens: [
+          {
+            id: "vault_token_1",
+            payment_source: {
+              paypal: {
+                email_address: "customer@example.com",
+                account_id: "ABC123",
+                account_status: "VERIFIED"
+              }
+            },
+            customer: {
+              id: "customer_id_12345"
+            }
+          },
+          {
+            id: "vault_token_2",
+            payment_source: {
+              card: {
+                brand: "VISA",
+                last_digits: "1234",
+                expiry: "2025-12"
+              }
+            },
+            customer: {
+              id: "customer_id_12345"
+            }
+          }
+        ],
+        total_items: 2,
+        total_pages: 1
+      }
+    end note
+
+    VaultingService --> PayPalVaultingController: Token array
+    deactivate VaultingService
+
+    PayPalVaultingController --> Browser: Render page with tokens
+    deactivate PayPalVaultingController
+
+    Browser -> Customer: Show saved payment methods
+    note right
+      Display:
+      ✓ PayPal (customer@example.com)
+        [Delete]
+
+      ✓ Visa ****1234 (Exp: 12/2025)
+        [Delete]
+    end note
+else No Customer ID
+    PayPalVaultingController --> Browser: Render empty state
+    deactivate PayPalVaultingController
+
+    Browser -> Customer: "No saved payment methods"
+end
+
+deactivate Browser
+
+... Customer wants to delete a token ...
+
+Customer -> Browser: Clicks "Delete" on Visa ****1234
+activate Browser
+
+Browser -> VaultingTokenController: POST /delete-vault-token
+note right
+  AJAX Request:
+  {
+    tokenId: "vault_token_2"
+  }
+end note
+activate VaultingTokenController
+
+VaultingTokenController -> VaultingService: deletePaymentToken(tokenId)
+activate VaultingService
+
+VaultingService -> PayPalAPI: DELETE /v1/vault/payment-tokens/vault_token_2
+activate PayPalAPI
+note right
+  Permanently removes token
+  Customer must re-add card
+end note
+
+alt Token Deleted Successfully
+    PayPalAPI --> VaultingService: HTTP 204 No Content
+    deactivate PayPalAPI
+
+    VaultingService --> VaultingTokenController: Success
+    deactivate VaultingService
+
+    VaultingTokenController --> Browser: {\n  status: "success",\n  message: "Payment method removed"\n}
+    deactivate VaultingTokenController
+
+    Browser -> Customer: Show success message\nRefresh list
+else Token Not Found or Error
+    PayPalAPI --> VaultingService: HTTP 404/Error
+    deactivate PayPalAPI
+
+    VaultingService --> VaultingTokenController: Error
+    deactivate VaultingService
+
+    VaultingTokenController --> Browser: {\n  status: "error",\n  message: "Could not delete"\n}
+    deactivate VaultingTokenController
+
+    Browser -> Customer: Show error message
+end
+
+deactivate Browser
+
+@enduml
+
+@enduml
