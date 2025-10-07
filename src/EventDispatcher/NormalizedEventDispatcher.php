@@ -2,6 +2,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\EventDispatcher;
 
+use InvalidArgumentException;
 use ReflectionMethod;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventDispatcher;
@@ -30,7 +31,7 @@ class NormalizedEventDispatcher extends EventDispatcher
         }
 
         if ($event === null) {
-            throw new \InvalidArgumentException('Event object is required');
+            throw new InvalidArgumentException('Event object is required');
         }
 
         // Symfony 4.3+ uses the event object class name as the event name if none is provided
@@ -46,11 +47,11 @@ class NormalizedEventDispatcher extends EventDispatcher
             $firstParam = $parameters[0];
             // If first parameter expects a string, we're in Symfony 3/4
             if ($firstParam->getType() && $firstParam->getType()->getName() === 'string') {
-                return parent::dispatch($eventName, $event);
+                return $this->dispatch($eventName, $event);
             }
         }
 
         // Symfony 5+ signature
-        return parent::dispatch($event, $eventName);
+        return $this->dispatch($event, $eventName);
     }
 }
