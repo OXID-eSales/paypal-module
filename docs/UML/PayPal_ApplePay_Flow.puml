@@ -1,0 +1,282 @@
+@startuml Apple Pay Payment Flow
+!theme plain
+
+title Apple Pay Payment Flow\n(Using AJAX Controller)
+
+actor Customer
+participant "Browser\n(JS)" as JS
+participant "Apple Pay\nButton SDK" as ApplePay
+participant AjaxPaymentController as Ajax
+participant PaymentService
+participant SCAValidator
+participant "PayPal API" as PayPalAPI
+participant WebhookController
+database Database
+
+Customer -> JS: Clicks Apple Pay button
+activate JS
+note right
+  Prerequisites:
+  - Safari browser or Apple device
+  - Apple Pay configured
+  - Customer has cards in Wallet
+end note
+
+JS -> ApplePay: Initialize Apple Pay session
+activate ApplePay
+
+ApplePay -> ApplePay: Check availability
+note right
+  ApplePaySession.canMakePayments()
+  Verifies:
+  - Device supports Apple Pay
+  - Wallet has cards
+end note
+
+alt Apple Pay Not Available
+    ApplePay --> JS: Not available
+    JS -> Customer: Hide Apple Pay button
+    deactivate ApplePay
+    deactivate JS
+else Apple Pay Available
+    ApplePay -> Customer: Show Apple Pay sheet
+    note right
+      Native Apple Pay UI:
+      - Select card
+      - Touch ID / Face ID
+      - Shipping options
+      - Total amount
+    end note
+
+    Customer -> ApplePay: Selects card & authenticates
+    note right
+      Biometric authentication:
+      - Touch ID
+      - Face ID
+      - Device PIN
+    end note
+
+    ApplePay -> ApplePay: Create payment token
+    note right
+      Apple encrypts card data
+      Creates payment token
+      Never exposes actual card number
+    end note
+
+    ApplePay -> JS: Payment authorized callback
+    deactivate ApplePay
+    note right
+      Callback includes:
+      - Payment token
+      - Billing contact
+      - Shipping contact
+      - Transaction ID
+    end note
+
+    == Create Shop Order ==
+
+    JS -> Ajax: POST executeApplePayOrder
+    note right
+      AJAX Request:
+      {
+        paypalOrderId: from button init,
+        deliveryAddressId,
+        paymentId: "oscpaypal_applepay",
+        applePayToken: {...}
+      }
+    end note
+    activate Ajax
+
+    Ajax -> OrderManager: createShopOrder()
+    activate OrderManager
+    OrderManager -> Database: INSERT oxorder\n(transstatus: NOT_FINISHED)
+    OrderManager --> Ajax: Shop Order ID
+    deactivate OrderManager
+
+    Ajax -> PaymentService: Patch PayPal order
+    note right
+      PayPal order already created
+      by Apple Pay button setup
+    end note
+    activate PaymentService
+
+    PaymentService -> PayPalAPI: PATCH /v2/checkout/orders/{id}
+    note right
+      Add shop order details:
+      - invoice_id
+      - custom_id
+      - order number
+    end note
+    activate PayPalAPI
+    PayPalAPI --> PaymentService: Order patched
+    deactivate PayPalAPI
+
+    PaymentService -> Database: INSERT oscpaypal_order
+    note right
+      Link shop order to
+      PayPal order
+    end note
+
+    PaymentService --> Ajax: Success
+    deactivate PaymentService
+
+    Ajax --> JS: { shopOrderId }
+    deactivate Ajax
+
+    == Capture Payment ==
+
+    JS -> Ajax: POST captureApplePayOrder
+    note right
+      AJAX Request:
+      {
+        orderId: payPalOrderId,
+        paymentId: "oscpaypal_applepay"
+      }
+    end note
+    activate Ajax
+
+    Ajax -> PaymentService: doCapturePayPalOrder()
+    activate PaymentService
+
+    PaymentService -> SCAValidator: verify3D()
+    note right
+      Apple Pay includes 3DS data
+      Verify authentication result
+    end note
+    activate SCAValidator
+
+    SCAValidator -> SCAValidator: Check Apple Pay authentication
+    note right
+      Apple Pay cryptogram validation:
+      - EMV 3DS data
+      - Tokenized authentication
+      - Network token validation
+    end note
+
+    alt 3DS Verification OK
+        SCAValidator --> PaymentService: Verified
+        deactivate SCAValidator
+
+        PaymentService -> PayPalAPI: POST /v2/checkout/orders/{id}/capture
+        activate PayPalAPI
+        note right
+          Capture with Apple Pay token
+        end note
+
+        PayPalAPI -> PayPalAPI: Process Apple Pay payment
+        note right
+          PayPal:
+          1. Decrypts Apple Pay token
+          2. Processes with card network
+          3. Returns capture result
+        end note
+
+        PayPalAPI --> PaymentService: Capture response
+        deactivate PayPalAPI
+        note right
+          {
+            id: capture_id,
+            status: "COMPLETED",
+            amount: {...},
+            payment_source: {
+              apple_pay: {
+                card: {
+                  name: "John Doe",
+                  last_digits: "1234",
+                  brand: "VISA",
+                  type: "CREDIT"
+                }
+              }
+            }
+          }
+        end note
+
+        PaymentService -> Database: UPDATE oscpaypal_order\n(transaction_id: capture_id,\n status: COMPLETED)
+
+        PaymentService -> Database: UPDATE oxorder\n(transstatus: ACDCCOMPLETED/750)
+
+        PaymentService --> Ajax: { status: "success" }
+        deactivate PaymentService
+
+        Ajax --> JS: Success response
+        deactivate Ajax
+
+        JS -> JS: afterCaptureOrder()
+        JS -> ApplePay: ApplePaySession.STATUS_SUCCESS
+        activate ApplePay
+        ApplePay -> Customer: Show success checkmark
+        deactivate ApplePay
+
+        == Wait for Webhook ==
+
+        JS -> Database: UPDATE oxorder\n(transstatus: WAIT_FOR_WEBHOOK_EVENTS/600)
+        note right
+          Wait up to 60 seconds
+          for webhook confirmation
+        end note
+
+        alt Webhook Arrives in Time
+            PayPalAPI -> WebhookController: PAYMENT.CAPTURE.COMPLETED
+            activate WebhookController
+            WebhookController -> Database: UPDATE oxorder\n(transstatus: OK,\n oxpaid: NOW())
+            WebhookController --> PayPalAPI: HTTP 200
+            deactivate WebhookController
+
+            JS -> Customer: Redirect to thank you page
+        else Webhook Timeout (60 sec)
+            JS -> Database: UPDATE oxorder\n(transstatus: TIMEOUT/900)
+            note right
+              Fallback mode activated
+            end note
+
+            JS -> Ajax: GET order status from API
+            Ajax -> PayPalAPI: GET /v2/checkout/orders/{id}
+            PayPalAPI --> Ajax: Order details
+            Ajax -> Database: UPDATE oxorder\n(transstatus: OK,\n oxpaid: NOW())
+            Ajax --> JS: Order completed
+
+            JS -> Customer: Redirect to thank you page
+        end
+
+    else 3DS Verification Failed
+        SCAValidator --> PaymentService: false
+        deactivate SCAValidator
+        PaymentService --> Ajax: Error: 3DS failed
+        Ajax --> JS: { status: "error",\n  message: "3DS failed" }
+        JS -> ApplePay: ApplePaySession.STATUS_FAILURE
+        activate ApplePay
+        ApplePay -> Customer: Show error
+        deactivate ApplePay
+        JS -> Customer: Show error message
+    end
+end
+
+deactivate JS
+
+note over Customer, Database
+  **Apple Pay Key Features**
+
+  1. **Security**:
+     - Tokenized payments (no real card numbers)
+     - Biometric authentication required
+     - Device-specific tokens
+
+  2. **User Experience**:
+     - One-click checkout
+     - No manual card entry
+     - Native iOS/Safari UI
+
+  3. **Requirements**:
+     - Safari browser or Apple device
+     - iOS 10+ / macOS Sierra+
+     - Merchant must be Apple Pay certified
+     - PayPal Apple Pay integration enabled
+
+  4. **Flow Differences from Google Pay**:
+     - Similar token-based approach
+     - Different SDK initialization
+     - Apple Pay validation required
+     - Apple Pay merchant validation
+end note
+
+@enduml

@@ -31,6 +31,37 @@ package "Controllers Layer" #DDDDDD {
         for different payment methods
     }
 
+    class ProxyController {
+        # getJsonRequest(): array
+        # outputJson(data): void
+        # handleErrors(exception): void
+        --
+        Base controller for
+        AJAX operations
+    }
+
+    class PayPalVaultingController {
+        + render(): string
+        + deleteVaultedPayment(): void
+        --
+        Account page for
+        managing vaulted PayPal payments
+    }
+
+    class PayPalVaultingCardController {
+        + render(): string
+        + deleteVaultedCard(): void
+        --
+        Account page for
+        managing vaulted cards
+    }
+
+    class VaultingTokenController {
+        + deleteToken(): void
+        --
+        Token deletion endpoint
+    }
+
     class AjaxPaymentController {
         + createPayPalOrder(): void
         + createAcdcOrder(): void
@@ -80,6 +111,18 @@ package "Controllers Layer" #DDDDDD {
             --
             Triggers capture on
             delivery if configured
+        }
+
+        class OrderArticle {
+            + render(): string
+            --
+            Extended order article view
+        }
+
+        class ModuleConfiguration {
+            + render(): string
+            --
+            Module settings interface
         }
     }
 }
@@ -155,6 +198,103 @@ package "Service Layer" #CCCCFF {
         Creates purchase units
         for PayPal orders
     }
+
+    class UserRepository <<Service>> {
+        + getUser(userId): User
+        + getUserByPayPalCustomerId(customerId): User
+        --
+        User data access
+    }
+
+    class BasketSummaryService <<Service>> {
+        + getBasketSummary(basket): array
+        + calculateTotals(basket): array
+        --
+        Basket calculations
+        and summaries
+    }
+
+    class OrderPayPalService <<Service>> {
+        + getPayPalOrderData(orderId): array
+        + updatePayPalOrderStatus(orderId, status): void
+        --
+        Order-specific
+        PayPal operations
+    }
+
+    class PayPalAmountValidator <<Service>> {
+        + validateAmount(basket, paypalOrder): bool
+        + compareAmounts(expected, actual): bool
+        --
+        Validates payment amounts
+        match basket totals
+    }
+
+    class LanguageLocaleMapper <<Service>> {
+        + getPayPalLocale(oxid Locale): string
+        + mapLanguageToLocale(language): string
+        --
+        Maps OXID locales
+        to PayPal locales
+    }
+
+    class GooglePayPayPalService <<Service>> {
+        + createGooglePayOrder(basket, paymentSource): array
+        + processGooglePayPayment(order): array
+        --
+        Google Pay specific
+        integration logic
+    }
+
+    class UserAddressPaypalService <<Service>> {
+        + convertPayPalAddress(address): OxidAddress
+        + updateUserAddress(user, paypalAddress): void
+        --
+        Address conversion between
+        PayPal and OXID formats
+    }
+
+    class VatOptionsService <<Service>> {
+        + getVatOptions(basket): array
+        + calculateVat(amount, rate): float
+        --
+        VAT calculation
+        and options
+    }
+
+    class OrderProcessTrackingService <<Service>> {
+        + getTrackingId(): string
+        + setTrackingId(id): void
+        --
+        Manages process
+        tracking IDs
+    }
+
+    class PayPalUrlService <<Service>> {
+        + getReturnUrl(): string
+        + getCancelUrl(): string
+        + getWebhookUrl(): string
+        --
+        Generates PayPal
+        callback URLs
+    }
+
+    class StaticContent <<Service>> {
+        + getContent(key): string
+        + hasContent(key): bool
+        --
+        Static content
+        management
+    }
+
+    class Context <<Service>> {
+        + getShopId(): int
+        + getLanguageId(): int
+        + getCurrency(): Currency
+        --
+        Shop context
+        information
+    }
 }
 
 ' ============================================================================
@@ -222,6 +362,25 @@ package "Model Layer" #CCFFCC {
         + getPayPalPaymentMethod(): string
         --
         Extended payment model
+    }
+
+    class Category {
+        + getPayPalCategoryData(): array
+        --
+        Extended category model
+    }
+
+    class Article {
+        + getPayPalArticleData(): array
+        --
+        Extended article/product model
+    }
+
+    class State {
+        + getStateCode(): string
+        + getStateName(): string
+        --
+        State/region model
     }
 }
 
@@ -372,6 +531,13 @@ package "PayPal API SDK" #FFCCCC {
         PayPal Identity API
     }
 
+    class WebhookService {
+        + createWebhook(url, events): Webhook
+        + verifySignature(headers, body): bool
+        --
+        PayPal Webhook Management API
+    }
+
     class OrderRequest {
         + intent: string
         + purchase_units: array
@@ -451,6 +617,59 @@ package "DTOs & Value Objects" #CCFFFF {
         + {static} SEPA_PAYPAL_PAYMENT_ID: string
         --
         Payment method identifiers
+    }
+}
+
+' ============================================================================
+' EVENT SYSTEM
+' ============================================================================
+
+package "Event System" #E6F3FF {
+
+    class PayPalOrderCompletedEvent <<Event>> {
+        - order: Order
+        - basket: Basket
+        - user: User
+        - shopOrderId: string
+        - payPalOrderId: string
+        - paymentMethodId: string
+        - transactionId: string
+        - payPalCustomerId: string
+        --
+        + getOrder(): Order
+        + getBasket(): Basket
+        + getUser(): User
+        --
+        Dispatched when order
+        payment is completed
+    }
+
+    class PayPalVaultingSucceededEvent <<Event>> {
+        - user: User
+        - payPalCustomerId: string
+        --
+        + getUser(): User
+        + getPayPalCustomerId(): string
+        --
+        Dispatched when vaulting
+        is successful
+    }
+
+    class PayPalOrderCompletedSubscriber <<Subscriber>> {
+        + onOrderCompleted(event): void
+        --
+        - Mark order as paid
+        - Set transaction ID
+        - Track PayPal order
+        - Send confirmation email
+        - Dispatch vaulting event
+    }
+
+    class PayPalVaultingSubscriber <<Subscriber>> {
+        + onVaultingSucceeded(event): void
+        --
+        - Save PayPal customer ID
+        - Update user record
     }
 }
 
@@ -556,6 +775,19 @@ Order "1" --> "0..*" PayPalOrder : tracked by
 PayPalOrder --> Constants : uses
 Payment --> PayPalDefinitions : uses
 Payment --> PayPalSession : uses
+
+' ============================================================================
+' RELATIONSHIPS - Event System
+' ============================================================================
+
+AjaxPaymentController ..> PayPalOrderCompletedEvent : dispatches
+PayPalOrderCompletedSubscriber ..> PayPalOrderCompletedEvent : listens to
+PayPalOrderCompletedSubscriber --> Order : updates
+PayPalOrderCompletedSubscriber --> Payment : uses
+PayPalOrderCompletedSubscriber ..> PayPalVaultingSucceededEvent : dispatches
+
+PayPalVaultingSubscriber ..> PayPalVaultingSucceededEvent : listens to
+PayPalVaultingSubscriber --> User : updates
 
 ' ============================================================================
 ' NOTES
