@@ -1,0 +1,613 @@
+@startuml PayPal Module Class Diagram
+!theme plain
+skinparam linetype ortho
+skinparam backgroundColor white
+skinparam classBackgroundColor white
+skinparam classBorderColor black
+skinparam arrowColor black
+
+title OXID PayPal Module - Class Diagram and Payment Flow Architecture
+
+' ============================================================================
+' CONTROLLERS LAYER
+' ============================================================================
+
+package "Controllers Layer" #DDDDDD {
+
+    class OrderController {
+        + finalizepaypalsession(): string
+        + cancelpaypalsession(errorcode): string
+        + createAcdcOrder(): void
+        + captureAcdcOrder(): void
+        + finalizeacdc(): string
+        + executeGooglePayOrder(): void
+        + captureGooglePayOrder(): void
+        + finalizeGooglePay(): string
+        + createApplePayOrder(): void
+        + captureApplePayOrder(): void
+        + finalizeapplepay(): string
+        --
+        Handles order finalization
+        for different payment methods
+    }
+
+    class AjaxPaymentController {
+        + createPayPalOrder(): void
+        + createAcdcOrder(): void
+        + authorizePayPalOrder(): void
+        + capturePayPalOrder(): void
+        + updatePayPalOrder(): void
+        + cancelShopOrder(): void
+        --
+        AJAX endpoints for
+        payment operations
+    }
+
+    class WebhookController {
+        + init(): void
+        --
+        Entry point for PayPal
+        webhook notifications
+    }
+
+    class PaymentController {
+        + validatepayment(): string
+        --
+        Extended payment
+        validation logic
+    }
+
+    package "Admin Controllers" {
+        class PayPalOrderController {
+            + render(): string
+            + refund(): void
+            + capturePayPalOrder(): void
+            + eligibleForRefund(): bool
+            + getPayPalRemainingRefundAmount(): float
+            --
+            Admin interface for
+            PayPal order management
+        }
+
+        class OrderMain {
+            + render(): string
+            --
+            Extended order main view
+        }
+
+        class OrderOverview {
+            + sendorder(): void
+            --
+            Triggers capture on
+            delivery if configured
+        }
+    }
+}
+
+' ============================================================================
+' SERVICE LAYER
+' ============================================================================
+
+package "Service Layer" #CCCCFF {
+
+    class Payment <<Service>> {
+        + doCreatePayPalOrder(basket, intent, userAction): array
+        + doCapturePayPalOrder(order, orderId, paymentId): array
+        + doAuthorizePayment(orderId, shopOrderId, paymentId): array
+        + doExecutePayPalPayment(basket, user): array
+        + doExecutePuiPayment(basket, user): array
+        + doExecuteUAPMPayment(basket, user, paymentId): array
+        + trackPayPalOrder(orderId, paypalOrderId, status, transId, type): void
+        + verify3D(paymentId, payPalOrder): bool
+        + removeTemporaryOrder(): void
+        --
+        Core payment processing logic
+        Creates, captures, authorizes payments
+    }
+
+    class OrderRepository <<Service>> {
+        + getPayPalOrderByOrderId(orderId): PayPalOrder
+        + getOrderIdByPayPalOrderId(paypalOrderId): string
+        + getPayPalOrderIdByShopOrderId(orderId): string
+        + getOrderByPayPalTransactionId(transactionId): Order
+        + cleanUpNotFinishedOrders(): void
+        --
+        Repository for querying
+        PayPal order data
+    }
+
+    class OrderManager <<Service>> {
+        + createShopOrder(basket, user, paymentId): Order
+        --
+        Manages shop order
+        creation and lifecycle
+    }
+
+    class SCAValidator <<Service>> {
+        + isCardUsableForPayment(payPalOrder): bool
+        + getCardAuthenticationResult(payPalOrder): ?object
+        --
+        Validates 3D Secure
+        authentication results
+    }
+
+    class ModuleSettings <<Service>> {
+        + getPayPalStandardCaptureStrategy(): string
+        + getPayPalSCAContingency(): string
+        + isAcdcEligible(): bool
+        + isPuiEligible(): bool
+        + alwaysIgnoreSCAResult(): bool
+        --
+        Module configuration
+        access service
+    }
+
+    class OrderRequestFactory <<Factory>> {
+        + getRequest(basket, paymentSource): OrderRequest
+        --
+        Creates PayPal API
+        order request objects
+    }
+
+    class PayPalPurchaseUnitsFactory <<Factory>> {
+        + createPurchaseUnits(basket): array
+        --
+        Creates purchase units
+        for PayPal orders
+    }
+}
+
+' ============================================================================
+' MODEL LAYER
+' ============================================================================
+
+package "Model Layer" #CCFFCC {
+
+    class Order {
+        - oxtransstatus: string
+        - oxpaid: datetime
+        - oxtransid: string
+        --
+        + finalizeOrderAfterExternalPayment(payPalOrderId, forceFetch): void
+        + markOrderPaid(): void
+        + markOrderPaymentFailed(): void
+        + setTransId(transId): void
+        + cancelOrder(): void
+        + setOrderNumber(): void
+        --
+        Extended shop order model
+        Handles PayPal payment finalization
+    }
+
+    class PayPalOrder {
+        - OXID: string
+        - OXORDERID: string
+        - OXPAYPALORDERID: string
+        - OSCPAYPALTRANSACTIONID: string
+        - OSCPAYPALSTATUS: string
+        - OSCPAYMENTMETHODID: string
+        - OSCPAYPALTRANSACTIONTYPE: string
+        - OSCPAYPALPUIIBAN: string
+        - OSCPAYPALPUIBIC: string
+        - OSCPAYPALPUIPAYMENTREFERENCE: string
+        --
+        + getPayPalOrderId(): string
+        + getTransactionId(): string
+        + setTransactionId(id): void
+        + getPaymentMethodId(): string
+        + setPuiPaymentReference(ref): void
+        + setPuiIban(iban): void
+        --
+        Tracks PayPal order data
+        Links shop order to PayPal order
+    }
+
+    class Basket {
+        + getPayPalCheckoutBasketData(): array
+        --
+        Extended basket model
+    }
+
+    class User {
+        - oscpaypalcustomerid: string
+        --
+        + getPayPalCustomerId(): string
+        --
+        Extended user model
+        Stores PayPal customer ID for vaulting
+    }
+
+    class Payment {
+        + isPayPalPayment(): bool
+        + getPayPalPaymentMethod(): string
+        --
+        Extended payment model
+    }
+}
+
+' ============================================================================
+' WEBHOOK SYSTEM
+' ============================================================================
+
+package "Webhook System" #FFFFCC {
+
+    class WebhookRequestHandler {
+        - requestReader: RequestReader
+        - verificationService: EventVerifier
+        - dispatcher: EventDispatcher
+        --
+        + process(): void
+        - processEvent(data): void
+        --
+        Processes webhook requests
+        Verifies and dispatches events
+    }
+
+    class RequestReader {
+        + getRawPost(): string
+        + getHeaders(): array
+        --
+        Reads webhook HTTP request
+    }
+
+    class EventVerifier {
+        + verify(requestReader): bool
+        --
+        Verifies PayPal webhook
+        signature authenticity
+    }
+
+    class EventDispatcher {
+        + dispatch(event): void
+        --
+        Routes events to
+        appropriate handlers
+    }
+
+    class Event {
+        - eventType: string
+        - resource: array
+        --
+        + getEventType(): string
+        + getResource(): array
+        --
+        Webhook event object
+    }
+
+    abstract class WebhookHandlerBase {
+        # {abstract} handleWebhookTasks(...)
+        # {abstract} markShopOrderPaymentStatus(order, transId)
+        # getPayPalOrderIdFromResource(payload): string
+        # getPayPalTransactionIdFromResource(payload): string
+        # getOrderByPayPalOrderId(orderId): Order
+        # updateStatus(status, paypalOrder, order, details): void
+        # cleanUpNotFinishedOrders(): void
+        --
+        + handle(event): void
+        --
+        Base class for all webhook handlers
+        Common order update logic
+    }
+
+    class PaymentCaptureCompletedHandler {
+        # markShopOrderPaymentStatus(order, transId): void
+        # handleWebhookTasks(...): void
+        --
+        Handles: PAYMENT.CAPTURE.COMPLETED
+        Marks order as paid
+    }
+
+    class CheckoutOrderCompletedHandler {
+        # markShopOrderPaymentStatus(order, transId): void
+        --
+        Handles: CHECKOUT.ORDER.COMPLETED
+        Alternative completion event
+    }
+
+    class CheckoutOrderApprovedHandler {
+        # handleWebhookTasks(...): void
+        - needsCapture(payload): bool
+        --
+        Handles: CHECKOUT.ORDER.APPROVED
+        Triggers capture if needed
+    }
+
+    class PaymentCaptureRefundedHandler {
+        # handleWebhookTasks(...): void
+        - getAmountFromResource(payload): float
+        --
+        Handles: PAYMENT.CAPTURE.REFUNDED
+        Updates refund status
+    }
+
+    class PaymentCaptureDeniedHandler {
+        # markShopOrderPaymentStatus(order, transId): void
+        --
+        Handles: PAYMENT.CAPTURE.DENIED
+        Marks order as failed
+    }
+
+    class CheckoutPaymentApprovalReverseHandler {
+        --
+        Handles: CHECKOUT.PAYMENT-APPROVAL.REVERSED
+        Customer reversed approval
+    }
+}
+
+' ============================================================================
+' PAYPAL API INTEGRATION
+' ============================================================================
+
+package "PayPal API SDK" #FFCCCC {
+
+    class OrderService {
+        + createOrder(request, bnCode, metadata, query): Order
+        + showOrderDetails(orderId, fields, bnCode): Order
+        + updateOrder(orderId, patches, bnCode): void
+        + authorizePaymentForOrder(body, orderId, request, prefer, bnCode): Order
+        + capturePaymentForOrder(body, orderId, request, prefer, bnCode): Order
+        + confirmTheOrder(metadata, orderId, request, bnCode): Order
+        --
+        PayPal Orders API v2
+    }
+
+    class PaymentService {
+        + captureAuthorizedPayment(authId, request, bnCode): Capture
+        + reauthorizeAuthorizedPayment(authId, request, bnCode): Authorization
+        + refundCapturedPayment(captureId, request, prefer, bnCode): Refund
+        --
+        PayPal Payments API v2
+    }
+
+    class VaultingService {
+        + getPaymentTokens(customerId): array
+        + deletePaymentToken(tokenId): void
+        --
+        PayPal Vaulting API
+    }
+
+    class IdentityService {
+        + getUserInfo(token): UserInfo
+        --
+        PayPal Identity API
+    }
+
+    class OrderRequest {
+        + intent: string
+        + purchase_units: array
+        + payment_source: object
+        + processing_instruction: string
+        + application_context: object
+    }
+
+    class OrderResponse {
+        + id: string
+        + status: string
+        + intent: string
+        + purchase_units: array
+        + payment_source: object
+        + create_time: string
+        + update_time: string
+    }
+
+    class Capture {
+        + id: string
+        + status: string
+        + amount: Money
+        + final_capture: bool
+    }
+
+    class Authorization {
+        + id: string
+        + status: string
+        + amount: Money
+        + expiration_time: string
+    }
+
+    class Refund {
+        + id: string
+        + status: string
+        + amount: Money
+    }
+}
+
+' ============================================================================
+' DATA TRANSFER OBJECTS
+' ============================================================================
+
+package "DTOs & Value Objects" #CCFFFF {
+
+    class PayPalSession <<Static>> {
+        + {static} storePayPalOrder(order): void
+        + {static} getPayPalOrder(): ?Order
+        + {static} storePayPalOrderId(id): void
+        + {static} getPayPalOrderId(): ?string
+        + {static} unsetPayPalOrderId(): void
+        --
+        Session management for PayPal data
+    }
+
+    class Constants <<Static>> {
+        + {static} PAYPAL_ORDER_INTENT_CAPTURE: string
+        + {static} PAYPAL_ORDER_INTENT_AUTHORIZE: string
+        + {static} PAYPAL_TRANSACTION_TYPE_CAPTURE: string
+        + {static} PAYPAL_TRANSACTION_TYPE_AUTH: string
+        + {static} PAYPAL_TRANSACTION_TYPE_REFUND: string
+        + {static} PAYPAL_AUTHORIZATION_VALIDITY: int
+        + {static} PAYPAL_MAXIMUM_TIME_FOR_CAPTURE: int
+        + {static} PAYPAL_WAIT_FOR_WEBOOK_TIMEOUT_IN_SEC: int
+        + {static} ORDER_STATE_ACDCINPROGRESS: int
+        + {static} ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS: int
+        --
+        Module constants and configuration
+    }
+
+    class PayPalDefinitions <<Static>> {
+        + {static} STANDARD_PAYPAL_PAYMENT_ID: string
+        + {static} ACDC_PAYPAL_PAYMENT_ID: string
+        + {static} PUI_PAYPAL_PAYMENT_ID: string
+        + {static} GOOGLEPAY_PAYPAL_PAYMENT_ID: string
+        + {static} APPLEPAY_PAYPAL_PAYMENT_ID: string
+        + {static} SEPA_PAYPAL_PAYMENT_ID: string
+        --
+        Payment method identifiers
+    }
+}
+
+' ============================================================================
+' RELATIONSHIPS - Controllers to Services
+' ============================================================================
+
+OrderController --> Payment : uses
+OrderController --> OrderRepository : uses
+OrderController --> OrderManager : uses
+
+AjaxPaymentController --> Payment : uses
+AjaxPaymentController --> OrderRepository : uses
+AjaxPaymentController --> ModuleSettings : uses
+
+WebhookController --> WebhookRequestHandler : creates
+WebhookController --> EventVerifier : uses
+WebhookController --> EventDispatcher : uses
+
+PayPalOrderController --> Payment : uses
+PayPalOrderController --> OrderRepository : uses
+PayPalOrderController --> PaymentService : uses (API)
+
+OrderOverview --> Payment : uses
+
+' ============================================================================
+' RELATIONSHIPS - Services to Models
+' ============================================================================
+
+Payment --> Order : updates
+Payment --> PayPalOrder : creates/updates
+Payment --> Basket : reads
+Payment --> User : reads/updates
+Payment --> OrderRepository : uses
+Payment --> SCAValidator : uses
+Payment --> ModuleSettings : uses
+Payment --> OrderRequestFactory : uses
+
+OrderRepository --> PayPalOrder : queries
+OrderRepository --> Order : queries
+
+OrderManager --> Order : creates
+OrderManager --> Basket : reads
+OrderManager --> User : reads
+
+' ============================================================================
+' RELATIONSHIPS - Services to API
+' ============================================================================
+
+Payment --> OrderService : calls API
+Payment --> PaymentService : calls API
+Payment --> VaultingService : calls API
+
+OrderRequestFactory --> OrderRequest : creates
+OrderRequestFactory --> PayPalPurchaseUnitsFactory : uses
+
+' ============================================================================
+' RELATIONSHIPS - Webhook System
+' ============================================================================
+
+WebhookController ..> WebhookRequestHandler : delegates to
+WebhookRequestHandler --> RequestReader : uses
+WebhookRequestHandler --> EventVerifier : uses
+WebhookRequestHandler --> EventDispatcher : uses
+
+EventDispatcher --> Event : receives
+EventDispatcher --> WebhookHandlerBase : dispatches to
+
+WebhookHandlerBase <|-- PaymentCaptureCompletedHandler
+WebhookHandlerBase <|-- CheckoutOrderCompletedHandler
+WebhookHandlerBase <|-- CheckoutOrderApprovedHandler
+WebhookHandlerBase <|-- PaymentCaptureRefundedHandler
+WebhookHandlerBase <|-- PaymentCaptureDeniedHandler
+WebhookHandlerBase <|-- CheckoutPaymentApprovalReverseHandler
+
+PaymentCaptureCompletedHandler --> Order : updates
+PaymentCaptureCompletedHandler --> PayPalOrder : updates
+PaymentCaptureCompletedHandler --> Payment : uses
+
+CheckoutOrderApprovedHandler --> Payment : triggers capture
+
+PaymentCaptureRefundedHandler --> OrderRepository : queries
+PaymentCaptureRefundedHandler --> Payment : tracks refund
+
+' ============================================================================
+' RELATIONSHIPS - PayPal API
+' ============================================================================
+
+OrderService ..> OrderRequest : accepts
+OrderService ..> OrderResponse : returns
+OrderService ..> Authorization : returns
+OrderService ..> Capture : returns
+
+PaymentService ..> Authorization : accepts/returns
+PaymentService ..> Capture : returns
+PaymentService ..> Refund : returns
+
+' ============================================================================
+' RELATIONSHIPS - Data
+' ============================================================================
+
+Order "1" --> "0..*" PayPalOrder : tracked by
+PayPalOrder --> Constants : uses
+Payment --> PayPalDefinitions : uses
+Payment --> PayPalSession : uses
+
+' ============================================================================
+' NOTES
+' ============================================================================
+
+note top of Payment
+  **Core Payment Service**
+  - Creates PayPal orders for all payment methods
+  - Handles capture, authorization, refunds
+  - Validates 3D Secure results
+  - Tracks all transactions in database
+end note
+
+note top of OrderRepository
+  **Data Access Layer**
+  - Maps PayPal orders to shop orders
+  - Queries by PayPal ID or transaction ID
+  - Cleans up unfinished orders
+end note
+
+note top of WebhookHandlerBase
+  **Webhook Event Processing**
+  - Handles asynchronous PayPal notifications
+  - Updates order status based on PayPal events
+  - Ensures eventual consistency
+end note
+
+note top of OrderService
+  **PayPal Orders API v2**
+  - Create, capture, authorize orders
+  - Update and patch orders
+  - Confirm uAPM payments
+end note
+
+note bottom of PayPalOrder
+  **Database Tracking**
+  Table: oscpaypal_order
+  - Links shop order to PayPal order
+  - Stores transaction IDs and statuses
+  - Supports multiple transactions per order
+    (auth → capture → refund)
+end note
+
+note right of Order
+  **Order State Transitions**
+  NOT_FINISHED → ACDCINPROGRESS (700)
+               → WAIT_FOR_WEBHOOK_EVENTS (600)
+               → OK (paid)
+
+  OR with timeout:
+  WAIT_FOR_WEBHOOK_EVENTS → TIMEOUT (900)
+                          → Fallback finalize
+end note
+
+@enduml
