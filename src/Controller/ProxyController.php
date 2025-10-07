@@ -21,6 +21,7 @@ use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\EventDispatcher\NormalizedEventDispatcher;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
@@ -43,7 +44,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
 use Psr\Log\LoggerInterface;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Server side interface for PayPal smart buttons.
@@ -59,7 +59,7 @@ class ProxyController extends FrontendController
     /** @var OrderProcessTrackingService */
     private $orderProcessTrackingService;
 
-    /** @var EventDispatcherInterface */
+    /** @var NormalizedEventDispatcher */
     private $dispatcher;
     /**
      * @var \OxidSolutionCatalysts\PayPal\Service\OrderRepository
@@ -74,7 +74,7 @@ class ProxyController extends FrontendController
         parent::__construct();
         $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
         $this->userAddressPaypalService = $this->getServiceFromContainer(UserAddressPaypalService::class);
-        $this->dispatcher = $this->getServiceFromContainer('event_dispatcher');
+        $this->dispatcher = $this->getServiceFromContainer(NormalizedEventDispatcher::class);
         $this->orderRepository = $this->getServiceFromContainer(OrderRepository::class);
         $this->orderManager = $this->getServiceFromContainer(OrderManager::class);
     }

@@ -2,6 +2,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\EventDispatcher;
 
+use ReflectionMethod;
 use Symfony\Component\EventDispatcher\Event;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
@@ -38,7 +39,7 @@ class NormalizedEventDispatcher extends EventDispatcher
         // Symfony 5+ uses dispatch($event, $eventName)
         // Symfony 3 & 4 use dispatch($eventName, $event)
         // Check the method signature to determine the correct order
-        $reflection = new \ReflectionMethod(parent::class, 'dispatch');
+        $reflection = new ReflectionMethod(parent::class, 'dispatch');
         $parameters = $reflection->getParameters();
 
         if (count($parameters) > 0) {
