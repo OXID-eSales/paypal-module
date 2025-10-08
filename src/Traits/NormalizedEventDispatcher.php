@@ -1,22 +1,34 @@
 <?php
 
-namespace OxidSolutionCatalysts\PayPal\EventDispatcher;
+/**
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
+ */
+
+declare(strict_types=1);
+
+namespace OxidSolutionCatalysts\PayPal\Traits;
 
 use ReflectionMethod;
 use Symfony\Component\EventDispatcher\Event;
-use Symfony\Component\EventDispatcher\EventDispatcher;
 
-class NormalizedEventDispatcher extends EventDispatcher
+trait NormalizedEventDispatcher
 {
+    use ServiceContainer;
+
     /**
      * Normalized dispatch method that accepts arguments in any order
      * and matches them by type to the parent dispatcher's signature
      *
      * @param mixed ...$args Variable arguments (Event object and optional event name string)
      * @return object The dispatched event
+     * @throws \ReflectionException
      */
     public function dispatchNormalized(...$args): object
     {
+        /** @var \Symfony\Component\EventDispatcher\EventDispatcherInterface $dispatcher */
+        $dispatcher = $this->getServiceFromContainer('event_dispatcher');
+
         // Match arguments by type
         $event = null;
         $eventName = null;
@@ -39,18 +51,18 @@ class NormalizedEventDispatcher extends EventDispatcher
         // Symfony 5+ uses dispatch($event, $eventName)
         // Symfony 3 & 4 use dispatch($eventName, $event)
         // Check the method signature to determine the correct order
-        $reflection = new ReflectionMethod(parent::class, 'dispatch');
+        $reflection = new ReflectionMethod($dispatcher, 'dispatch');
         $parameters = $reflection->getParameters();
 
+        // Version <5 signature
         if (count($parameters) > 0) {
             $firstParam = $parameters[0];
-            // If first parameter expects a string, we're in Symfony 3/4
-            if ($firstParam->getType() && $firstParam->getType()->getName() === 'string') {
-                return parent::dispatch($eventName, $event);
+            if (empty($firstParam->getType())) {
+                return $dispatcher->dispatch($eventName, $event);
             }
         }
 
-        // Symfony 5+ signature
-        return parent::dispatch($event, $eventName);
+        // Version 5+ signature
+        return $dispatcher->dispatch($event, $eventName);
     }
 }

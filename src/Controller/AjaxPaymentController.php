@@ -14,7 +14,7 @@ use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Field;
-use OxidSolutionCatalysts\PayPal\EventDispatcher\NormalizedEventDispatcher;
+use OxidSolutionCatalysts\PayPal\Traits\NormalizedEventDispatcher;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Model\Order as ShopOrder;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
@@ -39,7 +39,7 @@ use OxidSolutionCatalysts\PayPal\Event\PayPalOrderCompletedEvent;
 class AjaxPaymentController extends ProxyController
 {
     use JsonTrait;
-    use ServiceContainer;
+    use NormalizedEventDispatcher;
 
     /**
      * @var LoggerInterface
@@ -55,9 +55,6 @@ class AjaxPaymentController extends ProxyController
      * @var \OxidSolutionCatalysts\PayPal\Service\Payment
      */
     private $paymentService;
-
-    /** @var NormalizedEventDispatcher */
-    private $dispatcher;
 
     /** @var \OxidSolutionCatalysts\PayPal\Service\OrderRepository  */
     private $orderRepository;
@@ -76,13 +73,13 @@ class AjaxPaymentController extends ProxyController
             OrderProcessTrackingService::class
         );
         $this->paymentService = $this->getServiceFromContainer(PaymentService::class);
-        $this->dispatcher = $this->getServiceFromContainer(NormalizedEventDispatcher::class);
         $this->orderRepository = $this->getServiceFromContainer(OrderRepository::class);
         $this->orderManager = $this->getServiceFromContainer(OrderManager::class);
     }
 
     /**
      * @throws \JsonException
+     * @throws \ReflectionException
      */
     public function captureOrder(): void
     {
@@ -169,7 +166,7 @@ class AjaxPaymentController extends ProxyController
                 $transactionId,
                 $payPalCustomerId
             );
-            $this->dispatcher->dispatchNormalized($event, PayPalOrderCompletedEvent::NAME);
+            $this->dispatchNormalized($event, PayPalOrderCompletedEvent::NAME);
 
             if ($capturePaymentForOrder) {
                 $response['paymentStatus'] = $capturePaymentForOrder->getCapturePaymentStatus() ? 'success' : 'error';

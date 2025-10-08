@@ -59,8 +59,6 @@ class ProxyController extends FrontendController
     /** @var OrderProcessTrackingService */
     private $orderProcessTrackingService;
 
-    /** @var NormalizedEventDispatcher */
-    private $dispatcher;
     /**
      * @var \OxidSolutionCatalysts\PayPal\Service\OrderRepository
      */
@@ -74,7 +72,6 @@ class ProxyController extends FrontendController
         parent::__construct();
         $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
         $this->userAddressPaypalService = $this->getServiceFromContainer(UserAddressPaypalService::class);
-        $this->dispatcher = $this->getServiceFromContainer(NormalizedEventDispatcher::class);
         $this->orderRepository = $this->getServiceFromContainer(OrderRepository::class);
         $this->orderManager = $this->getServiceFromContainer(OrderManager::class);
     }

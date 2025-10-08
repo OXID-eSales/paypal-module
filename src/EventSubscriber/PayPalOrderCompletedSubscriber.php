@@ -9,9 +9,9 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\EventSubscriber;
 
-use OxidSolutionCatalysts\PayPal\EventDispatcher\NormalizedEventDispatcher;
 use OxidSolutionCatalysts\PayPal\Event\PayPalOrderCompletedEvent;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use OxidSolutionCatalysts\PayPal\Traits\NormalizedEventDispatcher;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Event\PayPalVaultingSucceededEvent;
@@ -19,6 +19,8 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class PayPalOrderCompletedSubscriber implements EventSubscriberInterface
 {
+    use NormalizedEventDispatcher;
+
     /**
      * @var \OxidSolutionCatalysts\PayPal\Service\Payment
      */
@@ -26,12 +28,10 @@ class PayPalOrderCompletedSubscriber implements EventSubscriberInterface
     /**
      * @var NormalizedEventDispatcher
      */
-    private $dispatcher;
 
-    public function __construct(PaymentService $paymentService, NormalizedEventDispatcher $dispatcher)
+    public function __construct(PaymentService $paymentService)
     {
         $this->paymentService = $paymentService;
-        $this->dispatcher = $dispatcher;
     }
 
     public static function getSubscribedEvents(): array
@@ -41,6 +41,9 @@ class PayPalOrderCompletedSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @throws \ReflectionException
+     */
     public function onOrderCompleted(PayPalOrderCompletedEvent $event): void
     {
         $order = $event->getOrder();
@@ -77,7 +80,7 @@ class PayPalOrderCompletedSubscriber implements EventSubscriberInterface
         $customerId = $event->getPayPalCustomerId();
         if (!empty($customerId)) {
             $vaultEvent = new PayPalVaultingSucceededEvent($user, $customerId);
-            $this->dispatcher->dispatchNormalized( $vaultEvent, PayPalVaultingSucceededEvent::NAME);
+            $this->dispatchNormalized( $vaultEvent, PayPalVaultingSucceededEvent::NAME);
         }
     }
 }
