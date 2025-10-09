@@ -29,7 +29,6 @@ use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
-use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
