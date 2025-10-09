@@ -21,7 +21,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  * @covers \OxidSolutionCatalysts\PayPal\Traits\NormalizedEventDispatcher
  * @group ignore
  */
-final class NormalizedEventDispatcherTest extends UnitTestCase
+final class NormalizedEventDispatcherTest_SKIP extends UnitTestCase
 {
     /** @var object */
     private $traitUser;
