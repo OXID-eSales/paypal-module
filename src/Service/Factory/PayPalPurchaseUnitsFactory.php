@@ -37,7 +37,7 @@ use OxidSolutionCatalysts\PayPal\Service\PayPalAmountValidator;
  */
 class PayPalPurchaseUnitsFactory
 {
-    const DECIMALS = 2;
+    private const DECIMALS = 2;
     /**
      * @var \OxidSolutionCatalysts\PayPal\Service\ModuleSettings
      */

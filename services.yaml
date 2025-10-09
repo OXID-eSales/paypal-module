@@ -23,6 +23,11 @@ services:
   OxidEsales\Eshop\Core\Request:
     factory: [ '@OxidEsales\Eshop\Core\Registry', 'getRequest' ]
 
+  # Alias the global event dispatcher so it can be fetched by id "event_dispatcher"
+  event_dispatcher:
+    alias: Symfony\Component\EventDispatcher\EventDispatcherInterface
+    public: true
+
   OxidSolutionCatalysts\PayPal\Logger:
     class: Monolog\Logger
     factory: ['@OxidSolutionCatalysts\PayPal\Logger\Factory', 'create']
