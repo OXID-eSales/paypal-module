@@ -165,6 +165,7 @@ final class OrderTest extends BaseTestCase
                 'isPayPalOrderCompleted',
                 'isOrderFinished',
                 'isOrderPaid',
+                'setLogger',
                 'isWaitForWebhookTimeoutReached',
                 'load'
             ])
