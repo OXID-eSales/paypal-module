@@ -17,12 +17,12 @@ use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Helper\Truncate;
 use OxidEsales\Eshop\Application\Model\Order;
+use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
-use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 
 /**
  * Class PatchRequestFactory

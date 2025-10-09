@@ -47,18 +47,18 @@ class Order extends Order_parent
 {
     use ServiceContainer;
 
-    private ?OrderProcessTrackingService $orderProcessTrackingService;
-    private ?ModuleSettings $moduleSettings;
-
-    private ?PaymentService $paymentService;
-
-    public function __construct()
-    {
-        parent::__construct();
-        $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
-        $this->moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $this->paymentService = $this->getServiceFromContainer(PaymentService::class);
-    }
+    /**
+     * @var null|OrderProcessTrackingService $orderProcessTrackingService
+     */
+    private $orderProcessTrackingService;
+    /**
+     * @var null|ModuleSettings $moduleSettings
+     */
+    private $moduleSettings;
+    /**
+     * @var null|PaymentService $paymentService
+     */
+    private $paymentService;
 
     /**
      * Uapm payment in progress
@@ -138,6 +138,14 @@ class Order extends Order_parent
      * @var null|string
      */
     protected $payPalSoapOrderId = null;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
+        $this->moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $this->paymentService = $this->getServiceFromContainer(PaymentService::class);
+    }
 
     public function savePuiInvoiceNr(string $invoiceNr): void
     {
