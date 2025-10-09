@@ -53,7 +53,8 @@ final class UserTest extends BaseTestCase
                  'oxid' => '_testorder' . $ordernumber,
                  'oxuserid' => self::TEST_USER_ID,
                  'oxordernr' => $ordernumber,
-                 'oxorderdate' => date('Y-m-d h:i:s')
+                 'oxorderdate' => date('Y-m-d h:i:s'),
+                 'oxsenddate' => '',
              ]
          );
 

@@ -18,7 +18,6 @@ use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
-use OxidSolutionCatalysts\PayPal\Service\Logger;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
@@ -27,6 +26,8 @@ use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
+use OxidSolutionCatalysts\PayPal\Model\Order as PaypalOrder;
+use Psr\Log\LoggerInterface;
 
 final class OrderTest extends BaseTestCase
 {
@@ -35,12 +36,10 @@ final class OrderTest extends BaseTestCase
     private const TEST_ORDER_ID = '_testorder';
     private const TEST_PAYPAL_ORDER_ID = '1UH87839KR156544P';
     private const TEST_PAYPAL_TRANS_ID = '42311647XV020574X';
-    private PaymentService $paymentService;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->paymentService = $this->getServiceFromContainer(PaymentService::class);
     }
 
 
@@ -161,9 +160,15 @@ final class OrderTest extends BaseTestCase
         $oBasket = oxNew(EshopModelBasket::class);
         $oUser = oxNew(EshopModelUser::class);
 
-        $orderMock = $this->getMockBuilder(\OxidSolutionCatalysts\PayPal\Model\Order::class)
+        $orderMock = $this->getMockBuilder(PaypalOrder::class)
             ->disableOriginalConstructor()
-            ->onlyMethods(['isPayPalOrderCompleted', 'isOrderFinished', 'isOrderPaid', 'isWaitForWebhookTimeoutReached', 'load']) // Exclude finalizeOrder from mocking
+            ->onlyMethods([
+                'isPayPalOrderCompleted',
+                'isOrderFinished',
+                'isOrderPaid',
+                'isWaitForWebhookTimeoutReached',
+                'load'
+            ])
             ->getMock();
 
         $orderMock->method('isPayPalOrderCompleted')
@@ -191,7 +196,7 @@ final class OrderTest extends BaseTestCase
 
         $orderMock = $this->patchMock($orderMock);
         $orderMock->setPaymentService($paymentServiceMock);
-
+        $orderMock->setLogger($this->createMock(LoggerInterface::class));
         $session = EshopRegistry::getSession();
         $session->setVariable('sess_challenge', 'test_challenge');
         EshopRegistry::set(Session::class, $session);
@@ -199,7 +204,7 @@ final class OrderTest extends BaseTestCase
         $result = $orderMock->finalizeOrder($oBasket, $oUser);
 
         $this->assertEquals(
-            \OxidSolutionCatalysts\PayPal\Model\Order::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS,
+            PaypalOrder::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS,
             $result,
             'Expected ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS (600), got: ' . $result
         );
@@ -246,16 +251,16 @@ final class OrderTest extends BaseTestCase
         $mockOrder->setId($order->getId());
         $mockOrder->load($order->getId());
 
-        $paypalApiOrder = new \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order();
+        $paypalApiOrder = new PayPalApiOrder();
         $paypalApiOrder->id = $payPalOrderId;
-        $paypalApiOrder->status = \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_COMPLETED;
+        $paypalApiOrder->status = PayPalApiOrder::STATUS_COMPLETED;
         $paypalApiOrder->purchase_units = [
             (object)[
                 'payments' => (object)[
                     'captures' => [
                         (object)[
                             'id' => $captureId,
-                            'status' => \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_COMPLETED,
+                            'status' => PayPalApiOrder::STATUS_COMPLETED,
                         ],
                     ],
                 ],
@@ -282,7 +287,7 @@ final class OrderTest extends BaseTestCase
             $this->createMock(OrderRepository::class),
             $this->createMock(SCAValidatorInterface::class),
             $this->createMock(ModuleSettings::class),
-            $this->createMock(\Psr\Log\LoggerInterface::class),
+            $this->createMock(LoggerInterface::class),
             $this->createMock(OrderProcessTrackingService::class),
             $serviceFactoryMock,
             EshopRegistry::get(PatchRequestFactory::class),
@@ -310,7 +315,7 @@ final class OrderTest extends BaseTestCase
         $order = $this->prepareEmptyOrder();
         $order->assign([
             'oxpaymenttype' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-            'oxtransstatus' => \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_PAYER_ACTION_REQUIRED
+            'oxtransstatus' => PayPalApiOrder::STATUS_PAYER_ACTION_REQUIRED
         ]);
         $order->save();
 
@@ -322,9 +327,9 @@ final class OrderTest extends BaseTestCase
             ->method('_sendOrderByEmail')
             ->willReturn(true);
 
-        $paypalApiOrder = new \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order();
+        $paypalApiOrder = new PayPalApiOrder();
         $paypalApiOrder->id = $payPalOrderId;
-        $paypalApiOrder->status = \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_PAYER_ACTION_REQUIRED;
+        $paypalApiOrder->status = PayPalApiOrder::STATUS_PAYER_ACTION_REQUIRED;
 
         $orderServiceMock = $this->createMock(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class);
         $orderServiceMock->expects($this->exactly(0))
@@ -346,7 +351,7 @@ final class OrderTest extends BaseTestCase
             $this->createMock(OrderRepository::class),
             $this->createMock(SCAValidatorInterface::class),
             $this->createMock(ModuleSettings::class),
-            $this->createMock(\Psr\Log\LoggerInterface::class),
+            $this->createMock(LoggerInterface::class),
             $this->createMock(OrderProcessTrackingService::class),
             $serviceFactoryMock,
             EshopRegistry::get(PatchRequestFactory::class),
@@ -367,28 +372,28 @@ final class OrderTest extends BaseTestCase
         $captureId = '42311647XV020574X';
         $forceFetchDetails = false;
 
-        $order = oxNew(\OxidSolutionCatalysts\PayPal\Model\Order::class);
+        $order = oxNew(PaypalOrder::class);
         $order->setId(self::TEST_ORDER_ID);
         $order->assign([
             'oxuserid' => '_testuser',
             'oxpaymenttype' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-            'oxtransstatus' => \OxidSolutionCatalysts\PayPal\Model\Order::ORDER_STATE_ACDCINPROGRESS,
+            'oxtransstatus' => PaypalOrder::ORDER_STATE_ACDCINPROGRESS,
         ]);
         $order->save();
         $order->load(self::TEST_ORDER_ID);
 
         $this->assertTrue($order->isLoaded(), 'Order was not properly loaded.');
 
-        $paypalApiOrder = new \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order();
+        $paypalApiOrder = new PayPalApiOrder();
         $paypalApiOrder->id = $payPalOrderId;
-        $paypalApiOrder->status = \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_COMPLETED;
+        $paypalApiOrder->status = PayPalApiOrder::STATUS_COMPLETED;
         $paypalApiOrder->purchase_units = [
             (object)[
                 'payments' => (object)[
                     'captures' => [
                         (object)[
                             'id' => $captureId,
-                            'status' => \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_COMPLETED,
+                            'status' => PayPalApiOrder::STATUS_COMPLETED,
                         ],
                     ],
                 ],
@@ -403,9 +408,9 @@ final class OrderTest extends BaseTestCase
             ->method('_sendOrderByEmail')
             ->willReturn(true);
 
-        $paypalApiOrder = new \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order();
+        $paypalApiOrder = new PayPalApiOrder();
         $paypalApiOrder->id = $payPalOrderId;
-        $paypalApiOrder->status = \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_PAYER_ACTION_REQUIRED;
+        $paypalApiOrder->status = PayPalApiOrder::STATUS_PAYER_ACTION_REQUIRED;
 
         $orderServiceMock = $this->createMock(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class);
         $orderServiceMock->expects($this->exactly(0))
@@ -427,7 +432,7 @@ final class OrderTest extends BaseTestCase
             $this->createMock(OrderRepository::class),
             $this->createMock(SCAValidatorInterface::class),
             $this->createMock(ModuleSettings::class),
-            $this->createMock(\Psr\Log\LoggerInterface::class),
+            $this->createMock(LoggerInterface::class),
             $this->createMock(OrderProcessTrackingService::class),
             $serviceFactoryMock,
             EshopRegistry::get(PatchRequestFactory::class),
@@ -447,9 +452,9 @@ final class OrderTest extends BaseTestCase
         $payPalOrderId = self::TEST_PAYPAL_ORDER_ID;
         $forceFetchDetails = true;
 
-        $paypalApiOrder = new \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order();
+        $paypalApiOrder = new PayPalApiOrder();
         $paypalApiOrder->id = $payPalOrderId;
-        $paypalApiOrder->status = \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_PAYER_ACTION_REQUIRED;
+        $paypalApiOrder->status = PayPalApiOrder::STATUS_PAYER_ACTION_REQUIRED;
 
 
         $orderServiceMock = $this->createMock(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class);
@@ -472,7 +477,7 @@ final class OrderTest extends BaseTestCase
             $this->createMock(OrderRepository::class),
             $this->createMock(SCAValidatorInterface::class),
             $this->createMock(ModuleSettings::class),
-            $this->createMock(\Psr\Log\LoggerInterface::class),
+            $this->createMock(LoggerInterface::class),
             $this->createMock(OrderProcessTrackingService::class),
             $serviceFactoryMock,
             EshopRegistry::get(PatchRequestFactory::class),
@@ -507,7 +512,7 @@ final class OrderTest extends BaseTestCase
 
         $order = $this->prepareEmptyOrder();
         $order->assign([
-            'oxtransstatus' => \OxidSolutionCatalysts\PayPal\Model\Order::ORDER_STATE_SESSIONPAYMENT_INPROGRESS,
+            'oxtransstatus' => PaypalOrder::ORDER_STATE_SESSIONPAYMENT_INPROGRESS,
             'oxuserid' => '_testuser',
             'oxbillcountryid' => 'a7c40f631fc920687.20179984',
             'oxdelcountryid' => 'a7c40f631fc920687.20179984',
@@ -516,7 +521,7 @@ final class OrderTest extends BaseTestCase
         $order->save();
         $this->assertTrue($order->isLoaded(), 'Order was not loaded properly.');
 
-        $mockOrder = $this->getMockBuilder(\OxidSolutionCatalysts\PayPal\Model\Order::class)
+        $mockOrder = $this->getMockBuilder(PaypalOrder::class)
             ->onlyMethods(['_sendOrderByEmail', 'getFieldData'])
             ->getMock();
         $mockOrder->expects($this->once())
@@ -526,9 +531,9 @@ final class OrderTest extends BaseTestCase
         $mockOrder->setId($order->getId());
         $mockOrder->load($order->getId());
 
-        $paypalApiOrder = new \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order();
+        $paypalApiOrder = new PayPalApiOrder();
         $paypalApiOrder->id = $payPalOrderId;
-        $paypalApiOrder->status = \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_COMPLETED;
+        $paypalApiOrder->status = PayPalApiOrder::STATUS_COMPLETED;
 
         // Mock PayPal purchase units (example data)
         $paypalApiOrder->purchase_units = [
