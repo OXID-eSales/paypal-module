@@ -14,6 +14,7 @@ use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Field;
+use OxidSolutionCatalysts\PayPal\Event\PayPalOrderCreatedEvent;
 use OxidSolutionCatalysts\PayPal\Traits\NormalizedEventDispatcher;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Model\Order as ShopOrder;
@@ -224,6 +225,7 @@ class AjaxPaymentController extends ProxyController
 
     /**
      * @throws \JsonException
+     * @throws \ReflectionException
      */
     public function createPayPalOrder(): void
     {
@@ -237,7 +239,10 @@ class AjaxPaymentController extends ProxyController
 
         $this->setPayPalPaymentMethod(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
         $session = Registry::getSession();
-        $basket = $session->getBasket();
+        $shopOrderId = $this->orderRepository->fetchCurrentShopOrderId();
+        $order = $this->orderRepository->fetchCurrentShopOrder();
+        $basket = Registry::getSession()->getBasket();
+        $user = $basket->getUser();
 
         if ($basket->getItemsCount() === 0) {
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
@@ -256,7 +261,7 @@ class AjaxPaymentController extends ProxyController
         $userAction = $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID ?
             OrderRequestFactory::USER_ACTION_CONTINUE : OrderRequestFactory::USER_ACTION_PAY_NOW;
 
-        $response = $paymentService->doCreatePayPalOrder(
+        $payPalOrder = $paymentService->doCreatePayPalOrder(
             $basket,
             $intent,
             $userAction,
@@ -269,19 +274,27 @@ class AjaxPaymentController extends ProxyController
             false
         );
 
-        if ($response->id) {
-            $sessionOrderId = $this->orderRepository->fetchCurrentShopOrderId();
-            $order = $this->orderRepository->fetchCurrentShopOrder();
-
-            PayPalSession::unsetPayPalSession();
+        if ($payPalOrder->id) {
+            $paymentsId = (string)$order->getFieldData('oxpaymenttype');
+            $transactionId = (string)$payPalOrder->purchase_units[0]->payments->captures[0]->id;
+            $event = new PayPalOrderCreatedEvent(
+                $order,
+                $basket,
+                $user,
+                $shopOrderId,
+                $payPalOrder->id,
+                $paymentsId,
+                $transactionId
+            );
+            $this->dispatchNormalized($event, PayPalOrderCreatedEvent::NAME);
 
             $this->outputJson([
                 'status' => 'success',
                 'shopOrder' => [
-                    'shopOrderId' => $sessionOrderId,
-                    'customId' => $paymentService->getCustomIdParameter($order)
+                    'shopOrderId' => $this->orderRepository->fetchCurrentShopOrderId(),
+                    'customId' => $paymentService->getCustomIdParameter($this->orderRepository->fetchCurrentShopOrder())
                 ],
-                'payPalOrder' => $response,
+                'payPalOrder' => $payPalOrder,
             ]);
         }
 
