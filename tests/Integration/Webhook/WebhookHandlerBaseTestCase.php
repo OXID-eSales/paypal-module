@@ -16,7 +16,6 @@ use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 use OxidEsales\EshopCommunity\Tests\ContainerTrait;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
-use OxidSolutionCatalysts\PayPal\Model\Order as PayPalExtendOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
 use Psr\Log\LoggerInterface;
 
@@ -68,8 +67,8 @@ class WebhookHandlerBaseTestCase extends BaseTestCase
         string $orderId = 'order_oxid',
         string $methodName = 'markOrderPaid',
         string $expectCalls = 'once'
-    ): PayPalExtendOrderModel {
-        $mock = $this->getMockBuilder(PayPalExtendOrderModel::class)
+    ): EshopModelOrder {
+        $mock = $this->getMockBuilder(EshopModelOrder::class)
             ->disableOriginalConstructor()
             ->getMock();
         $mock->expects($this->any())

@@ -15,7 +15,7 @@ use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 
 final class UserTest extends BaseTestCase
 {
-    private const TEST_USER_ID = 'testuser';
+    private const TEST_USER_ID = 'e7af1c3b786fd02906ccd75698f4e6b9';
     private const ORDER_TEMPLATE_ID = '7d090db46a124f48cb7e6836ceef3f66';
 
     protected function tearDown(): void

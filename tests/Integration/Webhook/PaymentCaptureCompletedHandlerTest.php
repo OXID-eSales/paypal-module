@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureCompletedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventRetryException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -78,13 +79,12 @@ final class PaymentCaptureCompletedHandlerTest extends WebhookHandlerBaseTestCas
 
         $event = new WebhookEvent($data, self::WEBHOOK_EVENT);
 
-        $this->expectException(WebhookEventException::class);
+        $this->expectException(WebhookEventRetryException::class);
         $this->expectExceptionMessage(
-            WebhookEventException::byPayPalOrderId($payPalOrderId)->getMessage()
+            WebhookEventRetryException::byPayPalOrderId($payPalOrderId)->getMessage()
         );
 
         $handler = \oxNew(PaymentCaptureCompletedHandler::class);
-
         $handler->handle($event);
     }
 

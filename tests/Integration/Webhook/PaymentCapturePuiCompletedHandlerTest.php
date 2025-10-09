@@ -14,33 +14,26 @@ use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureCompletedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventRetryException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook\WebhookHandlerBaseTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
-use Random\RandomException;
 
 final class PaymentCapturePuiCompletedHandlerTest extends WebhookHandlerBaseTestCase
 {
     public const WEBHOOK_EVENT = 'PAYMENT.CAPTURE.COMPLETED';
 
-    /**
-     * @throws RandomException
-     */
     public function testEshopOrderNotFoundByPayPalOrderId(): void
     {
         $data = $this->getRequestData('payment_capture_completed_pui_v1.json');
-
-        // we create random ID here since the same fixture
-        // is used by other tests and therefore the order can be found
-        $data['resource']['supplementary_data']['related_ids']['order_id'] = bin2hex(random_bytes(16));
         $payPalOrderId = $data['resource']['supplementary_data']['related_ids']['order_id'];
 
         $event = new WebhookEvent($data, self::WEBHOOK_EVENT);
 
-        $this->expectException(WebhookEventException::class);
+        $this->expectException(WebhookEventRetryException::class);
         $this->expectExceptionMessage(
-            WebhookEventException::byPayPalOrderId($payPalOrderId)->getMessage()
+            WebhookEventRetryException::byPayPalOrderId($payPalOrderId)->getMessage()
         );
 
         $handler = \oxNew(PaymentCaptureCompletedHandler::class);

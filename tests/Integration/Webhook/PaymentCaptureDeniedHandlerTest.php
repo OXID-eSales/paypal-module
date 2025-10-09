@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureDeniedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventRetryException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 
@@ -24,12 +25,12 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
 
     public function testRequestMissingData(): void
     {
-        $event = new WebhookEvent([], self::WEBHOOK_EVENT);
+        $event = new WebhookEvent([], static::WEBHOOK_EVENT);
 
         $this->expectException(WebhookEventException::class);
         $this->expectExceptionMessage(WebhookEventException::mandatoryDataNotFound()->getMessage());
 
-        $handler = oxNew(self::HANDLER_CLASS);
+        $handler = oxNew(static::HANDLER_CLASS);
         $handler->handle($event);
     }
 
@@ -78,12 +79,12 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
 
         $event = new WebhookEvent($data, self::WEBHOOK_EVENT);
 
-        $this->expectException(WebhookEventException::class);
+        $this->expectException(WebhookEventRetryException::class);
         $this->expectExceptionMessage(
-            WebhookEventException::byPayPalOrderId($payPalOrderId)->getMessage()
+            WebhookEventRetryException::byPayPalOrderId($payPalOrderId)->getMessage()
         );
 
-        $handler = oxNew(self::HANDLER_CLASS);
+        $handler = oxNew(static::HANDLER_CLASS);
         $handler->handle($event);
     }
 
@@ -99,7 +100,7 @@ final class PaymentCaptureDeniedHandlerTest extends WebhookHandlerBaseTestCase
         $event = new WebhookEvent($data, self::WEBHOOK_EVENT);
 
         // this state is when PayPal send the order completed webhook
-        $handler = oxNew(self::HANDLER_CLASS);
+        $handler = oxNew(static::HANDLER_CLASS);
         $handler->handle($event);
 
         // we now have two PayPal order entries

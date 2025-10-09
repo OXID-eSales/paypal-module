@@ -14,11 +14,10 @@ use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Core\Session;
-use OxidEsales\EshopCommunity\Tests\Unit\Application\Controller\RegisterTest;
-use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
@@ -160,7 +159,7 @@ final class OrderTest extends BaseTestCase
         $oBasket = oxNew(EshopModelBasket::class);
         $oUser = oxNew(EshopModelUser::class);
 
-        $orderMock = $this->getMockBuilder(\OxidSolutionCatalysts\PayPal\Model\Order::class)
+        $orderMock = $this->getMockBuilder(PaypalOrder::class)
             ->disableOriginalConstructor()
             ->onlyMethods([
                 'isPayPalOrderCompleted',
@@ -213,7 +212,7 @@ final class OrderTest extends BaseTestCase
 
     public function testFinalizeOrderAfterExternalPaymentOrderLoadError(): void
     {
-        $orderMock = $this->getMockBuilder(PaypalOrder::class)
+        $orderMock = $this->getMockBuilder(EshopModelOrder::class)
             ->onlyMethods(['isLoaded'])
             ->getMock();
 
@@ -241,7 +240,7 @@ final class OrderTest extends BaseTestCase
         ]);
         $order->save();
 
-        $mockOrder = $this->getMockBuilder(PaypalOrder::class)
+        $mockOrder = $this->getMockBuilder(EshopModelOrder::class)
             ->onlyMethods(['sendOrderByEmail'])
             ->getMock();
         $mockOrder->expects($this->once())
@@ -315,11 +314,11 @@ final class OrderTest extends BaseTestCase
         $order = $this->prepareEmptyOrder();
         $order->assign([
             'oxpaymenttype' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-            'oxtransstatus' => \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_PAYER_ACTION_REQUIRED
+            'oxtransstatus' => PayPalApiOrder::STATUS_PAYER_ACTION_REQUIRED
         ]);
         $order->save();
 
-        $mockOrder = $this->getMockBuilder(PaypalOrder::class)
+        $mockOrder = $this->getMockBuilder(EshopModelOrder::class)
             ->onlyMethods(['sendOrderByEmail'])
             ->getMock();
 
@@ -400,7 +399,7 @@ final class OrderTest extends BaseTestCase
             ],
         ];
 
-        $mockOrder = $this->getMockBuilder(PaypalOrder::class)
+        $mockOrder = $this->getMockBuilder(EshopModelOrder::class)
             ->onlyMethods(['sendOrderByEmail'])
             ->getMock();
 
@@ -484,7 +483,7 @@ final class OrderTest extends BaseTestCase
             $this->getServiceFromContainer(OrderRequestFactory::class)
         );
 
-        $mockOrder = $this->getMockBuilder(PaypalOrder::class)
+        $mockOrder = $this->getMockBuilder(EshopModelOrder::class)
             ->onlyMethods(['sendOrderByEmail'])
             ->getMock();
 
@@ -512,7 +511,7 @@ final class OrderTest extends BaseTestCase
 
         $order = $this->prepareEmptyOrder();
         $order->assign([
-            'oxtransstatus' => \OxidSolutionCatalysts\PayPal\Model\Order::ORDER_STATE_SESSIONPAYMENT_INPROGRESS,
+            'oxtransstatus' => PaypalOrder::ORDER_STATE_SESSIONPAYMENT_INPROGRESS,
             'oxuserid' => '_testuser',
             'oxbillcountryid' => 'a7c40f631fc920687.20179984',
             'oxdelcountryid' => 'a7c40f631fc920687.20179984',
@@ -521,7 +520,7 @@ final class OrderTest extends BaseTestCase
         $order->save();
         $this->assertTrue($order->isLoaded(), 'Order was not loaded properly.');
 
-        $mockOrder = $this->getMockBuilder(\OxidSolutionCatalysts\PayPal\Model\Order::class)
+        $mockOrder = $this->getMockBuilder(PaypalOrder::class)
             ->onlyMethods(['sendOrderByEmail', 'getFieldData'])
             ->getMock();
         $mockOrder->expects($this->once())
@@ -531,9 +530,9 @@ final class OrderTest extends BaseTestCase
         $mockOrder->setId($order->getId());
         $mockOrder->load($order->getId());
 
-        $paypalApiOrder = new \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order();
+        $paypalApiOrder = new PayPalApiOrder();
         $paypalApiOrder->id = $payPalOrderId;
-        $paypalApiOrder->status = \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order::STATUS_COMPLETED;
+        $paypalApiOrder->status = PayPalApiOrder::STATUS_COMPLETED;
 
         // Mock PayPal purchase units (example data)
         $paypalApiOrder->purchase_units = [
