@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - show Express-Buttons only if Basket > 0 or ArticlePrice > 0
 - fixes an error in the display of the GooglePay button
 - [0007821](https://bugs.oxid-esales.com/view.php?id=7821): use finalizeOrder for all payments again
-- use PayPal-Client v2.0.23
+- use PayPal-Client v3.0.19 (same as O7)
 
 ### FIX
 - [0007822](https://bugs.oxid-esales.com/view.php?id=7822): use existing DeliveryAddresses instead creating new once
