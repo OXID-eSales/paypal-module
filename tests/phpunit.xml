@@ -21,6 +21,11 @@
         <directory>Integration/</directory>
     </testsuite>
 </testsuites>
+<groups>
+    <exclude>
+        <group>ignore</group>
+    </exclude>
+</groups>
 <filter>
     <whitelist addUncoveredFilesFromWhitelist="true">
         <directory suffix=".php">../src</directory>

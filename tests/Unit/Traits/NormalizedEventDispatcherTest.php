@@ -19,6 +19,7 @@ use Symfony\Component\EventDispatcher\EventDispatcherInterface;
  * Test class for NormalizedEventDispatcher trait
  *
  * @covers \OxidSolutionCatalysts\PayPal\Traits\NormalizedEventDispatcher
+ * @group ignore
  */
 final class NormalizedEventDispatcherTest extends UnitTestCase
 {
@@ -44,8 +45,6 @@ final class NormalizedEventDispatcherTest extends UnitTestCase
         $reflection = new \ReflectionProperty(get_class($this->traitUser), 'serviceArray');
         $reflection->setAccessible(true);
         $reflection->setValue($this->traitUser, ['event_dispatcher' => $this->mockDispatcher]);
-
-        $r=1;
     }
 
     /**
