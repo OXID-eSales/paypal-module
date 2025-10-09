@@ -788,7 +788,7 @@ class Order extends Order_parent
         ) {
             return;
         }
-        parent::_setOrderStatus($sStatus);
+        parent::setOrderStatus($sStatus);
     }
 
     public function setOrderProcessTrackingService(OrderProcessTrackingService $orderProcessTrackingService): void
