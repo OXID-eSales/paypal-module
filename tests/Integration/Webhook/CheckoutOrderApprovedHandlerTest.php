@@ -64,7 +64,20 @@ final class CheckoutOrderApprovedHandlerTest extends WebhookHandlerBaseTestCase
         $data = $this->getRequestData('checkout_order_approved_pui_v2.json');
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
-        $orderMock = $this->prepareOrderMock('oxid', 'markOrderPaid', 'never');
+        // Erstelle einen Order-Mock mit beiden Methoden
+        $orderMock = $this->getMockBuilder(\OxidSolutionCatalysts\PayPal\Model\Order::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['load', 'getId', 'markOrderPaid', 'setOrderNumber'])
+            ->getMock();
+
+        $orderMock->expects($this->any())
+            ->method('load')
+            ->willReturn(true);
+        $orderMock->expects($this->any())
+            ->method('getId')
+            ->willReturn('oxid');
+        $orderMock->expects($this->never())
+            ->method('markOrderPaid');
         $orderMock->expects($this->never())
             ->method('setOrderNumber');
 

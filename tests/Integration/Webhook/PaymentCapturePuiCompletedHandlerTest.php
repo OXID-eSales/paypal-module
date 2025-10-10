@@ -24,12 +24,35 @@ final class PaymentCapturePuiCompletedHandlerTest extends WebhookHandlerBaseTest
 {
     public const WEBHOOK_EVENT = 'PAYMENT.CAPTURE.COMPLETED';
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Stelle sicher, dass die Tabellen vor jedem Test leer sind
+        $this->cleanUpTable('oscpaypal_order');
+        $this->cleanUpTable('oxorder');
+    }
+
+    protected function tearDown(): void
+    {
+        $this->cleanUpTable('oscpaypal_order');
+        $this->cleanUpTable('oxorder');
+
+        parent::tearDown();
+    }
+
     public function testEshopOrderNotFoundByPayPalOrderId(): void
     {
+        // Stelle explizit sicher, dass die DB leer ist
+        $this->cleanUpTable('oscpaypal_order');
+        $this->cleanUpTable('oxorder');
+
         $data = $this->getRequestData('payment_capture_completed_pui_v1.json');
         $payPalOrderId = $data['resource']['supplementary_data']['related_ids']['order_id'];
 
         $event = new WebhookEvent($data, self::WEBHOOK_EVENT);
+
+        // WICHTIG: KEINE prepareTestData() hier!
+        // Wir wollen testen, dass die Exception geworfen wird, wenn nichts gefunden wird
 
         $this->expectException(WebhookEventRetryException::class);
         $this->expectExceptionMessage(

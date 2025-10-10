@@ -22,6 +22,22 @@ final class CheckoutPaymentApprovalReverseHandlerTest extends WebhookHandlerBase
 
     public const HANDLER_CLASS = CheckoutPaymentApprovalReverseHandler::class;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Stelle sicher, dass die Tabellen vor jedem Test leer sind
+        $this->cleanUpTable('oscpaypal_order');
+        $this->cleanUpTable('oxorder');
+    }
+
+    protected function tearDown(): void
+    {
+        $this->cleanUpTable('oscpaypal_order');
+        $this->cleanUpTable('oxorder');
+
+        parent::tearDown();
+    }
+
     public function testRequestMissingData(): void
     {
         $event = new WebhookEvent([], static::WEBHOOK_EVENT);
@@ -35,10 +51,17 @@ final class CheckoutPaymentApprovalReverseHandlerTest extends WebhookHandlerBase
 
     public function testEshopOrderNotFoundByPayPalOrderId(): void
     {
+        // Stelle sicher, dass die DB leer ist
+        $this->cleanUpTable('oscpaypal_order');
+        $this->cleanUpTable('oxorder');
+
         $data = $this->getRequestData('payment_approval_reversed_pui_v1.json');
         $payPalOrderId = $data['resource']['order_id'];
 
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
+
+        // WICHTIG: KEINE prepareTestData() hier!
+        // Wir wollen testen, dass die Exception geworfen wird, wenn nichts gefunden wird
 
         $this->expectException(WebhookEventRetryException::class);
         $this->expectExceptionMessage(
@@ -56,6 +79,8 @@ final class CheckoutPaymentApprovalReverseHandlerTest extends WebhookHandlerBase
 
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
+        // Hier MUSS prepareTestData() aufgerufen werden,
+        // damit Testdaten vorhanden sind
         $this->prepareTestData($payPalOrderId);
 
         $handler = oxNew(static::HANDLER_CLASS);

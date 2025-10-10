@@ -64,12 +64,14 @@ final class UserTest extends TestCase
     public function testPuiPhone(): void
     {
         $puiRequired = [
-            'phonenumber' => '040 111222333'
+            'phonenumber' => '+49 040 111222333'
         ];
 
         $request = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();
-        $request->method('getRequestParameter')->willReturn($puiRequired);
 
+        $request->method('getRequestParameter')
+            ->with('pui_required')
+            ->willReturn($puiRequired);
         Registry::set(Request::class, $request);
 
         $user = oxNew(EshopModelUser::class);

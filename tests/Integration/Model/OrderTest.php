@@ -165,7 +165,6 @@ final class OrderTest extends BaseTestCase
                 'isPayPalOrderCompleted',
                 'isOrderFinished',
                 'isOrderPaid',
-                'setLogger',
                 'isWaitForWebhookTimeoutReached',
                 'load'
             ])
@@ -196,7 +195,6 @@ final class OrderTest extends BaseTestCase
 
         $orderMock = $this->patchMock($orderMock);
         $orderMock->setPaymentService($paymentServiceMock);
-        $orderMock->setLogger($this->createMock(LoggerInterface::class));
         $session = EshopRegistry::getSession();
         $session->setVariable('sess_challenge', 'test_challenge');
         EshopRegistry::set(Session::class, $session);
@@ -213,7 +211,7 @@ final class OrderTest extends BaseTestCase
 
     public function testFinalizeOrderAfterExternalPaymentOrderLoadError(): void
     {
-        $orderMock = $this->getMockBuilder(EshopModelOrder::class)
+        $orderMock = $this->getMockBuilder(PaypalOrder::class)
             ->onlyMethods(['isLoaded'])
             ->getMock();
 
@@ -241,7 +239,7 @@ final class OrderTest extends BaseTestCase
         ]);
         $order->save();
 
-        $mockOrder = $this->getMockBuilder(EshopModelOrder::class)
+        $mockOrder = $this->getMockBuilder(PaypalOrder::class)
             ->onlyMethods(['sendOrderByEmail'])
             ->getMock();
         $mockOrder->expects($this->once())
@@ -319,7 +317,7 @@ final class OrderTest extends BaseTestCase
         ]);
         $order->save();
 
-        $mockOrder = $this->getMockBuilder(EshopModelOrder::class)
+        $mockOrder = $this->getMockBuilder(PaypalOrder::class)
             ->onlyMethods(['sendOrderByEmail'])
             ->getMock();
 
@@ -400,7 +398,7 @@ final class OrderTest extends BaseTestCase
             ],
         ];
 
-        $mockOrder = $this->getMockBuilder(EshopModelOrder::class)
+        $mockOrder = $this->getMockBuilder(PaypalOrder::class)
             ->onlyMethods(['sendOrderByEmail'])
             ->getMock();
 
@@ -484,7 +482,7 @@ final class OrderTest extends BaseTestCase
             $this->getServiceFromContainer(OrderRequestFactory::class)
         );
 
-        $mockOrder = $this->getMockBuilder(EshopModelOrder::class)
+        $mockOrder = $this->getMockBuilder(PaypalOrder::class)
             ->onlyMethods(['sendOrderByEmail'])
             ->getMock();
 

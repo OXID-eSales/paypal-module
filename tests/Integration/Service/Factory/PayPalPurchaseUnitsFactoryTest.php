@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OxidEsales\EshopCommunity\modules\osc\paypal\tests\Integration\Service\Factory;
 
+use OxidSolutionCatalysts\PayPal\Model\Article;
 use OxidSolutionCatalysts\PayPal\Model\Basket;
 use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -94,7 +95,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
         $this->assertSame('0.00', $mapped->insurance->value);
         $this->assertSame('0.01', $mapped->shipping_discount->value);
         $this->assertSame('1.23', $mapped->discount->value);
-        $this->assertObjectNotHasAttribute('unknown_key', $mapped);
+        $this->assertObjectNotHasProperty('unknown_key', $mapped);
     }
 
     public function testMapAmountWithBreakdown_MapsAmountAndNestedBreakdown(): void
@@ -247,7 +248,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $basketItem->method('getTitle')->willReturn('Item A');
             $basketItem->method('getAmount')->willReturn(2);
             $basketItem->method('getUnitPrice')->willReturn($unitPrice);
-            $article = $this->createMock(\OxidEsales\Eshop\Application\Model\Article::class);
+            $article = $this->createMock(Article::class);
             $article->method('isVirtualPayPalArticle')->willReturn(false);
             $basketItem->method('getArticle')->willReturn($article);
             $basket->method('getContents')->willReturn([$basketItem]);
@@ -303,7 +304,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $basketItem->method('getTitle')->willReturn('Item A');
             $basketItem->method('getAmount')->willReturn(1);
             $basketItem->method('getUnitPrice')->willReturn($unitPrice);
-            $article = $this->createMock(\OxidEsales\Eshop\Application\Model\Article::class);
+            $article = $this->createMock(Article::class);
             $article->method('isVirtualPayPalArticle')->willReturn(false);
             $basketItem->method('getArticle')->willReturn($article);
             $basket->method('getContents')->willReturn([$basketItem]);
@@ -398,14 +399,14 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $basketItem1->method('getTitle')->willReturn('A');
             $basketItem1->method('getAmount')->willReturn(9);
             $basketItem1->method('getUnitPrice')->willReturn($unitPrice1);
-            $article1 = $this->createMock(\OxidEsales\Eshop\Application\Model\Article::class);
+            $article1 = $this->createMock(Article::class);
             $article1->method('isVirtualPayPalArticle')->willReturn(false);
             $basketItem1->method('getArticle')->willReturn($article1);
             $basketItem2 = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
             $basketItem2->method('getTitle')->willReturn('B');
             $basketItem2->method('getAmount')->willReturn(3);
             $basketItem2->method('getUnitPrice')->willReturn($unitPrice2);
-            $article2 = $this->createMock(\OxidEsales\Eshop\Application\Model\Article::class);
+            $article2 = $this->createMock(Article::class);
             $article2->method('isVirtualPayPalArticle')->willReturn(false);
             $basketItem2->method('getArticle')->willReturn($article2);
             $basket->method('getContents')->willReturn([$basketItem1, $basketItem2]);
@@ -476,14 +477,14 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $basketItem1->method('getTitle')->willReturn('A');
             $basketItem1->method('getAmount')->willReturn(9);
             $basketItem1->method('getUnitPrice')->willReturn($unitPrice1);
-            $articleA = $this->createMock(\OxidEsales\Eshop\Application\Model\Article::class);
+            $articleA = $this->createMock(Article::class);
             $articleA->method('isVirtualPayPalArticle')->willReturn(false);
             $basketItem1->method('getArticle')->willReturn($articleA);
             $basketItem2 = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
             $basketItem2->method('getTitle')->willReturn('B');
             $basketItem2->method('getAmount')->willReturn(3);
             $basketItem2->method('getUnitPrice')->willReturn($unitPrice2);
-            $articleB = $this->createMock(\OxidEsales\Eshop\Application\Model\Article::class);
+            $articleB = $this->createMock(Article::class);
             $articleB->method('isVirtualPayPalArticle')->willReturn(false);
             $basketItem2->method('getArticle')->willReturn($articleB);
             $basket->method('getContents')->willReturn([$basketItem1, $basketItem2]);
@@ -539,14 +540,14 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $basketItem1->method('getTitle')->willReturn('X');
             $basketItem1->method('getAmount')->willReturn(3);
             $basketItem1->method('getUnitPrice')->willReturn($unitPrice1);
-            $article1 = $this->createMock(\OxidEsales\Eshop\Application\Model\Article::class);
+            $article1 = $this->createMock(Article::class);
             $article1->method('isVirtualPayPalArticle')->willReturn(false);
             $basketItem1->method('getArticle')->willReturn($article1);
             $basketItem2 = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
             $basketItem2->method('getTitle')->willReturn('Y');
             $basketItem2->method('getAmount')->willReturn(3);
             $basketItem2->method('getUnitPrice')->willReturn($unitPrice2);
-            $article2 = $this->createMock(\OxidEsales\Eshop\Application\Model\Article::class);
+            $article2 = $this->createMock(Article::class);
             $article2->method('isVirtualPayPalArticle')->willReturn(false);
             $basketItem2->method('getArticle')->willReturn($article2);
             $basket->method('getContents')->willReturn([$basketItem1, $basketItem2]);
@@ -598,9 +599,11 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
 
             // UnitPrice mocks: use oxprice-like mocks as in PatchRequestFactoryTest
             $makeUnitPrice = function(float $gross) {
-                $price = $this->getMock('oxprice');
-                $price->expects($this->any())->method('getPrice')->will($this->returnValue($gross));
-                $price->expects($this->any())->method('getBruttoPrice')->will($this->returnValue($gross));
+                $price = $this->getMockBuilder(\OxidEsales\Eshop\Core\Price::class)
+                    ->onlyMethods(['getPrice', 'getBruttoPrice'])
+                    ->getMock();
+                $price->expects($this->any())->method('getPrice')->willReturn($gross);
+                $price->expects($this->any())->method('getBruttoPrice')->willReturn($gross);
                 return $price;
             };
 
@@ -612,7 +615,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $makeBasketItem = function(string $title, int $qty, $unitPrice) {
                 $basketItem = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
                 $basketItem->method('getTitle')->willReturn($title);
-                $basketItem->method('getArticle')->willReturn(oxNew(\OxidEsales\Eshop\Application\Model\Article::class));
+                $basketItem->method('getArticle')->willReturn(oxNew(Article::class));
                 $basketItem->method('getAmount')->willReturn($qty);
                 $basketItem->method('getUnitPrice')->willReturn($unitPrice);
                 return $basketItem;
@@ -694,7 +697,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
                 $basketItem->method('getTitle')->willReturn($title);
                 $basketItem->method('getAmount')->willReturn($qty);
                 $basketItem->method('getUnitPrice')->willReturn($unitPrice);
-                $article = $this->createMock(\OxidEsales\Eshop\Application\Model\Article::class);
+                $article = $this->createMock(Article::class);
                 $article->method('isVirtualPayPalArticle')->willReturn(false);
                 $basketItem->method('getArticle')->willReturn($article);
                 return $basketItem;

@@ -9,10 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Core;
 
-use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use PHPUnit\Framework\TestCase;
-use OxidEsales\Eshop\Application\Model\Payment;
 use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Module as OscPayPalModule;
 use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;

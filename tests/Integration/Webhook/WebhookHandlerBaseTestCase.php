@@ -16,6 +16,7 @@ use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 use OxidEsales\EshopCommunity\Tests\ContainerTrait;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
+use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderResponse;
 use Psr\Log\LoggerInterface;
 
@@ -68,9 +69,34 @@ class WebhookHandlerBaseTestCase extends BaseTestCase
         string $methodName = 'markOrderPaid',
         string $expectCalls = 'once'
     ): EshopModelOrder {
-        $mock = $this->getMockBuilder(EshopModelOrder::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        // PayPal-spezifische Methoden, die nur in PayPalOrder existieren
+        $paypalSpecificMethods = [
+            'markOrderPaid',
+            'setTransId',
+            'savePuiInvoiceNr',
+            'isWaitForWebhookTimeoutReached',
+            'hasOrderNumber',
+            'setOrderNumber',
+            'isOrderFinished',
+            'isOrderPaid',
+            'isPayPalOrderCompleted',
+            'markOrderPaymentFailed'
+        ];
+
+        // Verwende PayPalOrder für PayPal-spezifische Methoden
+        if (in_array($methodName, $paypalSpecificMethods)) {
+            $mock = $this->getMockBuilder(PayPalOrder::class)
+                ->disableOriginalConstructor()
+                ->onlyMethods(['load', 'getId', $methodName])
+                ->getMock();
+        } else {
+            // Verwende EshopModelOrder für Standard-Methoden
+            $mock = $this->getMockBuilder(EshopModelOrder::class)
+                ->disableOriginalConstructor()
+                ->onlyMethods(['load', 'getId', $methodName])
+                ->getMock();
+        }
+
         $mock->expects($this->any())
             ->method('load')
             ->with($orderId)
@@ -133,6 +159,18 @@ class WebhookHandlerBaseTestCase extends BaseTestCase
 
     protected function prepareTestData(string $payPalOrderId): void
     {
+        // Lösche existierende Einträge mit derselben PayPal Order ID
+        $db = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
+        $db->execute(
+            "DELETE FROM oscpaypal_order WHERE oxpaypalorderid = ?",
+            [$payPalOrderId]
+        );
+        $db->execute(
+            "DELETE FROM oxorder WHERE oxid = ?",
+            [self::SHOP_ORDER_ID]
+        );
+
+        // Jetzt neue Testdaten einfügen
         $shopOrder = oxNew(EshopModelOrder::class);
         $shopOrder->assign(
             [
