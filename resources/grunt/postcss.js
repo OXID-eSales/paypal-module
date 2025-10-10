@@ -9,12 +9,12 @@ module.exports = {
         files: [
             {
                 expand: true,
-                cwd: '../out/src/css',
+                cwd: '../assets/src/css',
                 src: ['*.css', '!*.min.css'],
-                dest: '../out/src/css',
+                dest: '../assets/src/css',
                 ext: '.css',
                 extDot: 'last'
-        }
+            }
         ]
     }
 };
