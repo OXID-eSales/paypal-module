@@ -1,4 +1,5 @@
 [{if $oViewConf->isPayPalCheckoutActive()}]
+    <div id="paypal-overlay"><div class="loader"></div></div>
     [{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','src/js/paypal-frontend.min.js')|filemtime}]
     <script src="[{$oViewConf->getModuleUrl('osc_paypal','src/js/paypal-frontend.min.js')|cat:"?"|cat:$sFileMTime}]"></script>
     [{assign var="sFileMTime" value=$oViewConf->getModulePath('osc_paypal','src/css/paypal.min.css')|filemtime}]

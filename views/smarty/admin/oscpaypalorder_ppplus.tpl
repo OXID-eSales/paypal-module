@@ -33,14 +33,15 @@
                             <td class="edittext">[{oxmultilang ident="OSC_PAYPALPLUS_REFUNDED_AMOUNT"}]:</td>
                             <td class="edittext"><b>[{$oView->formatPrice($dRefundedAmount)}]</b></td>
                         </tr>
-                    [{/if}]
+                        [{/if}]
                     <tr>
                         <td class="edittext">[{oxmultilang ident="OSC_PAYPALPLUS_PAYMENT_ID"}]:</td>
                         <td class="edittext"><b>[{$payPalOrder->getPaymentId()}]</b></td>
                     </tr>
                     <tr>
                         <td class="edittext">[{oxmultilang ident="OSC_PAYPALPLUS_PAYMENT_METHOD"}]:</td>
-                        <td class="edittext"><b>[{if $oPaymentInstructions}][{oxmultilang ident="OSC_PAYPALPLUS_PUI"}][{else}]PayPal[{/if}]</b></td>
+                        <td class="edittext">
+                            <b>[{if $oPaymentInstructions}][{oxmultilang ident="OSC_PAYPALPLUS_PUI"}][{else}]PayPal[{/if}]</b></td>
                     </tr>
                     </tbody>
                 </table>
@@ -49,28 +50,52 @@
                     <b>[{oxmultilang ident="OSC_PAYPALPLUS_PUI_PAYMENT_INSTRUCTIONS"}]</b>
                     <table>
                         <tr>
-                            <td>[{oxmultilang ident="OSC_PAYPALPLUS_PUI_TERM"}]:</td>
-                            <td>[{$oPaymentInstructions->getDueDate()|replace:" 00:00:00":""}]</td>
+                            <td>
+                                [{oxmultilang ident="OSC_PAYPALPLUS_PUI_TERM"}]:
+                            </td>
+                            <td>
+                                [{$oPaymentInstructions->getDueDate()|replace:" 00:00:00":""}]
+                            </td>
                         </tr>
                         <tr>
-                            <td>[{oxmultilang ident="OSC_PAYPALPLUS_PUI_ACCOUNT_HOLDER"}]:</td>
-                            <td>[{$oPaymentInstructions->getAccountHolder()}]</td>
+                            <td>
+                                [{oxmultilang ident="OSC_PAYPALPLUS_PUI_ACCOUNT_HOLDER"}]:
+                            </td>
+                            <td>
+                                [{$oPaymentInstructions->getAccountHolder()}]
+                            </td>
                         </tr>
                         <tr>
-                            <td>[{oxmultilang ident="OSC_PAYPALPLUS_PUI_BANK_NAME"}]:</td>
-                            <td>[{$oPaymentInstructions->getBankName()}]</td>
+                            <td>
+                                [{oxmultilang ident="OSC_PAYPALPLUS_PUI_BANK_NAME"}]:
+                            </td>
+                            <td>
+                                [{$oPaymentInstructions->getBankName()}]
+                            </td>
                         </tr>
                         <tr>
-                            <td>[{oxmultilang ident="OSC_PAYPALPLUS_PUI_REFERENCE_NUMBER"}]:</td>
-                            <td>[{$oPaymentInstructions->getReferenceNumber()}]</td>
+                            <td>
+                                [{oxmultilang ident="OSC_PAYPALPLUS_PUI_REFERENCE_NUMBER"}]:
+                            </td>
+                            <td>
+                                [{$oPaymentInstructions->getReferenceNumber()}]
+                            </td>
                         </tr>
                         <tr>
-                            <td>[{oxmultilang ident="OSC_PAYPALPLUS_PUI_IBAN"}]:</td>
-                            <td>[{$oPaymentInstructions->getIban()}]</td>
+                            <td>
+                                [{oxmultilang ident="OSC_PAYPALPLUS_PUI_IBAN"}]:
+                            </td>
+                            <td>
+                               [{$oPaymentInstructions->getIban()}]
+                            </td>
                         </tr>
                         <tr>
-                            <td>[{oxmultilang ident="OSC_PAYPALPLUS_PUI_BIC"}]:</td>
-                            <td>[{$oPaymentInstructions->getBic()}]</td>
+                            <td>
+                                [{oxmultilang ident="OSC_PAYPALPLUS_PUI_BIC"}]:
+                            </td>
+                            <td>
+                                [{$oPaymentInstructions->getBic()}]
+                            </td>
                         </tr>
                     </table>
                 [{/if}]
@@ -82,39 +107,42 @@
                     <b>[{oxmultilang ident="OSC_PAYPALPLUS_PAYMENT_REFUNDING"}]</b>
                     <table class="paypPayPalPlusOverviewTable" cellpadding="0" border="0">
                         <tbody>
-                        [{if $dRemainingRefundAmount}]
-                            <tr>
-                                <td width="5%">&nbsp;</td>
-                                <td width="40%" class="edittext">[{oxmultilang ident="OSC_PAYPALPLUS_AVAILABLE_REFUNDS"}]</td>
-                                <td width="35%" class="edittext"><b>[{$oView->getPayPalPlusRemainingRefundsCount()}]</b></td>
-                                <td width="20%">&nbsp;</td>
-                            </tr>
-                        [{/if}]
-                        <tr>
-                            <td>&nbsp;</td>
-                            <td class="edittext">[{oxmultilang ident="OSC_PAYPALPLUS_AVAILABLE_REFUND_AMOUNT"}]</td>
-                            <td class="edittext"><b>[{$oView->formatPrice($dRemainingRefundAmount)}]</b></td>
-                            <td>&nbsp;</td>
-                        </tr>
-                        [{if $payPalOrderRefunds and $payPalOrderRefunds->count()}]
-                            <tr>
-                                <td colspan="4">&nbsp;</td>
-                            </tr>
-                            <tr>
-                                <th class="listheader first">&nbsp;</th>
-                                <th class="listheader">[{oxmultilang ident="OSC_PAYPALPLUS_DATE"}]</th>
-                                <th class="listheader" height="15">[{oxmultilang ident="OSC_PAYPALPLUS_AMOUNT"}]</th>
-                                <th class="listheader">[{oxmultilang ident="OSC_PAYPALPLUS_STATUS"}]</th>
-                            </tr>
-                            [{foreach name='refunds_list' from=$payPalOrderRefunds item=payPalOrderRefund}]
+                            [{if $dRemainingRefundAmount}]
                                 <tr>
-                                    <td valign="top" class="listitem edittext">#[{$smarty.foreach.refunds_list.iteration}]</td>
-                                    <td valign="top" class="listitem edittext">[{$payPalOrderRefund->getDateCreated()}]</td>
-                                    <td valign="top" class="listitem edittext" height="15">[{$oView->formatPrice($payPalOrderRefund->getTotal())}]</td>
-                                    <td valign="top" class="listitem edittext">[{$payPalOrderRefund->getStatus()}]</td>
+                                    <td width="5%">&nbsp;</td>
+                                    <td width="40%" class="edittext">[{oxmultilang ident="OSC_PAYPALPLUS_AVAILABLE_REFUNDS"}]
+                                    </td>
+                                    <td width="35%" class="edittext"><b>[{$oView->getPayPalPlusRemainingRefundsCount()}]</b></td>
+                                    <td width="20%">&nbsp;</td>
                                 </tr>
-                            [{/foreach}]
-                        [{/if}]
+                                [{/if}]
+                            <tr>
+                                <td>&nbsp;</td>
+                                <td class="edittext">[{oxmultilang ident="OSC_PAYPALPLUS_AVAILABLE_REFUND_AMOUNT"}]</td>
+                                <td class="edittext"><b>[{$oView->formatPrice($dRemainingRefundAmount)}]</b></td>
+                                <td>&nbsp;</td>
+                            </tr>
+                            [{if $payPalOrderRefunds and $payPalOrderRefunds->count()}]
+                                <tr>
+                                    <td colspan="4">&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <th class="listheader first">&nbsp;</th>
+                                    <th class="listheader">[{oxmultilang ident="OSC_PAYPALPLUS_DATE"}]</th>
+                                    <th class="listheader" height="15">[{oxmultilang ident="OSC_PAYPALPLUS_AMOUNT"}]</th>
+                                    <th class="listheader">[{oxmultilang ident="OSC_PAYPALPLUS_STATUS"}]</th>
+                                </tr>
+                                [{foreach name='refunds_list' from=$payPalOrderRefunds item=payPalOrderRefund}]
+                                    <tr>
+                                        <td valign="top" class="listitem edittext">#[{$smarty.foreach.refunds_list.iteration}]</td>
+                                        <td valign="top" class="listitem edittext">[{$payPalOrderRefund->getDateCreated()}]</td>
+                                        <td valign="top" class="listitem edittext" height="15">
+                                            [{$oView->formatPrice($payPalOrderRefund->getTotal())}]
+                                        </td>
+                                        <td valign="top" class="listitem edittext">[{$payPalOrderRefund->getStatus()}]</td>
+                                    </tr>
+                                [{/foreach}]
+                            [{/if}]
                         </tbody>
                     </table>
                 [{/if}]
@@ -122,8 +150,8 @@
         </tr>
         </tbody>
     </table>
-[{else}]
+    [{else}]
     <div class="messagebox">[{oxmultilang ident="OSC_PAYPALPLUS_ONLY_FOR_PAYPAL_PLUS_PAYMENT"}]</div>
-[{/if}]
+    [{/if}]
 [{include file="bottomnaviitem.tpl"}]
 [{include file="bottomitem.tpl"}]
