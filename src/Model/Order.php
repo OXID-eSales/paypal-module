@@ -303,7 +303,7 @@ class Order extends Order_parent
             return self::ORDER_STATE_OK;
         }
 
-        return parent::_sendOrderByEmail($oUser, $oBasket, $oPayment);
+        return parent::sendOrderByEmail($oUser, $oBasket, $oPayment);
     }
 
     //TODO: this place should be refactored in shop core
@@ -372,7 +372,7 @@ class Order extends Order_parent
             return true;
         }
 
-        return parent::_executePayment($basket, $userpayment);
+        return parent::executePayment($basket, $userpayment);
     }
 
     /**
