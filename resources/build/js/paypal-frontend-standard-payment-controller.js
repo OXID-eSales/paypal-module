@@ -46,8 +46,16 @@
 
         // PayPal-specific order creation
         this.createOrder = async function (data, actions) {
+            PayPalPayment.removeErrorMessage();
             PayPalPayment.addSubmitButtonOverlay();
             PayPalPayment.paypalOverlayWatcher();
+            let checkTermsAndConditions = PayPalPayment.checkTermsAndConditions();
+
+            if(false === checkTermsAndConditions) {
+                PayPalPayment.currentError = PayPalI18n.READ_AND_CONFIRM_TERMS;
+                PayPalPayment.removeSubmitButtonOverlay();
+                return;
+            }
 
             // Create shop order first
             let shopOrderCreateResult = await PayPalPayment.backendRequest('shopOrderCreateUrl', {}, {
@@ -58,11 +66,10 @@
             document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...shopOrderCreateResult}})));
 
             // Create PayPal order
-            let useVaultedPayment = PayPalPayment.config.vaultedPaymentSource;
             let payPalOrderCreateResult = await PayPalPayment.backendRequest('payPalOrderCreateUrl', {}, {
                 'shopOrderId': shopOrderCreateResult.shopOrderId,
                 'vaultPayment': PayPalPayment.currentOrder.vaultPayment,
-                'useVaultedPayment': useVaultedPayment,
+                'useVaultedPayment': PayPalPayment.config.vaultedPaymentSource,
                 'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId')
             });
 
@@ -73,17 +80,8 @@
             }
 
             //if the vaulted payment source is used, go to finalize payment
-            if (null !== useVaultedPayment && payPalOrderCreateResult.payPalOrder.status === 'COMPLETED') {
-                PayPalPayment.afterCaptureOrder();
-            }
-
-            if (useVaultedPayment && payPalOrderCreateResult.payPalOrder.status === 'PAYER_ACTION_REQUIRED' ){
-                for (const i in payPalOrderCreateResult.payPalOrder.links) {
-                    if (payPalOrderCreateResult.payPalOrder.links[i].rel === 'payer-action'){
-                        window.location = payPalOrderCreateResult.payPalOrder.links[i].href;
-                        return;
-                    }
-                }
+            if (null !== PayPalPayment.config.vaultedPaymentSource && payPalOrderCreateResult.payPalOrder.status === 'COMPLETED') {
+                PayPalPayment.thankYouPageRedirect();
             }
 
             return payPalOrderCreateResult.payPalOrder.id;
@@ -92,13 +90,15 @@
         this.captureOrder = async function (data, actions) {
             //if we managed to get at this stage, closing the overlay not suppose to be watched anymore
             PayPalPayment.reactOnPayPalOverlayClosed = false;
+
             let result = await PayPalPayment.backendRequest('shopOrderCaptureUrl', {}, {
                 'orderId': data.orderID,
-                'paymentId': PayPalPayment.getConfigValue('paymentId')
+                'paymentId': PayPalPayment.getConfigValue('paymentId'),
+                'vaultPayment': PayPalPayment.currentOrder.vaultPayment
             });
 
             if (result.paymentStatus === 'success') {
-                PayPalPayment.afterCaptureOrder();
+                PayPalPayment.thankYouPageRedirect();
             }
         };
 
