@@ -148,7 +148,10 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
 
         // Price stub returning a known brutto price
         $priceStub = new class {
-            public function getBruttoPrice() { return 123.45; }
+            public function getBruttoPrice()
+            {
+                return 123.45;
+            }
         };
         $basket->method('getPrice')->willReturn($priceStub);
 
@@ -188,18 +191,49 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
         $currency = (object) ['name' => 'EUR', 'decimal' => 2];
         $basket->method('getBasketCurrency')->willReturn($currency);
         // total not relevant for item_total assertion
-        $priceStub = new class { public function getBruttoPrice() { return 999.99; } };
+        $priceStub = new class {
+            public function getBruttoPrice()
+            {
+                return 999.99;
+            }
+        };
         $basket->method('getPrice')->willReturn($priceStub);
         $basket->method('getPayPalCheckoutDeliveryCosts')->willReturn(0.00);
         $basket->method('getPayPalCheckoutDiscountBrutto')->willReturn(0.00);
 
         // Create two BasketItem stubs with unit prices and quantities
-        $makeItem = function(float $unitPrice, float $qty) {
-            return new class($unitPrice, $qty) {
-                private float $unitPrice; private float $qty;
-                public function __construct($p, $q) { $this->unitPrice = $p; $this->qty = $q; }
-                public function getUnitPrice() { return new class($this->unitPrice) { private float $p; public function __construct($p){$this->p=$p;} public function getPrice(){ return $this->p; } }; }
-                public function getAmount() { return (string)$this->qty; }
+        $makeItem = function (float $unitPrice, float $qty) {
+            return new class ($unitPrice, $qty) {
+                private float $unitPrice;
+                private float $qty;
+
+                public function __construct($p, $q)
+                {
+                    $this->unitPrice = $p;
+                    $this->qty = $q;
+                }
+
+                public function getUnitPrice()
+                {
+                    return new class ($this->unitPrice) {
+                        private float $p;
+
+                        public function __construct($p)
+                        {
+                            $this->p = $p;
+                        }
+
+                        public function getPrice()
+                        {
+                            return $this->p;
+                        }
+                    };
+                }
+
+                public function getAmount()
+                {
+                    return (string)$this->qty;
+                }
             };
         };
         $item1 = $makeItem(10.00, 2);    // 20.00
@@ -232,15 +266,35 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $basket->method('getBasketCurrency')->willReturn($currency);
             $basket->method('getPayPalCheckoutDeliveryCosts')->willReturn(0.0);
             $basket->method('getPayPalCheckoutDiscountBrutto')->willReturn(0.0);
-            $priceStub = new class { public function getBruttoPrice() { return 238.00; } };
+            $priceStub = new class {
+                public function getBruttoPrice()
+                {
+                    return 238.00;
+                }
+            };
             $basket->method('getPrice')->willReturn($priceStub);
 
             // UnitPrice stub with both net and gross exposed + vat percent
             $unitPrice = new class {
-                public function getNettoPrice() { return 100.00; }
-                public function getBruttoPrice() { return 119.00; }
-                public function getVat() { return 19.0; }
-                public function getPrice() { return 100.00; } // used by buildAmountArray item_total sum in net mode context
+                public function getNettoPrice()
+                {
+                    return 100.00;
+                }
+
+                public function getBruttoPrice()
+                {
+                    return 119.00;
+                }
+
+                public function getVat()
+                {
+                    return 19.0;
+                }
+
+                public function getPrice()
+                {
+                    return 100.00; // used by buildAmountArray item_total sum in net mode context
+                }
             };
 
             // BasketItem mock: use PHPUnit mock of real BasketItem class to satisfy instanceof checks
@@ -290,14 +344,34 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $basket->method('getBasketCurrency')->willReturn($currency);
             $basket->method('getPayPalCheckoutDeliveryCosts')->willReturn(0.0);
             $basket->method('getPayPalCheckoutDiscountBrutto')->willReturn(0.0);
-            $priceStub = new class { public function getBruttoPrice() { return 119.00; } };
+            $priceStub = new class {
+                public function getBruttoPrice()
+                {
+                    return 119.00;
+                }
+            };
             $basket->method('getPrice')->willReturn($priceStub);
 
             $unitPrice = new class {
-                public function getNettoPrice() { return 100.00; }
-                public function getBruttoPrice() { return 119.00; }
-                public function getVat() { return 19.0; }
-                public function getPrice() { return 119.00; }
+                public function getNettoPrice()
+                {
+                    return 100.00;
+                }
+
+                public function getBruttoPrice()
+                {
+                    return 119.00;
+                }
+
+                public function getVat()
+                {
+                    return 19.0;
+                }
+
+                public function getPrice()
+                {
+                    return 119.00;
+                }
             };
 
             $basketItem = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
@@ -337,16 +411,47 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
         $basket->method('getBasketCurrency')->willReturn($currency);
         $basket->method('getPayPalCheckoutDeliveryCosts')->willReturn(0.0);
         $basket->method('getPayPalCheckoutDiscountBrutto')->willReturn(0.0);
-        $priceStub = new class { public function getBruttoPrice() { return 999.99; } }; // not used for item_total
+        $priceStub = new class {
+            public function getBruttoPrice()
+            {
+                return 999.99; // not used for item_total
+            }
+        };
         $basket->method('getPrice')->willReturn($priceStub);
 
         // Two high-precision items: 0.123456789 * 9 = 1.111111101, 1.999999999 * 3 = 5.999999997 => sum 7.111111098 -> 7.11
-        $makeItem = function(float $unitPrice, float $qty) {
-            return new class($unitPrice, $qty) {
-                private float $unitPrice; private float $qty;
-                public function __construct($p, $q) { $this->unitPrice = $p; $this->qty = $q; }
-                public function getUnitPrice() { return new class($this->unitPrice) { private float $p; public function __construct($p){$this->p=$p;} public function getPrice(){ return $this->p; } }; }
-                public function getAmount() { return (string)$this->qty; }
+        $makeItem = function (float $unitPrice, float $qty) {
+            return new class ($unitPrice, $qty) {
+                private float $unitPrice;
+                private float $qty;
+
+                public function __construct($p, $q)
+                {
+                    $this->unitPrice = $p;
+                    $this->qty = $q;
+                }
+
+                public function getUnitPrice()
+                {
+                    return new class ($this->unitPrice) {
+                        private float $p;
+
+                        public function __construct($p)
+                        {
+                            $this->p = $p;
+                        }
+
+                        public function getPrice()
+                        {
+                            return $this->p;
+                        }
+                    };
+                }
+
+                public function getAmount()
+                {
+                    return (string)$this->qty;
+                }
             };
         };
         $item1 = $makeItem(0.123456789, 9);
@@ -378,21 +483,56 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $basket->method('getBasketCurrency')->willReturn($currency);
             $basket->method('getPayPalCheckoutDeliveryCosts')->willReturn(0.0);
             $basket->method('getPayPalCheckoutDiscountBrutto')->willReturn(0.0);
-            $priceStub = new class { public function getBruttoPrice() { return 1.00; } };
+            $priceStub = new class {
+                public function getBruttoPrice()
+                {
+                    return 1.00;
+                }
+            };
             $basket->method('getPrice')->willReturn($priceStub);
 
             // UnitPrice stubs with high-precision net values and VATs
             $unitPrice1 = new class {
-                public function getNettoPrice() { return 0.123456789; }
-                public function getBruttoPrice() { return 0.147; }
-                public function getVat() { return 19.0; }
-                public function getPrice() { return 0.123456789; }
+                public function getNettoPrice()
+                {
+                    return 0.123456789;
+                }
+
+                public function getBruttoPrice()
+                {
+                    return 0.147;
+                }
+
+                public function getVat()
+                {
+                    return 19.0;
+                }
+
+                public function getPrice()
+                {
+                    return 0.123456789;
+                }
             };
             $unitPrice2 = new class {
-                public function getNettoPrice() { return 1.999999999; }
-                public function getBruttoPrice() { return 2.139999999; }
-                public function getVat() { return 7.0; }
-                public function getPrice() { return 1.999999999; }
+                public function getNettoPrice()
+                {
+                    return 1.999999999;
+                }
+
+                public function getBruttoPrice()
+                {
+                    return 2.139999999;
+                }
+
+                public function getVat()
+                {
+                    return 7.0;
+                }
+
+                public function getPrice()
+                {
+                    return 1.999999999;
+                }
             };
 
             $basketItem1 = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
@@ -449,6 +589,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
         $this->assertSame('0.56', $mapped->shipping_discount->value);
         $this->assertSame('3.14', $mapped->discount->value);
     }
+
     public function testAmountValueEqualsBreakdownSumWithHighPrecisionMultipleItemsAndCharges(): void
     {
         $factory = $this->makeFactory();
@@ -463,15 +604,55 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
                 ->disableOriginalConstructor()
                 ->onlyMethods(['getBasketCurrency','getContents','getPrice','getPayPalCheckoutDeliveryCosts','getPayPalCheckoutDiscountBrutto'])
                 ->getMock();
-            $currency = (object)['name'=>'EUR','decimal'=>2];
+            $currency = (object)['name' => 'EUR','decimal' => 2];
             $basket->method('getBasketCurrency')->willReturn($currency);
             // High precision shipping/discount to provoke rounding
             $basket->method('getPayPalCheckoutDeliveryCosts')->willReturn(0.009999999); // -> 0.01
             $basket->method('getPayPalCheckoutDiscountBrutto')->willReturn(0.004999999); // -> 0.00
 
             // Unit prices (net) with many decimals
-            $unitPrice1 = new class { public function getNettoPrice(){return 0.123456789;} public function getBruttoPrice(){return 0.147;} public function getVat(){return 19.0;} public function getPrice(){return 0.123456789;} };
-            $unitPrice2 = new class { public function getNettoPrice(){return 1.999999999;} public function getBruttoPrice(){return 2.139999999;} public function getVat(){return 7.0;} public function getPrice(){return 1.999999999;} };
+            $unitPrice1 = new class {
+                public function getNettoPrice()
+                {
+                    return 0.123456789;
+                }
+
+                public function getBruttoPrice()
+                {
+                    return 0.147;
+                }
+
+                public function getVat()
+                {
+                    return 19.0;
+                }
+
+                public function getPrice()
+                {
+                    return 0.123456789;
+                }
+            };
+            $unitPrice2 = new class {
+                public function getNettoPrice()
+                {
+                    return 1.999999999;
+                }
+
+                public function getBruttoPrice()
+                {
+                    return 2.139999999;
+                }
+
+                public function getVat()
+                {
+                    return 7.0;
+                }
+
+                public function getPrice()
+                {
+                    return 1.999999999;
+                }
+            };
 
             $basketItem1 = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
             $basketItem1->method('getTitle')->willReturn('A');
@@ -494,7 +675,19 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             // tax_total: 9*(0.123456789*0.19 -> 0.02345683 -> 0.02) + 3*(1.999999999*0.07 -> 0.13999999993 -> 0.14) = 0.18 + 0.42 = 0.60
             // shipping: 0.01, discount: 0.00; amount = 7.11 + 0.60 + 0.01 - 0.00 = 7.72
             $expectedAmount = 7.72;
-            $priceStub = new class($expectedAmount) { private float $v; public function __construct($v){$this->v=$v;} public function getBruttoPrice(){return $this->v;} };
+            $priceStub = new class ($expectedAmount) {
+                private float $v;
+
+                public function __construct($v)
+                {
+                    $this->v = $v;
+                }
+
+                public function getBruttoPrice()
+                {
+                    return $this->v;
+                }
+            };
             $basket->method('getPrice')->willReturn($priceStub);
 
             // Map items and build amount
@@ -527,14 +720,54 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
                 ->disableOriginalConstructor()
                 ->onlyMethods(['getBasketCurrency','getContents','getPrice','getPayPalCheckoutDeliveryCosts','getPayPalCheckoutDiscountBrutto'])
                 ->getMock();
-            $currency = (object)['name'=>'EUR','decimal'=>2];
+            $currency = (object)['name' => 'EUR','decimal' => 2];
             $basket->method('getBasketCurrency')->willReturn($currency);
             $basket->method('getPayPalCheckoutDeliveryCosts')->willReturn(0.005); // -> 0.01
             $basket->method('getPayPalCheckoutDiscountBrutto')->willReturn(0.014); // -> 0.01
 
             // Choose values prone to rounding differences
-            $unitPrice1 = new class { public function getNettoPrice(){return 0.3333333;} public function getBruttoPrice(){return 0.3966666;} public function getVat(){return 19.0;} public function getPrice(){return 0.3333333;} };
-            $unitPrice2 = new class { public function getNettoPrice(){return 0.6666667;} public function getBruttoPrice(){return 0.7133333;} public function getVat(){return 7.0;} public function getPrice(){return 0.6666667;} };
+            $unitPrice1 = new class {
+                public function getNettoPrice()
+                {
+                    return 0.3333333;
+                }
+
+                public function getBruttoPrice()
+                {
+                    return 0.3966666;
+                }
+
+                public function getVat()
+                {
+                    return 19.0;
+                }
+
+                public function getPrice()
+                {
+                    return 0.3333333;
+                }
+            };
+            $unitPrice2 = new class {
+                public function getNettoPrice()
+                {
+                    return 0.6666667;
+                }
+
+                public function getBruttoPrice()
+                {
+                    return 0.7133333;
+                }
+
+                public function getVat()
+                {
+                    return 7.0;
+                }
+
+                public function getPrice()
+                {
+                    return 0.6666667;
+                }
+            };
 
             $basketItem1 = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
             $basketItem1->method('getTitle')->willReturn('X');
@@ -556,7 +789,19 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             // tax_total = 3*(0.3333333*19% -> 0.063333327 -> 0.06) + 3*(0.6666667*7% -> 0.046666669 -> 0.05) = 0.18 + 0.15 = 0.33
             // shipping 0.01, discount 0.01 => amount = 3.00 + 0.33 + 0.01 - 0.01 = 3.33
             $expectedAmount = 3.33;
-            $priceStub = new class($expectedAmount) { private float $v; public function __construct($v){$this->v=$v;} public function getBruttoPrice(){return $this->v;} };
+            $priceStub = new class ($expectedAmount) {
+                private float $v;
+
+                public function __construct($v)
+                {
+                    $this->v = $v;
+                }
+
+                public function getBruttoPrice()
+                {
+                    return $this->v;
+                }
+            };
             $basket->method('getPrice')->willReturn($priceStub);
 
             $itemsArr = $this->callPrivate($factory, 'mapItems', [$basket]);
@@ -576,7 +821,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
 
     public function testGrossModeBasketFromIssueDataProducesExpectedTwoDecimalResults(): void
     {
-         $factory = $this->makeFactory();
+        $factory = $this->makeFactory();
 
         // Set Config to force gross mode using existing Config instance
         $config = Registry::getConfig();
@@ -588,7 +833,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
                 ->disableOriginalConstructor()
                 ->onlyMethods(['getBasketCurrency','getContents','getPrice','getPayPalCheckoutDeliveryCosts','getPayPalCheckoutDiscountBrutto'])
                 ->getMock();
-            $currency = (object)['name'=>'EUR','decimal'=>2];
+            $currency = (object)['name' => 'EUR','decimal' => 2];
             $basketMock->method('getBasketCurrency')->willReturn($currency);
             $basketMock->method('getPayPalCheckoutDeliveryCosts')->willReturn(0.0);
             $basketMock->method('getPayPalCheckoutDiscountBrutto')->willReturn(0.0);
@@ -598,7 +843,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $basketMock->method('getPrice')->willReturn($priceMockTotal);
 
             // UnitPrice mocks: use oxprice-like mocks as in PatchRequestFactoryTest
-            $makeUnitPrice = function(float $gross) {
+            $makeUnitPrice = function (float $gross) {
                 $price = $this->getMockBuilder(\OxidEsales\Eshop\Core\Price::class)
                     ->onlyMethods(['getPrice', 'getBruttoPrice'])
                     ->getMock();
@@ -612,7 +857,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $unit3 = $makeUnitPrice(24.95555); // qty 1 => 24.95555 gross
 
             // BasketItem mocks
-            $makeBasketItem = function(string $title, int $qty, $unitPrice) {
+            $makeBasketItem = function (string $title, int $qty, $unitPrice) {
                 $basketItem = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
                 $basketItem->method('getTitle')->willReturn($title);
                 $basketItem->method('getArticle')->willReturn(oxNew(Article::class));
@@ -668,23 +913,49 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
                 ->disableOriginalConstructor()
                 ->onlyMethods(['getBasketCurrency','getContents','getPrice','getPayPalCheckoutDeliveryCosts','getPayPalCheckoutDiscountBrutto'])
                 ->getMock();
-            $currency = (object)['name'=>'EUR','decimal'=>2];
+            $currency = (object)['name' => 'EUR','decimal' => 2];
             $basket->method('getBasketCurrency')->willReturn($currency);
             $basket->method('getPayPalCheckoutDeliveryCosts')->willReturn(3.5);
             $basket->method('getPayPalCheckoutDiscountBrutto')->willReturn(0.0);
             // Final gross from issue: 412.24572 -> PayPal money rounds to 412.25
-            $priceStub = new class { public function getBruttoPrice(){ return 412.24572; } };
+            $priceStub = new class {
+                public function getBruttoPrice()
+                {
+                    return 412.24572;
+                }
+            };
             $basket->method('getPrice')->willReturn($priceStub);
 
             // UnitPrice stubs return net price and getPrice() returns net in net mode
-            $makeUnitPriceNet = function(float $net) {
-                return new class($net) {
-                    private float $n; public function __construct($n){$this->n=$n;}
-                    public function getNettoPrice(){ return $this->n; }
-                    public function getBruttoPrice(){ return $this->n * 1.19; }
-                    public function getVat(){ return 19.0; }
-                    public function getPrice(){ return $this->n; } // used by buildAmountArray for item_total in net mode
-                }; 
+            $makeUnitPriceNet = function (float $net) {
+                return new class ($net) {
+                    private float $n;
+
+                    public function __construct($n)
+                    {
+                        $this->n = $n;
+                    }
+
+                    public function getNettoPrice()
+                    {
+                        return $this->n;
+                    }
+
+                    public function getBruttoPrice()
+                    {
+                        return $this->n * 1.19;
+                    }
+
+                    public function getVat()
+                    {
+                        return 19.0;
+                    }
+
+                    public function getPrice()
+                    {
+                        return $this->n; // used by buildAmountArray for item_total in net mode
+                    }
+                };
             };
 
             $unitA = $makeUnitPriceNet(24.95676); // qty 5
@@ -692,7 +963,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $unitC = $makeUnitPriceNet(129.00000); // qty 1
 
             // BasketItem stubs must extend real BasketItem for instanceof checks
-            $makeBasketItem = function(string $title, int $qty, $unitPrice) {
+            $makeBasketItem = function (string $title, int $qty, $unitPrice) {
                 $basketItem = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
                 $basketItem->method('getTitle')->willReturn($title);
                 $basketItem->method('getAmount')->willReturn($qty);

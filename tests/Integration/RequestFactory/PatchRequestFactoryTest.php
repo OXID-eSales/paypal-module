@@ -141,7 +141,6 @@ class PatchRequestFactoryTest extends BaseTestCase
 
             $this->assertTrue($hasShippingNamePatch, 'Should have shipping name patch');
             $this->assertTrue($hasShippingAddressPatch, 'Should have shipping address patch');
-
         } finally {
             // Clean up test data
             $this->cleanUpTable('oxaddress');
