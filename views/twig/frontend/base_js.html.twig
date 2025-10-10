@@ -1,4 +1,5 @@
 {% if oViewConf.isPayPalCheckoutActive() %}
+    <div id="paypal-overlay"><div class="loader"></div></div>
     {{ script({ include: oViewConf.getModuleUrl('osc_paypal', 'src/js/paypal-frontend.min.js')|raw, priority: 10, dynamic: __oxid_include_dynamic }) }}
     {{ style({ include: oViewConf.getModuleUrl('osc_paypal', 'src/css/paypal.min.css')|raw }) }}
     <script src="{{ oViewConf.getPayPalJsSdkUrl(commitFlow) }}"

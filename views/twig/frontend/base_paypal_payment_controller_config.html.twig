@@ -32,6 +32,8 @@
             customerId: '{{ customerId }}',
             captureStrategy: '{% if captureStrategy == 'directly' %}CAPTURE{% else %}AUTHORIZE{% endif %}',
             trackingId: '{{ oView.getCurrentTrackingId() }}',
+            confirmAGBForIntangibleRequired: {% if oViewConf.isFunctionalityEnabled('blEnableIntangibleProdAgreement') and oView.isNonMaterialItemInBasket() %}1{% else %}0{% endif %} === 1,
+            confirmAGBRequired: {% if oViewConf.isFunctionalityEnabled('blConfirmAGB') %}1{% else %}0{% endif %} === 1,
         };
 
         {% if paymentId == 'oscpaypal' %}
