@@ -10,7 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Traits;
 
 use ReflectionMethod;
-use Symfony\Component\EventDispatcher\Event;
+use Symfony\Contracts\EventDispatcher\Event;
 
 trait NormalizedEventDispatcher
 {
