@@ -7,6 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Controller\Admin;
 
+use OxidSolutionCatalysts\PayPal\Model\Order;
 use OxidSolutionCatalysts\PayPal\Traits\AdminOrderTrait;
 
 /**
@@ -24,7 +25,10 @@ class OrderOverview extends OrderOverview_parent
     public function sendorder()
     {
         parent::sendorder();
-        if ($this->isPayPalOrderCaptureOnDelivery()) {
+
+        $order = $this->getOrder();
+        /** @var $order Order */
+        if ($order->paidWithPayPal() && $this->isPayPalOrderCaptureOnDelivery()) {
             $this->capturePayPalOrder();
         }
     }
