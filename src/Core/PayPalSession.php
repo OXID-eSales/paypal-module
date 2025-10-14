@@ -34,6 +34,8 @@ class PayPalSession
     public static function storePayPalOrder(array $checkoutOrder): void
     {
         self::storePayPalOrderId($checkoutOrder['id'] ?? '');
+        $serialized = json_encode($checkoutOrder, JSON_THROW_ON_ERROR);
+        $checkoutOrder = json_decode($serialized, true, 512, JSON_THROW_ON_ERROR);
         Registry::getSession()->setVariable(
             Constants::SESSION_CHECKOUT_ORDER,
             $checkoutOrder
