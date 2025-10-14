@@ -35,10 +35,10 @@ class OrderMain extends OrderMain_parent
     protected function onOrderSend()
     {
         parent::onOrderSend();
-        if ($this->isPayPalOrderCaptureOnDelivery()) {
-            $this->capturePayPalOrder();
-        }
         if ($this->paidWithPayPal()) {
+            if ($this->isPayPalOrderCaptureOnDelivery()) {
+                $this->capturePayPalOrder();
+            }
             $order = $this->getOrder();
             $order->doProvidePayPalTrackingCarrier();
         }
