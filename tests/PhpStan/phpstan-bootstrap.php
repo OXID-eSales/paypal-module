@@ -98,10 +98,20 @@ class_alias(
 
 class_alias(
     \OxidEsales\Eshop\Application\Controller\Admin\ModuleConfiguration::class,
-    OxidSolutionCatalysts\PayPal\Controller\Admin\ModuleConfiguration_parent::class
+    \OxidSolutionCatalysts\PayPal\Controller\Admin\ModuleConfiguration_parent::class
 );
 
 class_alias(
-    \OxidEsales\Eshop\Application\Controller\Admin\ModuleConfiguration::class,
-    \OxidSolutionCatalysts\PayPal\Controller\Admin\ModuleConfiguration_parent::class
+    \OxidEsales\Eshop\Application\Component\Widget\ArticleDetails::class,
+    \OxidSolutionCatalysts\PayPal\Component\Widget\ArticleDetails_parent::class
+);
+
+class_alias(
+    \OxidEsales\Eshop\Application\Controller\Admin\OrderArticle::class,
+    \OxidSolutionCatalysts\PayPal\Controller\Admin\OrderArticle_parent::class
+);
+
+class_alias(
+    \OxidEsales\Eshop\Core\Email::class,
+    \OxidSolutionCatalysts\PayPal\Core\Email_parent::class
 );

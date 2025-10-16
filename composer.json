@@ -52,8 +52,12 @@
     "scripts": {
         "phpmd": "./.github/scripts/codestyle_check.sh phpmd",
         "phpmd-commit": "./.github/scripts/codestyle_check.sh phpmd commit",
+        "phpmd-generate-baseline": "phpmd src ansi tests/PhpMd/standard.xml --generate-baseline",
+        "phpmd-report": "phpmd src json tests/PhpMd/standard.xml --reportfile tests/reports/phpmd.report.json --baseline tests/PhpMd/phpmd.baseline.xml",
         "phpstan": "./.github/scripts/codestyle_check.sh phpstan",
         "phpstan-commit": "./.github/scripts/codestyle_check.sh phpstan commit",
+        "phpstan-generate-baseline": "phpstan -ctests/PhpStan/phpstan.neon --level=max analyse src/ --generate-baseline tests/PhpStan/phpstan-baseline.neon",
+        "phpstan-report": "phpstan -ctests/PhpStan/phpstan.neon --level=max analyse src/ --error-format=json > tests/reports/phpstan.report.json",
         "phpcs": "./.github/scripts/codestyle_check.sh phpcs",
         "phpcs-commit": "./.github/scripts/codestyle_check.sh phpcs commit",
         "style": "./.github/scripts/codestyle_check.sh all",

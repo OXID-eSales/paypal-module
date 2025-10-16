@@ -1,12 +1,11 @@
 parameters:
-    checkMissingIterableValueType: false
     bootstrapFiles:
         - phpstan-bootstrap.php
     level: 0
     scanFiles:
         - ../../vendor/oxid-esales/oxideshop-ce/source/oxfunctions.php
         - ../../vendor/oxid-esales/oxideshop-ce/source/overridablefunctions.php
-    excludes_analyse:
+    excludePaths:
         - tests/Integration/*
         - tests/Unit/*
 
