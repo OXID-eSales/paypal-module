@@ -21,7 +21,6 @@ use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\EventDispatcher\NormalizedEventDispatcher;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
@@ -129,7 +128,7 @@ class ProxyController extends FrontendController
             PayPalSession::storePayPalOrderId($response->id);
         }
 
-        $this->outputJson($response);
+        !empty($response) ? $this->outputJson($response) : $this->outputJson(['ERROR' => 'Error on create PayPal Order call.']);
     }
 
     /**

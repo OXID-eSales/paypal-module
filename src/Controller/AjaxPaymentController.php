@@ -153,7 +153,7 @@ class AjaxPaymentController extends ProxyController
             && $order->isPayPalOrderCompleted($capturePaymentForOrder)
         ) {
             $paymentsId = (string)$order->getFieldData('oxpaymenttype');
-            $transactionId = (string)$payPalOrder->purchase_units[0]->payments->captures[0]->id;
+            $transactionId = (string)$capturePaymentForOrder->purchase_units[0]->payments->captures[0]->id;
             $response['status'] = 'success';
 
             // Dispatch event for order completion actions
