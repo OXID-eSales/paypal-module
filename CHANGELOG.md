@@ -15,11 +15,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007821](https://bugs.oxid-esales.com/view.php?id=7821): use finalizeOrder for all payments again
 - fix PUI-EMail-Handling
 - [0007821](https://bugs.oxid-esales.com/view.php?id=7821): use finalizeOrder for all payments again
-
+- use PayPal-Client v3.0.18
+- Add handling for worst case: When the order is completed and the customer clicks around, the customer is redirected to the thank you page
 
 ### FIX
 
 - [0007783](https://bugs.oxid-esales.com/view.php?id=7783): fix birthday validation for PUI (Maintenance-Mode)
+- use the loading-animation from backend also in frontend
+- faster Checkout
+- fix: payment with ApplePay
+- fix: capture in the backend only for PayPal-Orders
  
 ## [3.5.0] - 2025-08-18
 
