@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - fixes an error in the display of the GooglePay button
 - [0007821](https://bugs.oxid-esales.com/view.php?id=7821): use finalizeOrder for all payments again
 - use PayPal-Client v3.0.19 (same as O7)
+- Add handling for worst case: When the order is completed and the customer clicks around, the customer is redirected to the thank you page
 
 ### FIX
 - [0007822](https://bugs.oxid-esales.com/view.php?id=7822): use existing DeliveryAddresses instead creating new once
