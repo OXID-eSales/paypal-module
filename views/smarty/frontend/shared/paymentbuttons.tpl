@@ -31,6 +31,13 @@
                     // Initialize the buttons
                     let button = paypal.Buttons({
                         style: PayPalButtonStyle,
+                        [{if $oViewConf->getCountryRestrictionForPayPalExpress()}]
+                        onShippingChange: function (data, actions) {
+                            if (!countryRestriction.includes(data.shipping_address.country_code)) {
+                                return actions.reject();
+                            }
+                            return actions.resolve();
+                        },
                         fundingSource: fundingSource,
                         createOrder: function (data, actions) {
                             return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&paymentid="|cat:$buttonId|cat:"&context=continue&stoken="|cat:$sToken|cat:$sDebug}]', {
