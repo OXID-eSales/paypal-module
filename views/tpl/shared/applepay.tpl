@@ -228,6 +228,12 @@
                     console.error('Error during payment authorization', error);
                     session.completePayment(session.STATUS_FAILURE);
                     display_error_alert();
+
+                    // Remove overlay on error
+                    if (typeof PayPalPaymentControllerBase !== 'undefined') {
+                        const tempController = new PayPalPaymentControllerBase({});
+                        tempController.removeSubmitButtonOverlay();
+                    }
                 }
                 [{if $config->isSandbox()}]
                 console.log('--- End handleApplePayPaymentAuthorized ---');
@@ -250,6 +256,12 @@
                 } catch (validateError) {
                     console.error('Merchant validation error:', validateError);
                     session.abort();
+
+                    // Remove overlay on validation error
+                    if (typeof PayPalPaymentControllerBase !== 'undefined') {
+                        const tempController = new PayPalPaymentControllerBase({});
+                        tempController.removeSubmitButtonOverlay();
+                    }
                 }
                 [{if $config->isSandbox()}]
                 console.log('--- End ap_validate ---');
@@ -320,6 +332,23 @@
                 [{if $config->isSandbox()}]
                 console.log('--- Start handle_applepay_clicked ---');
                 [{/if}]
+
+                // Check terms and conditions BEFORE starting the Apple Pay flow
+                if (typeof PayPalPaymentControllerBase !== 'undefined') {
+                    const tempController = new PayPalPaymentControllerBase({});
+                    const checkTermsAndConditions = tempController.checkTermsAndConditions();
+
+                    if (false === checkTermsAndConditions) {
+                        tempController.showErrorMessage(
+                            window.PayPalI18n.READ_AND_CONFIRM_TERMS
+                        );
+                        return; // Prevents the ApplePay session from starting
+                    }
+
+                    // Add overlay if check is OK
+                    tempController.addSubmitButtonOverlay();
+                }
+
                 try {
                     let session = new ApplePaySession(3, globalPaymentRequestData);
                     [{if $config->isSandbox()}]
@@ -330,12 +359,29 @@
                         session.completePaymentMethodSelection({ newTotal: globalPaymentRequestData.total });
                     };
                     session.onpaymentauthorized = (event) => handleApplePayPaymentAuthorized(event, session);
+
+                    // Handle session cancel (user closes popup)
+                    session.oncancel = (event) => {
+                        [{if $config->isSandbox()}]
+                        console.log('Apple Pay session cancelled by user');
+                        [{/if}]
+                        if (typeof PayPalPaymentControllerBase !== 'undefined') {
+                            const tempController = new PayPalPaymentControllerBase({});
+                            tempController.removeSubmitButtonOverlay();
+                        }
+                    };
+
                     session.begin();
                     [{if $config->isSandbox()}]
                     console.log('Apple Pay session begun');
                     [{/if}]
                 } catch (error) {
                     console.error('Error starting ApplePaySession:', error);
+                    // Remove overlay on error
+                    if (typeof PayPalPaymentControllerBase !== 'undefined') {
+                        const tempController = new PayPalPaymentControllerBase({});
+                        tempController.removeSubmitButtonOverlay();
+                    }
                 }
                 [{if $config->isSandbox()}]
                 console.log('--- End handle_applepay_clicked ---');

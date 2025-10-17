@@ -74,6 +74,7 @@
                 try {
                     await paymentsClient.loadPaymentData(paymentDataRequest);
                 } catch (err) {
+                    PayPalPayment.removeSubmitButtonOverlay();
                     // user cancels code
                     if (err.code === 20 ) {
                         await PayPalPayment.cancelOrder();
@@ -161,7 +162,21 @@
             const button = paymentsClient.createButton({
                 buttonType: 'buy',
                 buttonLocale: this.language,
-                onClick: PayPalPayment.onGooglePaymentButtonClicked,
+                onClick: (event) => {
+                    // Check terms and conditions BEFORE starting the Google Pay flow
+                    const checkTermsAndConditions = PayPalPayment.checkTermsAndConditions();
+
+                    if (false === checkTermsAndConditions) {
+                        event.preventDefault(); // Prevents the GooglePay popup from opening
+                        PayPalPayment.showErrorMessage(
+                            window.PayPalI18n.READ_AND_CONFIRM_TERMS
+                        );
+                        return;
+                    }
+
+                    // If check is OK, proceed normally
+                    PayPalPayment.onGooglePaymentButtonClicked();
+                }
             });
             document.getElementById("oscpaypal_googlepay").appendChild(button);
         };
