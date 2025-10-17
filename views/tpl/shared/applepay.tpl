@@ -98,10 +98,10 @@
                 console.log('--- display_error_alert ---');
                 window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
                 document.getElementById("alert").innerHTML = `
-            <div class="ms-alert ms-action2 ms-small">
-                <span class="ms-close"></span>
-                <p>An Error Occurred! (View console for more info)</p>
-            </div>`;
+                <div class="ms-alert ms-action2 ms-small">
+                    <span class="ms-close"></span>
+                    <p>An Error Occurred! (View console for more info)</p>
+                </div>`;
             };
 
             // Function to display a success message
@@ -111,11 +111,11 @@
                 const intent_object = intent === "authorize" ? "authorizations" : "captures";
 
                 document.getElementById("alert").innerHTML = `
-            <div class='ms-alert ms-action'>
-                Thank you ${order_details?.payer?.name?.given_name || ''} ${order_details?.payer?.name?.surname || ''}
-                for your payment of ${order_details.purchase_units[0].payments[intent_object][0].amount.value}
-                ${order_details.purchase_units[0].payments[intent_object][0].amount.currency_code}!
-            </div>`;
+                <div class='ms-alert ms-action'>
+                    Thank you ${order_details?.payer?.name?.given_name || ''} ${order_details?.payer?.name?.surname || ''}
+                    for your payment of ${order_details.purchase_units[0].payments[intent_object][0].amount.value}
+                    ${order_details.purchase_units[0].payments[intent_object][0].amount.currency_code}!
+                </div>`;
 
                 paypal_buttons.close();
                 document.getElementById("card-form").classList.add("hide");
