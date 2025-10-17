@@ -70,6 +70,14 @@
                                 console.error('Error occurred while canceling PayPal payment:', error);
                             }
                         },
+                        [{if $oViewConf->getCountryRestrictionForPayPalExpress()}]
+                        onShippingChange: function (data, actions) {
+                            if (!countryRestriction.includes(data.shipping_address.country_code)) {
+                                return actions.reject();
+                            }
+                            return actions.resolve();
+                        },
+                        [{/if}]
                         onError: async function (data) {
                             try {
                                 const response = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"|cat:$sDebug}]');
