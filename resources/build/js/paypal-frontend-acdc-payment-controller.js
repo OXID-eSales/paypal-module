@@ -132,16 +132,6 @@
                 this.removeErrorMessage('cardNameError');
             }
 
-            let checkTermsAndConditions = PayPalPayment.checkTermsAndConditions();
-
-            if(false === checkTermsAndConditions) {
-                this.showErrorMessage(PayPalI18n.READ_AND_CONFIRM_TERMS,
-                    'missingTerms');
-                return false;
-            } else {
-                this.removeErrorMessage('missingTerms');
-            }
-
             return true;
         };
 
@@ -275,7 +265,7 @@
 
                         cardFields.submit().catch(err => {
                             if(null != PayPalPayment.currentError) {
-                                PayPalPayment.showErrorMessage(PayPalPayment.currentError);
+                                PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_ACDC_ERROR_INBOX);
                             }
 
                             PayPalPayment.removeSubmitButtonOverlay();
