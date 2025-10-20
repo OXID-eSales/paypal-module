@@ -15,6 +15,16 @@
 
         this.createOrder = async function (data, actions) {
             PayPalPayment.reactOnPayPalOverlayClosed = false;
+
+            let checkTermsAndConditions = PayPalPayment.checkTermsAndConditions();
+            if(false === checkTermsAndConditions) {
+                PayPalPayment.currentError = PayPalI18n.READ_AND_CONFIRM_TERMS;
+                PayPalPayment.removeSubmitButtonOverlay();
+
+                PayPalPayment.handleError(new Error());
+                return;
+            }
+
             let result = await PayPalPayment.backendRequest('shopOrderCreateUrl', {}, {
                 'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId'),
                 'vaultPayment': PayPalPayment.currentOrder.vaultPayment,
