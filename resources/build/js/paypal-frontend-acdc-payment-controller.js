@@ -16,6 +16,8 @@
         this.createOrder = async function (data, actions) {
             PayPalPayment.reactOnPayPalOverlayClosed = false;
 
+            document.dispatchEvent(new CustomEvent('beforeShopOrderCreated'));
+
             let checkTermsAndConditions = PayPalPayment.checkTermsAndConditions();
             if(false === checkTermsAndConditions) {
                 PayPalPayment.currentError = PayPalI18n.READ_AND_CONFIRM_TERMS;
@@ -273,7 +275,7 @@
 
                         cardFields.submit().catch(err => {
                             if(null != PayPalPayment.currentError) {
-                                PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_ACDC_ERROR_INBOX);
+                                PayPalPayment.showErrorMessage(PayPalPayment.currentError);
                             }
 
                             PayPalPayment.removeSubmitButtonOverlay();
