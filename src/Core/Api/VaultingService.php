@@ -186,8 +186,8 @@ class VaultingService extends BaseService
             ];
 
             if (!empty($customerId)) {
-                $attributes['vault'] += [
-                    "customer_id" => $customerId,
+                $attributes['customer'] = [
+                        "id" => $customerId
                 ];
             }
 
