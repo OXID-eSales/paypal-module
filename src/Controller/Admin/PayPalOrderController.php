@@ -209,7 +209,7 @@ class PayPalOrderController extends AdminDetailsController
             if (!$refundAll) {
                 $request->initAmount();
                 $request->amount->currency_code = $capture->amount->currency_code;
-                $request->amount->value = $refundAmount;
+                $request->amount->value = number_format($refundAmount, 2, '.', null);
             }
 
             /** @var Payments $paymentService */
