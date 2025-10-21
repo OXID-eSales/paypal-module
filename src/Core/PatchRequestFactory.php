@@ -53,7 +53,12 @@ class PatchRequestFactory
         $deliveryAddress = oxNew(Address::class);
         $order = oxNew(Order::class);
         $order->load($orderId);
-        $patches = [];
+        $patches = array_values(
+            array_filter([
+                $this->getAmountPatch(),
+                $this->getPurchaseUnitsPatch()
+            ])
+        );
 
         if ($deliveryId && $deliveryAddress->load($deliveryId)) {
             $patches[] = $this->getShippingNamePatch($deliveryAddress);
