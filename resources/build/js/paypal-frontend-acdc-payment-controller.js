@@ -265,7 +265,7 @@
 
                         cardFields.submit().catch(err => {
                             if(null != PayPalPayment.currentError) {
-                                PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_ACDC_ERROR_INBOX);
+                                PayPalPayment.showErrorMessage(PayPalPayment.currentError);
                             }
 
                             PayPalPayment.removeSubmitButtonOverlay();
