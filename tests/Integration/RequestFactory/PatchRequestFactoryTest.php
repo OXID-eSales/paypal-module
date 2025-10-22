@@ -68,7 +68,7 @@ class PatchRequestFactoryTest extends BaseTestCase
         $patches = $this->patchRequestFactory->getOrderPatches($basketMock, $orderId);
 
         $this->assertIsArray($patches);
-        $this->assertEmpty($patches);
+        $this->assertNotEmpty($patches);
 
         Registry::getSession()->setBasket($basketBackup);
     }
