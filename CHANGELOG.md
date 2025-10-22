@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - faster Checkout
 - fix: payment with ApplePay
 - fix: capture in the backend only for PayPal-Orders
+- [0007450](https://bugs.oxid-esales.com/view.php?id=7822): Mandatory field is ignored - old bugticket, but occurred again
+- do not authorize an order in express-flow, before the "pay now" button is clicked.
 
 ## [2.6.1] - 2025-08-18
 
