@@ -9,6 +9,9 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\EventSubscriber;
 
+use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Event\PayPalOrderCompletedEvent;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\NormalizedEventDispatcher;
@@ -49,6 +52,7 @@ class PayPalOrderCompletedSubscriber implements EventSubscriberInterface
         $order = $event->getOrder();
         $basket = $event->getBasket();
         $user = $event->getUser();
+        $session = Registry::getSession();
 
         // mark as paid and set transaction id
         if (method_exists($order, 'markOrderPaid')) {
@@ -78,8 +82,36 @@ class PayPalOrderCompletedSubscriber implements EventSubscriberInterface
         PayPalSession::unsetPayPalSession();
 
         $customerId = $event->getPayPalCustomerId();
+        if (empty($customerId)) {
+            $serviceFactory = Registry::get(ServiceFactory::class);
+            $orderService = $serviceFactory->getOrderService();
+            $payPalOrder = $orderService->showOrderDetails(
+                $event->getPayPalOrderId(),
+                '',
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+            );
+
+            if($payPalOrder){
+                if ($paypal = $payPalOrder->payment_source->paypal) {
+                    $vault = $paypal->attributes->vault;
+                } elseif ($card = $payPalOrder->payment_source->card) {
+                    $vault = $card->attributes->vault;
+                }
+
+                if (isset($vault->customer_id) && !empty($vault->customer_id)) {
+                    $customerId = $vault->customer_id;
+                } else {
+                    if (!empty($vault->status) && $vault->status === 'APPROVED') {
+                         $session->deleteVariable("vaultSuccess");
+                         $session->setVariable("vaultApproved", true);
+                    }
+                }
+            }
+        }
+
         if (!empty($customerId)) {
             $vaultEvent = new PayPalVaultingSucceededEvent($user, $customerId);
+            $session->deleteVariable("vaultApproved");
             $this->dispatchNormalized( $vaultEvent, PayPalVaultingSucceededEvent::NAME);
         }
     }

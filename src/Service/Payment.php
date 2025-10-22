@@ -88,16 +88,17 @@ class Payment
     private OrderProcessTrackingService $orderProcessTrackingService;
 
     public function __construct(
-        EshopSession $eshopSession,
-        OrderRepository $orderRepository,
-        SCAValidatorInterface $scaValidator,
-        ModuleSettings $moduleSettingsService,
-        LoggerInterface $logger,
+        EshopSession                $eshopSession,
+        OrderRepository             $orderRepository,
+        SCAValidatorInterface       $scaValidator,
+        ModuleSettings              $moduleSettingsService,
+        LoggerInterface             $logger,
         OrderProcessTrackingService $orderProcessTrackingService,
-        ?ServiceFactory $serviceFactory = null,
-        PatchRequestFactory $patchRequestFactory = null,
-        OrderRequestFactory $orderRequestFactory = null
-    ) {
+        ?ServiceFactory             $serviceFactory = null,
+        PatchRequestFactory         $patchRequestFactory = null,
+        OrderRequestFactory         $orderRequestFactory = null
+    )
+    {
         $this->eshopSession = $eshopSession;
         $this->orderRepository = $orderRepository;
         $this->scaValidator = $scaValidator;
@@ -112,16 +113,17 @@ class Payment
 
     public function doCreatePayPalOrder(
         EshopModelBasket $basket,
-        string $intent,
-        string $userAction = null,
-        string $processingInstruction = null,
-        string $paymentSource = null,
-        string $payPalClientMetadataId = '',
-        string $payPalPartnerAttributionId = '',
-        string $returnUrl = null,
-        string $cancelUrl = null,
-        bool $setProvidedAddress = true
-    ): ?Order {
+        string           $intent,
+        string           $userAction = null,
+        string           $processingInstruction = null,
+        string           $paymentSource = null,
+        string           $payPalClientMetadataId = '',
+        string           $payPalPartnerAttributionId = '',
+        string           $returnUrl = null,
+        string           $cancelUrl = null,
+        bool             $setProvidedAddress = true
+    ): ?Order
+    {
         $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
 
         /** @var ApiOrderService $orderService */
@@ -170,7 +172,8 @@ class Payment
 
     public function doCreatePatchedOrder(
         EshopModelBasket $basket
-    ): array {
+    ): array
+    {
         $config = Registry::getConfig();
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
@@ -235,9 +238,10 @@ class Payment
      */
     public function doPatchPayPalOrder(
         EshopModelBasket $basket,
-        string $payPalOrderId,
-        string $shopOrderId = ''
-    ): void {
+        string           $payPalOrderId,
+        string           $shopOrderId = ''
+    ): void
+    {
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
         $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
@@ -262,10 +266,11 @@ class Payment
 
     public function doCapturePayPalOrder(
         EshopModelOrder $order,
-        string $checkoutOrderId,
-        string $paymentId,
-        Order $payPalOrder = null
-    ): Order {
+        string          $checkoutOrderId,
+        string          $paymentId,
+        Order           $payPalOrder = null
+    ): Order
+    {
 
         /** @var Order $payPalOrder */
         if (is_null($payPalOrder) || !isset($payPalOrder->payment_source)) {
@@ -406,7 +411,30 @@ class Payment
                     }
 
                     $session->setVariable("vaultSuccess", $vaultSuccess);
+                } elseif ($vault->status === 'APPROVED') {
+                    $serviceFactory = Registry::get(ServiceFactory::class);
+                    $orderService = $serviceFactory->getOrderService();
+                    $payPalOrder = $orderService->showOrderDetails(
+                        $checkoutOrderId,
+                        '',
+                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+                    );
+                    if ($paypal = $payPalOrder->payment_source->paypal) {
+                        $vault = $paypal->attributes->vault;
+                    } elseif ($card = $payPalOrder->payment_source->card) {
+                        $vault = $card->attributes->vault;
+                    }
+
+                    if (isset($vault->customer_id) && !empty($vault->customer_id)) {
+                        $this->saveCustomerIdToUser($vault->customer_id);
+                    } else {
+                        if (!empty($vault->status) && $vault->status === 'APPROVED') {
+                            $session->setVariable("vaultSuccess", false);
+                            $session->setVariable("vaultApproved", true);
+                        }
+                    }
                 } else {
+                    $session->deleteVariable("vaultApproved");
                     $session->deleteVariable("vaultSuccess");
                 }
 
@@ -439,11 +467,12 @@ class Payment
      * @throws \OxidSolutionCatalysts\PayPal\Exception\PayPalException
      */
     public function doConfirmUAPM(
-        EshopModelOrder $order,
+        EshopModelOrder  $order,
         EshopModelBasket $basket,
-        string $checkoutOrderId,
-        string $paymentSourceId
-    ): string {
+        string           $checkoutOrderId,
+        string           $paymentSourceId
+    ): string
+    {
         $redirectLink = '';
 
         $requestFactory = Registry::get(ConfirmOrderRequestFactory::class);
@@ -759,10 +788,11 @@ class Payment
     }
 
     public function doExecutePuiPayment(
-        EshopModelOrder $order,
+        EshopModelOrder  $order,
         EshopModelBasket $basket,
-        string $payPalClientMetadataId = ''
-    ): bool {
+        string           $payPalClientMetadataId = ''
+    ): bool
+    {
         $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
 
         $payPalOrderId = '';
@@ -826,7 +856,8 @@ class Payment
         string $status,
         string $payPalTransactionId = '',
         string $transactionType = Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
-    ): PayPalOrderModel {
+    ): PayPalOrderModel
+    {
         /** @var PayPalOrderModel $payPalOrder */
         $payPalOrder = $this->getPayPalCheckoutOrder($shopOrderId, $payPalOrderId, $payPalTransactionId);
 
@@ -843,7 +874,8 @@ class Payment
         string $shopOrderId,
         string $payPalOrderId,
         string $payPalTransactionId = ''
-    ) {
+    )
+    {
         /** @var PayPalOrderModel $payPalOrder */
         return $this->orderRepository->paypalOrderByOrderIdAndPayPalId(
             $shopOrderId,
@@ -873,8 +905,8 @@ class Payment
         //no ACDC OR Gpay payment
         if (
             !in_array($paymentId, [
-            PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-            PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID
+                PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
+                PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID
             ], true)
         ) {
             return true;
@@ -945,7 +977,7 @@ class Payment
         $orderNumber = '';
         /** @var Order $orderNumber */
         if ($order instanceof EshopModelOrder) {
-            $orderNumber = (int) $order->getFieldData('oxordernr');
+            $orderNumber = (int)$order->getFieldData('oxordernr');
             if ($orderNumber === 0) {
                 $order->setOrderNumber();
                 $orderNumber = $order->getFieldData('oxordernr');
