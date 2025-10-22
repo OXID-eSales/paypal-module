@@ -60,6 +60,7 @@ $aLang = [
     'OSC_PAYPAL_VAULTING_VAULTED_PAYMENTS'          => 'Gespeicherte Zahlungsarten',
     'OSC_PAYPAL_VAULTING_ERROR'                     => 'Beim Speichern Ihrer Zahlart ist etwas schiefgelaufen.',
     'OSC_PAYPAL_VAULTING_SUCCESS'                   => 'Beim bezahlen haben Sie Ihre gespeicherten Zahlungsdaten genutzt. Wenn Sie das zum ersten Mal getan haben, dann sehen Sie diese Daten in ca. 15min auch in Ihrem Shop-Kundenaccount.',
+    'OSC_PAYPAL_VAULTING_APPROVED'                  => 'Ihre Bestellung ist abgeschlossen, aber beim Speichern Ihrer Zahlungsmethode ist ein Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
     'OSC_PAYPAL_VAULTING_SAVE'                      => 'Zahlart speichern',
     'OSC_PAYPAL_VAULTING_DELETE'                    => 'Zahlart löschen',
     'OSC_PAYPAL_VAULTING_REFRESH_CACHE'              => 'Zahlungsarten aktualisieren',

@@ -309,6 +309,20 @@ class ViewConfig extends ViewConfig_parent
     }
 
     /**
+     * get Session Vault approved
+     *
+     * @return bool|null
+     */
+    public function getSessionVaultApproved(): ?bool
+    {
+        $session = Registry::getSession();
+        $vaultApproved = $session->getVariable("vaultApproved");
+        $session->deleteVariable("vaultApproved");
+
+        return $vaultApproved;
+    }
+
+    /**
      * get Vault Token
      *
      * @return array|null
