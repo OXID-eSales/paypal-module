@@ -10,6 +10,7 @@ namespace OxidSolutionCatalysts\PayPal\Service;
 use Exception;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Registry;
@@ -451,9 +452,12 @@ class Payment
         return $result;
     }
 
-    public function saveCustomerIdToUser(string $customerId): void
+    public function saveCustomerIdToUser(string $customerId, ?User $user = null ): void
     {
-        $user = Registry::getConfig()->getUser();
+        if(null === $user) {
+            $user = Registry::getConfig()->getUser();
+        }
+
         if (!$user) {
             return;
         }
