@@ -59,7 +59,6 @@ $aLang = [
     'OSC_PAYPAL_VAULTING_VAULTED_PAYMENTS'          => 'Saved payments',
     'OSC_PAYPAL_VAULTING_ERROR'                     => 'There was an error saving your payment method.',
     'OSC_PAYPAL_VAULTING_SUCCESS'                   => 'You used your saved payment data when paying. If this is your first time, you\'ll see these data in your shop account in about 15 minutes.',
-    'OSC_PAYPAL_VAULTING_APPROVED'                  => 'Your order is completed, but there was an issue saving your payment method. Please try saving it again later.',
     'OSC_PAYPAL_VAULTING_SAVE'                      => 'Save payment',
     'OSC_PAYPAL_VAULTING_DELETE'                    => 'Delete payment',
     'OSC_PAYPAL_VAULTING_REFRESH_CACHE'              => 'Refresh payment methods',
