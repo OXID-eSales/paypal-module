@@ -29,7 +29,8 @@ class VaultingService extends BaseService
 {
     use ServiceContainer;
 
-    private OrderProcessTrackingService $orderProcessTrackingService;
+    /** @var OrderProcessTrackingService */
+    private $orderProcessTrackingService;
 
     public function __construct(OrderProcessTrackingService $orderProcessTrackingService, Client $client)
     {
@@ -531,5 +532,11 @@ class VaultingService extends BaseService
         $headers['Authorization'] = 'Bearer ' . $this->client->getTokenResponse();
 
         return $headers;
+    }
+
+    public function setTrackingId(string $trackingId): void
+    {
+        $this->trackingId = $trackingId;
+        $this->orderProcessTrackingService->setTrackingId($trackingId);
     }
 }
