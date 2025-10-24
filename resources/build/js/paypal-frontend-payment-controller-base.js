@@ -387,6 +387,7 @@
             const savePaymentChackbox = document.getElementById('oscPayPalVaultPaymentCheckbox');
             if (savePaymentChackbox) {
                 savePaymentChackbox.onclick = this.vaultingSettingSwitch;
+                savePaymentChackbox.removeAttribute('disabled');
             }
 
             document.addEventListener('beforeShopOrderCreated', this.onBeforeShopOrderCreated);
