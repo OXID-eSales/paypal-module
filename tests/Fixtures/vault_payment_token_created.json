@@ -1,0 +1,34 @@
+{
+  "id": "WH-4EU854421L6384829-5YF36224GW614632V",
+  "event_version": "1.0",
+  "create_time": "2024-01-15T10:30:45.000Z",
+  "resource_type": "payment_token",
+  "resource_version": "3.0",
+  "event_type": "VAULT.PAYMENT-TOKEN.CREATED",
+  "summary": "A payment token has been created.",
+  "resource": {
+    "id": "4jk67hg3d",
+    "status": "APPROVED",
+    "customer": {
+      "id": "customer_4903842084063842089"
+    },
+    "payment_source": {
+      "card": {
+        "name": "John Doe",
+        "last_digits": "1234",
+        "brand": "VISA",
+        "expiry": "2025-12"
+      }
+    },
+    "metadata": {
+      "order_id": "8CB9E1DAFC2C26B46"
+    }
+  },
+  "links": [
+    {
+      "href": "https://api.paypal.com/v1/notifications/webhooks-events/WH-4EU854421L6384829-5YF36224GW614632V",
+      "rel": "self",
+      "method": "GET"
+    }
+  ]
+}
