@@ -160,11 +160,6 @@ abstract class WebhookHandlerBase
         return $paypalOrderModel;
     }
 
-    protected function getPayPalOrderDetails(string $payPalOrderId): ?PayPalApiModelOrder
-    {
-        return null; //only needed for PAYMENT.CAPTURE.COMPLETED webhook event
-    }
-
     protected function updateStatus(
         string $status,
         PayPalModelOrder $paypalOrderModel,

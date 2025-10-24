@@ -957,6 +957,7 @@ class Payment
         }
         if ($moduleSettings->isCustomIdSchemaStructural()) {
             $customID = [
+                'id' => $this->orderProcessTrackingService->getTrackingId(),
                 'oxordernr' => $orderNumber,
                 'moduleVersion' => $module->getInfo('version'),
                 'oxidVersion' => ShopVersion::getVersion()

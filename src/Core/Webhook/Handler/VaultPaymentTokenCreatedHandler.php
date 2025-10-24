@@ -8,6 +8,10 @@
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use Psr\Log\LoggerInterface;
 
@@ -20,6 +24,11 @@ class VaultPaymentTokenCreatedHandler extends WebhookHandlerBase
      */
     public function handle(Event $event): void
     {
+        /** @var ServiceFactory $serviceFactory */
+        $serviceFactory = Registry::get(ServiceFactory::class);
+        $orderService = $serviceFactory->getOrderService();
+        /** @var VaultingService $vaultingService */
+        $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
         /** @var LoggerInterface $logger */
         $logger = $this->getLogger();
         $eventPayload = $this->getEventPayload($event);
@@ -31,6 +40,18 @@ class VaultPaymentTokenCreatedHandler extends WebhookHandlerBase
             /** @var EshopModelOrder $order */
             $order = $this->getOrderByPayPalOrderId($payPalOrderId);
             $user = $order->getOrderUser();
+
+            $payPalOrder = $orderService->showOrderDetails(
+                $payPalOrderId,
+                '',
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+            );
+            $customIdString = !empty($payPalOrder->purchase_units[0]->custom_id) ? $payPalOrder->purchase_units[0]->custom_id : null;
+            if($customIdString){
+                $customId = json_decode($customIdString);
+                $traceId = $customId->id;
+                $vaultingService->setTrackingId($traceId);
+            }
         }
 
         if (empty($user)) {
@@ -41,6 +62,10 @@ class VaultPaymentTokenCreatedHandler extends WebhookHandlerBase
         if ($customerId !== '' && is_object($user)) {
             // Save the PayPal vault customer ID to the current user
             $this->getPaymentService()->saveCustomerIdToUser($customerId, $user);
+
+            //Clear cached tokens
+            $vaultingService->clearVaultedTokenCache();
+
             $logger->log('debug', 'VAULT.PAYMENT-TOKEN.CREATED webhook received customer.id field.', [
                 'customerId' => $customerId,
                 'userId' => $user->getId()

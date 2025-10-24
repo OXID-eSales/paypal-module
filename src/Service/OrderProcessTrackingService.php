@@ -13,7 +13,8 @@ use OxidEsales\Eshop\Core\Registry;
 
 class OrderProcessTrackingService
 {
-    private string $trackingId = '';
+    /** @var string */
+    private $trackingId = '';
 
     public function getTrackingId(): string
     {
