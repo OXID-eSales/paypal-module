@@ -54,11 +54,26 @@ final class VaultPaymentTokenCreatedHandlerTest extends WebhookHandlerBaseTestCa
                 })
             );
 
+        $userMock = $this->getMockBuilder(User::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock = $this->getMockBuilder(EshopModelOrder::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock->expects($this->any())
+            ->method('getOrderUser')
+            ->willReturn($userMock);
+
         $handler = $this->getMockBuilder(VaultPaymentTokenCreatedHandler::class)
-            ->onlyMethods(['getLogger'])
+            ->onlyMethods([
+                'getLogger',
+                'getOrderByPayPalOrderId',
+                'updateTrackingId'
+            ])
             ->getMock();
 
         $handler->method('getLogger')->willReturn($loggerMock);
+        $handler->method('getOrderByPayPalOrderId')->willReturn($orderMock);
         $handler->handle($event);
     }
 
@@ -77,11 +92,23 @@ final class VaultPaymentTokenCreatedHandlerTest extends WebhookHandlerBaseTestCa
                 []
             );
 
+        $orderMock = $this->getMockBuilder(EshopModelOrder::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $orderMock->expects($this->any())
+            ->method('getOrderUser')
+            ->willReturn(null);
+
         $handler = $this->getMockBuilder(VaultPaymentTokenCreatedHandler::class)
-            ->onlyMethods(['getLogger'])
+            ->onlyMethods([
+                'getLogger',
+                'getOrderByPayPalOrderId',
+                'updateTrackingId'
+            ])
             ->getMock();
 
         $handler->method('getLogger')->willReturn($loggerMock);
+        $handler->method('getOrderByPayPalOrderId')->willReturn($orderMock);
         $handler->handle($event);
     }
 
