@@ -366,7 +366,6 @@ class ModuleConfiguration extends ModuleConfiguration_parent
         }
 
         $this->autoConfiguration();
-        $this->registerWebhooks();
 
         $result = [];
         header('Content-Type: application/json; charset=UTF-8');
@@ -389,21 +388,5 @@ class ModuleConfiguration extends ModuleConfiguration_parent
             $logger->log('error', $exception->getMessage(), [$exception]);
         }
         return $credentials;
-    }
-
-    /**
-     * webhook registration
-     */
-    public function registerWebhooks(): void
-    {
-        try {
-            (oxNew(Webhook::class))->ensureWebhook();
-        } catch (OnboardingException $exception) {
-            Registry::getUtilsView()->addErrorToDisplay($exception->getMessage());
-        } catch (Exception $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log('error', $exception->getMessage(), [$exception]);
-        }
     }
 }

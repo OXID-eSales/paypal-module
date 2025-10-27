@@ -151,20 +151,21 @@ final class VaultPaymentTokenCreatedHandlerTest extends WebhookHandlerBaseTestCa
 
     private function createOrderServiceMock()
     {
-        $orderServiceMock = $this->getMockBuilder(\stdClass::class)
-            ->addMethods(['showOrderDetails'])
+        $orderServiceMock = $this->getMockBuilder(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['showOrderDetails'])
             ->getMock();
 
-        $orderDetailsMock = new \stdClass();
-        $orderDetailsMock->purchase_units = [
-            (object)[
-                'custom_id' => json_encode(['id' => 'test_trace_id'])
+        $orderDetails = new \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order([
+            'purchase_units' => [
+                [
+                    'custom_id' => json_encode(['id' => 'test_trace_id'])
+                ]
             ]
-        ];
+        ]);
 
-        $orderServiceMock->expects($this->any())
-            ->method('showOrderDetails')
-            ->willReturn($orderDetailsMock);
+        $orderServiceMock->method('showOrderDetails')
+            ->willReturn($orderDetails);
 
         return $orderServiceMock;
     }
