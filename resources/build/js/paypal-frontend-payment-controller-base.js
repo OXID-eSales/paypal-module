@@ -1,6 +1,9 @@
 (function () {
     let PayPalPaymentControllerBase = function (config) {
-        this.config = Object.assign(PayPalPaymentControllerConfig, typeof config === 'object' ? config : {});
+        //this.config = Object.assign(PayPalPaymentControllerConfig, typeof config === 'object' ? config : {});
+        this.config = Object.assign(
+            'undefined' === typeof PayPalPaymentControllerConfig ? {} : PayPalPaymentControllerConfig,
+            typeof config === 'object' ? config : {});
 
         this.currentOrderDefaults = {
             shop: null,
