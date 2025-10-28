@@ -23,6 +23,7 @@
             [{if $phpstorm}]<script>[{/if}]
 
             const PayPalPaymentControllerConfiguratorDefaults = {
+                confirmAGBForIntangibleRequired: [{if $oViewConf->isFunctionalityEnabled('blEnableIntangibleProdAgreement') && $oView->isNonMaterialItemInBasket()}]1[{else}]0[{/if}] === 1,
                 confirmAGBRequired: [{if $oViewConf->isFunctionalityEnabled('blConfirmAGB')}]1[{else}]0[{/if}] === 1,
             }
 
