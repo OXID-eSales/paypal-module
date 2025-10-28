@@ -211,6 +211,9 @@ class Onboarding
         return $this->getOnboardingClient($onboardingResponse['isSandBox'], true)->getMerchantInformations();
     }
 
+    /**
+     * @throws OnboardingException
+     */
     public function saveEligibility(array $merchantInformations): array
     {
         if (!isset($merchantInformations['products'])) {
