@@ -375,7 +375,6 @@ class OrderController extends OrderController_parent
         $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
 
         if ($orderId === '' || $sessionOrderId === '') {
-            $logger->log('error', 'orderID ' . $orderId . 'or sessionOrderId' . $sessionOrderId);
             $logger->log('error', 'captureApplePayOrder missing orderID or sessionOrderId');
             throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
         }

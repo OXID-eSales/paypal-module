@@ -422,6 +422,7 @@ class VaultingService extends BaseService
         }
         $currentTrackingId = (string)Registry::getSession()->getVariable('payPalPaymentProcessId');
         $this->orderProcessTrackingService->setTrackingId($currentTrackingId);
+        $this->setTrackingId($currentTrackingId);
         $headers = [];
         $headers['Content-Type'] = 'application/x-www-form-urlencoded';
         $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;
@@ -532,11 +533,5 @@ class VaultingService extends BaseService
         $headers['Authorization'] = 'Bearer ' . $this->client->getTokenResponse();
 
         return $headers;
-    }
-
-    public function setTrackingId(string $trackingId): void
-    {
-        $this->trackingId = $trackingId;
-        $this->orderProcessTrackingService->setTrackingId($trackingId);
     }
 }

@@ -25,9 +25,6 @@ class PayPalOrderCompletedSubscriber implements EventSubscriberInterface
      * @var \OxidSolutionCatalysts\PayPal\Service\Payment
      */
     private $paymentService;
-    /**
-     * @var NormalizedEventDispatcher
-     */
 
     public function __construct(PaymentService $paymentService)
     {
