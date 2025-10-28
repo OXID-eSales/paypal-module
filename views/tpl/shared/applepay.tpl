@@ -182,6 +182,14 @@
                 [{if $config->isSandbox()}]
                 console.log('Creating order with URL:', createOrderUrl);
                 [{/if}]
+
+                const checkAgbTop = document.getElementById('checkAgbTop');
+                const oxdownloadableproductsagreement = document.getElementById('oxdownloadableproductsagreement');
+                const oxserviceproductsagreement = document.getElementById('oxserviceproductsagreement');
+                const checkAgbTopChecksed = !!(checkAgbTop && checkAgbTop.checked);
+                const oxdownloadableproductsagreementChecksed = !!(oxdownloadableproductsagreement && oxdownloadableproductsagreement.checked);
+                const oxserviceproductsagreementChecked = !!(oxserviceproductsagreement && oxserviceproductsagreement.checked);
+
                 try {
                     const response = await fetch(createOrderUrl, {
                         method: "post",
@@ -189,8 +197,9 @@
                         body: JSON.stringify({
                             "intent": intent_object,
                             "data":applepay_payment_event,
-                            "confirmAGBForIntangibleRequired" : ApplePayPayPalPaymentControllerConfiguratorDefaults.confirmAGBForIntangibleRequired,
-                            "confirmAGBRequired" : ApplePayPayPalPaymentControllerConfiguratorDefaults.confirmAGBRequired,
+                            "checkAgbTop" : checkAgbTopChecksed,
+                            "oxdownloadableproductsagreement" : oxdownloadableproductsagreementChecksed,
+                            "oxserviceproductsagreement" : oxserviceproductsagreementChecked
                         })
                     });
                     const pp_data = await response.json();
