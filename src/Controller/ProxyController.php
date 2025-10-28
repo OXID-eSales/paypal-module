@@ -130,7 +130,9 @@ class ProxyController extends FrontendController
             PayPalSession::storePayPalOrderId($response->id);
         }
 
-        !empty($response) ? $this->outputJson($response) : $this->outputJson(['ERROR' => 'Error on create PayPal Order call.']);
+        $response !== null ?
+            $this->outputJson($response) :
+            $this->outputJson(['ERROR' => 'Error on create PayPal Order call.']);
     }
 
     /**

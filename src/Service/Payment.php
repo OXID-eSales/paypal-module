@@ -424,9 +424,9 @@ class Payment
         return $result;
     }
 
-    public function saveCustomerIdToUser(string $customerId, ?User $user = null ): void
+    public function saveCustomerIdToUser(string $customerId, ?User $user = null): void
     {
-        if(null === $user) {
+        if (null === $user) {
             $user = Registry::getConfig()->getUser();
         }
 

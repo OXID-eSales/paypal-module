@@ -17,7 +17,6 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 
 class PayPalOrderCreatedSubscriber implements EventSubscriberInterface
 {
-
     /**
      * @var \OxidSolutionCatalysts\PayPal\Service\Payment
      */
@@ -25,8 +24,7 @@ class PayPalOrderCreatedSubscriber implements EventSubscriberInterface
 
     public function __construct(
         PaymentService $paymentService
-    )
-    {
+    ) {
         $this->paymentService = $paymentService;
     }
 
