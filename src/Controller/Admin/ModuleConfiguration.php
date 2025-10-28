@@ -188,7 +188,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
     {
         foreach ($conf as $confName => $value) {
             try {
-            $this->getServiceFromContainer(ModuleSettings::class)->save($confName, $value);
+                $this->getServiceFromContainer(ModuleSettings::class)->save($confName, $value);
             } catch (ModuleSettingNotFountException $exception) {
                 /** @var LoggerInterface $logger */
                 $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
