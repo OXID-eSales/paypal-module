@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core\Events;
 
-use Exception;
 use OxidEsales\DoctrineMigrationWrapper\MigrationsBuilder;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
@@ -17,7 +16,6 @@ use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\Mod
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 use OxidSolutionCatalysts\PayPal\Core\Onboarding\Webhook;
-use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -99,17 +97,7 @@ class Events
      */
     private static function registerWebhooks(): void
     {
-        try {
-            (oxNew(Webhook::class))->ensureWebhook();
-        } catch (OnboardingException $exception) {
-            Registry::getUtilsView()->addErrorToDisplay($exception->getMessage());
-        } catch (Exception $exception) {
-            /** @var ContainerInterface $container */
-            $container = ContainerFactory::getInstance()->getContainer();
-            /** @var LoggerInterface $logger */
-            $logger = $container->get('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log('error', $exception->getMessage(), [$exception]);
-        }
+        (oxNew(Webhook::class))->registerWebhooksWithErrorHandling();
     }
 
     /**
