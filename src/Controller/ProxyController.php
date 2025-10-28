@@ -550,9 +550,9 @@ class ProxyController extends FrontendController
     {
         $data = json_decode(file_get_contents('php://input'), true);
         $shippingData = $data['data'];
-        $_POST['ord_agb'] = $data['checkAgbTop']; //maybe some filtering or normalization needed for value
-        $_POST['oxdownloadableproductsagreement'] = $data['oxdownloadableproductsagreement'];
-        $_POST['oxserviceproductsagreement'] = $data['oxdownloadableproductsagreement'];
+        $_POST['ord_agb'] = (int)filter_var($data['checkAgbTop'], FILTER_VALIDATE_BOOLEAN);
+        $_POST['oxdownloadableproductsagreement'] = (int)filter_var($data['oxdownloadableproductsagreement'], FILTER_VALIDATE_BOOLEAN);
+        $_POST['oxserviceproductsagreement'] = (int)filter_var($data['oxdownloadableproductsagreement'], FILTER_VALIDATE_BOOLEAN);
 
         $shippingAddress = new AddressPortable();
         $shippingAddress->address_line_1 = $shippingData['shippingContact']['addressLines'][0] ?? '';

@@ -329,10 +329,11 @@ class OrderController extends OrderController_parent
                 'sess_challenge',
                 $this->getUtilsObjectInstance()->generateUID()
             );
+            $data = json_decode(file_get_contents('php://input'), true);
             $_POST['sDeliveryAddressMD5'] = $this->getDeliveryAddressMD5();
-//            $_POST['ord_agb'] = 1;
-//            $_POST['oxdownloadableproductsagreement'] = 1;
-//            $_POST['oxserviceproductsagreement'] = 1;
+            $_POST['ord_agb'] = (int)filter_var($data['checkAgbTop'], FILTER_VALIDATE_BOOLEAN);
+            $_POST['oxdownloadableproductsagreement'] = (int)filter_var($data['oxdownloadableproductsagreement'], FILTER_VALIDATE_BOOLEAN);
+            $_POST['oxserviceproductsagreement'] = (int)filter_var($data['oxdownloadableproductsagreement'], FILTER_VALIDATE_BOOLEAN);
             $session->setVariable('isPayPalPaymentCheckout', true);
             $status = $this->execute();
             $session->deleteVariable('isPayPalPaymentCheckout');
