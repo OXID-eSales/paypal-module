@@ -292,12 +292,23 @@
                 [{if $config->isSandbox()}]
                 console.log('--- Start onApprove ---');
                 [{/if}]
+                const checkAgbTop = document.getElementById('checkAgbTop');
+                const oxdownloadableproductsagreement = document.getElementById('oxdownloadableproductsagreement');
+                const oxserviceproductsagreement = document.getElementById('oxserviceproductsagreement');
+                const checkAgbTopChecksed = !!(checkAgbTop && checkAgbTop.checked);
+                const oxdownloadableproductsagreementChecksed = !!(oxdownloadableproductsagreement && oxdownloadableproductsagreement.checked);
+                const oxserviceproductsagreementChecked = !!(oxserviceproductsagreement && oxserviceproductsagreement.checked);
+
                 const url = `[{$sSelfLink|cat:'cl=order&fnc=createApplePayOrder&context=continue&aid='|cat:$aid|cat:'&stoken='|cat:$sToken|cat:'&sDeliveryAddressMD5='|cat:$oView->getDeliveryAddressMD5()}]`;
                 [{if $config->isSandbox()}]
                 console.log('Approving order with URL:', url);
                 [{/if}]
                 const formData = new FormData();
                 formData.append('orderID', confirmOrderResponse.id);
+                formData.append("checkAgbTop" : checkAgbTopChecksed);
+                formData.append("oxdownloadableproductsagreement" : oxdownloadableproductsagreementChecksed);
+                formData.append("oxserviceproductsagreement" : oxserviceproductsagreementChecked);
+
 
                 try {
                     const res = await fetch(url, {
@@ -388,6 +399,8 @@
                         if (typeof PayPalPaymentControllerBase !== 'undefined') {
                             const tempController = new PayPalPaymentControllerBase({});
                             tempController.removeSubmitButtonOverlay();
+                        }
+                    };
 
                     session.begin();
                     [{if $config->isSandbox()}]
