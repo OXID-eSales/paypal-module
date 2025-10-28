@@ -223,63 +223,6 @@ class OrderController extends OrderController_parent
     }
 
     /**
-     * @psalm-suppress InternalMethod
-     */
-    public function createAcdcOrder(): void
-    {
-        $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
-        $sessionAcdcOrderId = (string) PayPalSession::getCheckoutOrderId();
-        $acdcStatus = Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
-
-        if (
-            $sessionOrderId
-            && $sessionAcdcOrderId
-            && $acdcStatus === Constants::PAYPAL_STATUS_COMPLETED
-        ) {
-            //we already have a completed acdc order
-            $this->outputJson(['acdcerror' => 'shop order already completed']);
-            return;
-        }
-
-        try {
-            $paymentService = $this->getServiceFromContainer(PaymentService::class);
-            $paymentService->removeTemporaryOrder();
-            Registry::getSession()->setVariable(
-                'sess_challenge',
-                $this->getUtilsObjectInstance()->generateUID()
-            );
-            $status = $this->execute();
-        } catch (Exception $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log('error', $exception->getMessage(), [$exception]);
-            $this->outputJson(['acdcerror' => 'failed to execute shop order']);
-            return;
-        }
-
-        $response = $paymentService->doCreatePatchedOrder(
-            Registry::getSession()->getBasket()
-        );
-        if (!($paypalOrderId = $response['id'])) {
-            $this->outputJson(['acdcerror' => 'cannot create paypal order']);
-            return;
-        }
-
-        if (!$status || (PayPalOrderModel::ORDER_STATE_ACDCINPROGRESS !== (int)$status)) {
-            $response = ['acdcerror' => 'unexpected order status ' . $status];
-            $paymentService->removeTemporaryOrder();
-        } else {
-            PayPalSession::storePayPalOrderId($paypalOrderId);
-            $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
-            $payPalOrder = $paymentService->getPayPalCheckoutOrder($sessionOrderId, $paypalOrderId);
-            $payPalOrder->setStatus($response['status']);
-            $payPalOrder->save();
-        }
-
-        $this->outputJson($response);
-    }
-
-    /**
      * @throws Exception
      */
     public function executeGooglePayOrder(): void
@@ -370,81 +313,6 @@ class OrderController extends OrderController_parent
         ]);
     }
 
-    public function captureAcdcOrder(): void
-    {
-        $acdcRequestId = (string) Registry::getRequest()->getRequestParameter('acdcorderid');
-        $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
-        $sessionAcdcOrderId = (string) PayPalSession::getCheckoutOrderId();
-        $acdcStatus = Registry::getSession()->getVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
-
-        /** @var LoggerInterface $logger */
-        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-
-        if (
-            'COMPLETED' === $acdcStatus
-            && $sessionOrderId
-            && $sessionAcdcOrderId
-        ) {
-            $logger->log(
-                'debug',
-                'captureAcdcOrder already COMPLETED for PayPal Order id ' . $sessionAcdcOrderId
-            );
-
-            $result = [
-                'location' => [
-                    'cl=order&fnc=finalizeacdc'
-                ]
-            ];
-            $this->outputJson($result);
-            return;
-        }
-
-        $result = [
-            'details' => [
-                'transaction failed'
-            ],
-            'location' => [
-                'cl=payment&payerror=2'
-            ]
-        ];
-
-        if (!$sessionOrderId || !$sessionAcdcOrderId || ($acdcRequestId !== $sessionAcdcOrderId)) {
-            $this->getServiceFromContainer(PaymentService::class)->removeTemporaryOrder();
-            $this->outputJson($result);
-            return;
-        }
-
-        try {
-            $order = oxNew(EshopModelOrder::class);
-            $order->setId($sessionOrderId);
-            $order->load($sessionOrderId);
-
-            // At this point we only trigger the capture. We find out that order was really captured via the
-            // CHECKOUT.ORDER.COMPLETED webhook, where we mark the order as paid
-            $response = $this->getServiceFromContainer(PaymentService::class)->doCapturePayPalOrder(
-                $order,
-                $sessionAcdcOrderId,
-                PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID
-            );
-            $result = [
-                'location' => [
-                    'cl=order&fnc=finalizeacdc'
-                ]
-            ];
-            //track status in session
-            Registry::getSession()->setVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS, $response->status);
-        } catch (Exception $exception) {
-            $logger->log(
-                'debug',
-                $exception->getMessage(),
-                [$exception]
-            );
-            $this->getServiceFromContainer(PaymentService::class)->removeTemporaryOrder();
-        }
-
-        $this->outputJson($result);
-    }
-
     public function isPayPalCheckoutPayment(): bool
     {
         $payment = $this->getPayment();
@@ -499,6 +367,7 @@ class OrderController extends OrderController_parent
         $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
 
         if ($orderId === '' || $sessionOrderId === '') {
+            $logger->log('error', 'orderID ' . $orderId . 'or sessionOrderId' . $sessionOrderId);
             $logger->log('error', 'captureApplePayOrder missing orderID or sessionOrderId');
             throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
         }
