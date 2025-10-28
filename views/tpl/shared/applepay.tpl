@@ -22,11 +22,6 @@
         [{capture name="detailsApplePayScript"}]
             [{if $phpstorm}]<script>[{/if}]
 
-            const PayPalPaymentControllerConfiguratorDefaults = {
-                confirmAGBForIntangibleRequired: [{if $oViewConf->isFunctionalityEnabled('blEnableIntangibleProdAgreement') && $oView->isNonMaterialItemInBasket()}]1[{else}]0[{/if}] === 1,
-                confirmAGBRequired: [{if $oViewConf->isFunctionalityEnabled('blConfirmAGB')}]1[{else}]0[{/if}] === 1,
-            }
-
             let order_id;
             let global_apple_pay_config;
             let current_ap_session;
@@ -395,7 +390,7 @@
             };
 
             window.addEventListener('load', function () {
-                window.PayPalPayment = new ApplePayPaymentController(PayPalPaymentControllerConfiguratorDefaults);
+                window.PayPalPayment = new ApplePayPaymentController(window.PayPalPaymentControllerConfiguratorDefaults);
                 window.PayPalPayment.renderButton(typeof PayPalButtonStyle === 'object' ? PayPalButtonStyle : {});
             });
 
