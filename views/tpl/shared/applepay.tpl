@@ -22,6 +22,11 @@
         [{capture name="detailsApplePayScript"}]
             [{if $phpstorm}]<script>[{/if}]
 
+            const ApplePayPayPalPaymentControllerConfiguratorDefaults = {
+                confirmAGBForIntangibleRequired: [{if $oViewConf->isFunctionalityEnabled('blEnableIntangibleProdAgreement') && $oView->isNonMaterialItemInBasket()}]1[{else}]0[{/if}] === 1,
+                confirmAGBRequired: [{if $oViewConf->isFunctionalityEnabled('blConfirmAGB')}]1[{else}]0[{/if}] === 1,
+            }
+
             let order_id;
             let global_apple_pay_config;
             let current_ap_session;
@@ -172,6 +177,10 @@
                 applepay_payment_event = event.payment;
                 let intent = 'captures';
                 let intent_object = intent === "authorize" ? "authorizations" : "captures";
+
+
+                let checkTermsAndConditions = checkTermsAndConditions();
+
 
                 const createOrderUrl = "[{$sSelfLink|cat:'cl=oscpaypalproxy&fnc=createApplepayOrder&paymentid='|cat:$paymentId|cat:'&context=continue&aid='|cat:$aid|cat:'&stoken='|cat:$sToken}]";
                 [{if $config->isSandbox()}]
@@ -336,11 +345,11 @@
 
                 // Check terms and conditions BEFORE starting the Apple Pay flow
                 if (typeof PayPalPaymentControllerBase !== 'undefined') {
-                    const tempController = new PayPalPaymentControllerBase({});
-                    const checkTermsAndConditions = tempController.checkTermsAndConditions();
+                    window.PayPalPayment = new PayPalPaymentControllerBase(ApplePayPayPalPaymentControllerConfiguratorDefaults);
+                    const checkTermsAndConditions = PayPalPayment.checkTermsAndConditions();
 
                     if (false === checkTermsAndConditions) {
-                        tempController.showErrorMessage(
+                        PayPalPayment.showErrorMessage(
                             window.PayPalI18n.READ_AND_CONFIRM_TERMS
                         );
                         return; // Prevents the ApplePay session from starting
