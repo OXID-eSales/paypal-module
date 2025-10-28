@@ -39,7 +39,7 @@ class VaultPaymentTokenCreatedHandler extends WebhookHandlerBase
             return;
         }
 
-        if(empty($customerId)){
+        if (empty($customerId)) {
             $this->logMissingCustomerId($eventPayload);
             return;
         }
