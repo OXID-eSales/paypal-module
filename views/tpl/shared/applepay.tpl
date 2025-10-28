@@ -178,10 +178,6 @@
                 let intent = 'captures';
                 let intent_object = intent === "authorize" ? "authorizations" : "captures";
 
-
-                let checkTermsAndConditions = checkTermsAndConditions();
-
-
                 const createOrderUrl = "[{$sSelfLink|cat:'cl=oscpaypalproxy&fnc=createApplepayOrder&paymentid='|cat:$paymentId|cat:'&context=continue&aid='|cat:$aid|cat:'&stoken='|cat:$sToken}]";
                 [{if $config->isSandbox()}]
                 console.log('Creating order with URL:', createOrderUrl);
@@ -190,7 +186,12 @@
                     const response = await fetch(createOrderUrl, {
                         method: "post",
                         headers: { "Content-Type": "application/json; charset=utf-8" },
-                        body: JSON.stringify({ "intent": intent_object,"data":applepay_payment_event })
+                        body: JSON.stringify({
+                            "intent": intent_object,
+                            "data":applepay_payment_event,
+                            "confirmAGBForIntangibleRequired" : ApplePayPayPalPaymentControllerConfiguratorDefaults.confirmAGBForIntangibleRequired,
+                            "confirmAGBRequired" : ApplePayPayPalPaymentControllerConfiguratorDefaults.confirmAGBRequired,
+                        })
                     });
                     const pp_data = await response.json();
                     [{if $config->isSandbox()}]
@@ -356,7 +357,7 @@
                     }
 
                     // Add overlay if check is OK
-                    tempController.addSubmitButtonOverlay();
+                    PayPalPayment.addSubmitButtonOverlay();
                 }
 
                 try {
@@ -378,8 +379,6 @@
                         if (typeof PayPalPaymentControllerBase !== 'undefined') {
                             const tempController = new PayPalPaymentControllerBase({});
                             tempController.removeSubmitButtonOverlay();
-                        }
-                    };
 
                     session.begin();
                     [{if $config->isSandbox()}]
