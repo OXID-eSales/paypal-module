@@ -324,12 +324,19 @@ class OrderController extends OrderController_parent
         try {
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
             $paymentService->removeTemporaryOrder();
-            Registry::getSession()->setVariable(
+            $session = Registry::getSession();
+            $session->setVariable(
                 'sess_challenge',
                 $this->getUtilsObjectInstance()->generateUID()
             );
             $_POST['sDeliveryAddressMD5'] = $this->getDeliveryAddressMD5();
+//            $_POST['ord_agb'] = 1;
+//            $_POST['oxdownloadableproductsagreement'] = 1;
+//            $_POST['oxserviceproductsagreement'] = 1;
+            $session->setVariable('isPayPalPaymentCheckout', true);
             $status = $this->execute();
+            $session->deleteVariable('isPayPalPaymentCheckout');
+
         } catch (Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
