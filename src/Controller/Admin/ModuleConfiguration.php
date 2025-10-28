@@ -173,6 +173,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
             $confArr = $this->handleSpecialFields($confArr);
             $this->saveConfig($confArr);
             $this->checkEligibility($confArr);
+            $this->registerWebhooks();
         }
 
         parent::save();
@@ -186,7 +187,13 @@ class ModuleConfiguration extends ModuleConfiguration_parent
     protected function saveConfig(array $conf): void
     {
         foreach ($conf as $confName => $value) {
+            try {
             $this->getServiceFromContainer(ModuleSettings::class)->save($confName, $value);
+            } catch (ModuleSettingNotFountException $exception) {
+                /** @var LoggerInterface $logger */
+                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+                $logger->log('error', 'Error on saveConfig', [$exception]);
+            }
         }
     }
 
@@ -194,7 +201,6 @@ class ModuleConfiguration extends ModuleConfiguration_parent
      * check Eligibility if config would be changed
      *
      * @param $confArr array
-     * @throws OnboardingException|\OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Exception\ModuleSettingNotFountException
      */
     protected function checkEligibility(array $confArr): void
     {
@@ -223,7 +229,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
                     $moduleSettings->save('oscPayPalSetVaulting', false);
                 }
             }
-        } catch (ClientException | ApiException $exception) {
+        } catch (OnboardingException | ClientException | ModuleSettingNotFountException | ApiException $exception) {
 
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
@@ -416,14 +422,6 @@ class ModuleConfiguration extends ModuleConfiguration_parent
      */
     public function registerWebhooks(): void
     {
-        try {
-            (oxNew(Webhook::class))->ensureWebhook();
-        } catch (OnboardingException $exception) {
-            Registry::getUtilsView()->addErrorToDisplay($exception->getMessage());
-        } catch (Exception $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log('error', $exception->getMessage(), [$exception]);
-        }
+        (oxNew(Webhook::class))->registerWebhooksWithErrorHandling();
     }
 }

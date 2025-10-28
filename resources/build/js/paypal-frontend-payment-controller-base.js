@@ -1,6 +1,9 @@
 (function () {
     let PayPalPaymentControllerBase = function (config) {
-        this.config = Object.assign(PayPalPaymentControllerConfig, typeof config === 'object' ? config : {});
+        //this.config = Object.assign(PayPalPaymentControllerConfig, typeof config === 'object' ? config : {});
+        this.config = Object.assign(
+            'undefined' === typeof PayPalPaymentControllerConfig ? {} : PayPalPaymentControllerConfig,
+            typeof config === 'object' ? config : {});
 
         this.currentOrderDefaults = {
             shop: null,
@@ -9,6 +12,7 @@
         };
         this.currentOrder = this.currentOrderDefaults;
         this.currentError = null;
+        this.stoppedOnError = false;
         this.reactOnPayPalOverlayClosed = false;
 
         this.getPaymentData = function () {
@@ -74,6 +78,10 @@
         };
 
         // Common event handlers
+        this.onBeforeShopOrderCreated = function (data) {
+            PayPalPayment.stoppedOnError = false;
+        };
+
         this.onShopOrderCreated = function (data) {
             PayPalPayment.setShopOrderData(data.detail, 'shop');
         };
@@ -171,10 +179,6 @@
         };
 
         this.cancelOrder = async function () {
-            // Don't remove the overlay, as we'll reload the page at the end.
-            // During this time, no one should be able to click anything.
-            // PayPalPayment.removeSubmitButtonOverlay();
-
             let shopOrderId = PayPalPayment.getCurrentOrderOxid();
             if (null == shopOrderId) {
                 return;
@@ -185,10 +189,14 @@
             });
 
             PayPalPayment.resetCurrentOrder();
-            window.location.reload();
+            PayPalPayment.removeSubmitButtonOverlay();
         };
 
         this.handleError = async function (data) {
+            if(PayPalPayment.stoppedOnError){
+                return;
+            }
+
             if ('undefined' !== data && data instanceof Error){
                 PayPalPayment.showErrorMessage(
                     PayPalPayment.currentError ?
@@ -196,6 +204,7 @@
                 );
             }
 
+            PayPalPayment.stoppedOnError = true;
             let shopOrderId = PayPalPayment.getCurrentOrderOxid();
             if (null == shopOrderId) {
                 return;
@@ -381,8 +390,10 @@
             const savePaymentChackbox = document.getElementById('oscPayPalVaultPaymentCheckbox');
             if (savePaymentChackbox) {
                 savePaymentChackbox.onclick = this.vaultingSettingSwitch;
+                savePaymentChackbox.removeAttribute('disabled');
             }
 
+            document.addEventListener('beforeShopOrderCreated', this.onBeforeShopOrderCreated);
             document.addEventListener('shopOrderCreated', this.onShopOrderCreated);
             document.addEventListener('payPalOrderCreated', this.onPayPalOrderCreated);
 

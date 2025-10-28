@@ -49,6 +49,7 @@
             PayPalPayment.removeErrorMessage();
             PayPalPayment.addSubmitButtonOverlay();
             PayPalPayment.paypalOverlayWatcher();
+            document.dispatchEvent(new CustomEvent('beforeShopOrderCreated'));
             let checkTermsAndConditions = PayPalPayment.checkTermsAndConditions();
 
             if(false === checkTermsAndConditions) {

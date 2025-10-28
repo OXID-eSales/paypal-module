@@ -15,6 +15,18 @@
 
         this.createOrder = async function (data, actions) {
             PayPalPayment.reactOnPayPalOverlayClosed = false;
+
+            document.dispatchEvent(new CustomEvent('beforeShopOrderCreated'));
+
+            let checkTermsAndConditions = PayPalPayment.checkTermsAndConditions();
+            if(false === checkTermsAndConditions) {
+                PayPalPayment.currentError = PayPalI18n.READ_AND_CONFIRM_TERMS;
+                PayPalPayment.removeSubmitButtonOverlay();
+
+                PayPalPayment.handleError(new Error());
+                return;
+            }
+
             let result = await PayPalPayment.backendRequest('shopOrderCreateUrl', {}, {
                 'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId'),
                 'vaultPayment': PayPalPayment.currentOrder.vaultPayment,
@@ -118,16 +130,6 @@
                 return false;
             } else {
                 this.removeErrorMessage('cardNameError');
-            }
-
-            let checkTermsAndConditions = PayPalPayment.checkTermsAndConditions();
-
-            if(false === checkTermsAndConditions) {
-                this.showErrorMessage(PayPalI18n.READ_AND_CONFIRM_TERMS,
-                    'missingTerms');
-                return false;
-            } else {
-                this.removeErrorMessage('missingTerms');
             }
 
             return true;
@@ -263,7 +265,7 @@
 
                         cardFields.submit().catch(err => {
                             if(null != PayPalPayment.currentError) {
-                                PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_ACDC_ERROR_INBOX);
+                                PayPalPayment.showErrorMessage(PayPalPayment.currentError);
                             }
 
                             PayPalPayment.removeSubmitButtonOverlay();

@@ -10,6 +10,7 @@ namespace OxidSolutionCatalysts\PayPal\Service;
 use Exception;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Registry;
@@ -396,13 +397,7 @@ class Payment
                     $vaultSuccess = false;
 
                     if ($id = $vault->customer["id"]) {
-                        $user = Registry::getConfig()->getUser();
-
-                        $user->oxuser__oscpaypalcustomerid = new Field($id);
-
-                        if ($user->save()) {
-                            $vaultSuccess = true;
-                        }
+                        $this->saveCustomerIdToUser($id);
                     }
 
                     if (!$vaultSuccess) {
@@ -427,6 +422,20 @@ class Payment
         }
 
         return $result;
+    }
+
+    public function saveCustomerIdToUser(string $customerId, ?User $user = null): void
+    {
+        if (null === $user) {
+            $user = Registry::getConfig()->getUser();
+        }
+
+        if (!$user) {
+            return;
+        }
+
+        $user->oxuser__oscpaypalcustomerid = new Field($customerId);
+        $user->save();
     }
 
     /**
@@ -948,6 +957,7 @@ class Payment
         }
         if ($moduleSettings->isCustomIdSchemaStructural()) {
             $customID = [
+                'id' => $this->orderProcessTrackingService->getTrackingId(),
                 'oxordernr' => $orderNumber,
                 'moduleVersion' => $module->getInfo('version'),
                 'oxidVersion' => ShopVersion::getVersion()

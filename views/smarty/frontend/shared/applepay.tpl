@@ -21,6 +21,10 @@
         </style>
         [{capture name="detailsApplePayScript"}]
             [{if $phpstorm}]<script>[{/if}]
+            const ApplePayPayPalPaymentControllerConfiguratorDefaults = {
+                confirmAGBForIntangibleRequired: [{if $oViewConf->isFunctionalityEnabled('blEnableIntangibleProdAgreement') && $oView->isNonMaterialItemInBasket()}]1[{else}]0[{/if}] === 1,
+                confirmAGBRequired: [{if $oViewConf->isFunctionalityEnabled('blConfirmAGB')}]1[{else}]0[{/if}] === 1,
+            }
             let order_id;
             let global_apple_pay_config;
             let current_ap_session;
@@ -176,11 +180,23 @@
                 [{if $config->isSandbox()}]
                 console.log('Creating order with URL:', createOrderUrl);
                 [{/if}]
+                const checkAgbTop = document.getElementById('checkAgbTop');
+                const oxdownloadableproductsagreement = document.getElementById('oxdownloadableproductsagreement');
+                const oxserviceproductsagreement = document.getElementById('oxserviceproductsagreement');
+                const checkAgbTopChecksed = !!(checkAgbTop && checkAgbTop.checked);
+                const oxdownloadableproductsagreementChecksed = !!(oxdownloadableproductsagreement && oxdownloadableproductsagreement.checked);
+                const oxserviceproductsagreementChecked = !!(oxserviceproductsagreement && oxserviceproductsagreement.checked);
                 try {
                     const response = await fetch(createOrderUrl, {
                         method: "post",
                         headers: { "Content-Type": "application/json; charset=utf-8" },
-                        body: JSON.stringify({ "intent": intent_object,"data":applepay_payment_event })
+                        body: JSON.stringify({
+                            "intent": intent_object,
+                            "data":applepay_payment_event,
+                            "checkAgbTop" : checkAgbTopChecksed,
+                            "oxdownloadableproductsagreement" : oxdownloadableproductsagreementChecksed,
+                            "oxserviceproductsagreement" : oxserviceproductsagreementChecked
+                        })
                     });
                     const pp_data = await response.json();
                     [{if $config->isSandbox()}]
@@ -272,12 +288,21 @@
                 [{if $config->isSandbox()}]
                 console.log('--- Start onApprove ---');
                 [{/if}]
+                const checkAgbTop = document.getElementById('checkAgbTop');
+                const oxdownloadableproductsagreement = document.getElementById('oxdownloadableproductsagreement');
+                const oxserviceproductsagreement = document.getElementById('oxserviceproductsagreement');
+                const checkAgbTopChecksed = !!(checkAgbTop && checkAgbTop.checked);
+                const oxdownloadableproductsagreementChecksed = !!(oxdownloadableproductsagreement && oxdownloadableproductsagreement.checked);
+                const oxserviceproductsagreementChecked = !!(oxserviceproductsagreement && oxserviceproductsagreement.checked);
                 const url = `[{$sSelfLink|cat:'cl=order&fnc=createApplePayOrder&context=continue&aid='|cat:$aid|cat:'&stoken='|cat:$sToken|cat:'&sDeliveryAddressMD5='|cat:$oView->getDeliveryAddressMD5()}]`;
                 [{if $config->isSandbox()}]
                 console.log('Approving order with URL:', url);
                 [{/if}]
                 const formData = new FormData();
                 formData.append('orderID', confirmOrderResponse.id);
+                formData.append("checkAgbTop", checkAgbTopChecksed);
+                formData.append("oxdownloadableproductsagreement", oxdownloadableproductsagreementChecksed);
+                formData.append("oxserviceproductsagreement", oxserviceproductsagreementChecked);
 
                 try {
                     const res = await fetch(url, {
@@ -335,18 +360,18 @@
 
                 // Check terms and conditions BEFORE starting the Apple Pay flow
                 if (typeof PayPalPaymentControllerBase !== 'undefined') {
-                    const tempController = new PayPalPaymentControllerBase({});
-                    const checkTermsAndConditions = tempController.checkTermsAndConditions();
+                    window.PayPalPayment = new PayPalPaymentControllerBase(ApplePayPayPalPaymentControllerConfiguratorDefaults);
+                    const checkTermsAndConditions = PayPalPayment.checkTermsAndConditions();
 
                     if (false === checkTermsAndConditions) {
-                        tempController.showErrorMessage(
+                        PayPalPayment.showErrorMessage(
                             window.PayPalI18n.READ_AND_CONFIRM_TERMS
                         );
                         return; // Prevents the ApplePay session from starting
                     }
 
                     // Add overlay if check is OK
-                    tempController.addSubmitButtonOverlay();
+                    PayPalPayment.addSubmitButtonOverlay();
                 }
 
                 try {
@@ -387,6 +412,10 @@
                 console.log('--- End handle_applepay_clicked ---');
                 [{/if}]
             };
+            window.addEventListener('load', function () {
+                window.PayPalPayment = new ApplePayPaymentController(window.PayPalPaymentControllerConfiguratorDefaults);
+                window.PayPalPayment.renderButton(typeof PayPalButtonStyle === 'object' ? PayPalButtonStyle : {});
+            });
             [{if $phpstorm}]</script>[{/if}]
         [{/capture}]
         [{oxscript include="https://applepay.cdn-apple.com/jsapi/v1/apple-pay-sdk.js" }]

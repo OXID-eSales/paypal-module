@@ -186,8 +186,8 @@ class VaultingService extends BaseService
             ];
 
             if (!empty($customerId)) {
-                $attributes['vault'] += [
-                    "customer_id" => $customerId,
+                $attributes['customer'] = [
+                        "id" => $customerId
                 ];
             }
 
@@ -421,6 +421,7 @@ class VaultingService extends BaseService
         }
         $currentTrackingId = (string)Registry::getSession()->getVariable('payPalPaymentProcessId');
         $this->orderProcessTrackingService->setTrackingId($currentTrackingId);
+        $this->setTrackingId($currentTrackingId);
         $headers = [];
         $headers['Content-Type'] = 'application/x-www-form-urlencoded';
         $headers['PayPal-Partner-Attribution-Id'] = Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP;

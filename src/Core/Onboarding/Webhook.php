@@ -23,6 +23,45 @@ class Webhook
 {
     use ServiceContainer;
 
+    /**
+     * Register webhooks with integrated error handling
+     * This method can be called from any context (controller, static service, etc.)
+     *
+     * @return bool Returns true if successful, false otherwise
+     */
+    public function registerWebhooksWithErrorHandling(): bool
+    {
+        try {
+            $this->ensureWebhook();
+            return true;
+        } catch (OnboardingException $exception) {
+            // Show error to user if possible
+            if (class_exists('\OxidEsales\Eshop\Core\Registry')) {
+                Registry::getUtilsView()->addErrorToDisplay($exception->getMessage());
+            }
+            $this->logError($exception);
+            return false;
+        } catch (Exception $exception) {
+            $this->logError($exception);
+            return false;
+        }
+    }
+    /**
+     * Helper method to log errors consistently
+     *
+     * @param Exception $exception
+     */
+    protected function logError(Exception $exception): void
+    {
+        try {
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->log('error', $exception->getMessage(), [$exception]);
+        } catch (Exception $e) {
+            // Fallback if logger is not available
+            error_log('PayPal Webhook Error: ' . $exception->getMessage());
+        }
+    }
     public function ensureWebhook(): string
     {
         $endpoint = $this->getWebhookEndpoint();
@@ -61,18 +100,18 @@ class Webhook
         return $hook;
     }
 
-    public function registerWebhooks(): string
+    protected function registerWebhooks(): string
     {
         $webhookId = '';
         try {
-            $paypload = [
+            $payload = [
                 'url' => $this->getWebhookEndpoint(),
                 'event_types' => $this->getAvailableEventNames(),
             ];
 
-            /** @var GenericService $notificationService */
+            /** @var GenericService $webhookService */
             $webhookService = Registry::get(ServiceFactory::class)->getWebhookService();
-            $webHookResponse = $webhookService->request('POST', $paypload);
+            $webHookResponse = $webhookService->request('POST', $payload);
 
             $webhookId = $webHookResponse['id'] ?? '';
         } catch (Exception $exception) {
@@ -95,7 +134,7 @@ class Webhook
             return;
         }
 
-        /** @var GenericService $notificationService */
+        /** @var GenericService $webhookService */
         $webhookService = Registry::get(ServiceFactory::class)->getWebhookService('/' . $webhookId);
 
         $headers = [];
@@ -118,7 +157,7 @@ class Webhook
 
     public function getAllRegisteredWebhooks(): array
     {
-        /** @var GenericService $notificationService */
+        /** @var GenericService $webhookService */
         $webhookService = Registry::get(ServiceFactory::class)->getWebhookService();
         try {
             $result = $webhookService->request('GET');

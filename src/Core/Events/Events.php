@@ -15,6 +15,7 @@ use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInt
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleConfigurationDaoBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
+use OxidSolutionCatalysts\PayPal\Core\Onboarding\Webhook;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -43,6 +44,9 @@ class Events
 
         //extend session required controller
         self::addRequireSession();
+
+        //register PayPal webhooks
+        self::registerWebhooks();
     }
 
     /**
@@ -84,6 +88,16 @@ class Events
             $service->ensureStaticContents();
             $service->ensurePayPalPaymentMethods();
         }
+    }
+
+    /**
+     * Execute necessary PayPal webhooks registration on activate event
+     *
+     * @return void
+     */
+    private static function registerWebhooks(): void
+    {
+        (oxNew(Webhook::class))->registerWebhooksWithErrorHandling();
     }
 
     /**
