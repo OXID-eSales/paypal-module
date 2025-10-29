@@ -200,7 +200,6 @@ class PayPalOrderController extends AdminDetailsController
         $refundAll = $request->getRequestEscapedParameter('refundAll');
         $noteToPayer = $request->getRequestEscapedParameter('noteToPayer');
 
-
         $capture = $order->getOrderPaymentCapture();
         if ($capture instanceof Capture) {
             $request = new RefundRequest();
@@ -209,7 +208,7 @@ class PayPalOrderController extends AdminDetailsController
             if (!$refundAll) {
                 $request->initAmount();
                 $request->amount->currency_code = $capture->amount->currency_code;
-                $request->amount->value = $refundAmount;
+                $request->amount->value = number_format($refundAmount, $currency->decimal, '.', null);
             }
 
             /** @var Payments $paymentService */

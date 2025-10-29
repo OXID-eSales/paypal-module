@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-test.skip('GooglePay test', () => {
+// test('GooglePay test', () => {
     let context, page;
 
     test.beforeAll(async ({ browser }) => {
@@ -24,24 +24,17 @@ test.skip('GooglePay test', () => {
     });
 
 
-    test('Should complete GooglePay payment end-to-end', async () => {
+    test.skip('Should complete GooglePay payment end-to-end', async () => {
         const shopHelper = new ShopHelper(page);
         await shopHelper.loginUser();
         await shopHelper.addItemsToCart();
         await shopHelper.checkout();
-        await shopHelper.selectPaymentMethod( 'GooglePay');
+        await shopHelper.selectPaymentMethod( 'googlepay');
         await shopHelper.nextStep();
-        await shopHelper.orderNow();
-
-        const paypalHelper = new PaypalHelper(page)
-        await paypalHelper.loginSandboxPaypal();
-
+        await shopHelper.acceptTerms()
         await shopHelper.clickGooglePay(page);
-
-        //TODO: finish payment
-
-        await page.waitForTimeout(10000);
+        await shopHelper.useGooglePaySignIn()
         const thankYouText = await page.locator('#thankyouPage').isVisible();
         expect(thankYouText).toBeTruthy();
     });
-});
+// });

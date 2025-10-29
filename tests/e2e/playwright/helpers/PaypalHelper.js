@@ -3,30 +3,50 @@ export class PaypalHelper {
         if (!page || !context) {
             throw new Error('Invalid or undefined "page" or "context" provided to PaypalHelper.');
         }
-
         this.page = page;
         this.context = context;
+
         this.paypalCreds = {
             email: process.env.PAYPAL_EMAIL,
             password: process.env.PAYPAL_PASSWORD,
         };
+
+        // default iframe selectors (used by clickPaypalButtonInIframe with no args)
+        this._paypalIframeSelectors = [
+            'iframe[title="PayPal"]',
+            'iframe[title*="PayPal"]',
+            '.component-frame.visible',
+            'iframe[src*="paypal"]'
+        ];
+
+        // stash the popup between steps
+        this._lastPopupPage = null;
     }
 
-    async clickPaypalButtonInIframe(paypalIframeSelectors) {
-        const { page, context } = this;
+    // ===== Public API used by your test =====
 
-        const paypalFrameSelector = await this.getPaypalFrameSelector(page, paypalIframeSelectors);
+    async clickPaypalButtonInIframe(option = 'Paypal') {
+        const page = this.page;
+
+        // Map option → iframe index
+        const OPTION_TO_INDEX = {
+            0: 0,
+            1: 1,
+            PaypalExpress: 0,
+            Paypal: 1
+        };
+        const preferIndex = Object.prototype.hasOwnProperty.call(OPTION_TO_INDEX, option)
+            ? OPTION_TO_INDEX[option]
+            : 1;
+
+        // Find a matching iframe selector
+        const paypalFrameSelector = await this._findMatchingIframeSelector(this._paypalIframeSelectors);
         if (!paypalFrameSelector) throw new Error('PayPal iframe not found');
 
-        console.log('Setting up popup listener...');
-
-        // Set up popup listener BEFORE clicking the button
+        // Listen for popup BEFORE clicking
         const popupPromise = new Promise((resolve, reject) => {
-            const timeout = setTimeout(() => {
-                reject(new Error('Popup timeout - no popup detected within 20 seconds'));
-            }, 20000);
-
-            page.on('popup', async (popup) => {
+            const timeout = setTimeout(() => reject(new Error('Popup timeout - no popup detected within 20 seconds')), 20000);
+            page.once('popup', (popup) => {
                 clearTimeout(timeout);
                 console.log('Popup detected via event listener!');
                 console.log('Popup URL:', popup.url());
@@ -34,86 +54,99 @@ export class PaypalHelper {
             });
         });
 
-        // Click the PayPal button inside the iframe
-        console.log('Clicking PayPal button in iframe...');
+        console.log(`Clicking PayPal button in iframe... (option: ${option}, index: ${preferIndex})`);
 
-        const clicked = await page.evaluate((selector) => {
-            const iframe = document.querySelector(selector);
-            if (!iframe?.contentDocument) return false;
+        // ✅ Pass a single object argument to evaluate
+        const clicked = await page.evaluate(({ selector, idx }) => {
+            const iframes = document.querySelectorAll(selector);
+            console.log(`Found ${iframes.length} iframes for selector: ${selector}`);
 
-            const buttons = iframe.contentDocument.querySelectorAll('[data-funding-source="paypal"], [role="button"], .paypal-button, button');
+            const chosen = iframes[idx] || iframes[0]; // fallback to first if idx out of range
+            const usedIndex = chosen ? Array.prototype.indexOf.call(iframes, chosen) : -1;
+            console.log(`Requested iframe index: ${idx}, actually using: ${usedIndex}`);
+            if (!chosen || !chosen.contentDocument) return false;
+
+            const doc = chosen.contentDocument;
+            const buttons = doc.querySelectorAll('[data-funding-source="paypal"], [role="button"], .paypal-button, button');
             console.log('Found buttons in iframe:', buttons.length);
+            if (buttons.length === 0) return false;
 
-            if (buttons.length > 0) {
-                buttons[0].click();
-                return true;
-            }
-            return false;
-        }, paypalFrameSelector);
+            const btn = buttons[0];
+            console.log('Button to click (outerHTML):', btn.outerHTML);
+
+            if (typeof btn.click === 'function') btn.click();
+            else btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+
+            return true;
+        }, { selector: paypalFrameSelector, idx: preferIndex });
 
         if (!clicked) throw new Error('PayPal button click failed inside iframe');
         console.log('PayPal button clicked successfully.');
 
-        // Wait for the popup
         try {
-            const popupPage = await popupPromise;
-            return popupPage;
+            this._lastPopupPage = await popupPromise;
+            return this._lastPopupPage;
         } catch (error) {
             console.error('Failed to detect popup:', error.message);
-
-            // Fallback: check for new pages manually
             console.log('Attempting manual popup detection...');
             await page.waitForTimeout(5000);
-
-            const allPages = context.pages();
-            const newPages = allPages.filter(p => p !== page);
-
-            if (newPages.length > 0) {
+            const newPages = this.context.pages().filter(p => p !== page);
+            if (newPages.length) {
                 console.log('Found popup via manual detection');
-                return newPages[newPages.length - 1]; // Return the most recent page
+                this._lastPopupPage = newPages[newPages.length - 1];
+                return this._lastPopupPage;
             }
-
             throw new Error('No popup detected via any method');
         }
     }
 
+
+
+    async handlePopup() {
+        if (!this._lastPopupPage) {
+            throw new Error('HandlePopup called before clickPaypalButtonInIframe (no popup stored)');
+        }
+        await this.handlePaypalPopup(this._lastPopupPage, async (popup) => {
+            await this.loginToPaypal(popup);
+        });
+        console.log('Returned from PayPal popup; back on main page.');
+    }
+
+    async verifyThankYouPage(thankYouSelector = '#thankyouPage', timeoutMs = 60000) {
+        console.log('Verifying thank you page...');
+        await this.page.waitForSelector(thankYouSelector, { timeout: timeoutMs });
+        const visible = await this.page.locator(thankYouSelector).isVisible();
+        if (!visible) throw new Error('Thank you page not visible');
+        console.log('Payment successfully completed and thank you page displayed!');
+    }
+
+    // ===== Your existing implementations (left intact) =====
+
     async handlePaypalPopup(popupPage, loginCallback) {
         if (!popupPage) throw new Error('No popup page available');
-
         console.log('Handling PayPal popup...');
-
         try {
-            // Wait for the popup to load
             await popupPage.waitForLoadState('domcontentloaded', { timeout: 20000 });
             console.log('Popup loaded successfully');
 
-            // Execute the login callback
             await loginCallback(popupPage);
 
-            // Wait for the popup to close automatically with extended timeout for slow connections
             console.log('Waiting for popup to close (allowing up to 2 minutes for slow connections)...');
-
             const popupClosePromise = new Promise((resolve, reject) => {
                 const timeout = setTimeout(() => {
                     reject(new Error('Popup did not close within 2 minutes'));
-                }, 120000); // 2 minutes timeout
-
-                // Check if popup is already closed
+                }, 120000);
                 if (popupPage.isClosed()) {
                     clearTimeout(timeout);
                     console.log('Popup already closed');
                     resolve();
                     return;
                 }
-
-                // Listen for close event
                 popupPage.on('close', () => {
                     clearTimeout(timeout);
                     console.log('Popup closed via event listener');
                     resolve();
                 });
-
-                // Poll for popup closure as fallback
                 const pollInterval = setInterval(() => {
                     if (popupPage.isClosed()) {
                         clearTimeout(timeout);
@@ -121,143 +154,96 @@ export class PaypalHelper {
                         console.log('Popup closed via polling');
                         resolve();
                     }
-                }, 2000); // Check every 2 seconds
+                }, 2000);
             });
 
             await popupClosePromise;
             console.log('Popup closed successfully');
 
-            // Give extra time for the main page to process the redirect
             console.log('Waiting for main page to process redirect...');
-            await this.page.waitForTimeout(10000); // Wait 10 seconds for processing
+            await this.page.waitForTimeout(10000);
 
-            // After popup closes, wait for the main page to be redirected
-            console.log('Now waiting for main page redirect to thank you page...');
-            await this.waitForRedirectToThankYouPage(this.page);
+            // console.log('Now waiting for main page redirect to thank you page...');
+            // await this.waitForRedirectToThankYouPage(this.page);
 
         } catch (error) {
             console.error('Error handling PayPal popup:', error.message);
-
-            // Check if popup is still open and try to close it
             try {
                 if (popupPage && !popupPage.isClosed()) {
                     console.log('Popup still open, attempting to close...');
                     await popupPage.close();
                 }
             } catch (closeError) {
-                console.log('Failed to close popup:', closeError.message);
+                console.log('Failed to take close popup:', closeError.message);
             }
-
             throw error;
         }
     }
 
     async loginToPaypal(popupPage) {
         const { email, password } = this.paypalCreds;
-
         console.log('Starting PayPal login process...');
-
         try {
-            // Check if popup is still available before each operation
-            if (popupPage.isClosed()) {
-                throw new Error('Popup page was closed unexpectedly');
-            }
-
-            // Wait for and fill email field
+            if (popupPage.isClosed()) throw new Error('Popup page was closed unexpectedly');
             const emailField = popupPage.locator('#email');
             await emailField.waitFor({ state: 'visible', timeout: 15000 });
             console.log('Filling PayPal email...');
             await emailField.fill(email);
-
-            // Check for Next button (multi-step login)
             const nextButton = popupPage.locator('#btnNext');
             if (await nextButton.count() > 0) {
                 console.log('Clicking Next button...');
                 await nextButton.click();
-                await popupPage.waitForTimeout(3000); // Wait longer for slow connections
+                await popupPage.waitForTimeout(3000);
             }
-
-            // Check if popup is still available
-            if (popupPage.isClosed()) {
-                throw new Error('Popup page was closed during login process');
-            }
-
-            // Wait for and fill password field
+            if (popupPage.isClosed()) throw new Error('Popup page was closed during login process');
             const passwordField = popupPage.locator('#password');
             await passwordField.waitFor({ state: 'visible', timeout: 15000 });
             console.log('Filling PayPal password...');
             await passwordField.fill(password);
-
-            // Click login button
             const loginButton = popupPage.locator('#btnLogin');
             await loginButton.waitFor({ state: 'visible', timeout: 15000 });
             console.log('Clicking login button...');
             await loginButton.click();
-
-            // Wait for the continue button or next step
             console.log('Waiting for continue button...');
             const continueButton = popupPage.locator('button:has-text("Continue"), [data-testid="submit-button-initial"]');
             await continueButton.waitFor({ state: 'visible', timeout: 20000 });
             console.log('Continue button found - login successful');
-
-            // Click continue button
             await continueButton.click();
             console.log('Clicked continue button - payment should be processed');
-
-            // Wait longer for the payment to be processed
-            console.log('Waiting for payment processing (extended time for slow connections)...');
-
         } catch (error) {
             console.error('Error during PayPal login:', error.message);
             throw error;
         }
     }
 
-    async waitForRedirectToThankYouPage(mainPage, timeout = 120000) { // 2 minutes timeout
+    async waitForRedirectToThankYouPage(mainPage, timeout = 120000) {
         console.log('Waiting for redirect to thank you page (up to 2 minutes)...');
-
         try {
-            // Check if page is still available
-            if (mainPage.isClosed()) {
-                throw new Error('Main page was closed unexpectedly');
-            }
-
-            // Store the current URL for comparison
+            if (mainPage.isClosed()) throw new Error('Main page was closed unexpectedly');
             const currentUrl = mainPage.url();
             console.log('Current URL before waiting:', currentUrl);
-
-            // Wait for navigation/redirect with multiple possible patterns
             await Promise.race([
-                // Wait for URL to change to thank you page patterns
                 mainPage.waitForURL(url => url.includes('thankyou'), { timeout }),
                 mainPage.waitForURL(url => url.includes('order-complete'), { timeout }),
                 mainPage.waitForURL(url => url.includes('checkout') && url.includes('thankyou'), { timeout }),
                 mainPage.waitForURL(url => url.includes('success'), { timeout }),
-                // Wait for thank you page elements to appear
                 mainPage.waitForSelector('#thankyouPage', { timeout }),
                 mainPage.waitForSelector('[data-testid="thank-you"]', { timeout }),
                 mainPage.waitForSelector('.thankyou', { timeout }),
                 mainPage.waitForSelector('[class*="thank"]', { timeout }),
-                // Wait for navigation event with longer timeout
                 mainPage.waitForLoadState('networkidle', { timeout: Math.min(timeout, 60000) })
             ]);
-
             console.log('Successfully detected redirect/thank you page');
             console.log('New URL:', mainPage.url());
             return true;
-
         } catch (error) {
             console.log('Direct redirect detection failed, performing extended fallback checks...');
-
             try {
                 if (!mainPage.isClosed()) {
                     console.log('Current URL during fallback:', mainPage.url());
-
-                    // Give the page more time to load (extended for slow connections)
                     console.log('Waiting additional 15 seconds for slow connection...');
                     await mainPage.waitForTimeout(15000);
 
-                    // Check if thank you elements are present
                     const thankYouSelectors = [
                         '#thankyouPage',
                         '[data-testid="thank-you"]',
@@ -268,92 +254,75 @@ export class PaypalHelper {
                         'text=Thank you',
                         'text=Order complete',
                         'text=Payment successful',
-                        'text=Danke', // German
-                        'text=Bestellung abgeschlossen' // German
+                        'text=Danke',
+                        'text=Bestellung abgeschlossen'
                     ];
-
                     for (const selector of thankYouSelectors) {
-                        const element = mainPage.locator(selector);
-                        if (await element.count() > 0) {
+                        const el = mainPage.locator(selector);
+                        if (await el.count() > 0) {
                             console.log(`Thank you page element found with selector: ${selector}`);
                             return true;
                         }
                     }
-
-                    // Check URL patterns as fallback
-                    const currentUrl = mainPage.url();
-                    const thankYouPatterns = [
-                        'thankyou',
-                        'order-complete',
-                        'success',
-                        'checkout/thankyou',
-                        'payment/success',
-                        'danke', // German
-                        'bestellung'
+                    const url = mainPage.url();
+                    const patterns = [
+                        'thankyou', 'order-complete', 'success', 'checkout/thankyou',
+                        'payment/success', 'danke', 'bestellung'
                     ];
-
-                    for (const pattern of thankYouPatterns) {
-                        if (currentUrl.includes(pattern)) {
-                            console.log(`Thank you page detected via URL pattern: ${pattern}`);
+                    for (const p of patterns) {
+                        if (url.includes(p)) {
+                            console.log(`Thank you page detected via URL pattern: ${p}`);
                             return true;
                         }
                     }
-
-                    // Poll for changes over time (for very slow connections)
                     console.log('Performing extended polling for thank you page...');
-                    for (let i = 0; i < 12; i++) { // Poll for 60 more seconds (12 * 5 seconds)
+                    for (let i = 0; i < 12; i++) {
                         await mainPage.waitForTimeout(5000);
 
-                        // Check URL again
                         const newUrl = mainPage.url();
-                        if (newUrl !== currentUrl) {
-                            console.log(`URL changed from ${currentUrl} to ${newUrl}`);
-                            for (const pattern of thankYouPatterns) {
-                                if (newUrl.includes(pattern)) {
-                                    console.log(`Thank you page detected via URL pattern after polling: ${pattern}`);
+                        if (newUrl !== url) {
+                            console.log(`URL changed from ${url} to ${newUrl}`);
+                            for (const p of patterns) {
+                                if (newUrl.includes(p)) {
+                                    console.log(`Thank you page detected via URL pattern after polling: ${p}`);
                                     return true;
                                 }
                             }
                         }
-
-                        // Check elements again
                         for (const selector of thankYouSelectors) {
-                            const element = mainPage.locator(selector);
-                            if (await element.count() > 0) {
+                            const el = mainPage.locator(selector);
+                            if (await el.count() > 0) {
                                 console.log(`Thank you page element found after polling with selector: ${selector}`);
                                 return true;
                             }
                         }
-
                         console.log(`Polling attempt ${i + 1}/12 - still waiting for thank you page...`);
                     }
-
-                    // Take a screenshot for debugging
                     try {
                         await mainPage.screenshot({ path: './debug-current-page.png', fullPage: true });
                         console.log('Debug screenshot saved as debug-current-page.png');
-                    } catch (screenshotError) {
-                        console.log('Failed to take debug screenshot:', screenshotError.message);
+                    } catch (shotErr) {
+                        console.log('Failed to take debug screenshot:', shotErr.message);
                     }
                 }
-            } catch (urlError) {
-                console.log('Failed to check current page during fallback:', urlError.message);
+            } catch (urlErr) {
+                console.log('Failed to check current page during fallback:', urlErr.message);
             }
-
             throw new Error('Failed to detect thank you page after PayPal payment');
         }
     }
 
-    async getPaypalFrameSelector(page, selectors) {
+    // ===== private util =====
+    async _findMatchingIframeSelector(selectors) {
         for (const selector of selectors) {
             try {
-                const frameCount = await page.locator(selector).count();
+                const frameCount = await this.page.locator(selector).count();
                 if (frameCount > 0) {
                     console.log(`Found PayPal iframe with selector: ${selector}`);
                     return selector;
                 }
-            } catch (error) {
-                console.log(`Error checking selector ${selector}:`, error.message);
+            } catch (err) {
+                console.log(`Error checking selector ${selector}:`, err.message);
             }
         }
         return null;

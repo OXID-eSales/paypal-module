@@ -302,16 +302,10 @@ jobs:
           docker compose up -d
           sleep 2
 
-      - name: Set up ngrok
-        run: |
-          curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && \
-          echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list && \
-          sudo apt-get update && sudo apt-get install ngrok
-
       - name: Create .env file
         working-directory: source/test-module/tests/e2e/playwright
         run: |
-          echo "${{ secrets.PLAYWRIGHT_TEST_ENV }}" > .env
+          cp .env.dist.Razvan .env
           echo "Created .env file with the following content:"
           cat .env
 
@@ -376,58 +370,6 @@ jobs:
         if: failure()
         run: docker compose logs php
 
-      - name: Start ngrok with custom domain and keepalive
-        run: |
-          ngrok config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
-
-          nohup ngrok http --hostname=${{ secrets.NGROK_CUSTOM_DOMAIN }} --log=stdout 80 > ngrok.log 2>&1 &
-          NGROK_PID=$!
-          echo "NGROK_PID=$NGROK_PID" >> $GITHUB_ENV
-          
-          sleep 10
-          
-          if ! kill -0 $NGROK_PID 2>/dev/null; then
-            echo "Ngrok failed to start properly"
-            cat ngrok.log
-            exit 1
-          fi
-          echo "Ngrok started successfully with PID $NGROK_PID"
-
-      - name: Test ngrok tunnel connection
-        run: |
-          for i in {1..5}; do
-            echo "Testing ngrok connection attempt $i/5"
-            if curl -I https://${{ secrets.NGROK_CUSTOM_DOMAIN }} --max-time 10; then
-              echo "Ngrok connection successful"
-              break
-            else
-              echo "Connection failed, retrying in 5 seconds..."
-              sleep 5
-            fi
-          done
-
-      - name: Monitor ngrok during tests
-        run: |
-          # Create a script to monitor ngrok
-          cat > monitor_ngrok.sh << 'EOF'
-          #!/bin/bash
-          while true; do
-            if ! kill -0 $NGROK_PID 2>/dev/null; then
-              echo "WARNING: Ngrok process died, restarting..."
-              ngrok http --hostname=${{ secrets.NGROK_CUSTOM_DOMAIN }} --log=stdout 80 > ngrok.log 2>&1 &
-              NGROK_PID=$!
-              echo "NGROK_PID=$NGROK_PID" >> $GITHUB_ENV
-              sleep 5
-            fi
-            sleep 30
-          done
-          EOF
-          
-          chmod +x monitor_ngrok.sh
-          ./monitor_ngrok.sh &
-          echo "Ngrok monitor started"
-          
-
       - name: Install Playwright
         working-directory: source/test-module/tests/e2e/playwright
         run: |
@@ -439,42 +381,8 @@ jobs:
       - name: Run Playwright tests
         working-directory: source/test-module/tests/e2e/playwright
         run: |
-          # Verify ngrok is still running before tests
-          if ! kill -0 $NGROK_PID 2>/dev/null; then
-            echo "Ngrok is not running, restarting..."
-            ngrok http --hostname=${{ secrets.NGROK_CUSTOM_DOMAIN }} --log=stdout 80 > ngrok.log 2>&1 &
-            NGROK_PID=$!
-            sleep 10
-          fi
-          
-          # Run tests with timeout protection
-          timeout 600 make test || {
-            echo "Test timed out or failed, checking ngrok status..."
-            if kill -0 $NGROK_PID 2>/dev/null; then
-              echo "Ngrok is still running"
-            else
-              echo "Ngrok died during test execution"
-              cat ngrok.log
-            fi
-            exit 0
-          }
+          make test
 
-      - name: Cleanup ngrok
-        if: always()
-        run: |
-          if [[ -n "$NGROK_PID" ]] && kill -0 $NGROK_PID 2>/dev/null; then
-            echo "Stopping ngrok process $NGROK_PID"
-            kill $NGROK_PID
-          fi
-          
-          # Also kill any remaining ngrok processes
-          pkill -f ngrok || true
-          
-          # Show ngrok logs for debugging
-          if [ -f ngrok.log ]; then
-            echo "Ngrok logs:"
-            cat ngrok.log
-          fi
 
       - name: Upload log artifact
         if: always()

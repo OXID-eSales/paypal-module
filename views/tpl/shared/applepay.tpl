@@ -305,9 +305,9 @@
                 [{/if}]
                 const formData = new FormData();
                 formData.append('orderID', confirmOrderResponse.id);
-                formData.append("checkAgbTop" : checkAgbTopChecksed);
-                formData.append("oxdownloadableproductsagreement" : oxdownloadableproductsagreementChecksed);
-                formData.append("oxserviceproductsagreement" : oxserviceproductsagreementChecked);
+                formData.append("checkAgbTop", checkAgbTopChecksed);
+                formData.append("oxdownloadableproductsagreement", oxdownloadableproductsagreementChecksed);
+                formData.append("oxserviceproductsagreement", oxserviceproductsagreementChecked);
 
 
                 try {
