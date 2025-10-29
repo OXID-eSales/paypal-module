@@ -3,11 +3,17 @@
         // Inherit from base controller`
         PayPalPaymentControllerBase.call(this, config);
 
-        return this.init();
+        this.resetCurrentOrder();
+
+        return this;
     };
 
     window.addEventListener('load', function() {
-        window.PayPalPayment = new ApplePayPaymentController();
-
+        if (
+            'undefined' == typeof window.PayPalPayment &&
+            'undefined' !== typeof window.ApplePayPayPalPaymentControllerConfiguratorDefaults
+        ) {
+            window.PayPalPayment = new ApplePayPaymentController();
+        }
     });
 })();
