@@ -383,21 +383,31 @@
             return checksOk;
         };
 
-        // Common initialization
-        this.init = function () {
-            this.resetCurrentOrder();
+        this.handleSavePaymentCheckbox = function() {
 
             const savePaymentChackbox = document.getElementById('oscPayPalVaultPaymentCheckbox');
             if (savePaymentChackbox) {
                 savePaymentChackbox.onclick = this.vaultingSettingSwitch;
                 savePaymentChackbox.removeAttribute('disabled');
             }
+        };
 
+        this.setupEventListeners = function() {
             document.addEventListener('beforeShopOrderCreated', this.onBeforeShopOrderCreated);
             document.addEventListener('shopOrderCreated', this.onShopOrderCreated);
             document.addEventListener('payPalOrderCreated', this.onPayPalOrderCreated);
+        };
 
+        this.initCompleted = function() {
             document.dispatchEvent(new CustomEvent('PayPalPaymentControllerInitialized', new Object({detail: this})));
+        };
+
+        // Common initialization
+        this.init = function () {
+            this.resetCurrentOrder();
+            this.handleSavePaymentCheckbox();
+            this.setupEventListeners();
+            this.initCompleted();
 
             return this;
         };

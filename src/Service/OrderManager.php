@@ -62,7 +62,7 @@ class OrderManager
         }
 
         if (empty($this->basket->getPaymentId()) && !empty($paymentId)) {
-            $this->basket->setPaymentId($paymentId);
+            $this->basket->setPayment($paymentId);
         }
 
         $order = oxNew(Order::class);

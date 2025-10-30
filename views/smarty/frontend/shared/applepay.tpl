@@ -21,7 +21,7 @@
         </style>
         [{capture name="detailsApplePayScript"}]
             [{if $phpstorm}]<script>[{/if}]
-            const ApplePayPayPalPaymentControllerConfiguratorDefaults = {
+            window.ApplePayPayPalPaymentControllerConfiguratorDefaults = {
                 confirmAGBForIntangibleRequired: [{if $oViewConf->isFunctionalityEnabled('blEnableIntangibleProdAgreement') && $oView->isNonMaterialItemInBasket()}]1[{else}]0[{/if}] === 1,
                 confirmAGBRequired: [{if $oViewConf->isFunctionalityEnabled('blConfirmAGB')}]1[{else}]0[{/if}] === 1,
             }
@@ -360,7 +360,7 @@
 
                 // Check terms and conditions BEFORE starting the Apple Pay flow
                 if (typeof PayPalPaymentControllerBase !== 'undefined') {
-                    window.PayPalPayment = new PayPalPaymentControllerBase(ApplePayPayPalPaymentControllerConfiguratorDefaults);
+                    window.PayPalPayment = new PayPalPaymentControllerBase(window.ApplePayPayPalPaymentControllerConfiguratorDefaults);
                     const checkTermsAndConditions = PayPalPayment.checkTermsAndConditions();
 
                     if (false === checkTermsAndConditions) {

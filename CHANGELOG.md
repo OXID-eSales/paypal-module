@@ -11,10 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - add Age Control (min age 18) for PUI
 - [0007785](https://bugs.oxid-esales.com/view.php?id=7785): Fix: If you only fill in one of the fields Tracking carrier or code for PayPal orders, an alert inform that you need all fields
 - show Express-Buttons only if Basket > 0 or ArticlePrice > 0
-- fixes an error in the display of the GooglePay button
+- fix GooglePay-Button-Integration
+- fix ApplePay-Button-Integration
 - [0007821](https://bugs.oxid-esales.com/view.php?id=7821): use finalizeOrder for all payments again
 - fix PUI-EMail-Handling
-- [0007821](https://bugs.oxid-esales.com/view.php?id=7821): use finalizeOrder for all payments again
 - use PayPal-Client v3.0.19
 - Add handling for worst case: When the order is completed and the customer clicks around, the customer is redirected to the thank you page
 - Add new webhook 'VAULT.PAYMENT-TOKEN.CREATED'
