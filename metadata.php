@@ -189,11 +189,6 @@ $aModule = [
             'file' => 'views/smarty/extensions/themes/default/layout/base_js.tpl'
         ],
         [
-            'template' => 'layout/base.tpl',
-            'block' => 'base_style',
-            'file' => 'views/smarty/extensions/themes/default/layout/base_style.tpl'
-        ],
-        [
             'template' => 'page/account/inc/account_menu.tpl',
             'block' => 'account_menu',
             'file' => 'views/smarty/extensions/themes/default/page/account/inc/account_menu.tpl',

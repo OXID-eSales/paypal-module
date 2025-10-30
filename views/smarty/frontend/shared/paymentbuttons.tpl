@@ -38,6 +38,7 @@
                             }
                             return actions.resolve();
                         },
+                        [{/if}]
                         fundingSource: fundingSource,
                         createOrder: function (data, actions) {
                             return fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=createOrder&paymentid="|cat:$buttonId|cat:"&context=continue&stoken="|cat:$sToken|cat:$sDebug}]', {
