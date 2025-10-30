@@ -33,6 +33,7 @@
                         }
                         return actions.resolve();
                     },
+                    {% endif %}
                     fundingSource: fundingSource,
                     createOrder: function (data, actions) {
                         return fetch(selfLink + "cl=oscpaypalproxy&fnc=createOrder&paymentid={{ buttonId }}&context=continue&stoken={{ sToken }}", {
