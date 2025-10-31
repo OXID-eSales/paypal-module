@@ -55,3 +55,7 @@ services:
     resource: 'src/EventSubscriber/*'
     public: true
     tags: ['kernel.event_subscriber']
+
+  OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface:
+    alias: OxidSolutionCatalysts\PayPal\Service\SCAValidator
+    public: true

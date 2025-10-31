@@ -15,6 +15,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Field;
 use OxidSolutionCatalysts\PayPal\Event\PayPalOrderCreatedEvent;
+use OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface;
 use OxidSolutionCatalysts\PayPal\Traits\NormalizedEventDispatcher;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Model\Order as ShopOrder;
@@ -88,8 +89,7 @@ class AjaxPaymentController extends ProxyController
         $payPalOrderId = $data['orderId'];
         $paymentId = $data['paymentId'] ?? Registry::getSession()->getVariable('paymentid');
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();
-        /** @var PaymentService $paymentService */
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $scaValidator = $this->getServiceFromContainer(SCAValidatorInterface::class);
         $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
         $language = Registry::getLang();
         $request = new OrderCaptureRequest();
@@ -100,10 +100,8 @@ class AjaxPaymentController extends ProxyController
         ];
 
         try {
-            $payPalOrder = new \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order(PayPalSession::getCheckoutOrder());
-
-            //Verify 3D result if acdc payment
-            if (!$paymentService->verify3D($paymentId, $payPalOrder)) {
+            //Verify 3D result if ACDC payment
+            if (!$scaValidator->verify3D($paymentId)) {
                 $this->outputJson([
                     'status' => 'error',
                     'message' => $language->translateString('OSC_PAYPAL_3DSECURITY_ERROR')

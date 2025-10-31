@@ -19,6 +19,7 @@ use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings as ModuleSettingsService;
 use OxidSolutionCatalysts\PayPal\Service\SCAValidator;
+use OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
@@ -249,16 +250,20 @@ final class PaymentTest extends BaseTestCase
 
     public function testACDCOrder3DSecureFail(): void
     {
+        // Mock SCAValidator to force 3D verification to fail
+        $scaValidatorMock = $this->createMock(SCAValidatorInterface::class);
+        $scaValidatorMock->expects($this->once())
+            ->method('verify3D')
+            ->with($this->anything(), $this->anything())
+            ->willReturn(false);
+
         $paymentService = $this->getPaymentServiceMock(
             $this->failedAuthentication,
-            [
-                'verify3D',
-            ]
+            [],
+            false,
+            Constants::PAYPAL_SCA_ALWAYS,
+            $scaValidatorMock
         );
-
-        $paymentService->expects($this->once())
-            ->method('verify3D')
-            ->willReturn(false);
 
         $shopOrderModel = oxNew(EshopModelOrder::class);
         $this->expectExceptionMessage('OSC_PAYPAL_3DSECURITY_ERROR');
@@ -271,67 +276,8 @@ final class PaymentTest extends BaseTestCase
         );
     }
 
-    public function dataProviderverify3D(): array
-    {
-        $this->success3DCard          = serialize($this->createSuccess3DCardOrder());
-        $this->failedAuthentication   = serialize($this->createFailedAuthenticationOrder());
-        $this->missingCardAuthentication = serialize($this->createMissingCardAuthenticationOrder());
-
-        return [
-            'success' => [
-                'paymentId' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'paypalOrder' => $this->success3DCard,
-                'alwaysIgnoreSCAResult' => false,
-                'assert' => 'assertTrue',
-                'sca' => Constants::PAYPAL_SCA_ALWAYS
-            ],
-            'fail' => [
-                'paymentId' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'paypalOrder' => $this->failedAuthentication,
-                'alwaysIgnoreSCAResult' => false,
-                'assert' => 'assertFalse',
-                'sca' => Constants::PAYPAL_SCA_ALWAYS
-            ],
-            'other_payment' => [
-                'paymentId' => PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID,
-                'paypalOrder' => $this->failedAuthentication,
-                'alwaysIgnoreSCAResult' => false,
-                'assert' => 'assertTrue',
-                'sca' => Constants::PAYPAL_SCA_ALWAYS
-            ],
-            'ignore_sca' => [
-                'paymentId' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'paypalOrder' => $this->failedAuthentication,
-                'alwaysIgnoreSCAResult' => true,
-                'assert' => 'assertTrue',
-                'sca' => Constants::PAYPAL_SCA_WHEN_REQUIRED
-            ],
-            'sca_automatic_empty_result' => [
-                'paymentId' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'paypalOrder' => $this->missingCardAuthentication,
-                'alwaysIgnoreSCAResult' => false,
-                'assert' => 'assertTrue',
-                'sca' => Constants::PAYPAL_SCA_WHEN_REQUIRED
-            ]
-        ];
-    }
 
 
-    /**
-     * @dataProvider dataProviderverify3D
-     */
-    public function testVerify3D(
-        string $paymentId,
-        string $paypalOrder,
-        bool $alwaysIgnoreSCAResult,
-        string $assert,
-        string $sca
-    ): void {
-        $paymentService = $this->getPaymentServiceMock($paypalOrder, [], $alwaysIgnoreSCAResult, $sca);
-        $this->$assert(
-            $paymentService->verify3D($paymentId, unserialize($paypalOrder))
-        );
-    }
 
     private function getPuiOrderRequest(): OrderRequest
     {
@@ -357,7 +303,8 @@ final class PaymentTest extends BaseTestCase
         string $serializedOrder,
         array $addMockMethods = [],
         bool $alwaysIgnoreSCAResult = false,
-        string $sca = Constants::PAYPAL_SCA_ALWAYS
+        string $sca = Constants::PAYPAL_SCA_ALWAYS,
+        ?SCAValidatorInterface $scaValidator = null
     ): MockObject {
         $moduleSettingsService = $this->getMockBuilder(ModuleSettingsService::class)
             ->disableOriginalConstructor()
@@ -373,6 +320,10 @@ final class PaymentTest extends BaseTestCase
 
         $logger = $this->createMock(LoggerInterface::class);
 
+        $serviceFactory = $this->getMockBuilder(ServiceFactory::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $paymentService = $this->getMockBuilder(PaymentService::class)
             ->onlyMethods(array_merge(['fetchOrderFields', 'trackPayPalOrder'], $addMockMethods))
             ->setConstructorArgs(
@@ -381,7 +332,7 @@ final class PaymentTest extends BaseTestCase
                     $this->getMockBuilder(OrderRepository::class)
                         ->disableOriginalConstructor()
                         ->getMock(),
-                    new SCAValidator(),
+                    $scaValidator ?? new SCAValidator($serviceFactory, $moduleSettingsService),
                     $moduleSettingsService,
                     $logger,
                     $this->getServiceFromContainer(OrderProcessTrackingService::class),

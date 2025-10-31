@@ -86,7 +86,10 @@ class Payment
 
     private $logger;
 
-    private OrderProcessTrackingService $orderProcessTrackingService;
+    /**
+     * @var \OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService
+     */
+    private $orderProcessTrackingService;
 
     public function __construct(
         EshopSession $eshopSession,
@@ -139,8 +142,7 @@ class Payment
             $paymentSource,
             null,
             $returnUrl,
-            $cancelUrl,
-            $setProvidedAddress
+            $cancelUrl
         );
 
         $response = null;
@@ -274,7 +276,7 @@ class Payment
         }
 
         //Verify 3D result if acdc payment
-        if (!$this->verify3D($paymentId, $payPalOrder)) {
+        if (!$this->scaValidator->verify3D($paymentId, $payPalOrder)) {
             throw oxNew(StandardException::class, 'OSC_PAYPAL_3DSECURITY_ERROR');
         }
 
@@ -870,36 +872,6 @@ class Payment
                 $fields,
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
-    }
-
-    public function verify3D(string $paymentId, Order $payPalOrder): bool
-    {
-        //no ACDC OR Gpay payment
-        if (
-            !in_array($paymentId, [
-            PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-            PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID
-            ], true)
-        ) {
-            return true;
-        }
-        //case no check is needed
-        if ($this->moduleSettingsService->alwaysIgnoreSCAResult()) {
-            return true;
-        }
-        //case check is to be done automatic but we have no result to check
-        if (
-            (Constants::PAYPAL_SCA_WHEN_REQUIRED === $this->moduleSettingsService->getPayPalSCAContingency()) &&
-            is_null($this->scaValidator->getCardAuthenticationResult($payPalOrder))
-        ) {
-            return true;
-        }
-        //Verify 3D result if acdc payment
-        if ($this->scaValidator->isCardUsableForPayment($payPalOrder)) {
-            return true;
-        }
-
-        return false;
     }
 
     private function handlePayPalApiError(ApiException $exception): void

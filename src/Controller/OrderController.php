@@ -28,6 +28,8 @@ use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderPayPalService;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use OxidSolutionCatalysts\PayPal\Service\SCAValidator;
+use OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -270,8 +272,10 @@ class OrderController extends OrderController_parent
         $orderId = (string) Registry::getRequest()->getRequestParameter('orderID');
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        /** @var SCAValidator $scaValidator */
+        $scaValidator = $this->getServiceFromContainer(SCAValidatorInterface::class);
         $payPalApiOrder = $paymentService->fetchOrderFields($orderId);
-        $verify3DResult = $paymentService->verify3D(
+        $verify3DResult = $scaValidator->verify3D(
             PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID,
             $payPalApiOrder
         );

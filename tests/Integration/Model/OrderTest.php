@@ -281,10 +281,13 @@ final class OrderTest extends BaseTestCase
         EshopRegistry::getSession()->setUser(oxNew(EshopModelUser::class));
         EshopRegistry::getSession()->setBasket(oxNew(EshopModelBasket::class));
 
+        $scaValidatorMock = $this->createMock(SCAValidatorInterface::class);
+        $scaValidatorMock->method('verify3D')->willReturn(true);
+
         $paymentService = new \OxidSolutionCatalysts\PayPal\Service\Payment(
             EshopRegistry::getSession(),
             $this->createMock(OrderRepository::class),
-            $this->createMock(SCAValidatorInterface::class),
+            $scaValidatorMock,
             $this->createMock(ModuleSettings::class),
             $this->createMock(LoggerInterface::class),
             $this->createMock(OrderProcessTrackingService::class),
