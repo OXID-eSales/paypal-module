@@ -6,7 +6,6 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Service;
 
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings as ModuleSettingsService;
 use OxidSolutionCatalysts\PayPal\Service\SCAValidator;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
@@ -150,11 +149,7 @@ final class SCAValidatorTest extends BaseTestCase
             ->method('alwaysIgnoreSCAResult')
             ->willReturn($alwaysIgnoreSCAResult);
 
-        $serviceFactory = $this->getMockBuilder(ServiceFactory::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
-        $validator = new SCAValidator($serviceFactory, $moduleSettingsService);
+        $validator = new SCAValidator($moduleSettingsService);
 
         $this->$assert(
             $validator->verify3D($paymentId, $paypalOrder)

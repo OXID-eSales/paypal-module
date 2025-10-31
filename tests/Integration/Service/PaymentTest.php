@@ -16,7 +16,6 @@ use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings as ModuleSettingsService;
 use OxidSolutionCatalysts\PayPal\Service\SCAValidator;
 use OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface;
@@ -320,10 +319,6 @@ final class PaymentTest extends BaseTestCase
 
         $logger = $this->createMock(LoggerInterface::class);
 
-        $serviceFactory = $this->getMockBuilder(ServiceFactory::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $paymentService = $this->getMockBuilder(PaymentService::class)
             ->onlyMethods(array_merge(['fetchOrderFields', 'trackPayPalOrder'], $addMockMethods))
             ->setConstructorArgs(
@@ -332,7 +327,7 @@ final class PaymentTest extends BaseTestCase
                     $this->getMockBuilder(OrderRepository::class)
                         ->disableOriginalConstructor()
                         ->getMock(),
-                    $scaValidator ?? new SCAValidator($serviceFactory, $moduleSettingsService),
+                    $scaValidator ?? new SCAValidator($moduleSettingsService),
                     $moduleSettingsService,
                     $logger,
                     $this->getServiceFromContainer(OrderProcessTrackingService::class),

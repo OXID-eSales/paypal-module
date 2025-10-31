@@ -6,7 +6,6 @@ namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Service;
 
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\SCAValidator;
 use OxidSolutionCatalysts\PayPal\Exception\CardValidation as CardValidationException;
@@ -20,11 +19,10 @@ class CardValidationTest extends UnitTestCase
 {
     private function createValidator(): SCAValidator
     {
-        $serviceFactory = $this->createMock(ServiceFactory::class);
         $moduleSettings = $this->createMock(ModuleSettings::class);
         $moduleSettings->method('alwaysIgnoreSCAResult')->willReturn(false);
         $moduleSettings->method('getPayPalSCAContingency')->willReturn(Constants::PAYPAL_SCA_WHEN_REQUIRED);
-        return new SCAValidator($serviceFactory, $moduleSettings);
+        return new SCAValidator($moduleSettings);
     }
 
     /**
