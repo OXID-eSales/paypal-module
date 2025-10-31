@@ -9,11 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
-use OxidSolutionCatalysts\PayPal\Exception\CardValidation;
 
 /**
  * Recommended actions according to
@@ -21,7 +18,18 @@ use OxidSolutionCatalysts\PayPal\Exception\CardValidation;
  */
 interface SCAValidatorInterface
 {
-    public function isCardUsableForPayment(PayPalApiOrder $order): bool;
+    /**
+     * Checks if the given payment method is eligible for 3D Secure processing.
+     */
+    public function isEligibleFor3DS(string $paymentId): bool;
 
-    public function getCardAuthenticationResult(PayPalApiOrder $order): ?AuthenticationResponse;
+    public function isCardUsableForPayment(
+        PayPalApiOrder $order,
+        ?AuthenticationResponse $authenticationResponse = null
+    ): bool;
+
+    public function getCardAuthenticationResponse(PayPalApiOrder $payPalOrder): ?AuthenticationResponse;
+
+    public function getModuleSettingsService(): ModuleSettings;
+    public function verify3D(string $paymentId, ?PayPalApiOrder $payPalOrder = null): bool;
 }

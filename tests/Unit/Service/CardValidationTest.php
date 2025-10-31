@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Service;
 
-use OxidEsales\Eshop\Core\Exception\DatabaseErrorException;
 use OxidEsales\TestingLibrary\UnitTestCase;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\SCAValidator;
 use OxidSolutionCatalysts\PayPal\Exception\CardValidation as CardValidationException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
@@ -16,6 +18,15 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\ThreeDSecureAuthenticationRespo
 
 class CardValidationTest extends UnitTestCase
 {
+    private function createValidator(): SCAValidator
+    {
+        $serviceFactory = $this->createMock(ServiceFactory::class);
+        $moduleSettings = $this->createMock(ModuleSettings::class);
+        $moduleSettings->method('alwaysIgnoreSCAResult')->willReturn(false);
+        $moduleSettings->method('getPayPalSCAContingency')->willReturn(Constants::PAYPAL_SCA_WHEN_REQUIRED);
+        return new SCAValidator($serviceFactory, $moduleSettings);
+    }
+
     /**
      * Helper method to create a PayPalApiOrder with a configured PaymentSourceResponse and CardResponse.
      *
@@ -70,44 +81,43 @@ class CardValidationTest extends UnitTestCase
 
     public function testMissingPaymentSource(): void
     {
-        $this->markTestSkipped("strange error  Table 'example.oxv_oxshops_en' doesn't exist in database.");
-        $validator = new SCAValidator();
+        $this->markTestSkipped("Requires database tables in testing environment; skipping.");
+        $validator = $this->createValidator();
 
-        $this->expectException(DatabaseErrorException::class);
         $this->expectException(CardValidationException::class);
         $this->expectExceptionMessage(CardValidationException::byMissingPaymentSource()->getMessage());
 
         $order = new PayPalApiOrder();
-        $validator->getCardAuthenticationResult($order);
+        $validator->getCardAuthenticationResponse($order);
     }
 
     public function testNonCardPaymentSource(): void
     {
-        $validator = new SCAValidator();
+        $validator = $this->createValidator();
 
         $this->expectException(CardValidationException::class);
         $this->expectExceptionMessage(CardValidationException::byPaymentSource()->getMessage());
 
         // Create an order that has a PaymentSourceResponse but no card.
         $order = $this->createOrderFromOptions(['card' => false]);
-        $validator->getCardAuthenticationResult($order);
+        $validator->getCardAuthenticationResponse($order);
     }
 
     public function testMissingCardAutentication(): void
     {
-        $validator = new SCAValidator();
+        $validator = $this->createValidator();
 
         // Create an order with a card, but without any authentication_result.
         $order = $this->createOrderFromOptions([
             'last_digits'          => '9760',
             'include_authentication' => false
         ]);
-        $this->assertNull($validator->getCardAuthenticationResult($order));
+        $this->assertNull($validator->getCardAuthenticationResponse($order));
     }
 
     public function testAuthenticationResultSuccess()
     {
-        $validator = new SCAValidator();
+        $validator = $this->createValidator();
 
         // Create an order with a successful authentication result.
         $order = $this->createOrderFromOptions([
@@ -119,7 +129,7 @@ class CardValidationTest extends UnitTestCase
             ]
         ]);
 
-        $validationResult = $validator->getCardAuthenticationResult($order);
+        $validationResult = $validator->getCardAuthenticationResponse($order);
         $this->assertSame(SCAValidator::LIABILITY_SHIFT_POSSIBLE, $validationResult->liability_shift);
         $this->assertSame(SCAValidator::AUTH_STATUS_SUCCESS, $validationResult->three_d_secure->authentication_status);
         $this->assertSame(SCAValidator::ENROLLMENT_STATUS_YES, $validationResult->three_d_secure->enrollment_status);
@@ -127,18 +137,19 @@ class CardValidationTest extends UnitTestCase
 
     public function testIsCardSafeToUseFail()
     {
-        $validatorMock = $this->createMock(SCAValidator::class);
+        $validator = $this->createValidator();
 
-        $validatorMock->method('isCardUsableForPayment')
-            ->with($this->isInstanceOf(PayPalApiOrder::class))
-            ->willReturn(false);
-
+        // Enrolled card (Y) with failed authentication (N) and NO liability shift should not be allowed
         $order = $this->createOrderFromOptions([
-            'last_digits'          => '9760',
-            'include_authentication' => false
+            'last_digits'      => '1234',
+            'liability_shift'  => 'NO',
+            'three_d_secure'   => [
+                'authentication_status' => 'N',
+                'enrollment_status'     => 'Y'
+            ]
         ]);
 
-        $this->assertFalse($validatorMock->isCardUsableForPayment($order), 'Card should not be usable for payment.');
+        $this->assertFalse($validator->isCardUsableForPayment($order), 'Card should not be usable for payment.');
     }
 
 
@@ -147,7 +158,7 @@ class CardValidationTest extends UnitTestCase
      */
     public function testIsCardSafeToUse(array $options, string $assertMethod)
     {
-        $validator = new SCAValidator();
+        $validator = $this->createValidator();
         $order = $this->createOrderFromOptions($options);
         $this->$assertMethod($validator->isCardUsableForPayment($order));
     }
@@ -156,17 +167,25 @@ class CardValidationTest extends UnitTestCase
     {
         return [
             'timeout' => [
-                ['7210', 'NO', null],
+                ['last_digits' => '7210', 'liability_shift' => 'NO', 'three_d_secure' => null],
                 'assertTrue'
             ],
 
             'secured' => [
-                ['1234', 'YES', ['authentication_status' => 'Y', 'enrollment_status' => 'Y']],
+                [
+                    'last_digits' => '1234',
+                    'liability_shift' => 'YES',
+                    'three_d_secure' => ['authentication_status' => 'Y', 'enrollment_status' => 'Y']
+                ],
                 'assertTrue'
             ],
 
             'attempted' => [
-                ['1111', 'POSSIBLE', ['authentication_status' => 'A', 'enrollment_status' => 'Y']],
+                [
+                    'last_digits' => '1111',
+                    'liability_shift' => 'POSSIBLE',
+                    'three_d_secure' => ['authentication_status' => 'A', 'enrollment_status' => 'Y']
+                ],
                 'assertTrue'
             ]
         ];
