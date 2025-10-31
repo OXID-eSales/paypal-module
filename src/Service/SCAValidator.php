@@ -7,6 +7,7 @@
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
+use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
@@ -35,11 +36,10 @@ class SCAValidator implements SCAValidatorInterface
     private $serviceFactory;
 
     public function __construct(
-        ServiceFactory $serviceFactory,
         ModuleSettings $moduleSettingsService
     )
     {
-        $this->serviceFactory = $serviceFactory;
+        $this->serviceFactory = Registry::get(ServiceFactory::class);;
         $this->moduleSettingsService = $moduleSettingsService;
     }
 
