@@ -14,7 +14,7 @@
             <div id="card-name-field-container"></div>
         </div>
         {% if oscpaypal_isVaultingPossible %}
-            <input type="checkbox" id="oscPayPalVaultPaymentCheckbox">
+            <input type="checkbox" id="oscPayPalVaultPaymentCheckbox" disabled>
             <label for="oscPayPalVaultPaymentCheckbox">{{ translate({ ident: "OSC_PAYPAL_VAULTING_SAVE" }) }}</label>
         {% endif %}
         <div class="hidden">

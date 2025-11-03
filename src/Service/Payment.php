@@ -10,7 +10,6 @@ namespace OxidSolutionCatalysts\PayPal\Service;
 use Exception;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
-use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Registry;
@@ -26,6 +25,7 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Module;
+use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
@@ -151,9 +151,6 @@ class Payment
                 $payPalClientMetadataId,
                 'return=minimal'
             );
-
-            $response->payment_source = $request->payment_source;
-            PayPalSession::storePayPalOrder((array)$response);
         } catch (ApiException $exception) {
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
@@ -274,7 +271,7 @@ class Payment
         }
 
         //Verify 3D result if acdc payment
-        if (!$this->verify3D($paymentId, $payPalOrder)) {
+        if (!$this->scaValidator->verify3D($paymentId, $payPalOrder)) {
             throw oxNew(StandardException::class, 'OSC_PAYPAL_3DSECURITY_ERROR');
         }
 
@@ -397,7 +394,13 @@ class Payment
                     $vaultSuccess = false;
 
                     if ($id = $vault->customer["id"]) {
-                        $this->saveCustomerIdToUser($id);
+                        $user = Registry::getConfig()->getUser();
+
+                        $user->oxuser__oscpaypalcustomerid = new Field($id);
+
+                        if ($user->save()) {
+                            $vaultSuccess = true;
+                        }
                     }
 
                     if (!$vaultSuccess) {
@@ -424,20 +427,6 @@ class Payment
         return $result;
     }
 
-    public function saveCustomerIdToUser(string $customerId, ?User $user = null): void
-    {
-        if (null === $user) {
-            $user = Registry::getConfig()->getUser();
-        }
-
-        if (!$user) {
-            return;
-        }
-
-        $user->oxuser__oscpaypalcustomerid = new Field($customerId);
-        $user->save();
-    }
-
     /**
      * @throws \OxidSolutionCatalysts\PayPalApi\Exception\ApiException
      * @throws \OxidSolutionCatalysts\PayPal\Exception\PayPalException
@@ -450,7 +439,8 @@ class Payment
     ): string {
         $redirectLink = '';
 
-        $requestFactory = Registry::get(ConfirmOrderRequestFactory::class);
+        /** @var OrderRequestFactory $requestFactory */
+        $requestFactory = $this->getServiceFromContainer(OrderRequestFactory::class);
         /** @var ConfirmOrderRequest $request */
         $request = $requestFactory->getRequest(
             $basket,
@@ -465,6 +455,7 @@ class Payment
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
 
+        /** @var Order $response */
         $response = $orderService->confirmTheOrder(
             $payPalClientMetadataId,
             $checkoutOrderId,
@@ -678,6 +669,8 @@ class Payment
                     Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                 );
                 $payPalOrder->intent = Constants::PAYPAL_ORDER_INTENT_AUTHORIZE;
+
+
                 $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
 
                 if ($authorization->status === 'DENIED') {
@@ -872,36 +865,6 @@ class Payment
             );
     }
 
-    public function verify3D(string $paymentId, Order $payPalOrder): bool
-    {
-        //no ACDC OR Gpay payment
-        if (
-            !in_array($paymentId, [
-            PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-            PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID
-            ], true)
-        ) {
-            return true;
-        }
-        //case no check is needed
-        if ($this->moduleSettingsService->alwaysIgnoreSCAResult()) {
-            return true;
-        }
-        //case check is to be done automatic but we have no result to check
-        if (
-            (Constants::PAYPAL_SCA_WHEN_REQUIRED === $this->moduleSettingsService->getPayPalSCAContingency()) &&
-            is_null($this->scaValidator->getCardAuthenticationResult($payPalOrder))
-        ) {
-            return true;
-        }
-        //Verify 3D result if acdc payment
-        if ($this->scaValidator->isCardUsableForPayment($payPalOrder)) {
-            return true;
-        }
-
-        return false;
-    }
-
     private function handlePayPalApiError(ApiException $exception): void
     {
         $issue = $exception->getErrorIssue();
@@ -957,7 +920,6 @@ class Payment
         }
         if ($moduleSettings->isCustomIdSchemaStructural()) {
             $customID = [
-                'id' => $this->orderProcessTrackingService->getTrackingId(),
                 'oxordernr' => $orderNumber,
                 'moduleVersion' => $module->getInfo('version'),
                 'oxidVersion' => ShopVersion::getVersion()

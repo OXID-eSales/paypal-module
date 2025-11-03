@@ -7,11 +7,15 @@
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
+use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPal\Exception\CardValidation;
-
 /**
  * Implements the recommended actions according to
  * PayPal documentation: https://developer.paypal.com/docs/checkout/advanced/customize/3d-secure/response-parameters/
@@ -22,6 +26,86 @@ use OxidSolutionCatalysts\PayPal\Exception\CardValidation;
  */
 class SCAValidator implements SCAValidatorInterface
 {
+
+    /** @var ModuleSettings */
+    private $moduleSettingsService;
+
+    /**
+     * @var ServiceFactory
+     */
+    private $serviceFactory;
+
+    public function __construct(
+        ModuleSettings $moduleSettingsService
+    )
+    {
+        $this->serviceFactory = Registry::get(ServiceFactory::class);;
+        $this->moduleSettingsService = $moduleSettingsService;
+    }
+
+    public function verify3D(string $paymentId, ?PayPalApiOrder $payPalOrder = null): bool
+    {
+        // Check 3DS eligibility via SCA validator (payment method specific)
+        // If not eligible (e.g., non-card payments or SCA explicitly ignored), allow payment
+        if (!$this->isEligibleFor3DS($paymentId)) {
+            return true;
+        }
+
+        try {
+            // If no PayPal order is provided, attempt to load it using the checkout order id from the session
+            if ($payPalOrder === null) {
+                $checkoutOrderId = PayPalSession::getCheckoutOrderId();
+                // If there is no current order in session, the verification cannot be performed
+                if (empty($checkoutOrderId)) {
+                    return false;
+                }
+
+                $payPalOrder = $this->serviceFactory->getOrderService()
+                    ->showOrderDetails(
+                        $checkoutOrderId,
+                        '',
+                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+                    );
+            }
+
+            $authenticationResponse = $this->getCardAuthenticationResponse($payPalOrder);
+        } catch (CardValidation|ApiException $e) {
+            // Errors during verification: reject verification
+            return false;
+        }
+
+        try {
+            switch ($this->moduleSettingsService->getPayPalSCAContingency()) {
+                case Constants::PAYPAL_SCA_WHEN_REQUIRED:
+                    return is_null($authenticationResponse) || $this->isCardUsableForPayment($payPalOrder, $authenticationResponse);
+
+                case Constants::PAYPAL_SCA_ALWAYS:
+                    return $this->isCardUsableForPayment($payPalOrder, $authenticationResponse);
+            }
+        } catch (CardValidation $e) {
+            // Errors during verification: reject verification
+            return false;
+        }
+
+        return false;
+    }
+
+    /**
+     * Checks whether the given payment method should use 3D Secure flow.
+     */
+    public function isEligibleFor3DS(string $paymentId): bool
+    {
+        //3ds disabled in module settings
+        if ($this->getModuleSettingsService()->alwaysIgnoreSCAResult()) {
+            return false;
+        }
+
+        return in_array($paymentId, [
+            PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
+            PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID,
+        ], true);
+    }
+
     /**
      * Liability shift values:
      * - POSSIBLE: Liability has shifted to the card issuer.
@@ -71,36 +155,41 @@ class SCAValidator implements SCAValidatorInterface
      *    - Attempted authentication with POSSIBLE liability shift: Allow payment
      *    - Failed authentication or no liability shift: Decline payment
      *
-     * @param PayPalApiOrder $order The PayPal order containing card authentication results
+     * @param \OxidSolutionCatalysts\PayPalApi\Model\Orders\Order $order
+     * @param \OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse|null $authenticationResponse
      * @return bool True if the card should be allowed for payment, false otherwise
      * @throws CardValidation If payment source information is missing or invalid
      */
-    public function isCardUsableForPayment(PayPalApiOrder $order): bool
+    public function isCardUsableForPayment(
+        PayPalApiOrder $order,
+        ?AuthenticationResponse $authenticationResponse = null
+    ): bool
     {
-        $authenticationResult = $this->getCardAuthenticationResult($order);
+        $authenticationResponse = $authenticationResponse ??
+            $this->getCardAuthenticationResponse($order);
 
         // According to PayPal docs, if there's no authentication result, we should allow the payment
         // This follows PayPal's recommendation for cases where 3D Secure verification wasn't performed
-        if (is_null($authenticationResult)) {
+        if (is_null($authenticationResponse)) {
             return true;
         }
 
         // Extract enrollment status, defaulting to empty string if not available
         // Enrollment status indicates whether the card is enrolled in the 3D Secure program
-        $enrollmentStatus = !is_null($authenticationResult->three_d_secure) &&
-            !is_null($authenticationResult->three_d_secure->enrollment_status) ?
-            (string) $authenticationResult->three_d_secure->enrollment_status : '';
+        $enrollmentStatus = !is_null($authenticationResponse->three_d_secure) &&
+        !is_null($authenticationResponse->three_d_secure->enrollment_status) ?
+            (string) $authenticationResponse->three_d_secure->enrollment_status : '';
 
         // Extract authentication status, defaulting to empty string if not available
         // Authentication status indicates the result of the 3D Secure authentication attempt
-        $authStatus = !is_null($authenticationResult->three_d_secure) &&
-             !is_null($authenticationResult->three_d_secure->authentication_status) ?
-            (string) $authenticationResult->three_d_secure->authentication_status : '';
+        $authStatus = !is_null($authenticationResponse->three_d_secure) &&
+        !is_null($authenticationResponse->three_d_secure->authentication_status) ?
+            (string) $authenticationResponse->three_d_secure->authentication_status : '';
 
         // Extract liability shift, defaulting to empty string if not available
         // Liability shift indicates whether the liability for fraud has shifted from the merchant to the card issuer
-        $liabilityShift = !is_null($authenticationResult->liability_shift) ?
-            (string) $authenticationResult->liability_shift : '';
+        $liabilityShift = !is_null($authenticationResponse->liability_shift) ?
+            (string) $authenticationResponse->liability_shift : '';
 
         // Delegate to shouldContinueAuthorization to apply PayPal's recommended actions
         return $this->shouldContinueAuthorization($enrollmentStatus, $authStatus, $liabilityShift);
@@ -117,33 +206,33 @@ class SCAValidator implements SCAValidatorInterface
      * - Authentication status (the result of the authentication attempt)
      * - Liability shift indicator (whether liability has shifted to the card issuer)
      *
-     * @param PayPalApiOrder $order The PayPal order to extract authentication results from
+     * @param PayPalApiOrder $payPalOrder The PayPal order to extract authentication results from
      * @return AuthenticationResponse|null The authentication result, or null if not available
      * @throws CardValidation If payment source information is missing or invalid
      */
-    public function getCardAuthenticationResult(PayPalApiOrder $order): ?AuthenticationResponse
+    public function getCardAuthenticationResponse(PayPalApiOrder $payPalOrder): ?AuthenticationResponse
     {
         // Verify payment source exists
-        if (is_null($order->payment_source)) {
+        if (is_null($payPalOrder->payment_source)) {
             throw CardValidation::byMissingPaymentSource();
         }
 
         // Verify card payment source exists
-        if (is_null($order->payment_source->card) && is_null($order->payment_source->google_pay)) {
+        if (is_null($payPalOrder->payment_source->card) && is_null($payPalOrder->payment_source->google_pay)) {
             throw CardValidation::byPaymentSource();
         }
 
         // If no authentication result is available, return null
         // According to PayPal docs, this is a valid scenario and should allow payment to proceed
         if (
-            is_null($order->payment_source->card->authentication_result) &&
-            is_null($order->payment_source->google_pay->card->authentication_result)
+            is_null($payPalOrder->payment_source->card->authentication_result) &&
+            is_null($payPalOrder->payment_source->google_pay->card->authentication_result)
         ) {
             return null;
         }
 
-        return $order->payment_source->card->authentication_result
-            ?? ($order->payment_source->google_pay->card->authentication_result ?? null);
+        return $payPalOrder->payment_source->card->authentication_result
+            ?? ($payPalOrder->payment_source->google_pay->card->authentication_result ?? null);
     }
 
     /**
@@ -266,5 +355,13 @@ class SCAValidator implements SCAValidatorInterface
                 // Safest approach for unknown authentication status
                 return false;
         }
+    }
+
+    /**
+     * @return \OxidSolutionCatalysts\PayPal\Service\ModuleSettings
+     */
+    public function getModuleSettingsService(): ModuleSettings
+    {
+        return $this->moduleSettingsService;
     }
 }
