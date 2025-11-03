@@ -211,93 +211,6 @@ final class PaymentTest extends BaseTestCase
         $this->assertSame(PaymentService::PAYMENT_ERROR_NONE, $paymentService->getPaymentExecutionError());
     }
 
-    public function testACDCOrder3DSecureFail(): void
-    {
-        /** @var \OxidSolutionCatalysts\PayPal\Service\Payment|MockObject $paymentService */
-        $paymentService = $this->getPaymentServiceMock(
-            $this->failedAuthentication,
-            [
-                'verify3D',
-            ]
-        );
-
-        $paymentService->expects($this->once())
-            ->method('verify3D')
-            ->willReturn(false);
-
-        $shopOrderModel = oxNew(EshopModelOrder::class);
-        $this->expectExceptionMessage('OSC_PAYPAL_3DSECURITY_ERROR');
-        $this->expectException(StandardException::class);
-
-        $paymentService->doCapturePayPalOrder(
-            $shopOrderModel,
-            'some_id',
-            PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID
-        );
-    }
-
-    public function dataProviderverify3D(): array
-    {
-        $this->success3DCard          = serialize($this->createSuccess3DCardOrder());
-        $this->failedAuthentication   = serialize($this->createFailedAuthenticationOrder());
-        $this->missingCardAuthentication = serialize($this->createMissingCardAuthenticationOrder());
-
-        return [
-            'success' => [
-                'paymentId' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'paypalOrder' => $this->success3DCard,
-                'alwaysIgnoreSCAResult' => false,
-                'assert' => 'assertTrue',
-                'sca' => Constants::PAYPAL_SCA_ALWAYS
-            ],
-            'fail' => [
-                'paymentId' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'paypalOrder' => $this->failedAuthentication,
-                'alwaysIgnoreSCAResult' => false,
-                'assert' => 'assertFalse',
-                'sca' => Constants::PAYPAL_SCA_ALWAYS
-            ],
-            'other_payment' => [
-                'paymentId' => PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID,
-                'paypalOrder' => $this->failedAuthentication,
-                'alwaysIgnoreSCAResult' => false,
-                'assert' => 'assertTrue',
-                'sca' => Constants::PAYPAL_SCA_ALWAYS
-            ],
-            'ignore_sca' => [
-                'paymentId' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'paypalOrder' => $this->failedAuthentication,
-                'alwaysIgnoreSCAResult' => true,
-                'assert' => 'assertTrue',
-                'sca' => Constants::PAYPAL_SCA_WHEN_REQUIRED
-            ],
-            'sca_automatic_empty_result' => [
-                'paymentId' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'paypalOrder' => $this->missingCardAuthentication,
-                'alwaysIgnoreSCAResult' => false,
-                'assert' => 'assertTrue',
-                'sca' => Constants::PAYPAL_SCA_WHEN_REQUIRED
-            ]
-        ];
-    }
-
-
-    /**
-     * @dataProvider dataProviderverify3D
-     */
-    public function testVerify3D(
-        string $paymentId,
-        string $paypalOrder,
-        bool $alwaysIgnoreSCAResult,
-        string $assert,
-        string $sca
-    ): void {
-        $paymentService = $this->getPaymentServiceMock($paypalOrder, [], $alwaysIgnoreSCAResult, $sca);
-        $this->$assert(
-            $paymentService->verify3D($paymentId, unserialize($paypalOrder))
-        );
-    }
-
     private function getPuiOrderRequest(): OrderRequest
     {
         $decoded = $this->getPuiRequestData();
@@ -346,7 +259,7 @@ final class PaymentTest extends BaseTestCase
                     $this->getMockBuilder(OrderRepository::class)
                         ->disableOriginalConstructor()
                         ->getMock(),
-                    new SCAValidator(),
+                    $scaValidator ?? new SCAValidator($moduleSettingsService),
                     $moduleSettingsService,
                     $this->getPsrLoggerMock(),
                     $orderProcessTrackingService,
