@@ -4,15 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.6.2] - 2025-??-??
+## [2.6.2] - 2025-11-04
 
 ### NEW
 
 - add Age Control (min age 18) for PUI
 - [0007785](https://bugs.oxid-esales.com/view.php?id=7785): Fix: If you only fill in one of the fields Tracking carrier or code for PayPal orders, an alert inform that you need all fields
 - show Express-Buttons only if Basket > 0 or ArticlePrice > 0
-- fix GooglePay-Button-Integration
-- fix ApplePay-Button-Integration
 - [0007821](https://bugs.oxid-esales.com/view.php?id=7821): use finalizeOrder for all payments again
 - use PayPal-Client v3.0.19 (same as O7)
 - Add handling for worst case: When the order is completed and the customer clicks around, the customer is redirected to the thank you page
@@ -23,11 +21,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007822](https://bugs.oxid-esales.com/view.php?id=7822): use existing DeliveryAddresses instead creating new once
 - use the loading-animation from backend also in frontend
 - faster Checkout
-- fix: payment with ApplePay
+- fix: GooglePay-Button-Integration
+- fix: ApplePay-Button-Integration
 - fix: capture in the backend only for PayPal-Orders
 - [0007450](https://bugs.oxid-esales.com/view.php?id=7822): Mandatory field is ignored - old bugticket, but occurred again
 - do not authorize an order in express-flow, before the "pay now" button is clicked.
-- fix floating point error when performing a manual refund
+- fix: floating point error when performing a manual refund
 
 ## [2.6.1] - 2025-08-18
 
