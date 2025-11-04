@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - use PayPal-Client v3.0.19
 - Add handling for worst case: When the order is completed and the customer clicks around, the customer is redirected to the thank you page
 - Add new webhook 'VAULT.PAYMENT-TOKEN.CREATED'
+- 3ds related mechanisms moved to SCAValidator service
 
 ### FIX
 
