@@ -16,9 +16,9 @@ function getPaymentSubmitButton() {
         return smartyButton;
     }
 
-    const apexButton = document.querySelector('button[onclick*="document.getElementById(\'payment\').submit();"]');
-    if (apexButton) {
-        return apexButton;
+    const twigButton = document.querySelector('button[onclick*="document.getElementById(\'payment\').submit();"]');
+    if (twigButton) {
+        return twigButton;
     }
 
     return null;
