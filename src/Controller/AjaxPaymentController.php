@@ -239,7 +239,7 @@ class AjaxPaymentController extends ProxyController
         $session = Registry::getSession();
         $shopOrderId = $this->orderRepository->fetchCurrentShopOrderId();
         $order = $this->orderRepository->fetchCurrentShopOrder();
-        $basket = Registry::getSession()->getBasket();
+        $basket = $session->getBasket();
         $user = $basket->getUser();
 
         if ($basket->getItemsCount() === 0) {
@@ -254,7 +254,7 @@ class AjaxPaymentController extends ProxyController
         $config = Registry::getConfig();
         $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
         $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
-        $paymentId = Registry::getSession()->getVariable('paymentid');
+        $paymentId = $session->getVariable('paymentid');
         $intent = $captureStrategy === 'directly' ? OrderRequest::INTENT_CAPTURE : OrderRequest::INTENT_AUTHORIZE;
         $userAction = $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID ?
             OrderRequestFactory::USER_ACTION_CONTINUE : OrderRequestFactory::USER_ACTION_PAY_NOW;
