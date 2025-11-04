@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - faster Checkout
 - fix: payment with ApplePay
 - fix: capture in the backend only for PayPal-Orders
+- fix: frontend errors rendering  
  
 ## [3.5.0] - 2025-08-18
 
