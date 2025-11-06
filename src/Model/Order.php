@@ -268,9 +268,7 @@ class Order extends Order_parent
             $this->setTransId($capture->id);
         }
 
-        if (!$isPaypalGooglePay && !$isPaypalApplePay) {
-            $this->sendPayPalOrderByEmail($user, $basket);
-        }
+        $this->sendPayPalOrderByEmail($user, $basket);
     }
 
     /**
