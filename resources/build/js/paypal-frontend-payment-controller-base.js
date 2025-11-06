@@ -83,6 +83,7 @@
         };
 
         this.onShopOrderCreated = function (data) {
+            console.log('onShopOrderCreated triggered');
             PayPalPayment.setShopOrderData(data.detail, 'shop');
         };
 
@@ -335,9 +336,13 @@
         this.resolvePanelBody = function () {
             let panelBody = null;
 
-            const panelBodySmarty = document.querySelector("#orderPayment").querySelector(".panel-body");
+            const orderPayment = document.querySelector("#orderPayment");
+
+            // search for panel-body (flow, bootstrap3) or card-body (wave, bootstrap4)
+            const panelBodySmarty = orderPayment.querySelector(".panel-body, .card-body");
+
             if (null === panelBodySmarty) {
-                panelBody = document.querySelector("#orderPayment").nextElementSibling;
+                panelBody = orderPayment.nextElementSibling;
             } else {
                 panelBody = panelBodySmarty;
             }
