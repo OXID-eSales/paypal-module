@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.6.3] - 2025-??-??
+
+### NEW
+
+- Cancel a uAPM order that was ended by the customer using the back button.
+ 
+### FIX
+
+- fix: GooglePay send OrderMail
+- fix: ApplePay send OrderMail
+- fix: PUI-EMail-Handling (also use oxtotalordersum instead oxtotalbrutsum)
+- fix: Errorhandlings works in WAVE and Flow
+
 ## [2.6.2] - 2025-11-04
 
 ### NEW
