@@ -44,7 +44,7 @@
     [{oxmultilang ident="OSC_PAYPAL_PAYMENT_PUI_BANKNAME" suffix="COLON"}] [{ $puiPaymentDetails->bank_name }]
     [{oxmultilang ident="OSC_PAYPAL_PAYMENT_PUI_ACCOUNTHOLDER" suffix="COLON"}] [{ $puiPaymentDetails->account_holder_name }]
     [{oxmultilang ident="OSC_PAYPAL_PAYMENT_PUI_REFERENCE" suffix="COLON"}] [{ $puiPaymentDetails->payment_reference }]
-    [{oxmultilang ident="GRAND_TOTAL" suffix="COLON"}] [{oxprice price=$order->oxorder__oxtotalbrutsum->value currency=$currency}]
+    [{oxmultilang ident="GRAND_TOTAL" suffix="COLON"}] [{oxprice price=$order->oxorder__oxtotalordersum->value currency=$currency}]
 [{/block}]
 
 [{block name="email_plain_pui_paymentinfo_oxordernr"}]
