@@ -333,13 +333,30 @@
             }
         };
 
+        this.resolvePanelBody = function () {
+            let panelBody = null;
+
+            const orderPayment = document.querySelector("#orderPayment");
+
+            // search for panel-body (flow, bootstrap3) or card-body (wave, bootstrap4)
+            const panelBodySmarty = orderPayment.querySelector(".panel-body, .card-body");
+
+            if (null === panelBodySmarty) {
+                panelBody = orderPayment.nextElementSibling;
+            } else {
+                panelBody = panelBodySmarty;
+            }
+
+            return panelBody;
+        };
+
         this.showErrorMessage = function (message, className) {
             if(message.length === 0) {
                 message = PayPalI18n.OSC_PAYPAL_UNKNOWN_ERROR;
             }
 
             className = className || '';
-            const panelBody = document.querySelector("#orderPayment").querySelector(".panel-body");
+            const panelBody = PayPalPayment.resolvePanelBody();
 
             // Remove existing error if present
             PayPalPayment.removeErrorMessage(className);
@@ -358,7 +375,8 @@
 
         this.removeErrorMessage = function (className) {
             className = className || '';
-            const panelBody = document.querySelector("#orderPayment").querySelector(".panel-body");
+            const panelBody = PayPalPayment.resolvePanelBody();
+
             if (panelBody) {
                 const existingError = panelBody.querySelector(".error-message" + (className ? '.' + className : ''));
                 if (existingError) {
@@ -385,6 +403,7 @@
         };
 
         this.handleSavePaymentCheckbox = function() {
+
             const savePaymentChackbox = document.getElementById('oscPayPalVaultPaymentCheckbox');
             if (savePaymentChackbox) {
                 savePaymentChackbox.onclick = this.vaultingSettingSwitch;
