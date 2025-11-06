@@ -92,7 +92,7 @@
                 </tr>
                 <tr valign="top">
                     <th align="right" class="text-right">[{oxmultilang ident="GRAND_TOTAL"}]</th>
-                    <td>[{oxprice price=$order->oxorder__oxtotalbrutsum->value currency=$currency}]</td>
+                    <td>[{oxprice price=$order->oxorder__oxtotalordersum->value currency=$currency}]</td>
                 </tr>
             </tbody>
         </table>
