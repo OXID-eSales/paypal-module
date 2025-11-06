@@ -4,15 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.5.1] - 2025-??-??
+## [3.5.1] - 2025-11-06
  
 ### NEW
 
 - add Age Control (min age 18) for PUI
 - [0007785](https://bugs.oxid-esales.com/view.php?id=7785): Fix: If you only fill in one of the fields Tracking carrier or code for PayPal orders, an alert inform that you need all fields
 - show Express-Buttons only if Basket > 0 or ArticlePrice > 0
-- fix GooglePay-Button-Integration
-- fix ApplePay-Button-Integration
 - [0007821](https://bugs.oxid-esales.com/view.php?id=7821): use finalizeOrder for all payments again
 - fix PUI-EMail-Handling
 - use PayPal-Client v3.0.19
@@ -25,7 +23,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007783](https://bugs.oxid-esales.com/view.php?id=7783): fix birthday validation for PUI (Maintenance-Mode)
 - use the loading-animation from backend also in frontend
 - faster Checkout
-- fix: payment with ApplePay
+- fix: GooglePay-Button-Integration
+- fix: ApplePay-Button-Integration
 - fix: capture in the backend only for PayPal-Orders
 - fix: frontend errors rendering  
  
