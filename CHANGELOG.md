@@ -12,22 +12,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007785](https://bugs.oxid-esales.com/view.php?id=7785): Fix: If you only fill in one of the fields Tracking carrier or code for PayPal orders, an alert inform that you need all fields
 - show Express-Buttons only if Basket > 0 or ArticlePrice > 0
 - [0007821](https://bugs.oxid-esales.com/view.php?id=7821): use finalizeOrder for all payments again
-- fix PUI-EMail-Handling
 - use PayPal-Client v3.0.19
 - Add handling for worst case: When the order is completed and the customer clicks around, the customer is redirected to the thank you page
 - Add new webhook 'VAULT.PAYMENT-TOKEN.CREATED'
 - 3ds related mechanisms moved to SCAValidator service
+- Cancel a uAPM order that was ended by the customer using the back button.
 
 ### FIX
 
 - [0007783](https://bugs.oxid-esales.com/view.php?id=7783): fix birthday validation for PUI (Maintenance-Mode)
 - use the loading-animation from backend also in frontend
 - faster Checkout
-- fix: GooglePay-Button-Integration
-- fix: ApplePay-Button-Integration
+- fix: GooglePay-Button-Integration (also send OrderMail)
+- fix: ApplePay-Button-Integration (also send OrderMail)
 - fix: capture in the backend only for PayPal-Orders
-- fix: frontend errors rendering  
- 
+- fix: frontend errors rendering
+- fix: PUI-EMail-Handling (also use oxtotalordersum instead oxtotalbrutsum)
+- fix: Errorhandlings works in WAVE and Flow
+
 ## [3.5.0] - 2025-08-18
 
 ### NEW
