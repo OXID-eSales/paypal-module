@@ -14,7 +14,6 @@ use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
@@ -96,8 +95,9 @@ class OrderController extends OrderController_parent
             $isRetry = $this->renderRetryOrderExecution();
 
         if (!$isRetry && $paymentService->isOrderExecutionInProgress()) {
+            $errorMessage = $paymentService->getErrorMessageForInterruptedOrderExecution();
             $displayError = oxNew(DisplayError::class);
-            $displayError->setMessage('OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS');
+            $displayError->setMessage($errorMessage);
             Registry::getUtilsView()->addErrorToDisplay($displayError);
             $this->addTplParam('oscpaypal_executing_order', true);
         }
