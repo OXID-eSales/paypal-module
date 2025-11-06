@@ -459,26 +459,8 @@ class AjaxPaymentController extends ProxyController
             'Current user do not have permission to cancel referenced order'
         );
 
-        /** @var PayPalOrder $order */
-        $order = oxNew(Order::class);
-        $order->load($shopOrderId);
-
-        $orderNumberPart = !$order->hasOrderNumber() ? 'without Order number and' : '';
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        if ($moduleSettings->getPayPalDebugLevel() === 'debug') {
-            $this->logger->log('debug', sprintf(
-                'Temporary order %s with id %s was canceled',
-                $shopOrderId,
-                $orderNumberPart
-            ));
-        }
-
-        $order->cancelOrder();
-        $order->markOrderPaymentFailed();
-        $order->save();
-
-        Registry::getSession()->deleteVariable('sess_challenge'); //session cleanup
-        PayPalSession::unsetPayPalOrderId();
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $paymentService->removeTemporaryOrder($shopOrderId);
 
         $this->outputJson([
             'status' => 'success'
