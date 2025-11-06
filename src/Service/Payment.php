@@ -18,6 +18,7 @@ use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidEsales\Eshop\Core\ShopVersion;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModelExtension;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -514,24 +515,27 @@ class Payment
         return PayPalDefinitions::isPayPalPayment($sessionPaymentId);
     }
 
-    public function removeTemporaryOrder(): void
+    public function removeTemporaryOrder(?string $orderId = ''): void
     {
-        $sessionOrderId = $this->eshopSession->getVariable('sess_challenge');
-        if (!$sessionOrderId) {
+        $orderId = $orderId ?? $this->eshopSession->getVariable('sess_challenge');
+
+        if (!$orderId) {
             return;
         }
 
         $orderModel = oxNew(EshopModelOrder::class);
-        $orderModel->load($sessionOrderId);
+        $orderModel->load($orderId);
 
         if (
             $orderModel->isLoaded()
         ) {
             $orderModel->cancelOrder();
+            $orderModel->markOrderPaymentFailed();
+            $orderModel->save();
             if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
                 $this->logger->log('debug', sprintf(
                     'Temporary order with id %s was canceled',
-                    $sessionOrderId
+                    $orderId
                 ));
             }
             if (!$orderModel->hasOrderNumber()) {
@@ -539,7 +543,7 @@ class Payment
                 if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
                     $this->logger->log('debug', sprintf(
                         'Temporary order without Order number and with id %s was deleted',
-                        $sessionOrderId
+                        $orderId
                     ));
                 }
             }
@@ -563,6 +567,19 @@ class Payment
             ((PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId) ||
                 PayPalDefinitions::isUAPMPayment($paymentId)
             );
+    }
+
+    public function getErrorMessageForInterruptedOrderExecution(): string
+    {
+        $paymentId = $this->getSessionPaymentId();
+
+        if (!PayPalDefinitions::isUAPMPayment($paymentId)) {
+            return 'OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS';
+        }
+
+        $this->removeTemporaryOrder();
+
+        return 'OSC_PAYPAL_ORDEREXECUTION_ERROR';
     }
 
     /**
@@ -948,9 +965,7 @@ class Payment
     public function getCurrentOrderNumber(EshopModelBasket $basket): string
     {
         $customId = '';
-        /** @var \OxidSolutionCatalysts\PayPal\Service\Payment $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        $basket = Registry::getSession()->getBasket();
         /** @var EshopModelOrder $order */
         $order = oxNew(EshopModelOrder::class);
         $shopOrderOxid = $basket->getOrderId();
