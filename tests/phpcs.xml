@@ -38,11 +38,6 @@
         <exclude-pattern>src/Core/ShopControl.php</exclude-pattern>
     </rule>
 
-    <!-- code coverage ignore multiple classes in file -->
-    <rule ref="PSR1.Classes.ClassDeclaration.MultipleClasses">
-        <exclude-pattern>Tests/Codeception/Acceptance/WebhookCest.php</exclude-pattern>
-    </rule>
-
     <!-- ignore method declaration rules for tests -->
     <rule ref="PSR2.Methods.MethodDeclaration">
         <exclude-pattern>./</exclude-pattern>
