@@ -10,6 +10,7 @@ namespace OxidSolutionCatalysts\PayPal\Service;
 use Exception;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
+use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Registry;
@@ -25,7 +26,6 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalOrderModel;
 use OxidSolutionCatalysts\PayPal\Module;
-use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
@@ -138,8 +138,7 @@ class Payment
             $paymentSource,
             null,
             $returnUrl,
-            $cancelUrl,
-            $setProvidedAddress
+            $cancelUrl
         );
 
         $response = null;
@@ -150,6 +149,9 @@ class Payment
                 $payPalClientMetadataId,
                 'return=minimal'
             );
+
+            $response->payment_source = $request->payment_source;
+            PayPalSession::storePayPalOrder((array)$response);
         } catch (ApiException $exception) {
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
@@ -393,13 +395,7 @@ class Payment
                     $vaultSuccess = false;
 
                     if ($id = $vault->customer["id"]) {
-                        $user = Registry::getConfig()->getUser();
-
-                        $user->oxuser__oscpaypalcustomerid = new Field($id);
-
-                        if ($user->save()) {
-                            $vaultSuccess = true;
-                        }
+                        $this->saveCustomerIdToUser($id);
                     }
 
                     if (!$vaultSuccess) {
@@ -426,6 +422,20 @@ class Payment
         return $result;
     }
 
+    public function saveCustomerIdToUser(string $customerId, ?User $user = null): void
+    {
+        if (null === $user) {
+            $user = Registry::getConfig()->getUser();
+        }
+
+        if (!$user) {
+            return;
+        }
+
+        $user->oxuser__oscpaypalcustomerid = new Field($customerId);
+        $user->save();
+    }
+
     /**
      * @throws \OxidSolutionCatalysts\PayPalApi\Exception\ApiException
      * @throws \OxidSolutionCatalysts\PayPal\Exception\PayPalException
@@ -438,8 +448,7 @@ class Payment
     ): string {
         $redirectLink = '';
 
-        /** @var OrderRequestFactory $requestFactory */
-        $requestFactory = $this->getServiceFromContainer(OrderRequestFactory::class);
+        $requestFactory = Registry::get(ConfirmOrderRequestFactory::class);
         /** @var ConfirmOrderRequest $request */
         $request = $requestFactory->getRequest(
             $basket,
@@ -454,7 +463,6 @@ class Payment
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
 
-        /** @var Order $response */
         $response = $orderService->confirmTheOrder(
             $payPalClientMetadataId,
             $checkoutOrderId,
@@ -676,8 +684,6 @@ class Payment
                     Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                 );
                 $payPalOrder->intent = Constants::PAYPAL_ORDER_INTENT_AUTHORIZE;
-
-
                 $authorization = $payPalOrder->purchase_units[0]->payments->authorizations[0];
 
                 if ($authorization->status === 'DENIED') {
@@ -927,6 +933,7 @@ class Payment
         }
         if ($moduleSettings->isCustomIdSchemaStructural()) {
             $customID = [
+                'id' => $this->orderProcessTrackingService->getTrackingId(),
                 'oxordernr' => $orderNumber,
                 'moduleVersion' => $module->getInfo('version'),
                 'oxidVersion' => ShopVersion::getVersion()
@@ -945,9 +952,7 @@ class Payment
     public function getCurrentOrderNumber(EshopModelBasket $basket): string
     {
         $customId = '';
-        /** @var \OxidSolutionCatalysts\PayPal\Service\Payment $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        $basket = Registry::getSession()->getBasket();
         /** @var EshopModelOrder $order */
         $order = oxNew(EshopModelOrder::class);
         $shopOrderOxid = $basket->getOrderId();
