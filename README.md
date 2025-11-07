@@ -45,9 +45,6 @@ Warning: Running tests will reset the shop.
     run_tests_for_shop: false
     run_tests_for_modules: true
     ```
-* For codeception tests to be running, selenium server should be available, several options to solve this:
-    * Use OXID official [docker sdk configuration](https://github.com/OXID-eSales/docker-eshop-sdk).
-    * Use other preconfigured containers, example: ``image: 'selenium/standalone-chrome-debug:3.141.59'``
 
 #### Run
 
@@ -59,18 +56,6 @@ vendor/bin/runtests
 Running phpunit tests with coverage reports (report is generated in ``.../paypal/Tests/reports/`` directory):
 ```
 XDEBUG_MODE=coverage vendor/bin/runtests-coverage
-```
-
-Running codeception tests default way (Host: selenium, browser: chrome):
-in OXID 6.3 and above:
-```
-vendor/bin/runtests-codeception
-```
-
-Running codeception tests example with specific host/browser/testgroup:
-in OXID 6.3 and above:
-```
-SELENIUM_SERVER_HOST=seleniumchrome BROWSER_NAME=chrome vendor/bin/runtests-codeception --group=examplegroup
 ```
 
 ## CodeStyle commands ##
