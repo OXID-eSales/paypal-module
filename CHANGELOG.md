@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add new webhook 'VAULT.PAYMENT-TOKEN.CREATED'
 - 3ds related mechanisms moved to SCAValidator service
 - Cancel a uAPM order that was ended by the customer using the back button.
+- drop codeception-tests
 
 ### FIX
 
@@ -27,7 +28,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - fix: ApplePay-Button-Integration (also send OrderMail)
 - fix: capture in the backend only for PayPal-Orders
 - fix: frontend errors rendering
-- fix: PUI-EMail-Handling (also use oxtotalordersum instead oxtotalbrutsum)
+- fix: PUI-EMail-Handling (also use oxtotalordersum instead oxtotalbrutsum and send mail only once)
 - fix: Errorhandlings works in WAVE and Flow
 
 ## [3.5.0] - 2025-08-18
