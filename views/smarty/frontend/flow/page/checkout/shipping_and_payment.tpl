@@ -40,7 +40,7 @@
             <div class="panel-body">
                 [{if $vaultedPaymentDescription}]
                     [{$vaultedPaymentDescription}]
-                [{elseif !$oscpaypal_executing_order}]
+                [{else}]
                     [{$payment->oxpayments__oxdesc->value}]
                     [{if $sPaymentID == "oscpaypal_acdc"}]
                        [{include file="@osc_paypal/frontend/shared/acdc.tpl"}]

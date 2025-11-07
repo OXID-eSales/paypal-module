@@ -44,7 +44,6 @@ $aLang = [
     'PAYMENT_ERROR_INSTRUMENT_DECLINED'            => 'The chosen payment method at PayPal is not available for you.',
     'OSC_PAYPAL_ORDER_NOT_APPROVED'                => 'The order was not approved. Please try again later or with a different payment method.',
 
-    'OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'       => 'Order execution in progress, please wait for approx 60 seconds then press "order now" again.',
     'OSC_PAYPAL_LOG_IN_TO_CONTINUE'                => 'Please log in to continue checking out.',
 
     'OSC_PAYPAL_3DSECURITY_ERROR'                  => 'Security check failed, please retry.',

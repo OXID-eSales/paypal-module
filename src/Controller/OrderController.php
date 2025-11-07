@@ -50,16 +50,9 @@ class OrderController extends OrderController_parent
     use ServiceContainer;
     use JsonTrait;
 
-    public const RETRY_OSC_PAYMENT_REQUEST_PARAM = 'retryoscpp';
-
     private $removeTemporaryOrderOnRetry = [
         PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
         PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID
-    ];
-
-    private $retryPaymentMessages = [
-        'acdcretry' => 'OSC_PAYPAL_ACDC_PLEASE_RETRY',
-        'puiretry'  => 'OSC_PAYPAL_PUI_PLEASE_RETRY'
     ];
 
     public function init()
@@ -91,26 +84,9 @@ class OrderController extends OrderController_parent
             );
         }
 
-        $this->addTplParam('oscpaypal_executing_order', false);
-            $isRetry = $this->renderRetryOrderExecution();
-
-        if (!$isRetry && $paymentService->isOrderExecutionInProgress()) {
-            $errorMessage = $paymentService->getErrorMessageForInterruptedOrderExecution();
-            $displayError = oxNew(DisplayError::class);
-            $displayError->setMessage($errorMessage);
-            Registry::getUtilsView()->addErrorToDisplay($displayError);
-            $this->addTplParam('oscpaypal_executing_order', true);
+        if ($paymentService->isOrderExecutionInProgress()) {
+            $this->cancelpaypalsession();
         }
-
-        if (
-            $paymentService->getSessionPaymentId() === PayPalDefinitions::SEPA_PAYPAL_PAYMENT_ID
-            || $paymentService->getSessionPaymentId() === PayPalDefinitions::CCALTERNATIVE_PAYPAL_PAYMENT_ID
-            || $paymentService->getSessionPaymentId() === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID
-            || $paymentService->getSessionPaymentId() === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID
-        ) {
-            $paymentService->removeTemporaryOrder();
-        }
-
 
         $user = $this->getUser();
 
@@ -139,31 +115,7 @@ class OrderController extends OrderController_parent
             }
 
             $this->addTplParam('oscpaypal_isVaultingPossible', $isVaultingPossible);
-            $payPalCustomerId = $user->getFieldData("oscpaypalcustomerid");
             $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
-
-            if ($isVaultingPossible && $payPalCustomerId) {
-                $paymentDescription = '';
-
-                // Vaulted Cards
-                if ($paymentId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID) {
-                    $vaultedPaymentTokenSelected = $vaultingService->fetchSelectedVaultedPaymentToken($this->getUser());
-
-                    // the PaymentSourceIndex is set in Payment-Controller only by vaulted cards
-                    if (!is_null($vaultedPaymentTokenSelected)) {
-                        $paymentType = key($vaultedPaymentTokenSelected["payment_source"]);
-                        $paymentSource = $vaultedPaymentTokenSelected["payment_source"][$paymentType];
-                        // double check source type
-                        if ($paymentType === PayPalDefinitions::PAYMENT_SOURCE_CARD) {
-                            $string = $lang->translateString("OSC_PAYPAL_CARD_ENDING_IN");
-                            $paymentDescription = $paymentSource["brand"]
-                                . " "
-                                . $string
-                                . $paymentSource["last_digits"];
-                        }
-                    }
-                }
-            }
 
             if (
                 $paymentId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID ||
@@ -178,38 +130,6 @@ class OrderController extends OrderController_parent
         }
 
         return parent::render();
-    }
-
-    protected function renderRetryOrderExecution(): bool
-    {
-        $retryRequest = Registry::getRequest()->getRequestParameter(self::RETRY_OSC_PAYMENT_REQUEST_PARAM);
-
-        $order = oxNew(EshopModelOrder::class);
-        $order->load(Registry::getSession()->getVariable('sess_challenge'));
-
-        if (
-            !$order->getFieldData('oxtransid')
-            && $retryRequest
-            && isset($this->retryPaymentMessages[$retryRequest])
-        ) {
-            $displayError = oxNew(DisplayError::class);
-            $displayError->setMessage($this->retryPaymentMessages[$retryRequest]);
-            Registry::getUtilsView()->addErrorToDisplay($displayError);
-
-            $paymentService = $this->getServiceFromContainer(PaymentService::class);
-            if (
-                in_array(
-                    (string)$paymentService->getSessionPaymentId(),
-                    $this->removeTemporaryOrderOnRetry,
-                    true
-                )
-            ) {
-                $paymentService->removeTemporaryOrder();
-            }
-            return true;
-        }
-
-        return false;
     }
 
     public function getUserCountryIso(): string
@@ -550,21 +470,25 @@ class OrderController extends OrderController_parent
                 ->cancelPayPalSession('cannot finalize order');
     }
 
-    public function cancelpaypalsession(string $errorcode = null): string
+    public function cancelpaypalsession(string $errorcode = null): void
     {
-        //TODO: we get the PayPal order id retuned in token parameter, can be used for paranoia checks
-        //(string) Registry::getRequest()->getRequestParameter('token')
         $requestErrorcode = (string) Registry::getRequest()->getRequestParameter('errorcode');
 
         $this->getServiceFromContainer(PaymentService::class)
             ->removeTemporaryOrder();
 
-        $goNext = 'payment';
+        $goNext = 'cl=payment';
         if ($errorcode || $requestErrorcode) {
-            $goNext = 'payment?payerror=2';
+            $goNext .= '&payerror=2';
+            throw new Redirect(
+                Registry::getConfig()->getShopSecureHomeURL() . $goNext
+            );
         }
 
-        return $goNext;
+        throw new RedirectWithMessage(
+            Registry::getConfig()->getShopSecureHomeURL() . $goNext,
+            'OSC_PAYPAL_ORDEREXECUTION_ERROR'
+        );
     }
 
     /**
@@ -594,11 +518,6 @@ class OrderController extends OrderController_parent
 
         if (PayPalOrderModel::ORDER_STATE_ACDCINPROGRESS === $success) {
             return (string) $success;
-        }
-
-        if (PaymentService::PAYMENT_ERROR_PUI_PHONE === $success) {
-            //user needs to retry, entered pui phone number was not accepted by PayPal
-            return 'order?retryoscpp=puiretry';
         }
 
         if (PayPalOrderModel::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS === $success) {

@@ -42,7 +42,7 @@
         <div class="card-body">
             {% if vaultedPaymentDescription %}
                 {{ vaultedPaymentDescription }}
-            {% elseif not oscpaypal_executing_order %}
+            {% else %}
                 {{ payment.oxpayments__oxdesc.value }}
                 {% if paymentId == "oscpaypal_acdc" %}
                     {% include "@osc_paypal/frontend/acdc.html.twig" %}

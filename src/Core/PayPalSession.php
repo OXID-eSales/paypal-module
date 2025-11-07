@@ -124,8 +124,8 @@ class PayPalSession
             return false;
         }
 
-        $paymentId = (string) Registry::getSession()->getBasket()->getPaymentId();
-        return PayPalDefinitions::isPayPalPayment($paymentId);
+        $paymentId = Registry::getSession()->getBasket()->getPaymentId();
+        return PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID === $paymentId;
     }
 
     /**
