@@ -18,7 +18,6 @@ use OxidEsales\Eshop\Core\Session as EshopSession;
 use OxidEsales\Eshop\Core\ShopVersion;
 use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModelExtension;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
@@ -49,7 +48,6 @@ class Payment
 
     public const PAYMENT_ERROR_NONE = 'PAYPAL_PAYMENT_ERROR_NONE';
     public const PAYMENT_ERROR_GENERIC = 'PAYPAL_PAYMENT_ERROR_GENERIC';
-    public const PAYMENT_ERROR_PUI_PHONE = 'PAYPAL_PAYMENT_ERROR_PUI_PHONE';
     public const PAYMENT_ERROR_PUI_GENERIC = 'PAYPAL_PAYMENT_ERROR_PUI_GENRIC';
     public const PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED = 'PUI_PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED';
     public const PAYMENT_SOURCE_DECLINED_BY_PROCESSOR = 'PUI_PAYMENT_SOURCE_DECLINED_BY_PROCESSOR';
@@ -517,7 +515,7 @@ class Payment
 
     public function removeTemporaryOrder(?string $orderId = ''): void
     {
-        $orderId = $orderId ?? $this->eshopSession->getVariable('sess_challenge');
+        $orderId = $orderId ?: $this->eshopSession->getVariable('sess_challenge');
 
         if (!$orderId) {
             return;
@@ -564,22 +562,14 @@ class Payment
         return $sessionOrderId &&
             $payPalOrderId &&
             $paymentId &&
-            ((PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId) ||
+            (
+                PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId ||
+                PayPalDefinitions::SEPA_PAYPAL_PAYMENT_ID === $paymentId ||
+                PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID === $paymentId ||
+                PayPalDefinitions::CCALTERNATIVE_PAYPAL_PAYMENT_ID === $paymentId ||
+                PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID === $paymentId ||
                 PayPalDefinitions::isUAPMPayment($paymentId)
             );
-    }
-
-    public function getErrorMessageForInterruptedOrderExecution(): string
-    {
-        $paymentId = $this->getSessionPaymentId();
-
-        if (!PayPalDefinitions::isUAPMPayment($paymentId)) {
-            return 'OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS';
-        }
-
-        $this->removeTemporaryOrder();
-
-        return 'OSC_PAYPAL_ORDEREXECUTION_ERROR';
     }
 
     /**

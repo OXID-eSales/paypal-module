@@ -45,7 +45,6 @@ $aLang = [
     'PAYMENT_ERROR_INSTRUMENT_DECLINED'             => 'Die gewählte Zahlart steht Ihnen bei PayPal nicht zur Verfügung.',
     'OSC_PAYPAL_ORDER_NOT_APPROVED'                 => 'Die Bestellung wurde nicht genehmigt. Bitte versuchen Sie es später oder mit einer anderen Zahlart.',
 
-    'OSC_PAYPAL_ORDER_EXECUTION_IN_PROGRESS'        => 'Ihre Bestellung wird geprüft, das kann bis zu 60 Sekunden dauern. Bitte kurz warten und dann erneut auf "zahlungspflichtig bestellen" klicken.',
     'OSC_PAYPAL_LOG_IN_TO_CONTINUE'                 => 'Bitte loggen Sie sich ein, um die Bestellung abzuschliessen.',
     'OSC_PAYPAL_3DSECURITY_ERROR'                   => 'Die Sicherheitsüberprüfung ist fehlgeschlagen, bitte erneut versuchen.',
     'OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR'         => 'Die Zahlungsautorisierung wurde abgelehnt. Bitte überprüfen Sie Ihre Zahlungsdaten und versuchen Sie es erneut.',
