@@ -9,12 +9,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### NEW
 
 - Cancel a uAPM order that was ended by the customer using the back button.
+- drop codeception-tests
  
 ### FIX
 
 - fix: GooglePay send OrderMail
 - fix: ApplePay send OrderMail
-- fix: PUI-EMail-Handling (also use oxtotalordersum instead oxtotalbrutsum)
+- fix: PUI-EMail-Handling (also use oxtotalordersum instead oxtotalbrutsum and send mail only once)
 - fix: Errorhandlings works in WAVE and Flow
 
 ## [2.6.2] - 2025-11-04
