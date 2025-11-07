@@ -176,8 +176,10 @@ abstract class WebhookHandlerBase
             $paypalOrderModel->setPuiBankName($puiPaymentDetails->bank_name);
             $paypalOrderModel->setPuiAccountHolderName($puiPaymentDetails->account_holder_name);
 
-            $oxEmail = oxNew(Email::class);
-            $oxEmail->sendPuiInfo($order, $puiPaymentDetails);
+            if (!$order->isOrderPaid()) {
+                $oxEmail = oxNew(Email::class);
+                $oxEmail->sendPuiInfo($order, $puiPaymentDetails);
+            }
         }
 
         $paypalOrderModel->setTransactionType(Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE);
