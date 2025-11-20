@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - fix: compatibility-issues with telecash
 - fix: Banner-Placement on Detailspage
+- [0007857](https://bugs.oxid-esales.com/view.php?id=7857): Fix: When cancelling a PayPal order with a voucher and attempting to place the order again
 
 ## [3.5.1] - 2025-11-06
  

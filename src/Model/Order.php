@@ -298,7 +298,27 @@ class Order extends Order_parent
             return self::ORDER_STATE_OK;
         }
 
+        $this->markVouchers($oBasket, $oUser);
+
         return parent::sendOrderByEmail($oUser, $oBasket, $oPayment);
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket basket object
+     * @param \OxidEsales\Eshop\Application\Model\User   $oUser   user object
+     */
+    protected function markVouchers($oBasket, $oUser) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+    {
+        $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
+
+        // Skip markVoucher if finalizeOrder is called in the proxyController.
+        if (PayPalDefinitions::isProxyControllerPayment($sessionPaymentId)) {
+            return null;
+        }
+
+        return parent::markVouchers($oBasket, $oUser);
     }
 
     //TODO: this place should be refactored in shop core
