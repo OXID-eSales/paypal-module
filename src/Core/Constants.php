@@ -29,6 +29,9 @@ class Constants
     public const PAYPAL_ONBOARDING_SANDBOX_URL = 'https://www.sandbox.paypal.com/bizsignup/partner/entry';
     public const PAYPAL_ONBOARDING_LIVE_URL = 'https://www.paypal.com/bizsignup/partner/entry';
 
+    public const PAYPAL_TRANSACTION_SANDBOX_URL = 'https://www.sandbox.paypal.com/unifiedtransactions/details/payment/';
+    public const PAYPAL_TRANSACTION_LIVE_URL = 'https://www.paypal.com/unifiedtransactions/details/payment/';
+
     public const PAYPAL_DOCUMENTATION_DE = 'https://docs.oxid-esales.com/modules/paypal-checkout/de/latest/';
     public const PAYPAL_DOCUMENTATION_EN = 'https://docs.oxid-esales.com/modules/paypal-checkout/en/latest/';
 

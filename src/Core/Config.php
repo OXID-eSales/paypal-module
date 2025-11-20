@@ -427,6 +427,11 @@ class Config
         return $this->getServiceFromContainer(ModuleSettings::class)->isCustomIdSchemaStructural();
     }
 
+    public function getTransactionUrl(): string
+    {
+        return $this->isSandbox() ? Constants::PAYPAL_TRANSACTION_SANDBOX_URL : Constants::PAYPAL_TRANSACTION_LIVE_URL;
+    }
+
     public function tableExists(string $tableName = ''): bool
     {
         $exists = false;

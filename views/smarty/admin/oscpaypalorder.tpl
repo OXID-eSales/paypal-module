@@ -13,6 +13,7 @@
 [{if $order && $payPalOrder && $oView->getPayPalPaymentStatus()}]
 
     [{assign var="currency" value=$oView->getPayPalCurrency()}]
+    [{assign var="payPalConfig" value=$oViewConf->getPayPalCheckoutConfig()}]
 
     <table width="98%" cellspacing="0" cellpadding="0" border="0">
     <tbody>
@@ -181,7 +182,11 @@
                         <small>[{$currency}]</small>
                     </td>
                     <td valign="top" class="[{$class}]">[{oxmultilang ident='OSC_PAYPAL_STATUS_'|cat:$listitem.status}]</td>
-                    <td valign="top" class="[{$class}]">[{$listitem.transactionid}]</td>
+                    <td valign="top" class="[{$class}]">
+                        <a href="[{$payPalConfig->getTransactionUrl()}][{$listitem.transactionid}]" target="_blank">
+                            [{$listitem.transactionid}]
+                        </a>
+                    </td>
                     <td valign="top" class="[{$class}]">[{$listitem.invoiceid}]</td>
                     <td valign="top" class="[{$class}]">[{$listitem.comment}]</td>
                 </tr>
