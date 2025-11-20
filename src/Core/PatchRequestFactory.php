@@ -163,6 +163,7 @@ class PatchRequestFactory
         foreach ($basketItems as $basketItem) {
             $item = new Item();
             $item->name = (new Truncate())->truncate($basketItem->getTitle());
+            $item->sku = (new Truncate())->truncate($basketItem->getArticle()->getFieldData('oxartnum'));
             $basketArticle = $basketItem->getArticle();
             $articleCategory = ($basketArticle->isVirtualPayPalArticle())
                 ? Item::CATEGORY_DIGITAL_GOODS
