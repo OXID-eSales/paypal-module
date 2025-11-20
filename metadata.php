@@ -439,7 +439,7 @@ $aModule = [
         [
             'name' => 'oscPayPalBannersProductDetailsPageSelector',
             'type' => 'str',
-            'value' => '#detailsItemsPager',
+            'value' => '#details-paypal-installment-banner',
             'group' => null
         ],
         [

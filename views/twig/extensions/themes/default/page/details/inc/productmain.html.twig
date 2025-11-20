@@ -1,5 +1,10 @@
 {% extends "page/details/inc/productmain.html.twig" %}
 
+{% block details_productmain_content %}
+    {{ parent() }}
+    <div id="details-paypal-installment-banner"></div>
+{% endblock %}
+
 {% block details_productmain_tobasket %}
     {{ parent() }}
     {% if blCanBuy and oView.showPayPalExpressOnDetailsPage() %}
