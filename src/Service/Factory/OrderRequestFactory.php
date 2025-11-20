@@ -280,6 +280,7 @@ class OrderRequestFactory
         foreach ($basket->getContents() as $basketItem) {
             $item = new Item();
             $item->name = (new Truncate())->truncate($basketItem->getTitle());
+            $item->sku = (new Truncate())->truncate($basketItem->getArticle()->getFieldData('oxartnum'));
 
             $itemUnitPrice = $basketItem->getUnitPrice();
 
