@@ -25,6 +25,8 @@ use OxidEsales\Eshop\Application\Model\Address as EshopAddress;
 use OxidEsales\Eshop\Application\Model\Country as EshopCountry;
 use OxidSolutionCatalysts\PayPal\Model\State as EshopState;
 use OxidSolutionCatalysts\PayPal\Service\PayPalAmountValidator;
+use stdClass;
+use Throwable;
 
 /**
  * PayPalPurchaseUnitsFactory
@@ -86,6 +88,7 @@ class PayPalPurchaseUnitsFactory
             foreach ($itemsArr as $it) {
                 $apiItem = new ApiItem([
                     'name' => (string)($it['name'] ?? ''),
+                    'sku' => (string)($it['sku'] ?? ''),
                     'unit_amount' => [
                         'currency_code' => (string)(
                             $it['unit_amount']['currency_code']
@@ -297,6 +300,7 @@ class PayPalPurchaseUnitsFactory
             }
             $title = (string)$basketItem->getTitle();
             $qty = (string)$basketItem->getAmount();
+            $sku = (string)$basketItem->getArticle()->getFieldData('oxartnum');
             $unitPrice = $basketItem->getUnitPrice();
             if (!$unitPrice) {
                 continue;
@@ -322,6 +326,7 @@ class PayPalPurchaseUnitsFactory
 
             $items[] = [
                 'name' => $title,
+                'sku' => $sku,
                 'quantity' => $qty,
                 'unit_amount' => [
                     'currency_code' => $unitAmount->currency_code,
@@ -345,12 +350,12 @@ class PayPalPurchaseUnitsFactory
                 $article && method_exists($article, 'isVirtualPayPalArticle')
                 && $article->isVirtualPayPalArticle()
             ) {
-                return \OxidSolutionCatalysts\PayPalApi\Model\Orders\Item::CATEGORY_DIGITAL_GOODS;
+                return ApiItem::CATEGORY_DIGITAL_GOODS;
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // ignore and fallback below
         }
-        return \OxidSolutionCatalysts\PayPalApi\Model\Orders\Item::CATEGORY_PHYSICAL_GOODS;
+        return ApiItem::CATEGORY_PHYSICAL_GOODS;
     }
 
     /**
@@ -369,7 +374,7 @@ class PayPalPurchaseUnitsFactory
             }
             $qty = isset($it['quantity']) ? (float)$it['quantity'] : 1.0;
             $taxPerUnit = 0.0;
-            if (isset($it['tax']) && is_array($it['tax']) && isset($it['tax']['value'])) {
+            if (isset($it['tax']['value']) && is_array($it['tax'])) {
                 $taxPerUnit = (float)$it['tax']['value'];
             }
             $sum += $qty * $taxPerUnit;
@@ -398,7 +403,7 @@ class PayPalPurchaseUnitsFactory
     {
         try {
             $validator = Registry::get(PayPalAmountValidator::class);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // If validator class cannot be instantiated for any reason, return original
             return $amountArr;
         }
@@ -411,10 +416,10 @@ class PayPalPurchaseUnitsFactory
 
         try {
             $adjusted = $validator->validateAndAdjustOrder($orderData);
-            if (is_array($adjusted) && isset($adjusted['breakdown']) && is_array($adjusted['breakdown'])) {
+            if (isset($adjusted['breakdown']) && is_array($adjusted['breakdown'])) {
                 $amountArr['breakdown'] = $adjusted['breakdown'];
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             // Fallback silently in case of any unexpected error
         }
 
@@ -430,7 +435,7 @@ class PayPalPurchaseUnitsFactory
         // Known components per PayPal docs
         foreach (['item_total','shipping','tax_total','handling','insurance','shipping_discount','discount'] as $key) {
             if (isset($bdArr[$key]) && is_array($bdArr[$key])) {
-                $money = new \stdClass();
+                $money = new stdClass();
                 $money->currency_code = (string)($bdArr[$key]['currency_code'] ?? $currency);
                 $money->value = $this->toMoneyValue((float)($bdArr[$key]['value'] ?? 0.0));
                 $bd->{$key} = $money;
