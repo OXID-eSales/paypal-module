@@ -14,6 +14,7 @@ use Exception;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Application\Model\UserPayment;
+use OxidEsales\Eshop\Application\Model\Voucher;
 use OxidEsales\Eshop\Core\Counter as EshopCoreCounter;
 use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Field;
@@ -301,7 +302,28 @@ class Order extends Order_parent
             return self::ORDER_STATE_OK;
         }
 
+        $this->_markVouchers($oBasket, $oUser);
+
         return parent::_sendOrderByEmail($oUser, $oBasket, $oPayment);
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket basket object
+     * @param \OxidEsales\Eshop\Application\Model\User   $oUser   user object
+     * @deprecated underscore prefix violates PSR12, will be renamed to "markVouchers" in next major
+     */
+    protected function _markVouchers($oBasket, $oUser) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+    {
+        $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
+
+        // Skip markVoucher if finalizeOrder is called in the proxyController.
+        if (PayPalDefinitions::isProxyControllerPayment($sessionPaymentId)) {
+            return null;
+        }
+
+        return parent::_markVouchers($oBasket, $oUser);
     }
 
     //TODO: this place should be refactored in shop core

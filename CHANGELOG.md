@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - add link to PayPal-Backend from PayPal-Order-Overview-Page (see TransactionID)
 - provide ArticleNumbers to PayPal-API-Requests
 
+### FIX
+
+- [0007857](https://bugs.oxid-esales.com/view.php?id=7857): Fix: When cancelling a PayPal order with a voucher and attempting to place the order again
+
 ## [2.6.3] - 2025-11-07
 
 ### NEW
