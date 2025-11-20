@@ -301,6 +301,7 @@ class Order extends Order_parent
             return self::ORDER_STATE_OK;
         }
 
+        $this->_markVouchers($oBasket, $oUser);
         return parent::_sendOrderByEmail($oUser, $oBasket, $oPayment);
     }
 
