@@ -97,7 +97,6 @@ $aModule = [
         State::class => PayPalState::class
     ],
     'controllers' => [
-        'oscpaypalconfig'       => PaypalModuleConfiguration::class,
         'oscpaypalwebhook'      => WebhookController::class,
         'oscpaypalproxy'        => ProxyController::class,
         'ajaxpay'               => AjaxPaymentController::class,

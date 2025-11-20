@@ -142,9 +142,6 @@ class Order extends Order_parent
     public function __construct()
     {
         parent::__construct();
-        $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
-        $this->moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $this->paymentService = $this->getServiceFromContainer(PaymentService::class);
     }
 
     public function savePuiInvoiceNr(string $invoiceNr): void
@@ -167,11 +164,11 @@ class Order extends Order_parent
         }
 
         $paymentsId = (string) $this->getFieldData('oxpaymenttype');
-        if (!$this->paymentService->isPayPalPayment($paymentsId)) {
+        if (!$this->getPaymentService()->isPayPalPayment($paymentsId)) {
             throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
         }
 
-        $payPalApiOrder = $this->paymentService->fetchOrderFields($payPalOrderId);
+        $payPalApiOrder = $this->getPaymentService()->fetchOrderFields($payPalOrderId);
         $basket = Registry::getSession()->getBasket();
         $user = Registry::getSession()->getUser();
         $this->afterOrderCleanUp($basket, $user);
@@ -189,7 +186,7 @@ class Order extends Order_parent
                 $this->markOrderPaid();
                 $transactionId = $this->extractTransactionId($payPalApiOrder);
                 $this->setTransId($transactionId);
-                $this->paymentService->trackPayPalOrder(
+                $this->getPaymentService()->trackPayPalOrder(
                     $this->getId(),
                     $payPalOrderId,
                     $paymentsId,
@@ -208,13 +205,13 @@ class Order extends Order_parent
             PayPalSession::unsetPayPalOrderId();
         } elseif (
             ($isPayPalStandard || $isPayPalACDC ) &&
-            $this->moduleSettings
+            $this->getModuleSettings()
                 ->getPayPalStandardCaptureStrategy() !== 'directly'
         ) {
-            $paymentId = (string) $this->paymentService->getSessionPaymentId();
+            $paymentId = (string) $this->getPaymentService()->getSessionPaymentId();
 
             try {
-                $result = $this->paymentService->doAuthorizePayment($payPalOrderId, $this->getId(), $paymentId);
+                $result = $this->getPaymentService()->doAuthorizePayment($payPalOrderId, $this->getId(), $paymentId);
 
                 /** @var LoggerInterface $logger */
                 $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
@@ -233,7 +230,7 @@ class Order extends Order_parent
             $transactionId = '';
 
             $this->setOrderStatus('NOT_FINISHED');
-            $this->paymentService->trackPayPalOrder(
+            $this->getPaymentService()->trackPayPalOrder(
                 $this->getId(),
                 $payPalOrderId,
                 $paymentsId,
@@ -337,7 +334,7 @@ class Order extends Order_parent
      */
     protected function executePayment(Basket $basket, $userpayment)
     {
-        $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
+        $sessionPaymentId = (string) $this->getPaymentService()->getSessionPaymentId();
 
         if (PayPalDefinitions::isProxyControllerPayment($sessionPaymentId)) {
             return true;
@@ -351,7 +348,7 @@ class Order extends Order_parent
                 //order number needs to be set before the payment is requested
                 $this->setOrderNumber();
 
-                $redirectLink = $this->paymentService->doExecuteUAPMPayment($this, $basket);
+                $redirectLink = $this->getPaymentService()->doExecuteUAPMPayment($this, $basket);
 
                 PayPalSession::setSessionRedirectLink($redirectLink);
 
@@ -387,7 +384,7 @@ class Order extends Order_parent
         if (!$this->payPalApiOrder) {
             /** @var Orders $orderService */
             $orderService = Registry::get(ServiceFactory::class)->getOrderService();
-            $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
+            $orderService->setTrackingId($this->getOrderProcessTrackingService()->getTrackingId());
 
             $this->payPalApiOrder = $orderService->showOrderDetails(
                 $payPalOrderId,
@@ -401,14 +398,14 @@ class Order extends Order_parent
 
     protected function doExecutePayPalPayment(string $payPalOrderId): bool
     {
-        $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
+        $sessionPaymentId = (string) $this->getPaymentService()->getSessionPaymentId();
         $success = false;
 
         // Capture Order
         try {
             // At this point we only trigger the capture. We find out that order was really captured via the
             // CHECKOUT.ORDER.COMPLETED webhook, where we mark the order as paid
-            $order = $this->paymentService->doCapturePayPalOrder($this, $payPalOrderId, $sessionPaymentId);
+            $this->getPaymentService()->doCapturePayPalOrder($this, $payPalOrderId, $sessionPaymentId);
             // success means at this point, that we triggered the capture without errors
             $success = true;
         } catch (Exception $exception) {
@@ -658,14 +655,14 @@ class Order extends Order_parent
 
         //we might have the case that the order is already stored but we are waiting for webhook events
         if (
-            $this->paymentService->isPayPalPayment()
+            $this->getPaymentService()->isPayPalPayment()
         ) {
             //order payment is being processed
             $oOrderId = $oSession->getVariable('sess_challenge');
             $isLoaded = $this->load($oOrderId);
             if (
                 $isLoaded &&
-                $this->paymentService->isOrderExecutionInProgress() &&
+                $this->getPaymentService()->isOrderExecutionInProgress() &&
                 !$this->isOrderFinished() &&
                 !$this->isOrderPaid() &&
                 !$this->isWaitForWebhookTimeoutReached()
@@ -677,7 +674,7 @@ class Order extends Order_parent
         $result = parent::finalizeOrder($basket, $user, $recalculatingOrder);
 
         if (
-            $this->paymentService->isPayPalPayment() &&
+            $this->getPaymentService()->isPayPalPayment() &&
             !$this->isOrderFinished() &&
             !$this->isOrderPaid() &&
             !$this->hasOrderNumber() &&
@@ -759,7 +756,6 @@ class Order extends Order_parent
         $sOxId = $sOxId ?? $this->getId();
 
         // delete PayPalOrder too
-        /** @var OrderRepository $payPalOrderRepository */
         $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
         $payPalOrder = $payPalOrderRepository->paypalOrderByOrderId(
             $sOxId
@@ -802,5 +798,29 @@ class Order extends Order_parent
     public function setPaymentService(PaymentService $paymentService): void
     {
         $this->paymentService = $paymentService;
+    }
+
+    protected function getPaymentService(): PaymentService
+    {
+        if ($this->paymentService === null) {
+            $this->paymentService = $this->getServiceFromContainer(PaymentService::class);
+        }
+        return $this->paymentService;
+    }
+
+    protected function getModuleSettings(): ModuleSettings
+    {
+        if ($this->moduleSettings === null) {
+            $this->moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        }
+        return $this->moduleSettings;
+    }
+
+    protected function getOrderProcessTrackingService(): OrderProcessTrackingService
+    {
+        if ($this->orderProcessTrackingService === null) {
+            $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
+        }
+        return $this->orderProcessTrackingService;
     }
 }
