@@ -14,12 +14,14 @@ use JsonException;
 use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
+use oxArticleInputException;
 use OxidEsales\Eshop\Application\Model\Address;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Application\Model\User;
+use OxidEsales\Eshop\Core\Exception\ArticleException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\CustomerAddressHelper;
@@ -44,6 +46,7 @@ use OxidSolutionCatalysts\PayPalApi\Pui\ExperienceContext;
 use OxidSolutionCatalysts\PayPalApi\Pui\PuiPaymentSource;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use oxNoArticleException;
 
 /**
  * Class OrderRequestBuilder
@@ -219,8 +222,8 @@ class OrderRequestFactory
      * @param string|null $invoiceId
      * @param bool $withItems
      * @return PurchaseUnitRequest[]
-     * @throws \oxArticleInputException
-     * @throws \oxNoArticleException
+     * @throws oxArticleInputException
+     * @throws oxNoArticleException
      */
     protected function getPurchaseUnits(
         ?string $transactionId,
@@ -262,8 +265,9 @@ class OrderRequestFactory
 
     /**
      * @return array
-     * @throws \oxArticleInputException
-     * @throws \oxNoArticleException
+     * @throws oxArticleInputException
+     * @throws oxNoArticleException
+     * @throws ArticleException
      * @psalm-suppress UndefinedDocblockClass
      */
     public function getItems(): array
@@ -280,6 +284,7 @@ class OrderRequestFactory
         foreach ($basket->getContents() as $basketItem) {
             $item = new Item();
             $item->name = (new Truncate())->truncate($basketItem->getTitle());
+            $item->sku = (new Truncate())->truncate($basketItem->getArticle()->getFieldData('oxartnum'));
 
             $itemUnitPrice = $basketItem->getUnitPrice();
 
