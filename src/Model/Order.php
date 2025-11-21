@@ -311,7 +311,7 @@ class Order extends Order_parent
      */
     protected function markVouchers($oBasket, $oUser) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
     {
-        $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
+        $sessionPaymentId = (string) $this->getPaymentService()->getSessionPaymentId();
 
         // Skip markVoucher if finalizeOrder is called in the proxyController.
         if (PayPalDefinitions::isProxyControllerPayment($sessionPaymentId)) {
