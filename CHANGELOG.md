@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### FIX
 
 - [0007857](https://bugs.oxid-esales.com/view.php?id=7857): Fix: When cancelling a PayPal order with a voucher and attempting to place the order again
+- [0007858](https://bugs.oxid-esales.com/view.php?id=7858): Fix: Maintenance mode when the "PayPal Checkout" tab is clicked for cancelled PayPal orders
 
 ## [2.6.3] - 2025-11-07
 

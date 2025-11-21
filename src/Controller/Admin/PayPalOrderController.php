@@ -283,7 +283,11 @@ class PayPalOrderController extends AdminDetailsController
      */
     public function getPayPalPaymentStatus(): ?string
     {
-        return $this->getPayPalCheckoutOrder()->getCapturePaymentStatusString();
+        try {
+            return $this->getPayPalCheckoutOrder()->getCapturePaymentStatusString();
+        } catch (StandardException | ApiException $e) {
+            return null;
+        }
     }
 
     /**
