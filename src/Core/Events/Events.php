@@ -10,8 +10,10 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core\Events;
 
 use OxidEsales\DoctrineMigrationWrapper\MigrationsBuilder;
+use OxidEsales\Eshop\Core\Module\ModuleCache;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Cache\ModuleCacheServiceInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleConfigurationDaoBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
@@ -56,6 +58,8 @@ class Events
      */
     public static function onDeactivate(): void
     {
+        // clear Cache before deactivating the module
+        self::cleanCache();
     }
 
     /**
@@ -181,6 +185,20 @@ class Events
             Registry::getUtilsView()->addErrorToDisplay('OSC_PAYPAL_INSTALLPROCESS_FAILED');
             Registry::getLogger()->error($exception->getMessage(), [$exception]);
             return null;
+        }
+    }
+
+    private static function cleanCache(): void
+    {
+        try {
+            /** @var ContainerInterface $container */
+            $container = ContainerFactory::getInstance()
+                ->getContainer();
+            /** @var ModuleCacheServiceInterface $moduleCache */
+            $moduleCache = $container->get(ModuleCacheServiceInterface::class);
+            $moduleCache->invalidateModuleCache('osc_paypal', Registry::getConfig()->getShopId());
+        } catch (NotFoundExceptionInterface | ContainerExceptionInterface $exception) {
+            // do nothing
         }
     }
 }
