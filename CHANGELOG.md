@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - [0007857](https://bugs.oxid-esales.com/view.php?id=7857): Fix: When cancelling a PayPal order with a voucher and attempting to place the order again
 - [0007858](https://bugs.oxid-esales.com/view.php?id=7858): Fix: Maintenance mode when the "PayPal Checkout" tab is clicked for cancelled PayPal orders
+- If the customer does not wait until they reach the Thankyou page after clicking "Buy Now" in the PayPal pop-up, an order email will now also be sent in "healing mode".
+- clear Cache before deactivate the module, prevent possible maintenance mode in case of other installed modules
 
 ## [2.6.3] - 2025-11-07
 
