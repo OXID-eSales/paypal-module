@@ -83,7 +83,8 @@ class BasketComponent extends BasketComponent_parent
      */
     protected function checkForAbortedPayPalOrderPlacement(): void
     {
-        $basket = Registry::getSession()->getBasket();
+        $session = Registry::getSession();
+        $basket = $session->getBasket();
 
         if ($basket === null) {
             return;
@@ -102,6 +103,8 @@ class BasketComponent extends BasketComponent_parent
             $order->isOrderFinished() &&
             $order->isOrderPaid()
         ) {
+            // Delete the session variable that would prevent an order confirmation email from being sent.
+            $session->deleteVariable('isPayPalPaymentCheckout');
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             $logger->info('Found aborted order placement, redirecting to thankyou page.');
