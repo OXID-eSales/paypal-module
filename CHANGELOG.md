@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - fix: compatibility-issues with telecash
 - fix: Banner-Placement on Detailspage
 - [0007857](https://bugs.oxid-esales.com/view.php?id=7857): Fix: When cancelling a PayPal order with a voucher and attempting to place the order again
+- If the customer does not wait until they reach the Thankyou page after clicking "Buy Now" in the PayPal pop-up, an order email will now also be sent in "healing mode".
+- clear Cache before deactivate the module, prevent possible maintenance mode in case of other installed modules
 
 ## [3.5.1] - 2025-11-06
  
