@@ -359,7 +359,7 @@ class ProxyController extends FrontendController
 
     public function cancelPayPalPayment()
     {
-        PayPalSession::unsetPayPalSession();
+        PayPalSession::unsetPayPalSession(false);
         $redirect = Registry::getRequest()->getRequestParameter('redirect');
         if ($redirect === "1") {
             Registry::getUtils()->redirect(

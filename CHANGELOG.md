@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007858](https://bugs.oxid-esales.com/view.php?id=7858): Fix: Maintenance mode when the "PayPal Checkout" tab is clicked for cancelled PayPal orders
 - If the customer does not wait until they reach the Thankyou page after clicking "Buy Now" in the PayPal pop-up, an order email will now also be sent in "healing mode".
 - clear Cache before deactivate the module, prevent possible maintenance mode in case of other installed modules
+- Add handling for worst case: If the customer feels during an order process that something isn't progressing and triggers a cancel order, we check whether the order is already OK and redirect them to the thank you page.
+- [0007861](https://bugs.oxid-esales.com/view.php?id=7861): If the customer click close the SEPA-Payment-Overlay, We do not delete the Shipping-Session.
 
 ## [2.6.3] - 2025-11-07
 
