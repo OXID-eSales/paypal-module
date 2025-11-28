@@ -72,7 +72,7 @@ class PayPalSession
         );
     }
 
-    public static function unsetPayPalSession()
+    public static function unsetPayPalSession($deleteAlsoShipping = true): void
     {
         self::unsetPayPalOrderId();
         self::unsetPayPalOrder();
@@ -81,10 +81,14 @@ class PayPalSession
         $basket = $session->getBasket();
         if ($basket !== null) {
             $basket->setPayment();
-            $basket->setShipping();
+            if ($deleteAlsoShipping) {
+                $basket->setShipping();
+            }
         }
 
-        $session->deleteVariable('sShipSet');
+        if ($deleteAlsoShipping) {
+            $session->deleteVariable('sShipSet');
+        }
         $session->deleteVariable('paymentid');
     }
 

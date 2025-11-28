@@ -39,7 +39,6 @@ use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
 use Psr\Log\LoggerInterface;
@@ -359,7 +358,7 @@ class ProxyController extends FrontendController
 
     public function cancelPayPalPayment()
     {
-        PayPalSession::unsetPayPalSession();
+        PayPalSession::unsetPayPalSession(false);
         $redirect = Registry::getRequest()->getRequestParameter('redirect');
         if ($redirect === "1") {
             Registry::getUtils()->redirect(

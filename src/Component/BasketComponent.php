@@ -99,9 +99,7 @@ class BasketComponent extends BasketComponent_parent
         $order = oxNew(Order::class);
         $order->load($orderId);
         if (
-            $order->paidWithPayPal() &&
-            $order->isOrderFinished() &&
-            $order->isOrderPaid()
+            $order->isOrderSuccessfullyPaid()
         ) {
             // Delete the session variable that would prevent an order confirmation email from being sent.
             $session->deleteVariable('isPayPalPaymentCheckout');

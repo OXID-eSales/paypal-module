@@ -185,9 +185,15 @@
                 return;
             }
 
-            await PayPalPayment.backendRequest('shopOrderCancelUrl', {}, {
+            let response = await PayPalPayment.backendRequest('shopOrderCancelUrl', {}, {
                 'shopOrderId': PayPalPayment.getCurrentOrderOxid()
             });
+
+            let result = await response.json();
+
+            if (result.status === 'error') {
+                window.location.reload();
+            }
 
             PayPalPayment.resetCurrentOrder();
             PayPalPayment.removeSubmitButtonOverlay();

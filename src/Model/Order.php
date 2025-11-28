@@ -645,6 +645,13 @@ class Order extends Order_parent
         return false === strpos((string) $this->getFieldData('oxpaid'), '0000');
     }
 
+    public function isOrderSuccessfullyPaid(): bool
+    {
+        return $this->paidWithPayPal() &&
+            $this->isOrderFinished() &&
+            $this->isOrderPaid();
+    }
+
     /**
      * @throws Exception
      */

@@ -387,6 +387,9 @@ class OrderController extends OrderController_parent
                 ->cancelPayPalSession('request to session mismatch');
         }
 
+        $order = oxNew(EshopModelOrder::class);
+        $order->load($sessionOrderId);
+
         try {
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
@@ -400,8 +403,6 @@ class OrderController extends OrderController_parent
             }
 
             $deliveryAddress = PayPalAddressResponseToOxidAddress::mapOrderDeliveryAddress($payPalOrder);
-            $order = oxNew(EshopModelOrder::class);
-            $order->load($sessionOrderId);
             $paymentsId = $order->getFieldData('oxpaymenttype') ?? '';
             $isButtonPayment = PayPalDefinitions::isButtonPayment($paymentsId);
             if ($isButtonPayment) {
@@ -410,16 +411,20 @@ class OrderController extends OrderController_parent
             $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);
             $order->save();
         } catch (PayPalException $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log(
-                'debug',
-                'PayPal Checkout error during order finalization ' . $exception->getMessage(),
-                [$exception]
-            );
-            $this->getServiceFromContainer(OrderPayPalService::class)
-                ->cancelPayPalSession('cannot finalize order');
-            return 'payment?payerror=2';
+            // paranoia check: The order may have already been completely
+            // processed by a webhook and therefore cannot be finalized again.
+            if (!$order->isOrderSuccessfullyPaid()) {
+                /** @var LoggerInterface $logger */
+                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+                $logger->log(
+                    'debug',
+                    'PayPal Checkout error during order finalization ' . $exception->getMessage(),
+                    [$exception]
+                );
+                $this->getServiceFromContainer(OrderPayPalService::class)
+                    ->cancelPayPalSession('cannot finalize order');
+                return 'payment?payerror=2';
+            }
         }
 
         return 'thankyou';
