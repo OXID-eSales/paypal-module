@@ -449,9 +449,7 @@ class AjaxPaymentController extends ProxyController
         $order->load($shopOrderId);
 
         if (
-            $order->paidWithPayPal() &&
-            $order->isOrderFinished() &&
-            $order->isOrderPaid()
+            $order->isOrderSuccessfullyPaid()
         ) {
             if ($isLog) {
                 $this->logger->log('error', 'Order is successfully done');

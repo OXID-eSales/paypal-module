@@ -600,6 +600,13 @@ class Order extends Order_parent
         return (bool)$this->getPayPalSoapOrderIdForOxOrderId();
     }
 
+    public function isOrderSuccessfullyPaid(): bool
+    {
+        return $this->paidWithPayPal() &&
+            $this->isOrderFinished() &&
+            $this->isOrderPaid();
+    }
+
     /**
      * Checks if PayPalPlus-tables exists anymore
      *
