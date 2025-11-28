@@ -398,13 +398,12 @@ class AjaxPaymentController extends ProxyController
         $user = oxNew(User::class);
         $user->loadActiveUser();
 
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $isLog = in_array($moduleSettings->getPayPalDebugLevel(), ['debug', 'error']);
+
         if (is_null($shopOrderId)) {
-            $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-            if (
-                $moduleSettings->getPayPalDebugLevel() === 'debug'
-                || $moduleSettings->getPayPalDebugLevel() === 'error'
-            ) {
-                $this->logger->log('error', sprintf($message));
+            if ($isLog) {
+                $this->logger->log('error', $message);
             }
             $this->outputJson([
                 'status' => 'error'
@@ -416,18 +415,49 @@ class AjaxPaymentController extends ProxyController
         $order = oxNew(Order::class);
         $order->load($shopOrderId);
 
-
         if ($order->oxorder__oxuserid->value !== $user->getId()) {
-            $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-            if (
-                $moduleSettings->getPayPalDebugLevel() === 'debug'
-                || $moduleSettings->getPayPalDebugLevel() === 'error'
-            ) {
-                $this->logger->log('error', sprintf($message));
+            if ($isLog) {
+                $this->logger->log('error', $message);
             }
             $this->outputJson([
                 'status' => 'error',
                 'message' => $message
+            ]);
+        }
+    }
+
+    public function isOrderNotSuccessfullyDone(
+        ?string $shopOrderId = null
+    ): void
+    {
+
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $isLog = in_array($moduleSettings->getPayPalDebugLevel(), ['debug', 'error']);
+
+        if (is_null($shopOrderId)) {
+            if ($isLog) {
+                $this->logger->log('error', 'no Order ID provided for isOrderNotSuccessfullDone-Check');
+            }
+            $this->outputJson([
+                'status' => 'error'
+            ]);
+            return;
+        }
+
+        /** @var ShopOrder $order */
+        $order = oxNew(Order::class);
+        $order->load($shopOrderId);
+
+        if (
+            $order->paidWithPayPal() &&
+            $order->isOrderFinished() &&
+            $order->isOrderPaid()
+        ) {
+            if ($isLog) {
+                $this->logger->log('error', 'Order is successfully done');
+            }
+            $this->outputJson([
+                'status' => 'error'
             ]);
         }
     }
@@ -457,6 +487,10 @@ class AjaxPaymentController extends ProxyController
         $this->permissionsCheck(
             $shopOrderId,
             'Current user do not have permission to cancel referenced order'
+        );
+
+        $this->isOrderNotSuccessfullyDone(
+            $shopOrderId
         );
 
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
