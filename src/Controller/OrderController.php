@@ -413,11 +413,11 @@ class OrderController extends OrderController_parent
             $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);
             $order->save();
         } catch (PayPalException $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             // paranoia check: The order may have already been completely
             // processed by a webhook and therefore cannot be finalized again.
             if (!$order->isOrderSuccessfullyPaid()) {
+                /** @var LoggerInterface $logger */
+                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
                 $logger->log(
                     'debug',
                     'PayPal Checkout error during order finalization ' . $exception->getMessage(),
