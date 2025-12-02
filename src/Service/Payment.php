@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Service;
 
 use Exception;
+use JsonException;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Application\Model\User;
@@ -925,27 +926,31 @@ class Payment
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $module = oxNew(\OxidEsales\Eshop\Core\Module\Module::class);
         $module->load(Module::MODULE_ID);
-        $orderNumber = '';
-        /** @var Order $orderNumber */
+        $result = '';
+        /** @var EshopModelOrder $order */
         if ($order instanceof EshopModelOrder) {
-            $orderNumber = (int) $order->getFieldData('oxordernr');
-            if ($orderNumber === 0) {
+            $orderNumberCheck = (int) $order->getFieldData('oxordernr');
+            if ($orderNumberCheck === 0) {
                 $order->setOrderNumber();
-                $orderNumber = $order->getFieldData('oxordernr');
+                $result = $order->getFieldData('oxordernr');
             }
         }
         if ($moduleSettings->isCustomIdSchemaStructural()) {
             $customID = [
-                'id' => $this->orderProcessTrackingService->getTrackingId(),
-                'oxordernr' => $orderNumber,
+                'id'            => $this->orderProcessTrackingService->getTrackingId(),
+                'oxordernr'     => $result,
                 'moduleVersion' => $module->getInfo('version'),
-                'oxidVersion' => ShopVersion::getVersion()
+                'oxidVersion'   => ShopVersion::getVersion()
             ];
 
-            return json_encode($customID);
+            try {
+                $result = json_encode($customID, JSON_THROW_ON_ERROR);
+            } catch (JsonException $e) {
+                $result = '';
+            }
         }
 
-        return $orderNumber;
+        return $result ?: '';
     }
 
     /**

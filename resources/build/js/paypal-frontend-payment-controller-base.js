@@ -185,11 +185,9 @@
                 return;
             }
 
-            let response = await PayPalPayment.backendRequest('shopOrderCancelUrl', {}, {
+            let result = await PayPalPayment.backendRequest('shopOrderCancelUrl', {}, {
                 'shopOrderId': PayPalPayment.getCurrentOrderOxid()
             });
-
-            let result = await response.json();
 
             if (result.status === 'error') {
                 window.location.reload();
