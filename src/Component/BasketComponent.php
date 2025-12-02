@@ -90,6 +90,10 @@ class BasketComponent extends BasketComponent_parent
             return;
         }
 
+        if (Registry::getConfig()->getActiveView()->getClassKey() === 'thankyou') {
+            return;
+        }
+
         $orderId = $basket->getOrderId();
         if (empty($orderId)) {
             return;
