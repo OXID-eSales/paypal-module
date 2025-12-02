@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007861](https://bugs.oxid-esales.com/view.php?id=7861): If the customer click close the SEPA-Payment-Overlay, We do not delete the Shipping-Session.
 - [0007862](https://bugs.oxid-esales.com/view.php?id=7862): fix: if uAPM Bancontact customer is slower than the webhook, then do not throw an error
 - [0007863](https://bugs.oxid-esales.com/view.php?id=7863): fix: Wrong return value causes error and canceled payments with captured money
+- [0007864](https://bugs.oxid-esales.com/view.php?id=7864): fix: race condition leads to aborted orders
 
 ## [2.6.3] - 2025-11-07
 
