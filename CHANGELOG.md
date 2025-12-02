@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Add handling for worst case: If the customer feels during an order process that something isn't progressing and triggers a cancel order, we check whether the order is already OK and redirect them to the thank you page.
 - [0007861](https://bugs.oxid-esales.com/view.php?id=7861): If the customer click close the SEPA-Payment-Overlay, We do not delete the Shipping-Session.
 - [0007862](https://bugs.oxid-esales.com/view.php?id=7862): fix: if uAPM Bancontact customer is slower than the webhook, then do not throw an error
+- [0007863](https://bugs.oxid-esales.com/view.php?id=7863): fix: Wrong return value causes error and canceled payments with captured money
 
 ## [3.5.1] - 2025-11-06
  
