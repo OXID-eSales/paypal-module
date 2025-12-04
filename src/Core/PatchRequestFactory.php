@@ -140,7 +140,9 @@ class PatchRequestFactory
     }
 
     /**
-     * @return \OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch|null
+     * @return Patch|null
+     * @throws \oxArticleInputException
+     * @throws \oxNoArticleException
      */
     public function getPurchaseUnitsPatch(): ?Patch
     {
@@ -152,6 +154,17 @@ class PatchRequestFactory
 
         if (!$withItems) {
             return null;
+        }
+
+        // Check if any basket item has a decimal quantity (e.g., 10.5m cable)
+        // PayPal API only accepts whole numbers for item quantities
+        $basketItems = $this->basket->getContents();
+        foreach ($basketItems as $basketItem) {
+            $amount = $basketItem->getAmount();
+            // If amount is not a whole number, abort and don't send items
+            if ($amount !== floor($amount)) {
+                return null;
+            }
         }
 
         $patchValues = [];
