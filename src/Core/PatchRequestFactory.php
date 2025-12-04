@@ -14,6 +14,9 @@ use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
+use OxidEsales\Eshop\Core\Exception\ArticleException;
+use OxidEsales\Eshop\Core\Exception\ArticleInputException;
+use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Helper\Truncate;
 use OxidEsales\Eshop\Application\Model\Order;
@@ -141,7 +144,10 @@ class PatchRequestFactory
     }
 
     /**
-     * @return \OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch|null
+     * @return Patch|null
+     * @throws ArticleException
+     * @throws ArticleInputException
+     * @throws NoArticleException
      */
     public function getPurchaseUnitsPatch(): ?Patch
     {
@@ -155,10 +161,19 @@ class PatchRequestFactory
             return null;
         }
 
+        // Check if any basket item has a decimal quantity
+        // PayPal API only accepts whole numbers for item quantities
+        $basketItems = $this->basket->getContents();
+        foreach ($basketItems as $basketItem) {
+            $amount = $basketItem->getAmount();
+            if ($amount !== floor($amount)) {
+                return null;
+            }
+        }
+
         $patchValues = [];
         $language = Registry::getLang();
 
-        $basketItems = $this->basket->getContents();
         /** @var BasketItem $basketItem */
         foreach ($basketItems as $basketItem) {
             $item = new Item();

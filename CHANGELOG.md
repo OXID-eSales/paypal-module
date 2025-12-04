@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007862](https://bugs.oxid-esales.com/view.php?id=7862): fix: if uAPM Bancontact customer is slower than the webhook, then do not throw an error
 - [0007863](https://bugs.oxid-esales.com/view.php?id=7863): fix: Wrong return value causes error and canceled payments with captured money
 - [0007864](https://bugs.oxid-esales.com/view.php?id=7864): fix: race condition leads to aborted orders
+- [0007865](https://bugs.oxid-esales.com/view.php?id=7865): fix: If the basket contains article with decimal-point-amounts (like 0.5m) then we do not provide the basket-items to PayPal. Because PayPal can only handle whole numbers.
 
 ## [3.5.1] - 2025-11-06
  

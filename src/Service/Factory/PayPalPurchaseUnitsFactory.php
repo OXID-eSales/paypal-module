@@ -73,6 +73,17 @@ class PayPalPurchaseUnitsFactory
             $currency->decimal = 2;
         }
 
+        // Check if any basket item has a decimal quantity
+        if ($withItems) {
+            foreach ($basket->getContents() as $basketItem) {
+                $amount = $basketItem->getAmount();
+                if ($amount !== floor($amount)) {
+                    $withItems = false;
+                    break;
+                }
+            }
+        }
+
         // Build items first (needed to compute tax_total from items)
         $itemsArr = $withItems ? $this->mapItems($basket) : [];
         // Build amount (tax_total will be computed from itemsArr)
