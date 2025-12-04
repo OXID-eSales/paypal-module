@@ -915,23 +915,26 @@ class Payment
 
     /**
      * @param EshopModelOrder|null $order
-     * @return mixed|null
+     * @return string
      */
     public function getCustomIdParameter(?EshopModelOrder $order): string
     {
-        /** @var ModuleSettings $moduleSettings */
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $module = oxNew(\OxidEsales\Eshop\Core\Module\Module::class);
         $module->load(Module::MODULE_ID);
         $result = '';
+
         /** @var EshopModelOrder $order */
         if ($order instanceof EshopModelOrder) {
             $orderNumberCheck = (int) $order->getFieldData('oxordernr');
             if ($orderNumberCheck === 0) {
                 $order->setOrderNumber();
-                $result = $order->getFieldData('oxordernr');
             }
+            // Now ALWAYS get the oxordernr (new or existing)
+            $orderNr = $order->getFieldData('oxordernr');
+            $result = $orderNr !== null ? (string) $orderNr : '';
         }
+
         if ($moduleSettings->isCustomIdSchemaStructural()) {
             $customID = [
                 'id'            => $this->orderProcessTrackingService->getTrackingId(),
@@ -941,13 +944,14 @@ class Payment
             ];
 
             try {
-                $result = json_encode($customID, JSON_THROW_ON_ERROR);
+                $encoded = json_encode($customID, JSON_THROW_ON_ERROR);
+                $result = $encoded !== false ? $encoded : '';
             } catch (JsonException $e) {
                 $result = '';
             }
         }
 
-        return $result ?: '';
+        return $result;
     }
 
     /**
