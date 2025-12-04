@@ -78,6 +78,10 @@ class PayPalPurchaseUnitsFactory
         if ($withItems) {
             foreach ($basket->getContents() as $basketItem) {
                 $amount = $basketItem->getAmount();
+
+                // Convert to float to handle both numeric and string values
+                $amount = (float)$amount;
+
                 if ($amount !== floor($amount)) {
                     $withItems = false;
                     break;

@@ -161,6 +161,10 @@ class PatchRequestFactory
         $basketItems = $this->basket->getContents();
         foreach ($basketItems as $basketItem) {
             $amount = $basketItem->getAmount();
+
+            // Convert to float to handle both numeric and string values
+            $amount = (float)$amount;
+
             // If amount is not a whole number, abort and don't send items
             if ($amount !== floor($amount)) {
                 return null;
