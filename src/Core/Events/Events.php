@@ -15,9 +15,9 @@ use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInt
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Cache\ModuleCacheServiceInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleConfigurationDaoBridgeInterface;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleSettingBridgeInterface;
+use OxidEsales\EshopCommunity\Internal\Framework\Templating\Cache\TemplateCacheServiceInterface;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
 use OxidSolutionCatalysts\PayPal\Core\Onboarding\Webhook;
-use OxidSolutionCatalysts\PayPal\Module;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -191,12 +191,14 @@ class Events
     private static function cleanCache(): void
     {
         try {
-            /** @var ContainerInterface $container */
             $container = ContainerFactory::getInstance()
                 ->getContainer();
             /** @var ModuleCacheServiceInterface $moduleCache */
             $moduleCache = $container->get(ModuleCacheServiceInterface::class);
-            $moduleCache->invalidate(Module::MODULE_ID, Registry::getConfig()->getShopId());
+            $moduleCache->invalidateAll();
+            /** @var TemplateCacheServiceInterface $templateCache */
+            $templateCache = $container->get(TemplateCacheServiceInterface::class);
+            $templateCache->invalidateTemplateCache();
         } catch (NotFoundExceptionInterface | ContainerExceptionInterface) {
             // do nothing
         }
