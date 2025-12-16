@@ -11,6 +11,7 @@ namespace OxidSolutionCatalysts\PayPal\Service\Factory;
 
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\BasketItem;
+use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
@@ -23,7 +24,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail as ApiShippingDe
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3 as ApiAddressPortable3;
 use OxidEsales\Eshop\Application\Model\Address as EshopAddress;
 use OxidEsales\Eshop\Application\Model\Country as EshopCountry;
-use OxidSolutionCatalysts\PayPal\Model\State as EshopState;
 use OxidSolutionCatalysts\PayPal\Service\PayPalAmountValidator;
 use stdClass;
 use Throwable;
@@ -178,7 +178,7 @@ class PayPalPurchaseUnitsFactory
 
             $address = new ApiAddressPortable3();
 
-            $state = new EshopState();
+            $state = oxNew(State::class);
             $state->loadByIdAndCountry(
                 $deliveryAddress->getFieldData('oxstateid'),
                 $deliveryAddress->getFieldData('oxcountryid')
@@ -214,7 +214,7 @@ class PayPalPurchaseUnitsFactory
 
     private function buildBillingAddress($user): ApiAddressPortable3
     {
-        $state = new EshopState();
+        $state = oxNew(State::class);
         $state->loadByIdAndCountry(
             $user->getFieldData('oxstateid'),
             $user->getFieldData('oxcountryid')
