@@ -219,6 +219,7 @@ class AjaxPaymentController extends ProxyController
     public function cancelPayPalSession(): void
     {
         PayPalSession::unsetPayPalSession();
+        $this->outputJson(['success' => true]);
     }
 
     /**
@@ -587,7 +588,7 @@ class AjaxPaymentController extends ProxyController
         $order = $this->orderManager->createShopOrder($paymentId);
 
         if (null === $order) {
-            return;
+            $this->outputJson(['status' => 'error', 'message' => 'Order creation failed']);
         }
 
         $this->outputJson(array_merge(['status' => 'success'], $order));
