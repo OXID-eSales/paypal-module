@@ -98,9 +98,9 @@ class PaymentController extends PaymentController_parent
 
             //reset vaulting session var
             Registry::getSession()->deleteVariable("selectedVaultedPaymentTokenId");
-
-            return parent::render();
         }
+
+        return parent::render();
     }
 
     public function getPayPalPuiFraudnetCmId(): string
