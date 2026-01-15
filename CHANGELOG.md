@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### FIX
 
 - [0007872](https://bugs.oxid-esales.com/view.php?id=7872): Pay attention to correct return values.
+- [0007874](https://bugs.oxid-esales.com/view.php?id=7874): Fix PayPal stateand country initialisation in purchase units factory
 
 ## [2.6.4] - 2025-12-05
 
