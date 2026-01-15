@@ -415,6 +415,12 @@ class ProxyController extends FrontendController
 
     private function getActiveShippingSetId($session, $user, $basket): void
     {
+        $shippingSetId = $session->getVariable('sShipSet');
+
+        if ($shippingSetId) {
+            return;
+        }
+
         /** @psalm-suppress InvalidArgument */
         [, $shippingSetId,] =
             Registry::get(DeliverySetList::class)->getDeliverySetData('', $user, $basket);
