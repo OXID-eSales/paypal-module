@@ -9,8 +9,11 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service\Factory;
 
+use OxidEsales\Eshop\Application\Model\Address as EshopAddress;
+use OxidEsales\Eshop\Application\Model\Country as EshopCountry;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\BasketItem;
+use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
@@ -21,9 +24,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item as ApiItem;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest as ApiPurchaseUnitRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail as ApiShippingDetail;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3 as ApiAddressPortable3;
-use OxidEsales\Eshop\Application\Model\Address as EshopAddress;
-use OxidEsales\Eshop\Application\Model\Country as EshopCountry;
-use OxidSolutionCatalysts\PayPal\Model\State as EshopState;
 use OxidSolutionCatalysts\PayPal\Service\PayPalAmountValidator;
 use stdClass;
 use Throwable;
@@ -74,6 +74,7 @@ class PayPalPurchaseUnitsFactory
         }
 
         // Check if any basket item has a decimal quantity
+        // PayPal API only accepts whole numbers for item quantities
         if ($withItems) {
             foreach ($basket->getContents() as $basketItem) {
                 $amount = $basketItem->getAmount();
@@ -177,13 +178,13 @@ class PayPalPurchaseUnitsFactory
 
             $address = new ApiAddressPortable3();
 
-            $state = new EshopState();
+            $state = oxNew(State::class);
             $state->loadByIdAndCountry(
                 $deliveryAddress->getFieldData('oxstateid'),
                 $deliveryAddress->getFieldData('oxcountryid')
             );
 
-            $country = new EshopCountry();
+            $country = oxNew(EshopCountry::class);
             $country->load($deliveryAddress->getFieldData('oxcountryid'));
 
             $addressLine = $deliveryAddress->getFieldData('oxstreet')
@@ -213,13 +214,13 @@ class PayPalPurchaseUnitsFactory
 
     private function buildBillingAddress($user): ApiAddressPortable3
     {
-        $state = new EshopState();
+        $state = oxNew(State::class);
         $state->loadByIdAndCountry(
             $user->getFieldData('oxstateid'),
             $user->getFieldData('oxcountryid')
         );
 
-        $country = new EshopCountry();
+        $country = oxNew(EshopCountry::class);
         $country->load($user->getFieldData('oxcountryid'));
 
         $address = new ApiAddressPortable3();
@@ -314,8 +315,8 @@ class PayPalPurchaseUnitsFactory
                 continue;
             }
             $title = (string)$basketItem->getTitle();
-            $sku = (string)$basketItem->getArticle()->getFieldData('oxartnum');
             $qty = (string)$basketItem->getAmount();
+            $sku = (string)$basketItem->getArticle()->getFieldData('oxartnum');
             $unitPrice = $basketItem->getUnitPrice();
             if (!$unitPrice) {
                 continue;
