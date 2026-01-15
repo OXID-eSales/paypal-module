@@ -41,11 +41,11 @@ class PayPalPurchaseUnitsFactory
 {
     private const DECIMALS = 2;
     /**
-     * @var \OxidSolutionCatalysts\PayPal\Service\ModuleSettings
+     * @var ModuleSettings
      */
     private ModuleSettings $moduleSettings;
     /**
-     * @var \OxidEsales\Eshop\Application\Model\Basket|null
+     * @var Basket|null
      */
     private ?Basket $basket = null;
 

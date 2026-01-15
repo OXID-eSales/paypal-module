@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### FIX
 
 - [0007872](https://bugs.oxid-esales.com/view.php?id=7872): Pay attention to correct return values.
-- [0007874](https://bugs.oxid-esales.com/view.php?id=7874): Fix PayPal stateand country initialisation in purchase units factory
+- [0007874](https://bugs.oxid-esales.com/view.php?id=7874): Fix: PayPal stateand country initialisation in purchase units factory
+- [0007884](https://bugs.oxid-esales.com/view.php?id=7884): Fix: When canceling and paying again with PayPal, the module does not use the shipping method but the shipping costs
 
 ## [2.6.4] - 2025-12-05
 
