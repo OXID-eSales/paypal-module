@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service\Factory;
 
+use OxidEsales\Eshop\Application\Model\Address as EshopAddress;
+use OxidEsales\Eshop\Application\Model\Country as EshopCountry;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\State;
@@ -22,8 +24,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item as ApiItem;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest as ApiPurchaseUnitRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail as ApiShippingDetail;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3 as ApiAddressPortable3;
-use OxidEsales\Eshop\Application\Model\Address as EshopAddress;
-use OxidEsales\Eshop\Application\Model\Country as EshopCountry;
 use OxidSolutionCatalysts\PayPal\Service\PayPalAmountValidator;
 use stdClass;
 use Throwable;
@@ -184,7 +184,7 @@ class PayPalPurchaseUnitsFactory
                 $deliveryAddress->getFieldData('oxcountryid')
             );
 
-            $country = new EshopCountry();
+            $country = oxNew(EshopCountry::class);
             $country->load($deliveryAddress->getFieldData('oxcountryid'));
 
             $addressLine = $deliveryAddress->getFieldData('oxstreet')
@@ -220,7 +220,7 @@ class PayPalPurchaseUnitsFactory
             $user->getFieldData('oxcountryid')
         );
 
-        $country = new EshopCountry();
+        $country = oxNew(EshopCountry::class);
         $country->load($user->getFieldData('oxcountryid'));
 
         $address = new ApiAddressPortable3();
