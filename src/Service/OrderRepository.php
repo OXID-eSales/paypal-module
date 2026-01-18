@@ -119,9 +119,12 @@ class OrderRepository
         return $order;
     }
 
-    public function getPayPalOrderIdByShopOrderId(string $shopOrderId): string
+    public function getPayPalOrderIdByShopOrderId(?string $shopOrderId = ''): string
     {
-        /** @var QueryBuilder $queryBuilder */
+        if (!$shopOrderId) {
+            return '';
+        }
+
         $queryBuilder = $this->queryBuilderFactory->create();
 
         $parameters = [
