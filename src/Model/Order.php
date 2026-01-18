@@ -690,13 +690,13 @@ class Order extends Order_parent
         $logger->log('debug', 'finalizeOrder');
 
         $oSession = Registry::getSession();
+        $oOrderId = $oSession->getVariable('sess_challenge');
 
         //we might have the case that the order is already stored but we are waiting for webhook events
         if (
             $this->paymentService->isPayPalPayment()
         ) {
             //order payment is being processed
-            $oOrderId = $oSession->getVariable('sess_challenge');
             $isLoaded = $this->load($oOrderId);
             if (
                 $isLoaded &&
@@ -707,6 +707,21 @@ class Order extends Order_parent
             ) {
                 return self::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS;
             }
+        }
+
+        // ! paranoia-check !
+        // It can happen that a customer starts a PayPal session, then goes through the checkout again in a second tab,
+        // selects a different payment method, and tries to finalize.
+        $bIsPayPalPayment = $this->paymentService->isPayPalPayment();
+        $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
+        $payPalOrderId = $payPalOrderRepository->getPayPalOrderIdByShopOrderId(
+            $oOrderId
+        );
+
+        if (!$bIsPayPalPayment && $payPalOrderId)
+        {
+            $this->paymentService->removeTemporaryOrder();
+            $oSession->setVariable('sess_challenge', Registry::getUtilsObject()->generateUId());
         }
 
         $result = parent::finalizeOrder($basket, $user, $recalculatingOrder);
@@ -774,7 +789,6 @@ class Order extends Order_parent
 
     protected function getPayPalRepository(): PayPalOrder
     {
-        /** @var OrderRepository $payPalOrderRepository */
         $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
         $this->payPalOrder = $payPalOrderRepository->paypalOrderByOrderId(
             $this->getId()
@@ -794,7 +808,6 @@ class Order extends Order_parent
         $sOxId = $sOxId ?? $this->getId();
 
         // delete PayPalOrder too
-        /** @var OrderRepository $payPalOrderRepository */
         $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
         $payPalOrder = $payPalOrderRepository->paypalOrderByOrderId(
             $sOxId
