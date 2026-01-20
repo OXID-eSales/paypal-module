@@ -45,6 +45,7 @@
         };
 
         // PayPal-specific order creation
+// PayPal-specific order creation (optimized - single call)
         this.createOrder = async function (data, actions) {
             PayPalPayment.removeErrorMessage();
             PayPalPayment.addSubmitButtonOverlay();
@@ -60,34 +61,35 @@
                 return;
             }
 
-            // Create shop order first
-            let shopOrderCreateResult = await PayPalPayment.backendRequest('shopOrderCreateUrl', {}, {
+            // Combined call - creates both shop order AND PayPal order in one request
+            let result = await PayPalPayment.backendRequest('createOrdersForPayPalUrl', {}, {
                 'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId'),
-                'paymentId': PayPalPayment.getConfigValue('paymentId')
-            });
-
-            document.dispatchEvent(new CustomEvent('shopOrderCreated', new Object({detail: {...shopOrderCreateResult}})));
-
-            // Create PayPal order
-            let payPalOrderCreateResult = await PayPalPayment.backendRequest('payPalOrderCreateUrl', {}, {
-                'shopOrderId': shopOrderCreateResult.shopOrderId,
+                'paymentId': PayPalPayment.getConfigValue('paymentId'),
                 'vaultPayment': PayPalPayment.currentOrder.vaultPayment,
                 'useVaultedPayment': PayPalPayment.config.vaultedPaymentSource,
-                'deliveryAddressId': PayPalPayment.getConfigValue('deliveryAddressId')
+                'trackingId': PayPalPayment.getConfigValue('trackingId')
             });
 
-            document.dispatchEvent(new CustomEvent('payPalOrderCreated', new Object({detail: {...payPalOrderCreateResult.payPalOrder}})));
-
-            if (payPalOrderCreateResult.status !== 'success') {
-                throw new Error('PayPal order creation failed: ' + payPalOrderCreateResult.message);
+            if (result.status !== 'success') {
+                throw new Error('Order creation failed: ' + (result.message || 'Unknown error'));
             }
 
-            //if the vaulted payment source is used, go to finalize payment
-            if (null !== PayPalPayment.config.vaultedPaymentSource && payPalOrderCreateResult.payPalOrder.status === 'COMPLETED') {
+            // Dispatch events for both orders
+            document.dispatchEvent(new CustomEvent('shopOrderCreated', {
+                detail: { shopOrderId: result.shopOrderId }
+            }));
+
+            document.dispatchEvent(new CustomEvent('payPalOrderCreated', {
+                detail: { ...result.payPalOrder }
+            }));
+
+            // Handle vaulted payment - redirect if already completed
+            if (null !== PayPalPayment.config.vaultedPaymentSource &&
+                result.payPalOrder.status === 'COMPLETED') {
                 PayPalPayment.thankYouPageRedirect();
             }
 
-            return payPalOrderCreateResult.payPalOrder.id;
+            return result.payPalOrder.id;
         };
 
         this.captureOrder = async function (data, actions) {

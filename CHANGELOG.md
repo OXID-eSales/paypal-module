@@ -15,7 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### NEW
 
-- Performance: Improved AJAX controller response time by 56% through lazy-loaded settings cache and reduced controller inheritance
+- Performance: Improved AJAX controller response time by 56% through lazy-loaded settings cache and reduced controller inheritance 
+- Performance: Optimized PayPal standard checkout by combining shop and PayPal order creation into single request
 
 ## [2.6.4] - 2025-12-05
 
