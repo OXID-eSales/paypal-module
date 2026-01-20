@@ -19,6 +19,7 @@ use OxidSolutionCatalysts\PayPal\Helper\Truncate;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch;
@@ -53,9 +54,13 @@ class PatchRequestFactory
         $deliveryAddress = oxNew(Address::class);
         $order = oxNew(Order::class);
         $order->load($orderId);
+
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+
         $patches = array_values(
             array_filter([
                 $this->getAmountPatch(),
+                $orderId ? $this->getCustomIdPatch($paymentService->getCustomIdParameter($order)) : null,
                 $this->getPurchaseUnitsPatch()
             ])
         );
