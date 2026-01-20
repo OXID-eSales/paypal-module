@@ -96,6 +96,129 @@ class AjaxPaymentController extends BaseController
     }
 
     /**
+     * Combined creation of shop order and PayPal order in a single request.
+     * Optimized to reduce roundtrips and improve checkout performance.
+     *
+     * @throws JsonException
+     * @throws \ReflectionException
+     */
+    public function createOrdersForPayPal(): void
+    {
+        $data = $this->getRequestParameters();
+        $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'] ?? null;
+        $_POST['vaultPayment'] = $data['vaultPayment'] ? "true" : "false";
+        $_POST['oscPayPalPaymentTypeForVaulting'] = PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
+        $_POST['useVaultedPayment'] = $data['useVaultedPayment'] ?? false;
+
+        $paymentId = $data['paymentId'] ?? null;
+
+        if (isset($data['trackingId'])) {
+            $this->orderProcessTrackingService->setTrackingId($data['trackingId']);
+        }
+
+        $this->addToBasket();
+
+        // Step 1: Create shop order
+        $shopOrderResult = $this->orderManager->createShopOrder($paymentId);
+
+        if (null === $shopOrderResult) {
+            $this->outputJson([
+                'status' => 'error',
+                'message' => 'Shop order creation failed'
+            ]);
+            return;
+        }
+
+        $shopOrderId = $shopOrderResult['shopOrderId'];
+
+        // Step 2: Create PayPal order
+        $this->setPayPalPaymentMethod(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
+
+        $session = Registry::getSession();
+        $order = $this->orderRepository->fetchCurrentShopOrder();
+        $basket = $session->getBasket();
+        $user = $basket->getUser();
+
+        if ($basket->getItemsCount() === 0) {
+            $this->outputJson([
+                'status' => 'error',
+                'message' => 'No Article in the Basket'
+            ]);
+            return;
+        }
+
+        /** @var ModuleSettings $moduleSettings */
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+
+        $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
+        $config = Registry::getConfig();
+        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
+        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
+        $paymentIdFromSession = $session->getVariable('paymentid');
+        $intent = $captureStrategy === 'directly' ? OrderRequest::INTENT_CAPTURE : OrderRequest::INTENT_AUTHORIZE;
+        $userAction = $paymentIdFromSession === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID ?
+            OrderRequestFactory::USER_ACTION_CONTINUE : OrderRequestFactory::USER_ACTION_PAY_NOW;
+
+        try {
+            $payPalOrder = $paymentService->doCreatePayPalOrder(
+                $basket,
+                $intent,
+                $userAction,
+                null,
+                '',
+                '',
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
+                $returnUrl,
+                $cancelUrl,
+                false
+            );
+
+            if (!$payPalOrder->id) {
+                $this->outputJson([
+                    'status' => 'error',
+                    'message' => 'PayPal order creation failed - no order ID received'
+                ]);
+                return;
+            }
+
+            // Dispatch event for order creation
+            $paymentsId = (string)$order->getFieldData('oxpaymenttype');
+            $transactionId = (string)($payPalOrder->purchase_units[0]->payments->captures[0]->id ?? '');
+
+            $event = new PayPalOrderCreatedEvent(
+                $order,
+                $basket,
+                $user,
+                $shopOrderId,
+                $payPalOrder->id,
+                $paymentsId,
+                $transactionId
+            );
+            $this->dispatchNormalized($event, PayPalOrderCreatedEvent::NAME);
+
+            $this->outputJson([
+                'status' => 'success',
+                'shopOrderId' => $shopOrderId,
+                'payPalOrder' => $payPalOrder,
+            ]);
+
+        } catch (\Exception $exception) {
+            $this->logger->log('error', 'Combined order creation failed', [
+                'message' => $exception->getMessage(),
+                'shopOrderId' => $shopOrderId
+            ]);
+
+            $this->outputJson([
+                'status' => 'error',
+                'message' => 'PayPal order creation failed: ' . $exception->getMessage()
+            ]);
+        }
+    }
+
+    /**
      * @throws \JsonException
      * @throws \ReflectionException
      */
@@ -236,87 +359,6 @@ class AjaxPaymentController extends BaseController
     {
         PayPalSession::unsetPayPalSession();
         $this->outputJson(['success' => true]);
-    }
-
-    /**
-     * @throws \JsonException
-     * @throws \ReflectionException
-     */
-    public function createPayPalOrder(): void
-    {
-        $data = $this->getRequestParameters();
-        $_POST['sDeliveryAddressMD5'] = $data['deliveryAddressId'];
-        $_POST['vaultPayment'] = $data['vaultPayment'] ? "true" : "false";
-        $_POST['oscPayPalPaymentTypeForVaulting'] = PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
-        $_POST['useVaultedPayment'] = $data['useVaultedPayment'];
-        $this->orderProcessTrackingService->setTrackingId($data['trackingId']);
-        $this->addToBasket();
-
-        $this->setPayPalPaymentMethod(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
-        $session = Registry::getSession();
-        $shopOrderId = $this->orderRepository->fetchCurrentShopOrderId();
-        $order = $this->orderRepository->fetchCurrentShopOrder();
-        $basket = $session->getBasket();
-        $user = $basket->getUser();
-
-        if ($basket->getItemsCount() === 0) {
-            $this->outputJson(['ERROR' => 'No Article in the Basket']);
-        }
-
-        /** @var ModuleSettings $moduleSettings */
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        /** @var PaymentService $paymentService */
-        $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        $captureStrategy = $moduleSettings->getPayPalStandardCaptureStrategy();
-        $config = Registry::getConfig();
-        $returnUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession';
-        $cancelUrl = $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession';
-        $paymentId = $session->getVariable('paymentid');
-        $intent = $captureStrategy === 'directly' ? OrderRequest::INTENT_CAPTURE : OrderRequest::INTENT_AUTHORIZE;
-        $userAction = $paymentId === PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID ?
-            OrderRequestFactory::USER_ACTION_CONTINUE : OrderRequestFactory::USER_ACTION_PAY_NOW;
-
-        $payPalOrder = $paymentService->doCreatePayPalOrder(
-            $basket,
-            $intent,
-            $userAction,
-            null,
-            '',
-            '',
-            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-            $returnUrl,
-            $cancelUrl,
-            false
-        );
-
-        if ($payPalOrder->id) {
-            $paymentsId = (string)$order->getFieldData('oxpaymenttype');
-            $transactionId = (string)$payPalOrder->purchase_units[0]->payments->captures[0]->id;
-            $event = new PayPalOrderCreatedEvent(
-                $order,
-                $basket,
-                $user,
-                $shopOrderId,
-                $payPalOrder->id,
-                $paymentsId,
-                $transactionId
-            );
-            $this->dispatchNormalized($event, PayPalOrderCreatedEvent::NAME);
-
-            $this->outputJson([
-                'status' => 'success',
-                'shopOrder' => [
-                    'shopOrderId' => $this->orderRepository->fetchCurrentShopOrderId(),
-                    'customId' => $paymentService->getCustomIdParameter($this->orderRepository->fetchCurrentShopOrder())
-                ],
-                'payPalOrder' => $payPalOrder,
-            ]);
-        }
-
-        $this->outputJson([
-            'status' => 'error',
-            'message' => 'error'
-        ]);
     }
 
     /**

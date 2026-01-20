@@ -38,8 +38,7 @@
         [{if $paymentId == 'oscpaypal'}]
             window.PayPalPaymentControllerConfigurator = function () {
                 return Object.assign (PayPalPaymentControllerConfiguratorDefaults, {
-                    shopOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
-                    payPalOrderCreateUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createPayPalOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
+                    createOrdersForPayPalUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createOrdersForPayPal&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                     shopOrderCaptureUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=captureOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                     shopOrderPatchingUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                     updateOxUserWithPayPalCustomerIdUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=updateOxUserWithPayPalCustomerId&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
