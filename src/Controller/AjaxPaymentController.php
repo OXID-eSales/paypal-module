@@ -14,9 +14,12 @@ use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Field;
+use OxidEsales\Eshop\Core\Controller\BaseController;
 use OxidSolutionCatalysts\PayPal\Event\PayPalOrderCreatedEvent;
 use OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface;
 use OxidSolutionCatalysts\PayPal\Traits\NormalizedEventDispatcher;
+use OxidSolutionCatalysts\PayPal\Traits\PayPalBasketTrait;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Model\Order as ShopOrder;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
@@ -37,10 +40,12 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use Psr\Log\LoggerInterface;
 use OxidSolutionCatalysts\PayPal\Event\PayPalOrderCompletedEvent;
 
-class AjaxPaymentController extends ProxyController
+class AjaxPaymentController extends BaseController
 {
     use JsonTrait;
     use NormalizedEventDispatcher;
+    use ServiceContainer;
+    use PayPalBasketTrait;
 
     /**
      * @var LoggerInterface
@@ -76,6 +81,14 @@ class AjaxPaymentController extends ProxyController
         $this->paymentService = $this->getServiceFromContainer(PaymentService::class);
         $this->orderRepository = $this->getServiceFromContainer(OrderRepository::class);
         $this->orderManager = $this->getServiceFromContainer(OrderManager::class);
+    }
+
+    /**
+     * Override render to prevent template rendering
+     */
+    public function render()
+    {
+        return null;
     }
 
     /**
