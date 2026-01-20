@@ -14,9 +14,12 @@ use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Field;
+use OxidEsales\Eshop\Core\Controller\BaseController;
 use OxidSolutionCatalysts\PayPal\Event\PayPalOrderCreatedEvent;
 use OxidSolutionCatalysts\PayPal\Service\SCAValidatorInterface;
 use OxidSolutionCatalysts\PayPal\Traits\NormalizedEventDispatcher;
+use OxidSolutionCatalysts\PayPal\Traits\PayPalBasketTrait;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Model\Order as ShopOrder;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
@@ -37,10 +40,16 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use Psr\Log\LoggerInterface;
 use OxidSolutionCatalysts\PayPal\Event\PayPalOrderCompletedEvent;
 
-class AjaxPaymentController extends ProxyController
+/**
+ * Optimized AJAX Payment Controller
+ * Performance: Uses BaseController instead of FrontendController to reduce overhead
+ */
+class AjaxPaymentController extends BaseController
 {
     use JsonTrait;
     use NormalizedEventDispatcher;
+    use ServiceContainer;
+    use PayPalBasketTrait;
 
     /**
      * @var LoggerInterface
@@ -56,7 +65,6 @@ class AjaxPaymentController extends ProxyController
      * @var \OxidSolutionCatalysts\PayPal\Service\Payment
      */
     private $paymentService;
-
 
     /** @var \OxidSolutionCatalysts\PayPal\Service\OrderRepository  */
     private $orderRepository;
@@ -77,6 +85,14 @@ class AjaxPaymentController extends ProxyController
         $this->paymentService = $this->getServiceFromContainer(PaymentService::class);
         $this->orderRepository = $this->getServiceFromContainer(OrderRepository::class);
         $this->orderManager = $this->getServiceFromContainer(OrderManager::class);
+    }
+
+    /**
+     * Override render to prevent template rendering for AJAX endpoints
+     */
+    public function render()
+    {
+        return null;
     }
 
     /**
@@ -287,7 +303,6 @@ class AjaxPaymentController extends ProxyController
             );
             $this->dispatchNormalized($event, PayPalOrderCreatedEvent::NAME);
 
-
             $this->outputJson([
                 'status' => 'success',
                 'shopOrder' => [
@@ -371,7 +386,6 @@ class AjaxPaymentController extends ProxyController
     }
 
     /**
-     *
      * TODO implement error reporting from front to log file
      * @throws JsonException
      */
@@ -405,6 +419,7 @@ class AjaxPaymentController extends ProxyController
 
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $isLog = in_array($moduleSettings->getPayPalDebugLevel(), ['debug', 'error']);
+
         if (is_null($shopOrderId)) {
             if ($isLog) {
                 $this->logger->log('error', $message);
@@ -418,7 +433,6 @@ class AjaxPaymentController extends ProxyController
         /** @var PayPalOrder $order */
         $order = oxNew(Order::class);
         $order->load($shopOrderId);
-
 
         if ($order->oxorder__oxuserid->value !== $user->getId()) {
             if ($isLog) {
@@ -435,7 +449,6 @@ class AjaxPaymentController extends ProxyController
         ?string $shopOrderId = null
     ): void
     {
-
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
         $isLog = in_array($moduleSettings->getPayPalDebugLevel(), ['debug', 'error']);
 
@@ -453,9 +466,7 @@ class AjaxPaymentController extends ProxyController
         $order = oxNew(Order::class);
         $order->load($shopOrderId);
 
-        if (
-            $order->isOrderSuccessfullyPaid()
-        ) {
+        if ($order->isOrderSuccessfullyPaid()) {
             if ($isLog) {
                 $this->logger->log('error', 'Order is successfully done');
             }
@@ -492,9 +503,8 @@ class AjaxPaymentController extends ProxyController
             'Current user do not have permission to cancel referenced order'
         );
 
-        $this->isOrderNotSuccessfullyDone(
-            $shopOrderId
-        );
+        $this->isOrderNotSuccessfullyDone($shopOrderId);
+
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
         $paymentService->removeTemporaryOrder($shopOrderId);
 
@@ -525,7 +535,7 @@ class AjaxPaymentController extends ProxyController
         if ($cancelSession) {
             $this->outputJson([
                 'status' => 'error',
-                'message' => 'Order id mismatch error.', //@TODO improve errors messages
+                'message' => 'Order id mismatch error.',
             ]);
         }
         $paymentsId = (string)$oOrder->getFieldData('oxpaymenttype');
@@ -564,7 +574,7 @@ class AjaxPaymentController extends ProxyController
         } catch (\Exception $e) {
             $this->outputJson([
                 'status' => 'error',
-                'message' => 'Order completion error.', //@TODO improve errors messages
+                'message' => 'Order completion error.',
             ]);
         }
 

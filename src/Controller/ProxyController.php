@@ -36,6 +36,7 @@ use OxidSolutionCatalysts\PayPal\Service\UserRepository;
 use OxidSolutionCatalysts\PayPal\Service\PayPalUrlService;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPal\Traits\PayPalBasketTrait;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
@@ -45,11 +46,13 @@ use Psr\Log\LoggerInterface;
 
 /**
  * Server side interface for PayPal smart buttons.
+ * Optimized with PayPalBasketTrait to share common logic with AjaxPaymentController
  */
 class ProxyController extends FrontendController
 {
     use JsonTrait;
     use ServiceContainer;
+    use PayPalBasketTrait;
 
     /** @var UserAddressPaypalService */
     private $userAddressPaypalService;
@@ -261,7 +264,6 @@ class ProxyController extends FrontendController
         $this->outputJson($response);
     }
 
-
     /**
      * @throws JsonException
      */
@@ -370,99 +372,6 @@ class ProxyController extends FrontendController
         exit;
     }
 
-    protected function addToBasket(): void
-    {
-        $basket = Registry::getSession()->getBasket();
-        $utilsView = Registry::getUtilsView();
-        $aSel = Registry::getRequest()->getRequestParameter('sel');
-        $qty = (double)Registry::getRequest()->getRequestParameter('amountToBasket') ?? 0;
-        if ($aid = (string)Registry::getRequest()->getRequestEscapedParameter('aid')) {
-            try {
-                if (!$this->itemExists($basket, $aid, $qty)) {
-                    $basket->addToBasket($aid, $qty, $aSel);
-                    $basket->isNewItemAdded();
-                }
-                // Remove flag of "new item added" to not show "Item added" popup when returning to checkout from paypal
-                $basket->isNewItemAdded();
-            } catch (OutOfStockException $exception) {
-                $utilsView->addErrorToDisplay($exception);
-            } catch (ArticleInputException $exception) {
-                $utilsView->addErrorToDisplay($exception);
-            } catch (NoArticleException $exception) {
-                $utilsView->addErrorToDisplay($exception);
-            }
-            $basket->calculateBasket(false);
-        }
-    }
-
-    public function setPayPalPaymentMethod($defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID): void
-    {
-        $session = Registry::getSession();
-        $basket = $session->getBasket();
-        $user = null;
-
-        if ($activeUser = $this->getUser()) {
-            $user = $activeUser;
-        }
-
-        $requestedPayPalPaymentId = $this->getRequestedPayPalPaymentId($defaultPayPalPaymentId);
-        if ($session->getVariable('paymentid') !== $requestedPayPalPaymentId) {
-            $basket->setPayment($requestedPayPalPaymentId);
-            $session->setVariable('paymentid', $requestedPayPalPaymentId);
-        }
-        $this->getActiveShippingSetId($session, $user, $basket);
-    }
-
-    private function getActiveShippingSetId($session, $user, $basket): void
-    {
-        $shippingSetId = $session->getVariable('sShipSet');
-
-        if ($shippingSetId) {
-            return;
-        }
-
-        /** @psalm-suppress InvalidArgument */
-        [, $shippingSetId,] =
-            Registry::get(DeliverySetList::class)->getDeliverySetData('', $user, $basket);
-
-        if ($shippingSetId) {
-            $basket->setShipping($shippingSetId);
-            $session->setVariable('sShipSet', $shippingSetId);
-        }
-    }
-
-    /**
-     * Tries to fetch user delivery country ID
-     *
-     * @return string
-     */
-    protected function getDeliveryCountryId()
-    {
-        $config = Registry::getConfig();
-        $user = $this->getUser();
-
-        if (!$user) {
-            $homeCountry = $config->getConfigParam('aHomeCountry');
-            if (is_array($homeCountry)) {
-                $countryId = current($homeCountry);
-            }
-        } else {
-            if ($delCountryId = $config->getGlobalParameter('delcountryid')) {
-                $countryId = $delCountryId;
-            } elseif ($addressId = Registry::getSession()->getVariable('deladrid')) {
-                $deliveryAddress = oxNew(Address::class);
-                if ($deliveryAddress->load($addressId)) {
-                    $countryId = $deliveryAddress->oxaddress__oxcountryid->value;
-                }
-            }
-
-            if (!$countryId) {
-                $countryId = $user->oxuser__oxcountryid->value;
-            }
-        }
-        return $countryId;
-    }
-
     protected function handleUserLogin(PayPalApiOrder $apiOrder): bool
     {
         $paypalConfig = oxNew(Config::class);
@@ -480,15 +389,6 @@ class ProxyController extends FrontendController
         }
 
         return $isLoggedIn;
-    }
-
-    protected function getRequestedPayPalPaymentId(
-        $defaultPayPalPaymentId = PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID
-    ): string {
-        $paymentId = (string)Registry::getRequest()->getRequestEscapedParameter('paymentid');
-        return PayPalDefinitions::isPayPalPayment($paymentId) ?
-            $paymentId :
-            $defaultPayPalPaymentId;
     }
 
     public function getPaymentRequestLines()
@@ -652,9 +552,6 @@ class ProxyController extends FrontendController
 
                         $this->setPayPalPaymentMethod($paymentId);
                     } catch (StandardException $exception) {
-                        //   Registry::getUtilsView()->addErrorToDisplay($exception);
-                        // $response->status = 'ERROR';
-                        //     PayPalSession::unsetPayPalOrderId();
                         Registry::getSession()->getBasket()->setPayment(null);
                     }
                 }
@@ -662,29 +559,7 @@ class ProxyController extends FrontendController
         } elseif ($nonGuestAccountDetected && !$isLoggedIn) {
             // PPExpress is actual no possible so we switch to PP-Standard
             $this->setPayPalPaymentMethod(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
-        } else {
-            //TODO: we might end up in order step redirecting to start page without showing a message
-            // if we have no user, we stop the process
-            ////     $response->status = 'ERROR';
-            //     PayPalSession::unsetPayPalOrderId();
-            //  Registry::getSession()->getBasket()->setPayment(null);
         }
         $this->outputJson($response);
-    }
-
-    private function itemExists(?Basket $basket, ?string $articleOxid, ?int $amountToBasket): bool
-    {
-        if ($basket === null) {
-            return false;
-        }
-
-        $basketContents = $basket->getContents();
-        foreach ($basketContents as $basketItem) {
-            if ($basketItem->getProductId() === $articleOxid && $basketItem->getAmount() === $amountToBasket) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }

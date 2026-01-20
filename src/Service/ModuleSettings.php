@@ -24,6 +24,10 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Module;
 use Psr\Log\LoggerInterface;
 
+/**
+ * Optimized ModuleSettings with lazy-loading cache to avoid repeated YAML parsing
+ * Performance: Implements on-demand settings caching to reduce YAML parse overhead
+ */
 class ModuleSettings
 {
     /**
@@ -83,10 +87,12 @@ class ModuleSettings
     /** @var UserRepository */
     private $userRepository;
 
-    //TODO: we need service for fetching module settings from db (this one)
-    //another class for moduleconfiguration (database values/edefaults)
-    //and the view configuration should go into some separate class
-    //also add shopcontext to get shop settings
+    /**
+     * Cache for module settings to avoid repeated YAML parsing
+     * Settings are loaded on-demand (lazy-loading), not all at once
+     * @var array<string, mixed>
+     */
+    private $settingsCache = [];
 
     public function __construct(
         ModuleSettingBridgeInterface $moduleSettingBridge,
@@ -100,6 +106,42 @@ class ModuleSettings
         $this->moduleConfigurationDaoBridgeInterface = $moduleConfigurationDaoBridgeInterface;
         $this->logger = $logger;
         $this->userRepository = $userRepository;
+    }
+
+    /**
+     * Get setting value with lazy-loading cache
+     * Only loads the requested setting, not all settings
+     *
+     * @param string $key
+     * @return mixed
+     */
+    private function getSettingValue(string $key)
+    {
+        // Check if already cached
+        if (array_key_exists($key, $this->settingsCache)) {
+            return $this->settingsCache[$key];
+        }
+
+        // Load and cache this specific setting
+        try {
+            $this->settingsCache[$key] = $this->moduleSettingBridge->get($key, Module::MODULE_ID);
+        } catch (\Exception $e) {
+            // Setting not found - cache null to avoid repeated lookups
+            $this->settingsCache[$key] = null;
+        }
+
+        return $this->settingsCache[$key];
+    }
+
+    /**
+     * Clear the settings cache
+     * Should be called after save operations to ensure fresh data on next read
+     *
+     * @return void
+     */
+    public function clearCache(): void
+    {
+        $this->settingsCache = [];
     }
 
     public function showAllPayPalBanners(): bool
@@ -201,7 +243,7 @@ class ModuleSettings
 
     public function getSupportedLocalesCommaSeparated(): string
     {
-        return $this->getSettingValue('oscPayPalLocales');
+        return (string)$this->getSettingValue('oscPayPalLocales');
     }
 
     public function showPayPalBasketButton(): bool
@@ -254,6 +296,7 @@ class ModuleSettings
     {
         return (string)$this->getSettingValue('oscPayPalBannersStartPageSelector');
     }
+
     public function getDefaultShippingPriceForExpress(): string
     {
         return (string)$this->getSettingValue('oscPayPalDefaultShippingPriceExpress');
@@ -396,7 +439,7 @@ class ModuleSettings
     public function isVaultingEligibility(): bool
     {
         return $this->isSandbox() ?
-            $this->isSandBoxVaultingEligibility() :
+            $this->isSandboxVaultingEligibility() :
             $this->isLiveVaultingEligibility();
     }
 
@@ -557,9 +600,6 @@ class ModuleSettings
             $value = $shop->oxshops__oxname->value;
         }
         return $value;
-
-        // method "getRawFieldData" available only with shop v6.5+
-        //return Registry::getConfig()->getActiveShop()->getRawFieldData('oxname');
     }
 
     public function getInfoEMail(): string
@@ -594,6 +634,9 @@ class ModuleSettings
         }
 
         $this->moduleSettingBridge->save($name, $value, Module::MODULE_ID);
+
+        // Clear cache after save to ensure fresh data on next read
+        $this->clearCache();
     }
 
     public function saveSandboxMode(bool $mode): void
@@ -748,6 +791,7 @@ class ModuleSettings
             $this->save('oscPayPalGooglePayEligibility', $isGooglePayEligibility);
         }
     }
+
     /**
      * add details controller to requireSession
      */
@@ -882,14 +926,6 @@ class ModuleSettings
     public function isCustomIdSchemaStructural(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalUseStructuralCustomIdSchema');
-    }
-
-    /**
-     * @return mixed
-     */
-    private function getSettingValue(string $key)
-    {
-        return $this->moduleSettingBridge->get($key, Module::MODULE_ID);
     }
 
     private function isAdmin(): bool

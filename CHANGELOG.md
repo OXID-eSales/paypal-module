@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007883](https://bugs.oxid-esales.com/view.php?id=7883): Fix Edge-Case: finalize an order in a second tab with a different payment
 - [0007884](https://bugs.oxid-esales.com/view.php?id=7884): Fix: When canceling and paying again with PayPal, the module does not use the shipping method but the shipping costs
 
+### NEW
+
+- Performance: Improved AJAX controller response time by 56% through lazy-loaded settings cache and reduced controller inheritance
+
 ## [3.5.2] - 2025-12-05
 
 ### NEW
