@@ -12,11 +12,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007874](https://bugs.oxid-esales.com/view.php?id=7874): Fix: PayPal stateand country initialisation in purchase units factory
 - [0007883](https://bugs.oxid-esales.com/view.php?id=7883): Fix Edge-Case: finalize an order in a second tab with a different payment
 - [0007884](https://bugs.oxid-esales.com/view.php?id=7884): Fix: When canceling and paying again with PayPal, the module does not use the shipping method but the shipping costs
+- add customId for PP-Express again
 
 ### NEW
 
 - Performance: Improved AJAX controller response time by 56% through lazy-loaded settings cache and reduced controller inheritance 
 - Performance: Optimized PayPal standard checkout by combining shop and PayPal order creation into single request
+- Performance: uAPMs like iDeal, Blik, EPS, P24 and bancontact are completed on approval
 
 ## [2.6.4] - 2025-12-05
 

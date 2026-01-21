@@ -180,11 +180,17 @@ class Order extends Order_parent
         $isPaypalGooglePay = $paymentsId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
         $isPaypalApplePay = $paymentsId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID;
+        $isUAPM = PayPalDefinitions::isUAPMPayment($paymentsId);
 
         $transactionId = null;
         $payPalPaymentSuccess = true;
 
-        if (($isPayPalACDC && $forceFetchDetails) || $isPaypalGooglePay  || $isPaypalApplePay) {
+        if (
+            ($isPayPalACDC && $forceFetchDetails) ||
+            $isPaypalGooglePay ||
+            $isPaypalApplePay ||
+            $isUAPM
+        ) {
             if ($this->isPayPalOrderCompleted($payPalApiOrder)) {
                 $this->markOrderPaid();
                 $transactionId = $this->extractTransactionId($payPalApiOrder);
@@ -207,7 +213,7 @@ class Order extends Order_parent
             // remove PayPal order id from session
             PayPalSession::unsetPayPalOrderId();
         } elseif (
-            ($isPayPalStandard || $isPayPalACDC ) &&
+            ($isPayPalStandard || $isPayPalACDC) &&
             $this->moduleSettings
                 ->getPayPalStandardCaptureStrategy() !== 'directly'
         ) {
@@ -239,10 +245,13 @@ class Order extends Order_parent
                 $paymentsId,
                 PayPalApiOrder::STATUS_APPROVED
             );
-        } else {
-            // uAPM, PayPal Standard directly, PayPal Paylater
+        } elseif (
+            $isPayPalStandard &&
+            $this->moduleSettings
+                ->getPayPalStandardCaptureStrategy() === 'directly'
+        ) {
+            // PayPal Standard directly, PayPal Paylater
             $payPalPaymentSuccess = $this->doExecutePayPalPayment($payPalOrderId);
-            //TODO: maybe we can get transation id as return value if payment was completed
         }
 
         //TODO: reduce calls to api, see above
@@ -379,6 +388,7 @@ class Order extends Order_parent
                 PayPalSession::setSessionRedirectLink($redirectLink);
 
                 return self::ORDER_STATE_SESSIONPAYMENT_INPROGRESS;
+
             } catch (Exception $exception) {
                 $this->delete();
                 /** @var LoggerInterface $logger */
@@ -431,7 +441,7 @@ class Order extends Order_parent
         try {
             // At this point we only trigger the capture. We find out that order was really captured via the
             // CHECKOUT.ORDER.COMPLETED webhook, where we mark the order as paid
-            $order = $this->paymentService->doCapturePayPalOrder($this, $payPalOrderId, $sessionPaymentId);
+            $this->paymentService->doCapturePayPalOrder($this, $payPalOrderId, $sessionPaymentId);
             // success means at this point, that we triggered the capture without errors
             $success = true;
         } catch (Exception $exception) {

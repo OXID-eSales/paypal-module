@@ -441,63 +441,6 @@ class Payment
     }
 
     /**
-     * @throws \OxidSolutionCatalysts\PayPalApi\Exception\ApiException
-     * @throws \OxidSolutionCatalysts\PayPal\Exception\PayPalException
-     */
-    public function doConfirmUAPM(
-        EshopModelOrder $order,
-        EshopModelBasket $basket,
-        string $checkoutOrderId,
-        string $paymentSourceId
-    ): string {
-        $redirectLink = '';
-
-        $requestFactory = Registry::get(ConfirmOrderRequestFactory::class);
-        /** @var ConfirmOrderRequest $request */
-        $request = $requestFactory->getRequest(
-            $basket,
-            $paymentSourceId
-        );
-
-        // toDo: Clearing with Marcus. Optional. Verifies that the payment originates from a valid,
-        // user-consented device and application. Reduces fraud and decreases declines.
-        // Transactions that do not include a client metadata ID are not eligible for PayPal Seller Protection.
-        $payPalClientMetadataId = '';
-
-        /** @var ApiOrderService $orderService */
-        $orderService = $this->serviceFactory->getOrderService();
-
-        $response = $orderService->confirmTheOrder(
-            $payPalClientMetadataId,
-            $checkoutOrderId,
-            $request,
-            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
-        );
-
-        if (!isset($response->links)) {
-            throw PayPalException::sessionPaymentMalformedResponse();
-        }
-        foreach ($response->links as $links) {
-            if ($links['rel'] === 'payer-action') {
-                $redirectLink = $links['href'];
-                break;
-            }
-        }
-        if (!$redirectLink) {
-            throw PayPalException::sessionPaymentMissingRedirectLink();
-        }
-
-        $this->trackPayPalOrder(
-            (string)$order->getId(),
-            $checkoutOrderId,
-            $basket->getPaymentId(),
-            $response->status
-        );
-
-        return $redirectLink;
-    }
-
-    /**
      * Return the PaymentId from session basket
      */
     public function getSessionPaymentId(): ?string
@@ -583,59 +526,64 @@ class Payment
         //For UAPM payment we should not yet have a paypal order in session.
         //We create a fresh paypal order at this point
 
-        $uapmOrderId = $this->doCreateUAPMOrder($basket);
+        $redirectLink = $this->doCreateUAPMOrder($order, $basket);
 
-        if (!$uapmOrderId) {
+        if (!$redirectLink) {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
             throw PayPalException::createPayPalOrderFail();
         }
 
-        PayPalSession::storePayPalOrderId($uapmOrderId);
-        $redirectLink = '';
-
-        try {
-            $redirectLink = $this->doConfirmUAPM(
-                $order,
-                $basket,
-                $uapmOrderId,
-                PayPalDefinitions::getPaymentSourceRequestName($basket->getPaymentId())
-            );
-        } catch (Exception $exception) {
-            PayPalSession::unsetPayPalOrderId();
-            $this->removeTemporaryOrder();
-            //TODO: do we need to log this?
-            if (
-                $this->moduleSettingsService->getPayPalDebugLevel() === 'debug'
-                || $this->moduleSettingsService->getPayPalDebugLevel() === 'error'
-            ) {
-                $this->logger->log('error', $exception->getMessage(), [$exception]);
-            }
-        }
-
-        //NOTE: payment not fully executed, we need customer interaction first
         return $redirectLink;
     }
 
-    public function doCreateUAPMOrder(EshopModelBasket $basket): string
+    /**
+     * @throws PayPalException
+     */
+    public function doCreateUAPMOrder(EshopModelOrder $order, EshopModelBasket $basket): string
     {
+        $payPalUrlService = $this->getServiceFromContainer(PayPalUrlService::class);
+
         $response = $this->doCreatePayPalOrder(
             $basket,
             Constants::PAYPAL_ORDER_INTENT_CAPTURE,
             null,
-            null,
+            Constants::PAYPAL_PROCESSING_INSTRUCTIONS,
             null,
             '',
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
-            null,
-            null,
+            $payPalUrlService->getReturnUrl(),
+            $payPalUrlService->getCancelUrl(),
             false
         );
 
-        $result = '';
+        $redirectLink = '';
         if ($response) {
-            $result = $response->id ?: '';
+
+            $uapmOrderId = $response->id ?? null;
+            if ($uapmOrderId) {
+                PayPalSession::storePayPalOrderId($uapmOrderId);
+            }
+
+            foreach ($response->links as $links) {
+                if ($links['rel'] === 'payer-action') {
+                    $redirectLink = $links['href'];
+                    break;
+                }
+            }
+            if (!$redirectLink) {
+                throw PayPalException::sessionPaymentMissingRedirectLink();
+            }
+
+            $this->trackPayPalOrder(
+                (string)$order->getId(),
+                $uapmOrderId,
+                $basket->getPaymentId(),
+                $response->status
+            );
+
+            return $redirectLink;
         }
-        return $result;
+        return '';
     }
 
     /**
@@ -785,7 +733,7 @@ class Payment
                 $basket,
                 Constants::PAYPAL_ORDER_INTENT_CAPTURE,
                 null,
-                Constants::PAYPAL_PUI_PROCESSING_INSTRUCTIONS,
+                Constants::PAYPAL_PROCESSING_INSTRUCTIONS,
                 PayPalDefinitions::PAYMENT_SOURCE_PUI,
                 $payPalClientMetadataId,
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
