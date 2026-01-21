@@ -70,7 +70,7 @@ final class OrderTest extends BaseTestCase
             OrderRequest::INTENT_CAPTURE,
             OrderRequestFactory::USER_ACTION_CONTINUE,
             '',
-            Constants::PAYPAL_PUI_PROCESSING_INSTRUCTIONS,
+            Constants::PAYPAL_PROCESSING_INSTRUCTIONS,
             PayPalDefinitions::PAYMENT_SOURCE_PUI
         );
 

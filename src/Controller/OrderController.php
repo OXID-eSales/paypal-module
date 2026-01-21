@@ -396,7 +396,11 @@ class OrderController extends OrderController_parent
             /** @var PayPalApiModelOrder $payPalOrder */
             $payPalOrder = $paymentService->fetchOrderFields((string) $sessionCheckoutOrderId, '');
             $vaultingPaymentCompleted = $vaulting && $payPalOrder->status === "COMPLETED";
-            if (!$vaultingPaymentCompleted && 'APPROVED' !== $payPalOrder->status) {
+            if (
+                !$vaultingPaymentCompleted &&
+                'APPROVED' !== $payPalOrder->status &&
+                'COMPLETED' !== $payPalOrder->status
+            ) {
                 throw PayPalException::sessionPaymentFail(
                     'Unexpected status ' . $payPalOrder->status . ' for PayPal order ' . $sessionCheckoutOrderId
                 );

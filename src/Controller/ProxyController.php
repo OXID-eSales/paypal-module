@@ -176,9 +176,6 @@ class ProxyController extends FrontendController
             $this->outputJson(['ERROR' => 'No Article in the Basket']);
         }
 
-        /**
-         * @var PayPalUrlService $payPalUrlService
-         */
         $payPalUrlService = $this->getServiceFromContainer(PayPalUrlService::class);
         $isLoggedIn = false;
         $nonGuestAccountDetected = false;

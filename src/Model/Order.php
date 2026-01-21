@@ -177,11 +177,17 @@ class Order extends Order_parent
         $isPaypalGooglePay = $paymentsId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID;
         $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
         $isPaypalApplePay = $paymentsId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID;
+        $isUAPM = PayPalDefinitions::isUAPMPayment($paymentsId);
 
         $transactionId = null;
         $payPalPaymentSuccess = true;
 
-        if (($isPayPalACDC && $forceFetchDetails) || $isPaypalGooglePay  || $isPaypalApplePay) {
+        if (
+            ($isPayPalACDC && $forceFetchDetails) ||
+            $isPaypalGooglePay ||
+            $isPaypalApplePay ||
+            $isUAPM
+        ) {
             if ($this->isPayPalOrderCompleted($payPalApiOrder)) {
                 $this->markOrderPaid();
                 $transactionId = $this->extractTransactionId($payPalApiOrder);
@@ -204,7 +210,7 @@ class Order extends Order_parent
             // remove PayPal order id from session
             PayPalSession::unsetPayPalOrderId();
         } elseif (
-            ($isPayPalStandard || $isPayPalACDC ) &&
+            ($isPayPalStandard || $isPayPalACDC) &&
             $this->getModuleSettings()
                 ->getPayPalStandardCaptureStrategy() !== 'directly'
         ) {
@@ -236,10 +242,13 @@ class Order extends Order_parent
                 $paymentsId,
                 PayPalApiOrder::STATUS_APPROVED
             );
-        } else {
+        } elseif (
+            $isPayPalStandard &&
+            $this->moduleSettings
+                ->getPayPalStandardCaptureStrategy() === 'directly'
+        ) {
             // uAPM, PayPal Standard directly, PayPal Paylater
             $payPalPaymentSuccess = $this->doExecutePayPalPayment($payPalOrderId);
-            //TODO: maybe we can get transation id as return value if payment was completed
         }
 
         //TODO: reduce calls to api, see above
