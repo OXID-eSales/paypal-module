@@ -197,8 +197,6 @@ class ViewConfig extends ViewConfig_parent
             $params['currency'] = strtoupper($currency->name);
         }
 
-        $params['merchant-id'] = $moduleSettings->getMerchantId();
-
         if ($this->isPayPalBannerActive()) {
             $components[] = 'messages';
         }
