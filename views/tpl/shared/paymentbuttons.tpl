@@ -29,7 +29,7 @@
                 // Loop over each funding source/payment method
                 FUNDING_SOURCES.forEach(function (fundingSource) {
                     // Initialize the buttons
-                    let button = paypal.Buttons({
+                    let button[{$buttonId}] = paypal.Buttons({
                         style: PayPalButtonStyle,
                         fundingSource: fundingSource,
                         createOrder: function (data, actions) {
@@ -90,9 +90,9 @@
                         }
                     })
                     // Check if the button is eligible
-                    if (button.isEligible()) {
+                    if (button[{$buttonId}].isEligible()) {
                         // Render the standalone button for that funding source
-                        button.render('#[{$buttonId}]')
+                        button[{$buttonId}].render('#[{$buttonId}]')
                     } else {
                         //remove SEPA option from payments methods
                         document.querySelector('.paypal-button-wrapper--sepa')
@@ -101,7 +101,7 @@
                     }
                 });
             [{else}]
-                let button = paypal.Buttons({
+                let button[{$buttonId}] = paypal.Buttons({
                     style: PayPalButtonStyle,
                     [{if $oViewConf->getCountryRestrictionForPayPalExpress()}]
                     onShippingChange: function (data, actions) {
@@ -173,8 +173,8 @@
                         }
                     }
                 })
-                if (button.isEligible()) {
-                    button.render('#[{$buttonId}]');
+                if (button[{$buttonId}].isEligible()) {
+                    button[{$buttonId}].render('#[{$buttonId}]');
                 }
             [{/if}];
         [{/capture}]
