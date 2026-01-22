@@ -255,7 +255,7 @@ $aModule = [
         [
             'template' => 'page/list/list.tpl',
             'block' => 'page_list_listhead',
-            'file' => 'views/smarty/extensions/themes/default/page/list/page.tpl',
+            'file' => 'views/smarty/extensions/themes/default/page/list/list.tpl',
         ],
         [
             'template' => 'page/search/search.tpl',

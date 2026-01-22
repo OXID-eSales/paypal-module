@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007884](https://bugs.oxid-esales.com/view.php?id=7884): Fix: When canceling and paying again with PayPal, the module does not use the shipping method but the shipping costs
 - add customId for PP-Express again
 - Merchant ID removed from SDK URL (information is already provided via tokens)
+- Fix template-id in metadata for smarty list.tpl
 
 ### NEW
 
