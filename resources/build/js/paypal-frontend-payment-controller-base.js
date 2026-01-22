@@ -245,8 +245,6 @@
                 return result;
             }
 
-            console.log(result.status, result.message, result.data);
-            await new Promise(resolve => setTimeout(resolve, 5000));
             if (result.status !== 'success') {
                 PayPalPayment.handleError();
             }

@@ -101,7 +101,7 @@
                     }
                 });
             [{else}]
-                button = paypal.Buttons({
+                let button = paypal.Buttons({
                     style: PayPalButtonStyle,
                     [{if $oViewConf->getCountryRestrictionForPayPalExpress()}]
                     onShippingChange: function (data, actions) {
