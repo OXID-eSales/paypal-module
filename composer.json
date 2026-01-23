@@ -24,7 +24,7 @@
         "giggsey/libphonenumber-for-php": "^8.12",
         "viison/address-splitter": "^0.3.4",
         "webmozart/path-util": "^2.3.0",
-        "oxid-solution-catalysts/paypal-client": "^3.0.19|dev-b-7.0.x",
+        "oxid-solution-catalysts/paypal-client": "^3.0.20|dev-b-7.0.x",
         "php": "^7.4|^8.0|^8.1",
         "symfony/event-dispatcher": "*"
     },

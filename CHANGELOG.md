@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Performance: Optimized PayPal standard checkout by combining shop and PayPal order creation into single request
 - Performance: uAPMs like iDeal, Blik, EPS, P24 and bancontact are completed on approval
 - Performance: Faster login and capture in all "popup-payments" by removing a JS call time delay.
+- use PayPal-Client v3.0.20
 
 ## [2.6.4] - 2025-12-05
 
