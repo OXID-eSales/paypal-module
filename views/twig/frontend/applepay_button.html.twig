@@ -336,7 +336,7 @@
                 }).then(function (data) {
                     console.log('Order creation capture data:', data);
                     var goNext = Array.isArray(data.location) && data.location[0];
-                    window.location.href = '{{ sSelfLink }}' + goNext;
+                    window.location.href = '{{ sSelfLink|raw }}' + goNext;
 
                     if (data.status === "ERROR") {
                         location.reload();

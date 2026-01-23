@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Merchant ID removed from SDK URL (information is already provided via tokens)
 - Fix template-id in metadata for smarty list.tpl
 - use PayPal-Client v3.0.20
+- Fix: If Apple Pay is selected with a different language and currency
 
 ### NEW
 
