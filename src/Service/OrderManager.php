@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
+use Exception;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Application\Model\Basket;
@@ -18,7 +19,7 @@ use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
-
+use Psr\Log\LoggerInterface;
 class OrderManager
 {
     use JsonTrait;
@@ -29,24 +30,30 @@ class OrderManager
 
     /** @var EshopCoreConfig */
     private $config;
+
     /**
-     * @var \OxidSolutionCatalysts\PayPal\Service\Payment
+     * @var Payment
      */
     private $paymentService;
 
-    /** @var object|\OxidEsales\Eshop\Application\Model\Basket|null */
+    /** @var object|Basket|null */
     private $basket;
 
+    /**
+     * @var LoggerInterface
+     */
+    protected $logger;
     public function __construct(
         QueryBuilderFactoryInterface $queryBuilderFactory,
         EshopCoreConfig $config,
-        PaymentService $paymentService
+        PaymentService $paymentService,
+        LoggerInterface $logger
     ) {
         $this->queryBuilderFactory = $queryBuilderFactory;
         $this->config = $config;
         $this->paymentService = $paymentService;
         $this->basket = Registry::getSession()->getBasket();
-        ;
+        $this->logger = $logger;
     }
 
     /**
@@ -56,8 +63,10 @@ class OrderManager
     {
         $user = $this->getUser($this->basket);
         if (!$user || !$user->loadActiveUser()) {
-            $this->outputJson(['status' => 'error']);
-
+            $this->logger->log(
+                'debug',
+                'Error during create shop order: loadActiveUser'
+            );
             return null;
         }
 
@@ -70,7 +79,16 @@ class OrderManager
         $session->deleteVariable('sess_challenge');
         $session->setVariable('isPayPalPaymentCheckout', true);
         // finalizing an ordering process (validating, storing order into DB, setting status)
-        $success = $order->finalizeOrder($this->basket, $user);
+        try {
+            $success = $order->finalizeOrder($this->basket, $user);
+        } catch (Exception $exception) {
+            $this->logger->log(
+                'debug',
+                'Error during create shop order: finalizeOrder',
+                [$exception->getMessage()]
+            );
+            return null;
+        }
         $session->deleteVariable('isPayPalPaymentCheckout');
         $session->setVariable('sess_challenge', $this->basket->getOrderId());
 

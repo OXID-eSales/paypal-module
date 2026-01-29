@@ -15,6 +15,22 @@
         this.stoppedOnError = false;
         this.reactOnPayPalOverlayClosed = false;
 
+        this.onPayPalUnload = function (event) {
+            if (PayPalPayment.reactOnPayPalOverlayClosed) {
+                //This will be called when the user closes the window or reloads the page.
+                //In this case we need to cancel the order.
+                PayPalPayment.cancelOrder();
+            }
+        };
+
+        this.addBeforeUnloadListener = function () {
+            window.addEventListener('beforeunload', this.onPayPalUnload);
+        };
+
+        this.removeBeforeUnloadListener = function () {
+            window.removeEventListener('beforeunload', this.onPayPalUnload);
+        };
+
         this.getPaymentData = function () {
             let purchaseUnits = {
                 intent: PayPalPayment.getConfigValue('captureStrategy'),
@@ -123,10 +139,12 @@
         };
 
         this.thankYouPageRedirect = async function () {
+            PayPalPayment.removeBeforeUnloadListener();
             window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
         };
 
         this.handlePaymentAuthorization = async function (details) {
+            PayPalPayment.removeBeforeUnloadListener();
             PayPalPayment.setCreatePayPalOrderResponse(details);
             const patchResult = await PayPalPayment.patchOrder(details);
 
@@ -180,6 +198,7 @@
         };
 
         this.cancelOrder = async function () {
+            PayPalPayment.removeBeforeUnloadListener();
             let shopOrderId = PayPalPayment.getCurrentOrderOxid();
             if (null == shopOrderId) {
                 return;
@@ -198,6 +217,7 @@
         };
 
         this.handleError = async function (data) {
+            PayPalPayment.removeBeforeUnloadListener();
             if(PayPalPayment.stoppedOnError){
                 return;
             }

@@ -14,6 +14,7 @@
             };
 
         this.createOrder = async function (data, actions) {
+            PayPalPayment.addBeforeUnloadListener();
             PayPalPayment.reactOnPayPalOverlayClosed = false;
 
             document.dispatchEvent(new CustomEvent('beforeShopOrderCreated'));
@@ -69,6 +70,7 @@
         };
 
         this.captureOrder = async function (data, actions) {
+            PayPalPayment.removeBeforeUnloadListener();
             //if we managed to get at this stage, closing the overlay not suppose to be watched anymore
             PayPalPayment.reactOnPayPalOverlayClosed = false;
             let result = await PayPalPayment.backendRequest('shopOrderCaptureUrl', {}, {
