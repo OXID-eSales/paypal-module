@@ -188,7 +188,10 @@ class Order extends Order_parent
             $isPaypalApplePay ||
             $isUAPM
         ) {
-            if ($this->isPayPalOrderCompleted($payPalApiOrder)) {
+            if (
+                $this->isPayPalOrderCompleted($payPalApiOrder) ||
+                ($isUAPM && $this->isPayPalOrderApproved($payPalApiOrder))
+            ) {
                 $this->markOrderPaid();
                 $transactionId = $this->extractTransactionId($payPalApiOrder);
                 $this->setTransId($transactionId);
@@ -746,6 +749,16 @@ class Order extends Order_parent
             ) &&
             $apiOrder->status === PayPalApiOrder::STATUS_COMPLETED &&
             $apiOrder->purchase_units[0]->payments->captures[0]->status === Capture::STATUS_COMPLETED
+        );
+    }
+
+    public function isPayPalOrderApproved(PayPalApiOrder $apiOrder): bool
+    {
+        return (
+            isset(
+                $apiOrder->status
+            ) &&
+            $apiOrder->status === PayPalApiOrder::STATUS_APPROVED
         );
     }
 
