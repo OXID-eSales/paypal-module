@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007883](https://bugs.oxid-esales.com/view.php?id=7883): Fix Edge-Case: finalize an order in a second tab with a different payment
 - [0007884](https://bugs.oxid-esales.com/view.php?id=7884): Fix: When canceling and paying again with PayPal, the module does not use the shipping method but the shipping costs
 - [0007885](https://bugs.oxid-esales.com/view.php?id=7885): Fix error handling for createShopOrder and improve missing cancelOrder calls
+- [0007887](https://bugs.oxid-esales.com/view.php?id=7887): Fix that PayPal Express orders always use only the default shipping method
 - add customId for PP-Express again
 - Merchant ID removed from SDK URL (information is already provided via tokens)
 - ApplePay: Remove potential triggers for unnecessary session termination

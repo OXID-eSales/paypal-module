@@ -7,11 +7,9 @@
 
 namespace OxidSolutionCatalysts\PayPal\Traits;
 
-use OxidEsales\Eshop\Application\Component\UserComponent;
 use OxidEsales\Eshop\Application\Model\Address;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\DeliverySetList;
-use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Exception\ArticleInputException;
 use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
@@ -78,13 +76,11 @@ trait PayPalBasketTrait
     {
         $shippingSetId = $session->getVariable('sShipSet');
 
-        if ($shippingSetId) {
-            return;
+        if (!$shippingSetId) {
+            /** @psalm-suppress InvalidArgument */
+            [, $shippingSetId,] =
+                Registry::get(DeliverySetList::class)->getDeliverySetData('', $user, $basket);
         }
-
-        /** @psalm-suppress InvalidArgument */
-        [, $shippingSetId,] =
-            Registry::get(DeliverySetList::class)->getDeliverySetData('', $user, $basket);
 
         if ($shippingSetId) {
             $basket->setShipping($shippingSetId);
