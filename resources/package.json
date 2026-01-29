@@ -4,6 +4,9 @@
     "description": "resources for js and scss components",
     "repository": {},
     "license": "(MIT OR Apache-2.0)",
+    "scripts": {
+        "build": "grunt production"
+    },
     "main": "Gruntfile.js",
     "keywords": [],
     "author": "OSC OXID",
@@ -25,6 +28,7 @@
         "node-sass": "^7.0.1",
         "popper.js": "^1.6.1",
         "postcss": "^8.4.14",
-        "time-grunt": "^2.0.0"
+        "time-grunt": "^2.0.0",
+        "sass": "^1.97.3"
     }
 }

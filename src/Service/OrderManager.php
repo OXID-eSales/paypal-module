@@ -9,15 +9,20 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service;
 
+use Exception;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Application\Model\Basket;
+use OxidEsales\Eshop\Core\Exception\ArticleInputException;
+use OxidEsales\Eshop\Core\Exception\NoArticleException;
+use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
+use Psr\Log\LoggerInterface;
 
 class OrderManager
 {
@@ -34,19 +39,26 @@ class OrderManager
      */
     private $paymentService;
 
-    /** @var object|\OxidEsales\Eshop\Application\Model\Basket|null */
+    /** @var object|Basket|null */
     private $basket;
+    /**
+     * @var LoggerInterface
+     */
+    protected $logger;
 
     public function __construct(
         QueryBuilderFactoryInterface $queryBuilderFactory,
         EshopCoreConfig $config,
-        PaymentService $paymentService
+        PaymentService $paymentService,
+        LoggerInterface $logger
     ) {
         $this->queryBuilderFactory = $queryBuilderFactory;
         $this->config = $config;
         $this->paymentService = $paymentService;
         $this->basket = Registry::getSession()->getBasket();
-        ;
+        $this->logger = $logger;
+
+
     }
 
     /**
@@ -69,8 +81,23 @@ class OrderManager
         $session = Registry::getSession();
         $session->deleteVariable('sess_challenge');
         $session->setVariable('isPayPalPaymentCheckout', true);
-        // finalizing an ordering process (validating, storing order into DB, setting status)
-        $success = $order->finalizeOrder($this->basket, $user);
+        try {
+            /**
+             * finalizing an ordering process (validating, storing order into DB, setting status)
+             * @throws NoArticleException|ArticleInputException|OutOfStockException (from validateOrder -> validateStock)
+             */
+            $success = $order->finalizeOrder($this->basket, $user);
+        } catch (Exception $exception) {
+            $this->logger->log(
+                'debug',
+                'Error during create shop order.',
+                [$exception->getMessage()]
+            );
+            $this->outputJson([
+                'status' => 'error',
+                'message' => 'Shop order creation failed',
+            ]);
+        }
         $session->deleteVariable('isPayPalPaymentCheckout');
         $session->setVariable('sess_challenge', $this->basket->getOrderId());
 

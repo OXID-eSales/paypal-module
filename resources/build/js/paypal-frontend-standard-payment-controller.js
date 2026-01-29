@@ -47,6 +47,7 @@
         // PayPal-specific order creation
 // PayPal-specific order creation (optimized - single call)
         this.createOrder = async function (data, actions) {
+            PayPalPayment.addBeforeUnloadListener();
             PayPalPayment.removeErrorMessage();
             PayPalPayment.addSubmitButtonOverlay();
             PayPalPayment.paypalOverlayWatcher();
@@ -71,6 +72,7 @@
             });
 
             if (result.status !== 'success') {
+                PayPalPayment.removeSubmitButtonOverlay();
                 throw new Error('Order creation failed: ' + (result.message || 'Unknown error'));
             }
 
@@ -93,6 +95,7 @@
         };
 
         this.captureOrder = async function (data, actions) {
+            PayPalPayment.removeBeforeUnloadListener();
             //if we managed to get at this stage, closing the overlay not suppose to be watched anymore
             PayPalPayment.reactOnPayPalOverlayClosed = false;
 
