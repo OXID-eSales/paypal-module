@@ -77,8 +77,14 @@ trait PayPalBasketTrait
     private function getActiveShippingSetId($session, $user, $basket): void
     {
         $shippingSetId = $session->getVariable('sShipSet');
+        $basketShippingId = $basket ? $basket->getShippingId() : '';
+
+        if ($shippingSetId && $shippingSetId === $basketShippingId) {
+            return;
+        }
 
         if ($shippingSetId) {
+            $basket->setShipping($shippingSetId);
             return;
         }
 
