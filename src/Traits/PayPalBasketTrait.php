@@ -76,13 +76,11 @@ trait PayPalBasketTrait
     {
         $shippingSetId = $session->getVariable('sShipSet');
 
-        if ($shippingSetId) {
-            return;
+        if (!$shippingSetId) {
+            /** @psalm-suppress InvalidArgument */
+            [, $shippingSetId,] =
+                Registry::get(DeliverySetList::class)->getDeliverySetData('', $user, $basket);
         }
-
-        /** @psalm-suppress InvalidArgument */
-        [, $shippingSetId,] =
-            Registry::get(DeliverySetList::class)->getDeliverySetData('', $user, $basket);
 
         if ($shippingSetId) {
             $basket->setShipping($shippingSetId);
