@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix template-id in metadata for smarty list.tpl
 - use PayPal-Client v3.0.20
 - Fix: If Apple Pay is selected with a different language and currency
+- ApplePay: Remove potential triggers for unnecessary session termination
 
 ### NEW
 
