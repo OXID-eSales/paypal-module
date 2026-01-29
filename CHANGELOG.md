@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007885](https://bugs.oxid-esales.com/view.php?id=7885): Fix error handling for createShopOrder and improve missing cancelOrder calls
 - add customId for PP-Express again
 - Merchant ID removed from SDK URL (information is already provided via tokens)
+- ApplePay: Remove potential triggers for unnecessary session termination
 
 ### NEW
 

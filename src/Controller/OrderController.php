@@ -323,41 +323,28 @@ class OrderController extends OrderController_parent
             throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR' . $exception->getMessage());
         }
 
-        try {
-            $order = oxNew(EshopModelOrder::class);
-            $order->setId($sessionOrderId);
-            $order->load($sessionOrderId);
+        //track status in session
+        PayPalSession::storePayPalOrderId($orderId);
 
-            $result = [
-                'location' => [
-                    'cl=order&fnc=finalizeapplepay'
-                ]
-            ];
-            //track status in session
-            Registry::getSession()->setVariable('Sessionapplepay', $sessionOrderId);
-            Registry::getSession()->setVariable('applepayOrderId', $orderId);
-        } catch (Exception $exception) {
-            $logger->log(
-                'debug',
-                $exception->getMessage(),
-                [$exception]
-            );
-            $this->getServiceFromContainer(PaymentService::class)->removeTemporaryOrder();
-        }
+        $result = [
+            'location' => [
+                'cl=order&fnc=finalizeapplepay'
+            ]
+        ];
 
         $this->outputJson($result);
     }
 
     public function finalizeapplepay(): string
     {
-        $sessionOrderId = Registry::getSession()->getVariable('Sessionapplepay');
-        $sessionGooglePayOrderId = Registry::getSession()->getVariable('applepayOrderId'); // paypal-checkout-session
+        $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
+        $sessionCheckoutOrderId = PayPalSession::getCheckoutOrderId();
         $forceFetchDetails = (bool) Registry::getRequest()->getRequestParameter('fallbackfinalize');
 
         try {
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
-            $order->finalizeOrderAfterExternalPayment($sessionGooglePayOrderId, $forceFetchDetails);
+            $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId, $forceFetchDetails);
             $goNext = 'thankyou';
         } catch (Exception $exception) {
             /** @var LoggerInterface $logger */
