@@ -604,7 +604,7 @@ class AjaxPaymentController extends BaseController
 
             //capture after shipment or manual
             if ($captureStrategy !== 'directly') {
-                $oOrder->setOrderStatus('NOT_FINISHED');
+                $oOrder->markOrderPaymentNotFinished();
                 $oOrder->save();
                 //prepare capture tracking
                 $paymentService->trackPayPalOrder(
