@@ -70,31 +70,6 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
     {
         return $eventPayload['status'] ?? '';
     }
-
-    /**
-     * Captures payment for given order
-     *
-     * @param string $orderId
-     *
-     * @return OrderResponse
-     * @throws ApiException
-     */
-    private function capturePayment(string $orderId): OrderResponse
-    {
-        /** @var ServiceFactory $serviceFactory */
-        $serviceFactory = Registry::get(ServiceFactory::class);
-        $service = $serviceFactory->getOrderService();
-        $request = new OrderCaptureRequest();
-
-        return $service->capturePaymentForOrder(
-            '',
-            $orderId,
-            $request,
-            '',
-            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
-        );
-    }
-
     private function needsCapture(array $eventPayload): bool
     {
         return !$this->isCompleted($eventPayload) &&
