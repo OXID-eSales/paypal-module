@@ -227,18 +227,18 @@ class Order extends Order_parent
                 if ($result['paymentStatus'] === 'success' && $result['status'] === 'success') {
                     PayPalSession::unsetPayPalSession();
                 } else {
-                    $this->setOrderStatus('ERROR');
+                    $this->markOrderPaymentFailed();
                     $logger->log('error', 'Error on order authorization call.', [$result]);
                     throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
                 }
             } catch (Exception $exception) {
-                $this->setOrderStatus('ERROR');
+                $this->markOrderPaymentFailed();
                 throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
             }
 
             $transactionId = '';
 
-            $this->setOrderStatus('NOT_FINISHED');
+            $this->markOrderPaymentNotFinished();
             $this->getPaymentService()->trackPayPalOrder(
                 $this->getId(),
                 $payPalOrderId,
@@ -269,7 +269,7 @@ class Order extends Order_parent
                         Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
                     );
                 } catch (ApiException $exception) {
-                    $this->setOrderStatus('ERROR');
+                    $this->markOrderPaymentFailed();
                     throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
                 }
             }
@@ -491,6 +491,16 @@ class Order extends Order_parent
         $this->oxorder__oxpaid = new Field($date);
     }
 
+    public function markOrderPaymentFailed(): void
+    {
+        $this->setOrderStatus('ERROR');
+    }
+
+    public function markOrderPaymentNotFinished(): void
+    {
+        $this->setOrderStatus('NOT_FINISHED');
+    }
+
     /**
      * Update order oxtransid
      */
@@ -503,11 +513,6 @@ class Order extends Order_parent
 
         //updating order object
         $this->oxorder__oxtransid = new Field($sTransId);
-    }
-
-    public function markOrderPaymentFailed(): void
-    {
-        $this->setOrderStatus('ERROR');
     }
 
     /**
