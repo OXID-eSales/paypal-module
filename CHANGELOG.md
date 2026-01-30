@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - add customId for PP-Express again
 - Merchant ID removed from SDK URL (information is already provided via tokens)
 - ApplePay: Remove potential triggers for unnecessary session termination
+- double check capture-status before capture, to block a race condition
 
 ### NEW
 

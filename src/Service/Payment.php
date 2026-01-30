@@ -37,6 +37,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderAuthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Payments\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\CaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\ReauthorizeRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
