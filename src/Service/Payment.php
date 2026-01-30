@@ -340,16 +340,9 @@ class Payment
             } elseif (Registry::getRequest()->getRequestParameter("vaulting")) {
                 //when a vaulted payment is used, the order is already finished.
                 $result = $this->fetchOrderFields($checkoutOrderId);
-            } elseif ($payPalOrder->status !== Constants::PAYPAL_STATUS_COMPLETED) {
+            } elseif (!$this->isAlreadyCaptured($payPalOrder)) {
                 $request = new OrderCaptureRequest();
-                //order number must be resolved before order patching
-                $order->load((string)Registry::getSession()->getVariable('sess_challenge'));
-                if (!$order->hasOrderNumber()) {
-                    $order->setOrderNumber();
-                }
-
                 try {
-                    /** @var $result Order */
                     $result = $orderService->capturePaymentForOrder(
                         '',
                         $checkoutOrderId,
@@ -611,7 +604,7 @@ class Payment
 
         // Get PayPal order details
         $payPalOrder = $this->fetchOrderFields($checkoutOrderId);
-        $verify3DResult = $this->verify3D($paymentId, $payPalOrder);
+        $verify3DResult = $this->scaValidator->verify3D($paymentId, $payPalOrder);
         $language = Registry::getLang();
 
         if (!$verify3DResult) {
@@ -844,6 +837,15 @@ class Payment
         } else {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
         }
+    }
+
+    private function isAlreadyCaptured(Order $payPalOrder): bool
+    {
+        // check Order-Status and Capture-Status
+        return ($payPalOrder->status === Constants::PAYPAL_STATUS_COMPLETED) &&
+            !empty($payPalOrder->purchase_units[0]->payments->captures) &&
+            isset($payPalOrder->purchase_units[0]->payments->captures[0]->status) &&
+            ($payPalOrder->purchase_units[0]->payments->captures[0]->status === Capture::STATUS_COMPLETED);
     }
 
     private function displayErrorIfInstrumentDeclined(?string $issue): void
