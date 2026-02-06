@@ -324,17 +324,19 @@ $aLang = array_merge(
 
     'OSC_PAYPAL_INSTALLPROCESS_FAILED'              => 'Da das Modul nicht korrekt per Composer installiert ist, sind Fehler bei der (De-)Aktivierung des Moduls aufgetreten. Bitte installieren Sie das Modul via Composer frisch und wiederholen den Vorgang.',
 
-    // PayPal Payment
     'OSC_PAYPAL_PAYMENT_DEPRECATED'                 => 'Diese PayPal Zahlungsart kann nicht mehr aktiviert werden, da diese demnächst entfernt wird!',
 
     'OSC_PAYPAL_CUSTOM_ID_CONTENTS_TITLE'           => 'PayPal Inhalte des benutzerdefinierten ID-Feldes',
     'OSC_PAYPAL_CUSTOM_ID_CONTENTS_DESC'            => 'Das benutzerdefinierte PayPal-ID-Feld kann entweder nur den Bestellnummernwert oder ein JSON mit zusätzlichen Daten enthalten.',
 
-    'OSC_PAYPAL_DEBUG_LEVEL_OVERRIDE_TITLE'         => 'Debug-Level',
     'OSC_PAYPAL_DEBUG_LEVEL'                        => 'Debug-Level',
     'OSC_PAYPAL_DEBUG_LEVEL_OFF'                    => 'Aus',
     'OSC_PAYPAL_DEBUG_LEVEL_DEBUG'                  => 'Debug',
     'OSC_PAYPAL_DEBUG_LEVEL_ERROR'                  => 'Fehler',
     'HELP_OSC_PAYPAL_DEBUG_LEVEL'                   => 'Steuert die Protokollierungsstufe für PayPal-API-Aufrufe. "Aus" deaktiviert die Protokollierung, "Debug" protokolliert alle Anfragen und Antworten, "Fehler" protokolliert nur Fehler.',
+
+    'OSC_PAYPAL_WEBHOOK_TITLE'                      => 'Webhook',
+    'OSC_PAYPAL_WEBHOOK_TIMEDELAY'                  => 'Zeitverzögerung in Sekunden (Standard: 20)',
+    'OSC_PAYPAL_WEBHOOK_TIMEDELAY_DESC'             => 'Die PayPal-Webhooks informieren den Shop über den aktuellen Stand der Bestellung und beenden die Bestellungen teilweise, falls ein Kunde den Checkout-Prozess nicht bis zur "Danke"-Seite durchführt.',
     ]
 );

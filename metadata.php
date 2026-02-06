@@ -68,7 +68,7 @@ $aModule = [
         'en' => 'Use of the online payment service from PayPal. Documentation: <a href="https://docs.oxid-esales.com/modules/paypal-checkout/en/latest/" target="_blank">PayPal Checkout</a>'
     ],
     'thumbnail' => 'img/paypal.png',
-    'version' => '3.5.3',
+    'version' => '3.6.0-rc.1',
     'author' => 'OXID eSales AG',
     'url' => 'https://www.oxid-esales.com',
     'email' => 'info@oxid-esales.com',
@@ -649,6 +649,12 @@ $aModule = [
             'name' => 'oscPayPalDefaultShippingPriceExpress',
             'type' => 'str',
             'value' => '3.5',
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalWebhookRetryDelay',
+            'type' => 'num',
+            'value' => 20,
             'group' => null
         ],
         [

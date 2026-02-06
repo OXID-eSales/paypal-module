@@ -7,28 +7,23 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
-use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Model\User;
-use Psr\Log\LoggerInterface;
 
 class VaultPaymentTokenCreatedHandler extends WebhookHandlerBase
 {
     public const WEBHOOK_EVENT_NAME = 'VAULT.PAYMENT-TOKEN.CREATED';
-
-    /** @var LoggerInterface */
-    private $logger;
 
     /**
      * @inheritDoc
      */
     public function handle(Event $event): void
     {
-        $this->logger = $this->getLogger();
         $eventPayload = $this->getEventPayload($event);
 
         $customerId = $this->extractCustomerId($eventPayload);
@@ -62,6 +57,7 @@ class VaultPaymentTokenCreatedHandler extends WebhookHandlerBase
      *
      * @param array $eventPayload
      * @return object|null
+     * @throws WebhookEventException
      */
     protected function resolveUser(array $eventPayload)
     {
@@ -71,7 +67,6 @@ class VaultPaymentTokenCreatedHandler extends WebhookHandlerBase
             return null;
         }
 
-        /** @var EshopModelOrder $order */
         $order = $this->getOrderByPayPalOrderId($payPalOrderId);
         $user = $order->getOrderUser();
 
@@ -88,7 +83,6 @@ class VaultPaymentTokenCreatedHandler extends WebhookHandlerBase
         /** @var ServiceFactory $serviceFactory */
         $serviceFactory = Registry::get(ServiceFactory::class);
         $orderService = $serviceFactory->getOrderService();
-        /** @var VaultingService $vaultingService */
         $vaultingService = $serviceFactory->getVaultingService();
 
         $payPalOrder = $orderService->showOrderDetails(
@@ -119,7 +113,7 @@ class VaultPaymentTokenCreatedHandler extends WebhookHandlerBase
         $vaultingService = Registry::get(ServiceFactory::class)->getVaultingService();
         $vaultingService->clearVaultedTokenCache();
 
-        $this->logger->log('debug', 'VAULT.PAYMENT-TOKEN.CREATED webhook received customer.id field.', [
+        $this->getLogger()->log('debug', 'VAULT.PAYMENT-TOKEN.CREATED webhook received customer.id field.', [
             'customerId' => $customerId,
             'userId' => $user->getId()
         ]);
@@ -130,7 +124,7 @@ class VaultPaymentTokenCreatedHandler extends WebhookHandlerBase
      */
     protected function logUserNotFound(): void
     {
-        $this->logger->log('debug', 'VAULT.PAYMENT-TOKEN.CREATED webhook error: shop user unknown', []);
+        $this->getLogger()->log('debug', 'VAULT.PAYMENT-TOKEN.CREATED webhook error: shop user unknown', []);
     }
 
     /**
@@ -138,21 +132,19 @@ class VaultPaymentTokenCreatedHandler extends WebhookHandlerBase
      */
     protected function logMissingCustomerId(array $eventPayload): void
     {
-        $this->logger->log('debug', 'VAULT.PAYMENT-TOKEN.CREATED webhook received without customer.id field.', [
+        $this->getLogger()->log('debug', 'VAULT.PAYMENT-TOKEN.CREATED webhook received without customer.id field.', [
             'event_payload_keys' => array_keys($eventPayload),
         ]);
     }
 
     protected function getPayPalTransactionIdFromResource(array $eventPayload): string
     {
-        $transactionId = isset($eventPayload['id']) ? $eventPayload['id'] : '';
-
-        return $transactionId;
+        return $eventPayload['id'] ?? '';
     }
 
     protected function getStatusFromResource(array $eventPayload): string
     {
-        return isset($eventPayload['status']) ? $eventPayload['status'] : '';
+        return $eventPayload['status'] ?? '';
     }
 
     protected function getPayPalOrderIdFromResource(array $eventPayload): string

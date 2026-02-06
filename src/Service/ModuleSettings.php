@@ -589,6 +589,10 @@ class ModuleSettings
         return (bool)$this->getSettingValue('oscPayPalSandboxIDealEligibility');
     }
 
+    public function getWebhookRetryDelay(): int
+    {
+        return (int)$this->getSettingValue('oscPayPalWebhookRetryDelay');
+    }
     public function getShopName(): string
     {
         $value = '';
