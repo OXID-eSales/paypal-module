@@ -17,6 +17,7 @@ use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventRetryException;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalModelOrder;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -44,10 +45,8 @@ abstract class WebhookHandlerBase
         $payPalOrderId = $this->getPayPalOrderIdFromResource($eventPayload);
 
         if ($payPalOrderId !== '') {
-            /** @var EshopModelOrder $order */
             $order = $this->getOrderByPayPalOrderId($payPalOrderId);
 
-            /** @var PayPalModelOrder $paypalOrderModel */
             $paypalOrderModel = $this->getPayPalModelOrder(
                 (string) $order->getId(),
                 $payPalOrderId,
@@ -84,6 +83,22 @@ abstract class WebhookHandlerBase
         array $eventPayload,
         EshopModelOrder $order
     ): void {
+        // give the frontend time to persist
+        if (!$this->isMinimumWaitTimeElapsed($order)) {
+            $retryDelay = $this->getWebhookRetryDelay();
+
+            $this->getLogger()->log('debug', 'Order too fresh, requesting webhook retry', [
+                'payPalOrderId' => $payPalOrderId,
+                'shopOrderId' => $order->getId(),
+                'orderDate' => $order->getFieldData('oxorderdate'),
+                'retryAfter' => $retryDelay
+            ]);
+
+            http_response_code(503);
+            header('Retry-After: ' . $retryDelay);
+            exit('Order too fresh, retry later');
+        }
+
         $paypalOrderModel->setTransactionId($payPalTransactionId);
 
         /** @var ?PayPalApiModelOrder $orderDetail */
@@ -102,7 +117,7 @@ abstract class WebhookHandlerBase
     public function cleanUpNotFinishedOrders(): void
     {
         // check for not finished orders and reset
-        /** @var \OxidSolutionCatalysts\PayPal\Model\PayPalOrder $paypalOrderModel */
+        /** @var PayPalModelOrder $paypalOrderModel */
         $this->getOrderRepository()->cleanUpNotFinishedOrders();
     }
 
@@ -134,7 +149,6 @@ abstract class WebhookHandlerBase
     protected function getOrderByPayPalOrderId(string $payPalOrderId): EshopModelOrder
     {
         try {
-            /** @var EshopModelOrder $order */
             $order = $this->getOrderRepository()
                 ->getShopOrderByPayPalOrderId($payPalOrderId);
         } catch (NotFound $exception) {
@@ -149,7 +163,6 @@ abstract class WebhookHandlerBase
         string $payPalOrderId,
         string $payPalTransactionId
     ): PayPalModelOrder {
-        /** @var PayPalModelOrder $paypalOrderModel */
         $paypalOrderModel = $this->getOrderRepository()
             ->paypalOrderByOrderIdAndPayPalId(
                 $shopOrderId,
@@ -198,6 +211,28 @@ abstract class WebhookHandlerBase
         /** @var LoggerInterface $logger */
         $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
         return $logger;
+    }
+
+    protected function isMinimumWaitTimeElapsed(EshopModelOrder $order): bool
+    {
+        $orderDate = $order->getFieldData('oxorderdate');
+        if (empty($orderDate) || strpos($orderDate, '0000-00-00') === 0) {
+            // Order hat noch kein Datum - definitiv zu früh
+            return false;
+        }
+
+        $orderTimestamp = strtotime($orderDate);
+        $waitTime = $this->getWebhookRetryDelay();
+        $elapsedTime = time() - $orderTimestamp;
+
+        return $elapsedTime >= $waitTime;
+    }
+
+    protected function getWebhookRetryDelay(): int
+    {
+        return $this->getServiceFromContainer(
+            ModuleSettings::class
+        )->getWebhookRetryDelay();
     }
 
     abstract protected function getPayPalTransactionIdFromResource(array $eventPayload): string;

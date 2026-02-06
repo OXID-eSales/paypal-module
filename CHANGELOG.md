@@ -4,7 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.6.5] - 2026-??-??
+## [2.7.0] - 2026-??-??
+
+### NEW
+
+- Add option for delaying the webhook. Give the frontend time to persist.
+
+## [2.6.5] - 2026-02-02
 
 ### FIX
 
