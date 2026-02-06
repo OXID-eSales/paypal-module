@@ -86,7 +86,7 @@ abstract class WebhookHandlerBase
         array $eventPayload,
         EshopModelOrder $order
     ): void {
-        $this->handleWebhookDelay($order, $payPalOrderId);
+        $this->handleWebhookDelay($payPalOrderId, $eventPayload, $order);
         $paypalOrderModel->setTransactionId($payPalTransactionId);
 
         /** @var ?PayPalApiModelOrder $orderDetail */
@@ -132,11 +132,12 @@ abstract class WebhookHandlerBase
     }
 
     protected function handleWebhookDelay(
-        EshopModelOrder $order,
-        string $payPalOrderId
+        string $payPalOrderId,
+        array $eventPayload,
+        EshopModelOrder $order
     ): void {
         // give the frontend time to persist
-        if (!$this->isMinimumWaitTimeElapsed($order)) {
+        if (!$this->isMinimumWaitTimeElapsed($eventPayload)) {
             $retryDelay = $this->getWebhookRetryDelay();
 
             $this->getLogger()->log('debug', 'Order too fresh, requesting webhook retry', [
@@ -248,17 +249,16 @@ abstract class WebhookHandlerBase
         return $logger;
     }
 
-    protected function isMinimumWaitTimeElapsed(EshopModelOrder $order): bool
+    protected function isMinimumWaitTimeElapsed(array $eventPayload): bool
     {
-        $orderDate = $order->getFieldData('oxorderdate');
-        if (empty($orderDate) || strpos($orderDate, '0000-00-00') === 0) {
-            // Order hat noch kein Datum - definitiv zu früh
+        // PayPal sendet create_time des Events
+        if (!isset($eventPayload['create_time'])) {
             return false;
         }
 
-        $orderTimestamp = strtotime($orderDate);
+        $eventTimestamp = strtotime($eventPayload['create_time']);
         $waitTime = $this->getWebhookRetryDelay();
-        $elapsedTime = time() - $orderTimestamp;
+        $elapsedTime = time() - $eventTimestamp;
 
         return $elapsedTime >= $waitTime;
     }
