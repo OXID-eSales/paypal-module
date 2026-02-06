@@ -25,14 +25,7 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
         array $eventPayload,
         EshopModelOrder $order
     ): void {
-
-        parent::handleWebhookTasks(
-            $paypalOrderModel,
-            $payPalTransactionId,
-            $payPalOrderId,
-            $eventPayload,
-            $order
-        );
+        $this->handleWebhookDelay($order, $payPalOrderId);
 
         if ($this->needsCapture($eventPayload)) {
             try {

@@ -83,21 +83,7 @@ abstract class WebhookHandlerBase
         array $eventPayload,
         EshopModelOrder $order
     ): void {
-        // give the frontend time to persist
-        if (!$this->isMinimumWaitTimeElapsed($order)) {
-            $retryDelay = $this->getWebhookRetryDelay();
-
-            $this->getLogger()->log('debug', 'Order too fresh, requesting webhook retry', [
-                'payPalOrderId' => $payPalOrderId,
-                'shopOrderId' => $order->getId(),
-                'orderDate' => $order->getFieldData('oxorderdate'),
-                'retryAfter' => $retryDelay
-            ]);
-
-            http_response_code(503);
-            header('Retry-After: ' . $retryDelay);
-            exit('Order too fresh, retry later');
-        }
+        $this->handleWebhookDelay($order, $payPalOrderId);
 
         $paypalOrderModel->setTransactionId($payPalTransactionId);
 
@@ -143,8 +129,29 @@ abstract class WebhookHandlerBase
         return $event->getData()['resource'];
     }
 
+    protected function handleWebhookDelay(
+        EshopModelOrder $order,
+        string $payPalOrderId
+    ): void {
+        // give the frontend time to persist
+        if (!$this->isMinimumWaitTimeElapsed($order)) {
+            $retryDelay = $this->getWebhookRetryDelay();
+
+            $this->getLogger()->log('debug', 'Order too fresh, requesting webhook retry', [
+                'payPalOrderId' => $payPalOrderId,
+                'shopOrderId' => $order->getId(),
+                'orderDate' => $order->getFieldData('oxorderdate'),
+                'retryAfter' => $retryDelay
+            ]);
+
+            http_response_code(503);
+            header('Retry-After: ' . $retryDelay);
+            exit('Order too fresh, retry later');
+        }
+    }
+
     /**
-     * @throws WebhookEventException
+     * @throws WebhookEventRetryException
      */
     protected function getOrderByPayPalOrderId(string $payPalOrderId): EshopModelOrder
     {
