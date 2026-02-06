@@ -13,7 +13,6 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
-use Psr\Log\LoggerInterface;
 
 class CheckoutOrderCompletedHandler extends WebhookHandlerBase
 {
@@ -54,9 +53,7 @@ class CheckoutOrderCompletedHandler extends WebhookHandlerBase
                     );
             }
         } catch (ApiException $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log(
+            $this->getLogger()->log(
                 'debug',
                 'Exception during CheckoutOrderCompletedHandler::getPayPalOrderDetails().',
                 [$exception]
