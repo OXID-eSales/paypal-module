@@ -7,16 +7,13 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
+use Exception;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
-use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalModelOrder;
-use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as OrderResponse;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
-use Psr\Log\LoggerInterface;
 
 class CheckoutOrderApprovedHandler extends WebhookHandlerBase
 {
@@ -29,6 +26,15 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
         array $eventPayload,
         EshopModelOrder $order
     ): void {
+
+        parent::handleWebhookTasks(
+            $paypalOrderModel,
+            $payPalTransactionId,
+            $payPalOrderId,
+            $eventPayload,
+            $order
+        );
+
         if ($this->needsCapture($eventPayload)) {
             try {
                 //NOTE: capture will trigger CHECKOUT.ORDER.COMPLETED event which will mark order paid
@@ -39,10 +45,8 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
                         $paypalOrderModel->getPaymentMethodId()
                     );
                 $order->setOrderNumber(); //ensure the order has a number
-            } catch (\Exception $exception) {
-                /** @var LoggerInterface $logger */
-                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-                $logger->log(
+            } catch (Exception $exception) {
+                $this->getLogger()->log(
                     'debug',
                     sprintf(
                         "Error during %s for PayPal order_id '%s'",
