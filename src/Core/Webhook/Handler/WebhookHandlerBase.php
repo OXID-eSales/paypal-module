@@ -11,7 +11,10 @@ namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Email;
+use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
@@ -21,6 +24,7 @@ use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiModelOrder;
 use Psr\Log\LoggerInterface;
 
@@ -31,8 +35,7 @@ abstract class WebhookHandlerBase
     public const WEBHOOK_EVENT_NAME = '';
 
     /**
-     * @inheritDoc
-     * @throws WebhookEventException
+     * @throws WebhookEventException|WebhookEventRetryException
      */
     public function handle(Event $event): void
     {
@@ -84,7 +87,6 @@ abstract class WebhookHandlerBase
         EshopModelOrder $order
     ): void {
         $this->handleWebhookDelay($order, $payPalOrderId);
-
         $paypalOrderModel->setTransactionId($payPalTransactionId);
 
         /** @var ?PayPalApiModelOrder $orderDetail */
@@ -205,6 +207,32 @@ abstract class WebhookHandlerBase
         $paypalOrderModel->setTransactionType(Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE);
         $paypalOrderModel->setStatus($status);
         $paypalOrderModel->save();
+    }
+
+    protected function getPayPalOrderDetails(string $payPalOrderId): ?PayPalApiModelOrder
+    {
+        $apiOrder = null;
+        try {
+            $checkoutOrder = PayPalSession::getCheckoutOrder();
+            if (is_array($checkoutOrder) && isset($checkoutOrder['id']) && $checkoutOrder['id'] === $payPalOrderId) {
+                $apiOrder = new PayPalApiModelOrder($checkoutOrder);
+            } else {
+                $apiOrder = Registry::get(ServiceFactory::class)
+                    ->getOrderService()
+                    ->showOrderDetails(
+                        $payPalOrderId,
+                        '',
+                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+                    );
+            }
+        } catch (ApiException $exception) {
+            $this->getLogger()->log(
+                'debug',
+                'Exception during ' . static::class . '::getPayPalOrderDetails().',
+                [$exception]
+            );
+        }
+        return $apiOrder;
     }
 
     protected function markShopOrderPaymentStatus(EshopModelOrder $order, string $payPalTransactionId): void
