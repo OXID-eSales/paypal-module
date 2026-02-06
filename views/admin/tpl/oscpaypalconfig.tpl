@@ -736,7 +736,7 @@
             <div class="card">
                 <div class="card-header" id="heading12">
                     <h4 class="collapsed" data-toggle="collapse" data-target="#collapse12" aria-expanded="false" aria-controls="collapse12">
-                        [{oxmultilang ident="OSC_PAYPAL_DEBUG_LEVEL_OVERRIDE_TITLE"}]
+                        [{oxmultilang ident="OSC_PAYPAL_DEBUG_LEVEL"}]
                     </h4>
                 </div>
                 <div id="collapse12" class="collapse" aria-labelledby="heading12" data-parent="#accordion">
@@ -756,6 +756,28 @@
                                     </option>
                                 </select>
                                 <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_DEBUG_LEVEL"}]</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header" id="heading13">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse13" aria-expanded="false" aria-controls="collapse10">
+                        [{oxmultilang ident="OSC_PAYPAL_WEBHOOK_TITLE"}]
+                    </h4>
+                </div>
+                <div id="collapse13" class="collapse" aria-labelledby="heading13" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="controls">
+                                <div class="form-group">
+                                    <label for="shippingExpress">[{oxmultilang ident="OSC_PAYPAL_WEBHOOK_TIMEDELAY"}]</label>
+                                    <div class="controls">
+                                        <input type="text" id="shippingExpress" class="form-control" name="conf[oscPayPalWebhookRetryDelay]" value="[{$config->getWebhookRetryDelay()}]" />
+                                        <span class="help-block">[{oxmultilang ident="OSC_PAYPAL_WEBHOOK_TIMEDELAY_DESC"}]</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -323,17 +323,19 @@ $aLang = array_merge(
 
     'OSC_PAYPAL_INSTALLPROCESS_FAILED'              => 'Because the module was not installed correctly via Composer, errors occurred during the (de)activation of the module. Please reinstall the module via composer and repeat the process.',
 
-    // PayPal Payment
     'OSC_PAYPAL_PAYMENT_DEPRECATED'                 => 'This PayPal payment method can no longer be activated as it will be removed soon!',
 
     'OSC_PAYPAL_CUSTOM_ID_CONTENTS_TITLE'           => 'PayPal custom id field contents',
     'OSC_PAYPAL_CUSTOM_ID_CONTENTS_DESC'            => 'PayPal custom id field will be JSON encoded string with order number, shop version and the PayPal module version.',
 
-    'OSC_PAYPAL_DEBUG_LEVEL_OVERRIDE_TITLE'         => 'Debug Level',
     'OSC_PAYPAL_DEBUG_LEVEL'                        => 'Debug Level',
     'OSC_PAYPAL_DEBUG_LEVEL_OFF'                    => 'Off',
     'OSC_PAYPAL_DEBUG_LEVEL_DEBUG'                  => 'Debug',
     'OSC_PAYPAL_DEBUG_LEVEL_ERROR'                  => 'Error',
     'HELP_OSC_PAYPAL_DEBUG_LEVEL'                   => 'Controls the level of logging for PayPal API calls. "Off" disables logging, "Debug" logs all requests and responses, "Error" logs only errors.',
+
+    'OSC_PAYPAL_WEBHOOK_TITLE'                      => 'Webhook',
+    'OSC_PAYPAL_WEBHOOK_TIMEDELAY'                  => 'Time delay in seconds (default: 20)',
+    'OSC_PAYPAL_WEBHOOK_TIMEDELAY_DESC'             => 'PayPal webhooks inform the shop about the current order status and partially finalize orders if a customer does not complete the checkout process through to the "Thank You" page.',
     ]
 );

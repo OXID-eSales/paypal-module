@@ -661,6 +661,12 @@ $aModule = [
             'group' => null
         ],
         [
+            'name' => 'oscPayPalWebhookRetryDelay',
+            'type' => 'num',
+            'value' => 20,
+            'group' => null
+        ],
+        [
             'name' => 'oscPayPalUseStructuralCustomIdSchema',
             'type' => 'bool',
             'value' => true,

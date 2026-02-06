@@ -537,6 +537,11 @@ class ModuleSettings
         return (bool)$this->getSettingValue('oscPayPalSandboxSepaEligibility');
     }
 
+    public function getWebhookRetryDelay(): int
+    {
+        return (int)$this->getSettingValue('oscPayPalWebhookRetryDelay');
+    }
+
     public function isBlikEligibility(): bool
     {
         return $this->isSandbox() ?

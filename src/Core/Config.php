@@ -346,6 +346,11 @@ class Config
         return $this->getModuleSettings()->getDefaultShippingPriceForExpress();
     }
 
+    public function getWebhookRetryDelay(): int
+    {
+        return $this->getModuleSettings()->getWebhookRetryDelay();
+    }
+
     public function showBannersOnCategoryPage(): bool
     {
         return $this->getModuleSettings()->showBannersOnCategoryPage();
