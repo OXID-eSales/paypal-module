@@ -763,7 +763,7 @@
             </div>
             <div class="card">
                 <div class="card-header" id="heading13">
-                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse13" aria-expanded="false" aria-controls="collapse10">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse13" aria-expanded="false" aria-controls="collapse13">
                         [{oxmultilang ident="OSC_PAYPAL_WEBHOOK_TITLE"}]
                     </h4>
                 </div>
@@ -772,9 +772,9 @@
                         <div class="form-group">
                             <div class="controls">
                                 <div class="form-group">
-                                    <label for="shippingExpress">[{oxmultilang ident="OSC_PAYPAL_WEBHOOK_TIMEDELAY"}]</label>
+                                    <label for="webhookDelay">[{oxmultilang ident="OSC_PAYPAL_WEBHOOK_TIMEDELAY"}]</label>
                                     <div class="controls">
-                                        <input type="text" id="shippingExpress" class="form-control" name="conf[oscPayPalWebhookRetryDelay]" value="[{$config->getWebhookRetryDelay()}]" />
+                                        <input type="text" id="webhookDelay" class="form-control" name="conf[oscPayPalWebhookRetryDelay]" value="[{$config->getWebhookRetryDelay()}]" />
                                         <span class="help-block">[{oxmultilang ident="OSC_PAYPAL_WEBHOOK_TIMEDELAY_DESC"}]</span>
                                     </div>
                                 </div>
