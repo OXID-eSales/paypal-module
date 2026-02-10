@@ -218,7 +218,7 @@ class Payment
             $this->doPatchPayPalOrder(
                 $basket,
                 $paypalOrderId,
-                $this->getCustomIdParameter($order)
+                $order
             );
         }
 
@@ -240,7 +240,7 @@ class Payment
     public function doPatchPayPalOrder(
         EshopModelBasket $basket,
         string $payPalOrderId,
-        string $shopOrderId = ''
+        ?EshopModelOrder $order = null
     ): void {
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
@@ -250,7 +250,7 @@ class Payment
         try {
             $orderService->updateOrder(
                 $payPalOrderId,
-                $this->patchRequestFactory->getOrderPatches($basket, $shopOrderId),
+                $this->patchRequestFactory->getOrderPatches($basket, $order),
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
         } catch (Exception $exception) {
