@@ -45,25 +45,23 @@ class PatchRequestFactory
      * Returns array of patches that will be applied to an Order
      *
      * @param Basket $basket
-     * @param string $orderId
+     * @param Order|null $order
      * @return array
      */
     public function getOrderPatches(
         Basket $basket,
-        string $orderId = ''
+        ?Order $order = null
     ): array {
         $this->basket = $basket;
         $deliveryId = Registry::getSession()->getVariable("deladrid");
         $deliveryAddress = oxNew(Address::class);
-        $order = oxNew(Order::class);
-        $order->load($orderId);
 
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
         $patches = array_values(
             array_filter([
                 $this->getAmountPatch(),
-                $orderId ? $this->getCustomIdPatch($paymentService->getCustomIdParameter($order)) : null,
+                $order ? $this->getCustomIdPatch($paymentService->getCustomIdParameter($order)) : null,
                 $this->getPurchaseUnitsPatch()
             ])
         );

@@ -393,8 +393,9 @@ class Order extends Order_parent
                 PayPalSession::setSessionRedirectLink($redirectLink);
 
                 return self::ORDER_STATE_SESSIONPAYMENT_INPROGRESS;
+
             } catch (Exception $exception) {
-                $this->delete();
+                $this->cancelPayPalOrder();
                 /** @var LoggerInterface $logger */
                 $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
                 $logger->log('error', $exception->getMessage(), [$exception]);
@@ -402,12 +403,72 @@ class Order extends Order_parent
             return self::ORDER_STATE_PAYMENTERROR;
         }
 
-        // for all other PayPal-Payments ignore the _executePayment, because it is handle before
+        // Handle Express/Button payments with proper storno on failure
+        if (PayPalDefinitions::isButtonPayment($sessionPaymentId)) {
+            $oPayTransaction = $this->getGateway();
+            $oPayTransaction->setPaymentParams($userpayment);
+
+            if (!$oPayTransaction->executePayment($basket->getPrice()->getBruttoPrice(), $this)) {
+                $this->cancelPayPalOrder();
+
+                if (method_exists($oPayTransaction, 'getLastError')) {
+                    if (($sLastError = $oPayTransaction->getLastError())) {
+                        return $sLastError;
+                    }
+                }
+                if (method_exists($oPayTransaction, 'getLastErrorNo')) {
+                    if (($iLastErrorNo = $oPayTransaction->getLastErrorNo())) {
+                        return $iLastErrorNo;
+                    }
+                }
+
+                return self::ORDER_STATE_PAYMENTERROR;
+            }
+            return true;
+        }
+
+        // for all other PayPal-Payments ignore the executePayment, because it is handled before
         if (Registry::getSession()->getVariable('isPayPalPaymentCheckout')) {
             return true;
         }
 
         return parent::executePayment($basket, $userpayment);
+    }
+
+    /**
+     * Properly cancels a failed PayPal order: storno with stock release,
+     * mark as failed, clean up PayPal session, and only hard-delete if
+     * no order number was assigned.
+     *
+     * @return bool true if order was deleted, false if kept as storno
+     */
+    public function cancelPayPalOrder(): bool
+    {
+        $this->cancelOrder();
+        $this->markOrderPaymentFailed();
+        $this->save();
+
+        PayPalSession::unsetPayPalOrderId();
+
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+
+        if (!$this->hasOrderNumber()) {
+            $this->delete();
+            $logger->log('debug', sprintf(
+                'PayPal order with id %s was canceled and deleted (no order number)',
+                $this->getId()
+            ));
+            return true;
+        }
+
+        $logger->log('debug', sprintf(
+            'PayPal order with id %s (nr: %s) was canceled and kept as storno',
+            $this->getId(),
+            $this->getFieldData('oxordernr')
+        ));
+
+        return false;
     }
 
     /**

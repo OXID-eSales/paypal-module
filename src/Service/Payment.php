@@ -215,7 +215,7 @@ class Payment
             $this->doPatchPayPalOrder(
                 $basket,
                 $paypalOrderId,
-                $this->getCustomIdParameter($order)
+                $order
             );
         }
 
@@ -237,7 +237,7 @@ class Payment
     public function doPatchPayPalOrder(
         EshopModelBasket $basket,
         string $payPalOrderId,
-        string $shopOrderId = ''
+        ?EshopModelOrder $order = null
     ): void {
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
@@ -247,7 +247,7 @@ class Payment
         try {
             $orderService->updateOrder(
                 $payPalOrderId,
-                $this->patchRequestFactory->getOrderPatches($basket, $shopOrderId),
+                $this->patchRequestFactory->getOrderPatches($basket, $order),
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
         } catch (Exception $exception) {
@@ -460,30 +460,10 @@ class Payment
         $orderModel = oxNew(EshopModelOrder::class);
         $orderModel->load($orderId);
 
-        if (
-            $orderModel->isLoaded()
-        ) {
-            $orderModel->cancelOrder();
-            $orderModel->markOrderPaymentFailed();
-            $orderModel->save();
-            if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
-                $this->logger->log('debug', sprintf(
-                    'Temporary order with id %s was canceled',
-                    $orderId
-                ));
-            }
-            if (!$orderModel->hasOrderNumber()) {
-                $orderModel->delete();
-                if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
-                    $this->logger->log('debug', sprintf(
-                        'Temporary order without Order number and with id %s was deleted',
-                        $orderId
-                    ));
-                }
-            }
+        if ($orderModel->isLoaded()) {
+            $orderModel->cancelPayPalOrder();
         }
 
-        PayPalSession::unsetPayPalOrderId();
         $this->eshopSession->deleteVariable('sess_challenge');
     }
 

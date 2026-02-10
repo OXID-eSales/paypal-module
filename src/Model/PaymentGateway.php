@@ -90,7 +90,7 @@ class PaymentGateway extends PaymentGateway_parent
                 $paymentService->doPatchPayPalOrder(
                     Registry::getSession()->getBasket(),
                     $checkoutOrderId,
-                    $order->getId()
+                    $order
                 );
             } catch (Exception $exception) {
                 $logger->log('error', 'Error on order patch call.', [$exception]);
