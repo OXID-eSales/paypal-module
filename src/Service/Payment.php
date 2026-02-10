@@ -462,30 +462,10 @@ class Payment
         $orderModel = oxNew(EshopModelOrder::class);
         $orderModel->load($orderId);
 
-        if (
-            $orderModel->isLoaded()
-        ) {
-            $orderModel->cancelOrder();
-            $orderModel->markOrderPaymentFailed();
-            $orderModel->save();
-            if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
-                $this->logger->log('debug', sprintf(
-                    'Temporary order with id %s was canceled',
-                    $orderId
-                ));
-            }
-            if (!$orderModel->hasOrderNumber()) {
-                $orderModel->delete();
-                if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
-                    $this->logger->log('debug', sprintf(
-                        'Temporary order without Order number and with id %s was deleted',
-                        $orderId
-                    ));
-                }
-            }
+        if ($orderModel->isLoaded()) {
+            $orderModel->cancelPayPalOrder();
         }
 
-        PayPalSession::unsetPayPalOrderId();
         $this->eshopSession->deleteVariable('sess_challenge');
     }
 
