@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Add option for delaying the webhook. Give the frontend time to persist.
 
+### FIX
+
+- fix OrderNumber-Gaps in PayPalExpress-Orders
+
 ## [2.6.5] - 2026-02-02
 
 ### FIX
