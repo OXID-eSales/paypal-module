@@ -477,17 +477,23 @@ class Payment
         $payPalOrderId = PayPalSession::getCheckoutOrderId();
         $paymentId = $this->getSessionPaymentId();
 
-        return $sessionOrderId &&
-            $payPalOrderId &&
+        $isPaymentWithOrderId = $payPalOrderId &&
             $paymentId &&
             (
                 PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId ||
                 PayPalDefinitions::SEPA_PAYPAL_PAYMENT_ID === $paymentId ||
                 PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID === $paymentId ||
                 PayPalDefinitions::CCALTERNATIVE_PAYPAL_PAYMENT_ID === $paymentId ||
-                PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID === $paymentId ||
                 PayPalDefinitions::isUAPMPayment($paymentId)
             );
+
+        $isPaymentWithoutOrderId = $paymentId &&
+            (
+                PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID === $paymentId ||
+                PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID === $paymentId
+            );
+
+        return $sessionOrderId && ($isPaymentWithOrderId || $isPaymentWithoutOrderId);
     }
 
     /**
