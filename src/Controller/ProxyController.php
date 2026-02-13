@@ -79,10 +79,7 @@ class ProxyController extends FrontendController
 
     public function createOrder(): void
     {
-        if (PayPalSession::isPayPalExpressOrderActive()) {
-            //TODO: improve
-            //  $this->outputJson(['ERROR' => 'PayPal session already started.']);
-        }
+        $this->cancelPendingPayPalOrder();
 
         $session = Registry::getSession();
         $basket = $session->getBasket();
@@ -367,6 +364,36 @@ class ProxyController extends FrontendController
             );
         }
         exit;
+    }
+
+    /**
+     * Cancel any pending PayPal order with associated shop order to prevent session conflicts.
+     * Handles the case where a customer starts PayPal Standard payment, leaves the popup open,
+     * and then starts a PayPal Express payment in a new tab.
+     */
+    private function cancelPendingPayPalOrder(): void
+    {
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+
+        if (!$paymentService->isOrderExecutionInProgress()) {
+            return;
+        }
+
+        $session = Registry::getSession();
+        $shopOrderId = (string)$session->getVariable('sess_challenge');
+        $payPalOrderId = PayPalSession::getCheckoutOrderId();
+
+
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        $logger->log('info', sprintf(
+            'Cancelling pending PayPal order (shop: %s, paypal: %s) before starting Express checkout',
+            $shopOrderId,
+            $payPalOrderId
+        ));
+
+        $paymentService->removeTemporaryOrder($shopOrderId);
+        PayPalSession::unsetPayPalSession(false);
     }
 
     protected function handleUserLogin(PayPalApiOrder $apiOrder): bool

@@ -45,7 +45,5 @@ class PayPalOrderCreatedSubscriber implements EventSubscriberInterface
             PayPalApiOrder::STATUS_CREATED,
             $event->getTransactionId()
         );
-
-        PayPalSession::unsetPayPalSession(false);
     }
 }

@@ -15,7 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - fix OrderNumber-Gaps in PayPalExpress-Orders
 - use cancel-Process also for PayPalExpress
 - Introduce orderModel->cancelPayPalOrder. It takes over a large part of the tasks of the method PaymentService->removeTemporaryOrder
-
+- fix WorstCase: Start a PP-Order, open in a second tab a PP-Express-Order and finish. Now the first order is clean canceled.
+- 
 ## [3.5.3] - 2026-02-02
 
 ### FIX
