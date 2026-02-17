@@ -25,7 +25,7 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
         array $eventPayload,
         EshopModelOrder $order
     ): void {
-        $this->handleWebhookDelay($order, $payPalOrderId);
+        $this->handleWebhookDelay($payPalOrderId, $eventPayload, $order));
         if ($this->needsCapture($eventPayload)) {
             try {
                 //NOTE: capture will trigger CHECKOUT.ORDER.COMPLETED event which will mark order paid
