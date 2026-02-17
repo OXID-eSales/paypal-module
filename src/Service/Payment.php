@@ -451,21 +451,28 @@ class Payment
 
     public function removeTemporaryOrder(?string $orderId = ''): void
     {
-        $orderId = $orderId ?: $this->eshopSession->getVariable('sess_challenge');
-
-        if (!$orderId) {
-            return;
-        }
-
-        $orderModel = oxNew(EshopModelOrder::class);
-        $orderModel->load($orderId);
-
-        if ($orderModel->isLoaded()) {
+        $orderModel = $this->getTemporaryOrder($orderId);
+        if ($orderModel) {
             $orderModel->cancelPayPalOrder();
         }
-
         $this->eshopSession->deleteVariable('sess_challenge');
     }
+
+    public function getTemporaryOrder(?string $orderId = ''): ?EshopModelOrder
+    {
+        $orderId = $orderId ?: $this->eshopSession->getVariable('sess_challenge');
+
+        if ($orderId) {
+            $orderModel = oxNew(EshopModelOrder::class);
+            $orderModel->load($orderId);
+            if ($orderModel->isLoaded()) {
+                return $orderModel;
+            }
+        }
+
+        return null;
+    }
+
 
     //TODO: payment service is intended to trigger payments with API
     //      all methods for order handling need to go to separate service
@@ -475,23 +482,18 @@ class Payment
         $payPalOrderId = PayPalSession::getCheckoutOrderId();
         $paymentId = $this->getSessionPaymentId();
 
-        $isPaymentWithOrderId = $payPalOrderId &&
+        return $sessionOrderId &&
+            $payPalOrderId &&
             $paymentId &&
             (
                 PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID === $paymentId ||
                 PayPalDefinitions::SEPA_PAYPAL_PAYMENT_ID === $paymentId ||
                 PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID === $paymentId ||
                 PayPalDefinitions::CCALTERNATIVE_PAYPAL_PAYMENT_ID === $paymentId ||
+                PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID === $paymentId ||
+                PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID === $paymentId ||
                 PayPalDefinitions::isUAPMPayment($paymentId)
             );
-
-        $isPaymentWithoutOrderId = $paymentId &&
-            (
-                PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID === $paymentId ||
-                PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID === $paymentId
-            );
-
-        return $sessionOrderId && ($isPaymentWithOrderId || $isPaymentWithoutOrderId);
     }
 
     /**
