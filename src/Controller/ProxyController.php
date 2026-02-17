@@ -373,14 +373,15 @@ class ProxyController extends FrontendController
      */
     private function cancelPendingPayPalOrder(): void
     {
+        $session = Registry::getSession();
+        $shopOrderId = (string)$session->getVariable('sess_challenge');
+
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
-        if (!$paymentService->isOrderExecutionInProgress()) {
+        if (!$paymentService->getTemporaryOrder()) {
             return;
         }
 
-        $session = Registry::getSession();
-        $shopOrderId = (string)$session->getVariable('sess_challenge');
         $payPalOrderId = PayPalSession::getCheckoutOrderId();
 
 
