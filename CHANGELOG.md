@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Safety guard: never cancel an order that has been successfully captured
 - Log Requests only in debug-Mode
 - Fix: Webhook always responds 200 to prevent PayPal from retrying failed events 25x over 3 days
+- Fix: Possible maintenance work in the PayPalOrderController if the PayPal order does not match the OXID order.
+- 
+### NEW
+
+- cancelsession with logging
 
 ## [3.6.0] - 2026-02-19
 
