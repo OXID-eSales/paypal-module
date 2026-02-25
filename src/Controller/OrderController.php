@@ -485,6 +485,15 @@ class OrderController extends OrderController_parent
         $this->getServiceFromContainer(PaymentService::class)
             ->removeTemporaryOrder();
 
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        $logger->log('error', sprintf(
+            'PayPal session canceled (errorcode: %s, request errorcode: %s, sess_challenge: %s)',
+            $errorcode ?? 'none',
+            $requestErrorcode ?: 'none',
+            (string) Registry::getSession()->getVariable('sess_challenge')
+        ));
+
         $goNext = 'cl=payment';
         if ($errorcode || $requestErrorcode) {
             $goNext .= '&payerror=2';
