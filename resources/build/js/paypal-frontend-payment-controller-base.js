@@ -13,6 +13,7 @@
         this.currentOrder = this.currentOrderDefaults;
         this.currentError = null;
         this.stoppedOnError = false;
+        this.captureInProgress = false;
         this.reactOnPayPalOverlayClosed = false;
 
         this.onPayPalUnload = function (event) {
@@ -219,6 +220,13 @@
         this.handleError = async function (data) {
             PayPalPayment.removeBeforeUnloadListener();
             if(PayPalPayment.stoppedOnError){
+                return;
+            }
+
+            // Don't cancel an order after capture was initiated - payment may already be processed
+            if (PayPalPayment.captureInProgress) {
+                console.warn('Error during/after capture - skipping order cancellation');
+                PayPalPayment.removeSubmitButtonOverlay();
                 return;
             }
 

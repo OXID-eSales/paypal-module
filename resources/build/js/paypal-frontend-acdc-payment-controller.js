@@ -73,6 +73,8 @@
             PayPalPayment.removeBeforeUnloadListener();
             //if we managed to get at this stage, closing the overlay not suppose to be watched anymore
             PayPalPayment.reactOnPayPalOverlayClosed = false;
+            PayPalPayment.captureInProgress = true;
+
             let result = await PayPalPayment.backendRequest('shopOrderCaptureUrl', {}, {
                 'orderId': data.orderID,
                 'paymentId': PayPalPayment.getConfigValue('paymentId'),

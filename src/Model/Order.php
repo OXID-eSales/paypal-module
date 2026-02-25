@@ -444,6 +444,19 @@ class Order extends Order_parent
      */
     public function cancelPayPalOrder(): bool
     {
+        // Safety guard: never cancel an order that has been successfully captured
+        if ($this->isOrderSuccessfullyPaid() || !empty($this->getFieldData('oxtransid'))) {
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->log('debug', sprintf(
+                'PayPal order with id %s (nr: %s) cancel skipped - payment already processed (transid: %s)',
+                $this->getId(),
+                $this->getFieldData('oxordernr'),
+                $this->getFieldData('oxtransid')
+            ));
+            return false;
+        }
+
         $this->cancelOrder();
         $this->markOrderPaymentFailed();
         $this->save();

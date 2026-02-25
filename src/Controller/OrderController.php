@@ -370,8 +370,18 @@ class OrderController extends OrderController_parent
             !$sessionCheckoutOrderId ||
             ($standardRequestId !== $sessionCheckoutOrderId);
         if (!$vaulting && $cancelSession) {
+            // Check if order was already successfully captured (e.g. by previous request)
+            $order = oxNew(EshopModelOrder::class);
+            $order->load($sessionOrderId);
+            if ($order->isLoaded() &&
+                ($order->isOrderSuccessfullyPaid() || !empty($order->getFieldData('oxtransid')))
+            ) {
+                return 'thankyou';
+            }
+
             $this->getServiceFromContainer(OrderPayPalService::class)
                 ->cancelPayPalSession('request to session mismatch');
+            return 'payment?payerror=2';
         }
 
         $order = oxNew(EshopModelOrder::class);
