@@ -152,11 +152,11 @@ class PayPalOrderController extends AdminDetailsController
                     $paypalOrderModel->setStatus($capture->status);
                     $paypalOrderModel->save();
                 }
+                if (!$this->getPayPalPaymentStatus()) {
+                    $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_CANCELED_DURING_CHECKOUT'));
+                }
             } catch (ApiException $exception) {
                 $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_ERROR_' . $exception->getErrorIssue()));
-            }
-            if (!$this->getPayPalPaymentStatus()) {
-                $this->addTplParam('error', $lang->translateString('OSC_PAYPAL_CANCELED_DURING_CHECKOUT'));
             }
         } elseif (
             $order->getFieldData('oxpaymenttype') === $this->payPalPlusPaymentType &&
