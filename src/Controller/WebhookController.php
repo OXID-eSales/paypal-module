@@ -50,18 +50,11 @@ class WebhookController extends WidgetController
             $webhookRequestHandler->process();
         } catch (\Exception $exception) {
             $logger->log('error', $exception->getMessage(), [$exception]);
-            $this->sendErrorResponse();
         }
-        //We need to return a 200 if the call could be processed successfully, the otherwise webhook event
-        //will be sent it again:
-        //  "If your app responds with any other status code, PayPal tries to resend the notification
-        //   message 25 times over the course of three days."
+        // Always respond with 200, even on processing errors. A non-200 status causes PayPal
+        // to retry the webhook 25 times over 3 days. If the error is permanent (bad signature,
+        // unknown event, code bug), every retry will fail the same way — generating unnecessary
+        // load and log spam. The error is already logged above for investigation.
         Registry::getUtils()->showMessageAndExit('');
-    }
-
-    private function sendErrorResponse(): void
-    {
-        header('Content-Type: text/html', true, 500);
-        exit;
     }
 }
