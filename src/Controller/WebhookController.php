@@ -13,6 +13,7 @@ use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\RequestHandler as WebhookRequestHandler;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use Psr\Log\LoggerInterface;
 
@@ -39,8 +40,11 @@ class WebhookController extends WidgetController
             $verificationService = Registry::get(EventVerifier::class);
             $dispatcher = Registry::get(EventDispatcher::class);
 
-            $logger->log('debug', 'PayPal Webhook request ' . $requestReader->getRawPost());
-            $logger->log('debug', 'PayPal Webhook headers ' . serialize($requestReader->getHeaders()));
+            $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+            if ($moduleSettings->getPayPalDebugLevel() === 'debug') {
+                $logger->log('debug', 'PayPal Webhook request ' . $requestReader->getRawPost());
+                $logger->log('debug', 'PayPal Webhook headers ' . serialize($requestReader->getHeaders()));
+            }
 
             $webhookRequestHandler = new WebhookRequestHandler($requestReader, $verificationService, $dispatcher);
             $webhookRequestHandler->process();
