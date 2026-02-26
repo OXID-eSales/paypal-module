@@ -10,12 +10,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Safety guard: never cancel an order that has been successfully captured
 - Log Requests only in debug-Mode
-- Fix: Webhook always responds 200 to prevent PayPal from retrying failed events 25x over 3 days
-- Fix: Possible maintenance work in the PayPalOrderController if the PayPal order does not match the OXID order.
-- 
+- [0007898](https://bugs.oxid-esales.com/view.php?id=7898): Fix: Webhook always responds 200 to prevent PayPal from retrying failed events 25x over 3 days
+- [0007900](https://bugs.oxid-esales.com/view.php?id=7900): Fix: Possible maintenance work in the PayPalOrderController if the PayPal order does not match the OXID order.
+- [0007887](https://bugs.oxid-esales.com/view.php?id=7887): Force shipping recalculation after address change from PayPal (sShipSet may still contain old delivery set that is invalid for new country)
+
 ### NEW
 
-- cancelsession with logging
+- [0007901](https://bugs.oxid-esales.com/view.php?id=7901): cancelsession with logging
 
 ## [3.6.0] - 2026-02-19
 

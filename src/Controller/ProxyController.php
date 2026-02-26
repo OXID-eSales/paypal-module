@@ -319,6 +319,12 @@ class ProxyController extends FrontendController
                     $userInvoiceAddress,
                     $deliveryAddress,
                 );
+
+                // Force shipping recalculation after address change from PayPal
+                // (sShipSet may still contain old delivery set that is invalid for new country)
+                Registry::getSession()->deleteVariable('sShipSet');
+                Registry::getSession()->getBasket()->setShipping();
+
                 $paymentId = Registry::getSession()->getVariable('paymentid');
                 // use a deliveryaddress in oxid-checkout
                 Registry::getSession()->setVariable('blshowshipaddress', false);
