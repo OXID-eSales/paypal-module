@@ -367,6 +367,47 @@ class Order extends Order_parent
     }
 
     /**
+     * Override to use SELECT ... FOR UPDATE for stock validation.
+     * This prevents race conditions where two parallel requests both read
+     * the same stock level and both proceed to place an order.
+     * Requires an active DB transaction (started in finalizeOrder) to hold the lock.
+     *
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket basket object
+     */
+    public function validateStock($oBasket)
+    {
+        foreach ($oBasket->getContents() as $key => $oContent) {
+            try {
+                $oProd = $oContent->getArticle(true, null, true);
+            } catch (\OxidEsales\Eshop\Core\Exception\NoArticleException $oEx) {
+                $oBasket->removeItem($key);
+                throw $oEx;
+            } catch (\OxidEsales\Eshop\Core\Exception\ArticleInputException $oEx) {
+                $oBasket->removeItem($key);
+                throw $oEx;
+            }
+
+            $dArtStockAmount = $oBasket->getArtStockInBasket($oProd->getId(), $key);
+            // 3rd parameter: selectForUpdate = true
+            $iOnStock = $oProd->checkForStock($oContent->getAmount(), $dArtStockAmount, true);
+            if ($iOnStock !== true) {
+                /** @var \OxidEsales\Eshop\Core\Exception\OutOfStockException $oEx */
+                $oEx = oxNew(\OxidEsales\Eshop\Core\Exception\OutOfStockException::class);
+                $oEx->setMessage('ERROR_MESSAGE_OUTOFSTOCK_OUTOFSTOCK');
+                $oEx->setArticleNr($oProd->oxarticles__oxartnum->value);
+                $oEx->setProductId($oProd->getId());
+                $oEx->setBasketIndex($key);
+
+                if (!is_numeric($iOnStock)) {
+                    $iOnStock = 0;
+                }
+                $oEx->setRemainingAmount($iOnStock);
+                throw $oEx;
+            }
+        }
+    }
+
+    /**
      * Executes payment. Additionally loads oxPaymentGateway object, initiates
      * it by adding payment parameters (oxPaymentGateway::setPaymentParams())
      * and finally executes it (oxPaymentGateway::executePayment()). On failure -
@@ -816,7 +857,22 @@ class Order extends Order_parent
             $oSession->setVariable('sess_challenge', Registry::getUtilsObject()->generateUId());
         }
 
-        $result = parent::finalizeOrder($basket, $user, $recalculatingOrder);
+        // Wrap in DB transaction so that validateStock (SELECT ... FOR UPDATE)
+        // holds an exclusive lock until stock reduction in save() completes.
+        // This prevents two parallel requests from reading the same stock level.
+        if (!$recalculatingOrder) {
+            $db = DatabaseProvider::getDb();
+            $db->startTransaction();
+            try {
+                $result = parent::finalizeOrder($basket, $user, $recalculatingOrder);
+                $db->commitTransaction();
+            } catch (\Exception $e) {
+                $db->rollbackTransaction();
+                throw $e;
+            }
+        } else {
+            $result = parent::finalizeOrder($basket, $user, $recalculatingOrder);
+        }
 
         if (
             $this->paymentService->isPayPalPayment() &&
