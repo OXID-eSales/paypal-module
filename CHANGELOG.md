@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.6.1] - 2026-??-??
+## [3.7.0] - 2026-??-??
 
 ### FIX
 
@@ -17,6 +17,31 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### NEW
 
 - [0007901](https://bugs.oxid-esales.com/view.php?id=7901): cancelsession with logging
+- [0007895](https://bugs.oxid-esales.com/view.php?id=7895):
+
+#### Payment Method: PP-Standard / ACDC / GooglePay / ApplePay
+Steps inside transaction: validateStock (FOR UPDATE) → save (stock↓) →
+executePayment (returns true immediately, skipped via
+isPayPalPaymentCheckout)
+Lock duration: Milliseconds
+
+#### Payment Method: PP-Express
+Steps inside transaction: validateStock (FOR UPDATE) → save (stock↓) →
+executePayment (PayPal Capture API call)
+Lock duration: 1-3 seconds
+
+#### Payment Method: uAPMs (iDeal, Blik, EPS, ...)
+Steps inside transaction: validateStock (FOR UPDATE) → save (stock↓) →
+executePayment (creates PayPal order + stores redirect link)
+Lock duration: 1-3 seconds
+
+#### Payment Method: Order recalculation
+Steps inside transaction: No transaction – stock was already deducted
+during original order
+Lock duration: n/a
+
+On failure (e.g. capture fails, API timeout): automatic rollback reverts
+the stock reduction – no manual cleanup needed.
 
 ## [3.6.0] - 2026-02-19
 
