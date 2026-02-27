@@ -3,9 +3,12 @@
         [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
         [{if $phpStorm}]<script>[{/if}]
         function populateCarrier(countryCode) {
-            fetch('[{$sSelfLink|cat:"cl=order_main&fnc=getPayPalTrackingCarrierProviderAsJson&countrycode="}]' + countryCode, {
+            fetch('[{$sSelfLink|cat:"cl=order_main&oxid="|cat:$oxid|cat:"&fnc=getPayPalTrackingCarrierProviderAsJson&countrycode="}]' + countryCode, {
                 method: 'post'
             }).then(function (res) {
+                if (!res.ok) {
+                    throw new Error('HTTP ' + res.status);
+                }
                 return res.json();
             }).then(function (providerObj) {
                 let providerHtml = '';
@@ -13,6 +16,8 @@
                     providerHtml += '<option value="' + provider.id + '">' + provider.title + '</option>';
                 });
                 document.getElementById("paypaltrackingcarrierprovider").innerHTML = providerHtml;
+            }).catch(function (err) {
+                console.error('populateCarrier error:', err);
             });
         }
 
