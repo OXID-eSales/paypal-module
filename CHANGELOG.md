@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### NEW
 
+- add documentation to handle PayPal with stock-reservation [stock-protection.md](docs/stock-protection.md)
 - [0007901](https://bugs.oxid-esales.com/view.php?id=7901): cancelsession with logging
 - [0007895](https://bugs.oxid-esales.com/view.php?id=7895):
 
