@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007900](https://bugs.oxid-esales.com/view.php?id=7900): Fix: Possible maintenance work in the PayPalOrderController if the PayPal order does not match the OXID order.
 - [0007887](https://bugs.oxid-esales.com/view.php?id=7887): Force shipping recalculation after address change from PayPal (sShipSet may still contain old delivery set that is invalid for new country)
 - [0007908](https://bugs.oxid-esales.com/view.php?id=7908): Fix because the selection list “paypaltrackingcarrierprovider” is not displayed correctly.
-  
+- PPExpress, GooglePay, Applepay: Persist mapping in oscpaypal_order immediately so webhooks can find the shop order even if the customer never returns from PayPal.
 
 ### NEW
 
