@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007898](https://bugs.oxid-esales.com/view.php?id=7898): Fix: Webhook always responds 200 to prevent PayPal from retrying failed events 25x over 3 days
 - [0007900](https://bugs.oxid-esales.com/view.php?id=7900): Fix: Possible maintenance work in the PayPalOrderController if the PayPal order does not match the OXID order.
 - [0007887](https://bugs.oxid-esales.com/view.php?id=7887): Force shipping recalculation after address change from PayPal (sShipSet may still contain old delivery set that is invalid for new country)
+- PPExpress, GooglePay, Applepay: Persist mapping in oscpaypal_order immediately so webhooks can find the shop order even if the customer never returns from PayPal.
 
 ### NEW
 

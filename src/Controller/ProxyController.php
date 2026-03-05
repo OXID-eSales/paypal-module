@@ -127,6 +127,18 @@ class ProxyController extends FrontendController
 
         if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);
+
+            // Persist mapping in oscpaypal_order immediately so webhooks can find
+            // the shop order even if the customer never returns from PayPal.
+            $shopOrderId = $basket->getOrderId();
+            if (!empty($shopOrderId)) {
+                $paymentService->trackPayPalOrder(
+                    $shopOrderId,
+                    $response->id,
+                    $paymentId,
+                    PayPalApiOrder::STATUS_CREATED
+                );
+            }
         }
 
         $response !== null ?
@@ -191,6 +203,18 @@ class ProxyController extends FrontendController
 
         if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);
+
+            // Persist mapping in oscpaypal_order immediately so webhooks can find
+            // the shop order even if the customer never returns from PayPal.
+            $shopOrderId = $basket->getOrderId();
+            if (!empty($shopOrderId)) {
+                $this->getServiceFromContainer(PaymentService::class)->trackPayPalOrder(
+                    $shopOrderId,
+                    $response->id,
+                    $paymentId ?: PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID,
+                    PayPalApiOrder::STATUS_CREATED
+                );
+            }
         }
 
         if (!$this->getUser()) {
@@ -527,6 +551,18 @@ class ProxyController extends FrontendController
         );
         if ($response->id) {
             PayPalSession::storePayPalOrder((array)$response);
+
+            // Persist mapping in oscpaypal_order immediately so webhooks can find
+            // the shop order even if the customer never returns from PayPal.
+            $shopOrderId = $basket->getOrderId();
+            if (!empty($shopOrderId)) {
+                $this->getServiceFromContainer(PaymentService::class)->trackPayPalOrder(
+                    $shopOrderId,
+                    $response->id,
+                    $paymentId ?: PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID,
+                    PayPalApiOrder::STATUS_CREATED
+                );
+            }
         }
 
         if (!$this->getUser()) {
