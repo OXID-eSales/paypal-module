@@ -30,15 +30,19 @@ class PayPalSoapOrderCommentList extends \OxidEsales\Eshop\Core\Model\ListModel
         $oBaseObject = $this->getBaseObject();
         $sPaymentTable = $oBaseObject->getViewName();
 
-        // we could not use the simple $oBaseObject->getSelectFields(), because the table has no necessary oxid
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $sPaymentTable)) {
+            throw new \InvalidArgumentException('Invalid view name');
+        }
+
+        $db = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
         $sSelect = "select
-            $sPaymentTable.`oepaypal_commentid`,
-            $sPaymentTable.`oepaypal_paymentid`,
-            $sPaymentTable.`oepaypal_date`,
-            $sPaymentTable.`oepaypal_comment`
-            from $sPaymentTable
-            where $sPaymentTable.oepaypal_paymentid = " .
-            \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->quote($paymentId);
+            `{$sPaymentTable}`.`oepaypal_commentid`,
+            `{$sPaymentTable}`.`oepaypal_paymentid`,
+            `{$sPaymentTable}`.`oepaypal_date`,
+            `{$sPaymentTable}`.`oepaypal_comment`
+            from `{$sPaymentTable}`
+            where `{$sPaymentTable}`.`oepaypal_paymentid` = " .
+            $db->quote($paymentId);
 
         $this->selectString($sSelect);
     }

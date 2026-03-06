@@ -152,7 +152,7 @@ class ServiceFactory
             $sessionId = $session->getId();
             $basketId = $session->getVariable('sess_challenge');
             $paymentId = $session->getVariable('paymentid');
-            $actionHash = md5($sessionId . $basketId . $paymentId);
+            $actionHash = hash('sha256', $sessionId . $basketId . $paymentId);
 
             $tokenCacheFileName = $config->getTokenCacheFileName();
             $debugLevel = $config->getPayPalDebugLevel();

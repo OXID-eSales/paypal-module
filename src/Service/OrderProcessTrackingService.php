@@ -28,7 +28,7 @@ class OrderProcessTrackingService
 
     public function startPaymentProcessTracking()
     {
-        $this->trackingId = substr(md5(uniqid()), 0, 6);
+        $this->trackingId = bin2hex(random_bytes(3));
         Registry::getSession()->setVariable('payPalPaymentProcessId', $this->trackingId);
     }
 

@@ -173,7 +173,7 @@ class Onboarding
         $partnerConfig = oxNew(PartnerConfig::class);
         $session = Registry::getSession();
         $sessionId = $session->getId();
-        $actionHash = md5($sessionId);
+        $actionHash = hash('sha256', $sessionId);
 
         $clientId = '';
         $clientSecret = '';
