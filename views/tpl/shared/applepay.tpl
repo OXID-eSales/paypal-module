@@ -99,6 +99,13 @@
 
             document.addEventListener("click", handle_click);
 
+            // Escape HTML special characters to prevent XSS
+            const escapeHtml = (str) => {
+                const div = document.createElement('div');
+                div.textContent = String(str);
+                return div.innerHTML;
+            };
+
             // Function to display an error alert
             const display_error_alert = () => {
                 console.log('--- display_error_alert ---');
@@ -118,9 +125,9 @@
 
                 document.getElementById("alert").innerHTML = `
                 <div class='ms-alert ms-action'>
-                    Thank you ${order_details?.payer?.name?.given_name || ''} ${order_details?.payer?.name?.surname || ''}
-                    for your payment of ${order_details.purchase_units[0].payments[intent_object][0].amount.value}
-                    ${order_details.purchase_units[0].payments[intent_object][0].amount.currency_code}!
+                    Thank you ${escapeHtml(order_details?.payer?.name?.given_name || '')} ${escapeHtml(order_details?.payer?.name?.surname || '')}
+                    for your payment of ${escapeHtml(order_details.purchase_units[0].payments[intent_object][0].amount.value)}
+                    ${escapeHtml(order_details.purchase_units[0].payments[intent_object][0].amount.currency_code)}!
                 </div>`;
 
                 paypal_buttons.close();

@@ -11,11 +11,14 @@
                 }
                 return res.json();
             }).then(function (providerObj) {
-                let providerHtml = '';
+                const select = document.getElementById("paypaltrackingcarrierprovider");
+                select.innerHTML = '';
                 Object.values(providerObj).forEach(provider => {
-                    providerHtml += '<option value="' + provider.id + '">' + provider.title + '</option>';
+                    const option = document.createElement('option');
+                    option.value = provider.id;
+                    option.textContent = provider.title;
+                    select.appendChild(option);
                 });
-                document.getElementById("paypaltrackingcarrierprovider").innerHTML = providerHtml;
             }).catch(function (err) {
                 console.error('populateCarrier error:', err);
             });

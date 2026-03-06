@@ -30,21 +30,25 @@ class PayPalSoapOrderPaymentList extends \OxidEsales\Eshop\Core\Model\ListModel
         $oBaseObject = $this->getBaseObject();
         $sPaymentTable = $oBaseObject->getViewName();
 
-        // we could not use the simple $oBaseObject->getSelectFields(), because the table has no necessary oxid
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $sPaymentTable)) {
+            throw new \InvalidArgumentException('Invalid view name');
+        }
+
+        $db = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
         $sSelect = "select
-            $sPaymentTable.`oepaypal_paymentid`,
-            $sPaymentTable.`oepaypal_action`,
-            $sPaymentTable.`oepaypal_orderid`,
-            $sPaymentTable.`oepaypal_amount`,
-            $sPaymentTable.`oepaypal_refundedamount`,
-            $sPaymentTable.`oepaypal_status`,
-            $sPaymentTable.`oepaypal_date`,
-            $sPaymentTable.`oepaypal_currency`,
-            $sPaymentTable.`oepaypal_transactionid`,
-            $sPaymentTable.`oepaypal_correlationid`
-            from $sPaymentTable
-            where $sPaymentTable.oepaypal_orderid = " .
-            \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->quote($orderId);
+            `{$sPaymentTable}`.`oepaypal_paymentid`,
+            `{$sPaymentTable}`.`oepaypal_action`,
+            `{$sPaymentTable}`.`oepaypal_orderid`,
+            `{$sPaymentTable}`.`oepaypal_amount`,
+            `{$sPaymentTable}`.`oepaypal_refundedamount`,
+            `{$sPaymentTable}`.`oepaypal_status`,
+            `{$sPaymentTable}`.`oepaypal_date`,
+            `{$sPaymentTable}`.`oepaypal_currency`,
+            `{$sPaymentTable}`.`oepaypal_transactionid`,
+            `{$sPaymentTable}`.`oepaypal_correlationid`
+            from `{$sPaymentTable}`
+            where `{$sPaymentTable}`.`oepaypal_orderid` = " .
+            $db->quote($orderId);
 
         $this->selectString($sSelect);
     }

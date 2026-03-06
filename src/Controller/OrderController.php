@@ -530,6 +530,16 @@ class OrderController extends OrderController_parent
             ($redirectLink = PayPalSession::getSessionRedirectLink())
         ) {
             PayPalSession::unsetSessionRedirectLink();
+            $shopUrl = Registry::getConfig()->getShopUrl();
+            $sslShopUrl = Registry::getConfig()->getSslShopUrl();
+            if (
+                strpos($redirectLink, $shopUrl) !== 0 &&
+                strpos($redirectLink, $sslShopUrl) !== 0 &&
+                strpos($redirectLink, 'https://www.paypal.com/') !== 0 &&
+                strpos($redirectLink, 'https://www.sandbox.paypal.com/') !== 0
+            ) {
+                throw new Redirect($shopUrl);
+            }
             throw new Redirect($redirectLink);
         }
 

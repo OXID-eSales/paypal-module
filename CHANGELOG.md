@@ -16,6 +16,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007908](https://bugs.oxid-esales.com/view.php?id=7908): Fix because the selection list “paypaltrackingcarrierprovider” is not displayed correctly.
 - PPExpress, GooglePay, Applepay: Persist mapping in oscpaypal_order immediately so webhooks can find the shop order even if the customer never returns from PayPal.
 
+### Security
+
+- Fix insecure deserialization in PayPalPlusRefund: add `allowed_classes` restriction to `unserialize()` to prevent PHP Object Injection
+- Fix DOM-XSS in Apple Pay success message: escape PayPal API response data before rendering via `innerHTML`
+- Harden SQL queries in PayPalSoapOrderCommentList and PayPalSoapOrderPaymentList: validate view name and use backtick quoting
+- Fix DOM-XSS in admin carrier provider dropdown: use `createElement`/`textContent` instead of `innerHTML` with unsanitized data
+- Remove weak cryptographic nonce fallback in PartnerConfig (`md5`/`uniqid`/`mt_rand` dead code)
+- Prevent potential open redirect in OrderController: validate redirect URL against shop domain and PayPal
+- Replace weak `md5`/`uniqid` hashes with `random_bytes` and `sha256` in OrderProcessTrackingService, Onboarding and ServiceFactory
+- Add SECURITY.md documenting known security considerations and intentionally unfixed items
+
 ### NEW
 
 - add documentation to handle PayPal with stock-reservation [stock-protection.md](docs/stock-protection.md)
