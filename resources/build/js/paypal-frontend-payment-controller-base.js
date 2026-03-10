@@ -209,6 +209,13 @@
                 'shopOrderId': PayPalPayment.getCurrentOrderOxid()
             });
 
+            if (result.status === 'cancel_blocked') {
+                // Payment was already approved/captured at PayPal.
+                // Redirect to thank-you page — the webhook will finalize the order.
+                PayPalPayment.thankYouPageRedirect();
+                return;
+            }
+
             if (result.status === 'error') {
                 window.location.reload();
             }

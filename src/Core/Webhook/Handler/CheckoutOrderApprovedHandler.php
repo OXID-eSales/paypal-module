@@ -25,6 +25,31 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
         array $eventPayload,
         EshopModelOrder $order
     ): void {
+        // Defense-in-depth: never process webhooks for stornoed orders.
+        if ($order->getFieldData('oxstorno') == 1) {
+            $this->getLogger()->log('warning', sprintf(
+                'Webhook %s skipped for stornoed order %s (nr: %s, PayPal order: %s)',
+                static::WEBHOOK_EVENT_NAME,
+                $order->getId(),
+                $order->getFieldData('oxordernr'),
+                $payPalOrderId
+            ));
+            return;
+        }
+
+        // Skip capture if the order was already captured (e.g. by the frontend
+        // or by a different PayPal order that replaced this one).
+        if (!empty($order->getFieldData('oxtransid'))) {
+            $this->getLogger()->log('debug', sprintf(
+                'Webhook %s skipped capture for order %s (nr: %s) - already has transid %s',
+                static::WEBHOOK_EVENT_NAME,
+                $order->getId(),
+                $order->getFieldData('oxordernr'),
+                $order->getFieldData('oxtransid')
+            ));
+            return;
+        }
+
         $this->handleWebhookDelay($payPalOrderId, $eventPayload, $order);
 
         if ($this->needsCapture($eventPayload)) {

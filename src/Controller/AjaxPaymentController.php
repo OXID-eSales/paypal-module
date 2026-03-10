@@ -549,7 +549,14 @@ class AjaxPaymentController extends BaseController
         );
 
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        $paymentService->removeTemporaryOrder($shopOrderId);
+        $cancelBlocked = $paymentService->removeTemporaryOrder($shopOrderId);
+
+        if ($cancelBlocked) {
+            $this->outputJson([
+                'status' => 'cancel_blocked'
+            ]);
+            return;
+        }
 
         $this->outputJson([
             'status' => 'success'
