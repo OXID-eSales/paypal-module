@@ -53,13 +53,26 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
         $this->handleWebhookDelay($payPalOrderId, $eventPayload, $order);
 
         if ($this->needsCapture($eventPayload)) {
+            // Fetch live order details to check if already captured and to
+            // pass them to doCapturePayPalOrder() (avoids redundant API GET).
+            $orderDetails = $this->getPayPalOrderDetails($payPalOrderId);
+            if ($orderDetails && $orderDetails->status === OrderResponse::STATUS_COMPLETED) {
+                $this->getLogger()->log('debug', sprintf(
+                    'Webhook %s: PayPal order %s already COMPLETED, skipping capture',
+                    static::WEBHOOK_EVENT_NAME,
+                    $payPalOrderId
+                ));
+                return;
+            }
+
             try {
                 //NOTE: capture will trigger CHECKOUT.ORDER.COMPLETED event which will mark order paid
                 $this->getPaymentService()
                     ->doCapturePayPalOrder(
                         $order,
                         $payPalOrderId,
-                        $paypalOrderModel->getPaymentMethodId()
+                        $paypalOrderModel->getPaymentMethodId(),
+                        $orderDetails
                     );
                 $order->setOrderNumber(); //ensure the order has a number
             } catch (Exception $exception) {
