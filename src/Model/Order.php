@@ -505,6 +505,22 @@ class Order extends Order_parent
             return false;
         }
 
+        // Safety guard: check PayPal API status before canceling.
+        // Covers the race condition where the customer clicked "Pay" in the
+        // PayPal popup but closed it before the onApprove callback fired.
+        // In that case PayPal may have already approved/captured the payment
+        // even though the frontend triggered a cancel.
+        if ($this->isPayPalOrderApprovedOrCaptured()) {
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->log('warning', sprintf(
+                'PayPal order with id %s (nr: %s) cancel blocked - PayPal order already approved/captured',
+                $this->getId(),
+                $this->getFieldData('oxordernr')
+            ));
+            return false;
+        }
+
         $this->cancelOrder();
         $this->markOrderPaymentFailed();
         $this->save();
@@ -530,6 +546,43 @@ class Order extends Order_parent
         ));
 
         return false;
+    }
+
+    /**
+     * Checks the PayPal API to see if the order has already been
+     * approved or captured. This prevents canceling an order where
+     * the customer clicked "Pay" but closed the popup before the
+     * onApprove JS callback could fire.
+     */
+    protected function isPayPalOrderApprovedOrCaptured(): bool
+    {
+        $payPalOrderId = $this->getPayPalOrderIdForOxOrderId();
+        if (!$payPalOrderId) {
+            return false;
+        }
+
+        try {
+            $orderService = Registry::get(ServiceFactory::class)->getOrderService();
+            $apiOrder = $orderService->showOrderDetails(
+                $payPalOrderId,
+                '',
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+            );
+
+            $status = $apiOrder->status ?? '';
+
+            return in_array($status, ['APPROVED', 'COMPLETED'], true);
+        } catch (ApiException $exception) {
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->log('debug', sprintf(
+                'PayPal API check failed for order %s during cancel guard: %s',
+                $this->getId(),
+                $exception->getMessage()
+            ));
+            // If the API call fails, allow the cancel to proceed
+            return false;
+        }
     }
 
     /**

@@ -86,6 +86,21 @@ abstract class WebhookHandlerBase
         array $eventPayload,
         EshopModelOrder $order
     ): void {
+        // Defense-in-depth: never process webhooks for stornoed orders.
+        // This prevents a stale webhook from "healing" a cancelled order
+        // or writing transaction data into an order that should stay cancelled.
+        if ($order->getFieldData('oxstorno') == 1) {
+            $this->getLogger()->log('warning', sprintf(
+                'Webhook %s skipped for stornoed order %s (nr: %s, PayPal order: %s, PayPal txn: %s)',
+                static::WEBHOOK_EVENT_NAME,
+                $order->getId(),
+                $order->getFieldData('oxordernr'),
+                $payPalOrderId,
+                $payPalTransactionId
+            ));
+            return;
+        }
+
         $this->handleWebhookDelay($payPalOrderId, $eventPayload, $order);
         $paypalOrderModel->setTransactionId($payPalTransactionId);
 
