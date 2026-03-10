@@ -225,8 +225,15 @@ abstract class WebhookHandlerBase
         $paypalOrderModel->save();
     }
 
+    /** @var array<string, ?PayPalApiModelOrder> */
+    private static array $orderDetailsCache = [];
+
     protected function getPayPalOrderDetails(string $payPalOrderId): ?PayPalApiModelOrder
     {
+        if (isset(self::$orderDetailsCache[$payPalOrderId])) {
+            return self::$orderDetailsCache[$payPalOrderId];
+        }
+
         $apiOrder = null;
         try {
             $checkoutOrder = PayPalSession::getCheckoutOrder();
@@ -248,6 +255,8 @@ abstract class WebhookHandlerBase
                 [$exception]
             );
         }
+
+        self::$orderDetailsCache[$payPalOrderId] = $apiOrder;
         return $apiOrder;
     }
 
