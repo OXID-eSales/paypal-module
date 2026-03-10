@@ -449,13 +449,21 @@ class Payment
         return PayPalDefinitions::isPayPalPayment($sessionPaymentId);
     }
 
-    public function removeTemporaryOrder(?string $orderId = ''): void
+    /**
+     * @return bool true if cancel was blocked (payment already in progress at PayPal)
+     */
+    public function removeTemporaryOrder(?string $orderId = ''): bool
     {
+        $cancelBlocked = false;
         $orderModel = $this->getTemporaryOrder($orderId);
         if ($orderModel) {
-            $orderModel->cancelPayPalOrder();
+            $deleted = $orderModel->cancelPayPalOrder();
+            // If order still exists and is not stornoed, cancel was blocked
+            // because PayPal already approved/captured the payment.
+            $cancelBlocked = !$deleted && $orderModel->getFieldData('oxstorno') != 1;
         }
         $this->eshopSession->deleteVariable('sess_challenge');
+        return $cancelBlocked;
     }
 
     public function getTemporaryOrder(?string $orderId = ''): ?EshopModelOrder
