@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [3.7.0] - 2026-??-??
+## [3.7.0] - 2026-03-11
 
 ### FIX
 
@@ -75,7 +75,7 @@ the stock reduction – no manual cleanup needed.
 - use cancel-Process also for PayPalExpress
 - Introduce orderModel->cancelPayPalOrder. It takes over a large part of the tasks of the method PaymentService->removeTemporaryOrder
 - fix WorstCase: Start a PP-Order, open in a second tab a PP-Express-Order and finish. Now the first order is clean canceled.
-- 
+-
 ## [3.5.3] - 2026-02-02
 
 ### FIX
@@ -124,7 +124,7 @@ the stock reduction – no manual cleanup needed.
 - [0007865](https://bugs.oxid-esales.com/view.php?id=7865): fix: If the basket contains article with decimal-point-amounts (like 0.5m) then we do not provide the basket-items to PayPal. Because PayPal can only handle whole numbers.
 
 ## [3.5.1] - 2025-11-06
- 
+
 ### NEW
 
 - add Age Control (min age 18) for PUI
@@ -245,7 +245,7 @@ the stock reduction – no manual cleanup needed.
 - [0007695](https://bugs.oxid-esales.com/view.php?id=7695): Fix: if DeliverySet is set in Frontend, then do not add any PseudoDeliveryCosts for PPExpress
 - add possibility to ignore cached tokens. It helps e.g. for webhook registration
 - [0007695](https://bugs.oxid-esales.com/view.php?id=7695): Explain better Pseudo delivery costs
-- fix issue with provided english translations for admin 
+- fix issue with provided english translations for admin
 - fix issue with googlePay (await for the complete execution)
 - [0007760](https://bugs.oxid-esales.com/view.php?id=7760): fix Paypal return type and B2B Module
 - [0007763](https://bugs.oxid-esales.com/view.php?id=7763): fix Some data have received a strange name suffix
