@@ -378,6 +378,14 @@ class Payment
                 (string)$payPalTransactionId
             );
 
+            // Always set transaction ID immediately after capture to close the
+            // race window between frontend capture and webhook capture.
+            // Without this, a concurrent webhook for a different PayPal order
+            // could capture again before CHECKOUT.ORDER.COMPLETED sets oxtransid.
+            if ($payPalTransactionId) {
+                $order->setTransId((string)$payPalTransactionId);
+            }
+
             if ($result instanceof Order && $order->isPayPalOrderCompleted($result)) {
                 //save vault to user and set success message
                 $session = Registry::getSession();
@@ -408,7 +416,6 @@ class Payment
                 }
 
                 $order->markOrderPaid();
-                $order->setTransId((string)$payPalTransactionId);
             }
         } catch (Exception $exception) {
             if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
@@ -471,6 +478,13 @@ class Payment
         // being stuck on the old PayPal order ID.
         if ($cancelBlocked) {
             PayPalSession::unsetPayPalSession(false);
+            // Clear the basket's reference to the old order so that a subsequent
+            // PayPal order creation (e.g. via ProxyController) does not map
+            // the new PayPal order to the already-captured shop order.
+            $basket = $this->eshopSession->getBasket();
+            if ($basket) {
+                $basket->setOrderId(null);
+            }
         }
 
         return $cancelBlocked;
