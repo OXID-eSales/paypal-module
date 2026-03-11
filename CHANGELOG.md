@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Webhook guard: skip processing for stornoed orders to prevent webhooks from writing duplicate transaction data into cancelled orders (defense-in-depth)
 - CheckoutOrderApprovedHandler: add storno guard and already-captured check to prevent webhook from capturing a PayPal order when the OXID order was already paid or stornoed
 - Prevent double-charge on cross-payment-method scenario: when cancel is blocked (PayPal already approved), redirect customer to thank-you page instead of allowing a new order
+- Reduce redundant PayPal API calls: in-memory cache for order details in webhook handlers and skip capture when PayPal order is already COMPLETED
+- Clean up PayPal session data when cancel is blocked, so the customer can place a new order without needing to log out and back in
 - Log Requests only in debug-Mode
 - [0007898](https://bugs.oxid-esales.com/view.php?id=7898): Fix: Webhook always responds 200 to prevent PayPal from retrying failed events 25x over 3 days
 - [0007900](https://bugs.oxid-esales.com/view.php?id=7900): Fix: Possible maintenance work in the PayPalOrderController if the PayPal order does not match the OXID order.
