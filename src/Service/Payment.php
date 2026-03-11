@@ -463,6 +463,14 @@ class Payment
             $cancelBlocked = !$deleted && $orderModel->getFieldData('oxstorno') != 1;
         }
         $this->eshopSession->deleteVariable('sess_challenge');
+
+        // When cancel was blocked (PayPal already approved/captured), clean up
+        // the PayPal session so the customer can start a fresh order without
+        // being stuck on the old PayPal order ID.
+        if ($cancelBlocked) {
+            PayPalSession::unsetPayPalSession(false);
+        }
+
         return $cancelBlocked;
     }
 
