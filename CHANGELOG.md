@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.8.0] - 2026-??-??
+## [2.8.0] - 2026-03-11
 
 ### FIX
 
@@ -95,7 +95,7 @@ the stock reduction – no manual cleanup needed.
 
 ### NEW
 
-- Performance: Improved AJAX controller response time by 56% through lazy-loaded settings cache and reduced controller inheritance 
+- Performance: Improved AJAX controller response time by 56% through lazy-loaded settings cache and reduced controller inheritance
 - Performance: Optimized PayPal standard checkout by combining shop and PayPal order creation into single request
 - Performance: uAPMs like iDeal, Blik, EPS, P24 and bancontact are completed on approval
 - Performance: Faster login and capture in all "popup-payments" by removing a JS call time delay.
@@ -128,7 +128,7 @@ the stock reduction – no manual cleanup needed.
 
 - Cancel a uAPM order that was ended by the customer using the back button.
 - drop codeception-tests
- 
+
 ### FIX
 
 - fix: GooglePay send OrderMail
@@ -175,7 +175,7 @@ the stock reduction – no manual cleanup needed.
 ### NEW
 
 - PayPal-Buttons are configurable
-- Use PayPal-Button also on Checkout-Page for PayPal-Standard, this Button triggers a popUp instead of a page redirect 
+- Use PayPal-Button also on Checkout-Page for PayPal-Standard, this Button triggers a popUp instead of a page redirect
 - All PayPal payment methods have "PayPal" as a prefix in a fresh installation to better identify them in the admin panel. When setting up payment methods, the merchant can decide which name best fits their needs.
 - Additional check of eligibility for unbranded payments
 - CreditCard (ACDC) and Vaulting works now internally with card-fields-component. Fewer PayPal SDK resources are needed
@@ -225,7 +225,7 @@ the stock reduction – no manual cleanup needed.
 
 ## [2.5.2] - 2025-02-06
 
-### FIX 
+### FIX
 
 - Catch possible thrown Error by getting DataClientToken
 - [0007719](https://bugs.oxid-esales.com/view.php?id=7719): Tracking code also be stored in standard DB field for backwards compatibility
