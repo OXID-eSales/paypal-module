@@ -158,8 +158,12 @@ class OrderController extends OrderController_parent
             $_POST['sDeliveryAddressMD5'] = $this->getDeliveryAddressMD5();
             $orderId = Registry::getRequest()->getRequestParameter('orderID');
             $_POST['orderID'] = $orderId;
+            $session = Registry::getSession();
+            $session->setVariable('isPayPalPaymentCheckout', true);
             $this->execute();
+            $session->deleteVariable('isPayPalPaymentCheckout');
         } catch (Exception $exception) {
+            Registry::getSession()->deleteVariable('isPayPalPaymentCheckout');
             $logger->log('error', $exception->getMessage(), [$exception]);
             $this->outputJson([
                 'googlepayerror' => 'failed to execute shop order',
@@ -254,9 +258,9 @@ class OrderController extends OrderController_parent
                 $this->getUtilsObjectInstance()->generateUID()
             );
             $_POST['sDeliveryAddressMD5'] = $this->getDeliveryAddressMD5();
-            $_POST['ord_agb'] = (int)filter_var($_POST['checkAgbTop'], FILTER_VALIDATE_BOOLEAN);
-            $_POST['oxdownloadableproductsagreement'] = (int)filter_var($_POST['oxdownloadableproductsagreement'], FILTER_VALIDATE_BOOLEAN);
-            $_POST['oxserviceproductsagreement'] = (int)filter_var($_POST['oxdownloadableproductsagreement'], FILTER_VALIDATE_BOOLEAN);
+            $_POST['ord_agb'] = (int)filter_var($_POST['checkAgbTop'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $_POST['oxdownloadableproductsagreement'] = (int)filter_var($_POST['oxdownloadableproductsagreement'] ?? false, FILTER_VALIDATE_BOOLEAN);
+            $_POST['oxserviceproductsagreement'] = (int)filter_var($_POST['oxserviceproductsagreement'] ?? false, FILTER_VALIDATE_BOOLEAN);
 
             $session->setVariable('isPayPalPaymentCheckout', true);
             $status = $this->execute();

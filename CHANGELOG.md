@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.8.1] - 2026-??-??
+
+### Security
+
+- Fix payment bypass: Orders with PayPal payment methods (Standard, Pay Later, Google Pay) could be placed without completing the PayPal authorization flow by submitting the order form directly. Added server-side guards in `Order::_executePayment()` that require a valid PayPal checkout session (`isPayPalPaymentCheckout`) before accepting payment. Without this flag — which is only set by legitimate PayPal JS flows — the payment is now rejected.
+
+### FIX
+
+- [0007910](https://bugs.oxid-esales.com/view.php?id=7910): Fix copy-paste bug in OrderController and ProxyController: `oxserviceproductsagreement` was incorrectly read from `oxdownloadableproductsagreement`. Added `?? false` fallbacks to prevent PHP notices when `$_POST`/`$data` keys are missing (e.g. Apple Pay flow).
+
 ## [2.8.0] - 2026-03-11
 
 ### FIX

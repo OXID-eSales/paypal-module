@@ -425,6 +425,9 @@ class Order extends Order_parent
         $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
 
         if (PayPalDefinitions::isProxyControllerPayment($sessionPaymentId)) {
+            if (!Registry::getSession()->getVariable('isPayPalPaymentCheckout')) {
+                return self::ORDER_STATE_PAYMENTERROR;
+            }
             return true;
         }
 
@@ -478,6 +481,11 @@ class Order extends Order_parent
         // for all other PayPal-Payments ignore the _executePayment, because it is handle before
         if (Registry::getSession()->getVariable('isPayPalPaymentCheckout')) {
             return true;
+        }
+
+        // Reject any PayPal payment that was not handled by the flows above
+        if (PayPalDefinitions::isPayPalPayment($sessionPaymentId)) {
+            return self::ORDER_STATE_PAYMENTERROR;
         }
 
         return parent::_executePayment($basket, $userpayment);
