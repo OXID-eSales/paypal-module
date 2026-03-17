@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
@@ -85,6 +86,30 @@ class PaymentGateway extends PaymentGateway_parent
         $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
 
         if ($checkoutOrderId = PayPalSession::getCheckoutOrderId()) {
+            // Guard against double-submit: if another shop order already has
+            // a transaction ID for this PayPal order, payment was already
+            // processed (or is in progress). Skip to avoid duplicate captures.
+            try {
+                $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
+                $existingOrder = $orderRepository->getShopOrderByPayPalOrderId($checkoutOrderId);
+                if (
+                    $existingOrder->isLoaded() &&
+                    $existingOrder->getId() !== $order->getId() &&
+                    !empty($existingOrder->getFieldData('oxtransid'))
+                ) {
+                    $logger->log('info', 'PayPal order already processed by another shop order, skipping duplicate execution.', [
+                        'payPalOrderId' => $checkoutOrderId,
+                        'existingShopOrderId' => $existingOrder->getId(),
+                        'existingTransId' => $existingOrder->getFieldData('oxtransid'),
+                        'duplicateShopOrderId' => $order->getId(),
+                    ]);
+                    PayPalSession::unsetPayPalSession();
+                    return false;
+                }
+            } catch (Exception $exception) {
+                // Order not found in repository — no duplicate, continue normally
+            }
+
             // Update Order
             try {
                 $paymentService->doPatchPayPalOrder(
