@@ -7,7 +7,7 @@
 
 {% block details_productmain_tobasket %}
     {{ parent() }}
-    {% if blCanBuy and oView.showPayPalExpressOnDetailsPage() %}
+    {% if blCanBuy and not oDetailsProduct.isNotBuyable() and oView.showPayPalExpressOnDetailsPage() %}
         {% include "@osc_paypal/frontend/paymentbuttons.html.twig" with {buttonId: "PayPalButtonProductMain", buttonClass: "paypal-button-wrapper", aid: oDetailsProduct.oxarticles__oxid.value} %}
     {% endif %}
     {% include "@osc_paypal/frontend/paypalexpresshint.html.twig" with {withBreak: false} %}
