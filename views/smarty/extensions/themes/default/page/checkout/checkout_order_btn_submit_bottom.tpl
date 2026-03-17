@@ -16,18 +16,13 @@
     [{capture name="oscpaypal_express_doubleclick_guard"}]
         [{if $phpstorm}]<script>[{/if}]
         document.addEventListener('DOMContentLoaded', function() {
-            var form = document.getElementById('orderConfirmAgbBottom');
-            if (form) {
-                form.addEventListener('submit', function() {
-                    var buttons = document.querySelectorAll(
-                        '.submitButton.nextStep, [type="submit"].nextStep'
-                    );
-                    for (var i = 0; i < buttons.length; i++) {
-                        buttons[i].disabled = true;
-                        buttons[i].style.opacity = '0.6';
-                        buttons[i].style.pointerEvents = 'none';
-                    }
-                });
+            var buttons = document.querySelectorAll(
+                '.submitButton.nextStep, [type="submit"].nextStep'
+            );
+            for (var i = 0; i < buttons.length; i++) {
+                buttons[i].addEventListener('click', function() {
+                    this.disabled = true;
+                }, {once: true});
             }
         });
         [{if $phpstorm}]</script>[{/if}]
