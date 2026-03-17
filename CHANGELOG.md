@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### FIX
 
 - [0007910](https://bugs.oxid-esales.com/view.php?id=7910): Fix copy-paste bug in OrderController and ProxyController: `oxserviceproductsagreement` was incorrectly read from `oxdownloadableproductsagreement`. Added `?? false` fallbacks to prevent PHP notices when `$_POST`/`$data` keys are missing (e.g. Apple Pay flow).
+- [0007911](https://bugs.oxid-esales.com/view.php?id=7911): Function 'getRenderer' does not exist or is not accessible! PUI mail sending failed on OXID 6.3 because `Email::getRenderer()` is `private` in oxideshop-ce v6.9.x. Replaced call with direct container access via `TemplateRendererBridgeInterface`.
+- Fix double-submit on PayPal Express checkout: clicking "Jetzt zahlungspflichtig bestellen" multiple times created duplicate shop orders, where the second order failed with ORDER_ALREADY_COMPLETED. Added frontend double-click protection (button disabled after first submit) and backend guard in PaymentGateway that checks via oxtransid whether another shop order already processed the same PayPal order.
 
 ## [2.8.0] - 2026-03-11
 
