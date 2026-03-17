@@ -11,6 +11,7 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\Internal\Framework\Templating\TemplateRendererBridgeInterface;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Pui;
 
 /**
@@ -52,7 +53,7 @@ class Email extends Email_parent
         $this->setViewData("currency", $order->getOrderCurrency());
 
         // create messages
-        $renderer = $this->getRenderer();
+        $renderer = $this->getContainer()->get(TemplateRendererBridgeInterface::class)->getTemplateRenderer();
 
         // Process view data array through oxOutput processor
         $this->_processViewArray();
