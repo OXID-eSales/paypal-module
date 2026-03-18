@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - [0007910](https://bugs.oxid-esales.com/view.php?id=7910): Fix copy-paste bug in OrderController and ProxyController: `oxserviceproductsagreement` was incorrectly read from `oxdownloadableproductsagreement`. Added `?? false` fallbacks to prevent PHP notices when `$_POST`/`$data` keys are missing (e.g. Apple Pay flow).
 - Fix PayPal Express button still visible on detail page for out-of-stock products that are configured to be shown but not buyable. Added `isNotBuyable()` check to the template.
 - Fix double-submit on PayPal Express checkout: clicking "Jetzt zahlungspflichtig bestellen" multiple times created duplicate shop orders, where the second order failed with ORDER_ALREADY_COMPLETED. Added frontend double-click protection (button disabled after first submit) and backend guard in PaymentGateway that checks via oxtransid whether another shop order already processed the same PayPal order.
+- Fix PayPal Express button not re-initializing after variant selection change on product details page. OXID replaces the product content via AJAX on variant change, but the PayPal button init scripts are not re-executed. Added a MutationObserver (`paypal-frontend-variant-observer.js`) and a hidden config element (`#PayPalButtonProductMainConfig`) to detect DOM changes and re-render the PayPal button with the correct variant article ID. Supports both Apex/Twig (outerHTML) and Wave/Flow/Smarty (innerHTML) themes.
 
 ## [3.7.0] - 2026-03-11
 
