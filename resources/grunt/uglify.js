@@ -21,7 +21,8 @@ module.exports = {
                 "build/js/paypal-frontend-acdc-payment-controller.js",
                 "build/js/paypal-frontend-googlepay-payment-controller.js",
                 "build/js/paypal-frontend-applepay-payment-controller.js",
-                "build/js/paypal-frontend-express-payment-controller.js"
+                "build/js/paypal-frontend-express-payment-controller.js",
+                "build/js/paypal-frontend-variant-observer.js"
             ]
         }
     }
