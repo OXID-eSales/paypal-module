@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [2.8.1] - 2026-??-??
+## [2.8.1] - 2026-03-19
 
 ### Security
 
@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fix PayPal Express button still visible on detail page for out-of-stock products that are configured to be shown but not buyable. Added `isBuyable()` check to the template.
 - Fix double-submit on PayPal Express checkout: clicking "Jetzt zahlungspflichtig bestellen" multiple times created duplicate shop orders, where the second order failed with ORDER_ALREADY_COMPLETED. Added frontend double-click protection (button disabled after first submit) and backend guard in PaymentGateway that checks via oxtransid whether another shop order already processed the same PayPal order.
 - Fix PayPal Express button not re-initializing after variant selection change on product details page. OXID replaces the product content via AJAX on variant change, but the PayPal button init scripts are not re-executed. Added a MutationObserver (`paypal-frontend-variant-observer.js`) and a hidden config element (`#PayPalButtonProductMainConfig`) to detect DOM changes and re-render the PayPal button with the correct variant article ID. Supports both Wave/Flow (innerHTML) and Apex/Twig (outerHTML) themes.
+- [0007912](https://bugs.oxid-esales.com/view.php?id=7912): fix To obtain the correct BaseUrl for webhooks in the EE context, `$conf->getSslShopUrl()` / `$conf->getShopUrl()` must be used instead of `$conf->getCurrentShopUrl()`.
 
 ## [2.8.0] - 2026-03-11
 

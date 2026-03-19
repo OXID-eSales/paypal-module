@@ -543,8 +543,11 @@ class Config
             $webhookUrl .= '&XDEBUG_SESSION_START=1';
         }
 
+        $config = Registry::getConfig();
+        $frontendUrl = $config->isSsl() ? $config->getSslShopUrl() : $config->getShopUrl(null, false);
+
         return html_entity_decode(
-            Registry::getConfig()->getCurrentShopUrl(false) . $webhookUrl
+            $frontendUrl . $webhookUrl
         );
     }
 
