@@ -21,7 +21,10 @@
             );
             for (var i = 0; i < buttons.length; i++) {
                 buttons[i].addEventListener('click', function() {
-                    this.disabled = true;
+                    var btn = this;
+                    setTimeout(function() {
+                        btn.disabled = true;
+                    }, 0);
                 }, {once: true});
             }
         });
