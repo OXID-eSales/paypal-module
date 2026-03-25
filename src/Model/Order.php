@@ -483,6 +483,12 @@ class Order extends Order_parent
             return true;
         }
 
+        // Gateway payments (e.g. PUI) are processed by OXID's core PaymentGateway,
+        // so they must fall through to parent::_executePayment().
+        if (PayPalDefinitions::isGatewayPayment($sessionPaymentId)) {
+            return parent::_executePayment($basket, $userpayment);
+        }
+
         // Reject any PayPal payment that was not handled by the flows above
         if (PayPalDefinitions::isPayPalPayment($sessionPaymentId)) {
             return self::ORDER_STATE_PAYMENTERROR;
