@@ -799,6 +799,17 @@ class Payment
         string $payPalTransactionId = '',
         string $transactionType = Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
     ): PayPalOrderModel {
+        // Prevent creating orphaned tracking rows with empty shop order id.
+        if (empty($shopOrderId)) {
+            Registry::getLogger()->error(
+                'Payment::trackPayPalOrder called with empty shopOrderId, aborting',
+                ['payPalOrderId' => $payPalOrderId, 'status' => $status]
+            );
+            throw new \InvalidArgumentException(
+                'Cannot track PayPal order: shopOrderId must not be empty'
+            );
+        }
+
         /** @var PayPalOrderModel $payPalOrder */
         $payPalOrder = $this->getPayPalCheckoutOrder($shopOrderId, $payPalOrderId, $payPalTransactionId);
 

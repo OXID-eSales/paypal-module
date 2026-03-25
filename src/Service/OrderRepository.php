@@ -58,6 +58,16 @@ class OrderRepository
         $order->load($oxid);
 
         if (!$order->isLoaded()) {
+            // Do not create new tracking records with an empty shop order id.
+            // This is the final persistence safeguard against orphaned rows.
+            if (empty($shopOrderId)) {
+                Registry::getLogger()->error(
+                    'OrderRepository: refusing to create oscpaypal_order with empty shopOrderId',
+                    ['paypalOrderId' => $paypalOrderId]
+                );
+                return $order;
+            }
+
             $order->assign(
                 [
                     'oxorderid' => $shopOrderId,

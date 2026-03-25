@@ -274,6 +274,22 @@ class AjaxPaymentController extends BaseController
         $basket = Registry::getSession()->getBasket();
         $user = $basket->getUser();
 
+        // Validate that a valid shop order could be resolved from the session.
+        // If sess_challenge was cleared (e.g. by a concurrent cancel request),
+        // we must not proceed with tracking an orphaned PayPal capture.
+        if (empty($shopOrderId) || !$order->isLoaded()) {
+            $this->logger->log(
+                'error',
+                'PayPal captureOrder: cannot resolve shop order from session (sess_challenge missing or order not loaded)',
+                ['payPalOrderId' => $payPalOrderId, 'shopOrderId' => $shopOrderId]
+            );
+            $this->outputJson([
+                'status' => 'error',
+                'message' => $language->translateString('OSC_PAYPAL_CAPTURE_DENIED_ERROR')
+            ]);
+            return;
+        }
+
         $payPalCustomerId = null;
         if ($vaultPayment) {
             if (isset($capturePaymentForOrder->payment_source->paypal->attributes->vault->customer["id"])) {

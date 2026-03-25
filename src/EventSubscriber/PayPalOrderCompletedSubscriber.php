@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\EventSubscriber;
 
+use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Event\PayPalOrderCompletedEvent;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\NormalizedEventDispatcher;
@@ -46,6 +47,16 @@ class PayPalOrderCompletedSubscriber implements EventSubscriberInterface
         $order = $event->getOrder();
         $basket = $event->getBasket();
         $user = $event->getUser();
+
+        // Reject tracking if shopOrderId is empty – this prevents orphaned
+        // oscpaypal_order rows when sess_challenge was cleared before capture.
+        if (empty($event->getShopOrderId())) {
+            Registry::getLogger()->error(
+                'PayPalOrderCompletedSubscriber: shopOrderId is empty, aborting order tracking',
+                ['payPalOrderId' => $event->getPayPalOrderId()]
+            );
+            return;
+        }
 
         // mark as paid and set transaction id
         if (method_exists($order, 'markOrderPaid')) {
