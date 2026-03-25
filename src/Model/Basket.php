@@ -252,17 +252,22 @@ class Basket extends Basket_parent
      */
     public function hasProductVariantInBasket(\OxidEsales\Eshop\Application\Model\Article $product)
     {
-        $return = false;
-
         $variantIds = $product->getVariantIds();
-        foreach ($variantIds as $id) {
-            if ($this->getArtStockInBasket($id)) {
-                $return = true;
-                break;
+        if (empty($variantIds)) {
+            return false;
+        }
+
+        $variantIdMap = array_flip($variantIds);
+        foreach ($this->getContents() as $basketItem) {
+            // Use getArticle(false) to skip the buyable check – out-of-stock
+            // variants that are still in the basket must not cause a fatal error.
+            $article = $basketItem->getArticle(false);
+            if ($article && isset($variantIdMap[$article->getId()])) {
+                return true;
             }
         }
 
-        return $return;
+        return false;
     }
 
     /**
