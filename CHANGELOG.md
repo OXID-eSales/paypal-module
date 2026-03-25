@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.8.2] - 2026-03-25
+
+### FIX
+
+- [0007916](https://bugs.oxid-esales.com/view.php?id=7916): Fix orphaned oscpaypal_order rows with OSCPAYPALSTATUS=COMPLETED and empty OXORDERID. When `sess_challenge` was cleared before `captureOrder()` completed (e.g. by a concurrent cancel request), the capture flow proceeded and created tracking records that could not be matched by webhook processing. Added defense-in-depth validation at four levels: `AjaxPaymentController::captureOrder()` now aborts if the shop order cannot be resolved, `PayPalOrderCompletedSubscriber` rejects events with empty shopOrderId, `Payment::trackPayPalOrder()` throws on empty shopOrderId, and `OrderRepository::paypalOrderByOrderIdAndPayPalId()` refuses to create new records with empty shopOrderId.
+
 ## [2.8.1] - 2026-03-19
 
 ### Security
