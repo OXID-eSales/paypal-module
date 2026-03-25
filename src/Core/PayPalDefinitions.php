@@ -198,6 +198,7 @@ final class PayPalDefinitions
             'onlybrutto' => false,
             'buttonpayment' => false,
             'proxycontroller' => false,
+            'gatewaypayment' => true,
             'defaulton' => true,
             'paymentsource' => self::PAYMENT_SOURCE_PUI
         ],
@@ -524,6 +525,13 @@ final class PayPalDefinitions
     public static function isUAPMPayment(string $oxid): bool
     {
         return (isset(self::PAYPAL_DEFINTIONS[$oxid]['isuapm']));
+    }
+
+    public static function isGatewayPayment(string $oxid): bool
+    {
+        return (isset(self::PAYPAL_DEFINTIONS[$oxid])) ?
+            !empty(self::PAYPAL_DEFINTIONS[$oxid]['gatewaypayment']) :
+            false;
     }
 
     public static function isButtonPayment(string $oxid): bool
