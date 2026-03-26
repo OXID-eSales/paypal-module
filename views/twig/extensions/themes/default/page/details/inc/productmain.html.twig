@@ -25,15 +25,12 @@
             {% set bannerAmount = oxcmp_basket.getNettoSum() %}
         {% endif %}
 
-        {% if oxcmp_basket.getArtStockInBasket(oDetailsProduct.getId()) == 0 and not oxcmp_basket.hasProductVariantInBasket(oDetailsProduct) %}
-            {% set oPrice = oDetailsProduct.getPrice() %}
-
-            {% if oDetailsProduct.isParentNotBuyable() %}
-                {% set oPrice = oDetailsProduct.getVarMinPrice() %}
-            {% endif %}
-            {% set productPrice = oPrice.getPrice() %}
-            {% set bannerAmount = bannerAmount + productPrice %}
+        {% set oPrice = oDetailsProduct.getPrice() %}
+        {% if oDetailsProduct.isParentNotBuyable() %}
+            {% set oPrice = oDetailsProduct.getVarMinPrice() %}
         {% endif %}
+        {% set productPrice = oPrice.getPrice() %}
+        {% set bannerAmount = bannerAmount + productPrice %}
         {% include "@osc_paypal/frontend/installment_banners.html.twig" with {amount: bannerAmount, selector: oViewConf.getPayPalCheckoutBannerProductDetailsPageSelector(), addClass: "mt-4"} %}
     {% endif %}
 {% endblock %}
