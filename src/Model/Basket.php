@@ -246,31 +246,6 @@ class Basket extends Basket_parent
     }
 
     /**
-     * Check if variants of the given product are already in the basket
-     * @param \OxidEsales\Eshop\Application\Model\Article $product
-     * @return bool
-     */
-    public function hasProductVariantInBasket(\OxidEsales\Eshop\Application\Model\Article $product)
-    {
-        $variantIds = $product->getVariantIds();
-        if (empty($variantIds)) {
-            return false;
-        }
-
-        $variantIdMap = array_flip($variantIds);
-        foreach ($this->getContents() as $basketItem) {
-            // Use getArticle(false) to skip the buyable check – out-of-stock
-            // variants that are still in the basket must not cause a fatal error.
-            $article = $basketItem->getArticle(false);
-            if ($article && isset($variantIdMap[$article->getId()])) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * add a ShippingPrice for PPExpress if it is not defined before to prevent overcharge.
      * @param float $defaultShippingPriceExpress
      */
