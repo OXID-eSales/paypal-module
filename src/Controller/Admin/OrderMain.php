@@ -28,6 +28,9 @@ class OrderMain extends OrderMain_parent
     /** @var array|null  */
     protected $trackingCarrierCountries = null;
 
+    /** @var string|null */
+    protected $effectiveTrackingCountryCode = null;
+
     /**
      * @throws ApiException
      * @throws StandardException
@@ -90,7 +93,7 @@ class OrderMain extends OrderMain_parent
                 $this->trackingCarrierCountries[$allowedCountry] = [
                     'id'       => $allowedCountry,
                     'title'    => $countryTitle,
-                    'selected' => ($this->getPayPalOrderCountryCode() === $allowedCountry)
+                    'selected' => ($this->getEffectiveTrackingCountryCode() === $allowedCountry)
                 ];
             }
         }
@@ -103,7 +106,7 @@ class OrderMain extends OrderMain_parent
         $order = $this->getOrder();
         $savedTrackingCarrierId = $order->getPayPalTrackingCarrier();
 
-        $countryCode = $countryCode ?: $this->getPayPalOrderCountryCode();
+        $countryCode = $countryCode ?: $this->getEffectiveTrackingCountryCode();
 
         if ($countryCode) {
             $trackingCarrierList = oxNew(PayPalTrackingCarrierList::class);
@@ -154,5 +157,31 @@ class OrderMain extends OrderMain_parent
         }
 
         return $countryCode;
+    }
+
+    /**
+     * Returns the country code that should be pre-selected in the tracking carrier country dropdown.
+     * If a carrier is already saved, returns the country the carrier belongs to.
+     * Otherwise falls back to the order's country.
+     *
+     * @throws StandardException
+     */
+    protected function getEffectiveTrackingCountryCode(): string
+    {
+        if (is_null($this->effectiveTrackingCountryCode)) {
+            $savedCarrierKey = $this->getOrder()->getPayPalTrackingCarrier();
+            $this->effectiveTrackingCountryCode = '';
+
+            if ($savedCarrierKey) {
+                $trackingCarrierList = oxNew(PayPalTrackingCarrierList::class);
+                $this->effectiveTrackingCountryCode = $trackingCarrierList->getCountryCodeByCarrierKey($savedCarrierKey);
+            }
+
+            if (!$this->effectiveTrackingCountryCode) {
+                $this->effectiveTrackingCountryCode = $this->getPayPalOrderCountryCode();
+            }
+        }
+
+        return $this->effectiveTrackingCountryCode;
     }
 }

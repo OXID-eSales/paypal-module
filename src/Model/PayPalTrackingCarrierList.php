@@ -47,6 +47,42 @@ class PayPalTrackingCarrierList extends ListModel
      * Load allowed Tracking-Carrier Country-Codes
      *
      */
+    /**
+     * Find the country code for a given carrier key
+     *
+     * @param string $carrierKey
+     * @return string empty string if not found
+     */
+    public function getCountryCodeByCarrierKey(string $carrierKey): string
+    {
+        if (!$carrierKey) {
+            return '';
+        }
+
+        $baseObject = $this->getBaseObject();
+        $viewName = $baseObject->getViewName();
+        $queryBuilderFactory = $this->getServiceFromContainer(QueryBuilderFactoryInterface::class);
+        /** @var QueryBuilder $queryBuilder */
+        $queryBuilder = $queryBuilderFactory->create();
+
+        /** @var Result $resultDB */
+        $resultDB = $queryBuilder->select('oxcountrycode')
+            ->from($viewName)
+            ->where('oxkey = :oxkey')
+            ->setParameter(':oxkey', $carrierKey)
+            ->setMaxResults(1)
+            ->execute();
+
+        if (is_a($resultDB, Result::class)) {
+            $row = $resultDB->fetchAssociative();
+            if ($row) {
+                return (string) $row['oxcountrycode'];
+            }
+        }
+
+        return '';
+    }
+
     public function getAllowedTrackingCarrierCountryCodes(): array
     {
         $result = [];
