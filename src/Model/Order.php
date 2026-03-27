@@ -898,14 +898,30 @@ class Order extends Order_parent
         ) {
             //order payment is being processed
             $isLoaded = $this->load($oOrderId);
-            if (
-                $isLoaded &&
-                $this->paymentService->isOrderExecutionInProgress() &&
-                !$this->isOrderFinished() &&
-                !$this->isOrderPaid() &&
-                !$this->isWaitForWebhookTimeoutReached()
-            ) {
-                return self::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS;
+            if ($isLoaded) {
+                // If the order was already completed by the AJAX capture flow
+                // (markOrderPaid + setTransId in PayPalOrderCompletedSubscriber),
+                // do not create a duplicate order. The PayPal session is already
+                // cleaned up at this point, so isOrderExecutionInProgress() returns
+                // false and the webhook-wait guard below would not catch this case.
+                // This prevents a race condition with stock-1 articles where the
+                // browser redirect triggers a second finalizeOrder() call.
+                if ($this->isOrderPaid() && !empty($this->getFieldData('oxtransid'))) {
+                    $logger->log('debug', 'finalizeOrder: order already paid, skipping duplicate finalization', [
+                        'shopOrderId' => $oOrderId,
+                        'transId' => $this->getFieldData('oxtransid')
+                    ]);
+                    return 1;
+                }
+
+                if (
+                    $this->paymentService->isOrderExecutionInProgress() &&
+                    !$this->isOrderFinished() &&
+                    !$this->isOrderPaid() &&
+                    !$this->isWaitForWebhookTimeoutReached()
+                ) {
+                    return self::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS;
+                }
             }
         }
 
