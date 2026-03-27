@@ -49,6 +49,13 @@ services:
 
   OxidSolutionCatalysts\PayPal\Service\:
     resource: 'src/Service/*'
+    # Logger.php existed as a Service class in <= v2.6.1 but was replaced by a Monolog
+    # factory (see OxidSolutionCatalysts\PayPal\Logger above). In OXID 6 the module
+    # files are copied into source/modules/ and composer update does not remove
+    # deleted files, so the old Logger.php may still be present after an upgrade.
+    # Without this exclude Symfony's resource scanner would try to register it and
+    # fail because the class no longer matches the expected namespace/service setup.
+    exclude: 'src/Service/Logger.php'
     public: true
 
   OxidSolutionCatalysts\PayPal\EventSubscriber\:
