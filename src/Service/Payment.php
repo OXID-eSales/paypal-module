@@ -469,12 +469,12 @@ class Payment
             // because PayPal already approved/captured the payment.
             $cancelBlocked = !$deleted && $orderModel->getFieldData('oxstorno') != 1;
         }
-        $this->eshopSession->deleteVariable('sess_challenge');
-
-        // When cancel was blocked (PayPal already approved/captured), clean up
-        // the PayPal session so the customer can start a fresh order without
-        // being stuck on the old PayPal order ID.
         if ($cancelBlocked) {
+            // Cancel was blocked because PayPal already approved/captured the
+            // payment. Keep sess_challenge intact so the capture flow can still
+            // resolve the shop order from the session.
+            // Clean up the PayPal session so the customer can start a fresh
+            // order without being stuck on the old PayPal order ID.
             PayPalSession::unsetPayPalSession(false);
             // Clear the basket's reference to the old order so that a subsequent
             // PayPal order creation (e.g. via ProxyController) does not map
@@ -483,6 +483,10 @@ class Payment
             if ($basket) {
                 $basket->setOrderId(null);
             }
+        } else {
+            // Only delete sess_challenge when the cancel was not blocked,
+            // i.e. the order was actually cancelled or never existed.
+            $this->eshopSession->deleteVariable('sess_challenge');
         }
 
         return $cancelBlocked;
