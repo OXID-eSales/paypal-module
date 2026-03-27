@@ -38,6 +38,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use Psr\Log\LoggerInterface;
+use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidSolutionCatalysts\PayPal\Event\PayPalOrderCompletedEvent;
 
 class AjaxPaymentController extends BaseController
@@ -267,16 +268,32 @@ class AjaxPaymentController extends BaseController
         }
         $shopOrderId = $this->orderRepository->fetchCurrentShopOrderId();
         $order = $this->orderRepository->fetchCurrentShopOrder();
+
+        // If session-based resolution failed (e.g. sess_challenge was cleared
+        // by a concurrent cancel request), fall back to the persisted
+        // relationship in oscpaypal_order via the PayPal order ID.
+        if (empty($shopOrderId) || !$order->isLoaded()) {
+            try {
+                $order = $this->orderRepository->getShopOrderByPayPalOrderId($payPalOrderId);
+                $shopOrderId = (string)$order->getId();
+                $this->logger->log(
+                    'info',
+                    'PayPal captureOrder: resolved shop order from DB fallback (sess_challenge was missing)',
+                    ['payPalOrderId' => $payPalOrderId, 'shopOrderId' => $shopOrderId]
+                );
+            } catch (NotFound $e) {
+                // Neither session nor DB could resolve the shop order
+            }
+        }
+
         $basket = Registry::getSession()->getBasket();
         $user = $basket->getUser();
 
-        // Validate that a valid shop order could be resolved from the session.
-        // If sess_challenge was cleared (e.g. by a concurrent cancel request),
-        // we must not proceed with tracking an orphaned PayPal capture.
-        if (empty($shopOrderId) || !$order->isLoaded()) {
+        // Validate that a valid, non-cancelled shop order could be resolved.
+        if (empty($shopOrderId) || !$order->isLoaded() || $order->getFieldData('oxstorno') == 1) {
             $this->logger->log(
                 'error',
-                'PayPal captureOrder: cannot resolve shop order from session (sess_challenge missing or order not loaded)',
+                'PayPal captureOrder: cannot resolve valid shop order (sess_challenge missing, DB fallback failed, or order cancelled)',
                 ['payPalOrderId' => $payPalOrderId, 'shopOrderId' => $shopOrderId]
             );
             $this->outputJson([
