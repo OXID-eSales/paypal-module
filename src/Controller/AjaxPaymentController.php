@@ -240,6 +240,45 @@ class AjaxPaymentController extends BaseController
             'paymentStatus' => 'error'
         ];
 
+        // Resolve the shop order BEFORE calling the PayPal capture API.
+        // This prevents capturing funds for an order that was cancelled
+        // between createOrder and onApprove (race condition).
+        $shopOrderId = $this->orderRepository->fetchCurrentShopOrderId();
+        $order = $this->orderRepository->fetchCurrentShopOrder();
+
+        // If session-based resolution failed (e.g. sess_challenge was cleared
+        // by a concurrent cancel request), fall back to the persisted
+        // relationship in oscpaypal_order via the PayPal order ID.
+        if (empty($shopOrderId) || !$order->isLoaded()) {
+            try {
+                $order = $this->orderRepository->getShopOrderByPayPalOrderId($payPalOrderId);
+                $shopOrderId = (string)$order->getId();
+                $this->logger->log(
+                    'info',
+                    'PayPal captureOrder: resolved shop order from DB fallback (sess_challenge was missing)',
+                    ['payPalOrderId' => $payPalOrderId, 'shopOrderId' => $shopOrderId]
+                );
+            } catch (NotFound $e) {
+                // Neither session nor DB could resolve the shop order
+            }
+        }
+
+        // Validate that a valid, non-cancelled shop order could be resolved.
+        // This check MUST happen before the PayPal capture API call to prevent
+        // capturing funds for a cancelled order.
+        if (empty($shopOrderId) || !$order->isLoaded() || $order->getFieldData('oxstorno') == 1) {
+            $this->logger->log(
+                'error',
+                'PayPal captureOrder: cannot resolve valid shop order (sess_challenge missing, DB fallback failed, or order cancelled)',
+                ['payPalOrderId' => $payPalOrderId, 'shopOrderId' => $shopOrderId]
+            );
+            $this->outputJson([
+                'status' => 'error',
+                'message' => $language->translateString('OSC_PAYPAL_CAPTURE_DENIED_ERROR')
+            ]);
+            return;
+        }
+
         try {
             //Verify 3D result if ACDC payment
             if (!$scaValidator->verify3D($paymentId)) {
@@ -270,42 +309,9 @@ class AjaxPaymentController extends BaseController
                 'message' => $translatedErrorMessage
             ]);
         }
-        $shopOrderId = $this->orderRepository->fetchCurrentShopOrderId();
-        $order = $this->orderRepository->fetchCurrentShopOrder();
-
-        // If session-based resolution failed (e.g. sess_challenge was cleared
-        // by a concurrent cancel request), fall back to the persisted
-        // relationship in oscpaypal_order via the PayPal order ID.
-        if (empty($shopOrderId) || !$order->isLoaded()) {
-            try {
-                $order = $this->orderRepository->getShopOrderByPayPalOrderId($payPalOrderId);
-                $shopOrderId = (string)$order->getId();
-                $this->logger->log(
-                    'info',
-                    'PayPal captureOrder: resolved shop order from DB fallback (sess_challenge was missing)',
-                    ['payPalOrderId' => $payPalOrderId, 'shopOrderId' => $shopOrderId]
-                );
-            } catch (NotFound $e) {
-                // Neither session nor DB could resolve the shop order
-            }
-        }
 
         $basket = Registry::getSession()->getBasket();
         $user = $basket->getUser();
-
-        // Validate that a valid, non-cancelled shop order could be resolved.
-        if (empty($shopOrderId) || !$order->isLoaded() || $order->getFieldData('oxstorno') == 1) {
-            $this->logger->log(
-                'error',
-                'PayPal captureOrder: cannot resolve valid shop order (sess_challenge missing, DB fallback failed, or order cancelled)',
-                ['payPalOrderId' => $payPalOrderId, 'shopOrderId' => $shopOrderId]
-            );
-            $this->outputJson([
-                'status' => 'error',
-                'message' => $language->translateString('OSC_PAYPAL_CAPTURE_DENIED_ERROR')
-            ]);
-            return;
-        }
 
         $payPalCustomerId = null;
         if ($vaultPayment) {
