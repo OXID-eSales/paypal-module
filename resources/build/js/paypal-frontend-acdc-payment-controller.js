@@ -54,7 +54,7 @@
                     return false;
                 }
 
-                window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+                PayPalPayment.thankYouPageRedirect();
             }
 
             if (result.payPalOrder.status === 'PAYER_ACTION_REQUIRED' || result.payPalOrder.status === 'APPROVED' ){
@@ -92,7 +92,7 @@
         };
 
         this.afterCaptureOrder = function (details) {
-            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+            PayPalPayment.thankYouPageRedirect();
         };
 
         this.isCardFieldInvalid = function (name)

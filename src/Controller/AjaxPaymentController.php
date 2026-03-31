@@ -344,6 +344,15 @@ class AjaxPaymentController extends BaseController
             if ($capturePaymentForOrder) {
                 $response['paymentStatus'] = $capturePaymentForOrder->getCapturePaymentStatus() ? 'success' : 'error';
             }
+
+            // Provide a fresh redirect URL so the JS does not rely on
+            // the potentially stale shopThankYouPageUrl from the initial
+            // page render (important when the user retries without F5).
+            $config = Registry::getConfig();
+            $session = Registry::getSession();
+            $stoken = $session->getSessionChallengeToken();
+            $response['redirectUrl'] = $config->getSslShopUrl()
+                . 'index.php?cl=thankyou&stoken=' . $stoken;
         }
 
         if ($response['paymentStatus'] === 'error') {
@@ -776,9 +785,14 @@ class AjaxPaymentController extends BaseController
                 $completeOrderResult = $this->completeOrder(false);
 
                 if ($completeOrderResult["status"] === 'success') {
+                    $config = Registry::getConfig();
+                    $session = Registry::getSession();
+                    $stoken = $session->getSessionChallengeToken();
                     $this->outputJson([
                         'status' => 'success',
-                        'paymentStatus' => $authorizePaymentResult["paymentStatus"]
+                        'paymentStatus' => $authorizePaymentResult["paymentStatus"],
+                        'redirectUrl' => $config->getSslShopUrl()
+                            . 'index.php?cl=thankyou&stoken=' . $stoken,
                     ]);
                 }
             }

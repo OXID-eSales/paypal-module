@@ -139,9 +139,9 @@
             });
         };
 
-        this.thankYouPageRedirect = async function () {
+        this.thankYouPageRedirect = async function (redirectUrl) {
             PayPalPayment.removeBeforeUnloadListener();
-            window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+            window.location = redirectUrl || PayPalPayment.getConfigValue('shopThankYouPageUrl');
         };
 
         this.handlePaymentAuthorization = async function (details) {
@@ -160,7 +160,7 @@
             const result = await PayPalPayment.authorizeOrder(paypalOrderDetails);
 
             if (result.paymentStatus === 'success' ){
-                window.location = PayPalPayment.getConfigValue('shopThankYouPageUrl');
+                PayPalPayment.thankYouPageRedirect(result.redirectUrl);
                 return;
             }
 

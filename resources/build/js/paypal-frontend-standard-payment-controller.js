@@ -107,7 +107,7 @@
             });
 
             if (result.paymentStatus === 'success') {
-                PayPalPayment.thankYouPageRedirect();
+                PayPalPayment.thankYouPageRedirect(result.redirectUrl);
             }
         };
 
