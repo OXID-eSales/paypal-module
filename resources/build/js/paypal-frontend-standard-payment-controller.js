@@ -106,8 +106,14 @@
                 'vaultPayment': PayPalPayment.currentOrder.vaultPayment
             });
 
+            PayPalPayment.captureInProgress = false;
+
             if (result.paymentStatus === 'success') {
                 PayPalPayment.thankYouPageRedirect(result.redirectUrl);
+            } else {
+                // Clean up state so a retry does not attempt to cancel
+                // the old, already-handled order via setShopOrderData.
+                PayPalPayment.resetCurrentOrder();
             }
         };
 
