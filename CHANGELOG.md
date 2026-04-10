@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.7.3] - Unreleased
+
+### FIX
+
+- Fix ACDC orders incorrectly cancelled (storno) when payment was already captured. When the AJAX `captureOrder()` flow completed before the browser redirect to `finalizeacdc`, `finalizeOrderAfterExternalPayment()` attempted to capture/authorize the already-captured order, failed with an API error, and cancelled the paid order. Added an early-return guard that detects already-paid orders (via `isOrderPaid()` + `oxtransid`) and skips redundant processing — analogous to the existing guard in `finalizeOrder()`.
+
 ## [3.7.2] - 2026-04-02
 
 ### FIX

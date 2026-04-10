@@ -168,6 +168,22 @@ class Order extends Order_parent
             throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
         }
 
+        // If the order was already completed by the AJAX captureOrder flow
+        // (markOrderPaid + setTransId in PayPalOrderCompletedSubscriber),
+        // skip redundant processing. Without this guard, finalizeacdc would
+        // attempt to capture/authorize an already-captured order, fail with
+        // an API error, and incorrectly cancel the paid order.
+        if ($this->isOrderPaid() && !empty($this->getFieldData('oxtransid'))) {
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->log('debug', 'finalizeOrderAfterExternalPayment: order already paid, skipping', [
+                'shopOrderId' => $this->getId(),
+                'payPalOrderId' => $payPalOrderId,
+                'transId' => $this->getFieldData('oxtransid')
+            ]);
+            return;
+        }
+
         $payPalApiOrder = $this->getPaymentService()->fetchOrderFields($payPalOrderId);
         $basket = Registry::getSession()->getBasket();
         $user = Registry::getSession()->getUser();
