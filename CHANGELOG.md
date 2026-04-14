@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### FIX
 
 - Fix ACDC orders incorrectly cancelled (storno) when payment was already captured. When the AJAX `captureOrder()` flow completed before the browser redirect to `finalizeacdc`, `finalizeOrderAfterExternalPayment()` attempted to capture/authorize the already-captured order, failed with an API error, and cancelled the paid order. Added an early-return guard that detects already-paid orders (via `isOrderPaid()` + `oxtransid`) and skips redundant processing — analogous to the existing guard in `finalizeOrder()`.
+- [0007920](https://bugs.oxid-esales.com/view.php?id=7920): Fix credit card fallback button (`oscpaypal_cc_alternative`) incorrectly shown on PayPal buttons (e.g. product detail page) when vaulting (`oscPayPalSetVaulting`) is disabled. The PayPal SDK parameter `enable-funding=card` was hardcoded unconditionally. Now `card` is only added to `enable-funding` when ACDC eligibility is not given AND the `oscpaypal_cc_alternative` payment method is active.
 
 ## [3.7.2] - 2026-04-02
 

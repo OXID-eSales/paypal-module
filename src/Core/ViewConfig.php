@@ -194,7 +194,7 @@ class ViewConfig extends ViewConfig_parent
         $config = Registry::getConfig();
         $lang = Registry::getLang();
         $params = [];
-        $enableFunding = ['card'];
+        $enableFunding = [];
         $disableFunding = [
             'bancontact',
             'blik',
@@ -244,6 +244,20 @@ class ViewConfig extends ViewConfig_parent
 
         if ($moduleSettings->isAcdcEligibility() || $this->getIsVaultingActive()) {
             $components[] = 'card-fields';
+        }
+
+        // Only enable card funding when ACDC is not eligible and the
+        // credit card fallback payment method is active. Previously
+        // 'card' was always enabled, which incorrectly showed the
+        // card fallback button whenever vaulting was disabled.
+        if (!$moduleSettings->isAcdcEligibility()) {
+            $payment = oxNew(\OxidEsales\Eshop\Application\Model\Payment::class);
+            if (
+                $payment->load(PayPalDefinitions::CCALTERNATIVE_PAYPAL_PAYMENT_ID) &&
+                (bool)$payment->oxpayments__oxactive->value
+            ) {
+                $enableFunding[] = 'card';
+            }
         }
 
         if ($components) {
