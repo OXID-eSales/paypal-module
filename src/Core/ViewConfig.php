@@ -217,9 +217,9 @@ class ViewConfig extends ViewConfig_parent
             $payment = oxNew(\OxidEsales\Eshop\Application\Model\Payment::class);
             if (
                 $payment->load(PayPalDefinitions::CCALTERNATIVE_PAYPAL_PAYMENT_ID) &&
-                (bool)$payment->oxpayments__oxactive->value
+                !$payment->oxpayments__oxactive->value
             ) {
-                $enableFunding[] = 'card';
+                $disableFunding[] = 'card';
             }
         }
 

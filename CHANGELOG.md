@@ -69,7 +69,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Harden SQL queries in PayPalSoapOrderCommentList and PayPalSoapOrderPaymentList: validate view name and use backtick quoting
 - Fix DOM-XSS in admin carrier provider dropdown: use `createElement`/`textContent` instead of `innerHTML` with unsanitized data
 - Remove weak cryptographic nonce fallback in PartnerConfig (`md5`/`uniqid`/`mt_rand` dead code)
-- Prevent potential open redirect in OrderController: validate redirect URL against shop domain and PayPal
+- Prevent potential open redirect in OrderController: validate redirect URL against shop domain and PayPal. **Note (fixed in 2.8.3):** The initial whitelist only matched `www.paypal.com` / `www.sandbox.paypal.com`, but PayPal returns uAPM redirect URLs (iDeal, EPS, etc.) without `www.` prefix, which caused a silent redirect to the shop start page instead of the payment page.
 - Replace weak `md5`/`uniqid` hashes with `random_bytes` and `sha256` in OrderProcessTrackingService, Onboarding and ServiceFactory
 - Add SECURITY.md documenting known security considerations and intentionally unfixed items
 
