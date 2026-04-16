@@ -538,7 +538,9 @@ class OrderController extends OrderController_parent
                 strpos($redirectLink, $shopUrl) !== 0 &&
                 strpos($redirectLink, $sslShopUrl) !== 0 &&
                 strpos($redirectLink, 'https://www.paypal.com/') !== 0 &&
-                strpos($redirectLink, 'https://www.sandbox.paypal.com/') !== 0
+                strpos($redirectLink, 'https://www.sandbox.paypal.com/') !== 0 &&
+                strpos($redirectLink, 'https://paypal.com/') !== 0 &&
+                strpos($redirectLink, 'https://sandbox.paypal.com/') !== 0
             ) {
                 throw new Redirect($shopUrl);
             }
