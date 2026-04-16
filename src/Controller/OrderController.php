@@ -491,7 +491,7 @@ class OrderController extends OrderController_parent
 
         /** @var LoggerInterface $logger */
         $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-        $logger->log('error', sprintf(
+        $logger->log('info', sprintf(
             'PayPal session canceled (errorcode: %s, request errorcode: %s, sess_challenge: %s)',
             $errorcode ?? 'none',
             $requestErrorcode ?: 'none',
