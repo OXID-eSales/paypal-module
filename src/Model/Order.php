@@ -952,6 +952,14 @@ class Order extends Order_parent
             $oSession->setVariable('sess_challenge', Registry::getUtilsObject()->generateUId());
         }
 
+        // Non-PayPal payments must not be wrapped in the stock-lock transaction below:
+        // redirect-based gateways (e.g. Mollie) exit() inside _executePayment(), which
+        // would leave the transaction open and MySQL rolls it back on connection close —
+        // the order row would be gone when the gateway redirects back to handleMollieReturn.
+        if (!$bIsPayPalPayment) {
+            return parent::finalizeOrder($basket, $user, $recalculatingOrder);
+        }
+
         // Wrap in DB transaction so that validateStock (SELECT ... FOR UPDATE)
         // holds an exclusive lock until stock reduction in save() completes.
         // This prevents two parallel requests from reading the same stock level.

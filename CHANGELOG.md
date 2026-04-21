@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+### FIX
+
+- [0007924](https://bugs.oxid-esales.com/view.php?id=7924): Fix non-PayPal orders being rolled back when the payment gateway redirects with `exit()` during `_executePayment()` (e.g. Mollie credit card). `finalizeOrder()` wrapped `parent::finalizeOrder()` in a DB transaction to hold a `SELECT ... FOR UPDATE` stock lock, but redirect-based gateways terminate the PHP process before `commitTransaction()` is reached — MySQL then rolls back the open transaction, the `oxorder` row disappears, and `handleMollieReturn` redirects to the payment page with `MOLLIE_ERROR_ORDER_NOT_FOUND`. Added an early-return for non-PayPal payments after the paranoia-check so the stock-lock transaction (which is only needed for PayPal's AJAX-capture-plus-redirect race) is skipped for foreign gateways.
+
 ## [3.7.3] - 2026-04-16
 
 ### FIX
