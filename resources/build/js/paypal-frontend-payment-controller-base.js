@@ -428,12 +428,23 @@
 
             if (PayPalPayment.config.confirmAGBRequired) {
                 const checkAgbTop = document.getElementById('checkAgbTop');
-                checksOk = !!(checkAgbTop && checkAgbTop.checked);
+                if (!(checkAgbTop && checkAgbTop.checked)) {
+                    checksOk = false;
+                }
             }
 
             if (PayPalPayment.config.confirmAGBForIntangibleRequired) {
+                // Each checkbox is only rendered when the basket contains a matching
+                // article (downloadable via oxisdownloadable, intangible via oxnonmaterial).
+                // When present, the checkbox must be checked.
                 const oxdownloadableproductsagreement = document.getElementById('oxdownloadableproductsagreement');
-                checksOk = !!(oxdownloadableproductsagreement && oxdownloadableproductsagreement.checked);
+                if (oxdownloadableproductsagreement && !oxdownloadableproductsagreement.checked) {
+                    checksOk = false;
+                }
+                const oxserviceproductsagreement = document.getElementById('oxserviceproductsagreement');
+                if (oxserviceproductsagreement && !oxserviceproductsagreement.checked) {
+                    checksOk = false;
+                }
             }
 
             return checksOk;
