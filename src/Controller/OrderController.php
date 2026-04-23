@@ -172,10 +172,45 @@ class OrderController extends OrderController_parent
             return;
         }
 
-        $paymentService->doPatchPayPalOrder(
-            Registry::getSession()->getBasket(),
-            $orderId
-        );
+        try {
+            $paymentService->doPatchPayPalOrder(
+                Registry::getSession()->getBasket(),
+                $orderId
+            );
+        } catch (ApiException $exception) {
+            $logger->log('error', $exception->getMessage(), [$exception]);
+
+            // The shop order was already persisted by execute() -> finalizeOrder();
+            // cancel it and clear the session so the customer returns to a clean
+            // order overview where the queued displayError is rendered.
+            $sessionOrderId = (string)Registry::getSession()->getVariable('sess_challenge');
+            if ($sessionOrderId) {
+                $shopOrder = oxNew(EshopModelOrder::class);
+                if ($shopOrder->load($sessionOrderId)) {
+                    $shopOrder->cancelOrder();
+                }
+            }
+            Registry::getSession()->deleteVariable('sess_challenge');
+
+            $lang = Registry::getLang();
+            $message = $lang->translateString(
+                'OSC_PAYPAL_ERROR_INVALID_ADDRESS',
+                (int)$lang->getBaseLanguage(),
+                false
+            );
+            Registry::getUtilsView()->addErrorToDisplay(
+                $message,
+                false,
+                true,
+                'paypal_error'
+            );
+
+            $this->outputJson([
+                'googlepayerror' => 'failed to patch paypal order',
+                'status' => 'ERROR',
+            ]);
+            return;
+        }
 
         $this->outputJson([
             'status' => 'SUCCESS'
