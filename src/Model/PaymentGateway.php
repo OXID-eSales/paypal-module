@@ -155,20 +155,25 @@ class PaymentGateway extends PaymentGateway_parent
     protected function doExecutePuiPayment(EshopModelOrder $order): bool
     {
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
 
         $success = false;
         try {
             //order number must be resolved before requesting payment
             $order->setOrderNumber();
+            $cmId = PayPalSession::getPayPalPuiCmId();
+            $logger->log(
+                'debug',
+                sprintf('PUI CMID resolved from session: %s', $cmId !== '' ? $cmId : '<empty>')
+            );
             $success = $paymentService->doExecutePuiPayment(
                 $order,
                 Registry::getSession()->getBasket(),
-                PayPalSession::getPayPalPuiCmId()
+                $cmId
             );
             PayPalSession::unsetPayPalPuiCmId();
         } catch (Exception $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             $logger->log('error', 'Error on execute pui payment call.', [$exception]);
         }
         // destroy PayPal-Session
