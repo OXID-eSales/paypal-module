@@ -35,6 +35,16 @@
             });
 
             if (result.status === 'error' ){
+                // Backend may supply a redirect target (e.g. back to the order overview
+                // after a non-recoverable PayPal API error like an invalid address).
+                // The accompanying error message is queued via addErrorToDisplay and
+                // rendered on the target page.
+                if (result.redirect) {
+                    PayPalPayment.removeBeforeUnloadListener();
+                    window.location = result.redirect;
+                    return false;
+                }
+
                 PayPalPayment.showErrorMessage(result.message);
                 PayPalPayment.handleError(result.message);
 

@@ -449,9 +449,38 @@ class AjaxPaymentController extends BaseController
             return;
         }
 
-        $paypalOrder = $paymentService->doCreatePatchedOrder(
-            $session->getBasket()
-        );
+        try {
+            $paypalOrder = $paymentService->doCreatePatchedOrder(
+                $session->getBasket()
+            );
+        } catch (ApiException $exception) {
+            $this->logger->log('error', $exception->getMessage(), [$exception]);
+
+            // The shop order was already persisted by finalizeOrder(); cancel it and
+            // clear the session so the customer returns to a clean order overview.
+            $order->cancelOrder();
+            $session->deleteVariable('sess_challenge');
+
+            $lang = Registry::getLang();
+            $message = $lang->translateString(
+                'OSC_PAYPAL_ERROR_INVALID_ADDRESS',
+                (int)$lang->getBaseLanguage(),
+                false
+            );
+            Registry::getUtilsView()->addErrorToDisplay(
+                $message,
+                false,
+                true,
+                'paypal_error'
+            );
+
+            $this->outputJson([
+                'status' => 'error',
+                'message' => $message,
+                'redirect' => Registry::getConfig()->getSslShopUrl() . 'index.php?cl=order',
+            ]);
+            return;
+        }
 
         if (!($paypalOrderId = $paypalOrder['id'])) {
             $this->outputJson(['error' => 'cannot create paypal order']);
