@@ -15,6 +15,16 @@
         {% endif %}
         {% set sToken = oViewConf.getSessionChallengeToken() %}
         var selfLink = "{{ oViewConf.getSslSelfLink()|replace({'&amp;': '&'})|raw }}";
+        // Wrap in IIFE so re-executing this script (e.g. after a PDP AJAX variant
+        // swap that re-injects the button markup) does not raise a redeclaration
+        // SyntaxError on the `let button` binding — classic scripts share the
+        // script-block scope for `let`/`const`. The early-return also guards
+        // against double rendering when the container is still populated.
+        (function () {
+            var paypalButtonContainer = document.getElementById('{{ buttonId }}');
+            if (!paypalButtonContainer || paypalButtonContainer.children.length > 0) {
+                return;
+            }
         {% if buttonId == "oscpaypal_sepa" or buttonId == "oscpaypal_cc_alternative" %}
             FUNDING_SOURCES = [
                 paypal.FUNDING.{% if buttonId == "oscpaypal_sepa" %}SEPA{% elseif buttonId == "oscpaypal_cc_alternative" %}CARD{% endif %}
@@ -24,7 +34,7 @@
             // Loop over each funding source/payment method
             FUNDING_SOURCES.forEach(function (fundingSource) {
                 // Initialize the buttons
-                let button{{ buttonId }} = paypal.Buttons({
+                let button = paypal.Buttons({
                     style: PayPalButtonStyle,
                     {% if oViewConf.getCountryRestrictionForPayPalExpress() %}
                     onShippingChange: function (data, actions) {
@@ -85,9 +95,9 @@
                     }
                 })
                 // Check if the button is eligible
-                if (button{{ buttonId }}.isEligible()) {
+                if (button.isEligible()) {
                     // Render the standalone button for that funding source
-                    button{{ buttonId }}.render('#{{ buttonId }}');
+                    button.render('#{{ buttonId }}');
                 } else {
                     //remove SEPA option from payments methods
                     document.querySelector('.paypal-button-wrapper-oscpaypal_sepa')
@@ -96,7 +106,7 @@
                 }
             });
         {% else %}
-            let button{{ buttonId }} = paypal.Buttons({
+            let button = paypal.Buttons({
                 style: PayPalButtonStyle,
                 {% if oViewConf.getCountryRestrictionForPayPalExpress() %}
                 onShippingChange: function (data, actions) {
@@ -166,10 +176,11 @@
                     }
                 }
             })
-            if (button{{ buttonId }}.isEligible()) {
-                button{{ buttonId }}.render('#{{ buttonId }}');
+            if (button.isEligible()) {
+                button.render('#{{ buttonId }}');
             }
         {% endif %}
+        })();
     {% endset %}
     {% if phpStorm %}</script>{% endif %}
     {{ script({ add: paypal_init.__toString(), priority: 10, dynamic: __oxid_include_dynamic }) }}
