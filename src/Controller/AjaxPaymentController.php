@@ -362,6 +362,18 @@ class AjaxPaymentController extends BaseController
         if ($response['paymentStatus'] === 'error') {
             $response['message'] = $language->translateString('OSC_PAYPAL_CAPTURE_DENIED_ERROR');
             $response['status'] = 'error';
+
+            // Capture was rejected by PayPal (e.g. card decline). Storno the
+            // shop order server-side instead of leaving it open until the next
+            // retry's frontend would (mistakenly) cancel it. Keeping it open
+            // also blocks proper DB hygiene and re-uses an order number that
+            // never collected funds. See 0007927.
+            if ($order instanceof ShopOrder
+                && $order->isLoaded()
+                && (int)$order->getFieldData('oxstorno') !== 1
+            ) {
+                $this->paymentService->removeTemporaryOrder((string)$order->getId());
+            }
         }
 
         $this->outputJson($response);

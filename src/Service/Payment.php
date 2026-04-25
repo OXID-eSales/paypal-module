@@ -484,9 +484,20 @@ class Payment
                 $basket->setOrderId(null);
             }
         } else {
-            // Only delete sess_challenge when the cancel was not blocked,
-            // i.e. the order was actually cancelled or never existed.
-            $this->eshopSession->deleteVariable('sess_challenge');
+            // Only delete sess_challenge when we are actually cancelling the
+            // order that is currently active in the session. After a declined
+            // capture the customer's frontend may already have started a retry
+            // that put a new shop order id into sess_challenge — that one
+            // belongs to the new order, not to the one being stornoed here.
+            // See 0007927.
+            $targetOrderId = (string)$orderId;
+            if ($targetOrderId === '') {
+                $targetOrderId = (string)$this->eshopSession->getVariable('sess_challenge');
+            }
+            $currentSessionOrderId = (string)$this->eshopSession->getVariable('sess_challenge');
+            if ($currentSessionOrderId === $targetOrderId) {
+                $this->eshopSession->deleteVariable('sess_challenge');
+            }
         }
 
         return $cancelBlocked;
