@@ -94,6 +94,15 @@
             if (result.status === 'error' ){
                 PayPalPayment.showErrorMessage(result.message);
                 PayPalPayment.handleError(result.message);
+                // Capture was rejected by PayPal (e.g. card decline). Reset the
+                // frontend state so a subsequent submit does not see this order
+                // as "current" and does not trigger setShopOrderData -> cancelOrder
+                // on the just-failed shop order. That cancel chain ran a cancelOrder
+                // on the previous shop order while the new one was already in the
+                // session, which deleted sess_challenge of the new order and forced
+                // the captureOrder DB-fallback path on every retry (see 0007927).
+                PayPalPayment.captureInProgress = false;
+                PayPalPayment.resetCurrentOrder();
             }
 
             if (result.status === 'success') {
