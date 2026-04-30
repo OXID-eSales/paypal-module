@@ -30,6 +30,31 @@
                 if (!paypalButtonContainer || paypalButtonContainer.children.length > 0) {
                     return;
                 }
+
+                // Diagnostic helpers — best-effort, never let logging break the user flow.
+                // Used by the createOrder / onApprove fetch chains below to report
+                // unexpected server responses (silent-fail paths) and exceptions
+                // (network error, JSON parse error in WKWebView / in-app browsers).
+                var oscPayPalLogErrorUrl = '[{$sSelfLink|cat:"cl=ajaxpay&fnc=logError&stoken="|cat:$sToken|cat:$sDebug}]';
+                var oscPayPalPaymentErrorUrl = '[{$sSelfLink|cat:"cl=order&fnc=paymentInterrupted&stoken="|cat:$sToken|cat:$sDebug}]';
+
+                function oscPayPalReportClientError(context, payload) {
+                    try {
+                        var body = JSON.stringify({
+                            shopOrderId: (payload && payload.payPalOrderId) || '',
+                            errorMessage: context + ' | ' + JSON.stringify(payload || {}) + ' | UA: ' + (navigator.userAgent || '')
+                        });
+                        fetch(oscPayPalLogErrorUrl, {
+                            method: 'post',
+                            headers: {'content-type': 'application/json'},
+                            body: body
+                        }).catch(function () { /* best-effort */ });
+                    } catch (e) { /* never let diagnostics break the user flow */ }
+                }
+                function oscPayPalGoToPaymentError() {
+                    location.replace(oscPayPalPaymentErrorUrl);
+                }
+
             [{if $buttonId == "oscpaypal_sepa" || $buttonId == "oscpaypal_cc_alternative"}]
                 FUNDING_SOURCES = [
                     paypal.FUNDING.[{if $buttonId == "oscpaypal_sepa"}]SEPA[{elseif $buttonId == "oscpaypal_cc_alternative"}]CARD[{/if}]
@@ -57,10 +82,27 @@
                                     'content-type': 'application/json'
                                 }
                             }).then(function (res) {
-                                return res.json();
-                            }).then(function (data) {
-                                return data.id;
-                            })
+                                return res.json().catch(function (parseError) {
+                                    throw new Error('not-json: ' + parseError.message);
+                                });
+                            }).then(function (responseData) {
+                                if (responseData && responseData.id) {
+                                    return responseData.id;
+                                }
+                                oscPayPalReportClientError('createOrder:noId', {
+                                    fundingSource: fundingSource,
+                                    receivedStatus: responseData && responseData.status,
+                                    hasData: !!responseData
+                                });
+                                throw new Error('createOrder did not return a PayPal order id');
+                            }).catch(function (error) {
+                                oscPayPalReportClientError('createOrder:exception', {
+                                    fundingSource: fundingSource,
+                                    errorName: error && error.name,
+                                    errorMessage: error && error.message
+                                });
+                                throw error; // let PayPal SDK call onError
+                            });
                         },
                         onApprove: async function (data, actions) {
                             captureData = new FormData();
@@ -69,14 +111,36 @@
                                 method: 'post',
                                 body: captureData
                             }).then(function (res) {
-                                return res.json();
-                            }).then(function (data) {
-                                if (data.status == "ERROR") {
+                                return res.json().catch(function (parseError) {
+                                    throw new Error('not-json: ' + parseError.message);
+                                });
+                            }).then(function (responseData) {
+                                if (responseData && responseData.status == "ERROR") {
                                     location.reload();
-                                } else if (data.id && data.status == "APPROVED") {
+                                } else if (responseData && responseData.id && responseData.status == "APPROVED") {
                                     location.replace('[{$sSelfLink|cat:"cl=order"}]');
+                                } else {
+                                    // Server returned a JSON we have no defined path for
+                                    // (e.g. PAYER_ACTION_REQUIRED, empty body, missing status).
+                                    // Without this branch the spinner would hang silently.
+                                    oscPayPalReportClientError('onApprove:unknownStatus', {
+                                        payPalOrderId: data && data.orderID,
+                                        fundingSource: fundingSource,
+                                        receivedStatus: responseData && responseData.status,
+                                        receivedHasId: !!(responseData && responseData.id)
+                                    });
+                                    oscPayPalGoToPaymentError();
                                 }
-                            })
+                            }).catch(function (error) {
+                                // Network error, JSON parse error, or anything thrown above.
+                                oscPayPalReportClientError('onApprove:exception', {
+                                    payPalOrderId: data && data.orderID,
+                                    fundingSource: fundingSource,
+                                    errorName: error && error.name,
+                                    errorMessage: error && error.message
+                                });
+                                oscPayPalGoToPaymentError();
+                            });
                         },
                         onCancel: async function (data, actions) {
                             try {
@@ -144,10 +208,25 @@
                                     'content-type': 'application/json'
                                 }
                             }).then(function (res) {
-                            return res.json();
-                        }).then(function (data) {
-                            return data.id;
-                        })
+                                return res.json().catch(function (parseError) {
+                                    throw new Error('not-json: ' + parseError.message);
+                                });
+                            }).then(function (responseData) {
+                                if (responseData && responseData.id) {
+                                    return responseData.id;
+                                }
+                                oscPayPalReportClientError('createOrder:noId', {
+                                    receivedStatus: responseData && responseData.status,
+                                    hasData: !!responseData
+                                });
+                                throw new Error('createOrder did not return a PayPal order id');
+                            }).catch(function (error) {
+                                oscPayPalReportClientError('createOrder:exception', {
+                                    errorName: error && error.name,
+                                    errorMessage: error && error.message
+                                });
+                                throw error; // let PayPal SDK call onError
+                            });
                     },
                     onApprove: async function (data, actions) {
                         captureData = new FormData();
@@ -156,14 +235,34 @@
                             method: 'post',
                             body: captureData
                         }).then(function (res) {
-                            return res.json();
-                        }).then(function (data) {
-                            if (data.status == "ERROR") {
+                            return res.json().catch(function (parseError) {
+                                throw new Error('not-json: ' + parseError.message);
+                            });
+                        }).then(function (responseData) {
+                            if (responseData && responseData.status == "ERROR") {
                                 location.reload();
-                            } else if (data.id && data.status == "APPROVED") {
+                            } else if (responseData && responseData.id && responseData.status == "APPROVED") {
                                 location.replace('[{$sSelfLink|cat:"cl=order"}]');
+                            } else {
+                                // Server returned a JSON we have no defined path for
+                                // (e.g. PAYER_ACTION_REQUIRED, empty body, missing status).
+                                // Without this branch the spinner would hang silently.
+                                oscPayPalReportClientError('onApprove:unknownStatus', {
+                                    payPalOrderId: data && data.orderID,
+                                    receivedStatus: responseData && responseData.status,
+                                    receivedHasId: !!(responseData && responseData.id)
+                                });
+                                oscPayPalGoToPaymentError();
                             }
-                        })
+                        }).catch(function (error) {
+                            // Network error, JSON parse error, or anything thrown above.
+                            oscPayPalReportClientError('onApprove:exception', {
+                                payPalOrderId: data && data.orderID,
+                                errorName: error && error.name,
+                                errorMessage: error && error.message
+                            });
+                            oscPayPalGoToPaymentError();
+                        });
                     },
                     onCancel: async function (data, actions) {
                         try {

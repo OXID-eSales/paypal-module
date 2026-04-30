@@ -528,8 +528,8 @@ class AjaxPaymentController extends BaseController
         $shopOrderId = $data['shopOrderId'];
         $errorMessage = $data['errorMessage'];
 
-        $this->logger->log('debug', sprintf(
-            'Order with id %s error: %s',
+        $this->logger->log('warning', sprintf(
+            'PayPal frontend reported error for order %s: %s',
             $shopOrderId,
             $errorMessage
         ));
