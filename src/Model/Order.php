@@ -469,7 +469,25 @@ class Order extends Order_parent
             $oPayTransaction->setPaymentParams($userpayment);
 
             if (!$oPayTransaction->executePayment($basket->getPrice()->getBruttoPrice(), $this)) {
-                $this->cancelPayPalOrder();
+                $cancelResult = $this->cancelPayPalOrder();
+
+                // Late-stage idempotency for concurrent double-submits: when the
+                // first submit completed payment after this submit had already
+                // entered executePayment, the Express path here sees the cleared
+                // PayPal session, returns false, and we land in cancelPayPalOrder.
+                // cancelPayPalOrder skips the storno because the order is in fact
+                // already paid — but without this guard we would still return
+                // ORDER_STATE_PAYMENTERROR and the customer would see a payerror,
+                // assume the payment failed, and place a duplicate order.
+                // Scoped to the PayPal Express branch only — non-PayPal gateways
+                // never reach this code.
+                if (
+                    !$cancelResult
+                    && $this->isOrderSuccessfullyPaid()
+                    && !empty($this->getFieldData('oxtransid'))
+                ) {
+                    return self::ORDER_STATE_OK;
+                }
 
                 if (method_exists($oPayTransaction, 'getLastError')) {
                     if (($sLastError = $oPayTransaction->getLastError())) {
@@ -985,6 +1003,26 @@ class Order extends Order_parent
             $this->isWaitForWebhookTimeoutReached()
         ) {
             return self::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS;
+        }
+
+        // Defense-in-depth for concurrent double-submits: if parent returned
+        // ORDER_STATE_PAYMENTERROR but the order is in fact already paid (the
+        // Express executePayment branch above already covers the common case;
+        // this catches any other PayPal flow that may end up reporting a
+        // payment error on a submit whose payment has actually been completed
+        // by a concurrent first submit). Scoped to PayPal payments only —
+        // non-PayPal gateways early-returned earlier in this method.
+        if (
+            $result === self::ORDER_STATE_PAYMENTERROR
+            && $this->getPaymentService()->isPayPalPayment()
+            && $this->isOrderPaid()
+            && !empty($this->getFieldData('oxtransid'))
+        ) {
+            $logger->log('info', 'finalizeOrder: parent returned PAYMENTERROR but order is already paid — overriding to OK', [
+                'shopOrderId' => $oOrderId,
+                'transId' => $this->getFieldData('oxtransid')
+            ]);
+            return self::ORDER_STATE_OK;
         }
 
         return $result;
