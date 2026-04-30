@@ -164,7 +164,7 @@ class OrderController extends OrderController_parent
             $session->deleteVariable('isPayPalPaymentCheckout');
         } catch (Exception $exception) {
             Registry::getSession()->deleteVariable('isPayPalPaymentCheckout');
-            $logger->log('error', $exception->getMessage(), [$exception]);
+            $logger->log('error', 'GooglePay order execute failed: ' . $exception->getMessage(), [$exception]);
             $this->outputJson([
                 'googlepayerror' => 'failed to execute shop order',
                 'status' => 'ERROR'
@@ -178,7 +178,7 @@ class OrderController extends OrderController_parent
                 $orderId
             );
         } catch (ApiException $exception) {
-            $logger->log('error', $exception->getMessage(), [$exception]);
+            $logger->log('error', 'GooglePay order patch failed: ' . $exception->getMessage(), [$exception]);
 
             // The shop order was already persisted by execute() -> finalizeOrder();
             // cancel it and clear the session so the customer returns to a clean
@@ -269,7 +269,7 @@ class OrderController extends OrderController_parent
 
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log('error', $exception->getMessage(), [$exception]);
+            $logger->log('warning', 'GooglePay capture failed or refused: ' . $exception->getMessage(), [$exception]);
         }
 
         $this->outputJson([
@@ -303,7 +303,7 @@ class OrderController extends OrderController_parent
         } catch (Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log('error', $exception->getMessage(), [$exception]);
+            $logger->log('error', 'ApplePay createOrder execute failed: ' . $exception->getMessage(), [$exception]);
             $this->outputJson(['error' => 'failed to execute shop order' . $exception->getMessage()]);
             return;
         }
@@ -337,7 +337,7 @@ class OrderController extends OrderController_parent
         $orderService = Registry::get(ServiceFactory::class)->getOrderService();
         $sessionOrderId = (string) Registry::getSession()->getVariable('sess_challenge');
         if ($orderId === '' || $sessionOrderId === '') {
-            $logger->log('error', 'captureApplePayOrder missing orderID or sessionOrderId');
+            $logger->log('warning', 'captureApplePayOrder missing orderID or sessionOrderId');
             throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
         }
         $request = new OrderCaptureRequest();
@@ -355,7 +355,7 @@ class OrderController extends OrderController_parent
         } catch (ApiException $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log('error', $exception->getMessage(), [$exception]);
+            $logger->log('warning', 'ApplePay capture failed or refused: ' . $exception->getMessage(), [$exception]);
 
             throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR' . $exception->getMessage());
         }
@@ -457,8 +457,8 @@ class OrderController extends OrderController_parent
                 /** @var LoggerInterface $logger */
                 $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
                 $logger->log(
-                    'debug',
-                    'PayPal Checkout error during order finalization ' . $exception->getMessage(),
+                    'warning',
+                    'PayPal session finalize failed, cancelling session: ' . $exception->getMessage(),
                     [$exception]
                 );
                 $this->getServiceFromContainer(OrderPayPalService::class)

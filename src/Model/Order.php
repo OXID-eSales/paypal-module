@@ -458,7 +458,7 @@ class Order extends Order_parent
                 $this->cancelPayPalOrder();
                 /** @var LoggerInterface $logger */
                 $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-                $logger->log('error', $exception->getMessage(), [$exception]);
+                $logger->log('error', 'UAPM payment execution failed: ' . $exception->getMessage(), [$exception]);
             }
             return self::ORDER_STATE_PAYMENTERROR;
         }
@@ -519,7 +519,7 @@ class Order extends Order_parent
         if ($this->isOrderSuccessfullyPaid() || !empty($this->getFieldData('oxtransid'))) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log('debug', sprintf(
+            $logger->log('warning', sprintf(
                 'PayPal order with id %s (nr: %s) cancel skipped - payment already processed (transid: %s)',
                 $this->getId(),
                 $this->getFieldData('oxordernr'),
@@ -555,14 +555,14 @@ class Order extends Order_parent
 
         if (!$this->hasOrderNumber()) {
             $this->delete();
-            $logger->log('debug', sprintf(
+            $logger->log('info', sprintf(
                 'PayPal order with id %s was canceled and deleted (no order number)',
                 $this->getId()
             ));
             return true;
         }
 
-        $logger->log('debug', sprintf(
+        $logger->log('info', sprintf(
             'PayPal order with id %s (nr: %s) was canceled and kept as storno',
             $this->getId(),
             $this->getFieldData('oxordernr')
@@ -649,7 +649,7 @@ class Order extends Order_parent
         } catch (Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log('error', "Error on order capture call.", [$exception]);
+            $logger->log('warning', 'PayPal capture failed or refused: ' . $exception->getMessage(), [$exception]);
         }
 
         // destroy PayPal-Session
@@ -919,7 +919,7 @@ class Order extends Order_parent
                 // This prevents a race condition with stock-1 articles where the
                 // browser redirect triggers a second finalizeOrder() call.
                 if ($this->isOrderPaid() && !empty($this->getFieldData('oxtransid'))) {
-                    $logger->log('debug', 'finalizeOrder: order already paid, skipping duplicate finalization', [
+                    $logger->log('info', 'finalizeOrder: order already paid, skipping duplicate finalization', [
                         'shopOrderId' => $oOrderId,
                         'transId' => $this->getFieldData('oxtransid')
                     ]);

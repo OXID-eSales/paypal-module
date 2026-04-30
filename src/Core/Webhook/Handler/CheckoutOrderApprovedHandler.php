@@ -76,9 +76,9 @@ class CheckoutOrderApprovedHandler extends WebhookHandlerBase
                 $order->setOrderNumber(); //ensure the order has a number
             } catch (Exception $exception) {
                 $this->getLogger()->log(
-                    'debug',
+                    'warning',
                     sprintf(
-                        "Error during %s for PayPal order_id '%s'",
+                        "Capture during %s failed for PayPal order_id '%s' — webhook retry will follow",
                         self::WEBHOOK_EVENT_NAME,
                         $payPalOrderId
                     ),

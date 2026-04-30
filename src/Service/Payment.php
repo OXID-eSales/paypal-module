@@ -157,12 +157,7 @@ class Payment
         } catch (ApiException $exception) {
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
-            if (
-                $this->moduleSettingsService->getPayPalDebugLevel() === 'debug'
-                || $this->moduleSettingsService->getPayPalDebugLevel() === 'error'
-            ) {
-                $this->logger->log('error', 'Error on order create call.', [$exception->getMessage()]);
-            }
+            $this->logger->log('error', 'Error on order create call.', [$exception->getMessage()]);
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
         }
 
@@ -251,12 +246,7 @@ class Payment
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
         } catch (Exception $exception) {
-            if (
-                $this->moduleSettingsService->getPayPalDebugLevel() === 'debug'
-                || $this->moduleSettingsService->getPayPalDebugLevel() === 'error'
-            ) {
-                $this->logger->log('error', 'Error on order patch call.', [$exception]);
-            }
+            $this->logger->log('warning', 'PayPal order patch failed', [$exception]);
             throw $exception;
         }
     }
@@ -403,9 +393,7 @@ class Payment
                     }
 
                     if (!$vaultSuccess) {
-                        if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
-                            $this->logger->log('debug', "Vaulting was attempted but didn't succeed.");
-                        }
+                        $this->logger->log('debug', "Vaulting was attempted but didn't succeed.");
                     }
 
                     $session->setVariable("vaultSuccess", $vaultSuccess);
@@ -416,9 +404,7 @@ class Payment
                 $order->markOrderPaid();
             }
         } catch (Exception $exception) {
-            if ($this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
-                $this->logger->log('debug', 'Warning on order capture call.', [$exception->getMessage()]);
-            }
+            $this->logger->log('warning', 'PayPal capture refused or failed: ' . $exception->getMessage(), [$exception->getMessage()]);
             throw oxNew(StandardException::class, 'OSC_PAYPAL_ORDEREXECUTION_ERROR');
         }
 
@@ -695,7 +681,7 @@ class Payment
                         }
                     }
 
-                    if (!$vaultSuccess && $this->moduleSettingsService->getPayPalDebugLevel() === 'debug') {
+                    if (!$vaultSuccess) {
                         $this->logger->log('debug', "Vaulting was attempted but didn't succeed.");
                     }
 
@@ -768,12 +754,7 @@ class Payment
             }
         } catch (Exception $exception) {
             $this->setPaymentExecutionError(self::PAYMENT_ERROR_PUI_GENERIC);
-            if (
-                $this->moduleSettingsService->getPayPalDebugLevel() === 'debug'
-                || $this->moduleSettingsService->getPayPalDebugLevel() === 'error'
-            ) {
-                $this->logger->log('error', 'Error on pui order creation call.', [$exception]);
-            }
+            $this->logger->log('error', 'Error on pui order creation call.', [$exception]);
         }
 
         # TODO: check what we created, ensure it is a pui order

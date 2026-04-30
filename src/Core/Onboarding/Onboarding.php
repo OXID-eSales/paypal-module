@@ -70,7 +70,7 @@ class Onboarding
         } catch (ApiException $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log('error', $exception->getMessage(), [$exception]);
+            $logger->log('error', 'Failed to fetch PayPal credentials during onboarding: ' . $exception->getMessage(), [$exception]);
         }
         return $credentials;
     }

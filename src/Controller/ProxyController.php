@@ -314,7 +314,7 @@ class ProxyController extends FrontendController
         } catch (Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log('error', "Error on order capture call.", [$exception]);
+            $logger->log('warning', 'Could not fetch PayPal order details for ProxyController approveOrder: ' . $exception->getMessage(), [$exception]);
         }
 
         if (!$this->getUser() && $response) {
