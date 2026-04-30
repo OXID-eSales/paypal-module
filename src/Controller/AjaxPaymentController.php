@@ -203,7 +203,11 @@ class AjaxPaymentController extends BaseController
             ]);
 
         } catch (\Exception $exception) {
-            $this->logger->log('error', 'Combined order creation failed', [
+            $this->logger->log('error', sprintf(
+                'Combined order creation failed for shop order %s: %s',
+                $shopOrderId,
+                $exception->getMessage()
+            ), [
                 'message' => $exception->getMessage(),
                 'shopOrderId' => $shopOrderId
             ]);
@@ -387,10 +391,7 @@ class AjaxPaymentController extends BaseController
         $data = $this->getRequestParameters();
         $payPalOrderId = $data['orderId'];
 
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        if ($moduleSettings->getPayPalDebugLevel() === 'debug') {
-            $this->logger->log('debug', sprintf('Order with id %s capture', $payPalOrderId));
-        }
+        $this->logger->log('debug', sprintf('Order with id %s capture', $payPalOrderId));
 
         $order = $this->orderRepository->fetchCurrentShopOrder();
         $basket = Registry::getSession()->getBasket();
@@ -452,7 +453,7 @@ class AjaxPaymentController extends BaseController
             // performing special actions after user finishes order (assignment to special user groups)
             $user->onOrderExecute($basket, $iSuccess);
         } catch (Exception $exception) {
-            $this->logger->log('error', $exception->getMessage(), [$exception]);
+            $this->logger->log('error', 'ACDC finalizeOrder failed: ' . $exception->getMessage(), [$exception]);
             $this->outputJson(['error' => 'failed to execute shop order']);
             return;
         }
@@ -462,7 +463,7 @@ class AjaxPaymentController extends BaseController
                 $session->getBasket()
             );
         } catch (ApiException $exception) {
-            $this->logger->log('error', $exception->getMessage(), [$exception]);
+            $this->logger->log('error', 'ACDC patched-order creation failed: ' . $exception->getMessage(), [$exception]);
 
             // The shop order was already persisted by finalizeOrder(); cancel it and
             // clear the session so the customer returns to a clean order overview.
@@ -523,14 +524,11 @@ class AjaxPaymentController extends BaseController
         $shopOrderId = $data['shopOrderId'];
         $errorMessage = $data['errorMessage'];
 
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        if ($moduleSettings->getPayPalDebugLevel() === 'debug') {
-            $this->logger->log('debug', sprintf(
-                'Order with id %s error: %s',
-                $shopOrderId,
-                $errorMessage
-            ));
-        }
+        $this->logger->log('debug', sprintf(
+            'Order with id %s error: %s',
+            $shopOrderId,
+            $errorMessage
+        ));
 
         $this->outputJson([
             'status' => 'success'
@@ -544,13 +542,8 @@ class AjaxPaymentController extends BaseController
         $user = oxNew(User::class);
         $user->loadActiveUser();
 
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $isLog = in_array($moduleSettings->getPayPalDebugLevel(), ['debug', 'error']);
-
         if (is_null($shopOrderId)) {
-            if ($isLog) {
-                $this->logger->log('error', $message);
-            }
+            $this->logger->log('warning', 'AJAX permission denied: ' . $message);
             $this->outputJson([
                 'status' => 'error'
             ]);
@@ -562,9 +555,7 @@ class AjaxPaymentController extends BaseController
         $order->load($shopOrderId);
 
         if ($order->oxorder__oxuserid->value !== $user->getId()) {
-            if ($isLog) {
-                $this->logger->log('error', $message);
-            }
+            $this->logger->log('warning', 'AJAX permission denied: ' . $message);
             $this->outputJson([
                 'status' => 'error',
                 'message' => $message
@@ -576,14 +567,8 @@ class AjaxPaymentController extends BaseController
         ?string $shopOrderId = null
     ): void
     {
-
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $isLog = in_array($moduleSettings->getPayPalDebugLevel(), ['debug', 'error']);
-
         if (is_null($shopOrderId)) {
-            if ($isLog) {
-                $this->logger->log('error', 'no Order ID provided for isOrderNotSuccessfullDone-Check');
-            }
+            $this->logger->log('warning', 'No order id provided for isOrderNotSuccessfullyDone check');
             $this->outputJson([
                 'status' => 'error'
             ]);
@@ -597,9 +582,7 @@ class AjaxPaymentController extends BaseController
         if (
             $order->isOrderSuccessfullyPaid()
         ) {
-            if ($isLog) {
-                $this->logger->log('error', 'Order is successfully done');
-            }
+            $this->logger->log('warning', 'Cancel rejected: shop order is already successfully paid');
             $this->outputJson([
                 'status' => 'error'
             ]);
@@ -616,16 +599,10 @@ class AjaxPaymentController extends BaseController
 
         $shopOrderId = $data['shopOrderId'];
         if (empty($shopOrderId)) {
-            $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-            if (
-                $moduleSettings->getPayPalDebugLevel() === 'debug'
-                || $moduleSettings->getPayPalDebugLevel() === 'error'
-            ) {
-                $this->logger->log(
-                    'error',
-                    __CLASS__ . '::' . __FUNCTION__ . '(): Shop order id is empty'
-                );
-            }
+            $this->logger->log(
+                'warning',
+                __CLASS__ . '::' . __FUNCTION__ . '(): cancelShopOrder called without shop order id'
+            );
         }
 
         $this->permissionsCheck(
@@ -809,12 +786,7 @@ class AjaxPaymentController extends BaseController
         /** @var PaymentService $paymentService */
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
-        /** @var ModuleSettings $moduleSettings */
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-
-        if ($moduleSettings->getPayPalDebugLevel() === 'debug') {
-            $this->logger->log('debug', sprintf('Authorizing order with id %s', $checkoutOrderId));
-        }
+        $this->logger->log('debug', sprintf('Authorizing order with id %s', $checkoutOrderId));
 
         try {
             $authorizePaymentResult = $paymentService->doAuthorizePayment($checkoutOrderId, $shopOrderId, $paymentId);
@@ -843,13 +815,11 @@ class AjaxPaymentController extends BaseController
                 'message' => 'OSC_PAYPAL_ORDEREXECUTION_ERROR'
             ]);
         } catch (Exception $exception) {
-            if ($moduleSettings->getPayPalDebugLevel() === 'debug') {
-                $this->logger->log(
-                    'debug',
-                    'Error during payment authorization.',
-                    [$exception->getMessage()]
-                );
-            }
+            $this->logger->log(
+                'warning',
+                'Error during payment authorization: ' . $exception->getMessage(),
+                [$exception->getMessage()]
+            );
 
             $this->outputJson([
                 'status' => 'error',

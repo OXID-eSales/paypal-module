@@ -169,7 +169,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
             } catch (ModuleSettingNotFountException $exception) {
                 /** @var LoggerInterface $logger */
                 $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-                $logger->log('error', 'Error on saveConfig', [$exception]);
+                $logger->log('warning', 'Skipped saving unknown module setting', [$exception]);
             }
         }
     }
@@ -210,7 +210,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
 
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log('error', 'Error on checkEligibility', [$exception]);
+            $logger->log('warning', 'PayPal eligibility refresh failed during config save', [$exception]);
         }
     }
 
@@ -365,7 +365,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
         } catch (Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log('error', $exception->getMessage(), [$exception]);
+            $logger->log('error', 'Onboarding callback payload could not be stored: ' . $exception->getMessage(), [$exception]);
         }
 
         $this->autoConfiguration();
@@ -389,7 +389,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
         } catch (Exception $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log('error', $exception->getMessage(), [$exception]);
+            $logger->log('error', 'Onboarding credential auto-fetch failed: ' . $exception->getMessage(), [$exception]);
         }
         return $credentials;
     }

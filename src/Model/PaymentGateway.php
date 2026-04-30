@@ -117,7 +117,7 @@ class PaymentGateway extends PaymentGateway_parent
                     $order
                 );
             } catch (Exception $exception) {
-                $logger->log('error', 'Error on order patch call.', [$exception]);
+                $logger->log('warning', 'PayPal order patch failed, continuing with previous order data', [$exception]);
             }
 
             if ($intent === OrderRequest::INTENT_AUTHORIZE) {
@@ -141,7 +141,7 @@ class PaymentGateway extends PaymentGateway_parent
                     // success means at this point, that we triggered the capture without errors
                     $success = true;
                 } catch (Exception $exception) {
-                    $logger->log('error', 'Error on order capture call.', [$exception]);
+                    $logger->log('warning', 'PayPal capture failed or refused: ' . $exception->getMessage(), [$exception]);
                 }
 
                 // destroy PayPal-Session

@@ -124,7 +124,7 @@ class VaultPaymentTokenCreatedHandler extends WebhookHandlerBase
      */
     protected function logUserNotFound(): void
     {
-        $this->getLogger()->log('debug', 'VAULT.PAYMENT-TOKEN.CREATED webhook error: shop user unknown', []);
+        $this->getLogger()->log('warning', 'VAULT.PAYMENT-TOKEN.CREATED received for unknown shop user', []);
     }
 
     /**
@@ -132,7 +132,7 @@ class VaultPaymentTokenCreatedHandler extends WebhookHandlerBase
      */
     protected function logMissingCustomerId(array $eventPayload): void
     {
-        $this->getLogger()->log('debug', 'VAULT.PAYMENT-TOKEN.CREATED webhook received without customer.id field.', [
+        $this->getLogger()->log('warning', 'VAULT.PAYMENT-TOKEN.CREATED missing customer.id in payload', [
             'event_payload_keys' => array_keys($eventPayload),
         ]);
     }

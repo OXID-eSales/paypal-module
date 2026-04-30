@@ -676,15 +676,13 @@ class ModuleSettings
             $this->save('oscPayPalClientMerchantId', $merchantId);
         }
 
-        if ($this->getPayPalDebugLevel() === 'debug') {
-            $this->logger->log(
-                'debug',
-                sprintf(
-                    'Saving Merchant ID %s from onboarding',
-                    $merchantId
-                )
-            );
-        }
+        $this->logger->log(
+            'debug',
+            sprintf(
+                'Saving Merchant ID %s from onboarding',
+                $merchantId
+            )
+        );
     }
 
     public function saveAcdcEligibility(bool $eligibility): void
