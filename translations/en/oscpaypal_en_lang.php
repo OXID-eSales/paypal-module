@@ -81,4 +81,6 @@ $aLang = [
     'OSC_PAYPAL_PAYMENT_PUI_FOLLOW'               => 'You will receive another email with the account details for the transfer in a few minutes. Please be patient.',
     'OSC_PAYPAL_PAYMENT_PUI_NOTE'                 => 'Please use the following data for the transfer of the order amount',
     'OSC_PAYPAL_PAYMENT_PUI_HEADING'              => 'Payment information',
+
+    'OSC_PAYPAL_ORDER_SUBMITTING'                 => 'Processing your order …',
 ];

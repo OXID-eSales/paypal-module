@@ -82,4 +82,5 @@ $aLang = [
     'OSC_PAYPAL_PAYMENT_PUI_NOTE'                 => 'Bitte nutzen Sie folgende Daten für die Überweisung der Bestellsumme',
     'OSC_PAYPAL_PAYMENT_PUI_HEADING'              => 'Zahlungsinformationen',
 
+    'OSC_PAYPAL_ORDER_SUBMITTING'                 => 'Bestellung wird verarbeitet …',
 ];
