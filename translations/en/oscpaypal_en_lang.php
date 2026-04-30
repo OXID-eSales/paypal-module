@@ -53,6 +53,7 @@ $aLang = [
     'OSC_PAYPAL_CAPTURE_DENIED_ERROR'              => 'Payment money transfer was denied. Please check your payment data and try again.',
     'OSC_PAYPAL_INTERNAL_SERVICE_ERROR'            => 'Unknown error occurred while processing your payment. Please try again later.',
     'OSC_PAYPAL_ORDEREXECUTION_ERROR'              => 'Payment process could not be completed.',
+    'OSC_PAYPAL_PAYMENT_INTERRUPTED'               => 'The payment could not be completed. Please try again or choose a different payment method. If you are currently viewing this page inside an in-app browser (such as the Google, Facebook or Instagram app), opening the shop in a standard browser (Safari, Chrome, Firefox) may resolve the issue.',
 
     'OSC_PAYPAL_VAULTING_MENU'                      => 'Manage PayPal',
     'OSC_PAYPAL_VAULTING_MENU_CARD'                 => 'Manage credit or debit card',

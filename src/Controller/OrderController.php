@@ -548,6 +548,24 @@ class OrderController extends OrderController_parent
     }
 
     /**
+     * Frontend recovery target for the PayPal-button silent-fail paths
+     * (createOrder / onApprove receiving an unexpected response or throwing
+     * a network/JSON-parse error). The button JS redirects here as a fallback
+     * URL; we queue a localized error message for the customer and redirect
+     * to the payment page so they can retry or pick a different method.
+     */
+    public function paymentInterrupted(): void
+    {
+        $this->getServiceFromContainer(PaymentService::class)
+            ->removeTemporaryOrder();
+
+        throw new RedirectWithMessage(
+            Registry::getConfig()->getShopSecureHomeURL() . 'cl=payment',
+            'OSC_PAYPAL_PAYMENT_INTERRUPTED'
+        );
+    }
+
+    /**
      * Template-Getter get a Fraudnet CmId
      *
      * @return string
