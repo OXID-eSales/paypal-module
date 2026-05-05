@@ -173,7 +173,7 @@ class Order extends Order_parent
         // skip redundant processing. Without this guard, finalizeacdc would
         // attempt to capture/authorize an already-captured order, fail with
         // an API error, and incorrectly cancel the paid order.
-        if ($this->isOrderPaid() && !empty($this->getFieldData('oxtransid'))) {
+        if ($this->isOrderSuccessfullyPaid()) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
             $logger->log('debug', 'finalizeOrderAfterExternalPayment: order already paid, skipping', [
@@ -181,6 +181,19 @@ class Order extends Order_parent
                 'payPalOrderId' => $payPalOrderId,
                 'transId' => $this->getFieldData('oxtransid')
             ]);
+
+            // Healing mail: when the order reached this branch via the
+            // customer-too-fast race (webhook marked the order paid while
+            // the customer was still in the outer status-check), the
+            // sendPayPalOrderByEmail call at the end of this method would
+            // be skipped. Trigger it here so the customer still gets the
+            // confirmation. _sendOrderByEmail's isPayPalPaymentCheckout
+            // guard blocks duplicates during an in-flight PayPal checkout.
+            $basket = Registry::getSession()->getBasket();
+            $user = Registry::getSession()->getUser();
+            if ($basket && $user) {
+                $this->sendPayPalOrderByEmail($user, $basket);
+            }
             return;
         }
 

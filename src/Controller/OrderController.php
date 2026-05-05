@@ -423,51 +423,77 @@ class OrderController extends OrderController_parent
             return 'payment?payerror=2';
         }
 
-        $order = oxNew(EshopModelOrder::class);
-        $order->load($sessionOrderId);
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $lastException = null;
 
-        try {
-            $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        // Customer-too-fast retry: PayPal's order-status API is eventually
+        // consistent for uAPM/Express. The first fetchOrderFields() can
+        // return PAYER_ACTION_REQUIRED for a short window after the
+        // customer clicked "Buy Now" in the popup, even though the order
+        // flips to APPROVED/COMPLETED moments later (and the webhook
+        // arrives at roughly the same time, marking the order paid). Retry
+        // up to three times with one second between attempts and a fresh
+        // DB-read so a webhook-arrived-in-the-meantime is also caught.
+        for ($attempt = 1; $attempt <= 3; $attempt++) {
+            $order = oxNew(EshopModelOrder::class);
+            $order->load($sessionOrderId);
 
-            /** @var PayPalApiModelOrder $payPalOrder */
-            $payPalOrder = $paymentService->fetchOrderFields((string) $sessionCheckoutOrderId, '');
-            $vaultingPaymentCompleted = $vaulting && $payPalOrder->status === "COMPLETED";
-            if (
-                !$vaultingPaymentCompleted &&
-                'APPROVED' !== $payPalOrder->status &&
-                'COMPLETED' !== $payPalOrder->status
-            ) {
-                throw PayPalException::sessionPaymentFail(
+            // (a) Webhook glücksfall: order is already marked paid. Trigger
+            // finalizeOrderAfterExternalPayment so its early-skip branch
+            // sends the confirmation mail.
+            if ($order->isOrderSuccessfullyPaid()) {
+                try {
+                    $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);
+                } catch (Exception $idempotentSkip) {
+                    // early-skip path is idempotent; mail-trigger lives there
+                }
+                return 'thankyou';
+            }
+
+            // (b) Re-ask PayPal: maybe status flipped to APPROVED/COMPLETED.
+            try {
+                /** @var PayPalApiModelOrder $payPalOrder */
+                $payPalOrder = $paymentService->fetchOrderFields((string) $sessionCheckoutOrderId, '');
+                $vaultingPaymentCompleted = $vaulting && $payPalOrder->status === "COMPLETED";
+                if (
+                    $vaultingPaymentCompleted ||
+                    'APPROVED' === $payPalOrder->status ||
+                    'COMPLETED' === $payPalOrder->status
+                ) {
+                    $deliveryAddress = PayPalAddressResponseToOxidAddress::mapOrderDeliveryAddress($payPalOrder);
+                    $paymentsId = $order->getFieldData('oxpaymenttype') ?? '';
+                    $isButtonPayment = PayPalDefinitions::isButtonPayment($paymentsId);
+                    if ($isButtonPayment) {
+                        $order->assign($deliveryAddress);
+                    }
+                    $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);
+                    $order->save();
+                    return 'thankyou';
+                }
+                $lastException = PayPalException::sessionPaymentFail(
                     'Unexpected status ' . $payPalOrder->status . ' for PayPal order ' . $sessionCheckoutOrderId
                 );
+            } catch (PayPalException $exception) {
+                $lastException = $exception;
             }
 
-            $deliveryAddress = PayPalAddressResponseToOxidAddress::mapOrderDeliveryAddress($payPalOrder);
-            $paymentsId = $order->getFieldData('oxpaymenttype') ?? '';
-            $isButtonPayment = PayPalDefinitions::isButtonPayment($paymentsId);
-            if ($isButtonPayment) {
-                $order->assign($deliveryAddress);
-            }
-            $order->finalizeOrderAfterExternalPayment($sessionCheckoutOrderId);
-            $order->save();
-        } catch (PayPalException $exception) {
-            // paranoia check: The order may have already been completely
-            // processed by a webhook and therefore cannot be finalized again.
-            if (!$order->isOrderSuccessfullyPaid()) {
-                /** @var LoggerInterface $logger */
-                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-                $logger->log(
-                    'warning',
-                    'PayPal session finalize failed, cancelling session: ' . $exception->getMessage(),
-                    [$exception]
-                );
-                $this->getServiceFromContainer(OrderPayPalService::class)
-                    ->cancelPayPalSession('cannot finalize order');
-                return 'payment?payerror=2';
+            if ($attempt < 3) {
+                sleep(1);
             }
         }
 
-        return 'thankyou';
+        // All retries exhausted — webhook hasn't arrived, status hasn't flipped.
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        $logger->log(
+            'warning',
+            'PayPal session finalize failed after retries: '
+                . ($lastException ? $lastException->getMessage() : '(unknown)'),
+            $lastException ? [$lastException] : []
+        );
+        $this->getServiceFromContainer(OrderPayPalService::class)
+            ->cancelPayPalSession('cannot finalize order');
+        return 'payment?payerror=2';
     }
 
     public function finalizeacdc(): string
