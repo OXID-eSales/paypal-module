@@ -53,9 +53,11 @@ class OrderMain extends OrderMain_parent
     public function save()
     {
         $request = Registry::getRequest();
-        if ($request->getRequestParameter("sendorder")) {
-            $this->sendOrder();
-        }
+
+        // Persist the PayPal tracking values BEFORE sendOrder() so the
+        // onOrderSend hook can read them from oscpaypal_order when it calls
+        // doProvidePayPalTrackingCarrier() — otherwise the tracking is never
+        // pushed to the PayPal API on the same submit (0007945).
         $trackingCarrier = $request->getRequestParameter("paypaltrackingcarrier");
         $trackingCode = $request->getRequestParameter("paypaltrackingcode");
         if ($trackingCarrier && $trackingCode) {
@@ -63,6 +65,10 @@ class OrderMain extends OrderMain_parent
                 $trackingCarrier,
                 $trackingCode
             );
+        }
+
+        if ($request->getRequestParameter("sendorder")) {
+            $this->sendOrder();
         }
 
         parent::save();
