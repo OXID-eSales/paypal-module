@@ -61,6 +61,15 @@ class Order extends Order_parent
     private $paymentService;
 
     /**
+     * Bypass for the proxy-controller skip in markVouchers. Set to true only
+     * for the late, post-payment voucher binding from finalizeOrderAfterExternalPayment;
+     * the early pre-redirect calls keep the skip so cancel+retry stays safe.
+     *
+     * @var bool
+     */
+    private bool $skipProxyControllerVoucherGuard = false;
+
+    /**
      * Uapm payment in progress
      *
      * @var int
@@ -314,6 +323,19 @@ class Order extends Order_parent
             $this->setTransId($capture->id);
         }
 
+        // Bind vouchers to the order now that the external payment is confirmed.
+        // Routed via $this->markVouchers (not parent::) so any other module in the
+        // OXID class chain that overrides markVouchers still runs; the bypass flag
+        // only switches off our own proxy-controller skip for this one call.
+        if ($payPalPaymentSuccess) {
+            $this->skipProxyControllerVoucherGuard = true;
+            try {
+                $this->markVouchers($basket, $user);
+            } finally {
+                $this->skipProxyControllerVoucherGuard = false;
+            }
+        }
+
         $this->sendPayPalOrderByEmail($user, $basket);
     }
 
@@ -362,8 +384,14 @@ class Order extends Order_parent
     {
         $sessionPaymentId = (string) $this->getPaymentService()->getSessionPaymentId();
 
-        // Skip markVoucher if finalizeOrder is called in the proxyController.
-        if (PayPalDefinitions::isProxyControllerPayment($sessionPaymentId)) {
+        // Skip markVoucher in the early pre-redirect call so cancel+retry stays
+        // safe (0007940). The late call from finalizeOrderAfterExternalPayment
+        // sets $skipProxyControllerVoucherGuard so the binding actually happens
+        // after the external payment was confirmed (0007944).
+        if (
+            !$this->skipProxyControllerVoucherGuard
+            && PayPalDefinitions::isProxyControllerPayment($sessionPaymentId)
+        ) {
             return null;
         }
 
