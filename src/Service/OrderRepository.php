@@ -162,19 +162,37 @@ class OrderRepository
             'oxpaymenttype' => 'oscpaypal',
             'sessiontime'   => $sessiontime,
             'oxshopid'      => $shopId,
-            'oxstorno'      => '0'
+            'oxstorno'      => '0',
+            'pp_approved'   => 'APPROVED',
+            'pp_completed'  => 'COMPLETED',
         ];
 
-        $queryBuilder->select('oxid')
+        // Skip orders that PayPal has already APPROVED or COMPLETED — those
+        // represent a real payment-pending state where a webhook is expected
+        // to finalize the order, and must not be cancelled by the cleanup
+        // job. Orders whose oscpaypal_order row is missing or carries a non-
+        // pending status (e.g. CREATED, customer never approved) are still
+        // cleaned up as before. (0007946)
+        $queryBuilder->select('oxorder.oxid')
             ->from('oxorder')
-            ->where('oxtransstatus = :oxtransstatus')
-            ->andWhere('oxshopid = :oxshopid')
-            ->andWhere('oxstorno = :oxstorno')
+            ->leftJoin(
+                'oxorder',
+                'oscpaypal_order',
+                'pp',
+                'pp.oxorderid = oxorder.oxid'
+            )
+            ->where('oxorder.oxtransstatus = :oxtransstatus')
+            ->andWhere('oxorder.oxshopid = :oxshopid')
+            ->andWhere('oxorder.oxstorno = :oxstorno')
             ->andWhere($queryBuilder->expr()->like(
-                'oxpaymenttype',
+                'oxorder.oxpaymenttype',
                 $queryBuilder->expr()->literal($parameters['oxpaymenttype'] . '%')
             ))
-            ->andWhere('oxorderdate < now() - interval :sessiontime MINUTE');
+            ->andWhere('oxorder.oxorderdate < now() - interval :sessiontime MINUTE')
+            ->andWhere(
+                '(pp.oscpaypalstatus IS NULL '
+                . 'OR pp.oscpaypalstatus NOT IN (:pp_approved, :pp_completed))'
+            );
 
         $ids = $queryBuilder->setParameters($parameters)
             ->execute()
