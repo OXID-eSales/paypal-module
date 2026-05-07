@@ -1098,14 +1098,6 @@ class Order extends Order_parent
 
     public function setPayPalTracking(string $trackingCarrier, string $trackingCode): void
     {
-        // for backwards compatibility
-        $this->assign(
-            [
-                'oxtrackcode' => $trackingCode
-            ]
-        );
-        $this->save();
-
         $payPalOrder = $this->getPayPalRepository();
         $payPalOrder->setTrackingCode($trackingCode);
         $payPalOrder->setTrackingCarrier($trackingCarrier);
