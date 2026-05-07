@@ -18,6 +18,10 @@ class PaymentCaptureDeniedHandler extends PaymentCaptureCompletedHandler
     {
         $order->markOrderPaymentFailed();
         $order->setTransId($payPalTransactionId);
+        // Cancel the shop order to release reserved stock and flag oxstorno=1.
+        // Without this the order would stay in NOT_FINISHED/ERROR with stock
+        // still locked even though PayPal has finally rejected the payment. (0007946)
+        $order->cancelOrder();
     }
 
     protected function getPayPalOrderDetails(string $payPalOrderId): ?PayPalApiModelOrder
