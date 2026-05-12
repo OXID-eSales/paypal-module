@@ -11,6 +11,7 @@ namespace OxidSolutionCatalysts\PayPal\Service;
 
 use InvalidArgumentException;
 use OxidEsales\EshopCommunity\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Utils\AmountFormatter;
 
 class PayPalAmountValidator
 {
@@ -292,6 +293,6 @@ class PayPalAmountValidator
 
     private function formatAmount(float $amount): string
     {
-        return number_format($amount, self::DECIMAL_PRECISION, '.', '');
+        return AmountFormatter::format($amount, self::DECIMAL_PRECISION);
     }
 }

@@ -25,6 +25,7 @@ use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Core\Utils\AmountFormatter;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderManager;
@@ -474,27 +475,17 @@ class ProxyController extends FrontendController
                 'lineItems' => [
                     [
                         'label' => 'Subtotal',
-                        'amount' => number_format(
-                            (double)$basket->getBruttoSum(),
-                            2,
-                            '.',
-                            ''
-                        ),
+                        'amount' => AmountFormatter::format((float) $basket->getBruttoSum()),
                         'type' => 'final'
                     ],
                     [
                         'label' => 'Tax',
-                        'amount' => number_format((double)$sVat, 2, '.', ''),
+                        'amount' => AmountFormatter::format((float) $sVat),
                         'type' => 'final'
                     ],
                     [
                         'label' => 'Shipping',
-                        'amount' => number_format(
-                            $deliveryBruttoPrice,
-                            2,
-                            '.',
-                            ''
-                        ),
+                        'amount' => AmountFormatter::format((float) $deliveryBruttoPrice),
                         'type' => 'final'
                     ]
                 ]

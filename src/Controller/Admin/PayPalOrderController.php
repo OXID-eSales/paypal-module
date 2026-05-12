@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Core\Utils\AmountFormatter;
 use OxidSolutionCatalysts\PayPal\Helper\Str2Float;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalModelPayPalOrder;
 use OxidSolutionCatalysts\PayPal\Model\PayPalPlusOrder;
@@ -209,7 +210,10 @@ class PayPalOrderController extends AdminDetailsController
             if (!$refundAll) {
                 $request->initAmount();
                 $request->amount->currency_code = $capture->amount->currency_code;
-                $request->amount->value = number_format($refundAmount, $currency->decimal, '.', null);
+                $request->amount->value = AmountFormatter::format(
+                    (float) $refundAmount,
+                    (int) $currency->decimal
+                );
             }
 
             /** @var Payments $paymentService */

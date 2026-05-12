@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
+use OxidSolutionCatalysts\PayPal\Core\Utils\AmountFormatter;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
 use stdClass;
 
@@ -53,11 +54,9 @@ class PayPalRequestAmountFactory
         $amount = new AmountWithBreakdown();
         //https://developer.paypal.com/docs/api/orders/v2/
         //the amount = item_total + tax_total + shipping + handling + insurance - shipping_discount - discount.
-        $amount->value = (float)number_format(
-            $this->basket->getPrice()->getBruttoPrice(),
-            2,
-            '.',
-            ''
+        $amount->value = (float) AmountFormatter::format(
+            (float) $this->basket->getPrice()->getBruttoPrice(),
+            2
         );
         $amount->currency_code = $this->getCurrency()->name;
         //Breakdown provides details such as:
