@@ -717,6 +717,49 @@ class Order extends Order_parent
         return $success;
     }
 
+    /**
+     * Detect the "shipping moment" — oxsenddate transitions from empty/zero
+     * to a real timestamp — and auto-push PayPal tracking. Catches the case
+     * where a warehouse-management system writes the row directly (setting
+     * oxsenddate + oxtrackcode and saving) without going through the OXID
+     * admin's send-order button, which would otherwise fire the
+     * OrderMain::onOrderSend hook. The detection is one-shot per transition
+     * so a follow-up save with oxsenddate already set does not re-push. (0007945)
+     */
+    public function save()
+    {
+        $oldSendDate = '';
+        if ($this->isLoaded() && $this->getId()) {
+            $oldSendDate = (string) DatabaseProvider::getDb()->getOne(
+                'SELECT oxsenddate FROM oxorder WHERE oxid = ?',
+                [$this->getId()]
+            );
+        }
+
+        $result = parent::save();
+
+        $newSendDate = (string) $this->getFieldData('oxsenddate');
+        $wasUnset = $oldSendDate === '' || $oldSendDate === '0000-00-00 00:00:00';
+        $isNowSet = $newSendDate !== '' && $newSendDate !== '0000-00-00 00:00:00';
+
+        if ($wasUnset && $isNowSet && $this->paidWithPayPal()) {
+            try {
+                $this->doProvidePayPalTrackingCarrier();
+            } catch (\Throwable $exception) {
+                /** @var LoggerInterface $logger */
+                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+                $logger->log('warning', sprintf(
+                    'PayPal tracking auto-push during Order::save failed for order %s (nr: %s): %s',
+                    $this->getId(),
+                    $this->getFieldData('oxordernr'),
+                    $exception->getMessage()
+                ), [$exception]);
+            }
+        }
+
+        return $result;
+    }
+
     public function doProvidePayPalTrackingCarrier(
         string $transactionId = '',
         string $trackCarrier = '',
@@ -724,7 +767,20 @@ class Order extends Order_parent
         string $status = ''
     ): bool {
         $trackCode = $trackCode ?: $this->getPayPalTrackingCode();
+        if (!$trackCode) {
+            // Inherit the OXID-native tracking code when the PayPal tracking
+            // tab was not used — typical when a warehouse-management system
+            // sets oxtrackcode directly and triggers the regular send path. (0007945)
+            $trackCode = (string) $this->getFieldData('oxtrackcode');
+        }
         $trackCarrier = $trackCarrier ?: $this->getPayPalTrackingCarrier();
+        if (!$trackCarrier && $trackCode) {
+            // No carrier selected in the PayPal tracking tab — fall back to
+            // PayPal's generic OTHER carrier so the tracking code still
+            // reaches PayPal. The customer will see the code in PayPal but
+            // without a clickable carrier link. (0007945)
+            $trackCarrier = 'OTHER';
+        }
         $transactionId = $transactionId ?: $this->getPayPalTransactionId();
 
         if (!$trackCode || !$trackCarrier || !$transactionId) {
