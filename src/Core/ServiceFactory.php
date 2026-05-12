@@ -78,14 +78,37 @@ class ServiceFactory
     }
 
     /**
+     * Tracker create endpoint — POST adds a new tracker to a PayPal order
+     * (/v2/checkout/orders/{order_id}/track). Replaces the previous
+     * /v1/shipping/trackers-batch endpoint which required a separate
+     * "Shipping Tracking" app feature that is not part of the standard
+     * PPCP onboarding capability set. (0007945)
+     *
      * @return GenericService
      */
-    public function getTrackerService(): GenericService
+    public function getTrackerService(string $payPalOrderId): GenericService
     {
         return oxNew(
             GenericService::class,
             $this->getClient(),
-            '/v1/shipping/trackers-batch'
+            '/v2/checkout/orders/' . $payPalOrderId . '/track'
+        );
+    }
+
+    /**
+     * Tracker update endpoint — PATCH a previously-created tracker by id.
+     * Used as the fallback when POST returns "tracker already exists" because
+     * the (capture_id, tracking_number) pair was already pushed once and the
+     * merchant only wants to change carrier/status. (0007945)
+     *
+     * @return GenericService
+     */
+    public function getTrackerUpdateService(string $payPalOrderId, string $trackerId): GenericService
+    {
+        return oxNew(
+            GenericService::class,
+            $this->getClient(),
+            '/v2/checkout/orders/' . $payPalOrderId . '/trackers/' . $trackerId
         );
     }
 

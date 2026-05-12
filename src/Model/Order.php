@@ -725,46 +725,109 @@ class Order extends Order_parent
     }
 
     /**
-     * Detect the "shipping moment" — oxsenddate transitions from empty/zero
-     * to a real timestamp — and auto-push PayPal tracking. Catches the case
-     * where a warehouse-management system writes the row directly (setting
-     * oxsenddate + oxtrackcode and saving) without going through the OXID
-     * admin's send-order button, which would otherwise fire the
-     * OrderMain::onOrderSend hook. The detection is one-shot per transition
-     * so a follow-up save with oxsenddate already set does not re-push. (0007945)
+     * Auto-push PayPal tracking on Order::save() so admin-UI and warehouse-
+     * management (Wawi/ERP) shipping flows reach PayPal uniformly. The push
+     * is gated by a snapshot diff over the four tracking-relevant persisted
+     * fields — oxorder.oxsenddate, oxorder.oxtrackcode, oscpaypal_order.
+     * paypaltrackingcode, oscpaypal_order.paypaltrackingcarrier — so saves
+     * that only touched unrelated columns do not generate redundant pushes,
+     * while pressing "Versenden" again with an updated tracking code or
+     * carrier (or re-stamping oxsenddate) does push again. (0007945)
      */
     public function save()
     {
-        $oldSendDate = '';
-        if ($this->isLoaded() && $this->getId()) {
-            $oldSendDate = (string) DatabaseProvider::getDb()->getOne(
-                'SELECT oxsenddate FROM oxorder WHERE oxid = ?',
-                [$this->getId()]
-            );
-        }
+        $oldSnapshot = $this->readPayPalTrackingSnapshot();
 
         $result = parent::save();
 
         $newSendDate = (string) $this->getFieldData('oxsenddate');
-        $wasUnset = $oldSendDate === '' || $oldSendDate === '0000-00-00 00:00:00';
         $isNowSet = $newSendDate !== '' && $newSendDate !== '0000-00-00 00:00:00';
+        $paid = $this->paidWithPayPal();
 
-        if ($wasUnset && $isNowSet && $this->paidWithPayPal()) {
-            try {
-                $this->doProvidePayPalTrackingCarrier();
-            } catch (\Throwable $exception) {
-                /** @var LoggerInterface $logger */
-                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-                $logger->log('warning', sprintf(
-                    'PayPal tracking auto-push during Order::save failed for order %s (nr: %s): %s',
-                    $this->getId(),
-                    $this->getFieldData('oxordernr'),
-                    $exception->getMessage()
-                ), [$exception]);
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        $logger->log('info', sprintf(
+            'Order::save tracking-hook: order=%s nr=%s isNowSet=%s paidWithPayPal=%s',
+            $this->getId(),
+            $this->getFieldData('oxordernr'),
+            $isNowSet ? 'true' : 'false',
+            $paid ? 'true' : 'false'
+        ));
+
+        if ($isNowSet && $paid) {
+            $newSnapshot = $this->readPayPalTrackingSnapshot();
+            $changed = $newSnapshot !== $oldSnapshot;
+
+            $logger->log('info', sprintf(
+                'Order::save tracking-hook: snapshot %s — old=[%s] new=[%s]',
+                $changed ? 'CHANGED — pushing' : 'unchanged — skipping',
+                $oldSnapshot,
+                $newSnapshot
+            ));
+
+            if ($changed) {
+                try {
+                    $this->doProvidePayPalTrackingCarrier();
+                } catch (\Throwable $exception) {
+                    $logger->log('warning', sprintf(
+                        'PayPal tracking auto-push during Order::save failed for order %s (nr: %s): %s',
+                        $this->getId(),
+                        $this->getFieldData('oxordernr'),
+                        $exception->getMessage()
+                    ), [$exception]);
+                }
             }
         }
 
         return $result;
+    }
+
+    /**
+     * Pin the capture row in oscpaypal_order (which holds a per-event history)
+     * and return its transaction id. Filtered on transaction_type='capture'
+     * with a completed-style status so neither a still-empty pre-capture row
+     * (status CREATED) nor an authorize/refund row gets returned. (0007945)
+     */
+    public function getPayPalCaptureTransactionId(): string
+    {
+        if (!$this->isLoaded() || !$this->getId()) {
+            return '';
+        }
+        $transactionId = DatabaseProvider::getDb()->getOne(
+            'SELECT oscpaypaltransactionid FROM oscpaypal_order '
+            . 'WHERE oxorderid = ? '
+            . "AND oscpaypaltransactiontype = 'capture' "
+            . "AND oscpaypalstatus IN ('COMPLETED', 'CAPTURED') "
+            . "AND oscpaypaltransactionid <> '' "
+            . 'ORDER BY oxtimestamp DESC LIMIT 1',
+            [$this->getId()]
+        );
+        return (string) $transactionId;
+    }
+
+    /**
+     * Read a stable string representation of the four tracking-relevant
+     * persisted fields to compare across a save() call. Returns '' for
+     * unloaded / unsaved orders so a first-time save also registers as
+     * a change (the diff against the post-save value will then be non-empty).
+     */
+    private function readPayPalTrackingSnapshot(): string
+    {
+        if (!$this->isLoaded() || !$this->getId()) {
+            return '';
+        }
+
+        $row = DatabaseProvider::getDb()->getRow(
+            'SELECT o.oxsenddate, o.oxtrackcode, '
+            . 'COALESCE(pp.oscpaypaltrackingid, \'\') AS pp_trackingid, '
+            . 'COALESCE(pp.oscpaypaltrackingtype, \'\') AS pp_trackingtype '
+            . 'FROM oxorder o '
+            . 'LEFT JOIN oscpaypal_order pp ON pp.oxorderid = o.oxid '
+            . 'WHERE o.oxid = ?',
+            [$this->getId()]
+        );
+
+        return $row ? implode('|', $row) : '';
     }
 
     public function doProvidePayPalTrackingCarrier(
@@ -788,12 +851,42 @@ class Order extends Order_parent
             // without a clickable carrier link. (0007945)
             $trackCarrier = 'OTHER';
         }
-        $transactionId = $transactionId ?: $this->getPayPalTransactionId();
+        // oscpaypal_order keeps a per-event history (authorize, capture,
+        // refund …) with one row each, so an undifferentiated lookup via
+        // getPayPalTransactionId() could pick a non-capture row. Filter
+        // explicitly on transaction_type='capture' and a completed status
+        // to pin the capture row. oxorder.oxtransid stays as the last-ditch
+        // fallback for orders whose history row never received the capture
+        // id (legacy direct-capture paths). (0007945)
+        if (!$transactionId) {
+            $transactionId = $this->getPayPalCaptureTransactionId();
+        }
+        if (!$transactionId) {
+            $transactionId = (string) $this->getFieldData('oxtransid');
+        }
+        // v2 tracking endpoint needs the PayPal order id in the URL — fetch
+        // it from the oscpaypal_order mapping. (0007945)
+        $payPalOrderId = $this->getPayPalOrderIdForOxOrderId();
 
-        if (!$trackCode || !$trackCarrier || !$transactionId) {
+        if (!$trackCode || !$trackCarrier || !$transactionId || !$payPalOrderId) {
+            $missing = array_filter([
+                !$trackCode     ? 'trackCode'     : null,
+                !$trackCarrier  ? 'trackCarrier'  : null,
+                !$transactionId ? 'capture_id'    : null,
+                !$payPalOrderId ? 'payPalOrderId' : null,
+            ]);
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->log('info', sprintf(
+                'PayPal tracking push skipped for order %s (nr: %s) — missing: %s',
+                $this->getId(),
+                $this->getFieldData('oxordernr'),
+                implode(', ', $missing)
+            ));
             return false;
         }
         return oxNew(Tracker::class)->sendtracking(
+            $payPalOrderId,
             $transactionId,
             $trackCode,
             $trackCarrier,
