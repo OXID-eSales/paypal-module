@@ -42,8 +42,9 @@ class OrderMain extends OrderMain_parent
             if ($this->isPayPalOrderCaptureOnDelivery()) {
                 $this->capturePayPalOrder();
             }
-            $order = $this->getOrder();
-            $order->doProvidePayPalTrackingCarrier();
+            // PayPal tracking auto-push is handled in Order::save() now — it
+            // fires on the oxsenddate leer→gesetzt transition so admin and
+            // Wawi-driven send paths reach PayPal uniformly. (0007945)
         }
     }
 
