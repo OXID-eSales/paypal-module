@@ -9,6 +9,8 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
+use OxidSolutionCatalysts\PayPal\Core\Utils\AmountFormatter;
+
 class Currency
 {
     /**
@@ -50,6 +52,6 @@ class Currency
     {
         $decimals = in_array($currency, self::NON_DECIMAL) ? 0 : 2;
 
-        return number_format($value, $decimals, '', '');
+        return AmountFormatter::formatCents($value, $decimals);
     }
 }

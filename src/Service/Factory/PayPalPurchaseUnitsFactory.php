@@ -16,6 +16,7 @@ use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\Utils\AmountFormatter;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
@@ -246,11 +247,9 @@ class PayPalPurchaseUnitsFactory
         }
 
         // Total order amount (2 decimals)
-        $total = (float) number_format(
-            $basket->getPrice()->getBruttoPrice(),
-            2,
-            '.',
-            ''
+        $total = (float) AmountFormatter::format(
+            (float) $basket->getPrice()->getBruttoPrice(),
+            2
         );
 
         // Breakdown components
@@ -467,7 +466,7 @@ class PayPalPurchaseUnitsFactory
 
     private function toMoneyValue(float $v): string
     {
-        return number_format($this->round2($v), self::DECIMALS, '.', '');
+        return AmountFormatter::format($this->round2($v), self::DECIMALS);
     }
 
     public function setBasket(Basket $basket)
