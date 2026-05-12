@@ -28,6 +28,11 @@ class PayPalTrackingCarrierList extends ListModel
     /**
      * Load Tracking-Carrier models
      *
+     * For a country-scoped call the result also includes the carriers PayPal
+     * lists under the "GLOBAL" bucket — those are carriers (DHL, FedEx, UPS,
+     * Hermes-World, etc.) that PayPal stopped attaching to individual countries
+     * but that are still relevant for every country-specific shipment. (0007945)
+     *
      * @param string $countryCode - optional
      */
     public function loadTrackingCarriers(string $countryCode = '')
@@ -36,10 +41,14 @@ class PayPalTrackingCarrierList extends ListModel
         $viewName = $baseObject->getViewName();
         $select = "select * from {$viewName} where 1 ";
         $selectParams = [];
-        if ($countryCode) {
-            $select .= "and {$viewName}.oxcountrycode = :oxcountrycode";
+        if ($countryCode && $countryCode !== 'GLOBAL') {
+            $select .= "and {$viewName}.oxcountrycode in (:oxcountrycode, 'GLOBAL') ";
+            $selectParams[':oxcountrycode'] = $countryCode;
+        } elseif ($countryCode) {
+            $select .= "and {$viewName}.oxcountrycode = :oxcountrycode ";
             $selectParams[':oxcountrycode'] = $countryCode;
         }
+        $select .= "order by {$viewName}.oxtitle asc";
         $this->selectString($select, $selectParams);
     }
 
@@ -76,7 +85,14 @@ class PayPalTrackingCarrierList extends ListModel
         if (is_a($resultDB, Result::class)) {
             $row = $resultDB->fetchAssociative();
             if ($row) {
-                return (string) $row['oxcountrycode'];
+                $code = (string) $row['oxcountrycode'];
+                // The "GLOBAL" bucket is not a country — let the caller fall
+                // back to the order's own country code instead, so the admin
+                // dropdown does not pre-select an invented entry. (0007945)
+                if ($code === 'GLOBAL') {
+                    return '';
+                }
+                return $code;
             }
         }
 
@@ -111,6 +127,13 @@ class PayPalTrackingCarrierList extends ListModel
         if (is_a($resultDB, Result::class)) {
             $fromDB = $resultDB->fetchAllAssociative();
             foreach ($fromDB as $row) {
+                // Skip the "GLOBAL" bucket — it's not a country code and must
+                // not appear in the admin country dropdown. Its carriers are
+                // automatically merged into every country-scoped lookup via
+                // loadTrackingCarriers(). (0007945)
+                if ($row['oxcountrycode'] === 'GLOBAL') {
+                    continue;
+                }
                 $result[] = $row['oxcountrycode'];
             }
         }
