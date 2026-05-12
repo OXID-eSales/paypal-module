@@ -480,12 +480,11 @@ class AjaxPaymentController extends BaseController
                 (int)$lang->getBaseLanguage(),
                 false
             );
-            Registry::getUtilsView()->addErrorToDisplay(
-                $message,
-                false,
-                true,
-                'paypal_error'
-            );
+            // Queue into the default error slot, which the OXID frontend
+            // renders out of the box. The previous custom destination
+            // 'paypal_error' only feeds the admin onboarding template and
+            // never reached the customer. (0007925)
+            Registry::getUtilsView()->addErrorToDisplay($message, false, true);
 
             $this->outputJson([
                 'status' => 'error',
