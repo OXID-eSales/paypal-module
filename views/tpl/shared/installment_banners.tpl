@@ -49,7 +49,7 @@
                     initWhenPayPalMessageAvailable();
                 }, 100);
             }
-        }
+        };
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initWhenPayPalMessageAvailable);
@@ -59,7 +59,7 @@
 
         window.onresize = function () {
             initWhenPayPalMessageAvailable();
-        }
+        };
     [{/capture}]
     [{oxscript add=$installmentBanners}]
 [{/if}]
