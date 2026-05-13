@@ -944,22 +944,30 @@ class Order extends Order_parent
     public function getPayPalOrderIdForOxOrderId(string $oxId = null): string
     {
         //TODO: model?
-        if (is_null($this->payPalOrderId)) {
-            $this->payPalOrderId = '';
-            $oxId = is_null($oxId) ? $this->getId() : $oxId;
-            $table = 'oscpaypal_order';
-            $shopId = $this->getShopId();
-            $params = [$table . '.oxorderid' => $oxId, $table . '.oxshopid' => $shopId];
-
-            $paypalOrderObj = oxNew(BaseModel::class);
-            $paypalOrderObj->init($table);
-            $select = $paypalOrderObj->buildSelectString($params);
-
-            if ($data = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getRow($select)) {
-                $this->payPalOrderId = $data['oxpaypalorderid'];
-            }
+        // Only positive results are memoized. A negative lookup must not be cached because
+        // the oscpaypal_order row can be written during the same request (PUI flow:
+        // Order::save tracking-hook calls paidWithPayPal() before Payment::trackPayPalOrder
+        // inserts the row). A cached empty value would then mask the freshly written id,
+        // making the subsequent capture lookup request GET /v2/checkout/orders/ (no id) — 404.
+        if (!empty($this->payPalOrderId)) {
+            return $this->payPalOrderId;
         }
-        return $this->payPalOrderId;
+
+        $oxId = is_null($oxId) ? $this->getId() : $oxId;
+        $table = 'oscpaypal_order';
+        $shopId = $this->getShopId();
+        $params = [$table . '.oxorderid' => $oxId, $table . '.oxshopid' => $shopId];
+
+        $paypalOrderObj = oxNew(BaseModel::class);
+        $paypalOrderObj->init($table);
+        $select = $paypalOrderObj->buildSelectString($params);
+
+        if ($data = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getRow($select)) {
+            $this->payPalOrderId = $data['oxpaypalorderid'];
+            return $this->payPalOrderId;
+        }
+
+        return '';
     }
 
     /**
