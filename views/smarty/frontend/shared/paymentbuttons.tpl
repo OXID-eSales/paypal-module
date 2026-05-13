@@ -25,7 +25,9 @@
             // SyntaxError on the `let button` binding — classic scripts share the
             // script-block scope for `let`/`const`. The early-return also guards
             // against double rendering when the container is still populated.
-            (function () {
+            // Leading semicolon defends against ASI failure when this snippet is
+            // concatenated by oxscript behind another snippet that ends without `;`.
+            ;(function () {
                 var paypalButtonContainer = document.getElementById('[{$buttonId}]');
                 if (!paypalButtonContainer || paypalButtonContainer.children.length > 0) {
                     return;

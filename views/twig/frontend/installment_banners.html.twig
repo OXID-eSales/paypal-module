@@ -57,7 +57,7 @@
                     initWhenPayPalMessageAvailable();
                 }, 100);
             }
-        }
+        };
 
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initWhenPayPalMessageAvailable);
@@ -67,7 +67,7 @@
 
         window.onresize = function () {
             initWhenPayPalMessageAvailable();
-        }
+        };
     {% endset %}
     {{ script({ add: installmentBanners.__toString(), priority: 10, dynamic: __oxid_include_dynamic }) }}
 {% endif %}
