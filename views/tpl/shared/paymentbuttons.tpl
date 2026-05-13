@@ -26,7 +26,7 @@
             // script-block scope for `let`/`const`. The early-return also guards
             // against double rendering when the container is still populated.
             // Leading semicolon defends against ASI failure when this snippet is
-            // concatenated by [{oxscript}] behind another snippet that ends without `;`.
+            // concatenated by oxscript behind another snippet that ends without `;`.
             ;(function () {
                 var paypalButtonContainer = document.getElementById('[{$buttonId}]');
                 if (!paypalButtonContainer || paypalButtonContainer.children.length > 0) {
