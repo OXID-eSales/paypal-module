@@ -125,14 +125,20 @@ class Payment
         string $payPalPartnerAttributionId = '',
         string $returnUrl = null,
         string $cancelUrl = null,
-        bool $setProvidedAddress = true
+        bool $setProvidedAddress = true,
+        ?EshopModelOrder $order = null
     ): ?Order {
         $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
 
         /** @var ApiOrderService $orderService */
         $orderService = $this->serviceFactory->getOrderService();
         $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
-        $customId = $this->getCurrentOrderNumber($basket);
+        // For server-side flows (uAPM, PUI) the shop order already exists when this method
+        // runs (setOrderNumber has been called in _executePayment / doExecutePuiPayment).
+        // Express/ACDC pass null and rely on the patch step in doCreatePatchedOrder.
+        $customId = $order instanceof EshopModelOrder
+            ? $this->getCustomIdParameter($order)
+            : $this->getCurrentOrderNumber($basket);
         $this->orderRequestFactory->setBasket($basket);
         $request = $this->orderRequestFactory->getRequest(
             $basket,
@@ -565,7 +571,8 @@ class Payment
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
             $payPalUrlService->getReturnUrl(),
             $payPalUrlService->getCancelUrl(),
-            false
+            false,
+            $order
         );
 
         $redirectLink = '';
@@ -748,7 +755,11 @@ class Payment
                 Constants::PAYPAL_PROCESSING_INSTRUCTIONS,
                 PayPalDefinitions::PAYMENT_SOURCE_PUI,
                 $payPalClientMetadataId,
-                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
+                null,
+                null,
+                true,
+                $order
             );
             if ($result) {
                 $payPalOrderId = $result->id;
