@@ -78,7 +78,12 @@ class PayPalOrderCompletedSubscriber implements EventSubscriberInterface
         // send mail
         if ($basket && $user) {
             if (method_exists($order, 'sendPayPalOrderByEmail')) {
-                $order->sendPayPalOrderByEmail($user, $basket);
+                $order->setSkipProxyControllerVoucherGuard(true);
+                try {
+                    $order->sendPayPalOrderByEmail($user, $basket);
+                } finally {
+                    $order->setSkipProxyControllerVoucherGuard(false);
+                }
             }
         }
 
