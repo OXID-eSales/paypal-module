@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Service;
 
 use OxidEsales\Eshop\Application\Model\Order;
+use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use PDO;
@@ -68,16 +69,50 @@ class OrderRepository
                 return $order;
             }
 
-            $order->assign(
-                [
-                    'oxorderid' => $shopOrderId,
-                    'oxpaypalorderid' => $paypalOrderId
-                ]
+            // Atomically claim the (oxorderid, oxpaypalorderid, oscpaypaltransactionid)
+            // tuple via INSERT IGNORE so concurrent webhook deliveries do not race
+            // on the UNIQUE index ORDERID_PAYPALORDERID_TRANSACTIONID. After the
+            // statement the row is guaranteed to exist; the subsequent load+save
+            // by the caller turns into an UPDATE rather than a colliding INSERT.
+            $this->insertIgnorePayPalOrder(
+                $shopOrderId,
+                $paypalOrderId,
+                $payPalTransactionId
             );
-            $order->setTransactionId($payPalTransactionId);
+
+            $oxid = $this->getId(
+                $shopOrderId,
+                $paypalOrderId,
+                $payPalTransactionId,
+                Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE
+            );
+            $order = oxNew(PayPalOrderModel::class);
+            $order->load($oxid);
         }
 
         return $order;
+    }
+
+    private function insertIgnorePayPalOrder(
+        string $shopOrderId,
+        string $paypalOrderId,
+        string $payPalTransactionId
+    ): void {
+        $newOxid = Registry::getUtilsObject()->generateUId();
+        DatabaseProvider::getDb()->execute(
+            'INSERT IGNORE INTO oscpaypal_order'
+            . ' (oxid, oxshopid, oxorderid, oxpaypalorderid,'
+            . '  oscpaypaltransactionid, oscpaypaltransactiontype)'
+            . ' VALUES (?, ?, ?, ?, ?, ?)',
+            [
+                $newOxid,
+                (string) $this->config->getShopId(),
+                $shopOrderId,
+                $paypalOrderId,
+                $payPalTransactionId,
+                Constants::PAYPAL_TRANSACTION_TYPE_CAPTURE,
+            ]
+        );
     }
 
     public function paypalOrderByOrderId(
