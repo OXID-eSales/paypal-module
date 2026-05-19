@@ -1345,11 +1345,6 @@ class Order extends Order_parent
         $this->paymentService = $paymentService;
     }
 
-    public function isSkipProxyControllerVoucherGuard(): bool
-    {
-        return $this->skipProxyControllerVoucherGuard;
-    }
-
     public function setSkipProxyControllerVoucherGuard(bool $skipProxyControllerVoucherGuard): void
     {
         $this->skipProxyControllerVoucherGuard = $skipProxyControllerVoucherGuard;
