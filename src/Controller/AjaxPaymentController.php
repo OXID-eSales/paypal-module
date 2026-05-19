@@ -763,7 +763,7 @@ class AjaxPaymentController extends BaseController
         }
 
         /** @var ShopOrder $oOrder */
-        $order->sendPayPalOrderByEmail(
+        $order->sendPayPalOrderByEmailWithVoucherBinding(
             $user,
             $basket
         );

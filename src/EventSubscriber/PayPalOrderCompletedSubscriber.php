@@ -75,10 +75,10 @@ class PayPalOrderCompletedSubscriber implements EventSubscriberInterface
             $event->getTransactionId()
         );
 
-        // send mail
+        // send mail (with voucher binding — see Order::sendPayPalOrderByEmailWithVoucherBinding)
         if ($basket && $user) {
-            if (method_exists($order, 'sendPayPalOrderByEmail')) {
-                $order->sendPayPalOrderByEmail($user, $basket);
+            if (method_exists($order, 'sendPayPalOrderByEmailWithVoucherBinding')) {
+                $order->sendPayPalOrderByEmailWithVoucherBinding($user, $basket);
             }
         }
 
