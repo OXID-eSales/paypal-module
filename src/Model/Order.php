@@ -614,7 +614,13 @@ class Order extends Order_parent
         $this->markOrderPaymentFailed();
         $this->save();
 
-        PayPalSession::unsetPayPalOrderId();
+        // Wipe PayPal-side session state so a retry creates a fresh PayPal
+        // order instead of inheriting this one. Shipping is preserved.
+        PayPalSession::unsetPayPalSession(false);
+        $basket = Registry::getSession()->getBasket();
+        if ($basket !== null) {
+            $basket->setOrderId(null);
+        }
 
         /** @var LoggerInterface $logger */
         $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
