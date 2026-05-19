@@ -201,7 +201,7 @@ class Order extends Order_parent
             $basket = Registry::getSession()->getBasket();
             $user = Registry::getSession()->getUser();
             if ($basket && $user) {
-                $this->sendPayPalOrderByEmail($user, $basket);
+                $this->sendPayPalOrderByEmailWithVoucherBinding($user, $basket);
             }
             return;
         }
@@ -323,20 +323,15 @@ class Order extends Order_parent
             $this->setTransId($capture->id);
         }
 
-        // Bind vouchers to the order now that the external payment is confirmed.
-        // Routed via $this->markVouchers (not parent::) so any other module in the
-        // OXID class chain that overrides markVouchers still runs; the bypass flag
-        // only switches off our own proxy-controller skip for this one call.
+        // On confirmed payment, bind vouchers + send mail in one helper so the
+        // mail's voucher line is populated. On failure, just send the bare mail
+        // (no voucher binding for the failure branch of doExecutePayPalPayment
+        // in the PayPal-Standard direct-capture path).
         if ($payPalPaymentSuccess) {
-            $this->skipProxyControllerVoucherGuard = true;
-            try {
-                $this->markVouchers($basket, $user);
-            } finally {
-                $this->skipProxyControllerVoucherGuard = false;
-            }
+            $this->sendPayPalOrderByEmailWithVoucherBinding($user, $basket);
+        } else {
+            $this->sendPayPalOrderByEmail($user, $basket);
         }
-
-        $this->sendPayPalOrderByEmail($user, $basket);
     }
 
     /**
@@ -352,6 +347,30 @@ class Order extends Order_parent
         Registry::getSession()->setVariable('blDontCheckProductStockForPayPalMails', true);
         $this->sendOrderByEmail($user, $basket, $userPayment);
         Registry::getSession()->deleteVariable('blDontCheckProductStockForPayPalMails');
+    }
+
+    /**
+     * Bind basket vouchers to the order (so they appear in oxvouchers and in
+     * the order-confirmation mail's voucher list) and then send the mail.
+     * Required for proxy-controller payments (ACDC, Apple Pay, Google Pay,
+     * PayPal Standard via proxy) whose mail send paths reach `markVouchers`
+     * with `isProxyControllerPayment == true` — the skip guard there would
+     * otherwise drop the voucher binding, producing a confirmation mail
+     * without the voucher line even though the discount was applied at
+     * checkout. Use this method at every "external payment confirmed"
+     * mail-send site; for non-proxy payments (Express, PUI, uAPMs) calling
+     * this method is also safe — parent::markVouchers is idempotent against
+     * a voucher already bound to the same order.
+     */
+    public function sendPayPalOrderByEmailWithVoucherBinding(User $user, Basket $basket): void
+    {
+        $this->skipProxyControllerVoucherGuard = true;
+        try {
+            $this->markVouchers($basket, $user);
+        } finally {
+            $this->skipProxyControllerVoucherGuard = false;
+        }
+        $this->sendPayPalOrderByEmail($user, $basket);
     }
 
     /**
