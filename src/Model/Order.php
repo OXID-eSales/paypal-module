@@ -910,13 +910,17 @@ class Order extends Order_parent
             ));
             return false;
         }
-        return oxNew(Tracker::class)->sendtracking(
+        $success = oxNew(Tracker::class)->sendtracking(
             $payPalOrderId,
             $transactionId,
             $trackCode,
             $trackCarrier,
             $status
         );
+        if ($success) {
+            $this->setPayPalOrderTrackingCode($trackCode);
+        }
+        return $success;
     }
 
     /**
@@ -959,6 +963,21 @@ class Order extends Order_parent
 
         //updating order object
         $this->oxorder__oxtransid = new Field($sTransId);
+    }
+
+    /**
+     * Update order oxtrackcode with the tracking code that was sent to PayPal.
+     * (0007954)
+     */
+    protected function setPayPalOrderTrackingCode(string $trackCode): void
+    {
+        $db = DatabaseProvider::getDb();
+
+        $query = 'update oxorder set oxtrackcode=? where oxid=?';
+        $db->execute($query, [$trackCode, $this->getId()]);
+
+        //updating order object
+        $this->oxorder__oxtrackcode = new Field($trackCode);
     }
 
     /**
