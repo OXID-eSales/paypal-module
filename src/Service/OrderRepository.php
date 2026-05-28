@@ -130,11 +130,10 @@ class OrderRepository
         $sessiontime = (int)$this->config->getConfigParam('oscPayPalStartTimeCleanUpOrders');
         $shopId = $this->config->getShopId();
 
-        $query = "select oxid from oxorder where oxordernr = :oxordernr
-            and oxtransstatus = :oxtransstatus
+        $query = "select oxid from oxorder where oxtransstatus = :oxtransstatus
             and oxpaymenttype LIKE :oxpaymenttype
             and oxshopid = :oxshopid
-            and oxorderdate + interval :sessiontime MINUTE  > now()";
+            and oxorderdate < now() - interval :sessiontime MINUTE";
 
         /** @var \OxidEsales\Eshop\Core\Database\Adapter\Doctrine\ResultSet $result */
         $result = $this->db->select($query, [

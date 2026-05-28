@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased]
+
+- [0007955](https://bugs.oxid-esales.com/view.php?id=7955): Fix `OrderRepository::cleanUpNotFinishedOrders()` — the webhook-triggered cleanup never cancelled stale NOT_FINISHED orders because the SQL referenced an unbound `:oxordernr` placeholder (PDO threw a parameter-count exception) and the `oxorderdate` comparison was inverted, matching fresh orders inside the session window instead of expired ones
+
 ## [1.3.13] - 2025-06-06
 
 - [0007769](https://bugs.oxid-esales.com/view.php?id=7769): Performance: Cache the Data-Client-Token for 24h & load SDK only if necessary
