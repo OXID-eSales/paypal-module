@@ -24,34 +24,12 @@ class PayPalAmountValidator
      */
     public function validateAndAdjustOrder(array $orderData): array
     {
-        // Enrich breakdown using services if Basket is present
-        try {
-            // Fetch basket directly from session; do not rely on orderData['basket']
-            $session = \OxidEsales\Eshop\Core\Registry::getSession();
-            $basket = $session ? $session->getBasket() : null;
-            if ($basket instanceof \OxidEsales\Eshop\Application\Model\Basket) {
-                /** @var \OxidSolutionCatalysts\PayPal\Service\VatOptionsService $vatSvc */
-                $vatSvc = \OxidEsales\Eshop\Core\Registry::get(VatOptionsService::class);
-                if ($vatSvc->isPaymentVatVisible()) {
-                    $paymentVat = $vatSvc->getPaymentVatAmount($basket);
-                    if ($paymentVat > 0) {
-                        $orderData['breakdown']['payment_vat'] = $paymentVat;
-                    }
-                }
-            }
-        } catch (\Throwable $e) {
-            // Do not block checkout on service retrieval issues
-        }
-
         // Calculate items total (including subtracting discounts if provided in breakdown)
         $items = $orderData['items'] ?? [];
         $itemsTotal = $this->calculateItemsTotal($items, $orderData['breakdown'] ?? []);
 
         // If no items are present, we are not in NET items mode; do not adjust amounts
         if (empty($items)) {
-            if (isset($orderData['breakdown']['payment_vat'])) {
-                unset($orderData['breakdown']['payment_vat']);
-            }
             return $orderData;
         }
 
@@ -117,10 +95,6 @@ class PayPalAmountValidator
             ];
         }
 
-        if (isset($orderData['breakdown']['payment_vat'])) {
-            unset($orderData['breakdown']['payment_vat']);
-        }
-
         return $orderData;
     }
 
@@ -145,11 +119,6 @@ class PayPalAmountValidator
         $shippingDiscount = isset($breakdown['shipping_discount']['value'])
             ? (float)$breakdown['shipping_discount']['value'] : 0.0;
         $total -= ($discount + $shippingDiscount);
-
-        $paymentVat = isset($breakdown['payment_vat']) ? (float)$breakdown['payment_vat'] : 0.0;
-        if ($paymentVat > 0) {
-            $total -= $paymentVat;
-        }
 
         return $total;
     }
