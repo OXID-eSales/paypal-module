@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.9.0] - 2026-06-09
+
+### Security
+
+- **[CVE-XXXX-XXXX]** [0007936](https://bugs.oxid-esales.com/view.php?id=7936): Fixed a high-severity authentication bypass / account takeover in the PayPal Express checkout flow that could, under certain conditions, allow an unauthenticated attacker to sign in as another customer via the standard shop login form. **All users are strongly advised to update to this version immediately.** Full technical details, affected/patched version matrix and reporter credit will be published with the security advisory on the disclosure date (see below). Reported via security@oxid-esales.com.
+- **Coordinated disclosure:** In accordance with our responsible-disclosure policy, the full technical write-up, the public bug-tracker entry ([0007936](https://bugs.oxid-esales.com/view.php?id=7936)) and the corresponding CVE record will be formally published on 2026-06-23. Until that date the bug-tracker reference and the `CVE-XXXX-XXXX` identifier above are placeholders and may not yet resolve.
+
 ## [2.8.4] - 2026-05-15
 
 ### FIX
