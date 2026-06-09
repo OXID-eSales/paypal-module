@@ -72,7 +72,7 @@ $aLang = array_merge(
     "OSC_PAYPAL_STYLE_BUTTON_LABEL_INSTALLMENT" => "Installment",
     "OSC_PAYPAL_STYLE_BUTTON_LABEL_HELP"        => "",
 
-    'OSC_PAYPAL_EXPRESS_LOGIN_TITLE'              => 'Login mit PayPal',
+    'OSC_PAYPAL_EXPRESS_LOGIN_TITLE'              => 'Automatischer Login',
     'OSC_PAYPAL_LOGIN_WITH_PAYPAL_EMAIL'          => 'Im Shop beim Kauf automatisch einloggen',
     'HELP_OSC_PAYPAL_EXPRESS_LOGIN'               => 'Wenn die Shop-Kundenkonto-EMail-Adresse gleich der PayPal-EMail-Adresse ist,
         besteht die Möglichkeit, sich durch ein Login bei PayPal auch automatisch im Shop anzumelden. Möglicherweise ist dieses Verhalten nicht im
