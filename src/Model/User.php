@@ -11,11 +11,9 @@ use DateTimeImmutable;
 use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberUtil;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
-use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Application\Model\RequiredAddressFields;
 use OxidEsales\Eshop\Application\Model\Country as EshopModelCountry;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
-use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Exception\UserPhone;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Phone as ApiModelPhone;
 
@@ -118,41 +116,6 @@ class User extends User_parent
     public function resetAddresses(): void
     {
         $this->_aAddresses = [];
-    }
-
-    /**
-     * @param string $userName
-     *
-     * @return false|string
-     * @throws \OxidEsales\Eshop\Core\Exception\DatabaseConnectionException
-     */
-    private function getUserIdByPayPalAddress(string $userName)
-    {
-        return DatabaseProvider::getDb()->getOne(
-            "SELECT `OXID` FROM oxuser
-            WHERE 1 AND oxusername = :oxusername",
-            [
-                ':oxusername' => $userName
-            ]
-        );
-    }
-
-    /**
-     * Login with PayPalUsername
-     *
-     * @param string $userName
-     * @param string $password
-     */
-    protected function onLogin($userName, $password)
-    {
-        if (PayPalSession::isPayPalExpressOrderActive()) {
-            $userId = $this->getUserIdByPayPalAddress($userName);
-            if ($userId) {
-                $this->load($userId);
-            }
-        } else {
-            parent::onLogin($userName, $password);
-        }
     }
 
     /**
