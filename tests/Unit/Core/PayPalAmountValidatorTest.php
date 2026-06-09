@@ -131,4 +131,61 @@ class PayPalAmountValidatorTest extends TestCase
         // No shipping_discount expected in this branch
         $this->assertArrayNotHasKey('shipping_discount', $adjusted['breakdown']);
     }
+
+    /**
+     * Regression test for AMOUNT_MISMATCH when a payment-method surcharge is used
+     * together with "show VAT for payment surcharge" (blShowVATForPayCharge).
+     *
+     * The surcharge is already contained gross in amount_value, so its VAT part must
+     * NOT be subtracted from the items total. Otherwise the compensating adjustment item
+     * becomes too large by the surcharge VAT and the breakdown no longer matches amount.
+     *
+     * Real-world case (gross mode):
+     *   item 386.78 + shipping 6.95 + surcharge 0.39 (= 0.33 net) = 394.12 = amount_value
+     *   surcharge VAT part = 0.06
+     * Buggy behaviour produced an adjustment of 0.45 (=0.39+0.06) and item_total 387.23,
+     * so PayPal computed 387.23 + 6.95 = 394.18 != 394.12 -> AMOUNT_MISMATCH.
+     */
+    public function testPaymentVatInBreakdownDoesNotDistortAdjustment(): void
+    {
+        $validator = new PayPalAmountValidator();
+
+        $orderData = [
+            'items' => [
+                [
+                    'quantity' => 1,
+                    'unit_amount' => ['currency_code' => 'EUR', 'value' => '386.78'],
+                    'tax' => ['currency_code' => 'EUR', 'value' => '0.00'],
+                ],
+            ],
+            'breakdown' => [
+                'item_total' => ['currency_code' => 'EUR', 'value' => '386.78'],
+                'tax_total' => ['currency_code' => 'EUR', 'value' => '0.00'],
+                'shipping' => ['currency_code' => 'EUR', 'value' => '6.95'],
+                'discount' => ['currency_code' => 'EUR', 'value' => '0.00'],
+                // Simulates the previously injected (and faulty) payment VAT value.
+                // It must be ignored by the validator now.
+                'payment_vat' => 0.06,
+            ],
+            'amount_value' => 394.12,
+        ];
+
+        $adjusted = $validator->validateAndAdjustOrder($orderData);
+
+        // Adjustment item must cover the full gross surcharge (0.39), not 0.45.
+        $this->assertCount(2, $adjusted['items']);
+        $adjustmentItem = end($adjusted['items']);
+        $this->assertSame('0.39', $adjustmentItem['unit_amount']['value']);
+
+        // item_total must be 386.78 + 0.39 = 387.17.
+        $this->assertSame('387.17', $adjusted['breakdown']['item_total']['value']);
+
+        // Decisive assertion: breakdown total must equal amount_value.
+        $bd = $adjusted['breakdown'];
+        $breakdownTotal = (float)$bd['item_total']['value']
+            + (float)$bd['shipping']['value']
+            + (float)$bd['tax_total']['value']
+            - (float)$bd['discount']['value'];
+        $this->assertEqualsWithDelta(394.12, $breakdownTotal, 0.001);
+    }
 }

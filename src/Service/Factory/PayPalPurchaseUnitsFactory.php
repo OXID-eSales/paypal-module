@@ -353,7 +353,40 @@ class PayPalPurchaseUnitsFactory
             ];
         }
 
-        // Additional lines (wrapping, gift card, payment, surcharge, rounding diff) can be added here if needed
+        // Payment-method surcharge as an explicit line item, so it is reflected in
+        // item_total / tax_total (incl. its VAT in net mode) instead of being absorbed
+        // as a tax-free balancing item by PayPalAmountValidator.
+        $paymentCost = $basket->getCosts('oxpayment');
+        if ($paymentCost) {
+            $surchargeBrutto = (float)$paymentCost->getBruttoPrice();
+            // Only positive surcharges can be line items (PayPal forbids negative item
+            // amounts); a negative payment cost keeps flowing through the discount path.
+            if ($surchargeBrutto > 0) {
+                $surchargeVatPercent = (float)($paymentCost->getVat() ?? 0.0);
+                if ($isNetMode) {
+                    $surchargeValue = (float)$paymentCost->getNettoPrice();
+                    $surchargeTax = PriceToMoney::convert((float)$paymentCost->getVatValue(), $currency);
+                    $surchargeTaxStr = $surchargeTax->value;
+                } else {
+                    $surchargeValue = $surchargeBrutto;
+                    $surchargeTaxStr = '0.00';
+                }
+                $surchargeAmount = PriceToMoney::convert($surchargeValue, $currency);
+                $items[] = [
+                    'name' => 'Payment surcharge',
+                    'sku' => 'payment-surcharge',
+                    'quantity' => '1',
+                    'unit_amount' => [
+                        'currency_code' => $surchargeAmount->currency_code,
+                        'value' => $surchargeAmount->value,
+                    ],
+                    'tax' => ['currency_code' => $surchargeAmount->currency_code, 'value' => $surchargeTaxStr],
+                    'tax_rate' => (string)$surchargeVatPercent,
+                    'category' => ApiItem::CATEGORY_DIGITAL_GOODS,
+                ];
+            }
+        }
+
         return $items;
     }
 
