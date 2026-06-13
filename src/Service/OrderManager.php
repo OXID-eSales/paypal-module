@@ -14,6 +14,7 @@ use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\JsonTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -72,8 +73,32 @@ class OrderManager
             return null;
         }
 
-        if (empty($this->basket->getPaymentId()) && !empty($paymentId)) {
+        // The payment id passed by the PayPal checkout flow is authoritative for
+        // the order created here: always apply it, overriding any payment method
+        // left in the basket by a previous, abandoned checkout (e.g. an Amazon Pay
+        // express selection). The earlier "only when empty" guard ignored the
+        // PayPal payment id whenever a foreign payment was still set on the basket.
+        if (!empty($paymentId)) {
             $this->basket->setPayment($paymentId);
+        }
+
+        // Safety net: this method always runs the PayPal checkout path, where the
+        // isPayPalPaymentCheckout flag (set below) makes finalizeOrder skip the
+        // regular payment execution and mark the order OK. The basket payment must
+        // therefore be a PayPal payment here — otherwise a stale foreign basket
+        // payment would be finalized as a paid order without its real payment ever
+        // running. Abort cleanly; the callers turn a null result into an error
+        // response instead of creating a mispaid order.
+        if (!PayPalDefinitions::isPayPalPayment((string) $this->basket->getPaymentId())) {
+            $this->logger->log(
+                'error',
+                'Aborting create shop order: basket payment is not a PayPal payment',
+                [
+                    'basketPaymentId' => (string) $this->basket->getPaymentId(),
+                    'requestedPaymentId' => (string) $paymentId,
+                ]
+            );
+            return null;
         }
 
         $order = oxNew(Order::class);
