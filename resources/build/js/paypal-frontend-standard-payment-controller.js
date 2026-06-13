@@ -120,6 +120,21 @@
         // PayPal-specific button settings
         this.getPayButtonSettings = function () {
             const buttonSettings = {
+                // Validate the terms-and-conditions up front, before the SDK opens
+                // the popup. The SDK opens the popup synchronously on click and only
+                // then calls createOrder; rejecting here keeps the popup from opening
+                // at all. Without this, an unconfirmed AGB made createOrder resolve to
+                // undefined, which trips the SDK's strict order-id check
+                // ("Expected an order id to be passed") and flashes the popup shut.
+                // Mirrors the Apple Pay / Google Pay pre-check; the createOrder guard
+                // below is kept as a safety net.
+                onClick: function (data, actions) {
+                    if (false === PayPalPayment.checkTermsAndConditions()) {
+                        PayPalPayment.showErrorMessage(PayPalI18n.READ_AND_CONFIRM_TERMS);
+                        return actions.reject();
+                    }
+                    return actions.resolve();
+                },
                 createOrder: PayPalPayment.createOrder,
                 onApprove: PayPalPayment.handlePaymentAuthorization,
                 onCancel: PayPalPayment.cancelOrder,

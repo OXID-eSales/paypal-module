@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.9.2] - Unreleased
+
+### FIX
+
+- [0007963](https://bugs.oxid-esales.com/view.php?id=7963): Fix the standard PayPal smart button briefly opening and then immediately closing the PayPal popup with a visible `Uncaught Error: Expected an order id to be passed` (PayPal JS SDK, observed on v5.0.556) when the customer clicked the button on the order step ("Jetzt kaufen") without confirming the terms-and-conditions checkbox. Root cause: the terms check (`checkTermsAndConditions()` in `paypal-frontend-payment-controller-base.js`) was evaluated *inside* `createOrder` and, on failure, did a bare `return;` — so `createOrder` resolved to `undefined`. The PayPal SDK opens the popup synchronously on click and only then calls `createOrder`; a missing order id therefore tripped the SDK's strict order-id check and surfaced as the console error plus a popup that closed at once (previously, before the SDK's strict check, the same `undefined` return left the button spinner hanging silently). Fix: the check is now performed up front in an `onClick(data, actions)` handler added to the button settings in `paypal-frontend-standard-payment-controller.js`, which shows the localized `READ_AND_CONFIRM_TERMS` message and calls `actions.reject()` before the popup opens — matching the existing Apple Pay (`applepay.tpl`) and Google Pay (`paypal-frontend-googlepay-payment-controller.js`) behaviour. The `createOrder` guard is kept as a safety net. Files touched: `resources/build/js/paypal-frontend-standard-payment-controller.js` (source file and the concatenated `paypal-frontend.min.js` were updated).
+
 ## [2.9.1] - YYYY-MM-DD
 
 ### FIX
