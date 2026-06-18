@@ -1,4 +1,5 @@
 {% include "headitem.html.twig" with {title: "GENERAL_ADMIN_TITLE"|translate} %}
+{% include "@osc_paypal/admin/admin_headitem_inccss.html.twig" %}
 
 <form name="transfer" id="transfer" action="{{ oViewConf.getSelfLink() }}" method="post">
     {{ oViewConf.getHiddenSid()|raw }}

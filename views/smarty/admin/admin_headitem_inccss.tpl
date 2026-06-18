@@ -1,0 +1,2 @@
+<link rel="stylesheet" type="text/css" href="[{$oViewConf->getModuleUrl('osc_paypal','src/css/bootstrap.min.css')}]?[{$oViewConf->getModulePath('osc_paypal','src/css/bootstrap.min.css')|filemtime}]">
+<link rel="stylesheet" type="text/css" href="[{$oViewConf->getModuleUrl('osc_paypal','src/css/paypal-admin.min.css')}]?[{$oViewConf->getModulePath('osc_paypal','src/css/paypal-admin.min.css')|filemtime}]">

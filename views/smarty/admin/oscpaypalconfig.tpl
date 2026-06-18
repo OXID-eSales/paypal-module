@@ -1,4 +1,5 @@
 [{include file="headitem.tpl" title="paypal" box="boxpaypal"}]
+[{include file="@osc_paypal/admin/admin_headitem_inccss.tpl"}]
 [{assign var="isSandBox" value=$config->isSandbox()}]
 [{assign var="sSelfLink" value=$oViewConf->getSslSelfLink()|replace:"&amp;":"&"}]
 [{capture assign="sPayPalJS"}]

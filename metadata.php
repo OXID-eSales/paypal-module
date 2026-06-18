@@ -68,7 +68,7 @@ $aModule = [
         'en' => 'Use of the online payment service from PayPal. Documentation: <a href="https://docs.oxid-esales.com/modules/paypal-checkout/en/latest/" target="_blank">PayPal Checkout</a>'
     ],
     'thumbnail' => 'img/paypal.png',
-    'version' => '3.8.2-rc.1',
+    'version' => '3.8.2-rc.2',
     'author' => 'OXID eSales AG',
     'url' => 'https://www.oxid-esales.com',
     'email' => 'info@oxid-esales.com',
@@ -109,6 +109,9 @@ $aModule = [
     'templates' => [
         // Admin: Config
         '@osc_paypal/admin/oscpaypalconfig.tpl' => 'views/smarty/admin/oscpaypalconfig.tpl',
+
+        // Admin: shared backend CSS includes (replaces the headitem block extension, see OXDEV-9934 / bug 7849)
+        '@osc_paypal/admin/admin_headitem_inccss.tpl' => 'views/smarty/admin/admin_headitem_inccss.tpl',
 
         // Admin: Order
         '@osc_paypal/admin/oscpaypalorder.tpl' => 'views/smarty/admin/oscpaypalorder.tpl',
@@ -164,11 +167,6 @@ $aModule = [
         '@osc_paypal/frontend/email/plain/pui_paymentinfo.tpl' => 'views/smarty/frontend/shared/email/plain/pui_paymentinfo.tpl',
     ],
     'blocks'    => [
-        [
-            'template' => 'headitem.tpl',
-            'block' => 'admin_headitem_inccss',
-            'file' => 'views/smarty/extensions/themes/admin/admin_headitem_inccss.tpl'
-        ],
         [
             'template' => 'order_main.tpl',
             'block' => 'admin_order_main_form_shipping',
