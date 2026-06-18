@@ -505,6 +505,13 @@ class OrderController extends OrderController_parent
         $forceFetchDetails = (bool) Registry::getRequest()->getRequestParameter('fallbackfinalize');
 
         try {
+            // A lost or expired session leaves the checkout order id null.
+            // Bail out with a proper exception so the catch below routes the
+            // customer to payerror=2 instead of letting a TypeError surface
+            // from finalizeOrderAfterExternalPayment()'s string parameter.
+            if (empty($sessionAcdcOrderId)) {
+                throw PayPalException::sessionPaymentFail('missing PayPal checkout order id from session');
+            }
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
             $order->finalizeOrderAfterExternalPayment($sessionAcdcOrderId, $forceFetchDetails);
