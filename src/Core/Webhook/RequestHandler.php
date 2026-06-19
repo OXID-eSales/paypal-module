@@ -64,7 +64,19 @@ final class RequestHandler
         } catch (WebhookEventException | WebhookEventTypeException $exception) {
             //we could not handle the call and don't want to receive it again, log and be done
             $logger->log('error', 'Webhook permanent failure (no retry): ' . $exception->getMessage(), [$exception]);
-        } catch (ApiException | WebhookEventRetryException $exception) {
+        } catch (WebhookEventRetryException $exception) {
+            // Expected, benign condition rather than a failure: e.g. an abandoned PayPal
+            // Express checkout where the buyer approved at PayPal but never returned to
+            // complete the order, so no shop order exists for the PayPal order id. Log once
+            // at info level (without the stack trace) and do NOT rethrow: the WebhookController
+            // always responds 200 regardless, so rethrowing produced no different HTTP result
+            // and only generated a duplicate "responding 200" error line for a normal event.
+            $logger->log(
+                'info',
+                'Webhook skipped (no matching shop order, e.g. abandoned express checkout): '
+                . $exception->getMessage()
+            );
+        } catch (ApiException $exception) {
             //we could not handle the call but want to retry, so log and rethrow
             $logger->log('error', 'Webhook transient failure (retry expected): ' . $exception->getMessage(), [$exception]);
             throw $exception;
