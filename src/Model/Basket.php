@@ -217,7 +217,7 @@ class Basket extends Basket_parent
     public function getPayPalCheckoutItems(bool $isOxidSum = true): float
     {
         $result = 0;
-        $netMode = Registry::getConfig()->getConfigParam('blShowNetPrice');
+        $netMode = $this->isPriceViewModeNetto();
 
         if ($isOxidSum) {
             $result += $netMode ? $this->getProductsPrice()->getSum(false) : $this->getBruttoSum();

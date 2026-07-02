@@ -33,19 +33,22 @@ class ArticleDetails extends ArticleDetails_parent
             $this->showPayPalExpressOnDetailsPage = false;
             $payPalConfig = oxNew(Config::class);
             $ppActive = $payPalConfig->isActive();
-            $showNetPrice = (bool) Registry::getConfig()->getConfigParam('blShowNetPrice');
             $configShowPayPalProductDetailsButton = $payPalConfig->showPayPalProductDetailsButton();
             $ppExpressSessionActive = PayPalSession::isPayPalExpressOrderActive();
+            $basket = Registry::getSession()->getBasket();
+            // Honor the user-aware view mode (e.g. B2B overrides) and fall back to the shop default
+            $showNetPrice = $basket
+                ? $basket->isPriceViewModeNetto()
+                : (bool) Registry::getConfig()->getConfigParam('blShowNetPrice');
             $productPrice = $this->getProduct()->getPrice();
             $isProductPriceGreaterZero = $productPrice &&
                 (
                     ($showNetPrice && $productPrice->getNettoPrice() > 0) ||
                     $productPrice->getBruttoPrice() > 0
                 );
-            $basket = Registry::getSession()->getBasket();
             $isBasketTotalSumGreaterZero = $basket &&
                 (
-                    ($basket->isPriceViewModeNetto() && $basket->getNettoSum() > 0) ||
+                    ($showNetPrice && $basket->getNettoSum() > 0) ||
                     $basket->getBruttoSum() > 0
                 );
 
