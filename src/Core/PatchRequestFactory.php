@@ -11,22 +11,18 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 
 use OxidEsales\Eshop\Application\Model\Address;
 use OxidEsales\Eshop\Application\Model\Basket;
-use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Exception\ArticleException;
 use OxidEsales\Eshop\Core\Exception\ArticleInputException;
 use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Registry;
-use OxidSolutionCatalysts\PayPal\Helper\Truncate;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\Item;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch;
-use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
 
 /**
  * Class PatchRequestFactory
@@ -153,132 +149,29 @@ class PatchRequestFactory
      */
     public function getPurchaseUnitsPatch(): ?Patch
     {
-        $withItems = !$this->basket->isCalculationModeNetto();
-        //update currency object with decimal precision restricted version
-        $currency = $this->basket->getBasketCurrency();
-        $itemCategory = $this->getItemCategoryByBasketContent();
-        $currency->decimal = 2;
+        // Reuse the same purchase-units factory as getAmountPatch(), so the patched items
+        // stay consistent with the patched amount (item_total / tax_total) in both net and
+        // gross calculation mode. The factory itemises products, payment surcharge, gift
+        // wrapping and greeting card (each with correct per-item tax), applies the whole-number
+        // quantity guard and runs PayPalAmountValidator internally — so the former net-mode
+        // short-circuit (!isCalculationModeNetto()) and the separate, hand-built item list are
+        // no longer needed here. Only true cent rounding is still balanced by the validator.
+        /** @var PayPalPurchaseUnitsFactory $puFactory */
+        $puFactory = $this->getServiceFromContainer(PayPalPurchaseUnitsFactory::class);
+        $puFactory->setBasket($this->basket);
+        $units = $puFactory->getPurchaseUnits(null, null, true);
+        $unit = $units[0] ?? null;
+        $items = ($unit && !empty($unit->items)) ? $unit->items : [];
 
-        if (!$withItems) {
-            return null;
-        }
-
-        // Check if any basket item has a decimal quantity
-        // PayPal API only accepts whole numbers for item quantities
-        $basketItems = $this->basket->getContents();
-        foreach ($basketItems as $basketItem) {
-            $amount = $basketItem->getAmount();
-
-            // Convert to float to handle both numeric and string values
-            $amount = (float)$amount;
-
-            if ($amount !== floor($amount)) {
-                return null;
-            }
-        }
-
-        $patchValues = [];
-        $language = Registry::getLang();
-
-        /** @var BasketItem $basketItem */
-        foreach ($basketItems as $basketItem) {
-            $item = new Item();
-            $item->name = (new Truncate())->truncate($basketItem->getTitle());
-            $item->sku = (new Truncate())->truncate($basketItem->getArticle()->getFieldData('oxartnum'));
-            $basketArticle = $basketItem->getArticle();
-            $articleCategory = ($basketArticle->isVirtualPayPalArticle())
-                ? Item::CATEGORY_DIGITAL_GOODS
-                : Item::CATEGORY_PHYSICAL_GOODS;
-            $item->category = $articleCategory;
-            $itemUnitPrice = $basketItem->getUnitPrice();
-            if ($itemUnitPrice) {
-                $item->unit_amount = PriceToMoney::convert(
-                    $itemUnitPrice,
-                    $currency
-                );
-                // We provide no tax, because Tax is in 99% not necessary.
-                // Maybe just PUI, but PUI orders will not be patched.
-                $item->quantity = (string)$basketItem->getAmount();
-                $patchValues[] = $item;
-            }
-        }
-
-        $wrapping = $this->basket->getPayPalCheckoutWrapping();
-        if ($wrapping) {
-            $item = new Item();
-            $item->name = $language->translateString('GIFT_WRAPPING');
-            $item->category = $itemCategory;
-            $item->unit_amount = PriceToMoney::convert(
-                $wrapping,
-                $currency
-            );
-
-            $item->quantity = '1';
-            $patchValues[] = $item;
-        }
-
-        $giftCard = $this->basket->getPayPalCheckoutGiftCard();
-        if ($giftCard) {
-            $item = new Item();
-            $item->name = $language->translateString('GREETING_CARD');
-            $item->category = $itemCategory;
-            $item->unit_amount = PriceToMoney::convert(
-                $giftCard,
-                $currency
-            );
-
-            $item->quantity = '1';
-            $patchValues[] = $item;
-        }
-
-        $payment = $this->basket->getPayPalCheckoutPayment();
-        if ($payment) {
-            $item = new Item();
-            $item->name = $language->translateString('PAYMENT_METHOD');
-            $item->category = $itemCategory;
-            $item->unit_amount = PriceToMoney::convert(
-                $payment,
-                $currency
-            );
-
-            $item->quantity = '1';
-            $patchValues[] = $item;
-        }
-
-        // possible price surcharge
-        $discount = $this->basket->getPayPalCheckoutDiscount();
-
-        if ($discount < 0) {
-            $discount *= -1;
-            $item = new Item();
-            $item->name = $language->translateString('SURCHARGE');
-            $item->category = $itemCategory;
-            $item->unit_amount = PriceToMoney::convert($discount, $currency);
-
-            $item->quantity = '1';
-            $patchValues[] = $item;
-        }
-
-        // Dummy-Article for Rounding-Error
-        if ($roundDiff = $this->basket->getPayPalCheckoutRoundDiff()) {
-            $item = new Item();
-            $item->name = $language->translateString('OSC_PAYPAL_VAT_CORRECTION');
-            $item->category = $itemCategory;
-            $item->unit_amount = PriceToMoney::convert((float)$roundDiff, $currency);
-
-            $item->quantity = '1';
-            $patchValues[] = $item;
-        }
-
-        if (!count($patchValues)) {
+        // No items to patch (e.g. decimal quantities disabled items in the factory).
+        if (empty($items)) {
             return null;
         }
 
         $patch = new Patch();
         $patch->op = Patch::OP_REPLACE;
         $patch->path = "/purchase_units/@reference_id=='" . Constants::PAYPAL_ORDER_REFERENCE_ID . "'/items";
-
-        $patch->value = $patchValues;
+        $patch->value = $items;
 
         return $patch;
     }
@@ -291,20 +184,6 @@ class PatchRequestFactory
         $patch->value = $shopOrderId;
 
         return $patch;
-    }
-
-    /**
-     * Determine the item category based on the entire basket contents. If all items in the basket are virtual
-     * the category "DIGITAL_GOODS" is used, in any other case it'll be "PHYSICAL_GOODS".
-     * @return string
-     */
-    protected function getItemCategoryByBasketContent(): string
-    {
-        return (
-            $this->basket->isEntirelyVirtualPayPalBasket()
-                ? Item::CATEGORY_DIGITAL_GOODS
-                : Item::CATEGORY_PHYSICAL_GOODS
-            );
     }
 
     /**

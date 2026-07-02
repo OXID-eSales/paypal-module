@@ -306,7 +306,7 @@ class PayPalPurchaseUnitsFactory
             $currency->decimal = 2;
         }
 
-        $isNetMode = (bool)Registry::getConfig()->getConfigParam('blShowNetPrice');
+        $isNetMode = $basket->isPriceViewModeNetto();
 
         /** @var BasketItem $basketItem */
         foreach ($basket->getContents() as $basketItem) {
@@ -353,41 +353,65 @@ class PayPalPurchaseUnitsFactory
             ];
         }
 
-        // Payment-method surcharge as an explicit line item, so it is reflected in
-        // item_total / tax_total (incl. its VAT in net mode) instead of being absorbed
-        // as a tax-free balancing item by PayPalAmountValidator.
-        $paymentCost = $basket->getCosts('oxpayment');
-        if ($paymentCost) {
-            $surchargeBrutto = (float)$paymentCost->getBruttoPrice();
-            // Only positive surcharges can be line items (PayPal forbids negative item
-            // amounts); a negative payment cost keeps flowing through the discount path.
-            if ($surchargeBrutto > 0) {
-                $surchargeVatPercent = (float)($paymentCost->getVat() ?? 0.0);
-                if ($isNetMode) {
-                    $surchargeValue = (float)$paymentCost->getNettoPrice();
-                    $surchargeTax = PriceToMoney::convert((float)$paymentCost->getVatValue(), $currency);
-                    $surchargeTaxStr = $surchargeTax->value;
-                } else {
-                    $surchargeValue = $surchargeBrutto;
-                    $surchargeTaxStr = '0.00';
-                }
-                $surchargeAmount = PriceToMoney::convert($surchargeValue, $currency);
-                $items[] = [
-                    'name' => 'Payment surcharge',
-                    'sku' => 'payment-surcharge',
-                    'quantity' => '1',
-                    'unit_amount' => [
-                        'currency_code' => $surchargeAmount->currency_code,
-                        'value' => $surchargeAmount->value,
-                    ],
-                    'tax' => ['currency_code' => $surchargeAmount->currency_code, 'value' => $surchargeTaxStr],
-                    'tax_rate' => (string)$surchargeVatPercent,
-                    'category' => ApiItem::CATEGORY_DIGITAL_GOODS,
-                ];
+        // Non-product basket costs as explicit line items (payment surcharge, gift wrapping,
+        // greeting card), so their value — and, in net mode, their VAT — is reflected in
+        // item_total / tax_total instead of being absorbed into the PayPalAmountValidator's
+        // balancing "Rounding Adjustment" item, which stays reserved for true cent rounding.
+        // Shipping remains a breakdown component and discounts keep flowing through the
+        // breakdown discount, exactly as before.
+        $lang = Registry::getLang();
+        $costItems = [
+            ['oxpayment', $lang->translateString('PAYMENT_METHOD'), 'payment-surcharge'],
+            ['oxwrapping', $lang->translateString('GIFT_WRAPPING'), 'gift-wrapping'],
+            ['oxgiftcard', $lang->translateString('GREETING_CARD'), 'greeting-card'],
+        ];
+        foreach ($costItems as [$costKey, $itemName, $itemSku]) {
+            $costItem = $this->mapCostAsItem($basket->getCosts($costKey), $itemName, $itemSku, $currency, $isNetMode);
+            if ($costItem !== null) {
+                $items[] = $costItem;
             }
         }
 
         return $items;
+    }
+
+    /**
+     * Map a single non-product basket cost (payment surcharge, gift wrapping, greeting card)
+     * to a PayPal line item, mirroring the net/gross + tax handling used for basket items.
+     * Returns null when the cost is absent or not a positive amount (PayPal forbids
+     * zero/negative item amounts — such costs stay in the amount breakdown instead).
+     *
+     * @param \OxidEsales\Eshop\Core\Price|null $cost
+     */
+    private function mapCostAsItem($cost, string $name, string $sku, $currency, bool $isNetMode): ?array
+    {
+        if (!$cost || (float)$cost->getBruttoPrice() <= 0) {
+            return null;
+        }
+
+        $vatPercent = (float)($cost->getVat() ?? 0.0);
+        if ($isNetMode) {
+            $value = (float)$cost->getNettoPrice();
+            $taxStr = PriceToMoney::convert((float)$cost->getVatValue(), $currency)->value;
+        } else {
+            $value = (float)$cost->getBruttoPrice();
+            $taxStr = '0.00';
+        }
+
+        $money = PriceToMoney::convert($value, $currency);
+
+        return [
+            'name' => $name,
+            'sku' => $sku,
+            'quantity' => '1',
+            'unit_amount' => [
+                'currency_code' => $money->currency_code,
+                'value' => $money->value,
+            ],
+            'tax' => ['currency_code' => $money->currency_code, 'value' => $taxStr],
+            'tax_rate' => (string)$vatPercent,
+            'category' => ApiItem::CATEGORY_DIGITAL_GOODS,
+        ];
     }
 
     private function inferItemCategory(BasketItem $basketItem): string
