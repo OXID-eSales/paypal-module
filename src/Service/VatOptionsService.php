@@ -35,7 +35,7 @@ class VatOptionsService
         $shop = [
             'blShowVATForPayCharge' => (bool)$config->getConfigParam('blShowVATForPayCharge'),
             'blShowVATForDelivery'  => (bool)$config->getConfigParam('blShowVATForDelivery'),
-            'blShowNetPrice'        => (bool)$config->getConfigParam('blShowNetPrice'),
+            'blShowNetPrice'        => $this->isNetPriceMode($basket),
             'dDefaultVAT'           => (float)($config->getConfigParam('dDefaultVAT') ?? 0.0),
         ];
 
@@ -66,9 +66,34 @@ class VatOptionsService
         return (bool)Registry::getConfig()->getConfigParam('blShowVATForDelivery');
     }
 
-    public function isNetPriceMode(): bool
+    public function isNetPriceMode(?Basket $basket = null): bool
     {
+        $basket = $this->resolveBasket($basket);
+        if ($basket instanceof Basket) {
+            // User-aware view mode: a B2B module overriding User::isPriceViewModeNetto() takes effect here
+            return $basket->isPriceViewModeNetto();
+        }
+
+        // Fallback to the shop default when no basket is available
         return (bool)Registry::getConfig()->getConfigParam('blShowNetPrice');
+    }
+
+    /**
+     * Resolves the basket to operate on: the passed one is the primary path,
+     * the session basket the fallback. Returns null if neither is available.
+     */
+    private function resolveBasket(?Basket $basket = null): ?Basket
+    {
+        if ($basket instanceof Basket) {
+            return $basket;
+        }
+
+        try {
+            $session = Registry::getSession();
+            return $session ? $session->getBasket() : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 
     public function getDefaultVatRate(): float

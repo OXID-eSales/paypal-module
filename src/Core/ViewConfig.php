@@ -642,6 +642,6 @@ class ViewConfig extends ViewConfig_parent
         if (!$basket) {
             return false;
         }
-        return ($basket->isPriceViewModeNetto && $basket->getNettoSum() > 0) || $basket->getBruttoSum() > 0;
+        return ($basket->isPriceViewModeNetto() && $basket->getNettoSum() > 0) || $basket->getBruttoSum() > 0;
     }
 }
