@@ -35,6 +35,14 @@ abstract class WebhookHandlerBase
     public const WEBHOOK_EVENT_NAME = '';
 
     /**
+     * Upper bound (seconds, measured against the event create_time) for asking PayPal to retry a
+     * webhook whose shop order is not yet visible. Beyond it we assume the order never materialised
+     * and stop retrying. Covers the finalizeOrder() commit (sub-second to seconds) with wide margin
+     * while staying far below PayPal's own 25x-over-3-days retry ceiling.
+     */
+    protected const ORDER_NOT_FOUND_RETRY_MAX_AGE_SECONDS = 300;
+
+    /**
      * @throws WebhookEventException|WebhookEventRetryException
      */
     public function handle(Event $event): void
@@ -48,7 +56,7 @@ abstract class WebhookHandlerBase
         $payPalOrderId = $this->getPayPalOrderIdFromResource($eventPayload);
 
         if ($payPalOrderId !== '') {
-            $order = $this->getOrderByPayPalOrderId($payPalOrderId);
+            $order = $this->getOrderByPayPalOrderId($payPalOrderId, $eventPayload);
 
             $paypalOrderModel = $this->getPayPalModelOrder(
                 (string) $order->getId(),
@@ -162,25 +170,67 @@ abstract class WebhookHandlerBase
                 'retryAfter' => $retryDelay
             ]);
 
-            http_response_code(503);
-            header('Retry-After: ' . $retryDelay);
-            exit('Order too fresh, retry later');
+            throw WebhookEventRetryException::retry(
+                sprintf('Order %s too fresh for PayPal order %s, requesting retry', $order->getId(), $payPalOrderId),
+                $retryDelay
+            );
         }
     }
 
     /**
      * @throws WebhookEventRetryException
      */
-    protected function getOrderByPayPalOrderId(string $payPalOrderId): EshopModelOrder
+    protected function getOrderByPayPalOrderId(string $payPalOrderId, array $eventPayload = []): EshopModelOrder
     {
         try {
             $order = $this->getOrderRepository()
                 ->getShopOrderByPayPalOrderId($payPalOrderId);
         } catch (NotFound $exception) {
+            // The shop order may still be inside the finalizeOrder() DB transaction (created but
+            // not yet committed, see Model/Order::finalizeOrder()), so it is invisible on this
+            // separate webhook connection. Ask PayPal to retry (the caller maps a retryable
+            // exception to HTTP 503 + Retry-After) rather than acknowledging with 200 — by the
+            // retry the transaction has committed and the lookup succeeds. Give up (non-retryable
+            // -> 200) once the event exceeds the retry cap, which means the order genuinely never
+            // materialised (e.g. an abandoned express checkout).
+            $retryAfter = $this->resolveNotFoundRetryAfter($eventPayload);
+            if ($retryAfter !== null) {
+                throw WebhookEventRetryException::retry(
+                    sprintf("Shop Order for PayPal order '%s' not yet visible, requesting retry", $payPalOrderId),
+                    $retryAfter
+                );
+            }
+
             throw WebhookEventRetryException::byPayPalOrderId($payPalOrderId);
         }
 
         return $order;
+    }
+
+    /**
+     * Decides whether a not-yet-visible order should trigger a PayPal retry: returns the Retry-After
+     * (seconds) while still within the retry window, or null once we should give up (respond 200).
+     *
+     * The cap is measured against the event's create_time. PayPal resends the same event with an
+     * unchanged create_time on every retry, so (now - create_time) grows monotonically across
+     * deliveries — the cap is deterministic per event, with no guessing whether the order is ready.
+     * A missing create_time or an event older than the cap means the order never materialised.
+     */
+    protected function resolveNotFoundRetryAfter(array $eventPayload): ?int
+    {
+        $createTime = isset($eventPayload['create_time'])
+            ? strtotime((string)$eventPayload['create_time'])
+            : false;
+
+        if ($createTime === false) {
+            return null;
+        }
+
+        if ((time() - $createTime) >= self::ORDER_NOT_FOUND_RETRY_MAX_AGE_SECONDS) {
+            return null;
+        }
+
+        return $this->getWebhookRetryDelay();
     }
 
     protected function getPayPalModelOrder(
@@ -275,9 +325,12 @@ abstract class WebhookHandlerBase
 
     protected function isMinimumWaitTimeElapsed(array $eventPayload): bool
     {
-        // PayPal sendet create_time des Events
+        // PayPal sends create_time on the event. If the resource carries no create_time we cannot
+        // determine freshness — do NOT block processing: returning false here would treat the event
+        // as perpetually "too fresh" and, with the retry mechanism, loop 503 until PayPal gives up.
+        // Proceed instead; a not-yet-visible order is still covered by the not-found retry path.
         if (!isset($eventPayload['create_time'])) {
-            return false;
+            return true;
         }
 
         $eventTimestamp = strtotime($eventPayload['create_time']);

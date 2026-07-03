@@ -65,12 +65,19 @@ final class RequestHandler
             //we could not handle the call and don't want to receive it again, log and be done
             $logger->log('error', 'Webhook permanent failure (no retry): ' . $exception->getMessage(), [$exception]);
         } catch (WebhookEventRetryException $exception) {
-            // Expected, benign condition rather than a failure: e.g. an abandoned PayPal
-            // Express checkout where the buyer approved at PayPal but never returned to
-            // complete the order, so no shop order exists for the PayPal order id. Log once
-            // at info level (without the stack trace) and do NOT rethrow: the WebhookController
-            // always responds 200 regardless, so rethrowing produced no different HTTP result
-            // and only generated a duplicate "responding 200" error line for a normal event.
+            if ($exception->isRetryable()) {
+                // Transient: e.g. the shop order is still inside the finalizeOrder() transaction
+                // and not yet visible on this connection, or delivery is deliberately delayed.
+                // Rethrow so WebhookController can ask PayPal to redeliver (HTTP 503 + Retry-After)
+                // instead of acknowledging with 200 (PayPal only retries on a non-2xx status).
+                $logger->log('info', 'Webhook retry requested: ' . $exception->getMessage());
+                throw $exception;
+            }
+            // Benign, permanent condition rather than a failure: e.g. an abandoned PayPal Express
+            // checkout where the buyer approved at PayPal but never returned to complete the order,
+            // so no shop order exists (and the retry window has elapsed). Log once at info level
+            // (without the stack trace) and do NOT rethrow — the WebhookController responds 200 so
+            // PayPal stops redelivering.
             $logger->log(
                 'info',
                 'Webhook skipped (no matching shop order, e.g. abandoned express checkout): '
