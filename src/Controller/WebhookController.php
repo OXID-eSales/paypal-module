@@ -13,6 +13,7 @@ use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventDispatcher;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\EventVerifier;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\RequestHandler as WebhookRequestHandler;
+use OxidSolutionCatalysts\PayPal\Exception\WebhookEventRetryException;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use Psr\Log\LoggerInterface;
@@ -45,13 +46,26 @@ class WebhookController extends WidgetController
 
             $webhookRequestHandler = new WebhookRequestHandler($requestReader, $verificationService, $dispatcher);
             $webhookRequestHandler->process();
+        } catch (WebhookEventRetryException $retryException) {
+            // Transient condition (e.g. the shop order is still inside the finalizeOrder()
+            // transaction and not yet visible on this connection): ask PayPal to redeliver later
+            // instead of acknowledging. PayPal retries on any non-2xx status (up to 25 times over
+            // 3 days) until it receives a 2xx — so by a later retry the order has been committed.
+            $retryAfter = $retryException->getRetryAfter() ?? 0;
+            $logger->log(
+                'info',
+                'Webhook not processed yet, requesting PayPal retry (HTTP 503): ' . $retryException->getMessage()
+            );
+            http_response_code(503);
+            header('Retry-After: ' . $retryAfter);
+            exit('');
         } catch (\Exception $exception) {
             $logger->log('error', 'Webhook processing failed (responding 200 to avoid PayPal retry storm): ' . $exception->getMessage(), [$exception]);
         }
-        // Always respond with 200, even on processing errors. A non-200 status causes PayPal
-        // to retry the webhook 25 times over 3 days. If the error is permanent (bad signature,
-        // unknown event, code bug), every retry will fail the same way — generating unnecessary
-        // load and log spam. The error is already logged above for investigation.
+        // Respond 200 for handled, permanent or benign cases. A non-200 status causes PayPal to
+        // retry the webhook 25 times over 3 days; that is only desired for the transient retry
+        // case handled above. For permanent errors (bad signature, unknown event, code bug) a
+        // retry would fail identically — so those are acknowledged with 200 and logged above.
         Registry::getUtils()->showMessageAndExit('');
     }
 }
