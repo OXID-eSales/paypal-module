@@ -718,6 +718,31 @@ class Order extends Order_parent
         return $this->payPalApiOrder;
     }
 
+    /**
+     * Race-free duplicate-finalization check for button/express payments: returns true when PayPal
+     * already reports the checkout order as COMPLETED (i.e. a prior finalize pass captured it).
+     * Deliberately does a fresh lookup without populating the memoized $payPalApiOrder, so the
+     * regular express capture flow later still sees the up-to-date (post-capture) order.
+     */
+    private function isPayPalCheckoutOrderCompleted(string $payPalOrderId): bool
+    {
+        try {
+            /** @var Orders $orderService */
+            $orderService = Registry::get(ServiceFactory::class)->getOrderService();
+            $orderService->setTrackingId($this->getOrderProcessTrackingService()->getTrackingId());
+            $apiOrder = $orderService->showOrderDetails(
+                $payPalOrderId,
+                '',
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+            );
+
+            return (string) ($apiOrder->status ?? '') === 'COMPLETED';
+        } catch (\Throwable $exception) {
+            // On any lookup error, do not block finalization.
+            return false;
+        }
+    }
+
     protected function doExecutePayPalPayment(string $payPalOrderId): bool
     {
         $sessionPaymentId = (string) $this->getPaymentService()->getSessionPaymentId();
@@ -1194,6 +1219,32 @@ class Order extends Order_parent
                 ) {
                     return self::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS;
                 }
+            }
+
+            // Guard against a duplicate finalization doubling the order items: for button/express
+            // payments the capture happens *inside* this finalize (PaymentGateway::
+            // doExecutePayPalExpressPayment). If PayPal already reports the checkout order as
+            // COMPLETED at this point, a previous/concurrent finalize pass already captured it —
+            // running parent::finalizeOrder() again would insert the basket items a second time
+            // (doubled order positions, while the totals stay single). Unlike the oxpaid/oxtransid
+            // guard above — which can miss it while the first pass's stock-lock transaction is
+            // still open — this relies on PayPal's order status as a transaction-independent source
+            // of truth. Scoped to isButtonPayment so it never interferes with the AJAX-capture flows
+            // (ACDC/Apple Pay/Google Pay), where a COMPLETED status at finalize time is the normal,
+            // legitimate first finalization.
+            $sessionPaymentId = (string) $this->getPaymentService()->getSessionPaymentId();
+            $checkoutOrderId = (string) PayPalSession::getCheckoutOrderId();
+            if (
+                $checkoutOrderId !== '' &&
+                PayPalDefinitions::isButtonPayment($sessionPaymentId) &&
+                $this->isPayPalCheckoutOrderCompleted($checkoutOrderId)
+            ) {
+                $logger->log(
+                    'info',
+                    'finalizeOrder: PayPal order already COMPLETED, skipping duplicate finalization to avoid doubled order items',
+                    ['shopOrderId' => $oOrderId, 'payPalOrderId' => $checkoutOrderId]
+                );
+                return self::ORDER_STATE_OK;
             }
         }
 
