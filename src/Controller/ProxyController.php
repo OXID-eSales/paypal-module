@@ -431,19 +431,23 @@ class ProxyController extends FrontendController
     {
         $paypalConfig = oxNew(Config::class);
         $userComponent = oxNew(UserComponent::class);
-        $isLoggedIn = false;
 
-        if ($paypalConfig->loginWithPayPalEMail()) {
-            $userComponent->loginPayPalCustomer($apiOrder);
-            $isLoggedIn = true;
-        } else {
-            //NOTE: ProxyController must not redirect from create Order/approvaOrder methods,
-            //      it has to show a json response in all cases.
-            //tell order controller to redirect to checkout login
-            Registry::getSession()->setVariable('oscpaypal_payment_redirect', true);
+        // Auto-login via the PayPal email only counts when the merchant enabled it AND it actually
+        // succeeds. loginPayPalCustomer() returns false when the email has no matching 'user'
+        // account — e.g. it belongs to an admin account (blocked since the 2.9.0 security fix) or to
+        // no shop account at all. In every not-logged-in case (option off, or on but login failed)
+        // we route the customer to the login step with the same neutral message, so that an admin
+        // email is not distinguishable from the ordinary "please log in" case.
+        if ($paypalConfig->loginWithPayPalEMail() && $userComponent->loginPayPalCustomer($apiOrder)) {
+            return true;
         }
 
-        return $isLoggedIn;
+        //NOTE: ProxyController must not redirect from create Order/approveOrder methods,
+        //      it has to show a json response in all cases.
+        //tell order controller to redirect to checkout login (shows OSC_PAYPAL_LOG_IN_TO_CONTINUE)
+        Registry::getSession()->setVariable('oscpaypal_payment_redirect', true);
+
+        return false;
     }
 
     public function getPaymentRequestLines()
