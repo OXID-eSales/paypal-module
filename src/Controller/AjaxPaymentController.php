@@ -309,6 +309,11 @@ class AjaxPaymentController extends BaseController
                 'status' => 'error',
                 'message' => $translatedErrorMessage
             ]);
+            // Stop here: without this return the method fell through to the
+            // completion block below with a null $capturePaymentForOrder, which
+            // produced a second outputJson() call (duplicate JSON response) and
+            // a spurious storno attempt. See 0007981.
+            return;
         }
 
         $basket = Registry::getSession()->getBasket();
