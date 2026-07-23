@@ -415,11 +415,6 @@
                 {% endif %}
             };
 
-            window.addEventListener('load', function () {
-                window.PayPalPayment = new ApplePayPaymentController(window.PayPalPaymentControllerConfiguratorDefaults);
-                window.PayPalPayment.renderButton(typeof PayPalButtonStyle === 'object' ? PayPalButtonStyle : {});
-            });
-
             {% if phpstorm %}</script>{% endif %}
         {% endcapture %}
         {{ script({ include: "https://applepay.cdn-apple.com/jsapi/v1/apple-pay-sdk.js", dynamic: __oxid_include_dynamic }) }}

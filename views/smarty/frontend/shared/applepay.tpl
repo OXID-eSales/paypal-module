@@ -419,10 +419,6 @@
                 console.log('--- End handle_applepay_clicked ---');
                 [{/if}]
             };
-            window.addEventListener('load', function () {
-                window.PayPalPayment = new ApplePayPaymentController(window.PayPalPaymentControllerConfiguratorDefaults);
-                window.PayPalPayment.renderButton(typeof PayPalButtonStyle === 'object' ? PayPalButtonStyle : {});
-            });
             [{if $phpstorm}]</script>[{/if}]
         [{/capture}]
         [{oxscript include="https://applepay.cdn-apple.com/jsapi/v1/apple-pay-sdk.js" }]
