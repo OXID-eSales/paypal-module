@@ -1225,6 +1225,31 @@ class Order extends Order_parent
     }
 
     /**
+     * Rebuilds a virtual basket from this persisted order so an order that was
+     * paid but never finalized in the frontend (e.g. the captureOrder AJAX
+     * request died with a 503 after the PayPal capture had already succeeded)
+     * can be completed from the webhook. Mirrors the core order-recalculation
+     * path (getOrderBasket + addOrderArticlesToBasket + calculateBasket) that
+     * the admin order edit and other payment modules use for the same purpose.
+     * Stock check is intentionally disabled: an order whose payment already went
+     * through must not fail to finalize because an article ran low on stock in
+     * the meantime. See 0007981.
+     *
+     * @return Basket
+     */
+    public function recreateBasketFromOrder(): Basket
+    {
+        /** @var Basket $basket */
+        $basket = $this->getOrderBasket(false);
+
+        // add this order's articles to the virtual basket and recalculate
+        $this->addOrderArticlesToBasket($basket, $this->getOrderArticles(true));
+        $basket->calculateBasket(true);
+
+        return $basket;
+    }
+
+    /**
      * @inheritdoc
      * @throws Exception
      */

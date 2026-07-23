@@ -109,6 +109,13 @@ abstract class WebhookHandlerBase
             return;
         }
 
+        // Capture whether the frontend had already finalized this order at the
+        // moment the webhook started. Read before any status write below, so it
+        // reflects the pre-webhook state. Used by the capture-completed handler
+        // to decide whether a missing order-confirmation mail must be healed
+        // (frontend request died after the PayPal capture, e.g. a 503). (0007981)
+        $frontendHadNotFinalized = $order->getFieldData('oxtransstatus') === 'NOT_FINISHED';
+
         $this->handleWebhookDelay($payPalOrderId, $eventPayload, $order);
         $paypalOrderModel->setTransactionId($payPalTransactionId);
 
@@ -123,6 +130,20 @@ abstract class WebhookHandlerBase
         );
 
         $this->markShopOrderPaymentStatus($order, $payPalTransactionId);
+
+        $this->afterPaymentStatusHandled($order, $payPalOrderId, $frontendHadNotFinalized);
+    }
+
+    /**
+     * Hook invoked after the shop order payment status was written. No-op in the
+     * base handler; the capture-completed handler uses it to heal a missing
+     * order-confirmation mail. (0007981)
+     */
+    protected function afterPaymentStatusHandled(
+        EshopModelOrder $order,
+        string $payPalOrderId,
+        bool $frontendHadNotFinalized
+    ): void {
     }
 
     public function cleanUpNotFinishedOrders(): void
