@@ -40,7 +40,11 @@ class PaymentGateway extends PaymentGateway_parent
     public function executePayment($amount, &$order)
     {
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        $sessionPaymentId = $paymentService->getSessionPaymentId();
+        // Cast to string: getSessionPaymentId() returns null when no session is
+        // available (e.g. executePayment called for other modules in a CLI
+        // scenario), which would trip the string type hint of
+        // PayPalDefinitions::isButtonPayment(). See 0007974.
+        $sessionPaymentId = (string) $paymentService->getSessionPaymentId();
 
         if (PayPalDefinitions::isButtonPayment($sessionPaymentId)) {
             $success = $this->doExecutePayPalExpressPayment($order);
