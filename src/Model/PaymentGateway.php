@@ -10,6 +10,7 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 use Exception;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\PayPalCancelReason;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -142,7 +143,22 @@ class PaymentGateway extends PaymentGateway_parent
                     // success means at this point, that we triggered the capture without errors
                     $success = true;
                 } catch (Exception $exception) {
-                    $logger->log('warning', 'PayPal capture failed or refused: ' . $exception->getMessage(), [$exception]);
+                    // Classify a refused capture (issue recorded by the capture
+                    // error funnel) so the merchant can tell a PayPal decline
+                    // apart from an unexplained failure in the log.
+                    $declineIssue = PayPalSession::getCancelDeclineIssue();
+                    $reasonSuffix = $declineIssue !== ''
+                        ? PayPalCancelReason::formatLogSuffix(
+                            PayPalCancelReason::PAYMENT_DECLINED,
+                            $declineIssue
+                        )
+                        : PayPalCancelReason::formatLogSuffix(PayPalCancelReason::UNKNOWN);
+                    $logger->log(
+                        'warning',
+                        'PayPal capture failed or refused: ' . $exception->getMessage()
+                        . ' (' . $reasonSuffix . ')',
+                        [$exception]
+                    );
                 }
 
                 // destroy PayPal-Session

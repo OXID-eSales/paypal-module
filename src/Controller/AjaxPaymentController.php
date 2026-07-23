@@ -23,6 +23,7 @@ use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Model\Order as ShopOrder;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Core\PayPalCancelReason;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
@@ -614,7 +615,10 @@ class AjaxPaymentController extends BaseController
         $this->isOrderNotSuccessfullyDone($shopOrderId);
 
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
-        $cancelBlocked = $paymentService->removeTemporaryOrder($shopOrderId);
+        $cancelBlocked = $paymentService->removeTemporaryOrder(
+            $shopOrderId,
+            PayPalCancelReason::BUYER_CANCELLED
+        );
 
         if ($cancelBlocked) {
             $this->outputJson([
