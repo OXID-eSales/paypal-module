@@ -21,6 +21,7 @@ use OxidEsales\Eshop\Core\Model\BaseModel;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\PayPalCancelReason;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
@@ -596,35 +597,83 @@ class Order extends Order_parent
      * mark as failed, clean up PayPal session, and only hard-delete if
      * no order number was assigned.
      *
+     * @param string $cancelReason one of the PayPalCancelReason constants; used
+     *                             to classify the storno in the merchant log so
+     *                             expected cancels (customer abort, payment
+     *                             decline) can be told apart from process errors
      * @return bool true if order was deleted, false if kept as storno
      */
-    public function cancelPayPalOrder(): bool
+    public function cancelPayPalOrder(string $cancelReason = PayPalCancelReason::UNKNOWN): bool
     {
-        // Safety guard: never cancel an order that has been successfully captured
-        if ($this->isOrderSuccessfullyPaid() || !empty($this->getFieldData('oxtransid'))) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log('warning', sprintf(
-                'PayPal order with id %s (nr: %s) cancel skipped - payment already processed (transid: %s)',
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+
+        // A refused capture records its PayPal issue in the session. A real
+        // decline (e.g. TRANSACTION_REFUSED) is the authoritative cause and
+        // wins over any reason passed in — even if the buyer then also hit the
+        // cancel button. Consume it on read so it cannot leak into a later,
+        // unrelated cancel of a retry order.
+        $declineIssue = PayPalSession::getCancelDeclineIssue();
+        if ($declineIssue !== '') {
+            PayPalSession::unsetCancelDeclineIssue();
+            $cancelReason = PayPalCancelReason::PAYMENT_DECLINED;
+        }
+        $ppIssue = $cancelReason === PayPalCancelReason::PAYMENT_DECLINED ? $declineIssue : null;
+        $reasonSuffix = PayPalCancelReason::formatLogSuffix($cancelReason, $ppIssue);
+
+        // Idempotency guard: duplicate/triple-fired cancel requests (a frontend
+        // double-submit) must not storno or re-log the same order more than once.
+        if ((int)$this->getFieldData('oxstorno') === 1) {
+            $logger->log('debug', sprintf(
+                'PayPal order with id %s (nr: %s) cancel skipped - already stornoed (%s)',
                 $this->getId(),
                 $this->getFieldData('oxordernr'),
-                $this->getFieldData('oxtransid')
+                $reasonSuffix
             ));
             return false;
         }
 
-        // Safety guard: check PayPal API status before canceling.
-        // Covers the race condition where the customer clicked "Pay" in the
-        // PayPal popup but closed it before the onApprove callback fired.
-        // In that case PayPal may have already approved/captured the payment
-        // even though the frontend triggered a cancel.
-        if ($this->isPayPalOrderApprovedOrCaptured()) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        // Safety guard: never cancel an order that has been successfully captured
+        if ($this->isOrderSuccessfullyPaid() || !empty($this->getFieldData('oxtransid'))) {
             $logger->log('warning', sprintf(
-                'PayPal order with id %s (nr: %s) cancel blocked - PayPal order already approved/captured',
+                'PayPal order with id %s (nr: %s) cancel skipped - payment already processed (transid: %s) (%s)',
                 $this->getId(),
-                $this->getFieldData('oxordernr')
+                $this->getFieldData('oxordernr'),
+                $this->getFieldData('oxtransid'),
+                $reasonSuffix
+            ));
+            return false;
+        }
+
+        // Safety guard: check the PayPal API status before canceling.
+        $payPalStatus = $this->getPayPalApiOrderStatus();
+
+        // A genuinely captured PayPal order must never be stornoed here.
+        if ($payPalStatus === PayPalApiOrder::STATUS_COMPLETED) {
+            $logger->log('warning', sprintf(
+                'PayPal order with id %s (nr: %s) cancel blocked - PayPal order already captured (%s)',
+                $this->getId(),
+                $this->getFieldData('oxordernr'),
+                $reasonSuffix
+            ));
+            return false;
+        }
+
+        // An APPROVED-but-not-captured order is ambiguous: it can be a buyer who
+        // clicked "Pay" but closed the popup before onApprove fired (PayPal may
+        // still complete it) OR the leftover of a refused capture (a dead order
+        // that is safe to storno). Only the latter — where a decline issue was
+        // recorded — is stornoed; the former keeps the original protective
+        // behavior so we never storno a payment PayPal might still complete.
+        if (
+            $payPalStatus === PayPalApiOrder::STATUS_APPROVED
+            && $cancelReason !== PayPalCancelReason::PAYMENT_DECLINED
+        ) {
+            $logger->log('warning', sprintf(
+                'PayPal order with id %s (nr: %s) cancel blocked - PayPal order already approved (%s)',
+                $this->getId(),
+                $this->getFieldData('oxordernr'),
+                $reasonSuffix
             ));
             return false;
         }
@@ -641,38 +690,39 @@ class Order extends Order_parent
             $basket->setOrderId(null);
         }
 
-        /** @var LoggerInterface $logger */
-        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-
         if (!$this->hasOrderNumber()) {
             $this->delete();
             $logger->log('info', sprintf(
-                'PayPal order with id %s was canceled and deleted (no order number)',
-                $this->getId()
+                'PayPal order with id %s was canceled and deleted (no order number) (%s)',
+                $this->getId(),
+                $reasonSuffix
             ));
             return true;
         }
 
         $logger->log('info', sprintf(
-            'PayPal order with id %s (nr: %s) was canceled and kept as storno',
+            'PayPal order with id %s (nr: %s) was canceled and kept as storno (%s)',
             $this->getId(),
-            $this->getFieldData('oxordernr')
+            $this->getFieldData('oxordernr'),
+            $reasonSuffix
         ));
 
         return false;
     }
 
     /**
-     * Checks the PayPal API to see if the order has already been
-     * approved or captured. This prevents canceling an order where
-     * the customer clicked "Pay" but closed the popup before the
-     * onApprove JS callback could fire.
+     * Returns the current PayPal API status of this order (e.g. CREATED,
+     * PAYER_ACTION_REQUIRED, APPROVED, COMPLETED). Used by the cancel guard to
+     * tell a captured order (never storno) from an APPROVED-but-not-captured
+     * one (may be a late-approving buyer or the leftover of a refused capture).
+     *
+     * @return string the PayPal status, or '' if it cannot be determined
      */
-    protected function isPayPalOrderApprovedOrCaptured(): bool
+    protected function getPayPalApiOrderStatus(): string
     {
         $payPalOrderId = $this->getPayPalOrderIdForOxOrderId();
         if (!$payPalOrderId) {
-            return false;
+            return '';
         }
 
         try {
@@ -683,9 +733,7 @@ class Order extends Order_parent
                 Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
             );
 
-            $status = $apiOrder->status ?? '';
-
-            return in_array($status, ['APPROVED', 'COMPLETED'], true);
+            return (string)($apiOrder->status ?? '');
         } catch (ApiException $exception) {
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
@@ -694,8 +742,8 @@ class Order extends Order_parent
                 $this->getId(),
                 $exception->getMessage()
             ));
-            // If the API call fails, allow the cancel to proceed
-            return false;
+            // If the API call fails, return '' so the cancel is allowed to proceed
+            return '';
         }
     }
 

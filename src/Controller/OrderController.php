@@ -14,6 +14,7 @@ use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\PayPalCancelReason;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
@@ -554,7 +555,7 @@ class OrderController extends OrderController_parent
         $requestErrorcode = (string) Registry::getRequest()->getRequestParameter('errorcode');
 
         $this->getServiceFromContainer(PaymentService::class)
-            ->removeTemporaryOrder();
+            ->removeTemporaryOrder('', PayPalCancelReason::BUYER_CANCELLED);
 
         /** @var LoggerInterface $logger */
         $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');

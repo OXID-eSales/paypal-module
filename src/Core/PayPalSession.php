@@ -213,4 +213,30 @@ class PayPalSession
             Constants::SESSION_ONBOARDING_PAYLOAD
         );
     }
+
+    /**
+     * Records the PayPal error issue of a refused capture (e.g. TRANSACTION_REFUSED)
+     * so the later storno/cancel path can classify the cancel as PAYMENT_DECLINED.
+     */
+    public static function storeCancelDeclineIssue(string $issue): void
+    {
+        Registry::getSession()->setVariable(
+            Constants::SESSION_CANCEL_DECLINE_ISSUE,
+            $issue
+        );
+    }
+
+    public static function getCancelDeclineIssue(): string
+    {
+        return (string) Registry::getSession()->getVariable(
+            Constants::SESSION_CANCEL_DECLINE_ISSUE
+        );
+    }
+
+    public static function unsetCancelDeclineIssue(): void
+    {
+        Registry::getSession()->deleteVariable(
+            Constants::SESSION_CANCEL_DECLINE_ISSUE
+        );
+    }
 }

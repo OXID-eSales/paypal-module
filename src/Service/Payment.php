@@ -21,6 +21,7 @@ use OxidSolutionCatalysts\PayPal\Core\ConfirmOrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
+use OxidSolutionCatalysts\PayPal\Core\PayPalCancelReason;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
@@ -267,6 +268,10 @@ class Payment
         Order $payPalOrder = null
     ): Order {
 
+        // Start each capture attempt with a clean slate so a leftover decline
+        // issue from an earlier attempt cannot mislabel a later storno.
+        PayPalSession::unsetCancelDeclineIssue();
+
         /** @var Order $payPalOrder */
         if (is_null($payPalOrder) || !isset($payPalOrder->payment_source)) {
             $payPalOrder = $this->fetchOrderFields($checkoutOrderId);
@@ -453,12 +458,14 @@ class Payment
     /**
      * @return bool true if cancel was blocked (payment already in progress at PayPal)
      */
-    public function removeTemporaryOrder(?string $orderId = ''): bool
-    {
+    public function removeTemporaryOrder(
+        ?string $orderId = '',
+        string $cancelReason = PayPalCancelReason::UNKNOWN
+    ): bool {
         $cancelBlocked = false;
         $orderModel = $this->getTemporaryOrder($orderId);
         if ($orderModel) {
-            $deleted = $orderModel->cancelPayPalOrder();
+            $deleted = $orderModel->cancelPayPalOrder($cancelReason);
             // If order still exists and is not stornoed, cancel was blocked
             // because PayPal already approved/captured the payment.
             $cancelBlocked = !$deleted && $orderModel->getFieldData('oxstorno') != 1;
@@ -862,6 +869,12 @@ class Payment
     private function handlePayPalApiError(ApiException $exception): void
     {
         $issue = $exception->getErrorIssue();
+        // Remember the concrete PayPal issue so a subsequent storno/cancel can be
+        // classified as PAYMENT_DECLINED (e.g. TRANSACTION_REFUSED) instead of
+        // surfacing as an unexplained storno the merchant has to chase down.
+        if ($issue) {
+            PayPalSession::storeCancelDeclineIssue((string) $issue);
+        }
         if (self::PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED === 'PUI_' . $issue) {
             $this->setPaymentExecutionError(self::PAYMENT_SOURCE_INFO_CANNOT_BE_VERIFIED);
         } elseif (self::PAYMENT_SOURCE_DECLINED_BY_PROCESSOR === 'PUI_' . $issue) {
