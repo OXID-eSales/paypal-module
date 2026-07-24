@@ -73,6 +73,20 @@ class OrderMain extends OrderMain_parent
         }
 
         parent::save();
+
+        // Mirror the PayPal tracking code into the native oxorder.oxtrackcode
+        // when the operator left the OXID-side tracking field empty, so the
+        // customer gets the tracking link in the frontend order history.
+        // refreshOrder() first so the check reflects the value just persisted
+        // by parent::save(); an operator-managed oxtrackcode is never
+        // overwritten (see 0007945). (0007954)
+        if ($trackingCode) {
+            $this->refreshOrder();
+            $order = $this->getOrder();
+            if (!$order->getFieldData('oxtrackcode')) {
+                $order->setPayPalOrderTrackingCode((string) $trackingCode);
+            }
+        }
     }
 
     /**

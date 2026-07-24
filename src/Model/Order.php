@@ -1039,10 +1039,13 @@ class Order extends Order_parent
     }
 
     /**
-     * Update order oxtrackcode with the tracking code that was sent to PayPal.
+     * Update order oxtrackcode with the PayPal tracking code, so the native
+     * OXID tracking field — and the frontend order-history link that reads it —
+     * reflects the code entered for the PayPal order. Called after a successful
+     * API push and, when the native field was left empty, from the admin save.
      * (0007954)
      */
-    protected function setPayPalOrderTrackingCode(string $trackCode): void
+    public function setPayPalOrderTrackingCode(string $trackCode): void
     {
         $db = DatabaseProvider::getDb();
 
