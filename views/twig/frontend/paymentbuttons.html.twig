@@ -23,6 +23,10 @@
         // Leading semicolon defends against ASI failure when this snippet is
         // concatenated by the script() helper behind another snippet that ends without `;`.
         ;(function () {
+            // Render (or re-render) the button into its container. Extracted into a named
+            // function so it can run again after an AJAX DOM swap replaces the container
+            // (see the `basketLoaded` listener at the end of this IIFE).
+            function oscPayPalRenderButtons() {
             var paypalButtonContainer = document.getElementById('{{ buttonId }}');
             if (!paypalButtonContainer || paypalButtonContainer.children.length > 0) {
                 return;
@@ -281,6 +285,22 @@
                 button.render('#{{ buttonId }}');
             }
         {% endif %}
+            }
+
+            // Initial render on a normal (full) page load.
+            oscPayPalRenderButtons();
+
+            // Apex (OXID 7) updates the basket without a full reload: the theme's
+            // changeamount.js posts the basket form, then replaces the whole <body> via
+            // DOMParser + replaceWith and dispatches `basketLoaded` on window. Markup
+            // inserted that way never runs its <script>s, so the freshly injected (empty)
+            // button container stays empty and the PayPal Express / Pay Later buttons
+            // "disappear" until the next full page reload. `window` survives the <body>
+            // swap, so this listener -- registered once on the initial load -- re-renders
+            // the buttons into the new empty container on every AJAX basket update (basket
+            // page and minibasket). Wave/Flow (OXID 6, Smarty) reloads the whole page
+            // instead and never fires `basketLoaded`, so this is a harmless no-op there.
+            window.addEventListener('basketLoaded', oscPayPalRenderButtons);
         })();
     {% endset %}
     {% if phpStorm %}</script>{% endif %}
