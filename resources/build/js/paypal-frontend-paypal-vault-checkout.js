@@ -6,22 +6,35 @@ function deselectRadioButtons(selector) {
 }
 
 /**
+ * Default selector for the payment step's "next"/submit button.
+ *
+ * The button is not reliably selectable across themes: OXID6 core / Smarty themes
+ * (and the AmazonPay module) render it with the id "paymentNextStepBottom", whereas
+ * OXID7 Apex/Twig renders a button without a stable hook, identifiable only by its
+ * inline onclick. The onclick JS differs between theme versions
+ * (e.g. document.getElementById('payment').submit() vs
+ * document.querySelector('#payment').requestSubmit()), so we match loosely on the
+ * onclick referencing the payment form ("payment") and a submit call ("ubmit"
+ * covers submit / requestSubmit / Submit).
+ *
+ * Themes that render this button differently can override the selector by setting
+ * window.oscPayPalPaymentSubmitButtonSelector (via a theme template or additional
+ * JS). It is read at call time, so the override works regardless of script load order.
+ *
+ * @type {string}
+ */
+const OSC_PAYPAL_DEFAULT_PAYMENT_SUBMIT_BUTTON_SELECTOR =
+    '#paymentNextStepBottom, button[onclick*="payment"][onclick*="ubmit"]';
+
+/**
  * Helper function to get the payment submit button
  * @returns {Element|null} The payment submit button element or null if not found
  */
 function getPaymentSubmitButton() {
+    const selector = window.oscPayPalPaymentSubmitButtonSelector ||
+        OSC_PAYPAL_DEFAULT_PAYMENT_SUBMIT_BUTTON_SELECTOR;
 
-    const smartyButton = document.getElementById('paymentNextStepBottom');
-    if (smartyButton) {
-        return smartyButton;
-    }
-
-    const twigButton = document.querySelector('button[onclick*="document.getElementById(\'payment\').submit();"]');
-    if (twigButton) {
-        return twigButton;
-    }
-
-    return null;
+    return document.querySelector(selector);
 }
 
 function registerClickListenerForPaymentMethodsRadioButtons() {
@@ -33,7 +46,10 @@ function registerClickListenerForPaymentMethodsRadioButtons() {
                 document.getElementById("paypalVaultCheckoutButton").disabled = true;
             }
             if (paymentMethod.checked) {
-                getPaymentSubmitButton().disabled = false;
+                const paymentSubmitButton = getPaymentSubmitButton();
+                if (paymentSubmitButton) {
+                    paymentSubmitButton.disabled = false;
+                }
                 deselectRadioButtons(".vaulting_paymentsource");
             }
         };
@@ -47,7 +63,10 @@ function registerClickListenerForSavedVaultRadioButtons() {
             paymentsource.onclick = function() {
                 if (paymentsource.checked) {
                     document.getElementById("paypalVaultCheckoutButton").disabled = false;
-                    getPaymentSubmitButton().disabled = true;
+                    const paymentSubmitButton = getPaymentSubmitButton();
+                    if (paymentSubmitButton) {
+                        paymentSubmitButton.disabled = true;
+                    }
                     deselectRadioButtons('#payment [type="radio"]');
                 }
             };
@@ -79,9 +98,11 @@ function registerClickListenerForTheVaultCheckoutButton() {
                         document.getElementById("payment").appendChild(paymentIdInput);
 
                         let nextPaymentStepButton = getPaymentSubmitButton();
-                        nextPaymentStepButton.disabled = false;
-                        nextPaymentStepButton.click();
-                        nextPaymentStepButton.disabled = true;
+                        if (nextPaymentStepButton) {
+                            nextPaymentStepButton.disabled = false;
+                            nextPaymentStepButton.click();
+                            nextPaymentStepButton.disabled = true;
+                        }
                     }
                 });
             }
