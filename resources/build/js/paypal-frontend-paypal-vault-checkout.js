@@ -62,7 +62,10 @@ function registerClickListenerForSavedVaultRadioButtons() {
         vaultingPaymentSourceRadioButtons.forEach(function(paymentsource) {
             paymentsource.onclick = function() {
                 if (paymentsource.checked) {
-                    document.getElementById("paypalVaultCheckoutButton").disabled = false;
+                    const paypalVaultCheckoutButton = document.getElementById("paypalVaultCheckoutButton");
+                    if (paypalVaultCheckoutButton) {
+                        paypalVaultCheckoutButton.disabled = false;
+                    }
                     const paymentSubmitButton = getPaymentSubmitButton();
                     if (paymentSubmitButton) {
                         paymentSubmitButton.disabled = true;
