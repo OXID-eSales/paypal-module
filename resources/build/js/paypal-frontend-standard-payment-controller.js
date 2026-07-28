@@ -114,6 +114,14 @@
                 // Clean up state so a retry does not attempt to cancel
                 // the old, already-handled order via setShopOrderData.
                 PayPalPayment.resetCurrentOrder();
+                // Surface the reason the backend sent and free the button again.
+                // Without this the popup just closed and the page stayed exactly as it
+                // was: no message, no way to act, the order silently left behind.
+                // Deliberately no handleError() here — a refused capture is already
+                // stornoed server-side by captureOrder(), and handleError() would fire
+                // a second cancel for the same order (see 0007980).
+                PayPalPayment.showErrorMessage(result.message || '');
+                PayPalPayment.removeSubmitButtonOverlay();
             }
         };
 

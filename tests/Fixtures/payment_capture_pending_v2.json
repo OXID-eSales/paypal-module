@@ -1,0 +1,56 @@
+{
+    "id": "WH-7P305284UE9761510-49828263JH943873H",
+    "event_version": "1.0",
+    "create_time": "2021-03-19T08:17:29.782Z",
+    "resource_type": "capture",
+    "resource_version": "2.0",
+    "event_type": "PAYMENT.CAPTURE.PENDING",
+    "summary": "Payment pending for EUR 61.8 EUR",
+    "resource": {
+        "id": "77678605TD9836823",
+        "status": "PENDING",
+        "status_details": {
+            "reason": "UNILATERAL"
+        },
+        "amount": {
+            "value": "61.80",
+            "currency_code": "EUR"
+        },
+        "custom_id": "16",
+        "seller_protection": {
+            "status": "NOT_ELIGIBLE"
+        },
+        "supplementary_data": {
+            "related_ids": {
+                "order_id": "5O190127TN364715T"
+            }
+        },
+        "update_time": "2021-03-19T08:17:12Z",
+        "create_time": "2021-03-19T08:16:01Z",
+        "final_capture": true,
+        "links": [
+            {
+                "method": "GET",
+                "rel": "self",
+                "href": "https://api-m.sandbox.paypal.com/v2/payments/captures/77678605TD9836823"
+            },
+            {
+                "method": "GET",
+                "rel": "up",
+                "href": "https://api-m.sandbox.paypal.com/v2/checkout/orders/5O190127TN364715T"
+            }
+        ]
+    },
+    "links": [
+        {
+            "href": "https://api-m.sandbox.paypal.com/v1/notifications/webhooks-events/WH-7P305284UE9761510-49828263JH943873H",
+            "rel": "self",
+            "method": "GET"
+        },
+        {
+            "href": "https://api-m.sandbox.paypal.com/v1/notifications/webhooks-events/WH-7P305284UE9761510-49828263JH943873H/resend",
+            "rel": "resend",
+            "method": "POST"
+        }
+    ]
+}

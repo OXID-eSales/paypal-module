@@ -241,6 +241,31 @@ class Order extends Order_parent
                     PayPalApiOrder::STATUS_COMPLETED,
                     $transactionId
                 );
+            } elseif ($this->isPayPalCapturePending($payPalApiOrder)) {
+                // Capture accepted by PayPal but not settled yet. Treating this as a
+                // finalization failure (the else below) would throw and cancel an order
+                // whose payment PayPal is still going to collect, so finalize it as
+                // payment-not-finished and let PAYMENT.CAPTURE.COMPLETED settle it.
+                $transactionId = $this->extractTransactionId($payPalApiOrder);
+                $this->markOrderPaymentNotFinished();
+                $this->setTransId($transactionId);
+                $this->paymentService->trackPayPalOrder(
+                    $this->getId(),
+                    $payPalOrderId,
+                    $paymentsId,
+                    PayPalApiOrder::STATUS_APPROVED,
+                    $transactionId
+                );
+
+                /** @var LoggerInterface $logger */
+                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+                $logger->log('warning', sprintf(
+                    'finalizeOrderAfterExternalPayment: PayPal capture for order %s (nr: %s) is PENDING'
+                    . ' (reason: %s) - finalized as payment-not-finished',
+                    $this->getId(),
+                    $this->getFieldData('oxordernr'),
+                    $this->getPayPalCapturePendingReason($payPalApiOrder) ?: 'unknown'
+                ), ['payPalOrderId' => $payPalOrderId]);
             }
             elseif ($isUAPM && $this->isPayPalOrderApproved($payPalApiOrder)) {
                 $this->markOrderPaymentNotFinished();
@@ -1411,6 +1436,35 @@ class Order extends Order_parent
             $apiOrder->status === PayPalApiOrder::STATUS_COMPLETED &&
             $apiOrder->purchase_units[0]->payments->captures[0]->status === Capture::STATUS_COMPLETED
         );
+    }
+
+    /**
+     * A capture PayPal accepted but has not settled yet: the checkout order is
+     * COMPLETED while the capture itself sits in PENDING (e.g. reason UNILATERAL —
+     * the payee address is not confirmed on the receiving account — or a pending
+     * review). The money is committed but not collected, so such an order must
+     * neither be marked paid nor treated as a decline: it is a legitimate
+     * checkout outcome that has to reach the thank-you page.
+     */
+    public function isPayPalCapturePending(PayPalApiOrder $apiOrder): bool
+    {
+        return (
+            isset(
+                $apiOrder->status,
+                $apiOrder->purchase_units[0]->payments->captures[0]->status
+            ) &&
+            $apiOrder->status === PayPalApiOrder::STATUS_COMPLETED &&
+            $apiOrder->purchase_units[0]->payments->captures[0]->status === Capture::STATUS_PENDING
+        );
+    }
+
+    /**
+     * Reason PayPal gave for holding a PENDING capture (e.g. UNILATERAL,
+     * PENDING_REVIEW), for logging. Empty when PayPal sent no details.
+     */
+    public function getPayPalCapturePendingReason(PayPalApiOrder $apiOrder): string
+    {
+        return (string) ($apiOrder->purchase_units[0]->payments->captures[0]->status_details->reason ?? '');
     }
 
     public function isPayPalOrderApproved(PayPalApiOrder $apiOrder): bool

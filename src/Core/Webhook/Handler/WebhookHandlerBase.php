@@ -116,6 +116,11 @@ abstract class WebhookHandlerBase
         // (frontend request died after the PayPal capture, e.g. a 503). (0007981)
         $frontendHadNotFinalized = $order->getFieldData('oxtransstatus') === 'NOT_FINISHED';
 
+        // Same idea for the transaction id: read it before markShopOrderPaymentStatus()
+        // writes the one from this event, so the hook can tell whether the frontend had
+        // already recorded a capture of its own.
+        $transIdBeforeWebhook = (string) $order->getFieldData('oxtransid');
+
         $this->handleWebhookDelay($payPalOrderId, $eventPayload, $order);
         $paypalOrderModel->setTransactionId($payPalTransactionId);
 
@@ -131,7 +136,12 @@ abstract class WebhookHandlerBase
 
         $this->markShopOrderPaymentStatus($order, $payPalTransactionId);
 
-        $this->afterPaymentStatusHandled($order, $payPalOrderId, $frontendHadNotFinalized);
+        $this->afterPaymentStatusHandled(
+            $order,
+            $payPalOrderId,
+            $frontendHadNotFinalized,
+            $transIdBeforeWebhook
+        );
     }
 
     /**
@@ -142,7 +152,8 @@ abstract class WebhookHandlerBase
     protected function afterPaymentStatusHandled(
         EshopModelOrder $order,
         string $payPalOrderId,
-        bool $frontendHadNotFinalized
+        bool $frontendHadNotFinalized,
+        string $transIdBeforeWebhook = ''
     ): void {
     }
 
