@@ -207,12 +207,16 @@ class OrderRepository
             'oxstorno'      => '0',
             'pp_approved'   => 'APPROVED',
             'pp_completed'  => 'COMPLETED',
+            'pp_pending'    => 'PENDING',
         ];
 
-        // Skip orders that PayPal has already APPROVED or COMPLETED — those
-        // represent a real payment-pending state where a webhook is expected
-        // to finalize the order, and must not be cancelled by the cleanup
-        // job. Orders whose oscpaypal_order row is missing or carries a non-
+        // Skip orders that PayPal has already APPROVED, COMPLETED or accepted with a
+        // PENDING capture — those represent a real payment-pending state where a
+        // webhook is expected to finalize the order, and must not be cancelled by the
+        // cleanup job. PENDING is written by the capture paths that track the raw
+        // capture status (Payment::doCapturePayPalOrder): the funds are committed and
+        // PAYMENT.CAPTURE.COMPLETED is still to come, so cancelling would discard a
+        // real payment. Orders whose oscpaypal_order row is missing or carries a non-
         // pending status (e.g. CREATED, customer never approved) are still
         // cleaned up as before. (0007946)
         $queryBuilder->select('oxorder.oxid')
@@ -233,7 +237,7 @@ class OrderRepository
             ->andWhere('oxorder.oxorderdate < now() - interval :sessiontime MINUTE')
             ->andWhere(
                 '(pp.oscpaypalstatus IS NULL '
-                . 'OR pp.oscpaypalstatus NOT IN (:pp_approved, :pp_completed))'
+                . 'OR pp.oscpaypalstatus NOT IN (:pp_approved, :pp_completed, :pp_pending))'
             );
 
         $ids = $queryBuilder->setParameters($parameters)

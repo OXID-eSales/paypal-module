@@ -359,14 +359,61 @@ class AjaxPaymentController extends BaseController
                 $response['paymentStatus'] = $capturePaymentForOrder->getCapturePaymentStatus() ? 'success' : 'error';
             }
 
-            // Provide a fresh redirect URL so the JS does not rely on
-            // the potentially stale shopThankYouPageUrl from the initial
-            // page render (important when the user retries without F5).
-            $config = Registry::getConfig();
-            $session = Registry::getSession();
-            $stoken = $session->getSessionChallengeToken();
-            $response['redirectUrl'] = $config->getSslShopUrl()
-                . 'index.php?cl=thankyou&stoken=' . $stoken;
+            $response['redirectUrl'] = $this->getThankYouPageUrl();
+        } elseif (
+            $order instanceof ShopOrder
+            && $order->isPayPalCapturePending($capturePaymentForOrder)
+        ) {
+            // PayPal accepted the capture but has not settled it yet (e.g. reason
+            // UNILATERAL). The checkout is done from the customer's point of view,
+            // so this must not fall through to the decline branch below — which
+            // would deny the redirect and storno an order PayPal is still going to
+            // collect, leaving the customer on a dead page. See isPayPalCapturePending().
+            $paymentsId = (string)$order->getFieldData('oxpaymenttype');
+            $transactionId = (string)(
+                $capturePaymentForOrder->purchase_units[0]->payments->captures[0]->id ?? ''
+            );
+
+            $this->logger->log('warning', sprintf(
+                'PayPal capture for order %s (nr: %s) is PENDING (reason: %s) - order finalized as'
+                . ' payment-not-finished, waiting for PAYMENT.CAPTURE.COMPLETED',
+                $order->getId(),
+                $order->getFieldData('oxordernr'),
+                $order->getPayPalCapturePendingReason($capturePaymentForOrder) ?: 'unknown'
+            ), [
+                'payPalOrderId' => $payPalOrderId,
+                'shopOrderId' => $shopOrderId,
+                'transactionId' => $transactionId,
+            ]);
+
+            // Committed but not collected: never markOrderPaid() here. Tracking the
+            // PayPal order as APPROVED mirrors the UAPM/authorize flow and keeps the
+            // order out of OrderRepository::cleanUpNotFinishedOrders(), which skips
+            // APPROVED/COMPLETED rows.
+            if ($transactionId !== '') {
+                $order->setTransId($transactionId);
+            }
+            $order->markOrderPaymentNotFinished();
+
+            $this->paymentService->trackPayPalOrder(
+                $shopOrderId,
+                $payPalOrderId,
+                $paymentsId,
+                PayPalApiOrder::STATUS_APPROVED,
+                $transactionId
+            );
+
+            // The customer finished the checkout, so the confirmation mail is due
+            // now — not only once PayPal releases the funds.
+            if ($basket && $user) {
+                $order->sendPayPalOrderByEmailWithVoucherBinding($user, $basket);
+            }
+
+            PayPalSession::unsetPayPalSession();
+
+            $response['status'] = 'success';
+            $response['paymentStatus'] = 'success';
+            $response['redirectUrl'] = $this->getThankYouPageUrl();
         }
 
         if ($response['paymentStatus'] === 'error') {
@@ -387,6 +434,17 @@ class AjaxPaymentController extends BaseController
         }
 
         $this->outputJson($response);
+    }
+
+    /**
+     * Fresh thank-you page URL, so the JS does not rely on the potentially stale
+     * shopThankYouPageUrl from the initial page render (important when the user
+     * retries without F5).
+     */
+    private function getThankYouPageUrl(): string
+    {
+        return Registry::getConfig()->getSslShopUrl()
+            . 'index.php?cl=thankyou&stoken=' . Registry::getSession()->getSessionChallengeToken();
     }
 
     /**
@@ -680,6 +738,32 @@ class AjaxPaymentController extends BaseController
                         PayPalApiOrder::STATUS_COMPLETED,
                         $transactionId
                     );
+                } elseif ($oOrder->isPayPalCapturePending($payPalOrder)) {
+                    // Capture accepted but not settled: keep the transaction id so the
+                    // order can be reconciled, but leave it unpaid until
+                    // PAYMENT.CAPTURE.COMPLETED arrives. Tracked as APPROVED so the
+                    // not-finished cleanup leaves it alone.
+                    $transactionId = (string)(
+                        $payPalOrder->purchase_units[0]->payments->captures[0]->id ?? ''
+                    );
+                    $oOrder->markOrderPaymentNotFinished();
+                    if ($transactionId !== '') {
+                        $oOrder->setTransId($transactionId);
+                    }
+                    $paymentService->trackPayPalOrder(
+                        $shopOrderId,
+                        $payPalOrderId,
+                        $paymentsId,
+                        PayPalApiOrder::STATUS_APPROVED,
+                        $transactionId
+                    );
+
+                    $this->logger->log('warning', sprintf(
+                        'PayPal capture for order %s (nr: %s) is PENDING (reason: %s) during patchShopOrder',
+                        $oOrder->getId(),
+                        $oOrder->getFieldData('oxordernr'),
+                        $oOrder->getPayPalCapturePendingReason($payPalOrder) ?: 'unknown'
+                    ), ['payPalOrderId' => $payPalOrderId]);
                 }
             }
 

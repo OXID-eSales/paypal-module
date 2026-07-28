@@ -413,6 +413,20 @@ class Payment
                 }
 
                 $order->markOrderPaid();
+            } elseif ($result instanceof Order && $order->isPayPalCapturePending($result)) {
+                // PayPal accepted the capture but has not settled it yet. The money is
+                // committed, so this is not a failure — but it must not be marked paid
+                // either. Flag it as payment-not-finished and let
+                // PAYMENT.CAPTURE.COMPLETED / PAYMENT.CAPTURE.DENIED decide the outcome.
+                $order->markOrderPaymentNotFinished();
+
+                $this->logger->log('warning', sprintf(
+                    'PayPal capture for order %s (nr: %s) is PENDING (reason: %s) - order marked'
+                    . ' payment-not-finished, waiting for PAYMENT.CAPTURE.COMPLETED',
+                    $order->getId(),
+                    $order->getFieldData('oxordernr'),
+                    $order->getPayPalCapturePendingReason($result) ?: 'unknown'
+                ), ['payPalOrderId' => $checkoutOrderId]);
             }
         } catch (Exception $exception) {
             $this->logger->log('warning', 'PayPal capture refused or failed: ' . $exception->getMessage(), [$exception->getMessage()]);

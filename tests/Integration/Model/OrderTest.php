@@ -611,6 +611,83 @@ final class OrderTest extends BaseTestCase
         return $orderMock;
     }
 
+    public function dataProviderCaptureStatus(): array
+    {
+        return [
+            // PayPal order status, capture status, isCompleted, isCapturePending
+            'completed'        => ['COMPLETED', 'COMPLETED', true, false],
+            'pending'          => ['COMPLETED', 'PENDING', false, true],
+            'declined'         => ['COMPLETED', 'DECLINED', false, false],
+            'failed'           => ['COMPLETED', 'FAILED', false, false],
+            // A PENDING capture on a not-yet-completed order is not the settled-later
+            // case this branch covers, so it must not be reported as pending either.
+            'order_approved'   => ['APPROVED', 'PENDING', false, false],
+        ];
+    }
+
+    /**
+     * @dataProvider dataProviderCaptureStatus
+     */
+    public function testCaptureStatusDetection(
+        string $orderStatus,
+        string $captureStatus,
+        bool $expectedCompleted,
+        bool $expectedPending
+    ): void {
+        $order = oxNew(PaypalOrder::class);
+        $apiOrder = new PayPalApiOrder([
+            'id' => self::TEST_PAYPAL_ORDER_ID,
+            'status' => $orderStatus,
+            'purchase_units' => [
+                [
+                    'payments' => [
+                        'captures' => [
+                            [
+                                'id' => self::TEST_PAYPAL_TRANS_ID,
+                                'status' => $captureStatus,
+                                'status_details' => ['reason' => 'UNILATERAL'],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+        $this->assertSame($expectedCompleted, $order->isPayPalOrderCompleted($apiOrder));
+        $this->assertSame($expectedPending, $order->isPayPalCapturePending($apiOrder));
+    }
+
+    public function testCapturePendingReason(): void
+    {
+        $order = oxNew(PaypalOrder::class);
+
+        $withReason = new PayPalApiOrder([
+            'status' => 'COMPLETED',
+            'purchase_units' => [
+                [
+                    'payments' => [
+                        'captures' => [
+                            [
+                                'status' => 'PENDING',
+                                'status_details' => ['reason' => 'UNILATERAL'],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+        $this->assertSame('UNILATERAL', $order->getPayPalCapturePendingReason($withReason));
+
+        // PayPal may omit status_details entirely — that must not blow up.
+        $withoutReason = new PayPalApiOrder([
+            'status' => 'COMPLETED',
+            'purchase_units' => [
+                ['payments' => ['captures' => [['status' => 'PENDING']]]],
+            ],
+        ]);
+        $this->assertSame('', $order->getPayPalCapturePendingReason($withoutReason));
+    }
+
     private function prepareEmptyOrder(): EshopModelOrder
     {
         $order = oxNew(EshopModelOrder::class);

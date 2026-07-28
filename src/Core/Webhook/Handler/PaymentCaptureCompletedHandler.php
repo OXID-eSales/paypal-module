@@ -55,7 +55,8 @@ class PaymentCaptureCompletedHandler extends WebhookHandlerBase
     protected function afterPaymentStatusHandled(
         EshopModelOrder $order,
         string $payPalOrderId,
-        bool $frontendHadNotFinalized
+        bool $frontendHadNotFinalized,
+        string $transIdBeforeWebhook = ''
     ): void {
         // Frontend already finalized -> the confirmation mail was already sent.
         if (!$frontendHadNotFinalized) {
@@ -66,6 +67,23 @@ class PaymentCaptureCompletedHandler extends WebhookHandlerBase
         // PaymentCaptureDeniedHandler inherits this hook but its order is stornoed
         // and not successfully paid, so it is filtered out here.
         if ($order->getFieldData('oxstorno') == 1 || !$order->isOrderSuccessfullyPaid()) {
+            return;
+        }
+
+        // A pending capture that the frontend finalized (AjaxPaymentController::
+        // captureOrder PENDING branch) also leaves oxtransstatus at NOT_FINISHED, so
+        // $frontendHadNotFinalized alone cannot tell it apart from the died-frontend
+        // case this heal exists for — and when the pending capture later settles, this
+        // event would send a second confirmation mail. The pre-webhook transaction id
+        // separates them: the pending branch records one together with the mail, while
+        // the AJAX request this heal covers dies before PayPalOrderCompletedEvent and
+        // therefore before any setTransId().
+        //
+        // Residual: Payment::doCapturePayPalOrder() writes the transaction id a few
+        // statements before it marks the order paid, so a request dying inside that
+        // window is no longer healed. That is a far narrower case than the duplicate
+        // mail this prevents.
+        if ($transIdBeforeWebhook !== '') {
             return;
         }
 
