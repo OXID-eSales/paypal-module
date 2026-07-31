@@ -1,0 +1,26 @@
+{% set shop = oEmailView.getShop() %}
+{% set oViewConf = oEmailView.getViewConfig() %}
+{% block paypal_email_plain_refund_intro %}
+{% if isPayPalOwnerMail %}
+{{ translate({ ident: "OSC_PAYPAL_REFUND_MAIL_INTRO_OWNER" }) }}
+{% else %}
+{{ translate({ ident: "OSC_PAYPAL_REFUND_MAIL_SALUTATION" }) }} {{ order.oxorder__oxbillfname.getRawValue() }} {{ order.oxorder__oxbilllname.getRawValue() }},
+
+{{ translate({ ident: "OSC_PAYPAL_REFUND_MAIL_INTRO" }) }}
+{% endif %}
+{% endblock %}
+
+{% block paypal_email_plain_refund_details %}
+{{ translate({ ident: "ORDER_NUMBER", suffix: "COLON" }) }} {{ order.oxorder__oxordernr.value }}
+{{ translate({ ident: "OSC_PAYPAL_REFUND_MAIL_AMOUNT", suffix: "COLON" }) }} {{ payPalRefundedAmount|number_format(2, '.', '') }} {{ payPalCurrencyCode }}
+{{ translate({ ident: "OSC_PAYPAL_REFUND_MAIL_ORDER_TOTAL", suffix: "COLON" }) }} {{ order.oxorder__oxtotalordersum.value|number_format(2, '.', '') }} {{ order.oxorder__oxcurrency.value }}
+{% endblock %}
+
+{% block paypal_email_plain_refund_note %}
+{% if not isPayPalOwnerMail %}
+{{ translate({ ident: "OSC_PAYPAL_REFUND_MAIL_NOTE" }) }}
+{% endif %}
+{% endblock %}
+
+{{ shop.oxshops__oxname.getRawValue() }}
+{{ shop.oxshops__oxurl.value }}

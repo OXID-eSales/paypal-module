@@ -337,5 +337,13 @@ $aLang = array_merge(
     'OSC_PAYPAL_WEBHOOK_TITLE'                      => 'Webhook',
     'OSC_PAYPAL_WEBHOOK_TIMEDELAY'                  => 'Time delay in seconds (default: 20)',
     'OSC_PAYPAL_WEBHOOK_TIMEDELAY_DESC'             => 'PayPal webhooks inform the shop about the current order status and partially finalize orders if a customer does not complete the checkout process through to the "Thank You" page.',
+    'OSC_PAYPAL_REFUND_MAIL'                        => 'Confirmation mail on refund',
+    'HELP_OSC_PAYPAL_REFUND_MAIL'                   => 'Who is notified by email once a refund was triggered in the backend and PayPal confirmed it as completed? The mail states the order number and the refunded amount.',
+    'OSC_PAYPAL_CANCEL_MAIL'                        => 'Confirmation mail on cancellation',
+    'HELP_OSC_PAYPAL_CANCEL_MAIL'                   => 'Who is notified by email once a PayPal order was cancelled in the backend? A cancellation does not trigger an automatic refund in the PayPal module - this mail only confirms the cancellation. A refund is triggered separately via the refund button and confirmed separately.',
+    'OSC_PAYPAL_MAIL_RECIPIENT_NONE'                => 'Do not send a mail',
+    'OSC_PAYPAL_MAIL_RECIPIENT_CUSTOMER'            => 'To the customer',
+    'OSC_PAYPAL_MAIL_RECIPIENT_OWNER'               => 'To the shop owner',
+    'OSC_PAYPAL_MAIL_RECIPIENT_BOTH'                => 'To customer and shop owner',
     ]
 );

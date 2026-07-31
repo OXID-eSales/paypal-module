@@ -1,0 +1,65 @@
+{% set shop = oEmailView.getShop() %}
+{% set oViewConf = oEmailView.getViewConfig() %}
+
+{% capture assign = "style" %}
+    table.paypalcancel th, table.paypalcancel td {
+    border: 1px solid #d4d4d4;
+    font-size: 13px;
+    padding: 5px;
+    white-space: nowrap;
+    }
+
+    table.paypalcancel {
+    border-collapse: collapse;
+    }
+{% endcapture %}
+
+{% include "email/html/header.html.twig" with { title: ("OSC_PAYPAL_CANCEL_MAIL_TITLE"|translate) ~ " #" ~ order.oxorder__oxordernr.value, style: style } %}
+
+    {% block paypal_email_html_cancel_intro %}
+        <p>
+            {% if isPayPalOwnerMail %}
+                {{ translate({ ident: "OSC_PAYPAL_CANCEL_MAIL_INTRO_OWNER" }) }}
+            {% else %}
+                {{ translate({ ident: "OSC_PAYPAL_CANCEL_MAIL_SALUTATION" }) }}
+                {{ order.oxorder__oxbillfname.getRawValue() }} {{ order.oxorder__oxbilllname.getRawValue() }},
+            {% endif %}
+        </p>
+        {% if not isPayPalOwnerMail %}
+            <p>{{ translate({ ident: "OSC_PAYPAL_CANCEL_MAIL_INTRO" }) }}</p>
+        {% endif %}
+    {% endblock %}
+
+    {% block paypal_email_html_cancel_details %}
+        <table class="paypalcancel" border="0" cellspacing="0" cellpadding="0" width="100%">
+            <tbody>
+                <tr valign="top">
+                    <th align="right" class="text-right">{{ translate({ ident: "ORDER_NUMBER", suffix: "COLON" }) }}</th>
+                    <td>{{ order.oxorder__oxordernr.value }}</td>
+                </tr>
+                <tr valign="top">
+                    <th align="right" class="text-right">{{ translate({ ident: "OSC_PAYPAL_CANCEL_MAIL_ORDER_TOTAL", suffix: "COLON" }) }}</th>
+                    <td>{{ format_price(order.oxorder__oxtotalordersum.value, { currency: currency }) }}</td>
+                </tr>
+                {% if payPalRefundedAmount is not null %}
+                    <tr valign="top">
+                        <th align="right" class="text-right">{{ translate({ ident: "OSC_PAYPAL_CANCEL_MAIL_REFUNDED", suffix: "COLON" }) }}</th>
+                        <td>{{ payPalRefundedAmount|number_format(2, '.', '') }} {{ payPalCurrencyCode }}</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        <br/>
+    {% endblock %}
+
+    {% block paypal_email_html_cancel_note %}
+        {% if not isPayPalOwnerMail %}
+            {% if payPalRefundedAmount is not null %}
+                <p>{{ translate({ ident: "OSC_PAYPAL_REFUND_MAIL_NOTE" }) }}</p>
+            {% else %}
+                <p>{{ translate({ ident: "OSC_PAYPAL_CANCEL_MAIL_NOTE_NO_REFUND" }) }}</p>
+            {% endif %}
+        {% endif %}
+    {% endblock %}
+
+{% include "email/html/footer.html.twig" %}

@@ -1,6 +1,21 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Shop\\:\\:\\$oxshops__oxname\\.$#"
+			count: 2
+			path: ../../src/Core/Email.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:\\$oxorder__oxbillfname\\.$#"
+			count: 1
+			path: ../../src/Core/Email.php
+
+		-
+			message: "#^Access to an undefined property OxidEsales\\\\Eshop\\\\Application\\\\Model\\\\Order\\:\\:\\$oxorder__oxbilllname\\.$#"
+			count: 1
+			path: ../../src/Core/Email.php
+
+		-
 			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:changeBasket\\(\\) has parameter \\$aPersParam with no value type specified in iterable type array\\.$#"
 			count: 1
 			path: ../../src/Component/BasketComponent.php

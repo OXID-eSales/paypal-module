@@ -35,6 +35,34 @@ class Email extends Email_parent
     protected $sPuiTplPlain = "@osc_paypal/frontend/email/plain/pui_paymentinfo";
 
     /**
+     * Refund confirmation - HTML
+     *
+     * @var string
+     */
+    protected $payPalRefundTplHtml = "@osc_paypal/frontend/email/html/refund";
+
+    /**
+     * Refund confirmation - Plain
+     *
+     * @var string
+     */
+    protected $payPalRefundTplPlain = "@osc_paypal/frontend/email/plain/refund";
+
+    /**
+     * Cancellation confirmation - HTML
+     *
+     * @var string
+     */
+    protected $payPalCancelTplHtml = "@osc_paypal/frontend/email/html/cancel";
+
+    /**
+     * Cancellation confirmation - Plain
+     *
+     * @var string
+     */
+    protected $payPalCancelTplPlain = "@osc_paypal/frontend/email/plain/cancel";
+
+    /**
      * Sets mailer additional settings and sends pui info mail to user.
      * Returns true on success.
      *
@@ -70,5 +98,189 @@ class Email extends Email_parent
         $this->setReplyTo($shop->oxshops__oxorderemail->value, $shop->oxshops__oxname->getRawValue());
 
         return $this->send();
+    }
+    /**
+     * @param Order $order
+     * @param float $refundedAmount amount PayPal confirmed as refunded
+     * @param string $currency currency code of the refunded amount
+     * @return bool
+     */
+    public function sendPayPalRefundMailToCustomer(
+        Order $order,
+        float $refundedAmount,
+        string $currency
+    ): bool {
+        return $this->sendPayPalRefundMail($order, $refundedAmount, $currency, false);
+    }
+
+    /**
+     * @param Order $order
+     * @param float $refundedAmount amount PayPal confirmed as refunded
+     * @param string $currency currency code of the refunded amount
+     * @return bool
+     */
+    public function sendPayPalRefundMailToOwner(
+        Order $order,
+        float $refundedAmount,
+        string $currency
+    ): bool {
+        return $this->sendPayPalRefundMail($order, $refundedAmount, $currency, true);
+    }
+
+    /**
+     * @param Order $order
+     * @param float|null $refundedAmount amount refunded along with the
+     *                                   cancellation, null if no refund was made
+     * @param string $currency currency code of the refunded amount
+     * @return bool
+     */
+    public function sendPayPalCancelMailToCustomer(
+        Order $order,
+        ?float $refundedAmount,
+        string $currency
+    ): bool {
+        return $this->sendPayPalCancelMail($order, $refundedAmount, $currency, false);
+    }
+
+    /**
+     * @param Order $order
+     * @param float|null $refundedAmount amount refunded along with the
+     *                                   cancellation, null if no refund was made
+     * @param string $currency currency code of the refunded amount
+     * @return bool
+     */
+    public function sendPayPalCancelMailToOwner(
+        Order $order,
+        ?float $refundedAmount,
+        string $currency
+    ): bool {
+        return $this->sendPayPalCancelMail($order, $refundedAmount, $currency, true);
+    }
+
+    /**
+     * @param Order $order
+     * @param float $refundedAmount
+     * @param string $currency
+     * @param bool $toOwner send to the shop owner instead of the customer
+     * @return bool
+     */
+    protected function sendPayPalRefundMail(
+        Order $order,
+        float $refundedAmount,
+        string $currency,
+        bool $toOwner
+    ): bool {
+        return $this->sendPayPalOrderMail(
+            $order,
+            $toOwner,
+            $this->payPalRefundTplHtml,
+            $this->payPalRefundTplPlain,
+            $toOwner ? 'OSC_PAYPAL_REFUND_MAIL_SUBJECT_OWNER' : 'OSC_PAYPAL_REFUND_MAIL_SUBJECT',
+            [
+                'payPalRefundedAmount' => $refundedAmount,
+                'payPalCurrencyCode' => $currency,
+            ]
+        );
+    }
+
+    /**
+     * @param Order $order
+     * @param float|null $refundedAmount
+     * @param string $currency
+     * @param bool $toOwner send to the shop owner instead of the customer
+     * @return bool
+     */
+    protected function sendPayPalCancelMail(
+        Order $order,
+        ?float $refundedAmount,
+        string $currency,
+        bool $toOwner
+    ): bool {
+        return $this->sendPayPalOrderMail(
+            $order,
+            $toOwner,
+            $this->payPalCancelTplHtml,
+            $this->payPalCancelTplPlain,
+            $toOwner ? 'OSC_PAYPAL_CANCEL_MAIL_SUBJECT_OWNER' : 'OSC_PAYPAL_CANCEL_MAIL_SUBJECT',
+            [
+                'payPalRefundedAmount' => $refundedAmount,
+                'payPalCurrencyCode' => $currency,
+            ]
+        );
+    }
+
+    /**
+     * @param Order $order
+     * @param bool $toOwner
+     * @param string $htmlTemplate
+     * @param string $plainTemplate
+     * @param string $subjectIdent language ident, receives the order number
+     * @param array<string, mixed> $viewData additional template variables
+     * @return bool
+     */
+    protected function sendPayPalOrderMail(
+        Order $order,
+        bool $toOwner,
+        string $htmlTemplate,
+        string $plainTemplate,
+        string $subjectIdent,
+        array $viewData
+    ): bool {
+        $shop = $this->getShop();
+        $this->setMailParams($shop);
+
+        $this->setViewData('order', $order);
+        $this->setViewData('currency', $order->getOrderCurrency());
+        $this->setViewData('isPayPalOwnerMail', $toOwner);
+        foreach ($viewData as $name => $value) {
+            $this->setViewData($name, $value);
+        }
+
+        $renderer = $this->getRenderer();
+
+        // Process view data array through oxOutput processor
+        $this->processViewArray();
+
+        $this->setBody($renderer->renderTemplate($htmlTemplate, $this->getViewData()));
+        $this->setAltBody($renderer->renderTemplate($plainTemplate, $this->getViewData()));
+
+        /** @var string $subject */
+        $subject = Registry::getLang()->translateString($subjectIdent);
+        $this->setSubject(sprintf($subject, $this->payPalFieldAsString($order, 'oxordernr')));
+
+        if ($toOwner) {
+            $this->setRecipient(
+                $this->payPalFieldAsString($shop, 'oxowneremail'),
+                $shop->oxshops__oxname->getRawValue()
+            );
+
+            return $this->send();
+        }
+
+        $fullName = $order->oxorder__oxbillfname->getRawValue()
+            . ' ' . $order->oxorder__oxbilllname->getRawValue();
+
+        $this->setRecipient($this->payPalFieldAsString($order, 'oxbillemail'), $fullName);
+        $this->setReplyTo(
+            $this->payPalFieldAsString($shop, 'oxorderemail'),
+            $shop->oxshops__oxname->getRawValue()
+        );
+
+        return $this->send();
+    }
+
+    /**
+     * getFieldData() is untyped, so anything that is not a plain value yields an
+     * empty string instead of being cast.
+     *
+     * @param \OxidEsales\Eshop\Core\Model\BaseModel $model
+     * @param string $field
+     * @return string
+     */
+    protected function payPalFieldAsString($model, string $field): string
+    {
+        $value = $model->getFieldData($field);
+
+        return is_scalar($value) ? (string)$value : '';
     }
 }

@@ -338,5 +338,13 @@ $aLang = array_merge(
     'OSC_PAYPAL_WEBHOOK_TITLE'                      => 'Webhook',
     'OSC_PAYPAL_WEBHOOK_TIMEDELAY'                  => 'Zeitverzögerung in Sekunden (Standard: 20)',
     'OSC_PAYPAL_WEBHOOK_TIMEDELAY_DESC'             => 'Die PayPal-Webhooks informieren den Shop über den aktuellen Stand der Bestellung und beenden die Bestellungen teilweise, falls ein Kunde den Checkout-Prozess nicht bis zur "Danke"-Seite durchführt.',
+    'OSC_PAYPAL_REFUND_MAIL'                        => 'Bestätigungsmail bei Rückerstattung',
+    'HELP_OSC_PAYPAL_REFUND_MAIL'                   => 'Wer wird per E-Mail informiert, wenn im Backend eine Rückerstattung ausgelöst wurde und PayPal sie als abgeschlossen bestätigt hat? Die Mail nennt Bestellnummer und erstatteten Betrag.',
+    'OSC_PAYPAL_CANCEL_MAIL'                        => 'Bestätigungsmail bei Storno',
+    'HELP_OSC_PAYPAL_CANCEL_MAIL'                   => 'Wer wird per E-Mail informiert, wenn eine PayPal-Bestellung im Backend storniert wurde? Ein Storno löst im PayPal-Modul keine automatische Rückerstattung aus — diese Mail bestätigt nur die Stornierung. Eine Rückerstattung wird separat über den Rückerstattungs-Button ausgelöst und separat bestätigt.',
+    'OSC_PAYPAL_MAIL_RECIPIENT_NONE'                => 'Keine Mail versenden',
+    'OSC_PAYPAL_MAIL_RECIPIENT_CUSTOMER'            => 'An den Kunden',
+    'OSC_PAYPAL_MAIL_RECIPIENT_OWNER'               => 'An den Shop-Betreiber',
+    'OSC_PAYPAL_MAIL_RECIPIENT_BOTH'                => 'An Kunden und Shop-Betreiber',
     ]
 );

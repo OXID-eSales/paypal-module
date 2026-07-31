@@ -74,4 +74,22 @@ class Constants
     public const PAYPAL_SCA_WHEN_REQUIRED = 'SCA_WHEN_REQUIRED';
 
     public const PAYPAL_STATUS_COMPLETED = 'COMPLETED';
+
+    /**
+     * Recipients of the refund / cancellation confirmation mails
+     * (module settings oscPayPalRefundMailRecipient and
+     * oscPayPalCancelMailRecipient)
+     */
+    public const MAIL_RECIPIENT_NONE = '0';
+    public const MAIL_RECIPIENT_CUSTOMER = '1';
+    public const MAIL_RECIPIENT_OWNER = '2';
+    public const MAIL_RECIPIENT_BOTH = '3';
+
+    /**
+     * Backend action a refund was triggered by. The cancellation flow sends its
+     * own mail covering both the cancellation and a refunded amount, so it
+     * suppresses the refund mail and the customer receives one mail, not two.
+     */
+    public const REFUND_CONTEXT_REFUND = 'refund';
+    public const REFUND_CONTEXT_CANCEL = 'cancel';
 }

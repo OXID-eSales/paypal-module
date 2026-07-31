@@ -12,6 +12,7 @@ use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\RefundMailService;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\AmountFormatter;
 use OxidSolutionCatalysts\PayPal\Helper\Str2Float;
@@ -245,9 +246,45 @@ class PayPalOrderController extends AdminDetailsController
                 (string) $refund->id,
                 Constants::PAYPAL_TRANSACTION_TYPE_REFUND
             );
+
+            $this->sendRefundConfirmationMail($order, $refund, $capture);
         }
         // reset the order to get new informations about successful refund
         $this->refreshOrder();
+    }
+
+    /**
+     * Confirmation mail for a refund the merchant triggered here. Only a refund
+     * PayPal reports as COMPLETED is confirmed to the customer: a PENDING refund
+     * has not moved any money yet, and telling the customer otherwise would be
+     * wrong. The service decides whether a mail is sent at all and to whom.
+     *
+     * @param Order $order
+     * @param Refund $refund refund as returned by the PayPal API
+     * @param Capture $capture capture the refund was made against
+     * @return void
+     */
+    protected function sendRefundConfirmationMail($order, Refund $refund, Capture $capture): void
+    {
+        if ((string)$refund->status !== Constants::PAYPAL_STATUS_COMPLETED) {
+            return;
+        }
+
+        $amount = isset($refund->amount->value)
+            ? (float)$refund->amount->value
+            : 0.0;
+
+        // the refund response carries the amount it actually refunded; the capture
+        // currency is the fallback, and both may be absent on a partial response
+        $currency = '';
+        if (isset($refund->amount->currency_code)) {
+            $currency = (string)$refund->amount->currency_code;
+        } elseif (isset($capture->amount->currency_code)) {
+            $currency = (string)$capture->amount->currency_code;
+        }
+
+        $mailService = oxNew(RefundMailService::class);
+        $mailService->sendRefundMail($order, $amount, $currency);
     }
 
     /**
