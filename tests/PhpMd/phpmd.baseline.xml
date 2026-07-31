@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
 <phpmd-baseline>
+  <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Core/Email.php"/>
   <violation rule="PHPMD\Rule\CleanCode\BooleanArgumentFlag" file="src/Component/BasketComponent.php"/>
   <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Component/BasketComponent.php"/>
   <violation rule="PHPMD\Rule\CleanCode\StaticAccess" file="src/Component/UserComponent.php"/>

@@ -241,8 +241,19 @@ class Email extends Email_parent
         // Process view data array through oxOutput processor
         $this->processViewArray();
 
+        // These mails are triggered from the backend, but they use frontend
+        // templates and frontend language files. Rendering them in admin mode
+        // leaves core idents unresolved ("ERROR: Translation for ORDER_NUMBER not
+        // found!"), so switch the admin mode off around the rendering and restore
+        // whatever it was before.
+        $config = Registry::getConfig();
+        $wasAdmin = $config->isAdmin();
+        $config->setAdminMode(false);
+
         $this->setBody($renderer->renderTemplate($htmlTemplate, $this->getViewData()));
         $this->setAltBody($renderer->renderTemplate($plainTemplate, $this->getViewData()));
+
+        $config->setAdminMode($wasAdmin);
 
         /** @var string $subject */
         $subject = Registry::getLang()->translateString($subjectIdent);
