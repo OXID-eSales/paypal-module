@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Application\Controller\PaymentController;
 use OxidEsales\Eshop\Application\Controller\Admin\OrderMain;
 use OxidEsales\Eshop\Application\Controller\Admin\OrderArticle;
 use OxidEsales\Eshop\Application\Controller\Admin\OrderOverview;
+use OxidEsales\Eshop\Application\Controller\Admin\OrderList;
 use OxidEsales\Eshop\Application\Controller\Admin\ModuleConfiguration;
 use OxidEsales\Eshop\Application\Model\Article;
 use OxidEsales\Eshop\Application\Model\Basket;
@@ -32,6 +33,7 @@ use OxidSolutionCatalysts\PayPal\Controller\Admin\ModuleConfiguration as PaypalM
 use OxidSolutionCatalysts\PayPal\Controller\Admin\PayPalOrderController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderMain as PayPalOrderMainController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderArticle as PayPalOrderArticleController;
+use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderList as PayPalOrderListController;
 use OxidSolutionCatalysts\PayPal\Controller\Admin\OrderOverview as PayPalOrderOverviewController;
 use OxidSolutionCatalysts\PayPal\Controller\OrderController as PayPalFrontEndOrderController;
 use OxidSolutionCatalysts\PayPal\Controller\PaymentController as PayPalPaymentController;
@@ -69,7 +71,7 @@ $aModule = [
         'en' => 'Use of the online payment service from PayPal. Documentation: <a href="https://docs.oxid-esales.com/modules/paypal-checkout/en/latest/" target="_blank">PayPal Checkout</a>'
     ],
     'thumbnail' => 'out/img/paypal.png',
-    'version' => '2.9.2',
+    'version' => '2.10.0-rc.1',
     'author' => 'OXID eSales AG',
     'url' => 'https://www.oxid-esales.com',
     'email' => 'info@oxid-esales.com',
@@ -92,6 +94,7 @@ $aModule = [
         ArticleDetails::class => PayPalArticleDetails::class,
         OrderMain::class => PayPalOrderMainController::class,
         OrderArticle::class => PayPalOrderArticleController::class,
+        OrderList::class => PayPalOrderListController::class,
         OrderOverview::class => PayPalOrderOverviewController::class,
         State::class => PayPalState::class
     ],
@@ -158,6 +161,10 @@ $aModule = [
         'modules/osc/paypal/vaultedpaymentsources_wave.tpl'   => 'osc/paypal/views/tpl/wave/vaulting/vaultedpaymentsources.tpl',
 
         'modules/osc/paypal/email/html/pui_paymentinfo.tpl' => 'osc/paypal/views/tpl/shared/email/html/pui_paymentinfo.tpl',
+        'modules/osc/paypal/email/html/refund.tpl' => 'osc/paypal/views/tpl/shared/email/html/refund.tpl',
+        'modules/osc/paypal/email/plain/refund.tpl' => 'osc/paypal/views/tpl/shared/email/plain/refund.tpl',
+        'modules/osc/paypal/email/html/cancel.tpl' => 'osc/paypal/views/tpl/shared/email/html/cancel.tpl',
+        'modules/osc/paypal/email/plain/cancel.tpl' => 'osc/paypal/views/tpl/shared/email/plain/cancel.tpl',
         'modules/osc/paypal/plain/html/pui_paymentinfo.tpl' => 'osc/paypal/views/tpl/shared/plain/html/pui_paymentinfo.tpl',
 
     ],
@@ -664,6 +671,18 @@ $aModule = [
             'name' => 'oscPayPalWebhookRetryDelay',
             'type' => 'num',
             'value' => 20,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalRefundMailRecipient',
+            'type' => 'str',
+            'value' => '0',
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalCancelMailRecipient',
+            'type' => 'str',
+            'value' => '0',
             'group' => null
         ],
         [

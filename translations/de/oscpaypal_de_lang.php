@@ -83,4 +83,25 @@ $aLang = [
     'OSC_PAYPAL_PAYMENT_PUI_HEADING'              => 'Zahlungsinformationen',
 
     'OSC_PAYPAL_ORDER_SUBMITTING'                 => 'Bestellung wird verarbeitet …',
+    'OSC_PAYPAL_REFUND_MAIL_TITLE'                => 'Rückerstattung zu Ihrer Bestellung',
+    'OSC_PAYPAL_REFUND_MAIL_SUBJECT'              => 'Rückerstattung zu Ihrer Bestellung %s',
+    'OSC_PAYPAL_REFUND_MAIL_SUBJECT_OWNER'        => 'PayPal: Rückerstattung zur Bestellung %s veranlasst',
+    'OSC_PAYPAL_REFUND_MAIL_SALUTATION'           => 'Guten Tag',
+    'OSC_PAYPAL_REFUND_MAIL_INTRO'                => 'wir haben eine Rückerstattung über PayPal für Sie veranlasst.',
+    'OSC_PAYPAL_REFUND_MAIL_INTRO_OWNER'          => 'Für die folgende Bestellung wurde über PayPal eine Rückerstattung '
+        . 'veranlasst.',
+    'OSC_PAYPAL_REFUND_MAIL_AMOUNT'               => 'Erstatteter Betrag',
+    'OSC_PAYPAL_REFUND_MAIL_ORDER_TOTAL'          => 'Bestellwert',
+    'OSC_PAYPAL_REFUND_MAIL_NOTE'                 => 'Die Gutschrift erfolgt über PayPal auf das von Ihnen bei PayPal '
+        . 'verwendete Zahlungsmittel. Wie lange das dauert, hängt von Ihrem Zahlungsmittel und Ihrer Bank ab.',
+    'OSC_PAYPAL_CANCEL_MAIL_TITLE'                => 'Stornierung Ihrer Bestellung',
+    'OSC_PAYPAL_CANCEL_MAIL_SUBJECT'              => 'Stornierung Ihrer Bestellung %s',
+    'OSC_PAYPAL_CANCEL_MAIL_SUBJECT_OWNER'        => 'PayPal: Bestellung %s storniert',
+    'OSC_PAYPAL_CANCEL_MAIL_SALUTATION'           => 'Guten Tag',
+    'OSC_PAYPAL_CANCEL_MAIL_INTRO'                => 'Ihre Bestellung wurde storniert.',
+    'OSC_PAYPAL_CANCEL_MAIL_INTRO_OWNER'          => 'Die folgende Bestellung wurde storniert.',
+    'OSC_PAYPAL_CANCEL_MAIL_ORDER_TOTAL'          => 'Bestellwert',
+    'OSC_PAYPAL_CANCEL_MAIL_REFUNDED'             => 'Erstatteter Betrag',
+    'OSC_PAYPAL_CANCEL_MAIL_NOTE_NO_REFUND'       => 'Sollte für diese Bestellung bereits eine Zahlung erfolgt sein, '
+        . 'erhalten Sie die Rückerstattung in einer separaten Nachricht bestätigt.',
 ];

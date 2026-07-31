@@ -419,6 +419,47 @@
                                 <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_EXPRESS_LOGIN"}]</span>
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label for="paypal-refundmail">[{oxmultilang ident="OSC_PAYPAL_REFUND_MAIL"}]</label>
+                            <div class="controls">
+                                <select name="conf[oscPayPalRefundMailRecipient]" id="paypal-refundmail" class="form-control">
+                                    <option value="0" [{if $config->getRefundMailRecipient() == '0'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_MAIL_RECIPIENT_NONE"}]
+                                    </option>
+                                    <option value="1" [{if $config->getRefundMailRecipient() == '1'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_MAIL_RECIPIENT_CUSTOMER"}]
+                                    </option>
+                                    <option value="2" [{if $config->getRefundMailRecipient() == '2'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_MAIL_RECIPIENT_OWNER"}]
+                                    </option>
+                                    <option value="3" [{if $config->getRefundMailRecipient() == '3'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_MAIL_RECIPIENT_BOTH"}]
+                                    </option>
+                                </select>
+                                <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_REFUND_MAIL"}]</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="paypal-cancelmail">[{oxmultilang ident="OSC_PAYPAL_CANCEL_MAIL"}]</label>
+                            <div class="controls">
+                                <select name="conf[oscPayPalCancelMailRecipient]" id="paypal-cancelmail" class="form-control">
+                                    <option value="0" [{if $config->getCancelMailRecipient() == '0'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_MAIL_RECIPIENT_NONE"}]
+                                    </option>
+                                    <option value="1" [{if $config->getCancelMailRecipient() == '1'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_MAIL_RECIPIENT_CUSTOMER"}]
+                                    </option>
+                                    <option value="2" [{if $config->getCancelMailRecipient() == '2'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_MAIL_RECIPIENT_OWNER"}]
+                                    </option>
+                                    <option value="3" [{if $config->getCancelMailRecipient() == '3'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_MAIL_RECIPIENT_BOTH"}]
+                                    </option>
+                                </select>
+                                <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_CANCEL_MAIL"}]</span>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>

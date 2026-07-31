@@ -311,6 +311,16 @@ class Config
         return $this->getModuleSettings()->loginWithPayPalEMail();
     }
 
+    public function getRefundMailRecipient(): string
+    {
+        return $this->getModuleSettings()->getRefundMailRecipient();
+    }
+
+    public function getCancelMailRecipient(): string
+    {
+        return $this->getModuleSettings()->getCancelMailRecipient();
+    }
+
     public function getAutoBillOutstanding(): bool
     {
         return $this->getModuleSettings()->getAutoBillOutstanding();

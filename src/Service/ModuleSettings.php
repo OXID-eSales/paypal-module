@@ -391,6 +391,48 @@ class ModuleSettings
         return (bool)$this->getSettingValue('oscPayPalLoginWithPayPalEMail');
     }
 
+    /**
+     * Recipients of the refund confirmation mail, see the
+     * Constants::MAIL_RECIPIENT_* modes. Unknown values mean "no mail".
+     */
+    public function getRefundMailRecipient(): string
+    {
+        return $this->sanitizeMailRecipient($this->getSettingValueAsString('oscPayPalRefundMailRecipient'));
+    }
+
+    /**
+     * Recipients of the cancellation confirmation mail, see the
+     * Constants::MAIL_RECIPIENT_* modes. Unknown values mean "no mail".
+     */
+    public function getCancelMailRecipient(): string
+    {
+        return $this->sanitizeMailRecipient($this->getSettingValueAsString('oscPayPalCancelMailRecipient'));
+    }
+
+    /**
+     * getSettingValue() is untyped; anything that is not a plain value yields an
+     * empty string, which the sanitizer then maps to "no mail".
+     */
+    private function getSettingValueAsString(string $key): string
+    {
+        $value = $this->getSettingValue($key);
+
+        return is_scalar($value) ? (string)$value : '';
+    }
+
+    private function sanitizeMailRecipient(string $mode): string
+    {
+        return in_array(
+            $mode,
+            [
+                Constants::MAIL_RECIPIENT_CUSTOMER,
+                Constants::MAIL_RECIPIENT_OWNER,
+                Constants::MAIL_RECIPIENT_BOTH,
+            ],
+            true
+        ) ? $mode : Constants::MAIL_RECIPIENT_NONE;
+    }
+
     public function cleanUpNotFinishedOrdersAutomaticlly(): bool
     {
         return (bool)$this->getSettingValue('oscPayPalCleanUpNotFinishedOrdersAutomaticlly');
