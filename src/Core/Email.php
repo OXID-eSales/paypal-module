@@ -228,7 +228,15 @@ class Email extends Email_parent
         string $subjectIdent,
         array $viewData
     ): bool {
-        $shop = $this->_getShop();
+        // The customer is written to in the language they ordered in. The shop owner
+        // keeps the language the backend is running in, because that copy is read
+        // next to the order there - so only the customer mail switches the language.
+        // Core\Email::sendSendedNowMail() handles its backend triggered mail the
+        // same way, including loading the shop in that language: the shop name and
+        // the sender texts are translatable too.
+        $mailLanguage = $toOwner ? null : $this->payPalOrderLanguage($order);
+
+        $shop = $mailLanguage === null ? $this->_getShop() : $this->_getShop($mailLanguage);
         $this->_setMailParams($shop);
 
         $this->setViewData('order', $order);
@@ -243,6 +251,14 @@ class Email extends Email_parent
         // Process view data array through oxOutput processor
         $this->_processViewArray();
 
+        $lang = Registry::getLang();
+        $previousTplLanguage = (int)$lang->getTplLanguage();
+        $previousBaseLanguage = (int)$lang->getBaseLanguage();
+        if ($mailLanguage !== null) {
+            $lang->setTplLanguage($mailLanguage);
+            $lang->setBaseLanguage($mailLanguage);
+        }
+
         // These mails are triggered from the backend, but they use frontend
         // templates and frontend language files. Rendering them in admin mode
         // leaves core idents unresolved ("ERROR: Translation for ORDER_NUMBER not
@@ -252,14 +268,25 @@ class Email extends Email_parent
         $wasAdmin = $config->isAdmin();
         $config->setAdminMode(false);
 
-        $this->setBody($renderer->renderTemplate($htmlTemplate, $this->getViewData()));
-        $this->setAltBody($renderer->renderTemplate($plainTemplate, $this->getViewData()));
+        try {
+            $this->setBody($renderer->renderTemplate($htmlTemplate, $this->getViewData()));
+            $this->setAltBody($renderer->renderTemplate($plainTemplate, $this->getViewData()));
 
-        $config->setAdminMode($wasAdmin);
-
-        /** @var string $subject */
-        $subject = Registry::getLang()->translateString($subjectIdent);
-        $this->setSubject(sprintf($subject, $this->payPalFieldAsString($order, 'oxordernr')));
+            // the subject ident lives in the frontend language files, so it belongs
+            // into the same window as the templates
+            /** @var string $subject */
+            $subject = $lang->translateString($subjectIdent);
+            $this->setSubject(sprintf($subject, $this->payPalFieldAsString($order, 'oxordernr')));
+        } finally {
+            // A failing template must not leave the shop behind in frontend mode or
+            // in the order language: the admin page that triggered the mail is
+            // rendered after this and would lose its templates and translations.
+            $config->setAdminMode($wasAdmin);
+            if ($mailLanguage !== null) {
+                $lang->setTplLanguage($previousTplLanguage);
+                $lang->setBaseLanguage($previousBaseLanguage);
+            }
+        }
 
         if ($toOwner) {
             $this->setRecipient(
@@ -280,6 +307,20 @@ class Email extends Email_parent
         );
 
         return $this->send();
+    }
+
+    /**
+     * Language the order was placed in. getFieldData() is untyped, so anything
+     * that is not a number falls back to the shop default language.
+     *
+     * @param Order $order
+     * @return int
+     */
+    protected function payPalOrderLanguage(Order $order): int
+    {
+        $language = $order->getFieldData('oxlang');
+
+        return is_numeric($language) ? (int)$language : 0;
     }
 
     /**

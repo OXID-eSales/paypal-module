@@ -44,7 +44,7 @@
                 [{if $payPalRefundedAmount !== null}]
                     <tr valign="top">
                         <th align="right" class="text-right">[{oxmultilang ident="OSC_PAYPAL_CANCEL_MAIL_REFUNDED" suffix="COLON"}]</th>
-                        <td>[{$payPalRefundedAmount|string_format:"%.2f"}] [{$payPalCurrencyCode}]</td>
+                        <td>[{oxprice price=$payPalRefundedAmount currency=$currency}]</td>
                     </tr>
                 [{/if}]
             </tbody>

@@ -204,6 +204,11 @@ class PayPalOrderController extends AdminDetailsController
 
         $capture = $order->getOrderPaymentCapture();
         if ($capture instanceof Capture) {
+            // What "refund all" refunds: still the pre-refund state at this point,
+            // refreshOrder() below is what updates it. Read before the API call,
+            // because afterwards it no longer describes what was just refunded.
+            $remainingRefundAmount = (float)$this->getPayPalRemainingRefundAmount();
+
             $request = new RefundRequest();
             $request->note_to_payer = $noteToPayer;
             $request->invoice_id = !empty($invoiceId) ? $invoiceId : null;
@@ -245,7 +250,12 @@ class PayPalOrderController extends AdminDetailsController
                 Constants::PAYPAL_TRANSACTION_TYPE_REFUND
             );
 
-            $this->sendRefundConfirmationMail($order, $refund, $capture);
+            $this->sendRefundConfirmationMail(
+                $order,
+                $refund,
+                $capture,
+                $refundAll ? $remainingRefundAmount : (float)$refundAmount
+            );
         }
         // reset the order to get new informations about successful refund
         $this->refreshOrder();
@@ -260,20 +270,24 @@ class PayPalOrderController extends AdminDetailsController
      * @param Order $order
      * @param Refund $refund refund as returned by the PayPal API
      * @param Capture $capture capture the refund was made against
+     * @param float $refundedAmount amount the caller asked PayPal to refund
      * @return void
      */
-    protected function sendRefundConfirmationMail($order, Refund $refund, Capture $capture): void
-    {
+    protected function sendRefundConfirmationMail(
+        $order,
+        Refund $refund,
+        Capture $capture,
+        float $refundedAmount
+    ): void {
         if ((string)$refund->status !== Constants::PAYPAL_STATUS_COMPLETED) {
             return;
         }
 
-        $amount = isset($refund->amount->value)
-            ? (float)$refund->amount->value
-            : 0.0;
-
-        // the refund response carries the amount it actually refunded; the capture
-        // currency is the fallback, and both may be absent on a partial response
+        // The amount has to come from the caller: the API is called with
+        // "Prefer: return=minimal", so a refund response only carries id, status
+        // and links - reading the amount back out of it always yielded 0.00. The
+        // currency is taken from the response when it is there and from the
+        // capture otherwise, which is the same currency the refund was sent in.
         $currency = '';
         if (isset($refund->amount->currency_code)) {
             $currency = (string)$refund->amount->currency_code;
@@ -282,7 +296,7 @@ class PayPalOrderController extends AdminDetailsController
         }
 
         $mailService = oxNew(RefundMailService::class);
-        $mailService->sendRefundMail($order, $amount, $currency);
+        $mailService->sendRefundMail($order, $refundedAmount, $currency);
     }
 
     /**
