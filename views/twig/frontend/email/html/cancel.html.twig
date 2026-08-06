@@ -44,7 +44,7 @@
                 {% if payPalRefundedAmount is not null %}
                     <tr valign="top">
                         <th align="right" class="text-right">{{ translate({ ident: "OSC_PAYPAL_CANCEL_MAIL_REFUNDED", suffix: "COLON" }) }}</th>
-                        <td>{{ payPalRefundedAmount|number_format(2, '.', '') }} {{ payPalCurrencyCode }}</td>
+                        <td>{{ format_price(payPalRefundedAmount, { currency: currency }) }}</td>
                     </tr>
                 {% endif %}
             </tbody>

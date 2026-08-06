@@ -12,8 +12,8 @@
 
 [{block name="paypal_email_plain_refund_details"}]
 [{oxmultilang ident="ORDER_NUMBER" suffix="COLON"}] [{$order->oxorder__oxordernr->value}]
-[{oxmultilang ident="OSC_PAYPAL_REFUND_MAIL_AMOUNT" suffix="COLON"}] [{$payPalRefundedAmount|string_format:"%.2f"}] [{$payPalCurrencyCode}]
-[{oxmultilang ident="OSC_PAYPAL_REFUND_MAIL_ORDER_TOTAL" suffix="COLON"}] [{$order->oxorder__oxtotalordersum->value|string_format:"%.2f"}] [{$order->oxorder__oxcurrency->value}]
+[{oxmultilang ident="OSC_PAYPAL_REFUND_MAIL_AMOUNT" suffix="COLON"}] [{oxprice price=$payPalRefundedAmount currency=$currency}]
+[{oxmultilang ident="OSC_PAYPAL_REFUND_MAIL_ORDER_TOTAL" suffix="COLON"}] [{oxprice price=$order->oxorder__oxtotalordersum->value currency=$currency}]
 [{/block}]
 
 [{block name="paypal_email_plain_refund_note"}]

@@ -12,8 +12,8 @@
 
 {% block paypal_email_plain_refund_details %}
 {{ translate({ ident: "ORDER_NUMBER", suffix: "COLON" }) }} {{ order.oxorder__oxordernr.value }}
-{{ translate({ ident: "OSC_PAYPAL_REFUND_MAIL_AMOUNT", suffix: "COLON" }) }} {{ payPalRefundedAmount|number_format(2, '.', '') }} {{ payPalCurrencyCode }}
-{{ translate({ ident: "OSC_PAYPAL_REFUND_MAIL_ORDER_TOTAL", suffix: "COLON" }) }} {{ order.oxorder__oxtotalordersum.value|number_format(2, '.', '') }} {{ order.oxorder__oxcurrency.value }}
+{{ translate({ ident: "OSC_PAYPAL_REFUND_MAIL_AMOUNT", suffix: "COLON" }) }} {{ format_price(payPalRefundedAmount, { currency: currency }) }}
+{{ translate({ ident: "OSC_PAYPAL_REFUND_MAIL_ORDER_TOTAL", suffix: "COLON" }) }} {{ format_price(order.oxorder__oxtotalordersum.value, { currency: currency }) }}
 {% endblock %}
 
 {% block paypal_email_plain_refund_note %}

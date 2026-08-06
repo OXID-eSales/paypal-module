@@ -39,7 +39,7 @@
                 </tr>
                 <tr valign="top">
                     <th align="right" class="text-right">[{oxmultilang ident="OSC_PAYPAL_REFUND_MAIL_AMOUNT" suffix="COLON"}]</th>
-                    <td>[{$payPalRefundedAmount|string_format:"%.2f"}] [{$payPalCurrencyCode}]</td>
+                    <td>[{oxprice price=$payPalRefundedAmount currency=$currency}]</td>
                 </tr>
                 <tr valign="top">
                     <th align="right" class="text-right">[{oxmultilang ident="OSC_PAYPAL_REFUND_MAIL_ORDER_TOTAL" suffix="COLON"}]</th>
