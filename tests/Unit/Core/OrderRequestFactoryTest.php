@@ -21,6 +21,7 @@ use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
+use OxidSolutionCatalysts\PayPal\Service\LanguageLocaleMapper;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderExperienceContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
@@ -1057,15 +1058,24 @@ class OrderRequestFactoryTest extends UnitTestCase
         $this->orderRequestFactory->method('getVaultingService')
             ->willReturn($this->vaultingServiceMock);
 
+        // the experience context locale is resolved through LanguageLocaleMapper, which is fetched
+        // from the container just like ModuleSettings
+        $this->moduleSettingsMock->method('getSupportedLocales')
+            ->willReturn(['de_DE', 'en_US']);
         $this->orderRequestFactory->method('getServiceFromContainer')
-            ->with(ModuleSettings::class)
-            ->willReturn($this->moduleSettingsMock);
+            ->willReturnCallback(function (string $serviceName) {
+                return $serviceName === LanguageLocaleMapper::class
+                    ? new LanguageLocaleMapper($this->moduleSettingsMock)
+                    : $this->moduleSettingsMock;
+            });
 
         $this->countryMock->method('getFieldData')
             ->with('oxisoalpha2')
             ->willReturn('DE');
 
         $mockLang = $this->createMock(\OxidEsales\Eshop\Core\Language::class);
+        $mockLang->method('getLanguageAbbr')
+            ->willReturn('de');
         $mockLang->method('translateString')
             ->willReturnMap([
                 ['OSC_PAYPAL_DESCRIPTION', null, null, 'Payment at %s'],

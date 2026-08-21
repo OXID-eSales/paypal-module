@@ -9,6 +9,7 @@ namespace OxidSolutionCatalysts\PayPal\Core;
 
 use Exception;
 use GuzzleHttp\Exception\GuzzleException;
+use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\Theme;
 use OxidSolutionCatalysts\PayPal\Core\Api\IdentityService;
@@ -23,6 +24,9 @@ use Psr\Log\LoggerInterface;
 class ViewConfig extends ViewConfig_parent
 {
     use ServiceContainer;
+
+    /** Country the sandbox buyer-country parameter falls back to when the customer is unknown */
+    private const PAYPAL_SANDBOX_BUYER_COUNTRY_FALLBACK = 'DE';
 
     /**
      * is this a "Flow"-Theme Compatible Theme?
@@ -178,8 +182,13 @@ class ViewConfig extends ViewConfig_parent
             $disableFunding[] = 'sepa';
         }
 
+        // the country is passed on so a configured regional locale ("de_CH") is preferred for a
+        // customer in that country, instead of the order of the setting deciding for everyone
         $localeCode = $this->getServiceFromContainer(LanguageLocaleMapper::class)
-            ->mapLanguageToLocale($lang->getLanguageAbbr());
+            ->mapLanguageToLocale(
+                (string)$lang->getLanguageAbbr(),
+                $this->getPayPalCountryIso()
+            );
 
         /** @var ModuleSettings $moduleSettings */
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
@@ -233,14 +242,76 @@ class ViewConfig extends ViewConfig_parent
             $params['disable-funding'] = implode(',', $disableFunding);
         }
 
-        $params['locale'] = $localeCode;
+        if ($localeCode) {
+            $params['locale'] = $localeCode;
+        }
 
         // Add parameters to the sandbox to test geoblocking features like PUI from anywhere
         if ($moduleSettings->isSandbox()) {
-            $params['buyer-country'] = 'DE';
+            $params['buyer-country'] = $this->getPayPalSandboxBuyerCountry();
         }
 
         return Constants::PAYPAL_JS_SDK_URL . '?' . http_build_query($params);
+    }
+
+    /**
+     * The sandbox only "buyer-country" parameter simulates the country the customer is shopping
+     * from, which is why it has to follow the customer. Pinned to a fixed country it puts the
+     * client side sdk into a different country context than the order it is about to confirm - a
+     * CHF order confirmed in a simulated german context is answered with
+     * CURRENCY_NOT_SUPPORTED_BY_PAYMENT_SOURCE by confirm-payment-source. Falls back to DE, the
+     * previously hardcoded value, only when neither the customer nor the shop has a usable country,
+     * so the PUI geoblocking tests this parameter was introduced for keep working.
+     */
+    protected function getPayPalSandboxBuyerCountry(): string
+    {
+        return $this->getPayPalCountryIso() ?: self::PAYPAL_SANDBOX_BUYER_COUNTRY_FALLBACK;
+    }
+
+    /**
+     * Country code for the PayPal Messages component (installment banners), which expects the country
+     * the buyer is in, because the availability of the advertised financing products depends on it.
+     * Used to be the uppercased shop language ("de" -> "DE"), which is correct by accident for a
+     * german shop and invalid everywhere else ("en" -> "EN"). An empty result means neither the
+     * customer nor the shop country could be resolved; the template then omits the parameter and lets
+     * PayPal derive the country from the merchant account instead of sending an invented one.
+     */
+    public function getPayPalBannerCountryCode(): string
+    {
+        return $this->getPayPalCountryIso();
+    }
+
+    /**
+     * The country everything the client side sdk is told about has to agree on: the customer's
+     * billing country, and while no customer is known the country the shop itself sits in. Guessing
+     * a third country instead - a hardcoded one, or one derived from the shop language - is what put
+     * the sdk into a different country context than the order it was about to confirm. Empty when
+     * neither can be resolved; every caller decides for itself what to do with that.
+     */
+    protected function getPayPalCountryIso(): string
+    {
+        return $this->getPayPalCustomerCountryIso() ?: oxNew(Config::class)->getShopCountryIso();
+    }
+
+    /**
+     * The customer's billing country as ISO 3166-1 alpha-2, or an empty string when there is no
+     * customer yet or the country cannot be resolved.
+     */
+    protected function getPayPalCustomerCountryIso(): string
+    {
+        $user = $this->getUser();
+        if (!$user) {
+            return '';
+        }
+
+        $country = oxNew(Country::class);
+        if (!$country->load((string)$user->getFieldData('oxcountryid'))) {
+            return '';
+        }
+
+        $isoAlpha2 = strtoupper((string)$country->getFieldData('oxisoalpha2'));
+
+        return preg_match('/^[A-Z]{2}$/', $isoAlpha2) ? $isoAlpha2 : '';
     }
 
     public function showPayPalExpressInMiniBasket(): bool

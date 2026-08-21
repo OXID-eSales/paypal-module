@@ -22,6 +22,7 @@ use OxidSolutionCatalysts\PayPal\Core\Api\VaultingService;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
+use OxidSolutionCatalysts\PayPal\Service\LanguageLocaleMapper;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -108,9 +109,16 @@ class ApplePayRequestTest extends UnitTestCase
             ->willReturn($this->countryMock);
         $this->orderRequestFactory->method('getVaultingService')
             ->willReturn($this->vaultingServiceMock);
+        // the experience context locale is resolved through LanguageLocaleMapper, which is fetched
+        // from the container just like ModuleSettings
+        $this->moduleSettingsMock->method('getSupportedLocales')
+            ->willReturn(['de_DE', 'en_US']);
         $this->orderRequestFactory->method('getServiceFromContainer')
-            ->with(ModuleSettings::class)
-            ->willReturn($this->moduleSettingsMock);
+            ->willReturnCallback(function (string $serviceName) {
+                return $serviceName === LanguageLocaleMapper::class
+                    ? new LanguageLocaleMapper($this->moduleSettingsMock)
+                    : $this->moduleSettingsMock;
+            });
         $this->countryMock->method('getFieldData')
             ->with('oxisoalpha2')
             ->willReturn('DE');
@@ -119,6 +127,8 @@ class ApplePayRequestTest extends UnitTestCase
         Registry::set('oxconfig', $this->configMock);
 
         $mockLang = $this->createMock(\OxidEsales\Eshop\Core\Language::class);
+        $mockLang->method('getLanguageAbbr')
+            ->willReturn('de');
         $mockLang->method('translateString')
             ->willReturnMap([
                 ['OSC_PAYPAL_DESCRIPTION', null, null, 'Payment at %s'],
@@ -614,6 +624,8 @@ class ApplePayRequestTest extends UnitTestCase
         $this->mockRequiredBasketMethods();
 
         $mockLang = $this->createMock(\OxidEsales\Eshop\Core\Language::class);
+        $mockLang->method('getLanguageAbbr')
+            ->willReturn('de');
         $mockLang->method('translateString')
             ->willReturnMap([
                 ['OSC_PAYPAL_DESCRIPTION', null, null, 'Payment at %s'],
@@ -632,6 +644,8 @@ class ApplePayRequestTest extends UnitTestCase
     private function setupMocksForVaultingRequest(): void
     {
         $mockLang = $this->createMock(\OxidEsales\Eshop\Core\Language::class);
+        $mockLang->method('getLanguageAbbr')
+            ->willReturn('de');
         $mockLang->method('translateString')
             ->willReturnMap([
                 ['OSC_PAYPAL_DESCRIPTION', null, null, 'Payment at %s'],

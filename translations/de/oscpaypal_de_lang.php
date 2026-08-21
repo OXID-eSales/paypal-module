@@ -48,6 +48,7 @@ $aLang = [
     'OSC_PAYPAL_LOG_IN_TO_CONTINUE'                 => 'Bitte loggen Sie sich ein, um die Bestellung abzuschliessen.',
     'OSC_PAYPAL_3DSECURITY_ERROR'                   => 'Die Sicherheitsüberprüfung ist fehlgeschlagen, bitte erneut versuchen.',
     'OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR'         => 'Die Zahlungsautorisierung wurde abgelehnt. Bitte überprüfen Sie Ihre Zahlungsdaten und versuchen Sie es erneut.',
+    'OSC_PAYPAL_UNKNOWN_ERROR'                      => 'Bei der Zahlung ist ein unbekannter Fehler aufgetreten. Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlart.',
     'OSC_PAYPAL_ERROR_INVALID_ADDRESS'              => 'Ihre Rechnungs- oder Lieferadresse ist unvollständig oder ungültig. Bitte überprüfen Sie insbesondere Postleitzahl und Stadt und versuchen Sie es erneut.',
     'OSC_PAYPAL_PAYMENT_CANCELED'                     => 'Die Zahlung wurde storniert',
     'OSC_PAYPAL_CAPTURE_DENIED_ERROR'               => 'Die Überweisung wurde abgelehnt. Bitte überprüfen Sie Ihre Zahlungsdaten und versuchen Sie es erneut.',

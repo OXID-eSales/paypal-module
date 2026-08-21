@@ -114,7 +114,7 @@ $aLang = array_merge(
 
     'OSC_PAYPAL_LOCALISATIONS'                    => 'Spracheinstellungen',
     'OSC_PAYPAL_LOCALES'                          => 'regionale Spracheinstellungen',
-    'HELP_OSC_PAYPAL_LOCALES'                     => 'PayPal unterstützt die Anzeige der PayPal-Buttons in regionalen Sprachen. Bitte hinterlegen sie die Codes kommasepariert im ISO 639-1 alpha-2 / ISO 3166-1 alpha-2 - Format (z.B. de_DE). Der erste Eintrag ist der Standard-Eintrag.',
+    'HELP_OSC_PAYPAL_LOCALES'                     => 'PayPal unterstützt regionale Sprachen für die PayPal-Buttons sowie für die Sprache, in der PayPal in seinen Dialogen und Kartenfeldern mit dem Kunden kommuniziert. Bitte hinterlegen sie die Codes kommasepariert im ISO 639-1 alpha-2 / ISO 3166-1 alpha-2 - Format (z.B. de_DE). Der erste Eintrag ist der Standard-Eintrag. Für Kunden im Ausland können Sie regionale Varianten ergänzen (z.B. de_CH,de_DE,en_US): passt ein Eintrag zu Sprache und Land des Kunden, wird dieser bevorzugt, ansonsten wird der erste Eintrag mit passender Sprache verwendet.',
 
     // PayPal ORDER
     'OSC_PAYPAL_ACTIONS'                          => 'Aktionen',

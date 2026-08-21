@@ -237,7 +237,9 @@ class ModuleSettings
     {
         $commaSeparated = $this->getSupportedLocalesCommaSeparated();
 
-        return explode(',', $commaSeparated);
+        // trim and drop empty entries, so neither a stray space ("de_DE, en_US") nor an emptied
+        // setting can end up as a locale in the JS SDK url or in an API request
+        return array_values(array_filter(array_map('trim', explode(',', $commaSeparated))));
     }
 
     public function getSupportedLocalesCommaSeparated(): string

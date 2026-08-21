@@ -48,6 +48,7 @@ $aLang = [
 
     'OSC_PAYPAL_3DSECURITY_ERROR'                  => 'Security check failed, please retry.',
     'OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR'        => 'Payment authorization was denied. Please check your payment data and try again.',
+    'OSC_PAYPAL_UNKNOWN_ERROR'                     => 'An unknown error occurred during payment. Please try again or choose a different payment method.',
     'OSC_PAYPAL_ERROR_INVALID_ADDRESS'             => 'Your billing or shipping address is incomplete or invalid. Please verify in particular the postal code and city and try again.',
     'OSC_PAYPAL_PAYMENT_CANCELED'                    => 'Payment was cancelled',
     'OSC_PAYPAL_CAPTURE_DENIED_ERROR'              => 'Payment money transfer was denied. Please check your payment data and try again.',

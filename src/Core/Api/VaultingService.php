@@ -17,6 +17,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Service\LanguageLocaleMapper;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -163,17 +164,23 @@ class VaultingService extends BaseService
             "postal_code" => $user->getFieldData('oxzip'),
             "country_code" => $country->oxcountry__oxisoalpha2->value,
         ];
-        $locale =
-            strtolower($country->oxcountry__oxisoalpha2->value)
-            . '-'
-            . strtoupper($country->oxcountry__oxisoalpha2->value);
+        // the locale is the language PayPal talks to the customer in, so it is resolved from the shop
+        // language against the configured oscPayPalLocales - deriving it from the country alone used
+        // to produce invalid values like "ch-CH" for any country whose iso code is not a language
+        $locale = $this->getServiceFromContainer(LanguageLocaleMapper::class)
+            ->mapLanguageToBcp47Locale(
+                (string)Registry::getLang()->getLanguageAbbr(),
+                (string)$country->oxcountry__oxisoalpha2->value
+            );
         $experience_context = [
             "brand_name" => $shopName,
-            "locale" => $locale,
             "return_url" => $config->getSslShopUrl() . 'index.php?cl=order&fnc=finalizepaypalsession',
             "cancel_url" => $config->getSslShopUrl() . 'index.php?cl=order&fnc=cancelpaypalsession',
             "shipping_preference" => "SET_PROVIDED_ADDRESS"
         ];
+        if ($locale !== '') {
+            $experience_context["locale"] = $locale;
+        }
 
         $attributes = [];
         $vaultPaymentOnSuccess = Registry::getRequest()->getRequestParameter("vaultPayment");
