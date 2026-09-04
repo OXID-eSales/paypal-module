@@ -124,44 +124,47 @@ Events:
 11. **Przelewy24** - Polish online banking
 12. **Bancontact** - Belgian online banking
 
-## Generated SVG Files
+## Rendered Diagrams
 
-All PUML diagrams have been converted to SVG format for easy viewing and documentation:
+The rendered SVGs are committed in [../SVG/](../SVG/), so the diagrams can be read without a
+PlantUML installation. Regenerate them with `make svg` from `docs/` after editing a source
+(see below); `make clean` first if a diagram was renamed, because `make svg` overwrites but
+never deletes.
 
-**Total: 22 SVG diagrams**
+One SVG per `@startuml` block, named after the block - 21 diagrams from 6 sources:
 
-Located in: `../SVG/`
-
-### Class Diagrams
-- PayPal Module Class Diagram.svg (256 KB)
-
-### Sequence Diagrams
-- Standard PayPal Payment - Direct Capture.svg
-- ACDC Card Payment Flow.svg
-- Authorization with Capture on Delivery.svg
-- Google Pay Flow.svg
+**PayPal_ApplePay_Flow.puml**
 - Apple Pay Payment Flow.svg
-- PUI Payment Flow.svg
-- uAPM Payment Flow.svg
-- Refund Flow.svg
 
-### Vaulting Diagrams
-- Vaulting Architecture.svg
-- Vaulting During Purchase Flow.svg
-- Using Vaulted Payment Flow.svg
-- Managing Vaulted Payments.svg
-
-### Webhook System Diagrams
-- Webhook System Components.svg
-- Webhook Processing Sequence.svg
-- Webhook Handler Base Class.svg
-
-### Event System Diagrams
+**PayPal_Event_System_Architecture.puml**
 - Event System Components.svg
 - Order Completed Event Flow.svg
 - Vaulting Succeeded Event Flow.svg
 - Subscriber Registration.svg
 - Event System Benefits.svg
+
+**PayPal_Module_Sequence_Diagrams.puml**
+- Standard PayPal Payment - Direct Capture.svg
+- ACDC Card Payment Flow.svg
+- Authorization with Capture on Delivery.svg
+- Google Pay Flow.svg
+- Refund Flow.svg
+- PUI Payment Flow.svg
+- uAPM Payment Flow.svg
+
+**PayPal_Module_UML_Diagram.puml**
+- PayPal Module Class Diagram.svg
+
+**PayPal_Vaulting_Architecture.puml**
+- Vaulting Architecture.svg
+- Vaulting During Purchase Flow.svg
+- Using Vaulted Payment Flow.svg
+- Managing Vaulted Payments.svg
+
+**PayPal_Webhook_System_Architecture.puml**
+- Webhook System Components.svg
+- Webhook Processing Sequence.svg
+- Webhook Handler Base Class.svg
 
 ## Generating SVG Files
 

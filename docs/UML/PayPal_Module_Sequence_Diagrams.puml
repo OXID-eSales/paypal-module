@@ -1,9 +1,3 @@
-@startuml PayPal Payment Flows - Accurate Implementation
-!theme plain
-skinparam backgroundColor white
-
-title PayPal Module - Complete Payment Flow Sequence Diagrams\n(Based on Actual JavaScript & PHP Implementation)
-
 ' ============================================================================
 ' STANDARD PAYPAL PAYMENT FLOW - DIRECT CAPTURE
 ' ============================================================================
@@ -1573,7 +1567,5 @@ deactivate JS
 PayPalAPI -> WebhookController: PAYMENT.CAPTURE.COMPLETED
 WebhookController -> Database: UPDATE oxorder\n(transstatus: OK,\n oxpaid: NOW())
 WebhookController --> PayPalAPI: HTTP 200 OK
-
-@enduml
 
 @enduml
