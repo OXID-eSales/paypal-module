@@ -167,6 +167,16 @@ class Config
         return $this->getModuleSettings()->isSandboxAcdcEligibility();
     }
 
+    /**
+     * Whether PayPal offers ACDC to a merchant in the shop's own country at all. Needed by the
+     * module configuration template, which reports the raw eligibility PayPal answered and would
+     * otherwise promise a payment method the checkout deliberately hides.
+     */
+    public function isAcdcSupportedInShopCountry(): bool
+    {
+        return $this->getModuleSettings()->isAcdcSupportedInShopCountry();
+    }
+
     public function isPuiEligibility(): bool
     {
         return $this->getModuleSettings()->isPuiEligibility();

@@ -1259,6 +1259,19 @@ Card entered → 3DS challenge → Authentication result
 - Must be enabled by PayPal for merchant account
 - Requires advanced compliance
 
+**Merchant countries**:
+- PayPal does not offer ACDC to merchants in **Switzerland (CH)**. A swiss merchant account is
+  nevertheless granted the `CUSTOM_CARD_PROCESSING` capability during onboarding, so
+  `oscPayPalAcdcEligibility` reports "yes" while the card fields answer every payment attempt with
+  `422 CURRENCY_NOT_SUPPORTED_BY_PAYMENT_SOURCE` (confirmed by PayPal support as a bug in the
+  capability, not in the shop).
+- The module therefore overrules that eligibility: with the shop country (`aHomeCountry`) set to
+  `CH`, both the ACDC payment method and card vaulting are hidden. The list of excluded merchant
+  countries is `unsupportedmerchantcountries` in `Core/PayPalDefinitions.php`, evaluated by
+  `Service\ModuleSettings::isAcdcSupportedInShopCountry()`.
+- This is about where the **merchant** sits, not the customer: a german merchant can charge a swiss
+  customer's card via ACDC as before.
+
 **Pros**:
 - No redirect (seamless)
 - Supports all major cards

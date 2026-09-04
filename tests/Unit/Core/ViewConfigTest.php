@@ -13,6 +13,7 @@ use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\Mod
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Module as OscPayPalModule;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
 
 /**
@@ -23,9 +24,22 @@ final class ViewConfigTest extends UnitTestCase
     /**
      * Tear down the fixture.
      */
+    /**
+     * Module settings this test changed, with the value they had before, so the shop configuration is
+     * left as it was found - the tests used to leave their last data set behind in the live settings.
+     *
+     * @var array
+     */
+    private array $originalModuleSettings = [];
+
     protected function tearDown(): void
     {
         \OxidEsales\Eshop\Core\DatabaseProvider::getDB()->execute("delete from oxpayments where OXID = 'oscpaypal' ");
+
+        foreach ($this->originalModuleSettings as $name => $value) {
+            $this->getModuleSettings()->save($name, $value);
+        }
+        $this->originalModuleSettings = [];
 
         parent::tearDown();
     }
@@ -179,11 +193,28 @@ final class ViewConfigTest extends UnitTestCase
     /**
      * @param mixed $value
      */
+    /**
+     * Writes through the module's own settings service on purpose: it invalidates the settings cache
+     * that every reader goes through. Writing straight to the module setting bridge leaves that cache
+     * holding the previously read value, and the getters under test keep returning it.
+     */
     private function updateModuleSetting(string $name, $value): void
     {
-        $moduleSettingsBridge = ContainerFactory::getInstance()
-            ->getContainer()
-            ->get(ModuleSettingBridgeInterface::class);
-        $moduleSettingsBridge->save($name, $value, OscPayPalModule::MODULE_ID);
+        if (!array_key_exists($name, $this->originalModuleSettings)) {
+            $this->originalModuleSettings[$name] = $this->getModuleSettingBridge()
+                ->get($name, OscPayPalModule::MODULE_ID);
+        }
+
+        $this->getModuleSettings()->save($name, $value);
+    }
+
+    private function getModuleSettings(): ModuleSettings
+    {
+        return ContainerFactory::getInstance()->getContainer()->get(ModuleSettings::class);
+    }
+
+    private function getModuleSettingBridge(): ModuleSettingBridgeInterface
+    {
+        return ContainerFactory::getInstance()->getContainer()->get(ModuleSettingBridgeInterface::class);
     }
 }

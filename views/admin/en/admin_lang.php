@@ -98,6 +98,7 @@ $aLang = array_merge(
     'OSC_PAYPAL_SPECIAL_PAYMENTS'                 => 'Activation for special payment methods has taken place',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_PUI'             => 'Pay upon Invoice',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Creditcard',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_COUNTRY'    => '<em>- PayPal does not offer card payments (ACDC) in your shop\'s country. The payment method and storing cards are therefore hidden, even though your PayPal account reports the eligibility for it.</em>',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '<em>- Alternatively, you can activate and use the payment method "PayPal Credit Card Fallback" (id: "' . PayPalDefinitions::CCALTERNATIVE_PAYPAL_PAYMENT_ID . '"). Please use a suitable name for this payment method in this fallback case.</em>',
     'OSC_PAYPAL_INSTALL_NOTE_APPLEPAY'            => '<em>- If you plan to use Apple Pay, you must finally add this shops domain to your PayPal account (Account Settings > Payment Sources > Apple Pay). Detailed instructions can be found in our module documentation under <a href="' . Constants::PAYPAL_DOCUMENTATION_EN . '" target="_blank">Configuration > Enable Apple Pay as a Payment Method</a>.</em>',
 

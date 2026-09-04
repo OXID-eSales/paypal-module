@@ -1,6 +1,7 @@
 # PayPal Module Documentation
 
-Complete documentation package for OXID PayPal Module (osc/paypal v2.6.2-rc.4)
+Documentation for the OXID PayPal Checkout module (`osc/paypal`). The module version this
+belongs to is in `metadata.php`; changes are listed in [../CHANGELOG.md](../CHANGELOG.md).
 
 ## 📚 Documentation Files
 
@@ -27,7 +28,7 @@ Topics covered:
 
 ### UML Diagrams
 
-#### 🔷 [PayPal_Module_UML_Diagram.puml](PayPal_Module_UML_Diagram.puml)
+#### 🔷 [PayPal_Module_UML_Diagram.puml](UML/PayPal_Module_UML_Diagram.puml)
 **Complete class diagram** (18KB PlantUML)
 
 Includes:
@@ -39,7 +40,7 @@ Includes:
 
 **Best for**: System architects, developers
 
-#### 🔄 [PayPal_Module_Sequence_Diagrams.puml](PayPal_Module_Sequence_Diagrams.puml)
+#### 🔄 [PayPal_Module_Sequence_Diagrams.puml](UML/PayPal_Module_Sequence_Diagrams.puml)
 **Payment flow sequence diagrams** (19KB PlantUML)
 
 Contains 6 detailed flows:
@@ -54,49 +55,19 @@ Contains 6 detailed flows:
 
 ---
 
-### Guides and Tools
+### Diagrams as SVG
 
-#### 📘 [PayPal_Documentation_README.md](PayPal_Documentation_README.md)
-**Quick start guide** for using the documentation
-
-- How to read each document
-- Viewing PlantUML diagrams
-- Key concepts explained
-- Testing scenarios
-- Troubleshooting tips
-
-#### 🎨 [VSDX_CONVERSION_GUIDE.md](VSDX_CONVERSION_GUIDE.md)
-**Comprehensive guide for converting PlantUML to Visio VSDX**
-
-5 conversion methods:
-1. ⭐ Draw.io (recommended - creates true VSDX)
-2. PlantUML Server (quick online)
-3. Local PlantUML (batch processing)
-4. VS Code Extension (interactive)
-5. Visio Plugin (professional)
-
-Step-by-step instructions for each method.
-
-#### 🔧 [convert_plantuml.py](convert_plantuml.py)
-**Python helper script** for automated conversion
+All PlantUML sources in [UML/](UML/) are also committed as rendered SVG in [SVG/](SVG/), so the
+diagrams can be read without a PlantUML installation. To regenerate them after editing a `.puml`
+file (needs Docker):
 
 ```bash
-# Check system and show instructions
-python3 convert_plantuml.py
-
-# Convert to SVG/PNG (requires PlantUML installed)
-python3 convert_plantuml.py --convert
+cd docs
+make svg     # renders UML/*.puml into SVG/
+make clean   # removes the generated SVG files
 ```
 
-#### 📝 [convert_instructions.md](convert_instructions.md)
-Quick reference for conversion methods
-
-#### 🛠️ [convert_to_vsdx.sh](convert_to_vsdx.sh)
-Bash script showing conversion options
-
-```bash
-./convert_to_vsdx.sh
-```
+See [UML/README.md](UML/README.md) for what each diagram covers.
 
 ---
 
@@ -111,37 +82,36 @@ Bash script showing conversion options
 1. Read: [PayPal_Module_Documentation.md](PayPal_Module_Documentation.md)
    - Architecture Overview
    - Key Classes and Responsibilities
-2. View: [PayPal_Module_UML_Diagram.puml](PayPal_Module_UML_Diagram.puml)
-3. Study: [PayPal_Module_Sequence_Diagrams.puml](PayPal_Module_Sequence_Diagrams.puml)
+2. View: [PayPal_Module_UML_Diagram.puml](UML/PayPal_Module_UML_Diagram.puml)
+3. Study: [PayPal_Module_Sequence_Diagrams.puml](UML/PayPal_Module_Sequence_Diagrams.puml)
 
 ### For System Architects
-1. View: [PayPal_Module_UML_Diagram.puml](PayPal_Module_UML_Diagram.puml)
+1. View: [PayPal_Module_UML_Diagram.puml](UML/PayPal_Module_UML_Diagram.puml)
 2. Read: "Architecture Overview" section
-3. Study: [PayPal_Module_Sequence_Diagrams.puml](PayPal_Module_Sequence_Diagrams.puml)
+3. Study: [PayPal_Module_Sequence_Diagrams.puml](UML/PayPal_Module_Sequence_Diagrams.puml)
 
 ---
 
-## 🎨 Converting to Visio VSDX
+## 🎨 Viewing and Converting the Diagrams
 
-**Need VSDX files for Microsoft Visio?**
+### Viewing a `.puml` file
 
-👉 See: [VSDX_CONVERSION_GUIDE.md](VSDX_CONVERSION_GUIDE.md)
+1. **Rendered SVG** - open the matching file in [SVG/](SVG/), nothing to install
+2. **Online viewer** - paste the file content into http://www.plantuml.com/plantuml/uml/
+3. **VS Code** - install the "PlantUML" extension, open the file, `Alt+D` to preview
+4. **Command line** - `make svg` in this directory (see above), or a local PlantUML installation
 
-### Fastest Method (Recommended):
+### Converting to Visio VSDX
 
-1. Visit: https://app.diagrams.net/
+Draw.io produces true VSDX files that Visio can fully edit:
+
+1. Visit https://app.diagrams.net/
 2. Arrange → Insert → Advanced → PlantUML
-3. Copy/paste content from `.puml` files
+3. Copy/paste the content of the `.puml` file
 4. File → Export As → VSDX
 
-**Result**: True VSDX files that Visio can fully edit!
-
-### Alternative Methods:
-- Online PlantUML Server → SVG → Import to Visio
-- Local PlantUML installation → Batch conversion
-- VS Code extension → Interactive editing
-
-All methods detailed in [VSDX_CONVERSION_GUIDE.md](VSDX_CONVERSION_GUIDE.md)
+Alternatives: render to SVG first (`make svg`, or the online server) and import that into Visio -
+editable, but the shapes are grouped vector graphics rather than native Visio stencils.
 
 ---
 
@@ -152,7 +122,7 @@ All methods detailed in [VSDX_CONVERSION_GUIDE.md](VSDX_CONVERSION_GUIDE.md)
 | Method | ID | Description |
 |--------|----|----|
 | PayPal | `oscpaypal` | Standard PayPal wallet |
-| ACDC | `oscpaypal_acdc` | Credit/Debit cards with 3DS |
+| ACDC | `oscpaypal_acdc` | Credit/Debit cards with 3DS (not offered to merchants in CH) |
 | PUI | `oscpaypal_pui` | Pay Upon Invoice (Germany) |
 | Google Pay | `oscpaypal_googlepay` | Google Pay wallet |
 | Apple Pay | `oscpaypal_applepay` | Apple Pay wallet |
@@ -162,6 +132,17 @@ All methods detailed in [VSDX_CONVERSION_GUIDE.md](VSDX_CONVERSION_GUIDE.md)
 | Bancontact | `oscpaypal_bancontact` | Belgian payment |
 | BLIK | `oscpaypal_blik` | Polish mobile payment |
 | P24 | `oscpaypal_p24` | Przelewy24 (Poland) |
+
+### Payment Flow Types
+
+**Synchronous**
+- Customer action → immediate result → order completion
+- Examples: standard PayPal with direct capture, vaulted payments
+
+**Asynchronous**
+- Customer action → webhook delivers the result → order completion
+- Examples: uAPM (iDEAL, EPS), PUI, some ACDC / Google Pay cases
+- Timeout fallback: after 60 seconds the shop fetches the state from the API instead of waiting
 
 ### Capture Strategies
 
@@ -210,20 +191,32 @@ Webhook System ← PayPal Notifications
 ```
 src/
 ├── Controller/
-│   ├── OrderController.php              # Order finalization
-│   ├── AjaxPaymentController.php        # AJAX operations
-│   └── WebhookController.php            # Webhook entry
+│   ├── OrderController.php              # Order finalization for all payment methods
+│   ├── AjaxPaymentController.php        # AJAX payment operations
+│   ├── WebhookController.php            # Webhook entry point
+│   └── Admin/
+│       ├── PayPalOrderController.php    # Admin order management, refunds
+│       ├── ModuleConfiguration.php      # Module settings screen, onboarding
+│       └── OrderOverview.php            # Capture on delivery trigger
 ├── Service/
-│   ├── Payment.php                      # ⭐ Core logic
-│   ├── OrderRepository.php              # Data access
-│   └── SCAValidator.php                 # 3D Secure
+│   ├── Payment.php                      # ⭐ Core payment logic
+│   ├── OrderRepository.php              # Data access for PayPal orders
+│   ├── OrderManager.php                 # Shop order creation
+│   ├── ModuleSettings.php               # All module settings, eligibility
+│   └── SCAValidator.php                 # 3D Secure validation
 ├── Model/
-│   ├── Order.php                        # Extended order
-│   └── PayPalOrder.php                  # PayPal tracking
-└── Core/Webhook/Handler/
-    ├── PaymentCaptureCompletedHandler.php
-    ├── CheckoutOrderApprovedHandler.php
-    └── ...
+│   ├── Order.php                        # Extended order model
+│   └── PayPalOrder.php                  # PayPal order tracking model
+└── Core/
+    ├── PayPalDefinitions.php            # Payment method definitions
+    ├── Constants.php                    # All module constants
+    └── Webhook/
+        ├── EventDispatcher.php
+        └── Handler/
+            ├── PaymentCaptureCompletedHandler.php
+            ├── CheckoutOrderApprovedHandler.php
+            ├── PaymentCaptureRefundedHandler.php
+            └── ...
 ```
 
 ---
@@ -285,6 +278,7 @@ More scenarios in [PayPal_Module_Documentation.md](PayPal_Module_Documentation.m
 ## 🐛 Troubleshooting
 
 ### Webhook Not Received
+- ✓ Review the PayPal webhook dashboard for delivery attempts
 - ✓ Check webhook URL accessible
 - ✓ Verify webhook ID configured
 - ✓ Check firewall settings
@@ -295,6 +289,7 @@ More scenarios in [PayPal_Module_Documentation.md](PayPal_Module_Documentation.m
 - ✓ Verify test cards support 3DS
 - ✓ Review authentication logs
 - ✓ Ensure ACDC enabled in PayPal account
+- ✓ ACDC is not offered to merchants in Switzerland and is hidden when `aHomeCountry` is `CH`
 
 ### Authorization Expired
 - ✓ Check order age (max 29 days)
@@ -303,34 +298,29 @@ More scenarios in [PayPal_Module_Documentation.md](PayPal_Module_Documentation.m
 
 ### Order Stuck
 - ✓ Check webhook delivery
-- ✓ Run cleanup job
+- ✓ Run the cleanup job (`Service\OrderRepository::cleanUpNotFinishedOrders()`)
 - ✓ Check timeout setting (default 60 min)
 
-More troubleshooting in [PayPal_Documentation_README.md](PayPal_Documentation_README.md)
+### Debug Logging
 
----
+Set the module setting `oscPayPalDebugLevel` to `debug` (admin > PayPal > Configuration), then read
+`log/oxideshop.log`. Useful search terms:
 
-## 📊 File Sizes
+- `PayPal Webhook request` - webhook receipt
+- `PayPal API` - API calls
+- `doCreatePayPalOrder` - order creation
+- `doCapturePayPalOrder` - capture operations
 
-| File | Size | Type |
-|------|------|------|
-| PayPal_Module_Documentation.md | 83 KB | Text |
-| PayPal_Module_UML_Diagram.puml | 18 KB | PlantUML |
-| PayPal_Module_Sequence_Diagrams.puml | 19 KB | PlantUML |
-| VSDX_CONVERSION_GUIDE.md | 8.7 KB | Text |
-| PayPal_Documentation_README.md | 11 KB | Text |
-| convert_plantuml.py | 6.3 KB | Python |
-| convert_to_vsdx.sh | 2.0 KB | Bash |
-| convert_instructions.md | 2.3 KB | Text |
-
-**Total Documentation Package**: ~150 KB
+More troubleshooting in [PayPal_Module_Documentation.md](PayPal_Module_Documentation.md)
 
 ---
 
 ## 🔗 External Resources
 
 ### Official Documentation
-- **PayPal API**: https://developer.paypal.com/docs/api/
+- **PayPal Orders API v2**: https://developer.paypal.com/docs/api/orders/v2/
+- **PayPal Payments API v2**: https://developer.paypal.com/docs/api/payments/v2/
+- **PayPal Webhooks**: https://developer.paypal.com/docs/api/webhooks/v1/
 - **OXID Module**: https://docs.oxid-esales.com/modules/paypal-checkout/
 - **PlantUML**: https://plantuml.com/
 
@@ -343,10 +333,11 @@ More troubleshooting in [PayPal_Documentation_README.md](PayPal_Documentation_RE
 
 ## 📝 Version Information
 
-- **Module Version**: 2.6.2-rc.4
-- **OXID Version**: Compatible with OXID 6.x
-- **PayPal API**: v2
-- **Documentation Date**: 2025-10-07
+- **Module Version**: see `metadata.php` in the module root
+- **OXID Version**: OXID eShop 6.x
+- **PHP**: ^7.4 | ^8.0 | ^8.1 (from `composer.json`)
+- **PayPal API**: Orders v2 / Payments v2
+- **Changes**: [../CHANGELOG.md](../CHANGELOG.md)
 
 ---
 
@@ -367,25 +358,3 @@ For documentation issues:
 ## 📄 License
 
 This documentation is provided for the OXID PayPal module developed by OXID eSales AG.
-
----
-
-## ✨ What's Included
-
-- ✅ Complete business documentation (15,000+ words)
-- ✅ UML class diagram (all classes and relationships)
-- ✅ 6 sequence diagrams (payment flows)
-- ✅ VSDX conversion guide (5 methods)
-- ✅ Python conversion script (automated)
-- ✅ Quick start guides
-- ✅ Testing scenarios
-- ✅ Troubleshooting tips
-- ✅ Architecture overview
-- ✅ Database schema
-- ✅ Configuration reference
-
-**Everything you need to understand and work with the PayPal module!**
-
----
-
-**Happy coding! 🚀**
