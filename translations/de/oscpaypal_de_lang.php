@@ -48,6 +48,7 @@ $aLang = [
     'OSC_PAYPAL_LOG_IN_TO_CONTINUE'                 => 'Bitte loggen Sie sich ein, um die Bestellung abzuschliessen.',
     'OSC_PAYPAL_3DSECURITY_ERROR'                   => 'Die Sicherheitsüberprüfung ist fehlgeschlagen, bitte erneut versuchen.',
     'OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR'         => 'Die Zahlungsautorisierung wurde abgelehnt. Bitte überprüfen Sie Ihre Zahlungsdaten und versuchen Sie es erneut.',
+    'OSC_PAYPAL_UNKNOWN_ERROR'                      => 'Bei der Zahlung ist ein unbekannter Fehler aufgetreten. Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlart.',
     'OSC_PAYPAL_ERROR_INVALID_ADDRESS'              => 'Ihre Rechnungs- oder Lieferadresse ist unvollständig oder ungültig. Bitte überprüfen Sie insbesondere Postleitzahl und Stadt und versuchen Sie es erneut.',
     'OSC_PAYPAL_PAYMENT_CANCELED'                     => 'Die Zahlung wurde storniert',
     'OSC_PAYPAL_CAPTURE_DENIED_ERROR'               => 'Die Überweisung wurde abgelehnt. Bitte überprüfen Sie Ihre Zahlungsdaten und versuchen Sie es erneut.',
@@ -87,13 +88,13 @@ $aLang = [
     'OSC_PAYPAL_REFUND_MAIL_SUBJECT'              => 'Rückerstattung zu Ihrer Bestellung %s',
     'OSC_PAYPAL_REFUND_MAIL_SUBJECT_OWNER'        => 'PayPal: Rückerstattung zur Bestellung %s veranlasst',
     'OSC_PAYPAL_REFUND_MAIL_SALUTATION'           => 'Guten Tag',
-    'OSC_PAYPAL_REFUND_MAIL_INTRO'                => 'wir haben eine Rückerstattung über PayPal für Sie veranlasst.',
-    'OSC_PAYPAL_REFUND_MAIL_INTRO_OWNER'          => 'Für die folgende Bestellung wurde über PayPal eine Rückerstattung '
-        . 'veranlasst.',
+    'OSC_PAYPAL_REFUND_MAIL_INTRO'                => 'wir haben eine Rückerstattung für Sie veranlasst.',
+    'OSC_PAYPAL_REFUND_MAIL_INTRO_OWNER'          => 'Für die folgende Bestellung wurde eine Rückerstattung veranlasst '
+        . '(PayPal Payment Provider).',
     'OSC_PAYPAL_REFUND_MAIL_AMOUNT'               => 'Erstatteter Betrag',
     'OSC_PAYPAL_REFUND_MAIL_ORDER_TOTAL'          => 'Bestellwert',
-    'OSC_PAYPAL_REFUND_MAIL_NOTE'                 => 'Die Gutschrift erfolgt über PayPal auf das von Ihnen bei PayPal '
-        . 'verwendete Zahlungsmittel. Wie lange das dauert, hängt von Ihrem Zahlungsmittel und Ihrer Bank ab.',
+    'OSC_PAYPAL_REFUND_MAIL_NOTE'                 => 'Die Rückerstattung wurde Ihrer ursprünglich verwendeten '
+        . 'Zahlungsart gutgeschrieben. Die Wertstellung hängt von Ihrem Zahlungsmittel und Ihrer Bank ab.',
     'OSC_PAYPAL_CANCEL_MAIL_TITLE'                => 'Stornierung Ihrer Bestellung',
     'OSC_PAYPAL_CANCEL_MAIL_SUBJECT'              => 'Stornierung Ihrer Bestellung %s',
     'OSC_PAYPAL_CANCEL_MAIL_SUBJECT_OWNER'        => 'PayPal: Bestellung %s storniert',

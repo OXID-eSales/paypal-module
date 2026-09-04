@@ -19,6 +19,7 @@ use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\Mod
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\DataObject\ModuleConfiguration;
 use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Exception\ModuleSettingNotFountException;
 use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
+use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Module;
@@ -61,6 +62,13 @@ class ModuleSettings
      * @var bool
      */
     protected $isVaultingAllowedForACDC = null;
+
+    /**
+     * is ACDC offered to merchants in the country the shop sits in
+     *
+     * @var bool
+     */
+    protected $isAcdcSupportedInShopCountry = null;
 
     /**
      * Country Restriction for PayPal as comma seperated string
@@ -238,7 +246,9 @@ class ModuleSettings
     {
         $commaSeparated = $this->getSupportedLocalesCommaSeparated();
 
-        return explode(',', $commaSeparated);
+        // trim and drop empty entries, so neither a stray space ("de_DE, en_US") nor an emptied
+        // setting can end up as a locale in the JS SDK url or in an API request
+        return array_values(array_filter(array_map('trim', explode(',', $commaSeparated))));
     }
 
     public function getSupportedLocalesCommaSeparated(): string
@@ -446,9 +456,48 @@ class ModuleSettings
 
     public function isAcdcEligibility(): bool
     {
+        if (!$this->isAcdcSupportedInShopCountry()) {
+            return false;
+        }
+
         return $this->isSandbox() ?
             $this->isSandboxAcdcEligibility() :
             $this->isLiveAcdcEligibility();
+    }
+
+    /**
+     * Whether PayPal offers ACDC (card payments) to a merchant in the country the shop sits in at
+     * all. PayPal confirmed that ACDC is not available in Switzerland, while a swiss merchant
+     * account is nevertheless granted the CUSTOM_CARD_PROCESSING capability during onboarding - the
+     * card fields then answer every single payment attempt with
+     * 422 CURRENCY_NOT_SUPPORTED_BY_PAYMENT_SOURCE. The eligibility PayPal reported is therefore
+     * overruled here rather than at save time, so what the account actually answered stays
+     * inspectable in the module configuration and no re-onboarding is needed once PayPal offers the
+     * product in a market. The country list lives in Core\PayPalDefinitions.
+     */
+    public function isAcdcSupportedInShopCountry(): bool
+    {
+        if (is_null($this->isAcdcSupportedInShopCountry)) {
+            $shopCountryIso = oxNew(Config::class)->getShopCountryIso();
+            $this->isAcdcSupportedInShopCountry = PayPalDefinitions::isPaymentSupportedInMerchantCountry(
+                PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
+                $shopCountryIso
+            );
+
+            if (!$this->isAcdcSupportedInShopCountry) {
+                $this->logger->log(
+                    'warning',
+                    sprintf(
+                        'PayPal does not offer ACDC (card payments) to merchants in %s. '
+                        . 'The payment method and card vaulting are hidden, regardless of the '
+                        . 'eligibility the merchant account reports.',
+                        $shopCountryIso
+                    )
+                );
+            }
+        }
+
+        return $this->isAcdcSupportedInShopCountry;
     }
 
     public function isLiveAcdcEligibility(): bool
@@ -889,13 +938,20 @@ class ModuleSettings
         return $this->isVaultingAllowedForPayPal;
     }
 
-    /** check if Vaulting is allowed for ACDC */
+    /**
+     * check if Vaulting is allowed for ACDC
+     *
+     * Vaulting a card uses the same card fields as an ACDC payment, so it fails the same way in a
+     * country where PayPal does not offer ACDC - the customer must not be offered to store a card
+     * there either.
+     */
     public function isVaultingAllowedForACDC(): bool
     {
         if (is_null($this->isVaultingAllowedForACDC)) {
-            $this->isVaultingAllowedForACDC = $this->isVaultingAllowedForPayment(
-                PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID
-            );
+            $this->isVaultingAllowedForACDC = $this->isAcdcSupportedInShopCountry()
+                && $this->isVaultingAllowedForPayment(
+                    PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID
+                );
         }
         return $this->isVaultingAllowedForACDC;
     }

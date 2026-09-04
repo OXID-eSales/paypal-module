@@ -24,6 +24,7 @@ use OxidSolutionCatalysts\PayPal\Core\CustomerAddressHelper;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Service\BasketSummaryService;
+use OxidSolutionCatalysts\PayPal\Service\LanguageLocaleMapper;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable3;
@@ -349,9 +350,16 @@ class OrderRequestFactory
 
         $experienceContext = $this->getExperienceContext();
         $experienceContext->brand_name = $this->moduleSettings->getShopName();
-        $experienceContext->locale = strtolower($payer->address->country_code)
-            . '-'
-            .  strtoupper($payer->address->country_code);
+        // see VaultingService::getPaymentSourceForVaulting() - the locale is the shop language mapped
+        // against oscPayPalLocales, not the buyer country repeated twice
+        $locale = $this->getServiceFromContainer(LanguageLocaleMapper::class)
+            ->mapLanguageToBcp47Locale(
+                (string)Registry::getLang()->getLanguageAbbr(),
+                (string)$payer->address->country_code
+            );
+        if ($locale !== '') {
+            $experienceContext->locale = $locale;
+        }
         $experienceContext->customer_service_instructions[] = $this->moduleSettings->getInfoEMail();
         $paymentSource->experience_context = $experienceContext;
 

@@ -22,6 +22,7 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\RequestReader;
 use OxidSolutionCatalysts\PayPal\Exception\OnboardingException;
 use OxidSolutionCatalysts\PayPal\Module;
+use OxidSolutionCatalysts\PayPal\Service\LanguageLocaleMapper;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
@@ -113,8 +114,12 @@ class ModuleConfiguration extends ModuleConfiguration_parent
         $lang = Registry::getLang();
         $config = new Config();
 
-        $countryCode = strtoupper($lang->getLanguageAbbr());
-        $localeCode = $lang->getLanguageAbbr() . '-' . $countryCode;
+        // the onboarding country decides which products and capabilities the merchant account is
+        // offered, so it has to be the country the shop itself sits in. It used to be the uppercased
+        // backend language ("de" -> "DE"), which sent a swiss merchant through a german onboarding
+        $countryCode = $config->getShopCountryIso();
+        $localeCode = $this->getServiceFromContainer(LanguageLocaleMapper::class)
+            ->mapLanguageToBcp47Locale((string)$lang->getLanguageAbbr(), $countryCode);
 
         $partnerLogoUrl = Registry::getConfig()->getOutUrl(null, true)
             . 'modules/' . Module::MODULE_ID . '/img/oxid_logo.png';
@@ -129,11 +134,18 @@ class ModuleConfiguration extends ModuleConfiguration_parent
             'integrationType' => 'FO',
             'features' =>
                 'PAYMENT,REFUND,ACCESS_MERCHANT_INFORMATION,ADVANCED_TRANSACTIONS_SEARCH,VAULT,BILLING_AGREEMENT',
-            'country.x' => $countryCode,
-            'locale.x' => $localeCode,
             'sellerNonce' => $this->createNonce(),
             'displayMode' => 'minibrowser'
         ];
+
+        // both are omitted rather than filled with a guess when they cannot be resolved, so PayPal
+        // asks the merchant instead of starting the onboarding in the wrong country or language
+        if ($countryCode !== '') {
+            $params['country.x'] = $countryCode;
+        }
+        if ($localeCode !== '') {
+            $params['locale.x'] = $localeCode;
+        }
 
         return $url . '?' . http_build_query($params);
     }

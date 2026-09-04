@@ -267,6 +267,7 @@ final class PayPalDefinitions
                 ]
             ],
             'countries' => [],
+            'unsupportedmerchantcountries' => ['CH'],
             'currencies' => ['AUD', 'CAD', 'CHF', 'CZK', 'DKK', 'EUR', 'GBP', 'HKD', 'HUF', 'JPY', 'NOK', 'NZD', 'PLN', 'SEK', 'SGD', 'USD'],
             'constraints' => self::PAYMENT_CONSTRAINTS_PAYPAL,
             'onlybrutto' => false,
@@ -506,7 +507,7 @@ final class PayPalDefinitions
                 <a href="https://www.ratepay.com/en/ratepay-terms-of-payment/" target="_blank">terms of payment</a>
                 and performance of a <a href="https://www.ratepay.com/en/ratepay-data-privacy-statement/" target="_blank">risk check</a>
                 from the payment partner, Ratepay. You also agree to PayPal’s
-                <a href="https://www.paypal.com/de/webapps/mpp/ua/rechnungskauf-mit-ratepay?locale.x=en_EN"
+                <a href="https://www.paypal.com/de/webapps/mpp/ua/rechnungskauf-mit-ratepay?locale.x=en_US"
                 target="_blank">privacy statement</a>. If your request to purchase upon invoice is accepted, the purchase price claim
                 will be assigned to Ratepay, and you may only pay Ratepay, not the merchant.'
         ]
@@ -574,6 +575,27 @@ final class PayPalDefinitions
     public static function isPayPalPayment(string $paymentId): bool
     {
         return (isset(self::PAYPAL_DEFINTIONS[$paymentId]));
+    }
+
+    /**
+     * Whether a payment method is offered at all to a merchant domiciled in the given country, as
+     * opposed to the 'countries' key which restricts a payment to certain *customer* countries. Some
+     * PayPal products are simply not sold in some markets, and that depends on where the merchant
+     * account sits, not on where the buyer is - a german merchant may well charge a swiss card.
+     * An empty country means the shop country could not be resolved; nothing is restricted then,
+     * because a guessed country must not take a working payment method away.
+     */
+    public static function isPaymentSupportedInMerchantCountry(string $paymentId, string $countryIso): bool
+    {
+        if ($countryIso === '' || !isset(self::PAYPAL_DEFINTIONS[$paymentId]['unsupportedmerchantcountries'])) {
+            return true;
+        }
+
+        return !in_array(
+            strtoupper($countryIso),
+            self::PAYPAL_DEFINTIONS[$paymentId]['unsupportedmerchantcountries'],
+            true
+        );
     }
 
     public static function isPayPalVaultingPossible(string $paymentId, ?string $paypalPaymentType = null): bool

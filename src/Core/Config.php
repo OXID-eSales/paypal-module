@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Core;
 
+use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Core\DatabaseProvider;
@@ -164,6 +165,16 @@ class Config
     public function isSandboxAcdcEligibility(): bool
     {
         return $this->getModuleSettings()->isSandboxAcdcEligibility();
+    }
+
+    /**
+     * Whether PayPal offers ACDC to a merchant in the shop's own country at all. Needed by the
+     * module configuration template, which reports the raw eligibility PayPal answered and would
+     * otherwise promise a payment method the checkout deliberately hides.
+     */
+    public function isAcdcSupportedInShopCountry(): bool
+    {
+        return $this->getModuleSettings()->isAcdcSupportedInShopCountry();
     }
 
     public function isPuiEligibility(): bool
@@ -459,6 +470,31 @@ class Config
     public function isCustomIdSchemaStructural(): bool
     {
         return $this->getModuleSettings()->isCustomIdSchemaStructural();
+    }
+
+    /**
+     * The country the shop itself sits in as ISO 3166-1 alpha-2, taken from the shop setting
+     * "aHomeCountry". Needed wherever PayPal asks about the shop and not about the customer - the
+     * merchant onboarding for instance - because that country must not be guessed from the backend
+     * language. Returns an empty string when the setting is unset or the country cannot be loaded,
+     * so callers can omit the value instead of sending an invented one.
+     */
+    public function getShopCountryIso(): string
+    {
+        $homeCountry = Registry::getConfig()->getConfigParam('aHomeCountry');
+        $countryId = is_array($homeCountry) ? (string)current($homeCountry) : (string)$homeCountry;
+        if ($countryId === '') {
+            return '';
+        }
+
+        $country = oxNew(Country::class);
+        if (!$country->load($countryId)) {
+            return '';
+        }
+
+        $isoAlpha2 = strtoupper((string)$country->getFieldData('oxisoalpha2'));
+
+        return preg_match('/^[A-Z]{2}$/', $isoAlpha2) ? $isoAlpha2 : '';
     }
 
     public function getTransactionUrl(): string

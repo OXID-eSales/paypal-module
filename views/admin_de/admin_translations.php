@@ -99,6 +99,7 @@ $aLang = array_merge(
     'OSC_PAYPAL_SPECIAL_PAYMENTS'                 => 'Freischaltung für besondere Zahlarten erfolgt',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_PUI'             => 'Rechnungskauf',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Kreditkarte',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_COUNTRY'    => '<em>- PayPal bietet die Kreditkartenzahlung (ACDC) im Land Ihres Shops nicht an. Die Zahlart und das Hinterlegen von Karten sind deshalb ausgeblendet, auch wenn Ihr PayPal-Konto die Berechtigung dafür meldet.</em>',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '<em>- Alternativ können Sie die Zahlart "PayPal Kreditkarte Fallback" (id: "' . PayPalDefinitions::CCALTERNATIVE_PAYPAL_PAYMENT_ID . '") aktivieren und nutzen. Bitte verwenden Sie für diesen Falback-Fall einen passenden Namen für diese Zahlart.</em>',
     'OSC_PAYPAL_INSTALL_NOTE_APPLEPAY'            => '<em>- Wenn Sie vorhaben ApplePay einzusetzen, müssen Sie abschließend die Domain dieses Shops, in Ihrem PayPal-Konto (Kontoeinstellungen > Zahlungsquellen > ApplePay) hinterlegen. Eine genaue Anleitung finden Sie in unserer Modul-Dokumentation im Bereich <a href="' . Constants::PAYPAL_DOCUMENTATION_DE . '" target="_blank">Konfiguration > Apple Pay als Zahlungsart aktivieren</a>.</em>',
 
@@ -114,7 +115,7 @@ $aLang = array_merge(
 
     'OSC_PAYPAL_LOCALISATIONS'                    => 'Spracheinstellungen',
     'OSC_PAYPAL_LOCALES'                          => 'regionale Spracheinstellungen',
-    'HELP_OSC_PAYPAL_LOCALES'                     => 'PayPal unterstützt die Anzeige der PayPal-Buttons in regionalen Sprachen. Bitte hinterlegen sie die Codes kommasepariert im ISO 639-1 alpha-2 / ISO 3166-1 alpha-2 - Format (z.B. de_DE). Der erste Eintrag ist der Standard-Eintrag.',
+    'HELP_OSC_PAYPAL_LOCALES'                     => 'PayPal unterstützt regionale Sprachen für die PayPal-Buttons sowie für die Sprache, in der PayPal in seinen Dialogen und Kartenfeldern mit dem Kunden kommuniziert. Bitte hinterlegen sie die Codes kommasepariert im ISO 639-1 alpha-2 / ISO 3166-1 alpha-2 - Format (z.B. de_DE). Der erste Eintrag ist der Standard-Eintrag. Für Kunden im Ausland können Sie regionale Varianten ergänzen (z.B. de_CH,de_DE,en_US): passt ein Eintrag zu Sprache und Land des Kunden, wird dieser bevorzugt, ansonsten wird der erste Eintrag mit passender Sprache verwendet.',
 
     // PayPal ORDER
     'OSC_PAYPAL_ACTIONS'                          => 'Aktionen',

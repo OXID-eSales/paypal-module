@@ -115,7 +115,7 @@
                                 </li>
                                 <li>
                                     <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC", suffix: "COLON" }) }}</b>
-                                    {% if config.isLiveAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
+                                    {% if not config.isAcdcSupportedInShopCountry() %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_COUNTRY" }) }}{% elseif config.isLiveAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
                                 </li>
                                 <li>
                                     <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING", suffix: "COLON" }) }}</b>
@@ -211,7 +211,7 @@
                                 </li>
                                 <li>
                                     <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC", suffix: "COLON" }) }}</b>
-                                    {% if config.isSandboxAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
+                                    {% if not config.isAcdcSupportedInShopCountry() %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_COUNTRY" }) }}{% elseif config.isSandboxAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
                                 </li>
                                 <li>
                                     <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING", suffix: "COLON" }) }}</b>

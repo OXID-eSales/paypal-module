@@ -12,6 +12,7 @@
     {% endif %}
 
     {% set currency = oView.getActCurrency() %}
+    {% set payPalBannerCountryCode = oViewConf.getPayPalBannerCountryCode() %}
 
     {% set installmentBanners %}
         // Create installment banner holder
@@ -36,7 +37,8 @@
             paypal.Messages({
                 amount: {{ amount }},
                 currency: '{{ currency.name }}',
-                countryCode: '{{ oViewConf.getActLanguageAbbr()|upper }}',
+{% if payPalBannerCountryCode %}                countryCode: '{{ payPalBannerCountryCode }}',
+{% endif %}
                 style: {
                     layout: bannerLayout,
                     color: '{{ oViewConf.getPayPalCheckoutBannersColorScheme() }}',

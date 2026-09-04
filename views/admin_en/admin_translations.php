@@ -98,6 +98,7 @@ $aLang = array_merge(
     'OSC_PAYPAL_SPECIAL_PAYMENTS'                 => 'Activation for special payment methods has taken place',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_PUI'             => 'Pay upon Invoice',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC'            => 'Creditcard',
+    'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_COUNTRY'    => '<em>- PayPal does not offer card payments (ACDC) in your shop\'s country. The payment method and storing cards are therefore hidden, even though your PayPal account reports the eligibility for it.</em>',
     'OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK'   => '<em>- Alternatively, you can activate and use the payment method "PayPal Credit Card Fallback" (id: "' . PayPalDefinitions::CCALTERNATIVE_PAYPAL_PAYMENT_ID . '"). Please use a suitable name for this payment method in this fallback case.</em>',
     'OSC_PAYPAL_INSTALL_NOTE_APPLEPAY'            => '<em>- If you plan to use Apple Pay, you must finally add this shops domain to your PayPal account (Account Settings > Payment Sources > Apple Pay). Detailed instructions can be found in our module documentation under <a href="' . Constants::PAYPAL_DOCUMENTATION_EN . '" target="_blank">Configuration > Enable Apple Pay as a Payment Method</a>.</em>',
 
@@ -113,7 +114,7 @@ $aLang = array_merge(
 
     'OSC_PAYPAL_LOCALISATIONS'                    => 'Locals',
     'OSC_PAYPAL_LOCALES'                          => 'regional language settings',
-    'HELP_OSC_PAYPAL_LOCALES'                     => 'PayPal supports displaying the PayPal buttons in regional languages. Please enter the codes separated by commas in ISO 639-1 alpha-2 / ISO 3166-1 alpha-2 format (e.g. de_DE). The first entry is the default entry.',
+    'HELP_OSC_PAYPAL_LOCALES'                     => 'PayPal supports regional languages for the PayPal buttons as well as for the language PayPal uses to talk to the customer in its dialogs and card fields. Please enter the codes separated by commas in ISO 639-1 alpha-2 / ISO 3166-1 alpha-2 format (e.g. de_DE). The first entry is the default entry. For customers abroad you can add regional variants (e.g. de_CH,de_DE,en_US): an entry matching both the language and the country of the customer is preferred, otherwise the first entry matching the language is used.',
 
     // PayPal ORDER
     'OSC_PAYPAL_ACTIONS'                          => 'Actions',

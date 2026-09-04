@@ -12,6 +12,7 @@
     [{/if}]
 
     [{assign var="currency" value=$oView->getActCurrency()}]
+    [{assign var="payPalBannerCountryCode" value=$oViewConf->getPayPalBannerCountryCode()}]
 
     [{capture assign="installmentBanners"}]
         // Create installment banner holder
@@ -32,7 +33,8 @@
             paypal.Messages({
                 amount: [{$amount}],
                 currency: '[{$currency->name}]',
-                countryCode: '[{$oViewConf->getActLanguageAbbr()|upper}]',
+[{if $payPalBannerCountryCode}]                countryCode: '[{$payPalBannerCountryCode}]',
+[{/if}]
                 style: {
                     layout: bannerLayout,
                     color: '[{$oViewConf->getPayPalCheckoutBannersColorScheme()}]',

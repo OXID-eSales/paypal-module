@@ -11,6 +11,8 @@ PayPal checkout integration for OXID eShop 6.1 and above.
 * Official [English PayPal Checkout for OXID 6.3 to 6.5 documentation](https://docs.oxid-esales.com/modules/paypal-checkout/en/2.6/)
 * Official [English PayPal Checkout for OXID from 7.0 documentation](https://docs.oxid-esales.com/modules/paypal-checkout/en/3.5/)
 
+Technical documentation in this repository: [docs/README.md](docs/README.md) - architecture, payment flows, order states, webhook system, UML diagrams and troubleshooting.
+
 
 ## Branch Compatibility
 
