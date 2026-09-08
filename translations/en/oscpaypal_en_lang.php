@@ -98,6 +98,7 @@ $aLang = [
     'OSC_PAYPAL_CANCEL_MAIL_TITLE'                => 'Cancellation of your order',
     'OSC_PAYPAL_CANCEL_MAIL_SUBJECT'              => 'Cancellation of your order %s',
     'OSC_PAYPAL_CANCEL_MAIL_SUBJECT_OWNER'        => 'PayPal: order %s cancelled',
+    'OSC_PAYPAL_CANCEL_REFUND_NOTE_TO_PAYER'      => 'Cancellation of your order %s',
     'OSC_PAYPAL_CANCEL_MAIL_SALUTATION'           => 'Dear',
     'OSC_PAYPAL_CANCEL_MAIL_INTRO'                => 'your order has been cancelled.',
     'OSC_PAYPAL_CANCEL_MAIL_INTRO_OWNER'          => 'The following order has been cancelled.',

@@ -98,6 +98,7 @@ $aLang = [
     'OSC_PAYPAL_CANCEL_MAIL_TITLE'                => 'Stornierung Ihrer Bestellung',
     'OSC_PAYPAL_CANCEL_MAIL_SUBJECT'              => 'Stornierung Ihrer Bestellung %s',
     'OSC_PAYPAL_CANCEL_MAIL_SUBJECT_OWNER'        => 'PayPal: Bestellung %s storniert',
+    'OSC_PAYPAL_CANCEL_REFUND_NOTE_TO_PAYER'      => 'Stornierung Ihrer Bestellung %s',
     'OSC_PAYPAL_CANCEL_MAIL_SALUTATION'           => 'Guten Tag',
     'OSC_PAYPAL_CANCEL_MAIL_INTRO'                => 'Ihre Bestellung wurde storniert.',
     'OSC_PAYPAL_CANCEL_MAIL_INTRO_OWNER'          => 'Die folgende Bestellung wurde storniert.',

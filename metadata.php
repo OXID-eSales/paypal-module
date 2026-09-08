@@ -71,7 +71,7 @@ $aModule = [
         'en' => 'Use of the online payment service from PayPal. Documentation: <a href="https://docs.oxid-esales.com/modules/paypal-checkout/en/latest/" target="_blank">PayPal Checkout</a>'
     ],
     'thumbnail' => 'out/img/paypal.png',
-    'version' => '2.10.0-rc.4',
+    'version' => '2.10.0-rc.6',
     'author' => 'OXID eSales AG',
     'url' => 'https://www.oxid-esales.com',
     'email' => 'info@oxid-esales.com',
@@ -322,6 +322,12 @@ $aModule = [
             'group' => null
         ],
         [
+            'name' => 'oscPayPalMerchantCountry',
+            'type' => 'str',
+            'value' => '',
+            'group' => null
+        ],
+        [
             'name' => 'oscPayPalWebhookId',
             'type' => 'str',
             'value' => '',
@@ -341,6 +347,12 @@ $aModule = [
         ],
         [
             'name' => 'oscPayPalSandboxClientMerchantId',
+            'type' => 'str',
+            'value' => '',
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalSandboxMerchantCountry',
             'type' => 'str',
             'value' => '',
             'group' => null
@@ -671,6 +683,12 @@ $aModule = [
             'name' => 'oscPayPalWebhookRetryDelay',
             'type' => 'num',
             'value' => 20,
+            'group' => null
+        ],
+        [
+            'name' => 'oscPayPalAutomatedRefundOnCancel',
+            'type' => 'bool',
+            'value' => false,
             'group' => null
         ],
         [

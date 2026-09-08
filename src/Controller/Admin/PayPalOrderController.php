@@ -13,22 +13,17 @@ use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\RefundMailService;
-use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
-use OxidSolutionCatalysts\PayPal\Core\Utils\AmountFormatter;
 use OxidSolutionCatalysts\PayPal\Helper\Str2Float;
 use OxidSolutionCatalysts\PayPal\Model\PayPalOrder as PayPalModelPayPalOrder;
 use OxidSolutionCatalysts\PayPal\Model\PayPalPlusOrder;
 use OxidSolutionCatalysts\PayPal\Model\PayPalSoapOrder;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
-use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\AdminOrderTrait;
 use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as ApiOrderModel;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Payments\Refund;
-use OxidSolutionCatalysts\PayPalApi\Model\Payments\RefundRequest;
-use OxidSolutionCatalysts\PayPalApi\Service\Payments;
 
 /**
  * Order class wrapper for PayPal module
@@ -194,8 +189,6 @@ class PayPalOrderController extends AdminDetailsController
     {
         $request = Registry::getRequest();
         $order = $this->getOrder();
-        $currency = Registry::getConfig()->getCurrencyObject($order->oxorder__oxcurrency->value);
-        $currency->decimal = 2; //PayPal requires decimal precision of 2
         $refundAmount = $request->getRequestEscapedParameter('refundAmount');
         $refundAmount = (new Str2Float())->autoParse((string)$refundAmount);
         $invoiceId = $request->getRequestEscapedParameter('invoiceId');
@@ -209,53 +202,23 @@ class PayPalOrderController extends AdminDetailsController
             // because afterwards it no longer describes what was just refunded.
             $remainingRefundAmount = (float)$this->getPayPalRemainingRefundAmount();
 
-            $request = new RefundRequest();
-            $request->note_to_payer = $noteToPayer;
-            $request->invoice_id = !empty($invoiceId) ? $invoiceId : null;
-            if (!$refundAll) {
-                $request->initAmount();
-                $request->amount->currency_code = $capture->amount->currency_code;
-                $request->amount->value = AmountFormatter::format(
-                    (float) $refundAmount,
-                    (int) $currency->decimal
+            // Model\Order holds the refund call itself, so the automated refund of a
+            // cancellation goes to PayPal and into the order exactly the same way.
+            $refund = $order->refundPayPalCapture(
+                (float)$refundAmount,
+                (bool)$refundAll,
+                (string)$noteToPayer,
+                (string)$invoiceId
+            );
+
+            if ($refund instanceof Refund) {
+                $this->sendRefundConfirmationMail(
+                    $order,
+                    $refund,
+                    $capture,
+                    $refundAll ? $remainingRefundAmount : (float)$refundAmount
                 );
             }
-
-            /** @var Payments $paymentService */
-            $apiPaymentService = Registry::get(ServiceFactory::class)->getPaymentService();
-
-            $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
-            $payPalOrder = $orderRepository->paypalOrderByOrderIdAndPayPalId(
-                $order->getId(),
-                '',
-                $order->getFieldData('oxtransid')
-            );
-
-            /** @var Refund $refund */
-            $refund = $apiPaymentService->refundCapturedPayment(
-                $capture->id,
-                $request,
-                '',
-                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
-            );
-
-            /** @var PaymentService $paymentService */
-            $paymentService = $this->getServiceFromContainer(PaymentService::class);
-            $paymentService->trackPayPalOrder(
-                $order->getId(),
-                $payPalOrder->getPayPalOrderId(),
-                (string) $order->getFieldData('oxpaymenttype'),
-                (string) $refund->status,
-                (string) $refund->id,
-                Constants::PAYPAL_TRANSACTION_TYPE_REFUND
-            );
-
-            $this->sendRefundConfirmationMail(
-                $order,
-                $refund,
-                $capture,
-                $refundAll ? $remainingRefundAmount : (float)$refundAmount
-            );
         }
         // reset the order to get new informations about successful refund
         $this->refreshOrder();
@@ -358,13 +321,7 @@ class PayPalOrderController extends AdminDetailsController
      */
     public function getPayPalCapturedAmount()
     {
-        $captureAmount = 0;
-        $captures = (array) $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures;
-
-        foreach ($captures as $capture) {
-            $captureAmount += (float)$capture->amount->value;
-        }
-        return $captureAmount;
+        return $this->getOrder()->getPayPalCapturedAmount();
     }
 
     /**
@@ -386,13 +343,7 @@ class PayPalOrderController extends AdminDetailsController
      */
     public function getPayPalRefundedAmount()
     {
-        $refundAmount = 0;
-        $refunds = (array) $this->getPayPalCheckoutOrder()->purchase_units[0]->payments->refunds;
-
-        foreach ($refunds as $refund) {
-            $refundAmount += (float)$refund->amount->value;
-        }
-        return $refundAmount;
+        return $this->getOrder()->getPayPalRefundedAmount();
     }
 
     /**
@@ -443,7 +394,7 @@ class PayPalOrderController extends AdminDetailsController
      */
     public function getPayPalRemainingRefundAmount()
     {
-        return $this->getPayPalCapturedAmount() - $this->getPayPalRefundedAmount();
+        return $this->getOrder()->getPayPalRemainingRefundAmount();
     }
 
     /**

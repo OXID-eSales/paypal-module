@@ -63,11 +63,11 @@ class ModuleSettings
     protected $isVaultingAllowedForACDC = null;
 
     /**
-     * is ACDC offered to merchants in the country the shop sits in
+     * is ACDC offered to merchants in the country the connected PayPal account sits in
      *
      * @var bool
      */
-    protected $isAcdcSupportedInShopCountry = null;
+    protected $isAcdcSupportedInMerchantCountry = null;
 
     /**
      * Country Restriction for PayPal as comma seperated string
@@ -144,11 +144,16 @@ class ModuleSettings
      * Clear the settings cache
      * Should be called after save operations to ensure fresh data on next read
      *
+     * The country the ACDC restriction is decided on is cached separately and has to go with it:
+     * an eligibility refresh saves a merchant country and the module configuration page renders
+     * the result in the very same request.
+     *
      * @return void
      */
     public function clearCache(): void
     {
         $this->settingsCache = [];
+        $this->isAcdcSupportedInMerchantCountry = null;
     }
 
     public function showAllPayPalBanners(): bool
@@ -402,6 +407,16 @@ class ModuleSettings
     }
 
     /**
+     * Whether cancelling an order in the backend refunds what the PayPal payment still holds.
+     * Off by default: an update must not start moving money on its own, and a merchant who
+     * refunds separately (or has already refunded by hand) keeps the behaviour they know.
+     */
+    public function automatedRefundOnCancel(): bool
+    {
+        return (bool)$this->getSettingValue('oscPayPalAutomatedRefundOnCancel');
+    }
+
+    /**
      * Recipients of the refund confirmation mail, see the
      * Constants::MAIL_RECIPIENT_* modes. Unknown values mean "no mail".
      */
@@ -455,7 +470,7 @@ class ModuleSettings
 
     public function isAcdcEligibility(): bool
     {
-        if (!$this->isAcdcSupportedInShopCountry()) {
+        if (!$this->isAcdcSupportedInMerchantCountry()) {
             return false;
         }
 
@@ -465,7 +480,7 @@ class ModuleSettings
     }
 
     /**
-     * Whether PayPal offers ACDC (card payments) to a merchant in the country the shop sits in at
+     * Whether PayPal offers ACDC (card payments) to the PayPal account this shop is connected to at
      * all. PayPal confirmed that ACDC is not available in Switzerland, while a swiss merchant
      * account is nevertheless granted the CUSTOM_CARD_PROCESSING capability during onboarding - the
      * card fields then answer every single payment attempt with
@@ -473,30 +488,102 @@ class ModuleSettings
      * overruled here rather than at save time, so what the account actually answered stays
      * inspectable in the module configuration and no re-onboarding is needed once PayPal offers the
      * product in a market. The country list lives in Core\PayPalDefinitions.
+     *
+     * The deciding country is the one of the **PayPal account**, not the one of the shop: a german
+     * shop charging cards through a swiss PayPal account fails exactly the same way, and a swiss
+     * shop running a german account is not affected at all. PayPal reports that country in the
+     * merchant integration data, which Core\Onboarding\Onboarding stores alongside the
+     * eligibility; the shop country only stands in for it while it is unknown, see
+     * resolveMerchantCountry().
      */
-    public function isAcdcSupportedInShopCountry(): bool
+    public function isAcdcSupportedInMerchantCountry(): bool
     {
-        if (is_null($this->isAcdcSupportedInShopCountry)) {
-            $shopCountryIso = oxNew(Config::class)->getShopCountryIso();
-            $this->isAcdcSupportedInShopCountry = PayPalDefinitions::isPaymentSupportedInMerchantCountry(
-                PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                $shopCountryIso
-            );
+        if (is_null($this->isAcdcSupportedInMerchantCountry)) {
+            $merchantCountryIso = $this->getMerchantCountry();
+            $countryIso = $this->resolveMerchantCountry($merchantCountryIso);
+            $this->isAcdcSupportedInMerchantCountry = $this->isAcdcSupportedForCountry($countryIso);
 
-            if (!$this->isAcdcSupportedInShopCountry) {
+            if (!$this->isAcdcSupportedInMerchantCountry) {
                 $this->logger->log(
                     'warning',
                     sprintf(
-                        'PayPal does not offer ACDC (card payments) to merchants in %s. '
+                        'PayPal does not offer ACDC (card payments) to merchants in %s (%s). '
                         . 'The payment method and card vaulting are hidden, regardless of the '
                         . 'eligibility the merchant account reports.',
-                        $shopCountryIso
+                        $countryIso,
+                        $merchantCountryIso === ''
+                            ? 'country of the shop, the country of the PayPal account is unknown'
+                            : 'country of the PayPal account'
                     )
                 );
             }
         }
 
-        return $this->isAcdcSupportedInShopCountry;
+        return $this->isAcdcSupportedInMerchantCountry;
+    }
+
+    /**
+     * The same question asked for one mode explicitly. The module configuration page reports live
+     * and sandbox side by side, no matter which of the two the shop currently runs in, so it cannot
+     * use the mode dependent isAcdcSupportedInMerchantCountry().
+     */
+    public function isAcdcSupportedInLiveMerchantCountry(): bool
+    {
+        return $this->isAcdcSupportedForCountry(
+            $this->resolveMerchantCountry($this->getLiveMerchantCountry())
+        );
+    }
+
+    public function isAcdcSupportedInSandboxMerchantCountry(): bool
+    {
+        return $this->isAcdcSupportedForCountry(
+            $this->resolveMerchantCountry($this->getSandboxMerchantCountry())
+        );
+    }
+
+    private function isAcdcSupportedForCountry(string $countryIso): bool
+    {
+        return PayPalDefinitions::isPaymentSupportedInMerchantCountry(
+            PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
+            $countryIso
+        );
+    }
+
+    /**
+     * The country a payment restriction is decided on: the one of the PayPal account, and as long
+     * as that is unknown the country the shop sits in. Shops that have not refreshed their
+     * eligibility since this version know no account country yet, and until they do, deciding by
+     * the shop country is the behaviour they had before - it catches the common case of a swiss
+     * merchant running a swiss shop. An unresolvable country restricts nothing at all, because a
+     * guessed country must not take a working payment method away.
+     *
+     * @param string $merchantCountryIso country of the PayPal account, empty when unknown
+     */
+    private function resolveMerchantCountry(string $merchantCountryIso): string
+    {
+        return $merchantCountryIso ?: oxNew(Config::class)->getShopCountryIso();
+    }
+
+    /**
+     * Country of the PayPal account this shop is connected to as ISO 3166-1 alpha-2, as PayPal
+     * reported it in the merchant integration data during onboarding or the last eligibility
+     * refresh. Empty when it has not been fetched yet.
+     */
+    public function getMerchantCountry(): string
+    {
+        return $this->isSandbox() ?
+            $this->getSandboxMerchantCountry() :
+            $this->getLiveMerchantCountry();
+    }
+
+    public function getLiveMerchantCountry(): string
+    {
+        return strtoupper($this->getSettingValueAsString('oscPayPalMerchantCountry'));
+    }
+
+    public function getSandboxMerchantCountry(): string
+    {
+        return strtoupper($this->getSettingValueAsString('oscPayPalSandboxMerchantCountry'));
     }
 
     public function isLiveAcdcEligibility(): bool
@@ -776,6 +863,33 @@ class ModuleSettings
         );
     }
 
+    /**
+     * Country of the PayPal account as PayPal reports it in the merchant integration data. Stored
+     * per mode like the merchant id, because live and sandbox can well be two different accounts.
+     *
+     * @throws ModuleSettingNotFountException
+     */
+    public function saveMerchantCountry(string $countryIso): void
+    {
+        $countryIso = strtoupper(trim($countryIso));
+
+        if ($this->isSandbox()) {
+            $this->save('oscPayPalSandboxMerchantCountry', $countryIso);
+        } else {
+            $this->save('oscPayPalMerchantCountry', $countryIso);
+        }
+
+        $this->logger->log(
+            'debug',
+            $countryIso === ''
+                ? 'Clearing the stored country of the PayPal merchant account'
+                : sprintf(
+                    'Saving country %s of the PayPal merchant account from onboarding',
+                    $countryIso
+                )
+        );
+    }
+
     public function saveAcdcEligibility(bool $eligibility): void
     {
         if ($this->isSandbox()) {
@@ -947,7 +1061,7 @@ class ModuleSettings
     public function isVaultingAllowedForACDC(): bool
     {
         if (is_null($this->isVaultingAllowedForACDC)) {
-            $this->isVaultingAllowedForACDC = $this->isAcdcSupportedInShopCountry()
+            $this->isVaultingAllowedForACDC = $this->isAcdcSupportedInMerchantCountry()
                 && $this->isVaultingAllowedForPayment(
                     PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID
                 );

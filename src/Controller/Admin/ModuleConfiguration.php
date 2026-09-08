@@ -237,6 +237,9 @@ class ModuleConfiguration extends ModuleConfiguration_parent
     {
         $conf['oscPayPalSandboxMode'] = $conf['oscPayPalSandboxMode'] === 'sandbox';
 
+        if (!isset($conf['oscPayPalAutomatedRefundOnCancel'])) {
+            $conf['oscPayPalAutomatedRefundOnCancel'] = false;
+        }
         if (!isset($conf['oscPayPalShowProductDetailsButton'])) {
             $conf['oscPayPalShowProductDetailsButton'] = false;
         }

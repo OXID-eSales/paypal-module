@@ -21,6 +21,7 @@ use OxidSolutionCatalysts\PayPalApi\Onboarding as ApiOnboardingClient;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
+use Throwable;
 
 class Onboarding
 {
@@ -273,6 +274,7 @@ class Onboarding
         }
 
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $this->saveMerchantCountry($merchantInformations, $moduleSettings);
         $moduleSettings->savePuiEligibility($isPuiCapability);
         $moduleSettings->saveAcdcEligibility($isAcdcCapability);
         $moduleSettings->saveVaultingEligibility($isVaultingCapability);
@@ -299,6 +301,68 @@ class Onboarding
             'bancontact'  => $isBanContactCapability,
             'ideal'       => $isIDealCapability
         ];
+    }
+
+    /**
+     * Stores the country of the PayPal account, which decides whether PayPal offers a payment
+     * product to this merchant at all - see Service\ModuleSettings::isAcdcSupportedInMerchantCountry().
+     * A response without a usable country leaves the stored one alone instead of overwriting it
+     * with nothing, and a country that cannot be stored (a module updated but not activated, so the
+     * setting is not registered yet) only means the shop keeps deciding by its own country. Neither
+     * case may abort the eligibility refresh it is part of.
+     *
+     * @param array $merchantInformations decoded merchant integration response
+     * @param ModuleSettings $moduleSettings
+     * @return void
+     */
+    protected function saveMerchantCountry(array $merchantInformations, ModuleSettings $moduleSettings): void
+    {
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        $country = self::extractMerchantCountry($merchantInformations);
+
+        if ($country === '') {
+            $logger->log(
+                'warning',
+                'PayPal reported no usable country for the merchant account, keeping the one stored '
+                . 'before. Keys of the merchant integration response: '
+                . implode(', ', array_keys($merchantInformations))
+            );
+
+            return;
+        }
+
+        try {
+            $moduleSettings->saveMerchantCountry($country);
+        } catch (Throwable $throwable) {
+            $logger->log(
+                'warning',
+                'Could not store the country of the PayPal merchant account: ' . $throwable->getMessage()
+            );
+        }
+    }
+
+    /**
+     * Country of the PayPal account as reported in the merchant integration data
+     * (GET /v1/customer/partners/{partnerId}/merchant-integrations/{sellerId}, top level key
+     * "country"), normalised to an ISO 3166-1 alpha-2 code. Anything else - a missing key, a
+     * structure instead of a code, a longer string - yields an empty string, which the caller
+     * treats as "unknown": that country decides whether a payment method is offered at all, so a
+     * value that is not understood must not be turned into one that is.
+     *
+     * @param array $merchantInformations decoded merchant integration response
+     * @return string ISO 3166-1 alpha-2 code, empty when PayPal reported none
+     */
+    public static function extractMerchantCountry(array $merchantInformations): string
+    {
+        $country = $merchantInformations['country'] ?? '';
+        if (!is_scalar($country)) {
+            return '';
+        }
+
+        $country = strtoupper(trim((string)$country));
+
+        return preg_match('/^[A-Z]{2}$/', $country) === 1 ? $country : '';
     }
 
     private function checkCapability(array $capability, string $name): bool
