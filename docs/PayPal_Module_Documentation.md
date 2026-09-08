@@ -1265,12 +1265,21 @@ Card entered → 3DS challenge → Authentication result
   `oscPayPalAcdcEligibility` reports "yes" while the card fields answer every payment attempt with
   `422 CURRENCY_NOT_SUPPORTED_BY_PAYMENT_SOURCE` (confirmed by PayPal support as a bug in the
   capability, not in the shop).
-- The module therefore overrules that eligibility: with the shop country (`aHomeCountry`) set to
-  `CH`, both the ACDC payment method and card vaulting are hidden. The list of excluded merchant
-  countries is `unsupportedmerchantcountries` in `Core/PayPalDefinitions.php`, evaluated by
-  `Service\ModuleSettings::isAcdcSupportedInShopCountry()`.
-- This is about where the **merchant** sits, not the customer: a german merchant can charge a swiss
-  customer's card via ACDC as before.
+- The module therefore overrules that eligibility: with the PayPal account sitting in `CH`, both the
+  ACDC payment method and card vaulting are hidden. The list of excluded merchant countries is
+  `unsupportedmerchantcountries` in `Core/PayPalDefinitions.php`, evaluated by
+  `Service\ModuleSettings::isAcdcSupportedInMerchantCountry()`.
+- The deciding country is the one of the **PayPal account**, not the one of the shop. PayPal reports
+  it as `country` in the merchant integration data, and onboarding as well as every eligibility
+  refresh stores it in `oscPayPalMerchantCountry` / `oscPayPalSandboxMerchantCountry`. So a german
+  shop charging cards through a swiss PayPal account is restricted as well, and a swiss shop running
+  a german account is not restricted at all. The module configuration shows the country per mode
+  ("Country of your PayPal account") together with the reason ACDC is hidden.
+- While that country is unknown - a shop that has not refreshed its eligibility since module version
+  2.10.0 - the shop country (`aHomeCountry`) stands in for it, which is what the module decided by
+  before. Saving the module configuration once fetches the account country from PayPal.
+- This is about where the **merchant account** sits, not the customer: a german merchant can charge a
+  swiss customer's card via ACDC as before.
 
 **Pros**:
 - No redirect (seamless)

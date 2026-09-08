@@ -110,12 +110,16 @@
                             <label for="special-payments">{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS", suffix: "COLON" }) }}</label>
                             <ul>
                                 <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_MERCHANT_COUNTRY", suffix: "COLON" }) }}</b>
+                                    {% if config.getLiveMerchantCountry() %}{{ config.getLiveMerchantCountry() }}{% else %}{{ translate({ ident: "OSC_PAYPAL_MERCHANT_COUNTRY_UNKNOWN" }) }}{% endif %}
+                                </li>
+                                <li>
                                     <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_PUI", suffix: "COLON" }) }}</b>
                                     {% if config.isLivePuiEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
                                 </li>
                                 <li>
                                     <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC", suffix: "COLON" }) }}</b>
-                                    {% if not config.isAcdcSupportedInShopCountry() %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_COUNTRY" }) }}{% elseif config.isLiveAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
+                                    {% if not config.isAcdcSupportedInLiveMerchantCountry() %}{{ translate({ ident: "GENERAL_NO" }) }} {% if config.getLiveMerchantCountry() %}{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_COUNTRY", args: config.getLiveMerchantCountry() }) }}{% else %}{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_COUNTRY_UNKNOWN", args: config.getShopCountryIso() }) }}{% endif %}{% elseif config.isLiveAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
                                 </li>
                                 <li>
                                     <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING", suffix: "COLON" }) }}</b>
@@ -206,12 +210,16 @@
                             <label for="special-payments-sandbox">{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS", suffix: "COLON" }) }}</label>
                             <ul>
                                 <li>
+                                    <b>{{ translate({ ident: "OSC_PAYPAL_MERCHANT_COUNTRY", suffix: "COLON" }) }}</b>
+                                    {% if config.getSandboxMerchantCountry() %}{{ config.getSandboxMerchantCountry() }}{% else %}{{ translate({ ident: "OSC_PAYPAL_MERCHANT_COUNTRY_UNKNOWN" }) }}{% endif %}
+                                </li>
+                                <li>
                                     <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_PUI", suffix: "COLON" }) }}</b>
                                     {% if config.isSandboxPuiEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }}{% endif %}
                                 </li>
                                 <li>
                                     <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC", suffix: "COLON" }) }}</b>
-                                    {% if not config.isAcdcSupportedInShopCountry() %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_COUNTRY" }) }}{% elseif config.isSandboxAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
+                                    {% if not config.isAcdcSupportedInSandboxMerchantCountry() %}{{ translate({ ident: "GENERAL_NO" }) }} {% if config.getSandboxMerchantCountry() %}{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_COUNTRY", args: config.getSandboxMerchantCountry() }) }}{% else %}{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_COUNTRY_UNKNOWN", args: config.getShopCountryIso() }) }}{% endif %}{% elseif config.isSandboxAcdcEligibility() %}{{ translate({ ident: "GENERAL_YES" }) }}{% else %}{{ translate({ ident: "GENERAL_NO" }) }} {{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK" }) }}{% endif %}
                                 </li>
                                 <li>
                                     <b>{{ translate({ ident: "OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING", suffix: "COLON" }) }}</b>
@@ -780,6 +788,31 @@
                                         <span class="help-block">{{ translate({ ident: "OSC_PAYPAL_WEBHOOK_TIMEDELAY_DESC" }) }}</span>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header" id="heading15">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse15" aria-expanded="false" aria-controls="collapse15">
+                        {{ translate({ ident: "OSC_PAYPAL_CANCEL_REFUND_TITLE" }) }}
+                    </h4>
+                </div>
+                <div id="collapse15" class="collapse" aria-labelledby="heading15" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="controls">
+                                <div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="conf[oscPayPalAutomatedRefundOnCancel]" {% if config.automatedRefundOnCancel() %}checked{% endif %} value="1">
+                                            {{ translate({ ident: "OSC_PAYPAL_AUTOMATED_REFUND_ON_CANCEL" }) }}
+                                        </label>
+                                    </div>
+                                </div>
+                                <span class="help-block">{{ translate({ ident: "HELP_OSC_PAYPAL_AUTOMATED_REFUND_ON_CANCEL" }) }}</span>
                             </div>
                         </div>
                     </div>

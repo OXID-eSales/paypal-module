@@ -126,7 +126,7 @@ editable, but the shapes are grouped vector graphics rather than native Visio st
 | Method | ID | Description |
 |--------|----|----|
 | PayPal | `oscpaypal` | Standard PayPal wallet |
-| ACDC | `oscpaypal_acdc` | Credit/Debit cards with 3DS (not offered to merchants in CH) |
+| ACDC | `oscpaypal_acdc` | Credit/Debit cards with 3DS (not offered to PayPal accounts in CH) |
 | PUI | `oscpaypal_pui` | Pay Upon Invoice (Germany) |
 | Google Pay | `oscpaypal_googlepay` | Google Pay wallet |
 | Apple Pay | `oscpaypal_applepay` | Apple Pay wallet |
@@ -309,7 +309,9 @@ More scenarios in [PayPal_Module_Documentation.md](PayPal_Module_Documentation.m
 - ✓ Verify test cards support 3DS
 - ✓ Review authentication logs
 - ✓ Ensure ACDC enabled in PayPal account
-- ✓ ACDC is not offered to merchants in Switzerland and is hidden when `aHomeCountry` is `CH`
+- ✓ ACDC is not offered to merchants in Switzerland and is hidden when the PayPal account sits in `CH`
+      (country reported by PayPal, stored as `oscPayPalMerchantCountry`; the shop country
+      `aHomeCountry` decides only while it is unknown)
 
 ### Authorization Expired
 - ✓ Check order age (max 29 days)

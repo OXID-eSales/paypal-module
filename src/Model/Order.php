@@ -25,6 +25,7 @@ use OxidSolutionCatalysts\PayPal\Core\PayPalCancelReason;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Core\Utils\AmountFormatter;
 use OxidSolutionCatalysts\PayPal\Core\Tracker\Tracker;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -36,7 +37,10 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Payments\Refund;
+use OxidSolutionCatalysts\PayPalApi\Model\Payments\RefundRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders;
+use OxidSolutionCatalysts\PayPalApi\Service\Payments;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -1207,6 +1211,113 @@ class Order extends Order_parent
     public function getOrderPaymentCapture($payPalOrderId = ''): ?Capture
     {
         return $this->getPayPalCheckoutOrder($payPalOrderId)->purchase_units[0]->payments->captures[0] ?? null;
+    }
+
+
+    /**
+     * Everything PayPal has captured for this order, over all captures.
+     */
+    public function getPayPalCapturedAmount(): float
+    {
+        $capturedAmount = 0.0;
+        $captures = (array)($this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures ?? []);
+
+        foreach ($captures as $capture) {
+            $capturedAmount += (float)$capture->amount->value;
+        }
+
+        return $capturedAmount;
+    }
+
+    /**
+     * Everything PayPal has refunded for this order, over all refunds.
+     */
+    public function getPayPalRefundedAmount(): float
+    {
+        $refundedAmount = 0.0;
+        $refunds = (array)($this->getPayPalCheckoutOrder()->purchase_units[0]->payments->refunds ?? []);
+
+        foreach ($refunds as $refund) {
+            $refundedAmount += (float)$refund->amount->value;
+        }
+
+        return $refundedAmount;
+    }
+
+    /**
+     * What the payment still holds: captured minus already refunded. This is the only amount an
+     * automated refund ever sends, and the amount the refund form in the order view offers.
+     */
+    public function getPayPalRemainingRefundAmount(): float
+    {
+        return $this->getPayPalCapturedAmount() - $this->getPayPalRefundedAmount();
+    }
+
+    /**
+     * Refunds a captured PayPal payment and records the refund on the order. The single place the
+     * module asks PayPal for a refund: the refund form in the order view and the automated refund
+     * on cancellation both come through here, so both are tracked the same way.
+     *
+     * @param float $amount amount to refund, ignored when $refundAll is true
+     * @param bool $refundAll refund whatever the capture still holds - no amount is sent at all
+     *                        then and PayPal decides it
+     * @param string $noteToPayer note PayPal shows the customer, omitted when empty
+     * @param string $invoiceId merchant invoice id, omitted when empty
+     * @return Refund|null the refund as PayPal answered it, null when this order has no capture to
+     *                     refund against
+     * @throws ApiException
+     */
+    public function refundPayPalCapture(
+        float $amount,
+        bool $refundAll = false,
+        string $noteToPayer = '',
+        string $invoiceId = ''
+    ): ?Refund {
+        $capture = $this->getOrderPaymentCapture();
+        if (!$capture instanceof Capture) {
+            return null;
+        }
+
+        $refundRequest = new RefundRequest();
+        $refundRequest->note_to_payer = $noteToPayer !== '' ? $noteToPayer : null;
+        $refundRequest->invoice_id = $invoiceId !== '' ? $invoiceId : null;
+        if (!$refundAll) {
+            $currency = Registry::getConfig()->getCurrencyObject((string)$this->getFieldData('oxcurrency'));
+            $currency->decimal = 2; //PayPal requires decimal precision of 2
+            $refundRequest->initAmount();
+            $refundRequest->amount->currency_code = $capture->amount->currency_code;
+            $refundRequest->amount->value = AmountFormatter::format($amount, (int)$currency->decimal);
+        }
+
+        /** @var Payments $apiPaymentService */
+        $apiPaymentService = Registry::get(ServiceFactory::class)->getPaymentService();
+
+        /** @var Refund $refund */
+        $refund = $apiPaymentService->refundCapturedPayment(
+            $capture->id,
+            $refundRequest,
+            '',
+            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+        );
+
+        /** @var OrderRepository $orderRepository */
+        $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
+        $payPalOrder = $orderRepository->paypalOrderByOrderIdAndPayPalId(
+            $this->getId(),
+            '',
+            (string)$this->getFieldData('oxtransid')
+        );
+
+        $this->paymentService->trackPayPalOrder(
+            $this->getId(),
+            $payPalOrder->getPayPalOrderId(),
+            (string)$this->getFieldData('oxpaymenttype'),
+            (string)$refund->status,
+            (string)$refund->id,
+            Constants::PAYPAL_TRANSACTION_TYPE_REFUND
+        );
+
+        return $refund;
     }
 
     public function setOrderNumber(): void

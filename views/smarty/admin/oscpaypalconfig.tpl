@@ -111,12 +111,16 @@
                             <label for="special-payments">[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS" suffix="COLON"}]</label>
                             <ul>
                                 <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_MERCHANT_COUNTRY" suffix="COLON"}]</b>
+                                    [{if $config->getLiveMerchantCountry()}][{$config->getLiveMerchantCountry()}][{else}][{oxmultilang ident="OSC_PAYPAL_MERCHANT_COUNTRY_UNKNOWN"}][{/if}]
+                                </li>
+                                <li>
                                     <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_PUI" suffix="COLON"}]</b>
                                     [{if $config->isLivePuiEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
                                 </li>
                                 <li>
                                     <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC" suffix="COLON"}]</b>
-                                    [{if !$config->isAcdcSupportedInShopCountry()}][{oxmultilang ident="GENERAL_NO"}] [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_COUNTRY"}][{elseif $config->isLiveAcdcEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}] [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK"}][{/if}]</li>
+                                    [{if !$config->isAcdcSupportedInLiveMerchantCountry()}][{oxmultilang ident="GENERAL_NO"}] [{if $config->getLiveMerchantCountry()}][{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_COUNTRY" args=$config->getLiveMerchantCountry()}][{else}][{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_COUNTRY_UNKNOWN" args=$config->getShopCountryIso()}][{/if}][{elseif $config->isLiveAcdcEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}] [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK"}][{/if}]</li>
                                 <li>
                                     <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING" suffix="COLON"}]</b>
                                     [{if $config->isLiveVaultingEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
@@ -206,12 +210,16 @@
                             <label for="special-payments-sandbox">[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS" suffix="COLON"}]</label>
                             <ul>
                                 <li>
+                                    <b>[{oxmultilang ident="OSC_PAYPAL_MERCHANT_COUNTRY" suffix="COLON"}]</b>
+                                    [{if $config->getSandboxMerchantCountry()}][{$config->getSandboxMerchantCountry()}][{else}][{oxmultilang ident="OSC_PAYPAL_MERCHANT_COUNTRY_UNKNOWN"}][{/if}]
+                                </li>
+                                <li>
                                     <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_PUI" suffix="COLON"}]</b>
                                     [{if $config->isSandboxPuiEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
                                 </li>
                                 <li>
                                     <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC" suffix="COLON"}]</b>
-                                    [{if !$config->isAcdcSupportedInShopCountry()}][{oxmultilang ident="GENERAL_NO"}] [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_COUNTRY"}][{elseif $config->isSandboxAcdcEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}] [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK"}][{/if}]</li>
+                                    [{if !$config->isAcdcSupportedInSandboxMerchantCountry()}][{oxmultilang ident="GENERAL_NO"}] [{if $config->getSandboxMerchantCountry()}][{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_COUNTRY" args=$config->getSandboxMerchantCountry()}][{else}][{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_COUNTRY_UNKNOWN" args=$config->getShopCountryIso()}][{/if}][{elseif $config->isSandboxAcdcEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}] [{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_ACDC_FALLBACK"}][{/if}]</li>
                                 <li>
                                     <b>[{oxmultilang ident="OSC_PAYPAL_SPECIAL_PAYMENTS_VAULTING" suffix="COLON"}]</b>
                                     [{if $config->isSandboxVaultingEligibility()}][{oxmultilang ident="GENERAL_YES"}][{else}][{oxmultilang ident="GENERAL_NO"}][{/if}]
@@ -779,6 +787,31 @@
                                         <span class="help-block">[{oxmultilang ident="OSC_PAYPAL_WEBHOOK_TIMEDELAY_DESC"}]</span>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header" id="heading15">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapse15" aria-expanded="false" aria-controls="collapse15">
+                        [{oxmultilang ident="OSC_PAYPAL_CANCEL_REFUND_TITLE"}]
+                    </h4>
+                </div>
+                <div id="collapse15" class="collapse" aria-labelledby="heading15" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <div class="controls">
+                                <div>
+                                    <div class="checkbox">
+                                        <label>
+                                            <input type="checkbox" name="conf[oscPayPalAutomatedRefundOnCancel]" [{if $config->automatedRefundOnCancel()}]checked[{/if}] value="1">
+                                            [{oxmultilang ident="OSC_PAYPAL_AUTOMATED_REFUND_ON_CANCEL"}]
+                                        </label>
+                                    </div>
+                                </div>
+                                <span class="help-block">[{oxmultilang ident="HELP_OSC_PAYPAL_AUTOMATED_REFUND_ON_CANCEL"}]</span>
                             </div>
                         </div>
                     </div>

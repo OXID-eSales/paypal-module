@@ -168,13 +168,38 @@ class Config
     }
 
     /**
-     * Whether PayPal offers ACDC to a merchant in the shop's own country at all. Needed by the
-     * module configuration template, which reports the raw eligibility PayPal answered and would
-     * otherwise promise a payment method the checkout deliberately hides.
+     * Whether PayPal offers ACDC to the connected PayPal account at all. Needed by the module
+     * configuration template, which reports the raw eligibility PayPal answered and would
+     * otherwise promise a payment method the checkout deliberately hides. The template asks per
+     * mode, because it shows live and sandbox next to each other.
      */
-    public function isAcdcSupportedInShopCountry(): bool
+    public function isAcdcSupportedInMerchantCountry(): bool
     {
-        return $this->getModuleSettings()->isAcdcSupportedInShopCountry();
+        return $this->getModuleSettings()->isAcdcSupportedInMerchantCountry();
+    }
+
+    public function isAcdcSupportedInLiveMerchantCountry(): bool
+    {
+        return $this->getModuleSettings()->isAcdcSupportedInLiveMerchantCountry();
+    }
+
+    public function isAcdcSupportedInSandboxMerchantCountry(): bool
+    {
+        return $this->getModuleSettings()->isAcdcSupportedInSandboxMerchantCountry();
+    }
+
+    /**
+     * Country of the PayPal account as PayPal reported it, empty while unknown. Shown in the module
+     * configuration so a merchant can see which country the shop decides restrictions on.
+     */
+    public function getLiveMerchantCountry(): string
+    {
+        return $this->getModuleSettings()->getLiveMerchantCountry();
+    }
+
+    public function getSandboxMerchantCountry(): string
+    {
+        return $this->getModuleSettings()->getSandboxMerchantCountry();
     }
 
     public function isPuiEligibility(): bool
@@ -320,6 +345,11 @@ class Config
     public function loginWithPayPalEMail(): bool
     {
         return $this->getModuleSettings()->loginWithPayPalEMail();
+    }
+
+    public function automatedRefundOnCancel(): bool
+    {
+        return $this->getModuleSettings()->automatedRefundOnCancel();
     }
 
     public function getRefundMailRecipient(): string
