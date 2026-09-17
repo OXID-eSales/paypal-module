@@ -20,30 +20,6 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order;
  */
 class UserComponent extends UserComponent_parent
 {
-    public function render()
-    {
-        $return = parent::render();
-
-        Registry::getSession()->deleteVariable('paypalRedirect');
-
-        $redirect = Registry::getRequest()->getRequestEscapedParameter('return');
-        if ($redirect) {
-            Registry::getSession()->setVariable('paypalRedirect', $redirect);
-        }
-
-        return $return;
-    }
-
-    public function login_noredirect() //phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps
-    {
-        parent::login_noredirect();
-        $redirect = Registry::getSession()->getVariable('paypalRedirect');
-        if ($redirect) {
-            Registry::getSession()->deleteVariable('paypalRedirect');
-            Registry::getUtils()->redirect($redirect, true, 302);
-        }
-    }
-
     /**
      * @throws Exception
      */
