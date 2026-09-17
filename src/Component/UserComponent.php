@@ -17,32 +17,6 @@ use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
  */
 class UserComponent extends UserComponent_parent
 {
-    public function render()
-    {
-        $return = parent::render();
-
-        $this->getSession()->deleteVariable('paypalRedirect');
-
-        $redirect = Registry::getRequest()->getRequestEscapedParameter('return');
-        if ($redirect) {
-            $this->getSession()->setVariable('paypalRedirect', $redirect);
-        }
-
-        return $return;
-    }
-
-    public function login_noredirect() //phpcs:ignore PSR1.Methods.CamelCapsMethodName.NotCamelCaps
-    {
-        $return = parent::login_noredirect();
-        $redirect = $this->getSession()->getVariable('paypalRedirect');
-        if ($redirect) {
-            $this->getSession()->deleteVariable('paypalRedirect');
-            Registry::getUtils()->redirect($redirect, true, 302);
-        }
-
-        return $return;
-    }
-
     public function createPayPalGuestUser(\OxidSolutionCatalysts\PayPalApi\Model\Orders\Order $response)
     {
         $this->setParent(oxNew('Register'));

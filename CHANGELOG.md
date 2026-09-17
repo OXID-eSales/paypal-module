@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [Unreleased] - 1.4.2
+
+### Security
+
+- Remove an open redirect in `Component/UserComponent`. The component stored the request parameter `return` in the session (`paypalRedirect`) on every page render and, after the next login through `login_noredirect()`, sent the customer to that URL with `Registry::getUtils()->redirect($redirect, true, 302)` - unvalidated, so any absolute URL was accepted. `getRequestEscapedParameter()` only escapes HTML special characters and does not restrict a target, and the core's `Utils::redirect()` does not check the host either, so `index.php?cl=account&return=<external url>` followed by a login in the same session ended up on that external site (carrying the `redirected=1` parameter the core appends). Because `cl=account` *is* the page with the login form, link -> log in -> external landing page is one natural flow, which makes it usable for credential phishing right after a successful login; it is not XSS and not header injection, since a `javascript:` target is not followed from a `Location` header and PHP rejects CRLF in headers. The code was a leftover: `paypalRedirect` arrived in January 2022 with the subscription feature (PSPAYPAL-517), whose template was the only thing that ever set the parameter (`window.location.href="...cl=account&return=<currentUrl>"` in the subscription javascript), and that producer went away with the rest of the subscription feature in April 2022 - the consumer stayed behind. Neither the shop core nor the themes nor this module read or write `return` any more, so both overrides (`render()` and `login_noredirect()`) are removed without replacement: no setting, no migration, nothing to adjust in an integration. Shops that cannot update immediately can strip the `return` parameter in front of `index.php`, which breaks nothing because nothing legitimate sets it. Found by an external penetration test of a merchant shop and reported through a partner agency. Files touched: `src/Component/UserComponent.php`.
+
 ## [1.4.1]  - 2026-06-11
 
 ### FIX
