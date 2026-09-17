@@ -51,17 +51,26 @@ class Webhook
      * Helper method to log errors consistently
      *
      * @param Exception $exception
+     * @param string $context Optional description of the failing operation
      */
-    protected function logError(Exception $exception): void
+    protected function logError(Exception $exception, string $context = ''): void
     {
+        $message = ('' === $context) ? $exception->getMessage() : $context . ': ' . $exception->getMessage();
+
         try {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log('error', $exception->getMessage(), [$exception]);
+            $this->getLogger()->log('error', $message, [$exception]);
         } catch (Exception $e) {
             // Fallback if logger is not available
-            error_log('PayPal Webhook Error: ' . $exception->getMessage());
+            error_log('PayPal Webhook Error: ' . $message);
         }
+    }
+
+    protected function getLogger(): LoggerInterface
+    {
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+
+        return $logger;
     }
 
     public function ensureWebhook(): string
@@ -92,19 +101,21 @@ class Webhook
 
     public function getHookForUrl(string $url): array
     {
-        $allClientHooks = $this->getAllRegisteredWebhooks();
-        $hook = [];
-        foreach ($allClientHooks as $hook) {
-            if ($url === $hook['url']) {
+        foreach ($this->getAllRegisteredWebhooks() as $hook) {
+            if ($url === ($hook['url'] ?? '')) {
                 return $hook;
             }
         }
-        return $hook;
+
+        // no webhook registered for this url, never fall back to a foreign one
+        return [];
     }
 
+    /**
+     * @throws OnboardingException if the webhook could not be created
+     */
     protected function registerWebhooks(): string
     {
-        $webhookId = '';
         try {
             $payload = [
                 'url' => $this->getWebhookEndpoint(),
@@ -114,16 +125,13 @@ class Webhook
             /** @var GenericService $webhookService */
             $webhookService = Registry::get(ServiceFactory::class)->getWebhookService();
             $webHookResponse = $webhookService->request('POST', $payload);
-
-            $webhookId = $webHookResponse['id'] ?? '';
         } catch (Exception $exception) {
-            /** @var LoggerInterface $logger */
-            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
-            $logger->log(
-                'error',
-                'PayPal Webhook creation failed: ' . $exception->getMessage(),
-                [$exception]
-            );
+            throw OnboardingException::webhookRegistrationFailed($exception->getMessage(), $exception);
+        }
+
+        $webhookId = $webHookResponse['id'] ?? '';
+        if ('' === $webhookId) {
+            throw OnboardingException::webhookRegistrationFailed('response contained no webhook id');
         }
 
         return $webhookId;
@@ -163,7 +171,8 @@ class Webhook
         $webhookService = Registry::get(ServiceFactory::class)->getWebhookService();
         try {
             $result = $webhookService->request('GET');
-        } catch (ApiException $e) {
+        } catch (ApiException $exception) {
+            $this->logError($exception, 'Registered PayPal webhooks could not be fetched');
             $result = [];
         }
 
