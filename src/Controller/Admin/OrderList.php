@@ -164,8 +164,9 @@ class OrderList extends OrderList_parent
         $config = Registry::getConfig();
         $lang = Registry::getLang();
         $wasAdmin = $config->isAdmin();
-        $previousTplLanguage = $lang->getTplLanguage();
-        $previousBaseLanguage = $lang->getBaseLanguage();
+        // the getters are typed as string here, the setters take int
+        $previousTplLanguage = (int)$lang->getTplLanguage();
+        $previousBaseLanguage = (int)$lang->getBaseLanguage();
 
         $config->setAdminMode(false);
         $lang->setTplLanguage($languageId);

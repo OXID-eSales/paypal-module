@@ -42,6 +42,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Payments\RefundRequest;
 use OxidSolutionCatalysts\PayPalApi\Service\Orders;
 use OxidSolutionCatalysts\PayPalApi\Service\Payments;
 use Psr\Log\LoggerInterface;
+use Throwable;
 
 /**
  * PayPal Eshop model order class
@@ -1300,22 +1301,45 @@ class Order extends Order_parent
             Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
         );
 
-        /** @var OrderRepository $orderRepository */
-        $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
-        $payPalOrder = $orderRepository->paypalOrderByOrderIdAndPayPalId(
-            $this->getId(),
-            '',
-            (string)$this->getFieldData('oxtransid')
-        );
+        // PayPal has moved the money at this point. Recording the refund in the module's own order
+        // table is bookkeeping, and bookkeeping must not turn a refund that happened into a refund
+        // that failed: the caller would report a failure, the customer would not be told the
+        // amount, and the money would be gone all the same. So this is logged loudly and the
+        // refund is returned regardless.
+        try {
+            /** @var OrderRepository $orderRepository */
+            $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
+            $payPalOrder = $orderRepository->paypalOrderByOrderIdAndPayPalId(
+                $this->getId(),
+                '',
+                (string)$this->getFieldData('oxtransid')
+            );
 
-        $this->paymentService->trackPayPalOrder(
-            $this->getId(),
-            $payPalOrder->getPayPalOrderId(),
-            (string)$this->getFieldData('oxpaymenttype'),
-            (string)$refund->status,
-            (string)$refund->id,
-            Constants::PAYPAL_TRANSACTION_TYPE_REFUND
-        );
+            // getPaymentService(), not the property: in this line the service is injected lazily
+            // and the property is still null in a backend request.
+            $this->getPaymentService()->trackPayPalOrder(
+                $this->getId(),
+                $payPalOrder->getPayPalOrderId(),
+                (string)$this->getFieldData('oxpaymenttype'),
+                (string)$refund->status,
+                (string)$refund->id,
+                Constants::PAYPAL_TRANSACTION_TYPE_REFUND
+            );
+        } catch (Throwable $throwable) {
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->log(
+                'error',
+                sprintf(
+                    'PayPal refund %s (status %s) for order %s was carried out but could not be '
+                    . 'tracked in the shop: %s',
+                    (string)$refund->id,
+                    (string)$refund->status,
+                    (string)$this->getFieldData('oxordernr'),
+                    $throwable->getMessage()
+                )
+            );
+        }
 
         return $refund;
     }

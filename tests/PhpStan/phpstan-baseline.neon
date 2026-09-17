@@ -41,32 +41,12 @@ parameters:
 			path: ../../src/Component/UserComponent.php
 
 		-
-			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\UserComponent\\:\\:login_noredirect\\(\\) has no return type specified\\.$#"
-			count: 1
-			path: ../../src/Component/UserComponent.php
-
-		-
 			message: "#^Parameter \\#1 \\$className of function oxNew expects class\\-string\\<Register\\>, string given\\.$#"
 			count: 1
 			path: ../../src/Component/UserComponent.php
 
 		-
 			message: "#^Parameter \\#1 \\$oParent of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Controller\\\\BaseController\\:\\:setParent\\(\\) expects OxidEsales\\\\Eshop\\\\Core\\\\Controller\\\\BaseController\\|null, Register given\\.$#"
-			count: 1
-			path: ../../src/Component/UserComponent.php
-
-		-
-			message: "#^Parameter \\#1 \\$sUrl of method OxidEsales\\\\EshopCommunity\\\\Core\\\\Utils\\:\\:redirect\\(\\) expects string, mixed given\\.$#"
-			count: 1
-			path: ../../src/Component/UserComponent.php
-
-		-
-			message: "#^Parameter \\#1 \\$userName of method OxidEsales\\\\EshopCommunity\\\\Application\\\\Model\\\\User\\:\\:login\\(\\) expects string, string\\|null given\\.$#"
-			count: 1
-			path: ../../src/Component/UserComponent.php
-
-		-
-			message: "#^Parameter \\#3 \\$setSessionCookie of method OxidEsales\\\\EshopCommunity\\\\Application\\\\Model\\\\User\\:\\:login\\(\\) expects bool, mixed given\\.$#"
 			count: 1
 			path: ../../src/Component/UserComponent.php
 

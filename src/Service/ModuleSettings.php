@@ -64,9 +64,10 @@ class ModuleSettings
     protected $isVaultingAllowedForACDC = null;
 
     /**
-     * is ACDC offered to merchants in the country the connected PayPal account sits in
+     * is ACDC offered to merchants in the country the connected PayPal account sits in,
+     * null until it has been resolved (clearCache() puts it back to null)
      *
-     * @var bool
+     * @var bool|null
      */
     protected $isAcdcSupportedInMerchantCountry = null;
 
