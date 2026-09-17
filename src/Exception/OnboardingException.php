@@ -8,6 +8,7 @@
 namespace OxidSolutionCatalysts\PayPal\Exception;
 
 use Exception;
+use Throwable;
 
 class OnboardingException extends Exception
 {
@@ -29,5 +30,10 @@ class OnboardingException extends Exception
     public static function autoConfiguration(string $message): self
     {
         return new self('Autoconfiguration failed: ' . $message);
+    }
+
+    public static function webhookRegistrationFailed(string $message, ?Throwable $previous = null): self
+    {
+        return new self('Webhook registration failed: ' . $message, 0, $previous);
     }
 }
