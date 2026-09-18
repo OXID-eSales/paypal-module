@@ -36,4 +36,16 @@ class OnboardingException extends Exception
     {
         return new self('Webhook registration failed: ' . $message, 0, $previous);
     }
+
+    public static function webhookRemovalFailed(
+        string $webhookId,
+        string $message,
+        ?Throwable $previous = null
+    ): self {
+        return new self(
+            sprintf('Removal of the outdated webhook %s failed: %s', $webhookId, $message),
+            0,
+            $previous
+        );
+    }
 }

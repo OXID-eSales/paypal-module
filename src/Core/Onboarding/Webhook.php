@@ -65,6 +65,21 @@ class Webhook
         }
     }
 
+    /**
+     * Helper method to trace the onboarding steps consistently. The module logger is configured
+     * with log level debug (see services.yaml), so these entries always reach the PayPal log.
+     *
+     * @param string $message
+     */
+    protected function logDebug(string $message): void
+    {
+        try {
+            $this->getLogger()->log('debug', $message);
+        } catch (Exception $exception) {
+            // a missing logger must never abort the onboarding, and a trace is not worth error_log()
+        }
+    }
+
     protected function getLogger(): LoggerInterface
     {
         /** @var LoggerInterface $logger */
@@ -73,9 +88,23 @@ class Webhook
         return $logger;
     }
 
+    protected function getModuleSettings(): ModuleSettings
+    {
+        /** @var ModuleSettings $moduleSettings */
+        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+
+        return $moduleSettings;
+    }
+
+    /**
+     * @throws OnboardingException if the endpoint is not https, or the webhook could not be
+     *                             removed or created
+     */
     public function ensureWebhook(): string
     {
         $endpoint = $this->getWebhookEndpoint();
+
+        $this->logDebug(sprintf('Onboarding: ensuring the PayPal webhook for endpoint %s', $endpoint));
 
         if (false === strpos($endpoint, "https:")) {
             throw OnboardingException::nonsslUrl();
@@ -83,31 +112,82 @@ class Webhook
 
         $hook = $this->getHookForUrl($endpoint);
         $webhookId = $hook['id'] ?? '';
-        $registeredEvents = $this->getEnabledEvents($hook);
-        if (
-            array_diff(
-                array_column($this->getAvailableEventNames(), "name"),
-                array_column($registeredEvents, "name")
-            )
-        ) {
-            $this->removeWebhook($webhookId);
+        $availableEvents = $this->getAvailableEventNames();
+        $missingEvents = array_diff(
+            array_column($availableEvents, "name"),
+            array_column($this->getEnabledEvents($hook), "name")
+        );
+
+        if ($missingEvents) {
+            $this->logDebug(sprintf(
+                '' === $webhookId
+                    ? 'Onboarding: no webhook exists for this endpoint, creating one for the event types %2$s'
+                    : 'Onboarding: webhook %1$s does not have the event types %2$s enabled, registering it anew',
+                $webhookId,
+                implode(', ', $missingEvents)
+            ));
+
+            try {
+                $this->removeWebhook($webhookId);
+            } catch (Exception $exception) {
+                // without this, a failing DELETE reaches the caller as "registration failed", while
+                // the creation was never even attempted - and it would fail too, because PayPal
+                // refuses a second webhook for an url it already knows
+                throw OnboardingException::webhookRemovalFailed($webhookId, $exception->getMessage(), $exception);
+            }
+
             $webhookId = $this->registerWebhooks();
+
+            $this->logDebug(sprintf('Onboarding: registered the new webhook %s', $webhookId));
+        } else {
+            $this->logDebug(sprintf(
+                'Onboarding: webhook %s already has all %d event types enabled, keeping it',
+                $webhookId,
+                count($availableEvents)
+            ));
         }
 
-        $this->saveWebhookId($webhookId);
+        $storedWebhookId = $this->getModuleSettings()->getWebhookId();
+        if ($webhookId === $storedWebhookId) {
+            $this->logDebug(sprintf('Onboarding: webhook id %s is already stored, nothing to save', $webhookId));
+        } else {
+            $this->saveWebhookId($webhookId);
+
+            $this->logDebug(sprintf(
+                'Onboarding: stored webhook id %s for %s, replacing the stored %s',
+                $webhookId,
+                $endpoint,
+                '' === $storedWebhookId ? '(none)' : $storedWebhookId
+            ));
+        }
 
         return $webhookId;
     }
 
     public function getHookForUrl(string $url): array
     {
+        $foreignHookCount = 0;
         foreach ($this->getAllRegisteredWebhooks() as $hook) {
             if ($url === ($hook['url'] ?? '')) {
+                $this->logDebug(sprintf(
+                    'Onboarding: PayPal has webhook %s registered for %s',
+                    $hook['id'] ?? '',
+                    $url
+                ));
+
                 return $hook;
             }
+            $foreignHookCount++;
         }
 
         // no webhook registered for this url, never fall back to a foreign one
+        $this->logDebug(sprintf(
+            'Onboarding: PayPal has no webhook registered for %s (%d webhook(s) on this account'
+            . ' point to other urls)',
+            $url,
+            $foreignHookCount
+        ));
+
         return [];
     }
 
@@ -151,6 +231,8 @@ class Webhook
         $headers['Content-Type'] = 'application/json';
 
         $webhookService->request('DELETE', null, [], $headers);
+
+        $this->logDebug(sprintf('Onboarding: removed the webhook %s', $webhookId));
     }
 
     public function getWebhookEndpoint(): string
@@ -161,8 +243,7 @@ class Webhook
 
     public function saveWebhookId(string $webhookId): void
     {
-        $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
-        $moduleSettings->saveWebhookId($webhookId);
+        $this->getModuleSettings()->saveWebhookId($webhookId);
     }
 
     public function getAllRegisteredWebhooks(): array
