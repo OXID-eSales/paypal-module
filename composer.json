@@ -35,7 +35,7 @@
         "phpunit/phpunit": "^9.1.1",
         "phpmd/phpmd": "^2.15"
     },
-    "conflicts": {
+    "conflict": {
         "oxid-esales/oxideshop-ce": "<7.0"
     },
     "autoload": {
