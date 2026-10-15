@@ -19,6 +19,7 @@ use OxidEsales\Eshop\Core\DatabaseProvider;
 use OxidEsales\Eshop\Core\Field;
 use OxidEsales\Eshop\Core\Model\BaseModel;
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\PayPalCancelReason;
@@ -466,6 +467,118 @@ class Order extends Order_parent
         // marking vouchers as used and sets them to $this->aVoucherList (will be used in order email)
         // skipping this action in case of order recalculation
         $this->markVouchers($basket, $user);
+    }
+
+    /**
+     * Stops a second, concurrent finalizeOrder() of the same shop order from writing a
+     * second set of order articles and a second stock movement.
+     *
+     * finalizeOrder() asks checkOrderExist() on entry. For the second pass that answer
+     * is wrong - not because the guard is wrong, but because it is asked too early: the
+     * first pass has already inserted its order row while still holding it in the open
+     * finalize transaction, so the row is invisible by isolation. The second pass
+     * therefore walks on, builds its own order articles from the basket and saves them.
+     * Two things go wrong at that point:
+     *
+     * - the positions are duplicated, because BaseModel::save() decides INSERT vs UPDATE
+     *   through exists(), a live query - by then the first pass has committed, so the
+     *   order row is updated while the articles are inserted a second time;
+     * - the article stock is booked twice, because OrderArticle::save() treats every new
+     *   order item as a stock movement.
+     *
+     * Two statements close the window, and neither needs a schema change, a
+     * database-specific function or a particular shop setting:
+     *
+     * 1. acquireFinalizeLock() blocks a concurrent pass until the one that holds the
+     *    finalize transaction has committed or rolled back.
+     * 2. checkOrderExist() is asked once more. Past the lock it finally has the
+     *    information it needs, and the order is recognised as already finalized.
+     *    This happens before parent::validateOrder(): the first pass may already have
+     *    used up the last unit of an article, and the second pass must report the
+     *    existing order instead of a misleading stock error.
+     *
+     * Aborting here is what matters: validateOrder() runs before _loadFromBasket(), so
+     * no second position list is built and no second stock movement is booked.
+     *
+     * The guard added for the same symptom in 3.8.2 cannot cover this. It lives, together with the
+     * oxpaid/oxtransid check, inside the isPayPalPayment() branch of finalizeOrder(),
+     * and isPayPalPayment() resolves the payment through the *session* basket. Once the
+     * first pass has finalized the order and emptied that basket, the second pass of the
+     * very same PayPal checkout sees no payment id at all - which skips the stock-lock
+     * transaction and every guard in one go. This override sits outside that branch and
+     * is therefore reached regardless.
+     *
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket basket object
+     * @param \OxidEsales\Eshop\Application\Model\User   $oUser   order user
+     *
+     * @return null|int order state, null when the order may be finalized
+     */
+    public function validateOrder($oBasket, $oUser)
+    {
+        $this->acquireFinalizeLock($oUser);
+
+        // finalizeOrder() has set the id from sess_challenge right before calling us
+        $orderId = (string) $this->getId();
+        if ($orderId !== '' && $this->checkOrderExist($orderId)) {
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->log('warning', 'validateOrder: order was finalized by a concurrent request'
+                . ' while this one was waiting - aborting before a second set of order articles'
+                . ' and a second stock movement is written', ['shopOrderId' => $orderId]);
+
+            return self::ORDER_STATE_ORDEREXISTS;
+        }
+
+        return parent::validateOrder($oBasket, $oUser);
+    }
+
+    /**
+     * Serialization point for concurrent finalizations of one customer: a locking read on
+     * the customer's own row, which the finalize transaction holds until it commits. A
+     * concurrent pass waits here and continues only afterwards.
+     *
+     * Deliberately not relying on validateStock()'s own locking read below: that one is
+     * skipped entirely when stock management is switched off, and the race is not about
+     * stock. The customer row is the narrowest row both passes are guaranteed to share -
+     * two different shoppers never wait for each other.
+     *
+     * The lock clause comes from the Doctrine platform instead of being hard-coded, and
+     * the query runs on the same connection as the finalize transaction, so the lock is
+     * released exactly when that transaction ends.
+     *
+     * A lock that cannot be taken must never cost an order, so a failure is logged and
+     * the order proceeds - leaving the behaviour as it was before this change.
+     *
+     * @param mixed $oUser order user, as handed over by the untyped core signature
+     */
+    private function acquireFinalizeLock($oUser): void
+    {
+        if (!$oUser instanceof User || !$oUser->getId()) {
+            return;
+        }
+
+        /** @var QueryBuilderFactoryInterface $queryBuilderFactory */
+        $queryBuilderFactory = $this->getServiceFromContainer(QueryBuilderFactoryInterface::class);
+        $queryBuilder = $queryBuilderFactory->create();
+        $queryBuilder
+            ->select('oxid')
+            ->from('oxuser')
+            ->where('oxid = :oxid')
+            ->setParameter('oxid', $oUser->getId());
+
+        $connection = $queryBuilder->getConnection();
+        $lockingSelect = $queryBuilder->getSQL() . ' ' . $connection->getDatabasePlatform()->getForUpdateSQL();
+
+        try {
+            $connection->executeQuery($lockingSelect, $queryBuilder->getParameters());
+        } catch (Throwable $exception) {
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->log('warning', 'validateOrder: could not acquire the finalize lock', [
+                'userId' => $oUser->getId(),
+                'error' => $exception->getMessage(),
+            ]);
+        }
     }
 
     /**
