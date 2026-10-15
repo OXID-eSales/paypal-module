@@ -57,7 +57,7 @@ class OrderList extends OrderList_parent
 
         parent::cancelOrder();
 
-        $refundedAmount = $this->refundOnCancel($order);
+        $refundedAmount = $this->payPalRefundOnCancel($order);
 
         $mailService = oxNew(RefundMailService::class);
         $mailService->sendCancelMail($order, $refundedAmount, $this->orderCurrency($order));
@@ -82,7 +82,7 @@ class OrderList extends OrderList_parent
      * @param Order $order
      * @return float|null amount PayPal confirmed as refunded, null when nothing was refunded
      */
-    protected function refundOnCancel(Order $order): ?float
+    protected function payPalRefundOnCancel(Order $order): ?float
     {
         /** @var ModuleSettings $moduleSettings */
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
