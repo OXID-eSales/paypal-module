@@ -4,7 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## [Unreleased] - 1.4.2
+## [1.4.2] - 2026-10-22
+
+### Deprecated
+
+- **End of life:** 1.4.2 is the final release of this module line (branch `b-6.1.x`, OXID eShop 6.1 and 6.2). There will be no further bug fixes or security updates. Please update your shop, preferably to OXID eShop 7 with PayPal Checkout 3.x, or at least to OXID eShop 6.3 - 6.5 with PayPal Checkout 2.x (branch `b-6.3.x`).
 
 ### Security
 

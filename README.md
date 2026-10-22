@@ -2,6 +2,14 @@
 
 PayPal checkout integration for OXID eShop 6.1 and above.
 
+## ⚠️ End of life
+
+This branch (`b-6.1.x`, module version 1.x for OXID eShop 6.1 and 6.2) is **no longer maintained**.
+Version **1.4.2 is the final release**. There will be no further bug fixes or security updates.
+
+Please update your shop. We strongly recommend OXID eShop 7 together with PayPal Checkout 3.x.
+If that is not possible right away, update at least to OXID eShop 6.3 - 6.5 and use PayPal Checkout 2.x (branch `b-6.3.x`).
+
 ## Documentation
 
 * Official [German PayPal Checkout for OXID 6.1 to 6.2 documentation](https://docs.oxid-esales.com/modules/paypal-checkout/de/1.2/)
@@ -16,7 +24,7 @@ PayPal checkout integration for OXID eShop 6.1 and above.
 
 * b-7.0.x module branch is compatible with OXID eShop compilation 7.0, 7.1
 * b-6.3.x module branch is compatible with OXID eShop compilation 6.3, 6.4, 6.5
-* b-6.1.x module branch is compatible with OXID eShop compilation 6.1, 6.2
+* b-6.1.x module branch is compatible with OXID eShop compilation 6.1, 6.2 (end of life, final release 1.4.2)
 
 ## Install for OXID
 
