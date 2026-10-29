@@ -32,6 +32,15 @@ class Webhook
     public function registerWebhooksWithErrorHandling(): bool
     {
         try {
+            if (!$this->hasCredentials()) {
+                // a freshly activated module has no credentials yet: PayPal would only answer with
+                // 401 invalid_client, and the merchant would see that as an error on activation
+                $this->logDebug(
+                    'Onboarding: no client id or client secret configured yet, skipping the webhook registration'
+                );
+                return false;
+            }
+
             $this->ensureWebhook();
             return true;
         } catch (OnboardingException $exception) {
@@ -94,6 +103,16 @@ class Webhook
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
 
         return $moduleSettings;
+    }
+
+    /**
+     * Client id and secret of the active mode (sandbox or live), without them every API call fails
+     */
+    protected function hasCredentials(): bool
+    {
+        $moduleSettings = $this->getModuleSettings();
+
+        return '' !== $moduleSettings->getClientId() && '' !== $moduleSettings->getClientSecret();
     }
 
     /**

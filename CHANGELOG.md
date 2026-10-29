@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.9.2-rc.1] - Unreleased
+
+### FIX
+
+- Skip the webhook registration as long as no client id or client secret is configured for the active mode (sandbox or live). Activating the module on a shop without PayPal credentials - the normal case for a fresh installation - showed "Webhook registration failed: POST https://api.paypal.com/v1/oauth2/token returned: 401 Unauthorized ... invalid_client" in the module admin, and the PayPal log carried two error entries with stack traces. Cause: `Core/Events/Events::onActivate()` registers the webhook unconditionally, so the OAuth token request went out with empty credentials (`Authorization: Basic Og==` is the base64 of a lone `:`). The first 401 was only logged by `getAllRegisteredWebhooks()`, which then reported "no webhook registered", so the module went on to create one and failed a second time - that second failure is the one the merchant saw. The same happened when saving the module configuration without credentials, and in the onboarding callback. Fix: `Core/Onboarding/Webhook::registerWebhooksWithErrorHandling()`, which all three callers go through, checks the credentials first (`hasCredentials()`) and returns early with a debug entry in the PayPal log instead of calling PayPal. Missing credentials are still reported on the configuration page by the existing health check. Files touched: `src/Core/Onboarding/Webhook.php`.
+- Fix a PayPal order charging the buyer for an article that was no longer in the order, booked as "Rounding Adjustment". Reported for a shop where two customers ordered the last unit of the same article: the second customer's PayPal order contained one article plus a "Rounding Adjustment" of exactly the price of the sold out one, the shop order carried the old total with a single position, and the buyer was charged for both. Cause: when an article is no longer buyable at checkout (sold out and switched offline, or "not orderable"), the core's `validateStock()` removes it with `Basket::removeItem()` - which only drops the position. The totals of the last calculation stay cached, and since nothing marks the basket as changed, `calculateBasket(false)` on every following page render keeps them. The next checkout attempt then saved the shop order with the old total, and built the PayPal order from two sources that no longer agreed: the items from the basket positions, the total from the cached calculation. `PayPalAmountValidator` - meant for cent rounding - balanced the difference with a "Rounding Adjustment" item of any size. Fix in three places: `Model/Order::validateStock()` (the module overrides it for the stock lock) flags the basket for recalculation when it removes an article (`onUpdate()`), so the next calculation brings the totals back in line; `Service/OrderManager::createShopOrder()` recalculates the basket (`calculateBasket(true)`) before the shop order is finalized, since the shop order and the PayPal order are both built from it; and `Service/Factory/PayPalPurchaseUnitsFactory::getPurchaseUnits()` refuses a basket whose positions do not add up to the products total of its last calculation (`PayPalException::basketNotCalculated()`), so no PayPal order is created from an inconsistent basket on any path. That last check compares shop values only - every calculated position adds the very same price object to the products price list - so it is exact whatever the number of positions and needs no tolerance. Deliberately not capping the "Rounding Adjustment" itself: it also balances amounts the module does not send as items (a payment method discount, the VAT of a discount in net mode, which is approximated with the default VAT rate), and those legitimately exceed any rounding bound. A basket that is already recalculated is not touched by any of this. Files touched: `src/Model/Order.php`, `src/Service/OrderManager.php`, `src/Service/Factory/PayPalPurchaseUnitsFactory.php`, `src/Exception/PayPalException.php`, `tests/Integration/Service/Factory/PayPalPurchaseUnitsFactoryTest.php`, `tests/Integration/RequestFactory/PatchRequestFactoryTest.php`.
+- The same change was made in the OXID 6 module `osc/paypal` (2.10.2-rc.1).
+
 ## [3.9.1] - 2026-10-15
 
 ### FIX
@@ -332,12 +340,14 @@ the stock reduction – no manual cleanup needed.
 ## [3.4.1] - 2025-04-08
 
 ### Added
+
 - Cypress e2e tests
 - Support PayPal-Client v3.0.15
 - Support brick/phonenumber ^0.7.0
 - Add stronger indication of required domain registration for Apple Pay
 
 ### Fixed
+
 - set connect-timeout for 5 Seconds and request-timeout for 30 seconds
 - [0007769](https://bugs.oxid-esales.com/view.php?id=7769): Performance: Cache the Data-Client-Token for 24h & load SDK only if necessary
 - use PayPal-Client v3.0.15
@@ -429,7 +439,7 @@ the stock reduction – no manual cleanup needed.
 
 - first Version for OXID7 with APEX-Theme as Twig-Frontend-Standard-Theme, without Smarty-Support
 
-## [2.5.2] - 2024-??-??
+## [2.5.2] - 2025-02-06
 
 ### FIX
 
@@ -472,6 +482,7 @@ the stock reduction – no manual cleanup needed.
 - [0007695](https://bugs.oxid-esales.com/view.php?id=7695): Fix: if DeliverySet is set in Frontend, then do not add any PseudoDeliveryCosts for PPExpress
 
 ### NEW
+
 - PayPal-Request-Id based on serialized body, no extra PayPal-Request-Id necessary anymore
 - Introduce GooglePay-Payment
 - Introduce ApplePay-Payment
@@ -482,6 +493,7 @@ the stock reduction – no manual cleanup needed.
 ## [2.4.0] - 2024-04-04
 
 ### FIX
+
 - [0007588](https://bugs.oxid-esales.com/view.php?id=7588): Improve Error handling for Capture Order Requests (thanks to mount7)
 - remove Sofort and MyBank, Paymentmethods will soon no longer be accepted via PayPal
 - fix: Refund only with note to Buyer (required)
@@ -490,6 +502,7 @@ the stock reduction – no manual cleanup needed.
 - use PayPal-Client v2.0.12
 
 ### NEW
+
 - PayPal Vaulting https://developer.paypal.com/braintree/docs/guides/paypal/checkout-with-vault/
 
 ## [2.3.4] - 2024-01-26
@@ -516,7 +529,8 @@ the stock reduction – no manual cleanup needed.
 
 ## [2.3.1] - 2023-08-17
 
-# Fixed
+### Fixed
+
 - [0007493](https://bugs.oxid-esales.com/view.php?id=7468): Dont cleanup possible valid orders
 - [0007502](https://bugs.oxid-esales.com/view.php?id=7502): Better Mandantory-Fields-Errormessage for PayPalExpress. And got phonenumber from Customer via PPExpress. (only if PP-Merchant has activated in Merchant-Account. -> [Merchant-Preferences Sandbox](https://www.sandbox.paypal.com/businessmanage/preferences/website)
  [Merchant-Preferences Live](https://www.paypal.com/businessmanage/preferences/website)). This is a solution when phone numbers are mandatory fields in the store
@@ -527,13 +541,15 @@ the stock reduction – no manual cleanup needed.
 ## [2.3.0] - 2023-05-24
 
 ### Added
+
 - active payment methods are recognized after deactivating and activating the module and activated again correctly
 - in the backend there are new options for control the deleting of unfinished orders
 - New Payment "SEPA" and an alternative CreditCard-Payment as fallback if CreditCard via ACDC is not possible
 - Send Tracking-Information to PayPal
 - improved tests and static code analysis
 
-# Fixed
+### Fixed
+
 - [0007468](https://bugs.oxid-esales.com/view.php?id=7468): Javascript Error - in checkout step 3 for the English language
 - [0007465](https://bugs.oxid-esales.com/view.php?id=7465): Creditcard input fields are not available in english language
 - [0007470](https://bugs.oxid-esales.com/view.php?id=7470): PayPal Express buttons are missing in english language
@@ -562,6 +578,7 @@ the stock reduction – no manual cleanup needed.
 ## [2.2.3] - 2023-01-26
 
 ### Fixed
+
 - [0007394](https://bugs.oxid-esales.com/view.php?id=7394) Price reduction by payment method blocks order
 - onBoarding-Process with fixed PopUps from PayPal
 - [0007389](https://bugs.oxid-esales.com/view.php?id=7389) reformat large refund amounts
@@ -577,16 +594,19 @@ the stock reduction – no manual cleanup needed.
 ## [2.2.2] - 2022-10-18
 
 ### Fixed
+
 - [0007366](https://bugs.oxid-esales.com/view.php?id=7366) Not only cancel unsuccessful orders, but also delete them
 
 ## [2.2.1] - 2022-10-14
 
 ### Fixed
+
 - [0007363](https://bugs.oxid-esales.com/view.php?id=7363) Updated PaymentController to correctly display other non-Paypal payments when net mode is enabled
 
 ## [2.2.0] - 2022-10-05
 
 ### Added
+
 - Column `oscpaypal_order.oscpaypaltransactiontype` to distinguish capture, authorization, refund transactions when tracking.
 - Default values for `oscpaypal_order.oscpaypaltransactionid` and `oscpaypal_order.oscpaypalstatus`.
 - Webhook handler `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureRefundedHandler` for `PAYMENT.CAPTURE.REFUNDED`.
@@ -618,6 +638,7 @@ the stock reduction – no manual cleanup needed.
   - `OxidSolutionCatalysts\PayPal\Service\Payment::getPaymentExecutionError()`
 
 ### Changed
+
 - Method `OxidSolutionCatalysts\PayPal\Controller\OrderController::renderAcdcRetry()` converted to `OxidSolutionCatalysts\PayPal\Controller\OrderController::renderRetryOrderExecution()`.
 - New Class `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\WebhookHandlerBase` as base class for all webhook handlers.
 - Refactored Webhook Handlers to extend from `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\WebhookHandlerBase`.
@@ -631,6 +652,7 @@ the stock reduction – no manual cleanup needed.
 - Interface `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\WebhookHandlerInterface`, extend Handlers from `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\WebhookHandlerBase` instead.
 
 ### Fixed
+
 - [0007346](https://bugs.oxid-esales.com/view.php?id=7346) Update configuration to be able to force 3DSecure check for ACDC payments. Ensure 3D check result is validated depending on configuration.
 - PUI order in case of invalid phone number will now stay on order page and user can retry.
 - Fixed missing installment banners and shop start page, search etc.
@@ -693,4 +715,5 @@ the stock reduction – no manual cleanup needed.
 ## [1.0.0] - 2022-03-10
 
 ### Changed
+
 - initial release

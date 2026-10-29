@@ -99,6 +99,11 @@ class OrderManager
             return null;
         }
 
+        // The shop order and the PayPal order that follows are both built from this basket,
+        // so it has to reflect its current contents: a basket from which a position was
+        // removed without recalculation still carries the old totals.
+        $this->basket->calculateBasket(true);
+
         $order = oxNew(Order::class);
         $session = Registry::getSession();
         $session->deleteVariable('sess_challenge');

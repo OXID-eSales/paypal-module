@@ -595,10 +595,10 @@ class Order extends Order_parent
             try {
                 $oProd = $oContent->getArticle(true, null, true);
             } catch (\OxidEsales\Eshop\Core\Exception\NoArticleException $oEx) {
-                $oBasket->removeItem($key);
+                $this->removeUnbuyableBasketItem($oBasket, $key);
                 throw $oEx;
             } catch (\OxidEsales\Eshop\Core\Exception\ArticleInputException $oEx) {
-                $oBasket->removeItem($key);
+                $this->removeUnbuyableBasketItem($oBasket, $key);
                 throw $oEx;
             }
 
@@ -620,6 +620,27 @@ class Order extends Order_parent
                 throw $oEx;
             }
         }
+    }
+
+    /**
+     * Removes an article that is no longer buyable (sold out and offline, deactivated, ...)
+     * from the basket, as the core does, and flags the basket for recalculation.
+     *
+     * Basket::removeItem() only drops the position: the totals of the last calculation stay
+     * cached, and calculateBasket(false) - which every page render calls - keeps them, because
+     * nothing marked the basket as changed. A second checkout attempt then saved an order with
+     * the old total but without the removed article, and the PayPal order carried the missing
+     * article as "Rounding Adjustment". The recalculation itself is left to the next
+     * calculateBasket() call: this runs inside the finalize transaction, and recalculating here
+     * could throw for another position and hide the exception that is about to be thrown.
+     *
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket
+     * @param string $key basket item key
+     */
+    private function removeUnbuyableBasketItem($oBasket, string $key): void
+    {
+        $oBasket->removeItem($key);
+        $oBasket->onUpdate();
     }
 
     /**

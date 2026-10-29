@@ -57,4 +57,17 @@ class PayPalException extends StandardException
             )
         );
     }
+
+    public static function basketNotCalculated(float $positionsTotal, float $calculatedTotal): self
+    {
+        return new self(
+            sprintf(
+                'The basket positions (%.2f) do not match the products total of the last basket'
+                . ' calculation (%.2f) - a position was added or removed without recalculating'
+                . ' the basket. No PayPal order is created from it.',
+                $positionsTotal,
+                $calculatedTotal
+            )
+        );
+    }
 }

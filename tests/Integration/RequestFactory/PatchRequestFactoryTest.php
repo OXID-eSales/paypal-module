@@ -206,6 +206,8 @@ class PatchRequestFactoryTest extends BaseTestCase
         $basketMock = $this->createMock(Basket::class);
         $basketMock->method('getPrice')->willReturn($priceMock);
         $basketMock->method('getBasketCurrency')->willReturn($currency);
+        // an empty, calculated basket
+        $basketMock->method('getProductsPrice')->willReturn(oxNew(\OxidEsales\Eshop\Core\PriceList::class));
         $amountWithBreakdown = new AmountWithBreakdown();
         $amountWithBreakdown->value = '1.00';
         $amountWithBreakdown->currency_code = 'EUR';
@@ -246,6 +248,14 @@ class PatchRequestFactoryTest extends BaseTestCase
         $basketItem->method('getArticle')
             ->willReturn($article);
         $basketItem->method('getTitle')->willReturn('Test Product');
+        // a calculated basket: the position's line price is part of the products price list
+        $linePrice = oxNew(Price::class);
+        $linePrice->setBruttoPriceMode();
+        $linePrice->setPrice(10.00);
+        $basketItem->method('getPrice')->willReturn($linePrice);
+        $productsPriceList = oxNew(\OxidEsales\Eshop\Core\PriceList::class);
+        $productsPriceList->addToPriceList($linePrice);
+        $basketMock->method('getProductsPrice')->willReturn($productsPriceList);
         $basketMock->method('getContents')->willReturn([$basketItem]);
 
         $basketMock->method('getPayPalCheckoutWrapping')->willReturn(10.00);

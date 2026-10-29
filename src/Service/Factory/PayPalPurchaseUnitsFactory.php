@@ -18,6 +18,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Utils\AmountFormatter;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
+use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
@@ -67,6 +68,7 @@ class PayPalPurchaseUnitsFactory
         bool $withItems = true
     ): array {
         $basket = $this->getBasket();
+        $this->assertBasketIsCalculated($basket);
 
         // Ensure PayPal compatible precision
         $currency = $basket->getBasketCurrency();
@@ -152,6 +154,44 @@ class PayPalPurchaseUnitsFactory
         }
 
         return [$unit];
+    }
+
+    /**
+     * The items of the PayPal order are taken from the basket positions, its total from the
+     * last basket calculation. Both have to describe the same basket: when a position was
+     * removed without recalculating (as the core does for a sold out article in
+     * validateStock()), the total still contains it, and the PayPalAmountValidator would hand
+     * the missing article to the buyer as "Rounding Adjustment".
+     *
+     * The check compares shop values only, so it is exact whatever the number of positions:
+     * every calculated position adds the very same price object to the products price list.
+     * Discount articles never enter that list and are skipped here as well.
+     *
+     * @throws PayPalException
+     */
+    private function assertBasketIsCalculated(Basket $basket): void
+    {
+        $positionsTotal = 0.0;
+        /** @var BasketItem $basketItem */
+        foreach ((array) $basket->getContents() as $basketItem) {
+            if (!($basketItem instanceof BasketItem) || $basketItem->isDiscountArticle()) {
+                continue;
+            }
+            $price = $basketItem->getPrice();
+            if (!$price) {
+                // a position that was added after the last calculation has no price yet
+                throw PayPalException::basketNotCalculated(
+                    $positionsTotal,
+                    (float) $basket->getProductsPrice()->getBruttoSum()
+                );
+            }
+            $positionsTotal += (float) $price->getBruttoPrice();
+        }
+
+        $calculatedTotal = (float) $basket->getProductsPrice()->getBruttoSum();
+        if (abs($positionsTotal - $calculatedTotal) >= 0.005) {
+            throw PayPalException::basketNotCalculated($positionsTotal, $calculatedTotal);
+        }
     }
 
     private function getBasket(): ?Basket
