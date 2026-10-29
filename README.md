@@ -16,9 +16,11 @@ Technical documentation in this repository: [docs/README.md](docs/README.md) - a
 
 ## Branch Compatibility
 
-* b-7.0.x module branch is compatible with OXID eShop compilation 7.0, 7.1, 7.2, 7.3, 7.4
+* b-7.0.x module branch is compatible with OXID eShop compilation 7.0, 7.1, 7.2, 7.3, 7.4, 7.5
 * b-6.3.x module branch is compatible with OXID eShop compilation 6.3, 6.4, 6.5
-* b-6.1.x module branch is compatible with OXID eShop compilation 6.1, 6.2
+* b-6.1.x module branch is compatible with OXID eShop compilation 6.1, 6.2 (end of life, final release 1.4.2)
+
+Development for OXID eShop 7 takes place in the b-7.0.x branch only. Please use this branch for all OXID eShop 7 versions.
 
 ## Install for OXID
 

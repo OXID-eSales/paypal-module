@@ -4,13 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.10.2-rc.1] - Unreleased
+
+### FIX
+
+- Skip the webhook registration as long as no client id or client secret is configured for the active mode (sandbox or live). Activating the module on a shop without PayPal credentials - the normal case for a fresh installation - showed "Webhook registration failed: POST https://api.paypal.com/v1/oauth2/token returned: 401 Unauthorized ... invalid_client" in the module admin, and the PayPal log carried two error entries with stack traces. Cause: `Core/Events/Events::onActivate()` registers the webhook unconditionally, so the OAuth token request went out with empty credentials (`Authorization: Basic Og==` is the base64 of a lone `:`). The first 401 was only logged by `getAllRegisteredWebhooks()`, which then reported "no webhook registered", so the module went on to create one and failed a second time - that second failure is the one the merchant saw. The same happened when saving the module configuration without credentials, and in the onboarding callback. Fix: `Core/Onboarding/Webhook::registerWebhooksWithErrorHandling()`, which all three callers go through, checks the credentials first (`hasCredentials()`) and returns early with a debug entry in the PayPal log instead of calling PayPal. Missing credentials are still reported on the configuration page by the existing health check. Files touched: `src/Core/Onboarding/Webhook.php`.
+- Fix a PayPal order charging the buyer for an article that was no longer in the order, booked as "Rounding Adjustment". Reported for a shop where two customers ordered the last unit of the same article: the second customer's PayPal order contained one article plus a "Rounding Adjustment" of exactly the price of the sold out one, the shop order carried the old total with a single position, and the buyer was charged for both. Cause: when an article is no longer buyable at checkout (sold out and switched offline, or "not orderable"), the core's `validateStock()` removes it with `Basket::removeItem()` - which only drops the position. The totals of the last calculation stay cached, and since nothing marks the basket as changed, `calculateBasket(false)` on every following page render keeps them. The next checkout attempt then saved the shop order with the old total, and built the PayPal order from two sources that no longer agreed: the items from the basket positions, the total from the cached calculation. `PayPalAmountValidator` - meant for cent rounding - balanced the difference with a "Rounding Adjustment" item of any size. Fix in three places: `Model/Order::validateStock()` (the module overrides it for the stock lock) flags the basket for recalculation when it removes an article (`onUpdate()`), so the next calculation brings the totals back in line; `Service/OrderManager::createShopOrder()` recalculates the basket (`calculateBasket(true)`) before the shop order is finalized, since the shop order and the PayPal order are both built from it; and `Service/Factory/PayPalPurchaseUnitsFactory::getPurchaseUnits()` refuses a basket whose positions do not add up to the products total of its last calculation (`PayPalException::basketNotCalculated()`), so no PayPal order is created from an inconsistent basket on any path. That last check compares shop values only - every calculated position adds the very same price object to the products price list - so it is exact whatever the number of positions and needs no tolerance. Deliberately not capping the "Rounding Adjustment" itself: it also balances amounts the module does not send as items (a payment method discount, the VAT of a discount in net mode, which is approximated with the default VAT rate), and those legitimately exceed any rounding bound. A basket that is already recalculated is not touched by any of this. Files touched: `src/Model/Order.php`, `src/Service/OrderManager.php`, `src/Service/Factory/PayPalPurchaseUnitsFactory.php`, `src/Exception/PayPalException.php`, `tests/Integration/Service/Factory/PayPalPurchaseUnitsFactoryTest.php`, `tests/Integration/RequestFactory/PatchRequestFactoryTest.php`.
+- The same change was made in the OXID 7 module `osc/paypal-module` (3.9.2-rc.1).
+
 ## [2.10.1] - 2026-10-15
 
 ### FIX
 
 - Fix a second, concurrent `finalizeOrder()` of the same shop order writing the basket positions a second time and booking the article stock twice. The order totals stay correct and the customer is charged once, so nothing looks wrong about the sum: the positions are simply there twice, the stock of every article in the basket is reduced twice, and the order number of the first pass is silently overwritten by the second - it is gone afterwards, although the customer has a confirmation mail for it. Cause: `finalizeOrder()` asks `_checkOrderExist()` on entry, and for a second pass that answer is wrong - not because the guard is wrong, but because it is asked too early. The first pass has already inserted its order row while still holding it in the open stock-lock transaction, so the row is invisible by isolation, not by oversight. The second pass walks on, blocks on `validateStock()`'s `SELECT ... FOR UPDATE`, resumes once the first pass commits and - reading autocommitted, so unconstrained by a snapshot - finds the order row through `BaseModel::save()`'s `exists()` check: the order row is updated while a freshly generated set of `oxorderarticles` rows is inserted next to the existing one, and `OrderArticle::save()` books each of them as a new stock movement. The guard added for the same symptom in 2.9.2 cannot catch this, because it lives together with the `oxpaid`/`oxtransid` check inside the `isPayPalPayment()` branch of `finalizeOrder()`, and `isPayPalPayment()` resolves the payment through the *session* basket: once the first pass has finalized the order and emptied that basket, the second pass of the very same PayPal checkout sees no payment id at all, which skips the stock-lock transaction and every duplicate guard in one go. The reported case was PayPal Express - two confirmation mails three seconds apart carrying consecutive order numbers, only the later number left in `oxorder`, and two `oxorderarticles` rows on one order id. Fix: a new `Model/Order::validateOrder()` override, which sits outside that branch and is therefore always reached. It first takes a locking read on the ordering customer's own `oxuser` row (`acquireFinalizeLock()`), which the finalize transaction holds until it commits, so a concurrent pass waits there instead of racing ahead; it then asks `_checkOrderExist()` once more, which past the lock finally has the information it needs, and returns `ORDER_STATE_ORDEREXISTS`. The existence check runs before `parent::validateOrder()`, so that a second pass whose first pass already used up the last unit of an article reports the existing order instead of a misleading stock error. Aborting in `validateOrder()` is what matters: it runs before `_loadFromBasket()`, so no second position list is built and no second stock movement is booked. Deliberately not relying on `validateStock()`'s own locking read, which is skipped entirely when stock management is off and whose subject is not the race; deliberately calling `_checkOrderExist()` instead of querying `oxorder` directly, so that overrides of that method keep applying (the Mollie module returns `false` there on purpose in its finalize-return mode, where the order legitimately exists already); and deliberately taking the lock clause from the Doctrine platform (`getForUpdateSQL()`) on the same connection as the finalize transaction, so there is no hard-coded SQL dialect, no schema change and no new setting. A lock that cannot be taken is logged and does not stop the order. Files touched: `src/Model/Order.php`. Analysis and fix contributed by @alexbondarchukov (kosmonaut.io) in [PR #614](https://github.com/OXID-eSales/paypal-module/pull/614).
 
-## [2.10.0] - 2026-10-15 
+## [2.10.0] - 2026-10-15
 
 ### Security
 
@@ -296,6 +304,7 @@ the stock reduction – no manual cleanup needed.
 - 3ds related mechanisms moved to SCAValidator service
 
 ### FIX
+
 - [0007822](https://bugs.oxid-esales.com/view.php?id=7822): use existing DeliveryAddresses instead creating new once
 - use the loading-animation from backend also in frontend
 - faster Checkout
@@ -426,6 +435,7 @@ the stock reduction – no manual cleanup needed.
 - introduce ActionHash to make the PayPal-Request-ID more unique
 
 ### NEW
+
 - PayPal-Request-Id based on serialized body, no extra PayPal-Request-Id necessary anymore
 - Introduce GooglePay-Payment
 - Introduce ApplePay-Payment
@@ -436,6 +446,7 @@ the stock reduction – no manual cleanup needed.
 ## [2.4.0] - 2024-04-04
 
 ### FIX
+
 - [0007588](https://bugs.oxid-esales.com/view.php?id=7588): Improve Error handling for Capture Order Requests (thanks to mount7)
 - remove Sofort and MyBank, Paymentmethods will soon no longer be accepted via PayPal
 - fix: Refund only with note to Buyer (required)
@@ -444,6 +455,7 @@ the stock reduction – no manual cleanup needed.
 - use PayPal-Client v2.0.12
 
 ### NEW
+
 - PayPal Vaulting https://developer.paypal.com/braintree/docs/guides/paypal/checkout-with-vault/
 
 ## [2.3.4] - 2024-01-26
@@ -470,7 +482,8 @@ the stock reduction – no manual cleanup needed.
 
 ## [2.3.1] - 2023-08-17
 
-# Fixed
+### Fixed
+
 - [0007493](https://bugs.oxid-esales.com/view.php?id=7468): Dont cleanup possible valid orders
 - [0007502](https://bugs.oxid-esales.com/view.php?id=7502): Better Mandantory-Fields-Errormessage for PayPalExpress. And got phonenumber from Customer via PPExpress. (only if PP-Merchant has activated in Merchant-Account. -> [Merchant-Preferences Sandbox](https://www.sandbox.paypal.com/businessmanage/preferences/website)
  [Merchant-Preferences Live](https://www.paypal.com/businessmanage/preferences/website)). This is a solution when phone numbers are mandatory fields in the store
@@ -481,13 +494,15 @@ the stock reduction – no manual cleanup needed.
 ## [2.3.0] - 2023-05-24
 
 ### Added
+
 - active payment methods are recognized after deactivating and activating the module and activated again correctly
 - in the backend there are new options for control the deleting of unfinished orders
 - New Payment "SEPA" and an alternative CreditCard-Payment as fallback if CreditCard via ACDC is not possible
 - Send Tracking-Information to PayPal
 - improved tests and static code analysis
 
-# Fixed
+### Fixed
+
 - [0007468](https://bugs.oxid-esales.com/view.php?id=7468): JavaScript error in checkout step 3 for the English language
 - [0007465](https://bugs.oxid-esales.com/view.php?id=7465): Creditcard input fields are not available in english language
 - [0007470](https://bugs.oxid-esales.com/view.php?id=7470): PayPal Express buttons are missing in the english language
@@ -516,6 +531,7 @@ the stock reduction – no manual cleanup needed.
 ## [2.2.3] - 2023-01-26
 
 ### Fixed
+
 - [0007394](https://bugs.oxid-esales.com/view.php?id=7394) Price reduction by payment method blocks order
 - onBoarding-Process with fixed PopUps from PayPal
 - [0007389](https://bugs.oxid-esales.com/view.php?id=7389) reformat large refund amounts
@@ -531,16 +547,19 @@ the stock reduction – no manual cleanup needed.
 ## [2.2.2] - 2022-10-18
 
 ### Fixed
+
 - [0007366](https://bugs.oxid-esales.com/view.php?id=7366) Not only cancel unsuccessful orders, but also delete them
 
 ## [2.2.1] - 2022-10-14
 
 ### Fixed
+
 - [0007363](https://bugs.oxid-esales.com/view.php?id=7363) Updated PaymentController to correctly display other non-Paypal payments when net mode is enabled
 
 ## [2.2.0] - 2022-10-05
 
 ### Added
+
 - Column `oscpaypal_order.oscpaypaltransactiontype` to distinguish capture, authorization, refund transactions when tracking.
 - Default values for `oscpaypal_order.oscpaypaltransactionid` and `oscpaypal_order.oscpaypalstatus`.
 - Webhook handler `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureRefundedHandler` for `PAYMENT.CAPTURE.REFUNDED`.
@@ -572,6 +591,7 @@ the stock reduction – no manual cleanup needed.
   - `OxidSolutionCatalysts\PayPal\Service\Payment::getPaymentExecutionError()`
 
 ### Changed
+
 - Method `OxidSolutionCatalysts\PayPal\Controller\OrderController::renderAcdcRetry()` converted to `OxidSolutionCatalysts\PayPal\Controller\OrderController::renderRetryOrderExecution()`.
 - New Class `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\WebhookHandlerBase` as base class for all webhook handlers.
 - Refactored Webhook Handlers to extend from `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\WebhookHandlerBase`.
@@ -585,6 +605,7 @@ the stock reduction – no manual cleanup needed.
 - Interface `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\WebhookHandlerInterface`, extend Handlers from `OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\WebhookHandlerBase` instead.
 
 ### Fixed
+
 - [0007346](https://bugs.oxid-esales.com/view.php?id=7346) Update configuration to be able to force 3DSecure check for ACDC payments. Ensure 3D check result is validated depending on configuration.
 - PUI order in case of invalid phone number will now stay on order page and user can retry.
 - Fixed missing installment banners and shop start page, search etc.
@@ -647,4 +668,5 @@ the stock reduction – no manual cleanup needed.
 ## [1.0.0] - 2022-03-10
 
 ### Changed
+
 - initial release

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OxidEsales\EshopCommunity\modules\osc\paypal\tests\Integration\Service\Factory;
 
+use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Model\Basket;
 use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -573,6 +574,48 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
         }
     }
 
+    /**
+     * A position the core removed in validateStock() (article sold out in the meantime) is
+     * gone from the basket contents, while the products total of the last calculation still
+     * contains it. No PayPal order must be built from such a basket: the validator would hand
+     * the missing article to the buyer as "Rounding Adjustment".
+     */
+    public function testGetPurchaseUnitsRefusesBasketWithPositionRemovedWithoutRecalculation(): void
+    {
+        $factory = $this->makeFactory();
+
+        $basketMock = $this->getMockBuilder(Basket::class)
+            ->disableOriginalConstructor()
+            ->onlyMethods(['getBasketCurrency','getContents','getPrice','getProductsPrice','getPayPalCheckoutDeliveryCosts','getPayPalCheckoutDiscountBrutto'])
+            ->getMock();
+        $basketMock->method('getBasketCurrency')->willReturn((object)['name' => 'EUR','decimal' => 2]);
+
+        $makeLinePrice = function (float $gross) {
+            $price = oxNew(\OxidEsales\Eshop\Core\Price::class);
+            $price->setBruttoPriceMode();
+            $price->setPrice($gross);
+            return $price;
+        };
+        $remaining = $makeLinePrice(45.40);
+        $productsPriceList = oxNew(\OxidEsales\Eshop\Core\PriceList::class);
+        $productsPriceList->addToPriceList($remaining);
+        // the removed position is still part of the last calculation
+        $productsPriceList->addToPriceList($makeLinePrice(48.90));
+        $basketMock->method('getProductsPrice')->willReturn($productsPriceList);
+
+        $basketItem = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
+        $basketItem->method('getAmount')->willReturn(1);
+        $basketItem->method('getPrice')->willReturn($remaining);
+        $basketItem->method('getUnitPrice')->willReturn($remaining);
+        $basketMock->method('getContents')->willReturn([$basketItem]);
+
+        $factory->setBasket($basketMock);
+
+        $this->expectException(PayPalException::class);
+        $this->expectExceptionMessage('The basket positions (45.40) do not match the products total');
+        $factory->getPurchaseUnits(null, null, true);
+    }
+
     public function testGrossModeBasketFromIssueDataProducesExpectedTwoDecimalResults(): void
     {
          $factory = $this->makeFactory();
@@ -585,7 +628,7 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
         try {
             $basketMock = $this->getMockBuilder(Basket::class)
                 ->disableOriginalConstructor()
-                ->onlyMethods(['getBasketCurrency','getContents','getPrice','getPayPalCheckoutDeliveryCosts','getPayPalCheckoutDiscountBrutto'])
+                ->onlyMethods(['getBasketCurrency','getContents','getPrice','getProductsPrice','getPayPalCheckoutDeliveryCosts','getPayPalCheckoutDiscountBrutto'])
                 ->getMock();
             $currency = (object)['name'=>'EUR','decimal'=>2];
             $basketMock->method('getBasketCurrency')->willReturn($currency);
@@ -609,12 +652,22 @@ class PayPalPurchaseUnitsFactoryTest extends BaseTestCase
             $unit3 = $makeUnitPrice(24.95555); // qty 1 => 24.95555 gross
 
             // BasketItem mocks
-            $makeBasketItem = function(string $title, int $qty, $unitPrice) {
+            // a calculated basket: every position has its line price, and the products
+            // price list of the calculation holds the very same prices
+            $productsPriceList = oxNew(\OxidEsales\Eshop\Core\PriceList::class);
+            $basketMock->method('getProductsPrice')->willReturn($productsPriceList);
+            $makeBasketItem = function(string $title, int $qty, $unitPrice) use ($productsPriceList) {
+                $linePrice = oxNew(\OxidEsales\Eshop\Core\Price::class);
+                $linePrice->setBruttoPriceMode();
+                $linePrice->setPrice($unitPrice->getBruttoPrice() * $qty);
+                $productsPriceList->addToPriceList($linePrice);
+
                 $basketItem = $this->createMock(\OxidEsales\Eshop\Application\Model\BasketItem::class);
                 $basketItem->method('getTitle')->willReturn($title);
                 $basketItem->method('getArticle')->willReturn(oxNew(\OxidEsales\Eshop\Application\Model\Article::class));
                 $basketItem->method('getAmount')->willReturn($qty);
                 $basketItem->method('getUnitPrice')->willReturn($unitPrice);
+                $basketItem->method('getPrice')->willReturn($linePrice);
                 return $basketItem;
             };
 

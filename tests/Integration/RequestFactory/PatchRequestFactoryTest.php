@@ -51,9 +51,17 @@ class PatchRequestFactoryTest extends BaseTestCase
         $basketItem->method('getArticle')->willReturn($article);
         $basketItem->method('getAmount')->willReturn(1);
         $basketItem->method('getUnitPrice')->willReturn($articlePriceMock);
+        // a calculated basket: the position's line price is part of the products price list
+        $linePrice = oxNew(Price::class);
+        $linePrice->setBruttoPriceMode();
+        $linePrice->setPrice(101.00);
+        $basketItem->method('getPrice')->willReturn($linePrice);
+        $productsPriceList = oxNew(\OxidEsales\Eshop\Core\PriceList::class);
+        $productsPriceList->addToPriceList($linePrice);
 
         // Create basket mock
         $basketMock = $this->createMock(Basket::class);
+        $basketMock->method('getProductsPrice')->willReturn($productsPriceList);
         Registry::getSession()->setBasket($basketMock);
 
         $basketMock->method('getContents')->willReturn([
@@ -128,6 +136,8 @@ class PatchRequestFactoryTest extends BaseTestCase
         $basketMock = $this->createMock(Basket::class);
         $basketMock->method('getPrice')->willReturn($priceMock);
         $basketMock->method('getBasketCurrency')->willReturn($currency);
+        // an empty, calculated basket
+        $basketMock->method('getProductsPrice')->willReturn(oxNew(\OxidEsales\Eshop\Core\PriceList::class));
         $amountWithBreakdown = new AmountWithBreakdown();
         $amountWithBreakdown->value = 1.00;
         $amountFactoryMock = $this->createMock(PayPalRequestAmountFactory::class);
@@ -158,6 +168,14 @@ class PatchRequestFactoryTest extends BaseTestCase
         $basketItem->method('getTitle')->willReturn('Test Item');
         $article = oxNew(Article::class);
         $basketItem->method('getArticle')->willReturn($article);
+        // a calculated basket: the position's line price is part of the products price list
+        $linePrice = oxNew(Price::class);
+        $linePrice->setBruttoPriceMode();
+        $linePrice->setPrice(10.00);
+        $basketItem->method('getPrice')->willReturn($linePrice);
+        $productsPriceList = oxNew(\OxidEsales\Eshop\Core\PriceList::class);
+        $productsPriceList->addToPriceList($linePrice);
+        $basketMock->method('getProductsPrice')->willReturn($productsPriceList);
         $basketMock->method('getContents')->willReturn([
             $basketItem
         ]);

@@ -1,0 +1,1820 @@
+<?php
+
+/**
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
+ */
+
+declare(strict_types=1);
+
+namespace OxidSolutionCatalysts\PayPal\Model;
+
+use DateTimeImmutable;
+use Exception;
+use OxidEsales\Eshop\Application\Model\Basket;
+use OxidEsales\Eshop\Application\Model\User;
+use OxidEsales\Eshop\Application\Model\UserPayment;
+use OxidEsales\Eshop\Core\Counter as EshopCoreCounter;
+use OxidEsales\Eshop\Core\DatabaseProvider;
+use OxidEsales\Eshop\Core\Field;
+use OxidEsales\Eshop\Core\Model\BaseModel;
+use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
+use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
+use OxidSolutionCatalysts\PayPal\Core\Constants;
+use OxidSolutionCatalysts\PayPal\Core\PayPalCancelReason;
+use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Core\Utils\AmountFormatter;
+use OxidSolutionCatalysts\PayPal\Core\Tracker\Tracker;
+use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
+use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
+use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
+use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
+use OxidSolutionCatalysts\PayPalApi\Exception\ApiException;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Capture;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Payments\Refund;
+use OxidSolutionCatalysts\PayPalApi\Model\Payments\RefundRequest;
+use OxidSolutionCatalysts\PayPalApi\Service\Orders;
+use OxidSolutionCatalysts\PayPalApi\Service\Payments;
+use Psr\Log\LoggerInterface;
+use Throwable;
+
+/**
+ * PayPal Eshop model order class
+ *
+ * @mixin \OxidEsales\Eshop\Application\Model\Order
+ */
+class Order extends Order_parent
+{
+    use ServiceContainer;
+
+    /**
+     * @var null|OrderProcessTrackingService $orderProcessTrackingService
+     */
+    private $orderProcessTrackingService;
+    /**
+     * @var null|ModuleSettings $moduleSettings
+     */
+    private $moduleSettings;
+    /**
+     * @var null|PaymentService $paymentService
+     */
+    private $paymentService;
+
+    /**
+     * Bypass for the proxy-controller skip in _markVouchers. Set to true only
+     * for the late, post-payment voucher binding from finalizeOrderAfterExternalPayment;
+     * the early pre-redirect calls keep the skip so cancel+retry stays safe.
+     *
+     * @var bool
+     */
+    private bool $skipProxyControllerVoucherGuard = false;
+
+    /**
+     * Uapm payment in progress
+     *
+     * @var int
+     */
+    public const ORDER_STATE_SESSIONPAYMENT_INPROGRESS = 500;
+
+    /**
+     * ACDC payment in progress
+     *
+     * @var int
+     */
+    public const ORDER_STATE_ACDCINPROGRESS = 700;
+
+    /**
+     * ACDC payment in progress
+     *
+     * @var int
+     */
+    public const ORDER_STATE_ACDCCOMPLETED = 750;
+
+    /**
+     * Error during payment execution
+     *
+     * @var int
+     */
+    public const ORDER_STATE_PAYMENTERROR = 2;
+
+    /**
+     * Order finalizations is waiting for webhook events
+     *
+     * @var int
+     */
+    public const ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS = 600;
+
+    /**
+     * Order finalizations waiting for webhook events timed out
+     *
+     * @var int
+     */
+    public const ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS = 900;
+
+    /**
+     * ACDC payment completed but order needs call on OrderController::
+     *
+     * @var int
+     */
+    public const ORDER_STATE_NEED_CALL_ACDC_FINALIZE = 800;
+
+    /**
+     * PayPal order information
+     * @var null|PayPalApiOrder $payPalApiOrder
+     */
+    protected $payPalApiOrder = null;
+
+    /**
+     * PayPal order Id
+     * @var null|string
+     */
+    protected $payPalOrderId = null;
+
+    /**
+     * PayPal order Repo
+     * @var PayPalOrder $payPalOrder
+     */
+    protected $payPalOrder;
+
+    /**
+     * PayPalPlus order Id
+     * @var null|string
+     */
+    protected $payPalPlusOrderId = null;
+
+    /**
+     * PayPalPlus order Id
+     * @var null|string
+     */
+    protected $payPalSoapOrderId = null;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->orderProcessTrackingService = $this->getServiceFromContainer(OrderProcessTrackingService::class);
+        $this->moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
+        $this->paymentService = $this->getServiceFromContainer(PaymentService::class);
+    }
+
+    public function savePuiInvoiceNr(string $invoiceNr): void
+    {
+        $this->assign(
+            ['oxinvoicenr' => $invoiceNr]
+        );
+        $this->save();
+    }
+
+    /**
+     * @throws PayPalException
+     * @throws ApiException
+     * @throws \Exception
+     */
+    public function finalizeOrderAfterExternalPayment(string $payPalOrderId, bool $forceFetchDetails = false): void
+    {
+        if (!$this->isLoaded()) {
+            throw PayPalException::cannotFinalizeOrderAfterExternalPaymentSuccess($payPalOrderId);
+        }
+
+        $paymentsId = (string) $this->getFieldData('oxpaymenttype');
+        if (!$this->paymentService->isPayPalPayment($paymentsId)) {
+            throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
+        }
+
+        // If the order was already completed by the AJAX captureOrder flow
+        // (markOrderPaid + setTransId in PayPalOrderCompletedSubscriber),
+        // skip redundant processing. Without this guard, finalizeacdc would
+        // attempt to capture/authorize an already-captured order, fail with
+        // an API error, and incorrectly cancel the paid order.
+        if ($this->isOrderSuccessfullyPaid()) {
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->log('debug', 'finalizeOrderAfterExternalPayment: order already paid, skipping', [
+                'shopOrderId' => $this->getId(),
+                'payPalOrderId' => $payPalOrderId,
+                'transId' => $this->getFieldData('oxtransid')
+            ]);
+
+            // Healing mail: when the order reached this branch via the
+            // customer-too-fast race (webhook marked the order paid while
+            // the customer was still in the outer status-check), the
+            // sendPayPalOrderByEmail call at the end of this method would
+            // be skipped. Trigger it here so the customer still gets the
+            // confirmation. _sendOrderByEmail's isPayPalPaymentCheckout
+            // guard blocks duplicates during an in-flight PayPal checkout.
+            $basket = Registry::getSession()->getBasket();
+            $user = Registry::getSession()->getUser();
+            if ($basket && $user) {
+                $this->sendPayPalOrderByEmailWithVoucherBinding($user, $basket);
+            }
+            return;
+        }
+
+        $payPalApiOrder = $this->paymentService->fetchOrderFields($payPalOrderId);
+        $basket = Registry::getSession()->getBasket();
+        $user = Registry::getSession()->getUser();
+        $this->afterOrderCleanUp($basket, $user);
+
+        $isPayPalACDC = $paymentsId === PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID;
+        $isPaypalGooglePay = $paymentsId === PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID;
+        $isPayPalStandard = $paymentsId === PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
+        $isPaypalApplePay = $paymentsId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID;
+        $isUAPM = PayPalDefinitions::isUAPMPayment($paymentsId);
+
+        $transactionId = null;
+        $payPalPaymentSuccess = true;
+
+        if (
+            ($isPayPalACDC && $forceFetchDetails) ||
+            $isPaypalGooglePay ||
+            $isPaypalApplePay ||
+            $isUAPM
+        ) {
+            if ($this->isPayPalOrderCompleted($payPalApiOrder)) {
+                $this->markOrderPaid();
+                $transactionId = $this->extractTransactionId($payPalApiOrder);
+                $this->setTransId($transactionId);
+                $this->paymentService->trackPayPalOrder(
+                    $this->getId(),
+                    $payPalOrderId,
+                    $paymentsId,
+                    PayPalApiOrder::STATUS_COMPLETED,
+                    $transactionId
+                );
+            } elseif ($this->isPayPalCapturePending($payPalApiOrder)) {
+                // Capture accepted by PayPal but not settled yet. Treating this as a
+                // finalization failure (the else below) would throw and cancel an order
+                // whose payment PayPal is still going to collect, so finalize it as
+                // payment-not-finished and let PAYMENT.CAPTURE.COMPLETED settle it.
+                $transactionId = $this->extractTransactionId($payPalApiOrder);
+                $this->markOrderPaymentNotFinished();
+                $this->setTransId($transactionId);
+                $this->paymentService->trackPayPalOrder(
+                    $this->getId(),
+                    $payPalOrderId,
+                    $paymentsId,
+                    PayPalApiOrder::STATUS_APPROVED,
+                    $transactionId
+                );
+
+                /** @var LoggerInterface $logger */
+                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+                $logger->log('warning', sprintf(
+                    'finalizeOrderAfterExternalPayment: PayPal capture for order %s (nr: %s) is PENDING'
+                    . ' (reason: %s) - finalized as payment-not-finished',
+                    $this->getId(),
+                    $this->getFieldData('oxordernr'),
+                    $this->getPayPalCapturePendingReason($payPalApiOrder) ?: 'unknown'
+                ), ['payPalOrderId' => $payPalOrderId]);
+            }
+            elseif ($isUAPM && $this->isPayPalOrderApproved($payPalApiOrder)) {
+                $this->markOrderPaymentNotFinished();
+                $transactionId = $this->extractTransactionId($payPalApiOrder);
+                //prepare capture tracking
+                $this->paymentService->trackPayPalOrder(
+                    $this->getId(),
+                    $payPalOrderId,
+                    $paymentsId,
+                    PayPalApiOrder::STATUS_APPROVED,
+                    $transactionId
+                );
+            } else {
+                throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
+            }
+        }
+
+        if ($isPaypalGooglePay || $isPaypalApplePay) {
+            //webhook should kick in and handle order state and we should not call the api too often
+            Registry::getSession()->deleteVariable(Constants::SESSION_ACDC_PAYPALORDER_STATUS);
+            // remove PayPal order id from session
+            PayPalSession::unsetPayPalOrderId();
+        } elseif (
+            ($isPayPalStandard || $isPayPalACDC) &&
+            $this->moduleSettings
+                ->getPayPalStandardCaptureStrategy() !== 'directly'
+        ) {
+            $paymentId = (string) $this->paymentService->getSessionPaymentId();
+
+            try {
+                $result = $this->paymentService->doAuthorizePayment($payPalOrderId, $this->getId(), $paymentId);
+
+                /** @var LoggerInterface $logger */
+                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+                if ($result['paymentStatus'] === 'success' && $result['status'] === 'success') {
+                    PayPalSession::unsetPayPalSession();
+                } else {
+                    $this->markOrderPaymentFailed();
+                    $logger->log('error', 'Error on order authorization call.', [$result]);
+                    throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
+                }
+            } catch (Exception $exception) {
+                $this->markOrderPaymentFailed();
+                throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
+            }
+
+            $transactionId = '';
+
+            $this->markOrderPaymentNotFinished();
+            $this->paymentService->trackPayPalOrder(
+                $this->getId(),
+                $payPalOrderId,
+                $paymentsId,
+                PayPalApiOrder::STATUS_APPROVED
+            );
+        } elseif (
+            $isPayPalStandard &&
+            $this->moduleSettings
+                ->getPayPalStandardCaptureStrategy() === 'directly'
+        ) {
+            // PayPal Standard directly, PayPal Paylater
+            $payPalPaymentSuccess = $this->doExecutePayPalPayment($payPalOrderId);
+        }
+
+        //TODO: reduce calls to api, see above
+        if (is_null($transactionId) && $payPalApiOrder->intent === OrderRequest::INTENT_CAPTURE) {
+            $capture = $this->getOrderPaymentCapture($payPalOrderId);
+            $orderService = Registry::get(ServiceFactory::class)->getOrderService();
+            if ($payPalPaymentSuccess) {
+                $request = new OrderCaptureRequest();
+                try {
+                    $capture = $orderService->capturePaymentForOrder(
+                        '',
+                        $payPalOrderId,
+                        $request,
+                        '',
+                        Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+                    );
+                } catch (ApiException $exception) {
+                    $this->markOrderPaymentFailed();
+                    throw PayPalException::cannotFinalizeOrderAfterExternalPayment($payPalOrderId, $paymentsId);
+                }
+            }
+
+            $this->setTransId($capture->id);
+        }
+
+        // On confirmed payment, bind vouchers + send mail in one helper so the
+        // mail's voucher line is populated. On failure, just send the bare mail
+        // (no voucher binding for the failure branch of doExecutePayPalPayment
+        // in the PayPal-Standard direct-capture path).
+        if ($payPalPaymentSuccess) {
+            $this->sendPayPalOrderByEmailWithVoucherBinding($user, $basket);
+        } else {
+            $this->sendPayPalOrderByEmail($user, $basket);
+        }
+    }
+
+    /**
+     * send Order By Email without Stock-Check
+     * @param User $user
+     * @param Basket $basket
+     */
+    public function sendPayPalOrderByEmail(User $user, Basket $basket): void
+    {
+        $userPayment = oxNew(UserPayment::class);
+        $userPayment->load($this->getFieldData('oxpaymentid'));
+
+        Registry::getSession()->setVariable('blDontCheckProductStockForPayPalMails', true);
+        $this->_sendOrderByEmail($user, $basket, $userPayment);
+        Registry::getSession()->deleteVariable('blDontCheckProductStockForPayPalMails');
+    }
+
+    /**
+     * Bind basket vouchers to the order (so they appear in oxvouchers and in
+     * the order-confirmation mail's voucher list) and then send the mail.
+     * Required for proxy-controller payments (ACDC, Apple Pay, Google Pay,
+     * PayPal Standard via proxy) whose mail send paths reach `_markVouchers`
+     * with `isProxyControllerPayment == true` — the skip guard there would
+     * otherwise drop the voucher binding, producing a confirmation mail
+     * without the voucher line even though the discount was applied at
+     * checkout. Use this method at every "external payment confirmed"
+     * mail-send site; for non-proxy payments (Express, PUI, uAPMs) calling
+     * this method is also safe — parent::_markVouchers is idempotent against
+     * a voucher already bound to the same order.
+     */
+    public function sendPayPalOrderByEmailWithVoucherBinding(User $user, Basket $basket): void
+    {
+        $this->skipProxyControllerVoucherGuard = true;
+        try {
+            $this->_markVouchers($basket, $user);
+        } finally {
+            $this->skipProxyControllerVoucherGuard = false;
+        }
+        $this->sendPayPalOrderByEmail($user, $basket);
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @param User $oUser    order user
+     * @param \OxidEsales\Eshop\Application\Model\Basket      $oBasket  current order basket
+     * @param \OxidEsales\Eshop\Application\Model\UserPayment $oPayment order payment
+     *
+     * @return bool
+     */
+    protected function _sendOrderByEmail($oUser = null, $oBasket = null, $oPayment = null)
+    {
+        if (Registry::getSession()->getVariable('isPayPalPaymentCheckout')) {
+            return self::ORDER_STATE_OK;
+        }
+
+        $this->_markVouchers($oBasket, $oUser);
+
+        return parent::_sendOrderByEmail($oUser, $oBasket, $oPayment);
+    }
+
+    /**
+     * @inheritDoc
+     *
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket basket object
+     * @param \OxidEsales\Eshop\Application\Model\User   $oUser   user object
+     * @deprecated underscore prefix violates PSR12, will be renamed to "markVouchers" in next major
+     */
+    protected function _markVouchers($oBasket, $oUser) // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+    {
+        $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
+
+        // Skip markVoucher in the early pre-redirect call so cancel+retry stays
+        // safe (0007940). The late call from finalizeOrderAfterExternalPayment
+        // sets $skipProxyControllerVoucherGuard so the binding actually happens
+        // after the external payment was confirmed (0007944).
+        if (
+            !$this->skipProxyControllerVoucherGuard
+            && PayPalDefinitions::isProxyControllerPayment($sessionPaymentId)
+        ) {
+            return null;
+        }
+
+        return parent::_markVouchers($oBasket, $oUser);
+    }
+
+    //TODO: this place should be refactored in shop core
+    protected function afterOrderCleanUp(Basket $basket, User $user): void
+    {
+        // deleting remark info only when order is finished
+        Registry::getSession()->deleteVariable('ordrem');
+
+        // store orderid
+        $basket->setOrderId($this->getId());
+
+        // updating wish lists
+        $this->_updateWishlist($basket->getContents(), $user);
+
+        // updating users notice list
+        $this->_updateNoticeList($basket->getContents(), $user);
+
+        // marking vouchers as used and sets them to $this->_aVoucherList (will be used in order email)
+        // skipping this action in case of order recalculation
+        $this->_markVouchers($basket, $user);
+    }
+
+    /**
+     * Stops a second, concurrent finalizeOrder() of the same shop order from writing a
+     * second set of order articles and a second stock movement.
+     *
+     * finalizeOrder() asks _checkOrderExist() on entry. For the second pass that answer
+     * is wrong - not because the guard is wrong, but because it is asked too early: the
+     * first pass has already inserted its order row while still holding it in the open
+     * finalize transaction, so the row is invisible by isolation. The second pass
+     * therefore walks on, builds its own order articles from the basket and saves them.
+     * Two things go wrong at that point:
+     *
+     * - the positions are duplicated, because BaseModel::save() decides INSERT vs UPDATE
+     *   through exists(), a live query - by then the first pass has committed, so the
+     *   order row is updated while the articles are inserted a second time;
+     * - the article stock is booked twice, because OrderArticle::save() treats every new
+     *   order item as a stock movement.
+     *
+     * Two statements close the window, and neither needs a schema change, a
+     * database-specific function or a particular shop setting:
+     *
+     * 1. acquireFinalizeLock() blocks a concurrent pass until the one that holds the
+     *    finalize transaction has committed or rolled back.
+     * 2. _checkOrderExist() is asked once more. Past the lock it finally has the
+     *    information it needs, and the order is recognised as already finalized.
+     *    This happens before parent::validateOrder(): the first pass may already have
+     *    used up the last unit of an article, and the second pass must report the
+     *    existing order instead of a misleading stock error.
+     *
+     * Aborting here is what matters: validateOrder() runs before _loadFromBasket(), so
+     * no second position list is built and no second stock movement is booked.
+     *
+     * The guard added for the same symptom in 2.9.2 cannot cover this. It lives, together with the
+     * oxpaid/oxtransid check, inside the isPayPalPayment() branch of finalizeOrder(),
+     * and isPayPalPayment() resolves the payment through the *session* basket. Once the
+     * first pass has finalized the order and emptied that basket, the second pass of the
+     * very same PayPal checkout sees no payment id at all - which skips the stock-lock
+     * transaction and every guard in one go. This override sits outside that branch and
+     * is therefore reached regardless.
+     *
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket basket object
+     * @param \OxidEsales\Eshop\Application\Model\User   $oUser   order user
+     *
+     * @return null|int order state, null when the order may be finalized
+     */
+    public function validateOrder($oBasket, $oUser)
+    {
+        $this->acquireFinalizeLock($oUser);
+
+        // finalizeOrder() has set the id from sess_challenge right before calling us
+        $orderId = (string) $this->getId();
+        if ($orderId !== '' && $this->_checkOrderExist($orderId)) {
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->log('warning', 'validateOrder: order was finalized by a concurrent request'
+                . ' while this one was waiting - aborting before a second set of order articles'
+                . ' and a second stock movement is written', ['shopOrderId' => $orderId]);
+
+            return self::ORDER_STATE_ORDEREXISTS;
+        }
+
+        return parent::validateOrder($oBasket, $oUser);
+    }
+
+    /**
+     * Serialization point for concurrent finalizations of one customer: a locking read on
+     * the customer's own row, which the finalize transaction holds until it commits. A
+     * concurrent pass waits here and continues only afterwards.
+     *
+     * Deliberately not relying on validateStock()'s own locking read below: that one is
+     * skipped entirely when stock management is switched off, and the race is not about
+     * stock. The customer row is the narrowest row both passes are guaranteed to share -
+     * two different shoppers never wait for each other.
+     *
+     * The lock clause comes from the Doctrine platform instead of being hard-coded, and
+     * the query runs on the same connection as the finalize transaction, so the lock is
+     * released exactly when that transaction ends.
+     *
+     * A lock that cannot be taken must never cost an order, so a failure is logged and
+     * the order proceeds - leaving the behaviour as it was before this change.
+     *
+     * @param mixed $oUser order user, as handed over by the untyped core signature
+     */
+    private function acquireFinalizeLock($oUser): void
+    {
+        if (!$oUser instanceof User || !$oUser->getId()) {
+            return;
+        }
+
+        /** @var QueryBuilderFactoryInterface $queryBuilderFactory */
+        $queryBuilderFactory = $this->getServiceFromContainer(QueryBuilderFactoryInterface::class);
+        $queryBuilder = $queryBuilderFactory->create();
+        $queryBuilder
+            ->select('oxid')
+            ->from('oxuser')
+            ->where('oxid = :oxid')
+            ->setParameter('oxid', $oUser->getId());
+
+        $connection = $queryBuilder->getConnection();
+        $lockingSelect = $queryBuilder->getSQL() . ' ' . $connection->getDatabasePlatform()->getForUpdateSQL();
+
+        try {
+            $connection->executeQuery($lockingSelect, $queryBuilder->getParameters());
+        } catch (Throwable $exception) {
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->log('warning', 'validateOrder: could not acquire the finalize lock', [
+                'userId' => $oUser->getId(),
+                'error' => $exception->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Override to use SELECT ... FOR UPDATE for stock validation.
+     * This prevents race conditions where two parallel requests both read
+     * the same stock level and both proceed to place an order.
+     * Requires an active DB transaction (started in finalizeOrder) to hold the lock.
+     *
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket basket object
+     */
+    public function validateStock($oBasket)
+    {
+        foreach ($oBasket->getContents() as $key => $oContent) {
+            try {
+                $oProd = $oContent->getArticle(true, null, true);
+            } catch (\OxidEsales\Eshop\Core\Exception\NoArticleException $oEx) {
+                $oBasket->removeItem($key);
+                throw $oEx;
+            } catch (\OxidEsales\Eshop\Core\Exception\ArticleInputException $oEx) {
+                $oBasket->removeItem($key);
+                throw $oEx;
+            }
+
+            $dArtStockAmount = $oBasket->getArtStockInBasket($oProd->getId(), $key);
+            // 3rd parameter: selectForUpdate = true
+            $iOnStock = $oProd->checkForStock($oContent->getAmount(), $dArtStockAmount, true);
+            if ($iOnStock !== true) {
+                /** @var \OxidEsales\Eshop\Core\Exception\OutOfStockException $oEx */
+                $oEx = oxNew(\OxidEsales\Eshop\Core\Exception\OutOfStockException::class);
+                $oEx->setMessage('ERROR_MESSAGE_OUTOFSTOCK_OUTOFSTOCK');
+                $oEx->setArticleNr($oProd->oxarticles__oxartnum->value);
+                $oEx->setProductId($oProd->getId());
+                $oEx->setBasketIndex($key);
+
+                if (!is_numeric($iOnStock)) {
+                    $iOnStock = 0;
+                }
+                $oEx->setRemainingAmount($iOnStock);
+                throw $oEx;
+            }
+        }
+    }
+
+    /**
+     * Executes payment. Additionally loads oxPaymentGateway object, initiates
+     * it by adding payment parameters (oxPaymentGateway::setPaymentParams())
+     * and finally executes it (oxPaymentGateway::executePayment()). On failure -
+     * deletes order and returns * error code 2.
+     *
+     * @param Basket $basket      basket object
+     * @param object $userpayment user payment object
+     *
+     * @return  integer 2 or an error code
+     * @deprecated underscore prefix violates PSR12, will be renamed to "executePayment" in next major
+     */
+    // phpcs:ignore PSR2.Methods.MethodDeclaration.Underscore
+    protected function _executePayment(Basket $basket, $userpayment)
+    {
+        $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
+
+        if (PayPalDefinitions::isProxyControllerPayment($sessionPaymentId)) {
+            if (!Registry::getSession()->getVariable('isPayPalPaymentCheckout')) {
+                return self::ORDER_STATE_PAYMENTERROR;
+            }
+            return true;
+        }
+
+        $isPayPalUAPM = PayPalDefinitions::isUAPMPayment($sessionPaymentId);
+
+        //catch UAPM
+        if ($isPayPalUAPM) {
+            try {
+                //order number needs to be set before the payment is requested
+                $this->setOrderNumber();
+
+                $redirectLink = $this->paymentService->doExecuteUAPMPayment($this, $basket);
+
+                PayPalSession::setSessionRedirectLink($redirectLink);
+
+                return self::ORDER_STATE_SESSIONPAYMENT_INPROGRESS;
+
+            } catch (Exception $exception) {
+                $this->cancelPayPalOrder();
+                /** @var LoggerInterface $logger */
+                $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+                $logger->log('error', 'UAPM payment execution failed: ' . $exception->getMessage(), [$exception]);
+            }
+            return self::ORDER_STATE_PAYMENTERROR;
+        }
+
+        // Handle Express/Button payments with proper storno on failure
+        if (PayPalDefinitions::isButtonPayment($sessionPaymentId)) {
+            $oPayTransaction = $this->_getGateway();
+            $oPayTransaction->setPaymentParams($userpayment);
+
+            if (!$oPayTransaction->executePayment($basket->getPrice()->getBruttoPrice(), $this)) {
+                $cancelResult = $this->cancelPayPalOrder();
+
+                // Late-stage idempotency for concurrent double-submits: when the
+                // first submit completed payment after this submit had already
+                // entered executePayment, the Express path here sees the cleared
+                // PayPal session, returns false, and we land in cancelPayPalOrder.
+                // cancelPayPalOrder skips the storno because the order is in fact
+                // already paid — but without this guard we would still return
+                // ORDER_STATE_PAYMENTERROR and the customer would see a payerror,
+                // assume the payment failed, and place a duplicate order.
+                // Scoped to the PayPal Express branch only — non-PayPal gateways
+                // never reach this code.
+                if (
+                    !$cancelResult
+                    && $this->isOrderSuccessfullyPaid()
+                    && !empty($this->getFieldData('oxtransid'))
+                ) {
+                    return self::ORDER_STATE_OK;
+                }
+
+                if (method_exists($oPayTransaction, 'getLastError')) {
+                    if (($sLastError = $oPayTransaction->getLastError())) {
+                        return $sLastError;
+                    }
+                }
+                if (method_exists($oPayTransaction, 'getLastErrorNo')) {
+                    if (($iLastErrorNo = $oPayTransaction->getLastErrorNo())) {
+                        return $iLastErrorNo;
+                    }
+                }
+
+                return self::ORDER_STATE_PAYMENTERROR;
+            }
+            return true;
+        }
+
+        // for all other PayPal-Payments ignore the _executePayment, because it is handle before
+        if (Registry::getSession()->getVariable('isPayPalPaymentCheckout')) {
+            return true;
+        }
+
+        // Gateway payments (e.g. PUI) are processed by OXID's core PaymentGateway,
+        // so they must fall through to parent::_executePayment().
+        if (PayPalDefinitions::isGatewayPayment($sessionPaymentId)) {
+            return parent::_executePayment($basket, $userpayment);
+        }
+
+        // Reject any PayPal payment that was not handled by the flows above
+        if (PayPalDefinitions::isPayPalPayment($sessionPaymentId)) {
+            return self::ORDER_STATE_PAYMENTERROR;
+        }
+
+        return parent::_executePayment($basket, $userpayment);
+    }
+
+    /**
+     * Properly cancels a failed PayPal order: storno with stock release,
+     * mark as failed, clean up PayPal session, and only hard-delete if
+     * no order number was assigned.
+     *
+     * @param string $cancelReason one of the PayPalCancelReason constants; used
+     *                             to classify the storno in the merchant log so
+     *                             expected cancels (customer abort, payment
+     *                             decline) can be told apart from process errors
+     * @return bool true if order was deleted, false if kept as storno
+     */
+    public function cancelPayPalOrder(string $cancelReason = PayPalCancelReason::UNKNOWN): bool
+    {
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+
+        // A refused capture records its PayPal issue in the session. A real
+        // decline (e.g. TRANSACTION_REFUSED) is the authoritative cause and
+        // wins over any reason passed in — even if the buyer then also hit the
+        // cancel button. Consume it on read so it cannot leak into a later,
+        // unrelated cancel of a retry order.
+        $declineIssue = PayPalSession::getCancelDeclineIssue();
+        if ($declineIssue !== '') {
+            PayPalSession::unsetCancelDeclineIssue();
+            $cancelReason = PayPalCancelReason::PAYMENT_DECLINED;
+        }
+        $ppIssue = $cancelReason === PayPalCancelReason::PAYMENT_DECLINED ? $declineIssue : null;
+        $reasonSuffix = PayPalCancelReason::formatLogSuffix($cancelReason, $ppIssue);
+
+        // Idempotency guard: duplicate/triple-fired cancel requests (a frontend
+        // double-submit) must not storno or re-log the same order more than once.
+        if ((int)$this->getFieldData('oxstorno') === 1) {
+            $logger->log('debug', sprintf(
+                'PayPal order with id %s (nr: %s) cancel skipped - already stornoed (%s)',
+                $this->getId(),
+                $this->getFieldData('oxordernr'),
+                $reasonSuffix
+            ));
+            return false;
+        }
+
+        // Safety guard: never cancel an order that has been successfully captured
+        if ($this->isOrderSuccessfullyPaid() || !empty($this->getFieldData('oxtransid'))) {
+            $logger->log('warning', sprintf(
+                'PayPal order with id %s (nr: %s) cancel skipped - payment already processed (transid: %s) (%s)',
+                $this->getId(),
+                $this->getFieldData('oxordernr'),
+                $this->getFieldData('oxtransid'),
+                $reasonSuffix
+            ));
+            return false;
+        }
+
+        // Safety guard: check the PayPal API status before canceling.
+        $payPalStatus = $this->getPayPalApiOrderStatus();
+
+        // A genuinely captured PayPal order must never be stornoed here.
+        if ($payPalStatus === PayPalApiOrder::STATUS_COMPLETED) {
+            $logger->log('warning', sprintf(
+                'PayPal order with id %s (nr: %s) cancel blocked - PayPal order already captured (%s)',
+                $this->getId(),
+                $this->getFieldData('oxordernr'),
+                $reasonSuffix
+            ));
+            return false;
+        }
+
+        // An APPROVED-but-not-captured order is ambiguous: it can be a buyer who
+        // clicked "Pay" but closed the popup before onApprove fired (PayPal may
+        // still complete it) OR the leftover of a refused capture (a dead order
+        // that is safe to storno). Only the latter — where a decline issue was
+        // recorded — is stornoed; the former keeps the original protective
+        // behavior so we never storno a payment PayPal might still complete.
+        if (
+            $payPalStatus === PayPalApiOrder::STATUS_APPROVED
+            && $cancelReason !== PayPalCancelReason::PAYMENT_DECLINED
+        ) {
+            $logger->log('warning', sprintf(
+                'PayPal order with id %s (nr: %s) cancel blocked - PayPal order already approved (%s)',
+                $this->getId(),
+                $this->getFieldData('oxordernr'),
+                $reasonSuffix
+            ));
+            return false;
+        }
+
+        $this->cancelOrder();
+        $this->markOrderPaymentFailed();
+        $this->save();
+
+        // Wipe PayPal-side session state so a retry creates a fresh PayPal
+        // order instead of inheriting this one. Shipping is preserved.
+        PayPalSession::unsetPayPalSession(false);
+        $basket = Registry::getSession()->getBasket();
+        if ($basket !== null) {
+            $basket->setOrderId(null);
+        }
+
+        if (!$this->hasOrderNumber()) {
+            $this->delete();
+            $logger->log('info', sprintf(
+                'PayPal order with id %s was canceled and deleted (no order number) (%s)',
+                $this->getId(),
+                $reasonSuffix
+            ));
+            return true;
+        }
+
+        $logger->log('info', sprintf(
+            'PayPal order with id %s (nr: %s) was canceled and kept as storno (%s)',
+            $this->getId(),
+            $this->getFieldData('oxordernr'),
+            $reasonSuffix
+        ));
+
+        return false;
+    }
+
+    /**
+     * Returns the current PayPal API status of this order (e.g. CREATED,
+     * PAYER_ACTION_REQUIRED, APPROVED, COMPLETED). Used by the cancel guard to
+     * tell a captured order (never storno) from an APPROVED-but-not-captured
+     * one (may be a late-approving buyer or the leftover of a refused capture).
+     *
+     * @return string the PayPal status, or '' if it cannot be determined
+     */
+    protected function getPayPalApiOrderStatus(): string
+    {
+        $payPalOrderId = $this->getPayPalOrderIdForOxOrderId();
+        if (!$payPalOrderId) {
+            return '';
+        }
+
+        try {
+            $orderService = Registry::get(ServiceFactory::class)->getOrderService();
+            $apiOrder = $orderService->showOrderDetails(
+                $payPalOrderId,
+                '',
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+            );
+
+            return (string)($apiOrder->status ?? '');
+        } catch (ApiException $exception) {
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->log('debug', sprintf(
+                'PayPal API check failed for order %s during cancel guard: %s',
+                $this->getId(),
+                $exception->getMessage()
+            ));
+            // If the API call fails, return '' so the cancel is allowed to proceed
+            return '';
+        }
+    }
+
+    /**
+     * Get PayPal order object for the current active order object
+     * Result is cached and returned on subsequent calls
+     *
+     * @param string $payPalOrderId
+     * @return PayPalApiOrder
+     * @throws ApiException
+     */
+    public function getPayPalCheckoutOrder(string $payPalOrderId = ''): PayPalApiOrder
+    {
+        $payPalOrderId = $payPalOrderId ?: $this->getPayPalOrderIdForOxOrderId();
+        if (!$this->payPalApiOrder) {
+            /** @var Orders $orderService */
+            $orderService = Registry::get(ServiceFactory::class)->getOrderService();
+            $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
+
+            $this->payPalApiOrder = $orderService->showOrderDetails(
+                $payPalOrderId,
+                '',
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+            );
+        }
+
+        return $this->payPalApiOrder;
+    }
+
+    /**
+     * Race-free duplicate-finalization check for button/express payments: returns true when PayPal
+     * already reports the checkout order as COMPLETED (i.e. a prior finalize pass captured it).
+     * Deliberately does a fresh lookup without populating the memoized $payPalApiOrder, so the
+     * regular express capture flow later still sees the up-to-date (post-capture) order.
+     */
+    private function isPayPalCheckoutOrderCompleted(string $payPalOrderId): bool
+    {
+        try {
+            /** @var Orders $orderService */
+            $orderService = Registry::get(ServiceFactory::class)->getOrderService();
+            $orderService->setTrackingId($this->orderProcessTrackingService->getTrackingId());
+            $apiOrder = $orderService->showOrderDetails(
+                $payPalOrderId,
+                '',
+                Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+            );
+
+            return (string) ($apiOrder->status ?? '') === 'COMPLETED';
+        } catch (\Throwable $exception) {
+            // On any lookup error, do not block finalization.
+            return false;
+        }
+    }
+
+    protected function doExecutePayPalPayment(string $payPalOrderId): bool
+    {
+        $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
+        $success = false;
+
+        // Capture Order
+        try {
+            // At this point we only trigger the capture. We find out that order was really captured via the
+            // CHECKOUT.ORDER.COMPLETED webhook, where we mark the order as paid
+            $this->paymentService->doCapturePayPalOrder($this, $payPalOrderId, $sessionPaymentId);
+            // success means at this point, that we triggered the capture without errors
+            $success = true;
+        } catch (Exception $exception) {
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->log('warning', 'PayPal capture failed or refused: ' . $exception->getMessage(), [$exception]);
+        }
+
+        // destroy PayPal-Session
+        PayPalSession::unsetPayPalOrderId();
+
+        return $success;
+    }
+
+    /**
+     * Auto-push PayPal tracking on Order::save() so admin-UI and warehouse-
+     * management (Wawi/ERP) shipping flows reach PayPal uniformly. The push
+     * is gated by a snapshot diff over the four tracking-relevant persisted
+     * fields — oxorder.oxsenddate, oxorder.oxtrackcode, oscpaypal_order.
+     * paypaltrackingcode, oscpaypal_order.paypaltrackingcarrier — so saves
+     * that only touched unrelated columns do not generate redundant pushes,
+     * while pressing "Versenden" again with an updated tracking code or
+     * carrier (or re-stamping oxsenddate) does push again. (0007945)
+     */
+    public function save()
+    {
+        $oldSnapshot = $this->readPayPalTrackingSnapshot();
+
+        $result = parent::save();
+
+        $newSendDate = (string) $this->getFieldData('oxsenddate');
+        $isNowSet = $newSendDate !== '' && $newSendDate !== '0000-00-00 00:00:00';
+        $paid = $this->paidWithPayPal();
+
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        $logger->log('info', sprintf(
+            'Order::save tracking-hook: order=%s nr=%s isNowSet=%s paidWithPayPal=%s',
+            $this->getId(),
+            $this->getFieldData('oxordernr'),
+            $isNowSet ? 'true' : 'false',
+            $paid ? 'true' : 'false'
+        ));
+
+        if ($isNowSet && $paid) {
+            $newSnapshot = $this->readPayPalTrackingSnapshot();
+            $changed = $newSnapshot !== $oldSnapshot;
+
+            $logger->log('info', sprintf(
+                'Order::save tracking-hook: snapshot %s — old=[%s] new=[%s]',
+                $changed ? 'CHANGED — pushing' : 'unchanged — skipping',
+                $oldSnapshot,
+                $newSnapshot
+            ));
+
+            if ($changed) {
+                try {
+                    $this->doProvidePayPalTrackingCarrier();
+                } catch (\Throwable $exception) {
+                    $logger->log('warning', sprintf(
+                        'PayPal tracking auto-push during Order::save failed for order %s (nr: %s): %s',
+                        $this->getId(),
+                        $this->getFieldData('oxordernr'),
+                        $exception->getMessage()
+                    ), [$exception]);
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Pin the capture row in oscpaypal_order (which holds a per-event history)
+     * and return its transaction id. Filtered on transaction_type='capture'
+     * with a completed-style status so neither a still-empty pre-capture row
+     * (status CREATED) nor an authorize/refund row gets returned. (0007945)
+     */
+    public function getPayPalCaptureTransactionId(): string
+    {
+        if (!$this->isLoaded() || !$this->getId()) {
+            return '';
+        }
+        $transactionId = DatabaseProvider::getDb()->getOne(
+            'SELECT oscpaypaltransactionid FROM oscpaypal_order '
+            . 'WHERE oxorderid = ? '
+            . "AND oscpaypaltransactiontype = 'capture' "
+            . "AND oscpaypalstatus IN ('COMPLETED', 'CAPTURED') "
+            . "AND oscpaypaltransactionid <> '' "
+            . 'ORDER BY oxtimestamp DESC LIMIT 1',
+            [$this->getId()]
+        );
+        return (string) $transactionId;
+    }
+
+    /**
+     * Read a stable string representation of the four tracking-relevant
+     * persisted fields to compare across a save() call. Returns '' for
+     * unloaded / unsaved orders so a first-time save also registers as
+     * a change (the diff against the post-save value will then be non-empty).
+     */
+    private function readPayPalTrackingSnapshot(): string
+    {
+        if (!$this->isLoaded() || !$this->getId()) {
+            return '';
+        }
+
+        $row = DatabaseProvider::getDb()->getRow(
+            'SELECT o.oxsenddate, o.oxtrackcode, '
+            . 'COALESCE(pp.oscpaypaltrackingid, \'\') AS pp_trackingid, '
+            . 'COALESCE(pp.oscpaypaltrackingtype, \'\') AS pp_trackingtype '
+            . 'FROM oxorder o '
+            . 'LEFT JOIN oscpaypal_order pp ON pp.oxorderid = o.oxid '
+            . 'WHERE o.oxid = ?',
+            [$this->getId()]
+        );
+
+        return $row ? implode('|', $row) : '';
+    }
+
+    public function doProvidePayPalTrackingCarrier(
+        string $transactionId = '',
+        string $trackCarrier = '',
+        string $trackCode = '',
+        string $status = ''
+    ): bool {
+        $trackCode = $trackCode ?: $this->getPayPalTrackingCode();
+        if (!$trackCode) {
+            // Inherit the OXID-native tracking code when the PayPal tracking
+            // tab was not used — typical when a warehouse-management system
+            // sets oxtrackcode directly and triggers the regular send path. (0007945)
+            $trackCode = (string) $this->getFieldData('oxtrackcode');
+        }
+        $trackCarrier = $trackCarrier ?: $this->getPayPalTrackingCarrier();
+        if (!$trackCarrier && $trackCode) {
+            // No carrier selected in the PayPal tracking tab — fall back to
+            // PayPal's generic OTHER carrier so the tracking code still
+            // reaches PayPal. The customer will see the code in PayPal but
+            // without a clickable carrier link. (0007945)
+            $trackCarrier = 'OTHER';
+        }
+        // oscpaypal_order keeps a per-event history (authorize, capture,
+        // refund …) with one row each, so an undifferentiated lookup via
+        // getPayPalTransactionId() could pick a non-capture row. Filter
+        // explicitly on transaction_type='capture' and a completed status
+        // to pin the capture row. oxorder.oxtransid stays as the last-ditch
+        // fallback for orders whose history row never received the capture
+        // id (legacy direct-capture paths). (0007945)
+        if (!$transactionId) {
+            $transactionId = $this->getPayPalCaptureTransactionId();
+        }
+        if (!$transactionId) {
+            $transactionId = (string) $this->getFieldData('oxtransid');
+        }
+        // v2 tracking endpoint needs the PayPal order id in the URL — fetch
+        // it from the oscpaypal_order mapping. (0007945)
+        $payPalOrderId = $this->getPayPalOrderIdForOxOrderId();
+
+        if (!$trackCode || !$trackCarrier || !$transactionId || !$payPalOrderId) {
+            $missing = array_filter([
+                !$trackCode     ? 'trackCode'     : null,
+                !$trackCarrier  ? 'trackCarrier'  : null,
+                !$transactionId ? 'capture_id'    : null,
+                !$payPalOrderId ? 'payPalOrderId' : null,
+            ]);
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->log('info', sprintf(
+                'PayPal tracking push skipped for order %s (nr: %s) — missing: %s',
+                $this->getId(),
+                $this->getFieldData('oxordernr'),
+                implode(', ', $missing)
+            ));
+            return false;
+        }
+        $success = oxNew(Tracker::class)->sendtracking(
+            $payPalOrderId,
+            $transactionId,
+            $trackCode,
+            $trackCarrier,
+            $status
+        );
+        if ($success) {
+            $this->setPayPalOrderTrackingCode($trackCode);
+        }
+        return $success;
+    }
+
+    /**
+     * Update order oxpaid to current time.
+     */
+    public function markOrderPaid(): void
+    {
+        $this->_setOrderStatus('OK');
+
+        $db = DatabaseProvider::getDb();
+        $utilsDate = Registry::getUtilsDate();
+        $date = date('Y-m-d H:i:s', $utilsDate->getTime());
+
+        $query = 'update oxorder set oxpaid=? where oxid=?';
+        $db->execute($query, [$date, $this->getId()]);
+
+        //updating order object
+        $this->oxorder__oxpaid = new Field($date);
+    }
+
+    public function markOrderPaymentFailed(): void
+    {
+        $this->_setOrderStatus('ERROR');
+    }
+
+    public function markOrderPaymentNotFinished(): void
+    {
+        $this->_setOrderStatus('NOT_FINISHED');
+    }
+
+    /**
+     * Update order oxtransid
+     */
+    public function setTransId($sTransId): void
+    {
+        $db = DatabaseProvider::getDb();
+
+        $query = 'update oxorder set oxtransid=? where oxid=?';
+        $db->execute($query, [$sTransId, $this->getId()]);
+
+        //updating order object
+        $this->oxorder__oxtransid = new Field($sTransId);
+    }
+
+    /**
+     * Update order oxtrackcode with the PayPal tracking code, so the native
+     * OXID tracking field — and the frontend order-history link that reads it —
+     * reflects the code entered for the PayPal order. Called after a successful
+     * API push and, when the native field was left empty, from the admin save.
+     * (0007954)
+     */
+    public function setPayPalOrderTrackingCode(string $trackCode): void
+    {
+        $db = DatabaseProvider::getDb();
+
+        $query = 'update oxorder set oxtrackcode=? where oxid=?';
+        $db->execute($query, [$trackCode, $this->getId()]);
+
+        //updating order object
+        $this->oxorder__oxtrackcode = new Field($trackCode);
+    }
+
+    /**
+     * Returns PayPal order id.
+     *
+     * @param string|null $oxId
+     */
+    public function getPayPalOrderIdForOxOrderId(string $oxId = null): string
+    {
+        //TODO: model?
+        // Only positive results are memoized. A negative lookup must not be cached because
+        // the oscpaypal_order row can be written during the same request (PUI flow:
+        // Order::save tracking-hook calls paidWithPayPal() before Payment::trackPayPalOrder
+        // inserts the row). A cached empty value would then mask the freshly written id,
+        // making the subsequent capture lookup request GET /v2/checkout/orders/ (no id) — 404.
+        if (!empty($this->payPalOrderId)) {
+            return $this->payPalOrderId;
+        }
+
+        $oxId = is_null($oxId) ? $this->getId() : $oxId;
+        $table = 'oscpaypal_order';
+        $shopId = $this->getShopId();
+        $params = [$table . '.oxorderid' => $oxId, $table . '.oxshopid' => $shopId];
+
+        $paypalOrderObj = oxNew(BaseModel::class);
+        $paypalOrderObj->init($table);
+        $select = $paypalOrderObj->buildSelectString($params);
+
+        if ($data = DatabaseProvider::getDb(DatabaseProvider::FETCH_MODE_ASSOC)->getRow($select)) {
+            $this->payPalOrderId = $data['oxpaypalorderid'];
+            return $this->payPalOrderId;
+        }
+
+        return '';
+    }
+
+    /**
+     * Returns PayPalPlus order id.
+     *
+     * @param string|null $oxId
+     *
+     * @return string
+     */
+    public function getPayPalPlusOrderIdForOxOrderId(string $oxId = null): string
+    {
+        if (is_null($this->payPalPlusOrderId)) {
+            $this->payPalPlusOrderId = '';
+            $oxId = is_null($oxId) ? $this->getId() : $oxId;
+            $order = oxNew(PayPalPlusOrder::class);
+            if ($order->tableExists() && $order->loadByOrderId($oxId)) {
+                $this->payPalPlusOrderId = $order->getId();
+            }
+        }
+        return $this->payPalPlusOrderId;
+    }
+
+    /**
+     * Returns PayPalSoap order id
+     *
+     * @param string|null $oxId
+     *
+     * @return string
+     */
+    public function getPayPalSoapOrderIdForOxOrderId(string $oxId = null): string
+    {
+        if (is_null($this->payPalSoapOrderId)) {
+            $this->payPalSoapOrderId = '';
+            $oxId = is_null($oxId) ? $this->getId() : $oxId;
+            $order = oxNew(PayPalSoapOrder::class);
+            if ($order->tableExists() && $order->loadByOrderId($oxId)) {
+                $this->payPalSoapOrderId = $order->getId();
+            }
+        }
+        return $this->payPalSoapOrderId;
+    }
+
+    /**
+     * Checks if the order was paid using PayPal
+     *
+     * @return bool
+     */
+    public function paidWithPayPal(): bool
+    {
+        return (bool)$this->getPayPalOrderIdForOxOrderId();
+    }
+
+    /**
+     * Checks if the order was paid using PayPalPlus
+     *
+     * @return bool
+     */
+    public function paidWithPayPalPlus(): bool
+    {
+        return (bool)$this->getPayPalPlusOrderIdForOxOrderId();
+    }
+
+    /**
+     * Checks if the order was paid using PayPalSoap
+     *
+     * @return bool
+     */
+    public function paidWithPayPalSoap(): bool
+    {
+        return (bool)$this->getPayPalSoapOrderIdForOxOrderId();
+    }
+
+    public function isOrderSuccessfullyPaid(): bool
+    {
+        return $this->paidWithPayPal() &&
+            $this->isOrderFinished() &&
+            $this->isOrderPaid();
+    }
+
+    /**
+     * Checks if PayPalPlus-tables exists anymore
+     *
+     * @return bool
+     */
+    public function tableExitsForPayPalPlus(): bool
+    {
+        return oxNew(PayPalPlusOrder::class)->tableExists();
+    }
+
+    /**
+     * Checks if PayPalSoap-tables exists anymore
+     *
+     * @return bool
+     */
+    public function tableExitsForPayPalSoap(): bool
+    {
+        return oxNew(PayPalSoapOrder::class)->tableExists();
+    }
+
+    /**
+     * Get order payment capture or null if not captured
+     *
+     * @return Capture|null
+     * @throws ApiException
+     */
+    public function getOrderPaymentCapture($payPalOrderId = ''): ?Capture
+    {
+        return $this->getPayPalCheckoutOrder($payPalOrderId)->purchase_units[0]->payments->captures[0] ?? null;
+    }
+
+    /**
+     * Everything PayPal has captured for this order, over all captures.
+     */
+    public function getPayPalCapturedAmount(): float
+    {
+        $capturedAmount = 0.0;
+        $captures = (array)($this->getPayPalCheckoutOrder()->purchase_units[0]->payments->captures ?? []);
+
+        foreach ($captures as $capture) {
+            $capturedAmount += (float)$capture->amount->value;
+        }
+
+        return $capturedAmount;
+    }
+
+    /**
+     * Everything PayPal has refunded for this order, over all refunds.
+     */
+    public function getPayPalRefundedAmount(): float
+    {
+        $refundedAmount = 0.0;
+        $refunds = (array)($this->getPayPalCheckoutOrder()->purchase_units[0]->payments->refunds ?? []);
+
+        foreach ($refunds as $refund) {
+            $refundedAmount += (float)$refund->amount->value;
+        }
+
+        return $refundedAmount;
+    }
+
+    /**
+     * What the payment still holds: captured minus already refunded. This is the only amount an
+     * automated refund ever sends, and the amount the refund form in the order view offers.
+     */
+    public function getPayPalRemainingRefundAmount(): float
+    {
+        return $this->getPayPalCapturedAmount() - $this->getPayPalRefundedAmount();
+    }
+
+    /**
+     * Refunds a captured PayPal payment and records the refund on the order. The single place the
+     * module asks PayPal for a refund: the refund form in the order view and the automated refund
+     * on cancellation both come through here, so both are tracked the same way.
+     *
+     * @param float $amount amount to refund, ignored when $refundAll is true
+     * @param bool $refundAll refund whatever the capture still holds - no amount is sent at all
+     *                        then and PayPal decides it
+     * @param string $noteToPayer note PayPal shows the customer, omitted when empty
+     * @param string $invoiceId merchant invoice id, omitted when empty
+     * @return Refund|null the refund as PayPal answered it, null when this order has no capture to
+     *                     refund against
+     * @throws ApiException
+     */
+    public function refundPayPalCapture(
+        float $amount,
+        bool $refundAll = false,
+        string $noteToPayer = '',
+        string $invoiceId = ''
+    ): ?Refund {
+        $capture = $this->getOrderPaymentCapture();
+        if (!$capture instanceof Capture) {
+            return null;
+        }
+
+        $refundRequest = new RefundRequest();
+        $refundRequest->note_to_payer = $noteToPayer !== '' ? $noteToPayer : null;
+        $refundRequest->invoice_id = $invoiceId !== '' ? $invoiceId : null;
+        if (!$refundAll) {
+            $currency = Registry::getConfig()->getCurrencyObject((string)$this->getFieldData('oxcurrency'));
+            $currency->decimal = 2; //PayPal requires decimal precision of 2
+            $refundRequest->initAmount();
+            $refundRequest->amount->currency_code = $capture->amount->currency_code;
+            $refundRequest->amount->value = AmountFormatter::format($amount, (int)$currency->decimal);
+        }
+
+        /** @var Payments $apiPaymentService */
+        $apiPaymentService = Registry::get(ServiceFactory::class)->getPaymentService();
+
+        /** @var Refund $refund */
+        $refund = $apiPaymentService->refundCapturedPayment(
+            $capture->id,
+            $refundRequest,
+            '',
+            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP
+        );
+
+        // PayPal has moved the money at this point. Recording the refund in the module's own order
+        // table is bookkeeping, and bookkeeping must not turn a refund that happened into a refund
+        // that failed: the caller would report a failure, the customer would not be told the
+        // amount, and the money would be gone all the same. So this is logged loudly and the
+        // refund is returned regardless.
+        try {
+            /** @var OrderRepository $orderRepository */
+            $orderRepository = $this->getServiceFromContainer(OrderRepository::class);
+            $payPalOrder = $orderRepository->paypalOrderByOrderIdAndPayPalId(
+                $this->getId(),
+                '',
+                (string)$this->getFieldData('oxtransid')
+            );
+
+            // the property is filled in the constructor, but it is nullable by declaration - and the
+            // OXID 7 line of this module fills it lazily, where exactly this call once died on null
+            $paymentService = $this->paymentService ?: $this->getServiceFromContainer(PaymentService::class);
+            $paymentService->trackPayPalOrder(
+                $this->getId(),
+                $payPalOrder->getPayPalOrderId(),
+                (string)$this->getFieldData('oxpaymenttype'),
+                (string)$refund->status,
+                (string)$refund->id,
+                Constants::PAYPAL_TRANSACTION_TYPE_REFUND
+            );
+        } catch (Throwable $throwable) {
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->log(
+                'error',
+                sprintf(
+                    'PayPal refund %s (status %s) for order %s was carried out but could not be '
+                    . 'tracked in the shop: %s',
+                    (string)$refund->id,
+                    (string)$refund->status,
+                    (string)$this->getFieldData('oxordernr'),
+                    $throwable->getMessage()
+                )
+            );
+        }
+
+        return $refund;
+    }
+
+    public function setOrderNumber(): void
+    {
+        if (!$this->hasOrderNumber()) {
+            $this->_setNumber();
+        }
+    }
+
+    public function isOrderFinished(): bool
+    {
+        return 'OK' === $this->getFieldData('oxtransstatus');
+    }
+
+    public function isOrderPaid(): bool
+    {
+        return false === strpos((string) $this->getFieldData('oxpaid'), '0000');
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function isWaitForWebhookTimeoutReached(): bool
+    {
+        $orderTime = new DateTimeImmutable((string) $this->getFieldData('oxorderdate'));
+
+        return (new DateTimeImmutable('now'))->getTimestamp() >
+            ($orderTime->getTimestamp() + Constants::PAYPAL_WAIT_FOR_WEBOOK_TIMEOUT_IN_SEC);
+    }
+
+    public function hasOrderNumber(): bool
+    {
+        return 0 < (int) $this->getFieldData('oxordernr');
+    }
+
+    /**
+     * Rebuilds a virtual basket from this persisted order so an order that was
+     * paid but never finalized in the frontend (e.g. the captureOrder AJAX
+     * request died with a 503 after the PayPal capture had already succeeded)
+     * can be completed from the webhook. Mirrors the core order-recalculation
+     * path (_getOrderBasket + _addOrderArticlesToBasket + calculateBasket) that
+     * the admin order edit and other payment modules use for the same purpose.
+     * Stock check is intentionally disabled: an order whose payment already went
+     * through must not fail to finalize because an article ran low on stock in
+     * the meantime. See 0007981.
+     *
+     * @return Basket
+     */
+    public function recreateBasketFromOrder(): Basket
+    {
+        /** @var Basket $basket */
+        $basket = $this->_getOrderBasket(false);
+
+        // add this order's articles to the virtual basket and recalculate
+        $this->_addOrderArticlesToBasket($basket, $this->getOrderArticles(true));
+        $basket->calculateBasket(true);
+
+        return $basket;
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception
+     */
+    public function finalizeOrder(Basket $basket, $user, $recalculatingOrder = false)
+    {
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        $logger->log('debug', 'finalizeOrder');
+
+        $oSession = Registry::getSession();
+        $oOrderId = $oSession->getVariable('sess_challenge');
+
+        //we might have the case that the order is already stored but we are waiting for webhook events
+        if (
+            $this->paymentService->isPayPalPayment()
+        ) {
+            //order payment is being processed
+            $isLoaded = $this->load($oOrderId);
+            if ($isLoaded) {
+                // If the order was already completed by the AJAX capture flow
+                // (markOrderPaid + setTransId in PayPalOrderCompletedSubscriber),
+                // do not create a duplicate order. The PayPal session is already
+                // cleaned up at this point, so isOrderExecutionInProgress() returns
+                // false and the webhook-wait guard below would not catch this case.
+                // This prevents a race condition with stock-1 articles where the
+                // browser redirect triggers a second finalizeOrder() call.
+                if ($this->isOrderPaid() && !empty($this->getFieldData('oxtransid'))) {
+                    $logger->log('info', 'finalizeOrder: order already paid, skipping duplicate finalization', [
+                        'shopOrderId' => $oOrderId,
+                        'transId' => $this->getFieldData('oxtransid')
+                    ]);
+                    return 1;
+                }
+
+                if (
+                    $this->paymentService->isOrderExecutionInProgress() &&
+                    !$this->isOrderFinished() &&
+                    !$this->isOrderPaid() &&
+                    !$this->isWaitForWebhookTimeoutReached()
+                ) {
+                    return self::ORDER_STATE_WAIT_FOR_WEBHOOK_EVENTS;
+                }
+            }
+
+            // Guard against a duplicate finalization doubling the order items: for button/express
+            // payments the capture happens *inside* this finalize (PaymentGateway::
+            // doExecutePayPalExpressPayment). If PayPal already reports the checkout order as
+            // COMPLETED at this point, a previous/concurrent finalize pass already captured it —
+            // running parent::finalizeOrder() again would insert the basket items a second time
+            // (doubled order positions, while the totals stay single). Unlike the oxpaid/oxtransid
+            // guard above — which can miss it while the first pass's stock-lock transaction is
+            // still open — this relies on PayPal's order status as a transaction-independent source
+            // of truth. Scoped to isButtonPayment so it never interferes with the AJAX-capture flows
+            // (ACDC/Apple Pay/Google Pay), where a COMPLETED status at finalize time is the normal,
+            // legitimate first finalization.
+            $sessionPaymentId = (string) $this->paymentService->getSessionPaymentId();
+            $checkoutOrderId = (string) PayPalSession::getCheckoutOrderId();
+            if (
+                $checkoutOrderId !== '' &&
+                PayPalDefinitions::isButtonPayment($sessionPaymentId) &&
+                $this->isPayPalCheckoutOrderCompleted($checkoutOrderId)
+            ) {
+                $logger->log(
+                    'info',
+                    'finalizeOrder: PayPal order already COMPLETED, skipping duplicate finalization to avoid doubled order items',
+                    ['shopOrderId' => $oOrderId, 'payPalOrderId' => $checkoutOrderId]
+                );
+                return self::ORDER_STATE_OK;
+            }
+        }
+
+        // ! paranoia-check !
+        // It can happen that a customer starts a PayPal session, then goes through the checkout again in a second tab,
+        // selects a different payment method, and tries to finalize.
+        $bIsPayPalPayment = $this->paymentService->isPayPalPayment();
+        $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
+        $payPalOrderId = $payPalOrderRepository->getPayPalOrderIdByShopOrderId(
+            $oOrderId
+        );
+
+        if (!$bIsPayPalPayment && $payPalOrderId)
+        {
+            $this->paymentService->removeTemporaryOrder();
+            $oSession->setVariable('sess_challenge', Registry::getUtilsObject()->generateUId());
+        }
+
+        // Non-PayPal payments must not be wrapped in the stock-lock transaction below:
+        // redirect-based gateways (e.g. Mollie) exit() inside _executePayment(), which
+        // would leave the transaction open and MySQL rolls it back on connection close —
+        // the order row would be gone when the gateway redirects back to handleMollieReturn.
+        if (!$bIsPayPalPayment) {
+            return parent::finalizeOrder($basket, $user, $recalculatingOrder);
+        }
+
+        // Wrap in DB transaction so that validateStock (SELECT ... FOR UPDATE)
+        // holds an exclusive lock until stock reduction in save() completes.
+        // This prevents two parallel requests from reading the same stock level.
+        if (!$recalculatingOrder) {
+            $db = DatabaseProvider::getDb();
+            $db->startTransaction();
+            try {
+                $result = parent::finalizeOrder($basket, $user, $recalculatingOrder);
+                $db->commitTransaction();
+            } catch (\Exception $e) {
+                $db->rollbackTransaction();
+                throw $e;
+            }
+        } else {
+            $result = parent::finalizeOrder($basket, $user, $recalculatingOrder);
+        }
+
+        if (
+            $this->paymentService->isPayPalPayment() &&
+            !$this->isOrderFinished() &&
+            !$this->isOrderPaid() &&
+            !$this->hasOrderNumber() &&
+            $this->isWaitForWebhookTimeoutReached()
+        ) {
+            return self::ORDER_STATE_TIMEOUT_FOR_WEBHOOK_EVENTS;
+        }
+
+        // Defense-in-depth for concurrent double-submits: if parent returned
+        // ORDER_STATE_PAYMENTERROR but the order is in fact already paid (the
+        // Express _executePayment branch above already covers the common case;
+        // this catches any other PayPal flow that may end up reporting a
+        // payment error on a submit whose payment has actually been completed
+        // by a concurrent first submit). Scoped to PayPal payments only —
+        // non-PayPal gateways early-returned earlier in this method.
+        if (
+            $result === self::ORDER_STATE_PAYMENTERROR
+            && $this->paymentService->isPayPalPayment()
+            && $this->isOrderPaid()
+            && !empty($this->getFieldData('oxtransid'))
+        ) {
+            $logger->log('info', 'finalizeOrder: parent returned PAYMENTERROR but order is already paid — overriding to OK', [
+                'shopOrderId' => $oOrderId,
+                'transId' => $this->getFieldData('oxtransid')
+            ]);
+            return self::ORDER_STATE_OK;
+        }
+
+        return $result;
+    }
+
+    public function isPayPalOrderCompleted(PayPalApiOrder $apiOrder): bool
+    {
+        return (
+            isset(
+                $apiOrder->status,
+                $apiOrder->purchase_units[0]->payments->captures[0]->status
+            ) &&
+            $apiOrder->status === PayPalApiOrder::STATUS_COMPLETED &&
+            $apiOrder->purchase_units[0]->payments->captures[0]->status === Capture::STATUS_COMPLETED
+        );
+    }
+
+    /**
+     * A capture PayPal accepted but has not settled yet: the checkout order is
+     * COMPLETED while the capture itself sits in PENDING (e.g. reason UNILATERAL —
+     * the payee address is not confirmed on the receiving account — or a pending
+     * review). The money is committed but not collected, so such an order must
+     * neither be marked paid nor treated as a decline: it is a legitimate
+     * checkout outcome that has to reach the thank-you page.
+     */
+    public function isPayPalCapturePending(PayPalApiOrder $apiOrder): bool
+    {
+        return (
+            isset(
+                $apiOrder->status,
+                $apiOrder->purchase_units[0]->payments->captures[0]->status
+            ) &&
+            $apiOrder->status === PayPalApiOrder::STATUS_COMPLETED &&
+            $apiOrder->purchase_units[0]->payments->captures[0]->status === Capture::STATUS_PENDING
+        );
+    }
+
+    /**
+     * Reason PayPal gave for holding a PENDING capture (e.g. UNILATERAL,
+     * PENDING_REVIEW), for logging. Empty when PayPal sent no details.
+     */
+    public function getPayPalCapturePendingReason(PayPalApiOrder $apiOrder): string
+    {
+        return (string) ($apiOrder->purchase_units[0]->payments->captures[0]->status_details->reason ?? '');
+    }
+
+    public function isPayPalOrderApproved(PayPalApiOrder $apiOrder): bool
+    {
+        return (
+            isset(
+                $apiOrder->status
+            ) &&
+            $apiOrder->status === PayPalApiOrder::STATUS_APPROVED
+        );
+    }
+
+    protected function extractTransactionId(PayPalApiOrder $apiOrder): string
+    {
+        return (string) $apiOrder->purchase_units[0]->payments->captures[0]->id;
+    }
+
+    public function setPayPalTracking(string $trackingCarrier, string $trackingCode): void
+    {
+        $payPalOrder = $this->getPayPalRepository();
+        $payPalOrder->setTrackingCode($trackingCode);
+        $payPalOrder->setTrackingCarrier($trackingCarrier);
+        $payPalOrder->save();
+    }
+
+    public function getPayPalTrackingCarrier(): string
+    {
+        return $this->getPayPalRepository()->getTrackingCarrier();
+    }
+
+    public function getPayPalTrackingCode(): string
+    {
+        return $this->getPayPalRepository()->getTrackingCode();
+    }
+
+    public function getPayPalTransactionId(): string
+    {
+        return $this->getPayPalRepository()->getTransactionId();
+    }
+
+    protected function getPayPalRepository(): PayPalOrder
+    {
+        $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
+        $this->payPalOrder = $payPalOrderRepository->paypalOrderByOrderId(
+            $this->getId()
+        );
+        return $this->payPalOrder;
+    }
+
+    /**
+     * @inerhitDoc
+     *
+     * @param string $sOxId Ordering ID (default null)
+     *
+     * @return bool
+     */
+    public function delete($sOxId = null)
+    {
+        $sOxId = $sOxId ?? $this->getId();
+
+        // delete PayPalOrder too
+        $payPalOrderRepository = $this->getServiceFromContainer(OrderRepository::class);
+        $payPalOrder = $payPalOrderRepository->paypalOrderByOrderId(
+            $sOxId
+        );
+        if ($payPalOrder->isLoaded()) {
+            $payPalOrder->delete();
+        }
+
+        return parent::delete($sOxId);
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * @param string $sStatus order transaction status
+     */
+    protected function _setOrderStatus($sStatus)
+    {
+        // The status "OK" is set in PayPalCheckout by the markOrderAsPaid method.
+        // Therefore, it is intercepted here.
+        if (
+            $sStatus === 'OK' &&
+            Registry::getSession()->getVariable('isPayPalPaymentCheckout')
+        ) {
+            return;
+        }
+        parent::_setOrderStatus($sStatus);
+    }
+
+    public function setOrderProcessTrackingService(OrderProcessTrackingService $orderProcessTrackingService): void
+    {
+        $this->orderProcessTrackingService = $orderProcessTrackingService;
+    }
+
+    public function setModuleSettings(ModuleSettings $moduleSettings): void
+    {
+        $this->moduleSettings = $moduleSettings;
+    }
+
+    public function setPaymentService(PaymentService $paymentService): void
+    {
+        $this->paymentService = $paymentService;
+    }
+}
