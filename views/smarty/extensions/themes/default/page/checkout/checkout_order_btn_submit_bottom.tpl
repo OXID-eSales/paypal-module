@@ -4,7 +4,14 @@
     [{include file="@osc_paypal/frontend/wave/checkout_order_btn_submit_bottom.tpl"}]
 [{/if}]
 
-[{assign var="paymentId" value=$payment->getId()}]
+[{* order.tpl assigns $payment inside its "shippingAndPayment" block, which other modules
+    replace entirely (Amazon Pay does in its express checkout) - so fetch it here, and expect
+    no payment at all as well *}]
+[{assign var="payment" value=$oView->getPayment()}]
+[{assign var="paymentId" value=""}]
+[{if $payment}]
+    [{assign var="paymentId" value=$payment->getId()}]
+[{/if}]
 [{if "oscpaypal_googlepay" != $paymentId &&
     "oscpaypal_applepay" != $paymentId &&
     "oscpaypal" != $paymentId &&

@@ -24,6 +24,8 @@ class Constants
     public const SESSION_PUI_CMID = 'paypal-pui-cmid';
     public const SESSION_ACDC_PAYPALORDER_STATUS = 'oscpaypal-acdcorder-status';
     public const SESSION_CANCEL_DECLINE_ISSUE = 'oscpaypal-cancel-decline-issue';
+    // the delivery address the module itself put into "deladrid" from a PayPal (express) checkout
+    public const SESSION_PAYPAL_DELIVERY_ADDRESS_ID = 'oscpaypal-delivery-address-id';
 
     public const PAYPAL_ORDER_REFERENCE_ID = 'OXID_REFERENCE';
 
