@@ -88,8 +88,39 @@ class PayPalSession
 
         if ($deleteAlsoShipping) {
             $session->deleteVariable('sShipSet');
+            self::unsetPayPalDeliveryAddressId();
         }
         $session->deleteVariable('paymentid');
+    }
+
+    /**
+     * Selects the delivery address PayPal returned (express checkout, Google Pay, Apple Pay)
+     * for the checkout, and remembers that the module set it - as opposed to an address the
+     * customer chose in the shop's own checkout.
+     */
+    public static function storePayPalDeliveryAddressId(string $addressId): void
+    {
+        $session = Registry::getSession();
+        $session->setVariable('deladrid', $addressId);
+        $session->setVariable(Constants::SESSION_PAYPAL_DELIVERY_ADDRESS_ID, $addressId);
+    }
+
+    /**
+     * Drops the delivery address PayPal returned once the PayPal checkout is over. The core
+     * keeps "deladrid" for the whole session (it only deletes it on logout), so without this
+     * the address of one PayPal express order silently became the delivery address of every
+     * following order in the session, whatever payment method it used. Only the address the
+     * module set itself is removed: if the customer has picked another one in the meantime,
+     * that choice stays.
+     */
+    public static function unsetPayPalDeliveryAddressId(): void
+    {
+        $session = Registry::getSession();
+        $payPalAddressId = (string) $session->getVariable(Constants::SESSION_PAYPAL_DELIVERY_ADDRESS_ID);
+        if ($payPalAddressId !== '' && $payPalAddressId === (string) $session->getVariable('deladrid')) {
+            $session->deleteVariable('deladrid');
+        }
+        $session->deleteVariable(Constants::SESSION_PAYPAL_DELIVERY_ADDRESS_ID);
     }
 
     /**
