@@ -185,7 +185,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
             $confArr = $this->handleSpecialFields($confArr);
             $this->saveConfig($confArr);
             $this->checkEligibility($confArr);
-            $this->registerWebhooks();
+            $this->oscPayPalRegisterWebhooks();
         }
 
         parent::save();
@@ -407,7 +407,7 @@ class ModuleConfiguration extends ModuleConfiguration_parent
         }
 
         $this->autoConfiguration();
-        $this->registerWebhooks();
+        $this->oscPayPalRegisterWebhooks();
 
         $result = [];
         header('Content-Type: application/json; charset=UTF-8');
@@ -433,9 +433,11 @@ class ModuleConfiguration extends ModuleConfiguration_parent
     }
 
     /**
-     * webhook registration
+     * Webhook registration. Module-prefixed on purpose: other payment modules extend this
+     * controller too, and a generic name (registerWebhooks) was taken over by the Unzer module
+     * or took over Unzer's own method, depending on the order of the class chain.
      */
-    public function registerWebhooks(): void
+    public function oscPayPalRegisterWebhooks(): void
     {
         (oxNew(Webhook::class))->registerWebhooksWithErrorHandling();
     }
