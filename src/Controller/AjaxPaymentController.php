@@ -40,6 +40,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderCaptureRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use Psr\Log\LoggerInterface;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
+use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Event\PayPalOrderCompletedEvent;
 
 /**
@@ -126,7 +127,9 @@ class AjaxPaymentController extends BaseController
         if (null === $shopOrderResult) {
             $this->outputJson([
                 'status' => 'error',
-                'message' => 'Shop order creation failed'
+                'message' => 'Shop order creation failed',
+                // the checkout reloads the page, so the customer sees the changed basket
+                'reload' => $this->orderManager->hasBasketChanged()
             ]);
             return;
         }
@@ -217,9 +220,20 @@ class AjaxPaymentController extends BaseController
                 'shopOrderId' => $shopOrderId
             ]);
 
+            $reload = false;
+            if ($exception instanceof PayPalException && $exception->isBasketNotCalculated()) {
+                // The basket changed without being recalculated. The checkout only knows the
+                // shop order from a successful response, so remove the temporary order here,
+                // and recalculate the basket on the reload that shows it to the customer.
+                $paymentService->removeTemporaryOrder($shopOrderId, PayPalCancelReason::UNKNOWN);
+                $basket->onUpdate();
+                $reload = true;
+            }
+
             $this->outputJson([
                 'status' => 'error',
-                'message' => 'PayPal order creation failed: ' . $exception->getMessage()
+                'message' => 'PayPal order creation failed: ' . $exception->getMessage(),
+                'reload' => $reload
             ]);
         }
     }

@@ -13,6 +13,9 @@ use Exception;
 use OxidEsales\Eshop\Application\Model\Order;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Application\Model\Basket;
+use OxidEsales\Eshop\Core\Exception\ArticleInputException;
+use OxidEsales\Eshop\Core\Exception\NoArticleException;
+use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -44,6 +47,9 @@ class OrderManager
      * @var LoggerInterface
      */
     protected $logger;
+
+    /** @var bool */
+    private $basketChanged = false;
     public function __construct(
         QueryBuilderFactoryInterface $queryBuilderFactory,
         EshopCoreConfig $config,
@@ -62,6 +68,8 @@ class OrderManager
      */
     public function createShopOrder(?string $paymentId = null): ?array
     {
+        $this->basketChanged = false;
+
         $user = $this->getUser($this->basket);
         if (!$user || !$user->loadActiveUser()) {
             $this->logger->log(
@@ -117,6 +125,19 @@ class OrderManager
                 'Error during create shop order: finalizeOrder',
                 [$exception->getMessage()]
             );
+
+            if (
+                $exception instanceof ArticleInputException
+                || $exception instanceof NoArticleException
+                || $exception instanceof OutOfStockException
+            ) {
+                // The stock check removed an article that is no longer buyable, or the stock is
+                // too low: the page the customer looks at no longer matches the basket. Keep the
+                // reason for the next page, the checkout reloads the page to show both.
+                Registry::getUtilsView()->addErrorToDisplay($exception);
+                $this->basketChanged = true;
+            }
+
             return null;
         }
         $session->deleteVariable('isPayPalPaymentCheckout');
@@ -129,6 +150,15 @@ class OrderManager
             'shopOrderId' => $order->getId(),
             'customId' => $this->paymentService->getCustomIdParameter($order)
         ];
+    }
+
+    /**
+     * True if the last createShopOrder() failed because the stock check changed the basket
+     * or found it no longer orderable, so the page showing it is outdated.
+     */
+    public function hasBasketChanged(): bool
+    {
+        return $this->basketChanged;
     }
 
     private function getUser(?Basket $basket = null): ?User
