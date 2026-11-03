@@ -281,6 +281,15 @@
             }
 
             if (result.status !== 'success') {
+                if (result.reload) {
+                    // The backend changed the basket (e.g. removed an article that is no
+                    // longer buyable) or found it outdated: only a reload shows the customer
+                    // the current basket and the reason. Finish the cleanup first, a reload
+                    // would abort a cancel request still in flight.
+                    await PayPalPayment.handleError();
+                    window.location.reload();
+                    return result;
+                }
                 PayPalPayment.handleError();
             }
 

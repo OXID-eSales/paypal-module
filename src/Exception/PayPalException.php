@@ -11,6 +11,11 @@ use OxidEsales\Eshop\Core\Exception\StandardException;
 
 class PayPalException extends StandardException
 {
+    /**
+     * Exception code of basketNotCalculated(), lets callers tell this case apart
+     */
+    public const CODE_BASKET_NOT_CALCULATED = 1001;
+
     public static function createPayPalOrderFail(): self
     {
         return new self('Could not create PayPal order.');
@@ -67,7 +72,13 @@ class PayPalException extends StandardException
                 . ' the basket. No PayPal order is created from it.',
                 $positionsTotal,
                 $calculatedTotal
-            )
+            ),
+            self::CODE_BASKET_NOT_CALCULATED
         );
+    }
+
+    public function isBasketNotCalculated(): bool
+    {
+        return $this->getCode() === self::CODE_BASKET_NOT_CALCULATED;
     }
 }
