@@ -54,6 +54,8 @@ $aLang = [
     'OSC_PAYPAL_CAPTURE_DENIED_ERROR'              => 'Payment money transfer was denied. Please check your payment data and try again.',
     'OSC_PAYPAL_INTERNAL_SERVICE_ERROR'            => 'Unknown error occurred while processing your payment. Please try again later.',
     'OSC_PAYPAL_ORDEREXECUTION_ERROR'              => 'Payment process could not be completed.',
+    'OSC_PAYPAL_BASKET_ARTICLE_REMOVED'            => 'The article "%s" is no longer available and has been removed from your basket. Please check your order before submitting it.',
+    'OSC_PAYPAL_BASKET_ARTICLE_AMOUNT_REDUCED'     => 'Only %2$s of the article "%1$s" are still available. The quantity in your basket has been adjusted. Please check your order before submitting it.',
     'OSC_PAYPAL_PAYMENT_INTERRUPTED'               => 'The payment could not be completed. Please try again or choose a different payment method. If you are currently viewing this page inside an in-app browser (such as the Google, Facebook or Instagram app), opening the shop in a standard browser (Safari, Chrome, Firefox) may resolve the issue.',
 
     'OSC_PAYPAL_VAULTING_MENU'                      => 'Manage PayPal',

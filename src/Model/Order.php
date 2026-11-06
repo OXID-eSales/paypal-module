@@ -12,6 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 use DateTimeImmutable;
 use Exception;
 use OxidEsales\Eshop\Application\Model\Basket;
+use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Application\Model\UserPayment;
 use OxidEsales\Eshop\Core\Counter as EshopCoreCounter;
@@ -29,6 +30,7 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\AmountFormatter;
 use OxidSolutionCatalysts\PayPal\Core\Tracker\Tracker;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
+use OxidSolutionCatalysts\PayPal\Service\BasketStockGuard;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -600,10 +602,10 @@ class Order extends Order_parent
             try {
                 $oProd = $oContent->getArticle(true, null, true);
             } catch (\OxidEsales\Eshop\Core\Exception\NoArticleException $oEx) {
-                $this->removeUnbuyableBasketItem($oBasket, $key);
+                $this->removeUnbuyableBasketItem($oBasket, $key, $oEx);
                 throw $oEx;
             } catch (\OxidEsales\Eshop\Core\Exception\ArticleInputException $oEx) {
-                $this->removeUnbuyableBasketItem($oBasket, $key);
+                $this->removeUnbuyableBasketItem($oBasket, $key, $oEx);
                 throw $oEx;
             }
 
@@ -639,13 +641,26 @@ class Order extends Order_parent
      * calculateBasket() call: this runs inside the finalize transaction, and recalculating here
      * could throw for another position and hide the exception that is about to be thrown.
      *
+     * The exception, which the core's OrderController::execute() and the OrderManager show
+     * to the customer, gets a message that names the removed article: the core's own says
+     * "article <article number> does not exist" or "not buyable", which leaves the customer
+     * guessing what happened to their basket.
+     *
      * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket
      * @param string $key basket item key
+     * @param \OxidEsales\Eshop\Core\Exception\StandardException $exception about to be thrown
      */
-    private function removeUnbuyableBasketItem($oBasket, string $key): void
+    private function removeUnbuyableBasketItem($oBasket, string $key, $exception): void
     {
+        $basketItem = $oBasket->getContents()[$key] ?? null;
         $oBasket->removeItem($key);
         $oBasket->onUpdate();
+
+        if ($basketItem instanceof BasketItem) {
+            /** @var BasketStockGuard $basketStockGuard */
+            $basketStockGuard = $this->getServiceFromContainer(BasketStockGuard::class);
+            $exception->setMessage($basketStockGuard->getRemovedItemMessage($basketItem));
+        }
     }
 
     /**

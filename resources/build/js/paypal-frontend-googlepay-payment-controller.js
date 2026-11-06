@@ -189,7 +189,7 @@
                     shopOrderId: PayPalPayment.currentOrder.shop.shopOrderId
                 };
 
-                const {id: orderId, status} = await fetch(createOrderUrl, {
+                const {id: orderId, status, reload} = await fetch(createOrderUrl, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify(paymentData),
@@ -203,6 +203,10 @@
                     /* Capture the Order */
                     PayPalPayment.captureOrder(orderId);
                     return {transactionState: "SUCCESS"};
+                } else if (reload) {
+                    // The stock check changed the basket: show the corrected basket and the reason
+                    window.location.reload();
+                    return {transactionState: "ERROR"};
                 } else {
                     PayPalPayment.showErrorMessage(PayPalI18n.OSC_PAYPAL_AUTHORIZATION_DENIED_ERROR);
                     PayPalPayment.handleError();
@@ -249,22 +253,25 @@
             createData = new FormData();
             createData.append('orderID', orderId);
 
+            let data;
             try {
                 const res = await fetch(url, {
                     method: 'POST',
                     body: createData
                 });
-                const data = await res.json();
-
-                if (data.status === "ERROR") {
-                    location.reload();
-                }
-
-                return data;
+                data = await res.json();
             } catch (error) {
                 PayPalPayment.handleError();
                 throw error; // Forward the error so that the calling method can react
             }
+
+            if (data.status === "ERROR") {
+                location.reload();
+                // No shop order: the capture that follows must not run
+                throw new Error('Shop order was not created');
+            }
+
+            return data;
         };
 
         this.captureOrder = async function (orderId) {

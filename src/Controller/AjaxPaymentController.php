@@ -41,6 +41,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use Psr\Log\LoggerInterface;
 use OxidSolutionCatalysts\PayPal\Exception\NotFound;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
+use OxidSolutionCatalysts\PayPal\Service\BasketStockGuard;
 use OxidSolutionCatalysts\PayPal\Event\PayPalOrderCompletedEvent;
 
 class AjaxPaymentController extends BaseController
@@ -116,6 +117,20 @@ class AjaxPaymentController extends BaseController
         }
 
         $this->addToBasket();
+
+        // Step 0: the page the customer confirmed may show an outdated basket (another
+        // customer bought the last unit meanwhile). Correct it and let the checkout reload
+        // the page, which shows the corrected basket and the reason.
+        /** @var BasketStockGuard $basketStockGuard */
+        $basketStockGuard = $this->getServiceFromContainer(BasketStockGuard::class);
+        if ($basketStockGuard->correctBasket(Registry::getSession()->getBasket())) {
+            $this->outputJson([
+                'status' => 'error',
+                'message' => 'The basket changed because of the current stock',
+                'reload' => true
+            ]);
+            return;
+        }
 
         // Step 1: Create shop order
         $shopOrderResult = $this->orderManager->createShopOrder($paymentId);

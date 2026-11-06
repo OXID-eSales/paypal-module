@@ -122,6 +122,21 @@ class PaymentGateway extends PaymentGateway_parent
                     $order
                 );
             } catch (Exception $exception) {
+                // The patch also carries the amount. The buyer approved the PayPal order for
+                // the basket they saw at PayPal; when the shop corrected the basket since
+                // (an article sold out in the meantime), only the patch brings the PayPal
+                // order down to the shop order. Continuing without it would charge the old,
+                // higher amount for an order without that article.
+                if (!$this->isPayPalAmountEqualToOrder($checkoutOrderId, $order)) {
+                    $logger->log(
+                        'error',
+                        'PayPal order patch failed and the PayPal order amount differs from the shop'
+                        . ' order - not charging the buyer the outdated amount',
+                        ['payPalOrderId' => $checkoutOrderId, 'shopOrderId' => $order->getId(), $exception]
+                    );
+                    PayPalSession::unsetPayPalSession(false);
+                    return false;
+                }
                 $logger->log('warning', 'PayPal order patch failed, continuing with previous order data', [$exception]);
             }
 
@@ -170,6 +185,25 @@ class PaymentGateway extends PaymentGateway_parent
         }
 
         return $success;
+    }
+
+    /**
+     * True if the PayPal order still carries the total of the shop order, so it can be
+     * charged although its patch failed. An amount that cannot be read counts as different:
+     * the buyer can retry, an overcharge would have to be refunded.
+     */
+    private function isPayPalAmountEqualToOrder(string $checkoutOrderId, EshopModelOrder $order): bool
+    {
+        try {
+            $payPalOrder = $this->getServiceFromContainer(PaymentService::class)
+                ->fetchOrderFields($checkoutOrderId);
+            $payPalAmount = $payPalOrder->purchase_units[0]->amount->value ?? null;
+        } catch (Exception $exception) {
+            return false;
+        }
+
+        return $payPalAmount !== null
+            && abs((float) $payPalAmount - (float) $order->getTotalOrderSum()) < 0.005;
     }
 
     protected function doExecutePuiPayment(EshopModelOrder $order): bool
