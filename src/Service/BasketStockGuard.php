@@ -11,10 +11,12 @@ namespace OxidSolutionCatalysts\PayPal\Service;
 
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\BasketItem;
+use OxidEsales\Eshop\Core\DisplayError;
 use OxidEsales\Eshop\Core\Exception\ArticleInputException;
 use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\StandardException;
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\Core\Di\ContainerFacade;
 
 /**
  * Brings the basket in line with the current stock before the customer pays for it.
@@ -145,7 +147,13 @@ class BasketStockGuard
      */
     private function addMessage(string $ident, ...$arguments): void
     {
-        Registry::getUtilsView()->addErrorToDisplay($this->formatMessage($ident, ...$arguments), false, true);
+        // handed over as ident and arguments, as the core does: the message is translated when
+        // it is shown. A finished text would be translated once more there, and every message
+        // would log "translation for ... not found".
+        $error = oxNew(DisplayError::class);
+        $error->setMessage($ident);
+        $error->setFormatParameters($this->formatArguments($arguments));
+        Registry::getUtilsView()->addErrorToDisplay($error, false, true);
     }
 
     /**
@@ -154,18 +162,36 @@ class BasketStockGuard
     private function formatMessage(string $ident, ...$arguments): string
     {
         $lang = Registry::getLang();
-        $arguments = array_map(
-            static function ($argument): string {
+
+        return vsprintf(
+            $lang->translateString($ident, (int) $lang->getBaseLanguage(), false),
+            $this->formatArguments($arguments)
+        );
+    }
+
+    /**
+     * The themes print messages unescaped, and the title is merchant content, so it has to
+     * reach the message HTML-escaped exactly once. The article field escapes it itself unless
+     * the template engine escapes on output (Field::valueNeedsEscaping()): with Twig the title
+     * comes raw and is escaped here, with Smarty it comes escaped already.
+     *
+     * @param array<int, string|float> $arguments
+     * @return string[]
+     */
+    private function formatArguments(array $arguments): array
+    {
+        $escape = (bool) ContainerFacade::getParameter('oxid_esales.templating.engine_autoescapes_html');
+
+        return array_map(
+            static function ($argument) use ($escape): string {
                 if (is_float($argument)) {
                     // 2.0 -> "2", 1.5 -> "1.5"
-                    $argument = rtrim(rtrim(sprintf('%.3F', $argument), '0'), '.');
+                    return rtrim(rtrim(sprintf('%.3F', $argument), '0'), '.');
                 }
-                // the themes print messages unescaped, and the title is merchant content
-                return htmlspecialchars((string) $argument, ENT_QUOTES);
+
+                return $escape ? htmlspecialchars((string) $argument, ENT_QUOTES) : (string) $argument;
             },
             $arguments
         );
-
-        return vsprintf($lang->translateString($ident, (int) $lang->getBaseLanguage(), false), $arguments);
     }
 }
