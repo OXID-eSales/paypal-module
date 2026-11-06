@@ -165,7 +165,12 @@ class PayPalPurchaseUnitsFactory
      *
      * The check compares shop values only, so it is exact whatever the number of positions:
      * every calculated position adds the very same price object to the products price list.
-     * Discount articles never enter that list and are skipped here as well.
+     *
+     * Bundled and discount articles are created by the calculation itself. The core gives them
+     * a zero price and keeps them out of that list, but modules may price them and add them to
+     * it (e.g. D3 "Schnittkosten", which charges cutting costs as a bundled article): a
+     * discount article counts with its price whenever it has one, and is skipped only when it
+     * has none.
      *
      * @throws PayPalException
      */
@@ -174,10 +179,13 @@ class PayPalPurchaseUnitsFactory
         $positionsTotal = 0.0;
         /** @var BasketItem $basketItem */
         foreach ((array) $basket->getContents() as $basketItem) {
-            if (!($basketItem instanceof BasketItem) || $basketItem->isDiscountArticle()) {
+            if (!($basketItem instanceof BasketItem)) {
                 continue;
             }
             $price = $basketItem->getPrice();
+            if (!$price && $basketItem->isDiscountArticle()) {
+                continue;
+            }
             if (!$price) {
                 // a position that was added after the last calculation has no price yet
                 throw PayPalException::basketNotCalculated(
