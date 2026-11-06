@@ -57,6 +57,11 @@
                     location.replace(oscPayPalPaymentErrorUrl);
                 }
 
+                // Set when the shop refused to create the PayPal order because the stock check changed
+                // the basket (an article sold out meanwhile): the PayPal window is closed and the page
+                // reloaded, which shows the corrected basket and the reason.
+                var oscPayPalBasketChanged = false;
+
             [{if $buttonId == "oscpaypal_sepa" || $buttonId == "oscpaypal_cc_alternative"}]
                 FUNDING_SOURCES = [
                     paypal.FUNDING.[{if $buttonId == "oscpaypal_sepa"}]SEPA[{elseif $buttonId == "oscpaypal_cc_alternative"}]CARD[{/if}]
@@ -91,6 +96,10 @@
                                 if (responseData && responseData.id) {
                                     return responseData.id;
                                 }
+                                if (responseData && responseData.reload) {
+                                    oscPayPalBasketChanged = true;
+                                    throw new Error('basket changed, reloading the page');
+                                }
                                 oscPayPalReportClientError('createOrder:noId', {
                                     fundingSource: fundingSource,
                                     receivedStatus: responseData && responseData.status,
@@ -98,6 +107,9 @@
                                 });
                                 throw new Error('createOrder did not return a PayPal order id');
                             }).catch(function (error) {
+                                if (oscPayPalBasketChanged) {
+                                    throw error; // expected, not a client error
+                                }
                                 oscPayPalReportClientError('createOrder:exception', {
                                     fundingSource: fundingSource,
                                     errorName: error && error.name,
@@ -155,6 +167,11 @@
                             }
                         },
                         onError: async function (data) {
+                            if (oscPayPalBasketChanged) {
+                                // no PayPal order was created, there is nothing to cancel
+                                location.reload();
+                                return;
+                            }
                             try {
                                 const response = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"|cat:$sDebug}]');
                                 if (!response.ok) {
@@ -217,12 +234,19 @@
                                 if (responseData && responseData.id) {
                                     return responseData.id;
                                 }
+                                if (responseData && responseData.reload) {
+                                    oscPayPalBasketChanged = true;
+                                    throw new Error('basket changed, reloading the page');
+                                }
                                 oscPayPalReportClientError('createOrder:noId', {
                                     receivedStatus: responseData && responseData.status,
                                     hasData: !!responseData
                                 });
                                 throw new Error('createOrder did not return a PayPal order id');
                             }).catch(function (error) {
+                                if (oscPayPalBasketChanged) {
+                                    throw error; // expected, not a client error
+                                }
                                 oscPayPalReportClientError('createOrder:exception', {
                                     errorName: error && error.name,
                                     errorMessage: error && error.message
@@ -277,6 +301,11 @@
                         }
                     },
                     onError: async function (data) {
+                        if (oscPayPalBasketChanged) {
+                            // no PayPal order was created, there is nothing to cancel
+                            location.reload();
+                            return;
+                        }
                         try {
                             const response = await fetch('[{$sSelfLink|cat:"cl=oscpaypalproxy&fnc=cancelPayPalPayment"|cat:$sDebug}]');
                         } catch (error) {

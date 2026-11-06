@@ -132,9 +132,10 @@ class OrderManager
                 || $exception instanceof OutOfStockException
             ) {
                 // The stock check removed an article that is no longer buyable, or the stock is
-                // too low: the page the customer looks at no longer matches the basket. Keep the
-                // reason for the next page, the checkout reloads the page to show both.
-                Registry::getUtilsView()->addErrorToDisplay($exception);
+                // too low: the page the customer looks at no longer matches the basket. The
+                // checkout reloads the page. The message comes from the stock check itself
+                // (removed article) or from the BasketStockGuard on the reloaded order page
+                // (too little stock: it reduces the amount there).
                 $this->basketChanged = true;
             }
 

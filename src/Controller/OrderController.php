@@ -23,6 +23,7 @@ use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Exception\Redirect;
 use OxidSolutionCatalysts\PayPal\Exception\RedirectWithMessage;
 use OxidSolutionCatalysts\PayPal\Model\Order as PayPalOrderModel;
+use OxidSolutionCatalysts\PayPal\Service\BasketStockGuard;
 use OxidSolutionCatalysts\PayPal\Service\GooglePay\GooglePayPayPalService;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderPayPalService;
@@ -89,6 +90,25 @@ class OrderController extends OrderController_parent
             $this->cancelpaypalsession();
         }
 
+        // The order page is where the customer confirms the basket, so it has to show the
+        // basket that can actually be ordered: another customer may have bought the last
+        // unit since it was put into the basket. Applies to every payment, and in particular
+        // after the return from a PayPal express checkout, whose amount the buyer approved
+        // for the old basket - the capture patches the PayPal order to the corrected one.
+        if (
+            $this->getIsOrderStep()
+            && $this->correctBasketToStock()
+            && !$this->getBasket()->getProductsCount()
+        ) {
+            // nothing left to order: the core would send the customer to the start page
+            // without a word, the basket shows the messages
+            Registry::getUtils()->redirect(
+                Registry::getConfig()->getShopHomeUrl() . 'cl=basket',
+                false,
+                302
+            );
+        }
+
         $user = $this->getUser();
 
         if ($user) {
@@ -133,6 +153,39 @@ class OrderController extends OrderController_parent
         return parent::render();
     }
 
+    /**
+     * Checks the basket against the current stock before the order is finalized, and
+     * keeps the customer on the order page when the stock check changed the basket.
+     *
+     * The page the customer confirmed may be outdated: the core finds that out only inside
+     * finalizeOrder() and answers a removed article with a plain redirect to the basket,
+     * without any message. Here the basket is corrected first and the customer gets the
+     * order page again, with the corrected basket and the reason, to confirm it once more.
+     *
+     * @return string|null
+     */
+    public function execute()
+    {
+        if (
+            Registry::getSession()->checkSessionChallenge()
+            && $this->correctBasketToStock()
+        ) {
+            return $this->getBasket()->getProductsCount() ? 'order' : 'basket';
+        }
+
+        $nextStep = parent::execute();
+
+        // A stock check inside finalizeOrder() that removed an article (it ran later than the
+        // check above, e.g. another customer's order committed in between) makes the core
+        // return 'basket'. Model\Order::validateStock() has told the customer which article
+        // was removed; while something is left to order, show the corrected order page.
+        if ($nextStep === 'basket' && $this->getBasket()->getProductsCount()) {
+            return 'order';
+        }
+
+        return $nextStep;
+    }
+
     public function getUserCountryIso(): string
     {
         $userRepository = $this->getServiceFromContainer(UserRepository::class);
@@ -155,6 +208,18 @@ class OrderController extends OrderController_parent
 
             /** @var LoggerInterface $logger */
             $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+
+            if ($this->correctBasketToStock()) {
+                // The Google Pay order was approved for the old basket: drop it, the reloaded
+                // order page shows the corrected basket and the reason.
+                $this->abandonPayPalOrderForChangedBasket();
+                $this->outputJson([
+                    'googlepayerror' => 'basket changed',
+                    'status' => 'ERROR',
+                    'reload' => true
+                ]);
+                return;
+            }
 
             $_POST['sDeliveryAddressMD5'] = $this->getDeliveryAddressMD5();
             $orderId = Registry::getRequest()->getRequestParameter('orderID');
@@ -285,6 +350,18 @@ class OrderController extends OrderController_parent
 
     public function createApplePayOrder(): void
     {
+        if ($this->correctBasketToStock()) {
+            // The Apple Pay order was approved for the old basket: drop it, the reloaded
+            // order page shows the corrected basket and the reason.
+            $this->abandonPayPalOrderForChangedBasket();
+            $this->outputJson([
+                'error' => 'basket changed',
+                'status' => 'ERROR',
+                'reload' => true
+            ]);
+            return;
+        }
+
         try {
             $paymentService = $this->getServiceFromContainer(PaymentService::class);
             $paymentService->removeTemporaryOrder();
@@ -663,6 +740,37 @@ class OrderController extends OrderController_parent
         }
 
         return parent::getNextStep($success);
+    }
+
+    /**
+     * Brings the session basket in line with the current stock (BasketStockGuard).
+     *
+     * @return bool true if the basket was changed; the messages are queued for display
+     */
+    protected function correctBasketToStock(): bool
+    {
+        $basket = $this->getBasket();
+        if (!$basket || !$basket->getProductsCount()) {
+            return false;
+        }
+
+        /** @var BasketStockGuard $basketStockGuard */
+        $basketStockGuard = $this->getServiceFromContainer(BasketStockGuard::class);
+
+        return $basketStockGuard->correctBasket($basket);
+    }
+
+    /**
+     * A wallet payment (Google Pay, Apple Pay) was started for a basket that has changed
+     * since. Removes its temporary shop order and forgets the PayPal order, which was never
+     * captured, so the reloaded order page shows the corrected basket instead of cancelling
+     * the session. The payment method stays selected.
+     */
+    private function abandonPayPalOrderForChangedBasket(): void
+    {
+        $this->getServiceFromContainer(PaymentService::class)
+            ->removeTemporaryOrder('', PayPalCancelReason::UNKNOWN);
+        PayPalSession::unsetPayPalOrderId();
     }
 
     public function getCurrentTrackingId(): string

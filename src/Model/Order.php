@@ -12,6 +12,7 @@ namespace OxidSolutionCatalysts\PayPal\Model;
 use DateTimeImmutable;
 use Exception;
 use OxidEsales\Eshop\Application\Model\Basket;
+use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Application\Model\UserPayment;
 use OxidEsales\Eshop\Core\Counter as EshopCoreCounter;
@@ -29,6 +30,7 @@ use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\AmountFormatter;
 use OxidSolutionCatalysts\PayPal\Core\Tracker\Tracker;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
+use OxidSolutionCatalysts\PayPal\Service\BasketStockGuard;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderRepository;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
@@ -599,7 +601,15 @@ class Order extends Order_parent
                 throw $oEx;
             } catch (\OxidEsales\Eshop\Core\Exception\ArticleInputException $oEx) {
                 $this->removeUnbuyableBasketItem($oBasket, $key);
-                throw $oEx;
+                // Reported as NoArticleException like the case above: the position is gone
+                // either way, and the customer already got the message naming the article.
+                // The core's OrderController::execute() would print the ArticleInputException
+                // a second time, in its generic wording ("not buyable").
+                $noArticleException = oxNew(\OxidEsales\Eshop\Core\Exception\NoArticleException::class);
+                $noArticleException->setMessage($oEx->getMessage());
+                $noArticleException->setArticleNr($oEx->getArticleNr());
+                $noArticleException->setProductId($oEx->getProductId());
+                throw $noArticleException;
             }
 
             $dArtStockAmount = $oBasket->getArtStockInBasket($oProd->getId(), $key);
@@ -634,13 +644,23 @@ class Order extends Order_parent
      * calculateBasket() call: this runs inside the finalize transaction, and recalculating here
      * could throw for another position and hide the exception that is about to be thrown.
      *
+     * The customer is told which article was removed: the core's OrderController::execute()
+     * answers a NoArticleException with a plain redirect and no message at all.
+     *
      * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket
      * @param string $key basket item key
      */
     private function removeUnbuyableBasketItem($oBasket, string $key): void
     {
+        $basketItem = $oBasket->getContents()[$key] ?? null;
         $oBasket->removeItem($key);
         $oBasket->onUpdate();
+
+        if ($basketItem instanceof BasketItem) {
+            /** @var BasketStockGuard $basketStockGuard */
+            $basketStockGuard = $this->getServiceFromContainer(BasketStockGuard::class);
+            $basketStockGuard->reportRemovedItem($basketItem);
+        }
     }
 
     /**

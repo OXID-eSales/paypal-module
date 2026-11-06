@@ -22,11 +22,13 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Config;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
+use OxidSolutionCatalysts\PayPal\Core\PayPalCancelReason;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use OxidSolutionCatalysts\PayPal\Core\Utils\AmountFormatter;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PayPalAddressResponseToOxidAddress;
+use OxidSolutionCatalysts\PayPal\Service\BasketStockGuard;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\OrderManager;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
@@ -86,6 +88,9 @@ class ProxyController extends FrontendController
         $basket = $session->getBasket();
         $config = Registry::getConfig();
         $this->addToBasket();
+        if ($this->rejectBasketChangedByStock()) {
+            return;
+        }
         $paymentId = Registry::getRequest()->getRequestParameter('paymentid');
         if ($paymentId === PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID) {
             $this->setPayPalPaymentMethod($paymentId);
@@ -179,6 +184,9 @@ class ProxyController extends FrontendController
         $paymentId = Registry::getSession()->getVariable('paymentid');
 
         $this->addToBasket();
+        if ($this->rejectBasketChangedByStock()) {
+            return;
+        }
         $this->setPayPalPaymentMethod($paymentId);
         $basket = Registry::getSession()->getBasket();
 
@@ -427,6 +435,44 @@ class ProxyController extends FrontendController
         PayPalSession::unsetPayPalSession(false);
     }
 
+    /**
+     * Checks the basket against the current stock before a PayPal order is created from it.
+     *
+     * Without this, the PayPal window showed and the buyer approved the total of an article
+     * that another customer had bought in the meantime; the shop found out only when the
+     * order was submitted. When the stock changed the basket, no PayPal order is created:
+     * the answer asks the button to reload the page, which shows the corrected basket and
+     * the reason (BasketStockGuard queues the messages).
+     *
+     * @return bool true if the request was answered and must not continue
+     */
+    private function rejectBasketChangedByStock(): bool
+    {
+        $basket = Registry::getSession()->getBasket();
+        if (!$basket || !$basket->getProductsCount()) {
+            return false;
+        }
+
+        /** @var BasketStockGuard $basketStockGuard */
+        $basketStockGuard = $this->getServiceFromContainer(BasketStockGuard::class);
+        if (!$basketStockGuard->correctBasket($basket)) {
+            return false;
+        }
+
+        // a temporary shop order or PayPal order of an earlier attempt describes the old basket
+        $this->getServiceFromContainer(PaymentService::class)
+            ->removeTemporaryOrder('', PayPalCancelReason::UNKNOWN);
+        PayPalSession::unsetPayPalOrderId();
+
+        $this->outputJson([
+            'ERROR' => 'The basket changed because of the current stock',
+            'status' => 'ERROR',
+            'reload' => true
+        ]);
+
+        return true;
+    }
+
     protected function handleUserLogin(PayPalApiOrder $apiOrder): bool
     {
         $paypalConfig = oxNew(Config::class);
@@ -524,6 +570,9 @@ class ProxyController extends FrontendController
         $isLoggedIn = false;
 
         $this->addToBasket();
+        if ($this->rejectBasketChangedByStock()) {
+            return;
+        }
         $this->setPayPalPaymentMethod($paymentId);
         $basket = Registry::getSession()->getBasket();
 

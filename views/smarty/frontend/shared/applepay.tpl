@@ -206,6 +206,13 @@
                         })
                     });
                     const pp_data = await response.json();
+                    if (pp_data && pp_data.reload) {
+                        // The stock check changed the basket: no PayPal order was created. The reload
+                        // shows the corrected basket and the reason.
+                        session.completePayment(session.STATUS_FAILURE);
+                        location.reload();
+                        return;
+                    }
                     [{if $config->isSandbox()}]
                     console.log('Order created, PayPal data:', pp_data);
                     [{/if}]
@@ -242,7 +249,13 @@
                     [{/if}]
 
                     if (order_details.status === "APPROVED") {
-                        await onApprove(order_details).then(() => onCreated(order_details));
+                        if (false === await onApprove(order_details)) {
+                            // No shop order (e.g. the stock check changed the basket): do not capture
+                            session.completePayment(session.STATUS_FAILURE);
+                            location.reload();
+                            return;
+                        }
+                        await onCreated(order_details);
                     } else {
                         session.completePayment(session.STATUS_FAILURE);
                         throw new Error("payment was not completed, please view console for more information");
@@ -323,7 +336,7 @@
                     console.log('Order approval data:', data);
                     [{/if}]
                     if (data.status === "ERROR") {
-                        location.reload();
+                        return false;
                     }
                 } catch (error) {
                     console.error('Error submitting form:', error);

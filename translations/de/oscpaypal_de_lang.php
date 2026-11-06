@@ -54,6 +54,8 @@ $aLang = [
     'OSC_PAYPAL_CAPTURE_DENIED_ERROR'               => 'Die Überweisung wurde abgelehnt. Bitte überprüfen Sie Ihre Zahlungsdaten und versuchen Sie es erneut.',
     'OSC_PAYPAL_INTERNAL_SERVICE_ERROR'             => 'Bei der Bearbeitung Ihrer Zahlung ist ein unbekannter Fehler aufgetreten. Bitte versuchen Sie es später erneut.',
     'OSC_PAYPAL_ORDEREXECUTION_ERROR'               => 'Der Bezahlvorgang wurde abgebrochen.',
+    'OSC_PAYPAL_BASKET_ARTICLE_REMOVED'             => 'Der Artikel "%s" ist nicht mehr verfügbar und wurde aus Ihrem Warenkorb entfernt. Bitte prüfen Sie Ihre Bestellung, bevor Sie sie abschicken.',
+    'OSC_PAYPAL_BASKET_ARTICLE_AMOUNT_REDUCED'      => 'Vom Artikel "%s" sind nur noch %s Stück verfügbar. Die Menge in Ihrem Warenkorb wurde angepasst. Bitte prüfen Sie Ihre Bestellung, bevor Sie sie abschicken.',
     'OSC_PAYPAL_PAYMENT_INTERRUPTED'                => 'Der Bezahlvorgang konnte nicht abgeschlossen werden. Bitte versuchen Sie es erneut oder wählen Sie eine andere Zahlungsart. Falls Sie diese Seite gerade in einer App-Ansicht (z. B. der Google-, Facebook- oder Instagram-App) geöffnet haben, kann das Öffnen in einem Standard-Browser (Safari, Chrome, Firefox) das Problem möglicherweise beheben.',
     'OSCPAYPAL_KILL_EXPRESS_SESSION_REASON'         => 'Der Warenkorb wurde geändert. Aus diesem Grund wurde der aktive PayPal-Zahlvorgang automatisch abgebrochen. Bitte starten Sie die Zahlung mit PayPal erneut. Es wurde noch kein Geld von PayPal eingezogen.',
 
