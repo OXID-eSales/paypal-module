@@ -110,7 +110,7 @@ final class BasketStockGuardTest extends BaseTestCase
 
         $messages = $this->getDisplayedMessages();
         $this->assertCount(1, $messages);
-        // the title is merchant content and printed unescaped by the themes
+        // shown escaped exactly once: OXID 6 holds the title HTML-escaped, the guard adds nothing
         $this->assertStringContainsString('Guard &lt;low&gt; stock', $messages[0]);
         $this->assertStringContainsString('1', $messages[0]);
     }
