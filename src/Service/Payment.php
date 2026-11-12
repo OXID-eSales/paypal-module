@@ -657,7 +657,8 @@ class Payment
         if (!$verify3DResult) {
             return [
                 'status' => 'error',
-                'message' => $language->translateString('OSC_PAYPAL_3DSECURITY_ERROR')
+                'message' => $language->translateString('OSC_PAYPAL_3DSECURITY_ERROR'),
+                'cancelReason' => PayPalCancelReason::SCA_3DS_NOT_COMPLETED
             ];
         }
 

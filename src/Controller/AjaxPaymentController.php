@@ -312,10 +312,23 @@ class AjaxPaymentController extends BaseController
         try {
             //Verify 3D result if ACDC payment
             if (!$scaValidator->verify3D($paymentId)) {
+                // createShopOrder() already finalized the shop order (stock was
+                // reduced). We will not capture it, so storno it server-side
+                // instead of leaving a NOT_FINISHED order with reserved stock.
+                $this->logger->log(
+                    'warning',
+                    'PayPal captureOrder: 3-D-Secure verification failed, cancelling shop order',
+                    ['payPalOrderId' => $payPalOrderId, 'shopOrderId' => $shopOrderId]
+                );
+                $this->paymentService->removeTemporaryOrder(
+                    $shopOrderId,
+                    PayPalCancelReason::SCA_3DS_NOT_COMPLETED
+                );
                 $this->outputJson([
                     'status' => 'error',
                     'message' => $language->translateString('OSC_PAYPAL_3DSECURITY_ERROR')
                 ]);
+                return;
             }
 
             $capturePaymentForOrder = $orderService->capturePaymentForOrder(
@@ -911,6 +924,31 @@ class AjaxPaymentController extends BaseController
 
         try {
             $authorizePaymentResult = $paymentService->doAuthorizePayment($checkoutOrderId, $shopOrderId, $paymentId);
+
+            if (
+                ($authorizePaymentResult['cancelReason'] ?? '') === PayPalCancelReason::SCA_3DS_NOT_COMPLETED
+            ) {
+                // Same as in captureOrder(): the shop order was already finalized
+                // (stock reduced) but will never be authorized, so storno it.
+                // Use the order from the session, not the request parameter.
+                $sessionShopOrderId = (string)$this->orderRepository->fetchCurrentShopOrderId();
+                $this->logger->log(
+                    'warning',
+                    'PayPal authorizePayment: 3-D-Secure verification failed, cancelling shop order',
+                    ['payPalOrderId' => $checkoutOrderId, 'shopOrderId' => $sessionShopOrderId]
+                );
+                if ($sessionShopOrderId !== '') {
+                    $paymentService->removeTemporaryOrder(
+                        $sessionShopOrderId,
+                        PayPalCancelReason::SCA_3DS_NOT_COMPLETED
+                    );
+                }
+                $this->outputJson([
+                    'status' => 'error',
+                    'message' => $authorizePaymentResult['message']
+                ]);
+                return;
+            }
 
             if (
                 $authorizePaymentResult["status"] === 'success'

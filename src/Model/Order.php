@@ -844,9 +844,12 @@ class Order extends Order_parent
         // that is safe to storno). Only the latter — where a decline issue was
         // recorded — is stornoed; the former keeps the original protective
         // behavior so we never storno a payment PayPal might still complete.
+        // A failed 3-D-Secure check is equally terminal: the shop itself refuses
+        // to capture, so the APPROVED order can never turn into a payment.
         if (
             $payPalStatus === PayPalApiOrder::STATUS_APPROVED
             && $cancelReason !== PayPalCancelReason::PAYMENT_DECLINED
+            && $cancelReason !== PayPalCancelReason::SCA_3DS_NOT_COMPLETED
         ) {
             $logger->log('warning', sprintf(
                 'PayPal order with id %s (nr: %s) cancel blocked - PayPal order already approved (%s)',
