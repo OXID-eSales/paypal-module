@@ -267,7 +267,10 @@ final class OrderTest extends BaseTestCase
         ];
 
         $orderServiceMock = $this->createMock(\OxidSolutionCatalysts\PayPalApi\Service\Orders::class);
-        $orderServiceMock->expects($this->exactly(2))
+        // Capture strategy 'directly': the order is fetched once and not
+        // authorized afterwards. Set explicitly, so the test does not depend
+        // on the capture strategy configured in the shop.
+        $orderServiceMock->expects($this->once())
             ->method('showOrderDetails')
             ->with($this->equalTo($payPalOrderId))
             ->willReturn($paypalApiOrder);
@@ -297,6 +300,11 @@ final class OrderTest extends BaseTestCase
         );
 
         $mockOrder->setPaymentService($paymentService);
+
+        $moduleSettingsMock = $this->createMock(ModuleSettings::class);
+        $moduleSettingsMock->method('getPayPalStandardCaptureStrategy')
+            ->willReturn('directly');
+        $mockOrder->setModuleSettings($moduleSettingsMock);
 
         $mockOrder->finalizeOrderAfterExternalPayment($payPalOrderId, $forceFetchDetails);
 
