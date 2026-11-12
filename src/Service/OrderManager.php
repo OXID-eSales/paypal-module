@@ -24,6 +24,7 @@ use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidEsales\Eshop\Core\Config as EshopCoreConfig;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
 use Psr\Log\LoggerInterface;
+
 class OrderManager
 {
     use JsonTrait;

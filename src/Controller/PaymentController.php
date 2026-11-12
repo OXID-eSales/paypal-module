@@ -98,7 +98,6 @@ class PaymentController extends PaymentController_parent
 
             //reset vaulting session var
             Registry::getSession()->deleteVariable("selectedVaultedPaymentTokenId");
-
         }
         return parent::render();
     }

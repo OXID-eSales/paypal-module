@@ -489,7 +489,8 @@ class OrderController extends OrderController_parent
             // Check if order was already successfully captured (e.g. by previous request)
             $order = oxNew(EshopModelOrder::class);
             $order->load($sessionOrderId);
-            if ($order->isLoaded() &&
+            if (
+                $order->isLoaded() &&
                 ($order->isOrderSuccessfullyPaid() || !empty($order->getFieldData('oxtransid')))
             ) {
                 return 'thankyou';

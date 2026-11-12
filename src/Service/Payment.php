@@ -597,7 +597,6 @@ class Payment
 
         $redirectLink = '';
         if ($response) {
-
             $uapmOrderId = $response->id ?? null;
             if ($uapmOrderId) {
                 PayPalSession::storePayPalOrderId($uapmOrderId);

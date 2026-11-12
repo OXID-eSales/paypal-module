@@ -39,7 +39,6 @@ class SCAValidator implements SCAValidatorInterface
         ModuleSettings $moduleSettingsService
     ) {
         $this->serviceFactory = Registry::get(ServiceFactory::class);
-        ;
         $this->moduleSettingsService = $moduleSettingsService;
     }
 
