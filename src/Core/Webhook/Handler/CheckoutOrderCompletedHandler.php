@@ -7,7 +7,6 @@
 
 namespace OxidSolutionCatalysts\PayPal\Core\Webhook\Handler;
 
-
 class CheckoutOrderCompletedHandler extends WebhookHandlerBase
 {
     public const WEBHOOK_EVENT_NAME = 'CHECKOUT.ORDER.COMPLETED';

@@ -220,7 +220,6 @@ class AjaxPaymentController extends BaseController
                 'shopOrderId' => $shopOrderId,
                 'payPalOrder' => $payPalOrder,
             ]);
-
         } catch (\Exception $exception) {
             $this->logger->log('error', sprintf(
                 'Combined order creation failed for shop order %s: %s',
@@ -463,7 +462,8 @@ class AjaxPaymentController extends BaseController
             // retry's frontend would (mistakenly) cancel it. Keeping it open
             // also blocks proper DB hygiene and re-uses an order number that
             // never collected funds. See 0007927.
-            if ($order instanceof ShopOrder
+            if (
+                $order instanceof ShopOrder
                 && $order->isLoaded()
                 && (int)$order->getFieldData('oxstorno') !== 1
             ) {
@@ -670,8 +670,7 @@ class AjaxPaymentController extends BaseController
 
     public function isOrderNotSuccessfullyDone(
         ?string $shopOrderId = null
-    ): void
-    {
+    ): void {
         if (is_null($shopOrderId)) {
             $this->logger->log('warning', 'No order id provided for isOrderNotSuccessfullyDone check');
             $this->outputJson([

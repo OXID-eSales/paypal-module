@@ -274,8 +274,7 @@ class Order extends Order_parent
                     $this->getFieldData('oxordernr'),
                     $this->getPayPalCapturePendingReason($payPalApiOrder) ?: 'unknown'
                 ), ['payPalOrderId' => $payPalOrderId]);
-            }
-            elseif ($isUAPM && $this->isPayPalOrderApproved($payPalApiOrder)) {
+            } elseif ($isUAPM && $this->isPayPalOrderApproved($payPalApiOrder)) {
                 $this->markOrderPaymentNotFinished();
                 $transactionId = $this->extractTransactionId($payPalApiOrder);
                 //prepare capture tracking
@@ -700,7 +699,6 @@ class Order extends Order_parent
                 PayPalSession::setSessionRedirectLink($redirectLink);
 
                 return self::ORDER_STATE_SESSIONPAYMENT_INPROGRESS;
-
             } catch (Exception $exception) {
                 $this->cancelPayPalOrder();
                 /** @var LoggerInterface $logger */
@@ -1150,9 +1148,9 @@ class Order extends Order_parent
 
         if (!$trackCode || !$trackCarrier || !$transactionId || !$payPalOrderId) {
             $missing = array_filter([
-                !$trackCode     ? 'trackCode'     : null,
-                !$trackCarrier  ? 'trackCarrier'  : null,
-                !$transactionId ? 'capture_id'    : null,
+                !$trackCode ? 'trackCode' : null,
+                !$trackCarrier ? 'trackCarrier' : null,
+                !$transactionId ? 'capture_id' : null,
                 !$payPalOrderId ? 'payPalOrderId' : null,
             ]);
             /** @var LoggerInterface $logger */
@@ -1649,8 +1647,7 @@ class Order extends Order_parent
             $oOrderId
         );
 
-        if (!$bIsPayPalPayment && $payPalOrderId)
-        {
+        if (!$bIsPayPalPayment && $payPalOrderId) {
             $this->paymentService->removeTemporaryOrder();
             $oSession->setVariable('sess_challenge', Registry::getUtilsObject()->generateUId());
         }
