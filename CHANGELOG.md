@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.9.3] - unreleased
+
+### FIX
+
+- Cancel the shop order when the 3-D-Secure check of a card payment (ACDC, Google Pay) fails. Reported via support ticket 117175. On "Pay", `AjaxPaymentController::createShopOrder()` finalizes the shop order (status NOT_FINISHED) and already reduces the stock. If `verify3D()` then failed in `captureOrder()`, the controller only answered `OSC_PAYPAL_3DSECURITY_ERROR` and left the order open with the stock still reserved; the authorize flow (`authorizePayment()`) did the same. Fix: both now storno the shop order via `removeTemporaryOrder()` with the reason `SCA_3DS_NOT_COMPLETED` before answering with the error. For that, `Order::cancelPayPalOrder()` no longer blocks an APPROVED PayPal order for this reason: the shop itself refuses to capture, so the order can never turn into a payment - the same as for a refused capture (`PAYMENT_DECLINED`). Every other reason keeps the block. Files touched: `src/Controller/AjaxPaymentController.php`, `src/Model/Order.php`, `src/Service/Payment.php`.
+- The same change was made in the OXID 6 module `osc/paypal` (2.10.3).
+
 ## [3.9.2] - 2026-11-10
 
 ### FIX

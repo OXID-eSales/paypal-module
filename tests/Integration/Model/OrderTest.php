@@ -15,6 +15,7 @@ use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
 use OxidEsales\Eshop\Core\Registry as EshopRegistry;
 use OxidEsales\Eshop\Core\Session;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
+use OxidSolutionCatalysts\PayPal\Core\PayPalCancelReason;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
@@ -686,6 +687,42 @@ final class OrderTest extends BaseTestCase
             ],
         ]);
         $this->assertSame('', $order->getPayPalCapturePendingReason($withoutReason));
+    }
+
+    /**
+     * An APPROVED PayPal order is only stornoed for terminal reasons: a refused
+     * capture or a failed 3-D-Secure check (the shop itself refuses to capture).
+     * Any other reason keeps the protective block, as PayPal may still complete it.
+     *
+     * @dataProvider cancelApprovedOrderDataProvider
+     */
+    public function testCancelPayPalOrderWithApprovedPayPalStatus(string $cancelReason, bool $expectCancelled): void
+    {
+        $this->prepareEmptyOrder();
+
+        $order = $this->getMockBuilder(PaypalOrder::class)
+            ->onlyMethods(['getPayPalApiOrderStatus'])
+            ->getMock();
+        $order->method('getPayPalApiOrderStatus')
+            ->willReturn(PayPalApiOrder::STATUS_APPROVED);
+        $order->load(self::TEST_ORDER_ID);
+
+        // Order has no order number, so a successful cancel deletes it.
+        $result = $order->cancelPayPalOrder($cancelReason);
+
+        $reloaded = oxNew(EshopModelOrder::class);
+        $this->assertSame($expectCancelled, $result);
+        $this->assertSame(!$expectCancelled, $reloaded->load(self::TEST_ORDER_ID));
+    }
+
+    public function cancelApprovedOrderDataProvider(): array
+    {
+        return [
+            '3DS failed' => [PayPalCancelReason::SCA_3DS_NOT_COMPLETED, true],
+            'payment declined' => [PayPalCancelReason::PAYMENT_DECLINED, true],
+            'buyer cancelled' => [PayPalCancelReason::BUYER_CANCELLED, false],
+            'unknown' => [PayPalCancelReason::UNKNOWN, false],
+        ];
     }
 
     private function prepareEmptyOrder(): EshopModelOrder
