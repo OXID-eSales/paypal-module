@@ -45,6 +45,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
+use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -181,7 +182,8 @@ class ProxyController extends FrontendController
                 ]
             );
         }
-        $paymentId = Registry::getSession()->getVariable('paymentid');
+        $paymentId = (string)Registry::getSession()->getVariable('paymentid')
+            ?: PayPalDefinitions::GOOGLEPAY_PAYPAL_PAYMENT_ID;
 
         $this->addToBasket();
         if ($this->rejectBasketChangedByStock()) {
@@ -210,6 +212,10 @@ class ProxyController extends FrontendController
             false
         );
 
+        if (!$this->isCreatedPayPalOrder($response)) {
+            return;
+        }
+
         if ($response->id) {
             PayPalSession::storePayPalOrderId($response->id);
 
@@ -227,28 +233,13 @@ class ProxyController extends FrontendController
         }
 
         if (!$this->getUser()) {
-            $purchaseUnitRequest = new PurchaseUnitRequest();
-            $purchaseUnitRequest->shipping->address = $shippingAddress;
-            $purchaseUnitRequest->shipping->name->full_name = $data['shippingAddress']['name'] ?? '';
-
-            $response->purchase_units = [$purchaseUnitRequest];
-
-            $response->payer = new Payer();
-            $response->payer->email_address = $data['email'];
-            $response->payer->phone->phone_number->national_number = $data['shippingAddress']['phoneNumber'] ?? '';
-
-            $userRepository = $this->getServiceFromContainer(UserRepository::class);
-            $paypalEmail = $data['email'];
-
-            if ($userRepository->userAccountExists($paypalEmail)) {
-                //got a non-guest account, so either we log in or redirect customer to login step
-                $isLoggedIn = $this->handleUserLogin($response);
-                $nonGuestAccountDetected = true;
-            } else {
-                //we need to use a guest account
-                $userComponent = oxNew(UserComponent::class);
-                $userComponent->createPayPalGuestUser($response);
-            }
+            $nonGuestAccountDetected = $this->prepareWalletVisitorWithoutLogin(
+                $response,
+                (string)($data['email'] ?? ''),
+                $shippingAddress,
+                (string)($data['shippingAddress']['name'] ?? ''),
+                (string)($data['shippingAddress']['phoneNumber'] ?? '')
+            );
         }
 
         if ($user = $this->getUser()) {
@@ -496,6 +487,75 @@ class ProxyController extends FrontendController
         return false;
     }
 
+    /**
+     * Google Pay / Apple Pay for a visitor who is not logged in: puts the data
+     * from the wallet into the PayPal order response and creates a guest
+     * account when no customer account uses the e-mail address.
+     *
+     * The e-mail address comes from the browser, PayPal has not confirmed it.
+     * It must therefore never log the visitor in (0008026): when a customer
+     * account with that address exists, the visitor is sent to the login step
+     * - the same as with the automatic login switched off - and nothing is
+     * written into that account.
+     *
+     * @return bool true when a customer account with that e-mail address exists
+     */
+    protected function prepareWalletVisitorWithoutLogin(
+        PayPalApiOrder $response,
+        string $email,
+        AddressPortable $shippingAddress,
+        string $fullName,
+        string $phoneNumber
+    ): bool {
+        $purchaseUnitRequest = new PurchaseUnitRequest();
+        $purchaseUnitRequest->shipping = new ShippingDetail();
+        $purchaseUnitRequest->shipping->address = $shippingAddress;
+        $purchaseUnitRequest->shipping->initName()->full_name = $fullName;
+        $response->purchase_units = [$purchaseUnitRequest];
+
+        $response->payer = new Payer();
+        $response->payer->email_address = $email;
+        $response->payer->initPhone()->phone_number->national_number = $phoneNumber;
+
+        $userRepository = $this->getServiceFromContainer(UserRepository::class);
+        if ($userRepository->userAccountExists($email)) {
+            //tell order controller to redirect to checkout login (shows OSC_PAYPAL_LOG_IN_TO_CONTINUE)
+            Registry::getSession()->setVariable('oscpaypal_payment_redirect', true);
+            return true;
+        }
+
+        $userComponent = oxNew(UserComponent::class);
+        $userComponent->createPayPalGuestUser($response);
+
+        return false;
+    }
+
+    /**
+     * PayPal may refuse to create the order, doCreatePayPalOrder() then returns
+     * null. Answer with JSON instead of running into an error further down.
+     *
+     * @param mixed $response
+     */
+    private function isCreatedPayPalOrder($response): bool
+    {
+        if ($response instanceof PayPalApiOrder && !empty($response->id)) {
+            return true;
+        }
+
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        $logger->log('warning', sprintf(
+            'ProxyController: PayPal did not create the order for payment method %s',
+            (string)Registry::getSession()->getVariable('paymentid')
+        ));
+
+        PayPalSession::unsetPayPalOrderId();
+        Registry::getSession()->getBasket()->setPayment(null);
+        $this->outputJson(['ERROR' => 'Error on create PayPal Order call.']);
+
+        return false;
+    }
+
     public function getPaymentRequestLines()
     {
         $moduleSettings = $this->getServiceFromContainer(ModuleSettings::class);
@@ -565,7 +625,8 @@ class ProxyController extends FrontendController
         if (PayPalSession::isPayPalExpressOrderActive()) {
             //TODO: improve
         }
-        $paymentId = Registry::getSession()->getVariable('paymentid');
+        $paymentId = (string)Registry::getSession()->getVariable('paymentid')
+            ?: PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID;
         $nonGuestAccountDetected = false;
         $isLoggedIn = false;
 
@@ -593,6 +654,10 @@ class ProxyController extends FrontendController
             $payPalUrlService->getCancelUrl(),
             false
         );
+        if (!$this->isCreatedPayPalOrder($response)) {
+            return;
+        }
+
         if ($response->id) {
             PayPalSession::storePayPalOrder((array)$response);
 
@@ -610,28 +675,13 @@ class ProxyController extends FrontendController
         }
 
         if (!$this->getUser()) {
-            $purchaseUnitRequest = new PurchaseUnitRequest();
-            $purchaseUnitRequest->shipping->address = $shippingAddress;
-            $purchaseUnitRequest->shipping->name->full_name = $shippingData['shippingContact']['name'] ?? '';
-
-            $response->purchase_units = [$purchaseUnitRequest];
-
-            $response->payer = new Payer();
-            $response->payer->email_address = $data['email'];
-            $response->payer->phone->phone_number->national_number =
-                $shippingData['shippingContact']['phoneNumber'] ?? '';
-
-            $userRepository = $this->getServiceFromContainer(UserRepository::class);
-            $paypalEmail = $data['email'];
-
-            $nonGuestAccountDetected = false;
-            if ($userRepository->userAccountExists($paypalEmail)) {
-                $isLoggedIn = $this->handleUserLogin($response);
-                $nonGuestAccountDetected = true;
-            } else {
-                $userComponent = oxNew(UserComponent::class);
-                $userComponent->createPayPalGuestUser($response);
-            }
+            $nonGuestAccountDetected = $this->prepareWalletVisitorWithoutLogin(
+                $response,
+                (string)($data['email'] ?? ''),
+                $shippingAddress,
+                (string)($shippingData['shippingContact']['name'] ?? ''),
+                (string)($shippingData['shippingContact']['phoneNumber'] ?? '')
+            );
         }
 
         if ($user = $this->getUser()) {
