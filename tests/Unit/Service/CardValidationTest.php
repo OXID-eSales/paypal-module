@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Service;
 
 use PHPUnit\Framework\TestCase;
+use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPal\Service\SCAValidator;
 use OxidSolutionCatalysts\PayPal\Exception\CardValidation as CardValidationException;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
@@ -37,7 +38,11 @@ class CardValidationTest extends TestCase
     {
         parent::setUp();
         $this->initSerializedVariables();
-        $this->markTestSkipped('Skipping all tests in CardValidationTest.');
+    }
+
+    private function createValidator(): SCAValidator
+    {
+        return new SCAValidator($this->createMock(ModuleSettings::class));
     }
 
     private function initSerializedVariables(): void
@@ -383,57 +388,56 @@ class CardValidationTest extends TestCase
 
     public function testMissingPaymentSource(): void
     {
-        $validator = new SCAValidator();
+        $validator = $this->createValidator();
 
         $this->expectException(CardValidationException::class);
         $this->expectExceptionMessage(CardValidationException::byMissingPaymentSource()->getMessage());
 
-        $validator->getCardAuthenticationResult(new PayPalApiOrder());
+        $validator->getCardAuthenticationResponse(new PayPalApiOrder());
     }
 
     public function testNonCardPaymentSource(): void
     {
-        $validator = new SCAValidator();
+        $validator = $this->createValidator();
 
         $this->expectException(CardValidationException::class);
         $this->expectExceptionMessage(CardValidationException::byPaymentSource()->getMessage());
 
-        $validator->getCardAuthenticationResult(unserialize($this->nonCardPaymentSource));
+        $validator->getCardAuthenticationResponse(unserialize($this->nonCardPaymentSource));
     }
 
     public function testMissingCardAutentication(): void
     {
-        $validator = new SCAValidator();
+        $validator = $this->createValidator();
 
         $order = unserialize($this->missingCardAuthentication);
-        $this->assertNull($validator->getCardAuthenticationResult($order));
+        $this->assertNull($validator->getCardAuthenticationResponse($order));
     }
 
     public function testAuthenticationResultSuccess()
     {
-        $validator = new SCAValidator();
+        $validator = $this->createValidator();
 
         $order = unserialize($this->success3DCard);
-        $validationResult = $validator->getCardAuthenticationResult($order);
+        $validationResult = $validator->getCardAuthenticationResponse($order);
         $this->assertSame(SCAValidator::LIABILITY_SHIFT_POSSIBLE, $validationResult->liability_shift);
         $this->assertSame(SCAValidator::AUTH_STATUS_SUCCESS, $validationResult->three_d_secure->authentication_status);
         $this->assertSame(SCAValidator::ENROLLMENT_STATUS_YES, $validationResult->three_d_secure->enrollment_status);
     }
 
     /**
+     * Decision matrix of SCAValidator::isCardUsableForPayment(), named after PayPal's 3D Secure
+     * test cards. See https://developer.paypal.com/docs/checkout/advanced/customize/3d-secure/response-parameters/
+     *
+     * timeout, merchant_not_active, failed_3Ds1 and cmpiLookupError carry no 3D Secure data and
+     * liability shift NO. PayPal's table has no row for this combination; the module continues
+     * with authorization (no 3D Secure was performed, the merchant keeps the liability).
+     *
      * @dataProvider providerPayPalApiOrderResults
      */
     public function testIsCardSafeToUse(string $serializedOrder, string $assertMethod)
     {
-        $this->markTestSkipped("needs more detailed mocks");
-        $validator = $this->getMockBuilder(SCAValidator::class)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getCardAuthenticationResult'])
-            ->getMock();
-
-        $validator->expects($this->any())
-            ->method('getCardAuthenticationResult')
-            ->willReturn(new AuthenticationResponse());
+        $validator = $this->createValidator();
 
         $this->{$assertMethod}($validator->isCardUsableForPayment(unserialize($serializedOrder)));
     }
@@ -447,21 +451,26 @@ class CardValidationTest extends TestCase
             'failesignature'     => ['success' => $this->failedSignature,      'method' => 'assertFalse'],
             'failedauth'         => ['success' => $this->failedAuthentication, 'method' => 'assertFalse'],
             'no_credemtial_prompt' => ['success' => $this->noPrompt,            'method' => 'assertTrue'],
-            'timeout'            => ['success' => $this->timeout,             'method' => 'assertFalse'],
+            'timeout'            => ['success' => $this->timeout,             'method' => 'assertTrue'],
             'not_enrolled'       => ['success' => $this->notEnrolled,         'method' => 'assertTrue'],
             'system_not_available' => ['success' => $this->systemNotAvailable,  'method' => 'assertTrue'],
-            'merchant_not_active' => ['success' => $this->merchantNotActive,   'method' => 'assertFalse'],
-            'failed_3Ds1'        => ['success' => $this->failedSignature3DS1,   'method' => 'assertFalse'],
-            'cmpiLookupError'    => ['success' => $this->cmpiLookupError,       'method' => 'assertFalse'],
+            'merchant_not_active' => ['success' => $this->merchantNotActive,   'method' => 'assertTrue'],
+            'failed_3Ds1'        => ['success' => $this->failedSignature3DS1,   'method' => 'assertTrue'],
+            'cmpiLookupError'    => ['success' => $this->cmpiLookupError,       'method' => 'assertTrue'],
             'cmpiAuthError'      => ['success' => $this->cmpiAuthError,         'method' => 'assertFalse'],
             'unavailableAuth'    => ['success' => $this->unavailableAuth,       'method' => 'assertFalse'],
             'bypassedAuth'       => ['success' => $this->bypassedAuth,          'method' => 'assertTrue'],
         ];
     }
 
-    public function testIsCardSafeToUseFail()
+    /**
+     * Without any authentication result no 3D Secure was performed. PayPal's documentation does
+     * not cover this case; the module continues with authorization (the merchant keeps the
+     * liability), consistent with SCAValidator::verify3D() for "SCA when required".
+     */
+    public function testIsCardSafeToUseWithoutAuthenticationResult()
     {
-        $validator = new SCAValidator();
-        $this->assertFalse($validator->isCardUsableForPayment(unserialize($this->missingCardAuthentication)));
+        $validator = $this->createValidator();
+        $this->assertTrue($validator->isCardUsableForPayment(unserialize($this->missingCardAuthentication)));
     }
 }
