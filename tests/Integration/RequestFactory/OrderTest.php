@@ -20,6 +20,7 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Exception\UserPhone as UserPhoneException;
 
 final class OrderTest extends BaseTestCase
 {
@@ -77,6 +78,43 @@ final class OrderTest extends BaseTestCase
         $this->assertEquals(
             '2000-04-01',
             $request->payment_source["pay_upon_invoice"]->birth_date
+        );
+    }
+
+    public function testCreatePuiPayPalOrderRequestWithoutPuiRequiredFields(): void
+    {
+        // the request carries no PUI data (no phone number)
+        $request = $this->getMockBuilder(Request::class)->disableOriginalConstructor()->getMock();
+        $request->method('getRequestParameter')->willReturn(null);
+
+        $user = oxNew(EshopModelUser::class);
+        $user->load(self::TEST_USER_ID);
+
+        $basket = oxNew(EshopModelBasket::class);
+        $basket->addToBasket($this->testProductOxid, 1);
+        $basket->setUser($user);
+        $basket->setBasketUser($user);
+        $basket->setPayment(PayPalDefinitions::PAYMENT_SOURCE_PUI);
+        $basket->setShipping('oxidstandard');
+        $basket->calculateBasket(true);
+
+        EshopRegistry::getSession()->setVariable('paymentid', PayPalDefinitions::PUI_PAYPAL_PAYMENT_ID);
+
+        /** @var OrderRequestFactory $requestFactory */
+        $requestFactory = $this->getServiceFromContainer(OrderRequestFactory::class);
+
+        EshopRegistry::set(\OxidEsales\Eshop\Core\Request::class, $request);
+
+        $this->expectException(UserPhoneException::class);
+        $this->expectExceptionMessage(UserPhoneException::byRequestData()->getMessage());
+
+        $requestFactory->getRequest(
+            $basket,
+            OrderRequest::INTENT_CAPTURE,
+            OrderRequestFactory::USER_ACTION_CONTINUE,
+            '',
+            Constants::PAYPAL_PROCESSING_INSTRUCTIONS,
+            PayPalDefinitions::PAYMENT_SOURCE_PUI
         );
     }
 
