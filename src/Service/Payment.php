@@ -162,6 +162,14 @@ class Payment
             $response->payment_source = $request->payment_source;
             PayPalSession::storePayPalOrder((array)$response);
         } catch (ApiException $exception) {
+            // Only the classified error - the exception message contains the
+            // whole request, including the authorization header and buyer data.
+            $this->logger->log('warning', 'PayPal refused to create the order.', [
+                'httpCode' => $exception->getCode(),
+                'issue' => $exception->getErrorIssue(),
+                'description' => $exception->getErrorDescription(),
+                'paymentId' => $this->getSessionPaymentId(),
+            ]);
             $this->handlePayPalApiError($exception);
         } catch (Exception $exception) {
             $this->logger->log('error', 'Error on order create call.', [$exception->getMessage()]);
