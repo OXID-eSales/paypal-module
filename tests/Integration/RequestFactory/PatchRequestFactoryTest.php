@@ -13,10 +13,8 @@ use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
-use OxidSolutionCatalysts\PayPal\Core\PayPalRequestAmountFactory;
 use OxidSolutionCatalysts\PayPal\Model\Basket;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPal\Model\Basket as PayPalBasket;
@@ -89,12 +87,22 @@ class PatchRequestFactoryTest extends BaseTestCase
 
         $basketItemMock->method('getUnitPrice')->willReturn($unitPriceMock);
 
+        // a calculated basket: the position's line price (2 x 50.00) is part of the products price list
+        $linePrice = oxNew(Price::class);
+        $linePrice->setBruttoPriceMode();
+        $linePrice->setPrice(100.00);
+        $basketItemMock->method('getPrice')->willReturn($linePrice);
+        $productsPriceList = oxNew(\OxidEsales\Eshop\Core\PriceList::class);
+        $productsPriceList->addToPriceList($linePrice);
+
         // Create basket mock with all required methods
         $basketMock = $this->createMock(PayPalBasket::class);
         $basketMock->method('getBasketCurrency')->willReturn($currency);
         $basketMock->method('isCalculationModeNetto')->willReturn(false);
+        $basketMock->method('isPriceViewModeNetto')->willReturn(false);
         $basketMock->method('getPrice')->willReturn($priceMock);
         $basketMock->method('getContents')->willReturn([$basketItemMock]);
+        $basketMock->method('getProductsPrice')->willReturn($productsPriceList);
         $basketMock->method('getPayPalCheckoutWrapping')->willReturn(0.00);
         $basketMock->method('getPayPalCheckoutGiftCard')->willReturn(0.00);
         $basketMock->method('getPayPalCheckoutPayment')->willReturn(0.00);
@@ -103,23 +111,9 @@ class PatchRequestFactoryTest extends BaseTestCase
         $basketMock->method('getPayPalCheckoutDeliveryCosts')->willReturn(0.00);
         $basketMock->method('getPayPalCheckoutRoundDiff')->willReturn(0.00);
 
-        // Create proper amount with breakdown
-        $amountWithBreakdown = new AmountWithBreakdown();
-        $amountWithBreakdown->value = '100.00';
-        $amountWithBreakdown->currency_code = 'EUR';
-
-        // Mock the amount factory
-        $amountFactoryMock = $this->createMock(PayPalRequestAmountFactory::class);
-        $amountFactoryMock->method('getAmount')->willReturn($amountWithBreakdown);
-
-        $PayPalRequestAmountFactoryBackup = Registry::get(PayPalRequestAmountFactory::class);
-        Registry::set(PayPalRequestAmountFactory::class, $amountFactoryMock);
-
-        $orderId = 'testOrderId';
-
-
         try {
-            $patches = $this->patchRequestFactory->getOrderPatches($basketMock, $orderId);
+            // without a shop order: the custom id patch is covered by testGetCustomIdPatch()
+            $patches = $this->patchRequestFactory->getOrderPatches($basketMock);
 
             $this->assertIsArray($patches);
             $this->assertNotEmpty($patches, 'Patches array should not be empty');
@@ -145,9 +139,6 @@ class PatchRequestFactoryTest extends BaseTestCase
             // Clean up test data
             $this->cleanUpTable('oxaddress');
             Registry::getSession()->deleteVariable('deladrid');
-
-            // Restore the original factory
-            Registry::set(PayPalRequestAmountFactory::class, $PayPalRequestAmountFactoryBackup);
         }
     }
 
@@ -206,27 +197,15 @@ class PatchRequestFactoryTest extends BaseTestCase
         $basketMock = $this->createMock(Basket::class);
         $basketMock->method('getPrice')->willReturn($priceMock);
         $basketMock->method('getBasketCurrency')->willReturn($currency);
+        $basketMock->method('isPriceViewModeNetto')->willReturn(false);
         // an empty, calculated basket
         $basketMock->method('getProductsPrice')->willReturn(oxNew(\OxidEsales\Eshop\Core\PriceList::class));
-        $amountWithBreakdown = new AmountWithBreakdown();
-        $amountWithBreakdown->value = '1.00';
-        $amountWithBreakdown->currency_code = 'EUR';
-
-        $amountFactoryMock = $this->createMock(PayPalRequestAmountFactory::class);
-        $amountFactoryMock->method('getAmount')->willReturn($amountWithBreakdown);
-
-        $PayPalRequestAmountFactoryBackup = Registry::get(PayPalRequestAmountFactory::class);
-        Registry::set(PayPalRequestAmountFactory::class, $amountFactoryMock);
-
         $this->patchRequestFactory->getOrderPatches($basketMock);
 
         $patch = $this->patchRequestFactory->getAmountPatch();
 
         $this->assertInstanceOf(Patch::class, $patch);
         $this->assertEquals(Patch::OP_REPLACE, $patch->op);
-
-        //restoring globally changed object in the registry
-        Registry::set(PayPalRequestAmountFactory::class, $PayPalRequestAmountFactoryBackup);
     }
 
     public function testGetPurchaseUnitsPatch(): void
@@ -239,6 +218,7 @@ class PatchRequestFactoryTest extends BaseTestCase
         $basketMock->method('getPrice')->willReturn($priceMock);
 
         $basketMock->method('isCalculationModeNetto')->willReturn(false);
+        $basketMock->method('isPriceViewModeNetto')->willReturn(false);
         $basketMock->method('getBasketCurrency')->willReturn((object) ['decimal' => 2]);
 
         $basketItem = $this->createMock(BasketItem::class);
@@ -253,6 +233,9 @@ class PatchRequestFactoryTest extends BaseTestCase
         $linePrice->setBruttoPriceMode();
         $linePrice->setPrice(10.00);
         $basketItem->method('getPrice')->willReturn($linePrice);
+        // the factory builds the items from quantity and unit price
+        $basketItem->method('getAmount')->willReturn(1);
+        $basketItem->method('getUnitPrice')->willReturn($linePrice);
         $productsPriceList = oxNew(\OxidEsales\Eshop\Core\PriceList::class);
         $productsPriceList->addToPriceList($linePrice);
         $basketMock->method('getProductsPrice')->willReturn($productsPriceList);
