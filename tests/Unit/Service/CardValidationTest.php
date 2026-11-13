@@ -185,6 +185,23 @@ class CardValidationTest extends UnitTestCase
                     'three_d_secure' => ['authentication_status' => 'A', 'enrollment_status' => 'Y']
                 ],
                 'assertTrue'
+            ],
+
+            // PayPal: system unavailable - do not continue, ask the cardholder to retry
+            'unknown_enrollment_liability_unknown' => [
+                ['liability_shift' => 'UNKNOWN', 'three_d_secure' => ['enrollment_status' => 'U']],
+                'assertFalse'
+            ],
+
+            'no_3ds_data_liability_unknown' => [
+                ['liability_shift' => 'UNKNOWN', 'three_d_secure' => null],
+                'assertFalse'
+            ],
+
+            // PayPal: system unavailable with liability shift NO - continue
+            'unknown_enrollment_liability_no' => [
+                ['liability_shift' => 'NO', 'three_d_secure' => ['enrollment_status' => 'U']],
+                'assertTrue'
             ]
         ];
     }
