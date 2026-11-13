@@ -43,9 +43,6 @@ use OxidSolutionCatalysts\PayPal\Traits\PayPalBasketTrait;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Order as PayPalApiOrder;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\Payer;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\ShippingDetail;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -157,6 +154,10 @@ class ProxyController extends FrontendController
      */
     public function createGooglePayOrder()
     {
+        if ($this->isWalletRequestWithoutUser(__FUNCTION__)) {
+            return;
+        }
+
         $data = json_decode(
             file_get_contents('php://input'),
             true,
@@ -196,8 +197,6 @@ class ProxyController extends FrontendController
         }
 
         $payPalUrlService = $this->getServiceFromContainer(PayPalUrlService::class);
-        $isLoggedIn = false;
-        $nonGuestAccountDetected = false;
         $response = $this->getServiceFromContainer(PaymentService::class)->doCreatePayPalOrder(
             $basket,
             OrderRequest::INTENT_CAPTURE,
@@ -231,16 +230,6 @@ class ProxyController extends FrontendController
             }
         }
 
-        if (!$this->getUser()) {
-            $nonGuestAccountDetected = $this->prepareWalletVisitorWithoutLogin(
-                $response,
-                (string)($data['email'] ?? ''),
-                $shippingAddress,
-                (string)($data['shippingAddress']['name'] ?? ''),
-                (string)($data['shippingAddress']['phoneNumber'] ?? '')
-            );
-        }
-
         if ($user = $this->getUser()) {
             /** @var array $userInvoiceAddress */
             $userInvoiceAddress = $user->getInvoiceAddress();
@@ -268,15 +257,6 @@ class ProxyController extends FrontendController
                     }
                 }
             }
-        } elseif ($nonGuestAccountDetected && !$isLoggedIn) {
-            // PPExpress is actual no possible so we switch to PP-Standard
-            $this->setPayPalPaymentMethod(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
-        } else {
-            //TODO: we might end up in order step redirecting to start page without showing a message
-            // if we have no user, we stop the process
-            $response->status = 'ERROR';
-            PayPalSession::unsetPayPalOrderId();
-            Registry::getSession()->getBasket()->setPayment(null);
         }
         $this->outputJson($response);
     }
@@ -489,46 +469,25 @@ class ProxyController extends FrontendController
     }
 
     /**
-     * Google Pay / Apple Pay for a visitor who is not logged in: puts the data
-     * from the wallet into the PayPal order response and creates a guest
-     * account when no customer account uses the e-mail address.
-     *
-     * The e-mail address comes from the browser, PayPal has not confirmed it.
-     * It must therefore never log the visitor in (0008026): when a customer
-     * account with that address exists, the visitor is sent to the login step
-     * - the same as with the automatic login switched off - and nothing is
-     * written into that account.
-     *
-     * @return bool true when a customer account with that e-mail address exists
+     * Google Pay and Apple Pay are only offered in the checkout, where the
+     * visitor already has a shop account - a guest account for an order
+     * without registration. A request without one does not come from the
+     * shop's checkout. It is refused before the basket, a PayPal order or an
+     * account is touched: the e-mail address in the request is not confirmed
+     * by PayPal and must neither log in nor create an account (0008026).
      */
-    protected function prepareWalletVisitorWithoutLogin(
-        PayPalApiOrder $response,
-        string $email,
-        AddressPortable $shippingAddress,
-        string $fullName,
-        string $phoneNumber
-    ): bool {
-        $purchaseUnitRequest = new PurchaseUnitRequest();
-        $purchaseUnitRequest->shipping = new ShippingDetail();
-        $purchaseUnitRequest->shipping->address = $shippingAddress;
-        $purchaseUnitRequest->shipping->initName()->full_name = $fullName;
-        $response->purchase_units = [$purchaseUnitRequest];
-
-        $response->payer = new Payer();
-        $response->payer->email_address = $email;
-        $response->payer->initPhone()->phone_number->national_number = $phoneNumber;
-
-        $userRepository = $this->getServiceFromContainer(UserRepository::class);
-        if ($userRepository->userAccountExists($email)) {
-            //tell order controller to redirect to checkout login (shows OSC_PAYPAL_LOG_IN_TO_CONTINUE)
-            Registry::getSession()->setVariable('oscpaypal_payment_redirect', true);
-            return true;
+    private function isWalletRequestWithoutUser(string $method): bool
+    {
+        if ($this->getUser()) {
+            return false;
         }
 
-        $userComponent = oxNew(UserComponent::class);
-        $userComponent->createPayPalGuestUser($response);
+        /** @var LoggerInterface $logger */
+        $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+        $logger->log('warning', sprintf('ProxyController::%s() refused - no user in the session', $method));
+        $this->outputJson(['ERROR' => 'No user in the session.']);
 
-        return false;
+        return true;
     }
 
     /**
@@ -609,6 +568,10 @@ class ProxyController extends FrontendController
 
     public function createApplepayOrder()
     {
+        if ($this->isWalletRequestWithoutUser(__FUNCTION__)) {
+            return;
+        }
+
         $data = json_decode(file_get_contents('php://input'), true);
         $shippingData = $data['data'];
         $_POST['ord_agb'] = (int)filter_var($data['checkAgbTop'] ?? false, FILTER_VALIDATE_BOOLEAN);
@@ -628,8 +591,6 @@ class ProxyController extends FrontendController
         }
         $paymentId = (string)Registry::getSession()->getVariable('paymentid')
             ?: PayPalDefinitions::APPLEPAY_PAYPAL_PAYMENT_ID;
-        $nonGuestAccountDetected = false;
-        $isLoggedIn = false;
 
         $this->addToBasket();
         if ($this->rejectBasketChangedByStock()) {
@@ -675,16 +636,6 @@ class ProxyController extends FrontendController
             }
         }
 
-        if (!$this->getUser()) {
-            $nonGuestAccountDetected = $this->prepareWalletVisitorWithoutLogin(
-                $response,
-                (string)($data['email'] ?? ''),
-                $shippingAddress,
-                (string)($shippingData['shippingContact']['name'] ?? ''),
-                (string)($shippingData['shippingContact']['phoneNumber'] ?? '')
-            );
-        }
-
         if ($user = $this->getUser()) {
             /** @var array $userInvoiceAddress */
             $userInvoiceAddress = $user->getInvoiceAddress();
@@ -720,15 +671,6 @@ class ProxyController extends FrontendController
                     }
                 }
             }
-        } elseif ($nonGuestAccountDetected && !$isLoggedIn) {
-            // PPExpress is actual no possible so we switch to PP-Standard
-            $this->setPayPalPaymentMethod(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
-        } else {
-            //TODO: we might end up in order step redirecting to start page without showing a message
-            // if we have no user, we stop the process
-            ////     $response->status = 'ERROR';
-            //     PayPalSession::unsetPayPalOrderId();
-            //  Registry::getSession()->getBasket()->setPayment(null);
         }
         $this->outputJson($response);
     }
