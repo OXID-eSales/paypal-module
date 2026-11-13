@@ -16,7 +16,8 @@ use OxidSolutionCatalysts\PayPal\Model\PayPalOrder;
 
 final class OrderRepositoryTest extends BaseTestCase
 {
-    private const SHOP_ORDER_ID = 'shop_order_id';
+    // leading underscore: cleanUpTable() also removes the rows the repository creates itself
+    private const SHOP_ORDER_ID = '_test_shop_order_id';
     private const PAYMENT_METHOD = 'oscpaypal_pui';
     private const PAYPAL_ORDERID = '8S9298293T126730G';
     private const PAYPAL_TRANSACTIONID = '7JS1508358036693V';
@@ -26,6 +27,8 @@ final class OrderRepositoryTest extends BaseTestCase
     protected function tearDown(): void
     {
         $this->cleanUpTable('oscpaypal_order');
+        // rows claimed by the repository (INSERT IGNORE) get a generated oxid
+        $this->cleanUpTable('oscpaypal_order', 'oxorderid');
 
         parent::tearDown();
     }
@@ -52,7 +55,11 @@ final class OrderRepositoryTest extends BaseTestCase
             self::PAYPAL_ORDERID,
             'some_different_trans_id'
         );
-        $this->assertEmpty($fromRepo->getId());
+        // an unknown transaction id is claimed as a new tracking row (INSERT IGNORE,
+        // so concurrent webhook deliveries do not collide on the unique index)
+        $this->assertTrue($fromRepo->isLoaded());
+        $this->assertNotSame(self::PAYPAL_OXID, $fromRepo->getId());
+        $this->assertSame(self::SHOP_ORDER_ID, $fromRepo->getShopOrderId());
         $this->assertEmpty($fromRepo->getPaymentMethodId());
         $this->assertSame(self::PAYPAL_ORDERID, $fromRepo->getPayPalOrderId());
         $this->assertSame('some_different_trans_id', $fromRepo->getTransactionId());
