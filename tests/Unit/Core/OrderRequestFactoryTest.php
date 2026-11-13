@@ -78,7 +78,6 @@ class OrderRequestFactoryTest extends UnitTestCase
         $this->vaultingServiceMock->method('fetchSelectedVaultedPaymentToken')->willReturn(null);
 
         // This test should focus on the structure, not the full implementation
-        $this->markTestSkipped('This test needs to be rewritten to properly test the OrderRequestFactory with all dependencies');
     }
 
     /**

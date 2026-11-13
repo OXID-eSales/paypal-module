@@ -138,7 +138,6 @@ class PaypalPaymentTest extends UnitTestCase
             ->willReturn(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
         $this->moduleSettingsMock->method('getIsVaultingActive')->willReturn(false);
         $this->vaultingServiceMock->method('fetchSelectedVaultedPaymentToken')->willReturn(null);
-        $this->markTestSkipped('This test needs to be rewritten to properly test the OrderRequestFactory with all dependencies');
     }
 
     public function testExperienceContextForGuestPayPalPayment(): void

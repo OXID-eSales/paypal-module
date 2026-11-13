@@ -79,7 +79,6 @@ class CardValidationTest extends UnitTestCase
 
     public function testMissingPaymentSource(): void
     {
-        $this->markTestSkipped("Requires database tables in testing environment; skipping.");
         $validator = $this->createValidator();
 
         $this->expectException(CardValidationException::class);
