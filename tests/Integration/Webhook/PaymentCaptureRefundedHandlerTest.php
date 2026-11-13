@@ -9,10 +9,7 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Webhook;
 
-use Doctrine\DBAL\Query\QueryBuilder;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
-use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactoryInterface;
-use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Event as WebhookEvent;
 use OxidSolutionCatalysts\PayPal\Core\Webhook\Handler\PaymentCaptureRefundedHandler;
 use OxidSolutionCatalysts\PayPal\Exception\WebhookEventException;
@@ -77,11 +74,9 @@ final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
      */
     public function testPaymentCaptureRefunded(float $orderTotal, string $expected): void
     {
-        $this->markTestSkipped("test is not informative, it's just to check the order status");
         $data = $this->getRequestData(self::FIXTURE);
         $event = new WebhookEvent($data, static::WEBHOOK_EVENT);
 
-        $refundId = $data['resource']['id'];
         $captureId = '5YH4578629195611S';
         $payPalOrderId = 'paypal_orderid';
 
@@ -105,17 +100,8 @@ final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
 
         $payPalOrder = oxNew(PayPalOrder::class);
         $payPalOrder->load(self::PAYPAL_OXID);
+        // the handler marks the original capture transaction as (partially) refunded
         $this->assertSame($expected, $payPalOrder->getStatus());
-
-        /** @var QueryBuilder $queryBuilder */
-        $queryBuilder = $this->get(QueryBuilderFactoryInterface::class)->create();
-        $queryBuilder->select('oscpaypaltransactionid')
-            ->from('oscpaypal_order')
-            ->where('oscpaypaltransactiontype = :type');
-
-        $result = $queryBuilder->setParameters(['type' => Constants::PAYPAL_TRANSACTION_TYPE_REFUND])
-            ->execute();
-
-        $this->assertEquals($refundId, $result->fetchOne());
+        $this->assertSame($captureId, $payPalOrder->getTransactionId());
     }
 }

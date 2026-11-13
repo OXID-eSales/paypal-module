@@ -165,6 +165,12 @@ class WebhookHandlerBaseTestCase extends BaseTestCase
             "DELETE FROM oscpaypal_order WHERE oxpaypalorderid = ?",
             [$payPalOrderId]
         );
+        // rows the order repository claimed for this shop order (INSERT IGNORE, generated oxid)
+        // are not removed by cleanUpTable() and would be picked up by the handlers
+        $db->execute(
+            "DELETE FROM oscpaypal_order WHERE oxorderid = ?",
+            [self::SHOP_ORDER_ID]
+        );
         $db->execute(
             "DELETE FROM oxorder WHERE oxid = ?",
             [self::SHOP_ORDER_ID]
