@@ -47,8 +47,8 @@ final class VaultPaymentTokenCreatedHandlerTest extends WebhookHandlerBaseTestCa
         $loggerMock->expects($this->once())
             ->method('log')
             ->with(
-                'debug',
-                'VAULT.PAYMENT-TOKEN.CREATED webhook received without customer.id field.',
+                'warning',
+                'VAULT.PAYMENT-TOKEN.CREATED missing customer.id in payload',
                 $this->callback(function ($context) {
                     return isset($context['event_payload_keys']);
                 })
@@ -87,8 +87,8 @@ final class VaultPaymentTokenCreatedHandlerTest extends WebhookHandlerBaseTestCa
         $loggerMock->expects($this->once())
             ->method('log')
             ->with(
-                'debug',
-                'VAULT.PAYMENT-TOKEN.CREATED webhook error: shop user unknown',
+                'warning',
+                'VAULT.PAYMENT-TOKEN.CREATED received for unknown shop user',
                 []
             );
 
