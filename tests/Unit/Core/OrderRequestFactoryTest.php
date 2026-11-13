@@ -543,7 +543,6 @@ class OrderRequestFactoryTest extends UnitTestCase
         $this->assertNotEmpty($request->purchase_units, 'Purchase units should be set');
     }
 
-
     /**
      * Test experience_context URLs for different payment types using data provider
      *
@@ -785,7 +784,6 @@ class OrderRequestFactoryTest extends UnitTestCase
             $paymentSourceArray = $request->payment_source;
         }
 
-
         if (isset($paymentSourceArray['pay_upon_invoice'])) {
             $puiSource = $paymentSourceArray['pay_upon_invoice'];
 
@@ -989,7 +987,12 @@ class OrderRequestFactoryTest extends UnitTestCase
     {
         $this->moduleSettingsMock = $this->createMock(ModuleSettings::class);
 
-        $mockPurchaseUnitsFactory = new PayPalPurchaseUnitsFactory($this->moduleSettingsMock);
+        // The purchase units are built by PayPalPurchaseUnitsFactory (no longer by
+        // OrderRequestFactory) - these tests only look at the payment source.
+        $mockPurchaseUnitsFactory = $this->createMock(PayPalPurchaseUnitsFactory::class);
+        $mockPurchaseUnitsFactory->method('getPurchaseUnits')->willReturn([
+            new \OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest(['reference_id' => 'OXID_REFERENCE'])
+        ]);
 
         $this->orderRequestFactory = $this->getMockBuilder(OrderRequestFactory::class)
             ->setConstructorArgs([$mockPurchaseUnitsFactory, $this->moduleSettingsMock])
@@ -998,42 +1001,9 @@ class OrderRequestFactoryTest extends UnitTestCase
                     'getServiceFromContainer',
                     'getUserNameFromBasket',
                     'getCountryFromBasket',
-                    'getVaultingService',
-                    'getPurchaseUnits',
-                    'getAmount',
+                    'getVaultingService'
                 ]
             )->getMock();
-
-        $this->orderRequestFactory->method('getAmount')
-            ->willReturn(new \OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown(
-                [
-                    'breakdown' => [
-                        'item_total' => [
-                            'currency_code' => 'EUR',
-                            'value' => '100.00'
-                        ],
-                        'tax_total' => [
-                            'currency_code' => 'EUR',
-                            'value' => '0.00'
-                        ]
-                    ]
-                ]
-            ));
-
-        $this->orderRequestFactory->method('getPurchaseUnits')
-            ->willReturn([
-                new \OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnit([
-                    'reference_id' => '123',
-                    'amount' => [
-                        'breakdown' => [
-                            'item_total' => [
-                                'currency_code' => 'EUR',
-                                'value' => '100.00'
-                            ],
-                        ]
-                    ]
-                ])
-            ]);
 
         $this->vaultingServiceMock = $this->createMock(VaultingService::class);
         $this->basketMock = $this->createMock(Basket::class);

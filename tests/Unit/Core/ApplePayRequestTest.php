@@ -58,7 +58,12 @@ class ApplePayRequestTest extends UnitTestCase
 
         $this->moduleSettingsMock = $this->createMock(ModuleSettings::class);
 
-        $mockPurchaseUnitsFactory = new PayPalPurchaseUnitsFactory($this->moduleSettingsMock);
+        // The purchase units are built by PayPalPurchaseUnitsFactory (no longer by
+        // OrderRequestFactory) - these tests only look at the payment source.
+        $mockPurchaseUnitsFactory = $this->createMock(PayPalPurchaseUnitsFactory::class);
+        $mockPurchaseUnitsFactory->method('getPurchaseUnits')->willReturn([
+            new \OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest(['reference_id' => 'OXID_REFERENCE'])
+        ]);
 
         $this->orderRequestFactory = $this->getMockBuilder(OrderRequestFactory::class)
             ->setConstructorArgs([$mockPurchaseUnitsFactory, $this->moduleSettingsMock])
@@ -66,30 +71,11 @@ class ApplePayRequestTest extends UnitTestCase
                 'getServiceFromContainer',
                 'getUserNameFromBasket',
                 'getCountryFromBasket',
-                'getVaultingService',
-                'getAmount',
-                'getPurchaseUnits'
+                'getVaultingService'
             ])
             ->getMock();
 
         $this->moduleSettingsMock = $this->createMock(ModuleSettings::class);
-
-
-        $this->orderRequestFactory->method('getPurchaseUnits')
-            ->willReturn([
-                [
-                    'breakdown' => [
-                        'item_total' => [
-                            'currency_code' => 'EUR',
-                            'value' => '100.00'
-                        ],
-                        'tax_total' => [
-                            'currency_code' => 'EUR',
-                        ]
-                    ]
-                ]
-            ]);
-
 
         $this->vaultingServiceMock = $this->createMock(VaultingService::class);
         $this->basketMock = $this->createMock(Basket::class);

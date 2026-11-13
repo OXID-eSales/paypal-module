@@ -57,7 +57,12 @@ class PaypalPaymentTest extends UnitTestCase
         parent::setUp();
         $this->moduleSettingsMock = $this->createMock(ModuleSettings::class);
 
-        $mockPurchaseUnitsFactory = new PayPalPurchaseUnitsFactory($this->moduleSettingsMock);
+        // The purchase units are built by PayPalPurchaseUnitsFactory (no longer by
+        // OrderRequestFactory) - these tests only look at the payment source.
+        $mockPurchaseUnitsFactory = $this->createMock(PayPalPurchaseUnitsFactory::class);
+        $mockPurchaseUnitsFactory->method('getPurchaseUnits')->willReturn([
+            new \OxidSolutionCatalysts\PayPalApi\Model\Orders\PurchaseUnitRequest(['reference_id' => 'OXID_REFERENCE'])
+        ]);
 
         $this->orderRequestFactory = $this->getMockBuilder(OrderRequestFactory::class)
             ->setConstructorArgs([ $mockPurchaseUnitsFactory, $this->moduleSettingsMock])
@@ -65,28 +70,11 @@ class PaypalPaymentTest extends UnitTestCase
                 'getServiceFromContainer',
                 'getUserNameFromBasket',
                 'getCountryFromBasket',
-                'getVaultingService',
-                'getPurchaseUnits',
-                'getAmount',
+                'getVaultingService'
             ])
             ->getMock();
 
-
         $this->orderRequestFactory->setBasket(new Basket());
-
-        $this->orderRequestFactory->method('getAmount')
-            ->willReturn(new \OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown([
-                'breakdown' => [
-                    'item_total' => [
-                        'currency_code' => 'EUR',
-                        'value' => '100.00'
-                    ],
-                    'tax_total' => [
-                        'currency_code' => 'EUR',
-                        'value' => '0.00'
-                    ]
-                ]
-            ]));
 
         $this->vaultingServiceMock = $this->createMock(VaultingService::class);
         $this->basketMock = $this->createMock(Basket::class);
@@ -354,22 +342,6 @@ class PaypalPaymentTest extends UnitTestCase
     {
         $this->setupMocksForLoggedInPayment(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
 
-        $this->orderRequestFactory->method('getPurchaseUnits')
-            ->willReturn([
-               [
-                    'breakdown' => [
-                        'item_total' => [
-                            'currency_code' => 'EUR',
-                            'value' => '100.00'
-                        ],
-                        'tax_total' => [
-                            'currency_code' => 'EUR',
-                        ]
-                    ]
-                   ]
-            ]);
-
-
         $request = $this->orderRequestFactory->getRequest(
             $this->basketMock,
             OrderRequest::INTENT_CAPTURE,
@@ -432,7 +404,6 @@ class PaypalPaymentTest extends UnitTestCase
             }
         }
     }
-
 
     public function setRequestParameter($name, $value): void
     {
