@@ -44,9 +44,17 @@ final class WebhookTest extends BaseTestCase
         $service->ensureWebhook();
     }
 
+    /**
+     * Skipped in automated runs: the test deletes the webhooks registered for
+     * TEST_WEBHOOK_URL at the configured PayPal sandbox app (ensureCleanUp()) and
+     * registers new ones. Running it against a shared sandbox app would break the
+     * webhook registration of that environment.
+     *
+     * Run it manually with sandbox credentials of an app used only for this test.
+     */
     public function testWebhookCreationRoundtrip(): void
     {
-        $this->markTestSkipped('Test removes existing webhooks, only use manually until refactored');
+        $this->markTestSkipped('Deletes the webhooks of the sandbox app - manual use only, see docblock');
 
         $this->ensureCleanUp();
 
@@ -73,9 +81,17 @@ final class WebhookTest extends BaseTestCase
         $this->ensureCleanUp();
     }
 
+    /**
+     * Skipped in automated runs: the test deletes the webhooks registered for
+     * TEST_WEBHOOK_URL at the configured PayPal sandbox app (ensureCleanUp()) and
+     * registers new ones. Running it against a shared sandbox app would break the
+     * webhook registration of that environment.
+     *
+     * Run it manually with sandbox credentials of an app used only for this test.
+     */
     public function testWebhookCreationNewEvents(): void
     {
-        $this->markTestSkipped('Test removes existing webhooks, only use manually until refactored');
+        $this->markTestSkipped('Deletes the webhooks of the sandbox app - manual use only, see docblock');
 
         $this->ensureCleanUp();
 

@@ -162,9 +162,16 @@ final class PaymentTest extends BaseTestCase
         }
     }
 
+    /**
+     * Skipped in automated runs: creates a real Pay upon Invoice order at the PayPal
+     * sandbox. That needs a sandbox merchant enabled for PUI and a valid FraudNet
+     * (client metadata) id.
+     *
+     * Run it manually against a PUI enabled sandbox account.
+     */
     public function testCreatePuiPayPalOrder(): void
     {
-        $this->markTestSkipped('For manual use only, for automatic tests we have codeception tests');
+        $this->markTestSkipped('Needs a PUI enabled PayPal sandbox account - manual use only, see docblock');
 
         // The rest of the method remains unchanged
         $_POST['pui_required'] = [
@@ -212,9 +219,16 @@ final class PaymentTest extends BaseTestCase
         $this->assertSame(PaymentService::PAYMENT_ERROR_NONE, $paymentService->getPaymentExecutionError());
     }
 
+    /**
+     * Skipped in automated runs: checks that the configured sandbox account can create
+     * a Pay upon Invoice order at all (real API call). That needs a sandbox merchant
+     * enabled for PUI.
+     *
+     * Run it manually to verify a PUI sandbox setup.
+     */
     public function testSandboxAccountCanCreatePuiOrder(): void
     {
-        $this->markTestSkipped('For manual use only, for automatic tests we have codeception tests');
+        $this->markTestSkipped('Needs a PUI enabled PayPal sandbox account - manual use only, see docblock');
 
         /** @var \OxidSolutionCatalysts\PayPalApi\Service\Orders $orderService */
         $orderService = EshopRegistry::get(ServiceFactory::class)
