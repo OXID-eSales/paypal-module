@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - The same change was made in the OXID 7 module `osc/paypal-module` (3.9.3).
 - Google Pay and Apple Pay: the request that creates the order is refused when there is no user in the session. Both payment methods are only offered in the checkout, where the customer already has an account - a guest account for an order without registration. A request without one no longer logs in, creates an account or changes the basket, and the refusal is logged as a warning in the PayPal log. The request also answers with an error message instead of HTTP 500 when PayPal does not create the order or when no payment method is in the session yet. See 0008026. Files touched: `src/Controller/ProxyController.php`.
 - The same change was made in the OXID 7 module `osc/paypal-module` (3.9.3).
+- Log why PayPal refused to create an order. Until now `Payment::doCreatePayPalOrder()` gave up silently on a refusal, so the shop log did not show the cause (for example `INVALID_STRING_LENGTH` for an empty name). It now logs a warning with the HTTP code, the PayPal issue, its description and the payment method - deliberately not the exception message, which contains the whole request including the authorization header. Files touched: `src/Service/Payment.php`.
+- The same change was made in the OXID 7 module `osc/paypal-module` (3.9.3).
 
 ## [2.10.2] - 2026-11-10
 
