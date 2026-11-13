@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
+use OxidSolutionCatalysts\PayPal\Tests\Integration\Trait\TestBasketDataTrait;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
@@ -32,11 +33,18 @@ use TypeError;
 
 final class PaymentTest extends BaseTestCase
 {
-    protected const TEST_USER_ID = 'e7af1c3b786fd02906ccd75698f4e6b9';
-    protected const TEST_PRODUCT_ID = 'dc5ffdf380e15674b56dd562a7cb6aec';
+    use TestBasketDataTrait;
+
     private string $success3DCard;
     private string $failedAuthentication;
     private string $missingCardAuthentication;
+
+    protected function tearDown(): void
+    {
+        $this->removeTestBasketData();
+
+        parent::tearDown();
+    }
 
     protected function setUp(): void
     {
@@ -121,11 +129,10 @@ final class PaymentTest extends BaseTestCase
 
     public function testCreatePayPalOrder(): void
     {
-        $user = oxNew(EshopModelUser::class);
-        $user->load(self::TEST_USER_ID);
+        $user = $this->createTestUser();
 
         $basket = oxNew(EshopModelBasket::class);
-        $basket->addToBasket(self::TEST_PRODUCT_ID, 1);
+        $basket->addToBasket($this->createTestArticle(), 1);
         $basket->setUser($user);
         $basket->setBasketUser($user);
         $basket->setPayment(PayPalDefinitions::EXPRESS_PAYPAL_PAYMENT_ID);
@@ -171,11 +178,10 @@ final class PaymentTest extends BaseTestCase
             ->method('error');
         EshopRegistry::set('logger', $loggerMock);
 
-        $user = oxNew(EshopModelUser::class);
-        $user->load(self::TEST_USER_ID);
+        $user = $this->createTestUser();
 
         $basket = oxNew(EshopModelBasket::class);
-        $basket->addToBasket(self::TEST_PRODUCT_ID, 1);
+        $basket->addToBasket($this->createTestArticle(), 1);
         $basket->setUser($user);
         $basket->setBasketUser($user);
         $basket->setPayment(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID);
