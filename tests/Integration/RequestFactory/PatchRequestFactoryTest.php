@@ -13,9 +13,7 @@ use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
-use OxidSolutionCatalysts\PayPal\Core\PayPalRequestAmountFactory;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
-use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountWithBreakdown;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\Patch;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AddressPortable;
 use stdClass;
@@ -70,10 +68,10 @@ class PatchRequestFactoryTest extends BaseTestCase
 
         $basketMock->method('getBasketCurrency')->willReturn($currency);
         $basketMock->method('isCalculationModeNetto')->willReturn(false);
+        $basketMock->method('isPriceViewModeNetto')->willReturn(false);
         $basketMock->method('getPrice')->willReturn($priceMock);
-        $orderId = 'testOrderId';
-
-        $patches = $this->patchRequestFactory->getOrderPatches($basketMock, $orderId);
+        // without a shop order: the custom id patch is covered by testGetCustomIdPatch()
+        $patches = $this->patchRequestFactory->getOrderPatches($basketMock);
 
         $this->assertIsArray($patches);
         $this->assertNotEmpty($patches);
@@ -136,15 +134,9 @@ class PatchRequestFactoryTest extends BaseTestCase
         $basketMock = $this->createMock(Basket::class);
         $basketMock->method('getPrice')->willReturn($priceMock);
         $basketMock->method('getBasketCurrency')->willReturn($currency);
+        $basketMock->method('isPriceViewModeNetto')->willReturn(false);
         // an empty, calculated basket
         $basketMock->method('getProductsPrice')->willReturn(oxNew(\OxidEsales\Eshop\Core\PriceList::class));
-        $amountWithBreakdown = new AmountWithBreakdown();
-        $amountWithBreakdown->value = 1.00;
-        $amountFactoryMock = $this->createMock(PayPalRequestAmountFactory::class);
-        $amountFactoryMock->method('getAmount')->willReturn($amountWithBreakdown);
-
-        Registry::set(PayPalRequestAmountFactory::class, $amountFactoryMock);
-
         $this->patchRequestFactory->getOrderPatches($basketMock);
 
         $patch = $this->patchRequestFactory->getAmountPatch();
@@ -162,6 +154,7 @@ class PatchRequestFactoryTest extends BaseTestCase
         $basketMock->method('getPrice')->willReturn($priceMock);
 
         $basketMock->method('isCalculationModeNetto')->willReturn(false);
+        $basketMock->method('isPriceViewModeNetto')->willReturn(false);
         $basketMock->method('getBasketCurrency')->willReturn((object) ['decimal' => 2]);
 
         $basketItem = $this->createMock(BasketItem::class);
@@ -173,6 +166,9 @@ class PatchRequestFactoryTest extends BaseTestCase
         $linePrice->setBruttoPriceMode();
         $linePrice->setPrice(10.00);
         $basketItem->method('getPrice')->willReturn($linePrice);
+        // the factory builds the items from quantity and unit price
+        $basketItem->method('getAmount')->willReturn(1);
+        $basketItem->method('getUnitPrice')->willReturn($linePrice);
         $productsPriceList = oxNew(\OxidEsales\Eshop\Core\PriceList::class);
         $productsPriceList->addToPriceList($linePrice);
         $basketMock->method('getProductsPrice')->willReturn($productsPriceList);
