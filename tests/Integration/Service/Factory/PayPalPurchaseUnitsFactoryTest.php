@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OxidEsales\EshopCommunity\modules\osc\paypal\tests\Integration\Service\Factory;
+namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Service\Factory;
 
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Model\Basket;
