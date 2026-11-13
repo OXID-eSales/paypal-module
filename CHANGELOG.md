@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Log why PayPal refused to create an order. Until now `Payment::doCreatePayPalOrder()` gave up silently on a refusal, so the shop log did not show the cause (for example `INVALID_STRING_LENGTH` for an empty name). It now logs a warning with the HTTP code, the PayPal issue, its description and the payment method - deliberately not the exception message, which contains the whole request including the authorization header. Files touched: `src/Service/Payment.php`.
 - The same change was made in the OXID 6 module `osc/paypal` (2.10.3).
 
+- 3-D-Secure check (`SCAValidator`) follows PayPal's recommended actions for an unavailable authentication system: with liability shift `UNKNOWN` and enrollment status `U` or no enrollment status, the card payment is no longer continued (PayPal: "Do not continue with authorization. Request the cardholder to retry."). Until now both cases counted as "not enrolled" and the payment went through. Cases PayPal does not document - no 3D Secure data with liability shift `NO`, or no authentication result at all - are continued as before. The decision matrix in `CardValidationTest` runs again and covers these cases. Files touched: `src/Service/SCAValidator.php`.
+- The same change was made in the OXID 6 module `osc/paypal` (2.10.3).
+
 ## [3.9.2] - 2026-11-10
 
 ### FIX

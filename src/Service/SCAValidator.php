@@ -110,10 +110,12 @@ class SCAValidator implements SCAValidatorInterface
      * - POSSIBLE: Liability has shifted to the card issuer.
      * - YES: Liability has shifted to the card issuer.
      * - NO: Liability remains with the merchant.
+     * - UNKNOWN: The authentication system is not available.
      */
     public const LIABILITY_SHIFT_POSSIBLE = 'POSSIBLE';
     public const LIABILITY_SHIFT_YES = 'YES';
     public const LIABILITY_SHIFT_NO = 'NO';
+    public const LIABILITY_SHIFT_UNKNOWN = 'UNKNOWN';
 
     /**
      * Enrollment status values:
@@ -238,12 +240,14 @@ class SCAValidator implements SCAValidatorInterface
      * and liability shift indicators.
      *
      * PayPal recommended actions:
-     * - For cards not enrolled in 3D Secure (N, U, B): Continue with authorization
+     * - For cards not enrolled in 3D Secure (N, U, B): Continue with authorization,
+     *   except U with liability shift UNKNOWN (system unavailable): do not continue
+     * - Without enrollment status: continue, except with liability shift UNKNOWN: do not continue
      * - For enrolled cards (Y): Decision depends on authentication status and liability shift
      *
      * @param string $enrollmentStatus The 3D Secure enrollment status (Y, N, U, B)
      * @param string $authStatus The authentication status (Y, N, R, A, U, C)
-     * @param string $liabilityShift Whether liability has shifted to the card issuer (POSSIBLE, YES, NO)
+     * @param string $liabilityShift Whether liability has shifted to the card issuer (POSSIBLE, YES, NO, UNKNOWN)
      * @return bool True if authorization should continue, false otherwise
      */
     protected function shouldContinueAuthorization(
@@ -256,10 +260,11 @@ class SCAValidator implements SCAValidatorInterface
         $authStatus = strtoupper($authStatus);
         $liabilityShift = strtoupper($liabilityShift);
 
-        // If enrollment status is empty, treat as not enrolled
-        // PayPal recommends continuing with authorization for non-enrolled cards
+        // If enrollment status is empty, treat as not enrolled - unless the authentication
+        // system was unavailable (liability shift UNKNOWN): PayPal recommends not to continue
+        // and to ask the cardholder to retry
         if (empty($enrollmentStatus)) {
-            return true;
+            return $liabilityShift !== self::LIABILITY_SHIFT_UNKNOWN;
         }
 
         switch ($enrollmentStatus) {
@@ -274,9 +279,10 @@ class SCAValidator implements SCAValidatorInterface
                 return true;
 
             case self::ENROLLMENT_STATUS_UNKNOWN:
-                // Unable to determine if card is enrolled
-                // PayPal recommends continuing with authorization
-                return true;
+                // Unable to determine if card is enrolled (system unavailable)
+                // PayPal recommends continuing with authorization - but not with liability
+                // shift UNKNOWN: then the cardholder should retry
+                return $liabilityShift !== self::LIABILITY_SHIFT_UNKNOWN;
 
             case self::ENROLLMENT_STATUS_BYPASS:
                 // Card is enrolled but authentication bypassed

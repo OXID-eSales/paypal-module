@@ -460,7 +460,50 @@ class CardValidationTest extends TestCase
             'cmpiAuthError'      => ['success' => $this->cmpiAuthError,         'method' => 'assertFalse'],
             'unavailableAuth'    => ['success' => $this->unavailableAuth,       'method' => 'assertFalse'],
             'bypassedAuth'       => ['success' => $this->bypassedAuth,          'method' => 'assertTrue'],
+            // PayPal: system unavailable - do not continue, ask the cardholder to retry
+            'unknown_enrollment_liability_unknown' => [
+                'success' => $this->buildSerializedCardOrder('U', null, 'UNKNOWN'),
+                'method' => 'assertFalse'
+            ],
+            'no_3ds_data_liability_unknown' => [
+                'success' => $this->buildSerializedCardOrder(null, null, 'UNKNOWN'),
+                'method' => 'assertFalse'
+            ],
+            // PayPal: system unavailable with liability shift NO - continue
+            'unknown_enrollment_liability_no' => [
+                'success' => $this->buildSerializedCardOrder('U', null, 'NO'),
+                'method' => 'assertTrue'
+            ],
         ];
+    }
+
+    /**
+     * Card order with an authentication result; null enrollment and authentication status
+     * mean no 3D Secure data at all.
+     */
+    private function buildSerializedCardOrder(
+        ?string $enrollmentStatus,
+        ?string $authenticationStatus,
+        string $liabilityShift
+    ): string {
+        $order = new PayPalApiOrder();
+        $paymentSource = $order->initPaymentSource();
+        $card = new CardResponse();
+        $card->last_digits = '0000';
+        $card->brand = 'VISA';
+        $card->type = 'CREDIT';
+        $authResponse = new AuthenticationResponse();
+        $authResponse->liability_shift = $liabilityShift;
+        if ($enrollmentStatus !== null || $authenticationStatus !== null) {
+            $threeDS = new ThreeDSecureAuthenticationResponse();
+            $threeDS->enrollment_status = $enrollmentStatus;
+            $threeDS->authentication_status = $authenticationStatus;
+            $authResponse->three_d_secure = $threeDS;
+        }
+        $card->authentication_result = $authResponse;
+        $paymentSource->card = $card;
+
+        return serialize($order);
     }
 
     /**
