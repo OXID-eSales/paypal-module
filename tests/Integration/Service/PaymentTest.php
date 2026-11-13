@@ -162,9 +162,17 @@ final class PaymentTest extends BaseTestCase
         $this->assertNotEmpty($result->id);
     }
 
+    /**
+     * Skipped in automated runs: creates a real Pay upon Invoice order at the PayPal
+     * sandbox. That needs a sandbox merchant enabled for PUI and a valid FraudNet
+     * (client metadata) id; with the test credentials PayPal answers
+     * MISSING_REQUIRED_PARAMETER.
+     *
+     * Run it manually against a PUI enabled sandbox account.
+     */
     public function testCreatePuiPayPalOrder(): void
     {
-        $this->markTestSkipped("Need more detailed mock for this test");
+        $this->markTestSkipped('Needs a PUI enabled PayPal sandbox account - manual use only, see docblock');
         $_POST['pui_required'] = [
             'birthdate' => [
                 'day' => '1',
