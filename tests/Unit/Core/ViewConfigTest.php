@@ -60,12 +60,20 @@ final class ViewConfigTest extends UnitTestCase
     }
 
     /**
-     * Test case for ViewConfig::getPayPalClientId()
-     * @Todo needs new test with Core\Config mock
+     * Test case for ViewConfig::getPayPalClientId(): the client id of the active mode.
      */
-    public function testGetPayPalClientIdId(): void
+    public function testGetPayPalClientId(): void
     {
-        $this->markTestIncomplete('TODO');
+        $view = oxNew(ViewConfig::class);
+
+        $this->updateModuleSetting('oscPayPalClientId', '_test_live_client_id');
+        $this->updateModuleSetting('oscPayPalSandboxClientId', '_test_sandbox_client_id');
+
+        $this->updateModuleSetting('oscPayPalSandboxMode', true);
+        $this->assertSame('_test_sandbox_client_id', $view->getPayPalClientId());
+
+        $this->updateModuleSetting('oscPayPalSandboxMode', false);
+        $this->assertSame('_test_live_client_id', $view->getPayPalClientId());
     }
 
     /**

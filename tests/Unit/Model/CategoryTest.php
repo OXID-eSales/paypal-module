@@ -7,19 +7,29 @@
 
 declare(strict_types=1);
 
-namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Model\Logger;
+namespace OxidSolutionCatalysts\PayPal\Tests\Unit\Model;
 
 use OxidEsales\TestingLibrary\UnitTestCase;
 use OxidSolutionCatalysts\PayPal\Model\Category;
 
 class CategoryTest extends UnitTestCase
 {
-    public function testGetCategories()
+    /**
+     * The category list comes from the CATEGORY_ constants of the PayPal client's catalog
+     * Product model, so its size depends on the client version - check its shape instead.
+     */
+    public function testGetCategories(): void
     {
-        $this->markTestIncomplete('TODO');
-
         $category = new Category();
         $categories = $category->getCategories();
-        $this->assertCount(446, $categories);
+
+        $this->assertNotEmpty($categories);
+        foreach (array_keys($categories) as $constantName) {
+            $this->assertStringStartsWith('CATEGORY_', $constantName);
+        }
+
+        $sortedNames = array_keys($categories);
+        sort($sortedNames);
+        $this->assertSame($sortedNames, array_keys($categories));
     }
 }
