@@ -133,6 +133,13 @@ class WebhookHandlerBaseTestCase extends UnitTestCase
 
     protected function prepareTestData(string $payPalOrderId): void
     {
+        // rows the order repository claimed for this shop order (INSERT IGNORE, generated oxid)
+        // are not removed by cleanUpTable() and would be picked up by the handlers
+        \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->execute(
+            "DELETE FROM oscpaypal_order WHERE oxorderid = ?",
+            [self::SHOP_ORDER_ID]
+        );
+
         $shopOrder = oxNew(EshopModelOrder::class);
         $shopOrder->assign(
             [
