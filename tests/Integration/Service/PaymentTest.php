@@ -27,6 +27,8 @@ use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSourceResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\CardResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AuthenticationResponse;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\ThreeDSecureAuthenticationResponse;
+use OxidSolutionCatalysts\PayPalApi\Service\Orders as ApiOrderService;
+use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Log\LoggerInterface;
 use TypeError;
@@ -42,6 +44,7 @@ final class PaymentTest extends BaseTestCase
     protected function tearDown(): void
     {
         $this->removeTestBasketData();
+        $this->cleanUpTable('oxorder');
 
         parent::tearDown();
     }
@@ -229,19 +232,41 @@ final class PaymentTest extends BaseTestCase
     }
 
     /**
-     * TODO: Fix the test
+     * A successful 3D Secure result passes the check and the order is captured. The PayPal
+     * API is mocked: the capture call answers with a completed capture.
      */
     public function testACDCOrder3DSecureSuccess(): void
     {
-        $this->markTestSkipped("This test is failing, it needs to be fixed");
-        // The string is still in $this->success3DCard, but now it was built in setUp()
+        $capturedOrder = unserialize($this->success3DCard);
+        $capturedOrder->status = ApiOrderModel::STATUS_COMPLETED;
+        $capturedOrder->purchase_units = [(object)[
+            'payments' => (object)[
+                'captures' => [(object)['id' => 'capture_id', 'status' => 'COMPLETED']],
+            ],
+        ]];
+
+        $orderService = $this->createMock(ApiOrderService::class);
+        $orderService->expects($this->once())
+            ->method('capturePaymentForOrder')
+            ->with('', 'some_id')
+            ->willReturn($capturedOrder);
+        $serviceFactory = $this->createMock(ServiceFactory::class);
+        $serviceFactory->method('getOrderService')->willReturn($orderService);
+
         /**
          * @var PaymentService|MockObject $paymentService
          */
-        $paymentService = $this->getPaymentServiceMock($this->success3DCard);
+        $paymentService = $this->getPaymentServiceMock(
+            $this->success3DCard,
+            [],
+            false,
+            Constants::PAYPAL_SCA_ALWAYS,
+            null,
+            $serviceFactory
+        );
 
         $shopOrderModel = oxNew(EshopModelOrder::class);
-        $shopOrderModel->setId('order_id');
+        $shopOrderModel->setId('_test_acdc_order');
         $shopOrderModel->oxorder__oxordernr = new \OxidEsales\Eshop\Core\Field('order_nr');
 
         $apiOrder = $paymentService->doCapturePayPalOrder(
@@ -250,7 +275,8 @@ final class PaymentTest extends BaseTestCase
             PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID
         );
 
-        $this->assertInstanceOf(ApiOrderModel::class, $apiOrder);
+        $this->assertSame($capturedOrder, $apiOrder);
+        $this->assertSame('capture_id', $shopOrderModel->getFieldData('oxtransid'));
     }
 
     public function testACDCOrder3DSecureFail(): void
@@ -309,7 +335,8 @@ final class PaymentTest extends BaseTestCase
         array $addMockMethods = [],
         bool $alwaysIgnoreSCAResult = false,
         string $sca = Constants::PAYPAL_SCA_ALWAYS,
-        ?SCAValidatorInterface $scaValidator = null
+        ?SCAValidatorInterface $scaValidator = null,
+        ?ServiceFactory $serviceFactory = null
     ): MockObject {
         $moduleSettingsService = $this->getMockBuilder(ModuleSettingsService::class)
             ->disableOriginalConstructor()
@@ -337,7 +364,7 @@ final class PaymentTest extends BaseTestCase
                     $moduleSettingsService,
                     $logger,
                     $this->getServiceFromContainer(OrderProcessTrackingService::class),
-                    null,
+                    $serviceFactory,
                     null
                 ]
             )
