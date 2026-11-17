@@ -29,8 +29,8 @@
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "3.*",
-        "symfony/dotenv": "^5.1",
-        "oxid-esales/oxideshop-ce": "dev-b-7.0.x",
+        "symfony/dotenv": "^5.1 || ^6.4",
+        "oxid-esales/oxideshop-ce": "dev-b-7.4.x",
         "phpstan/phpstan": "^1.10",
         "phpunit/phpunit": "^9.1.1",
         "phpmd/phpmd": "^2.15"
@@ -81,6 +81,9 @@
         "allow-plugins": {
             "oxid-esales/oxideshop-unified-namespace-generator": true,
             "oxid-esales/oxideshop-composer-plugin": true
+        },
+        "audit": {
+            "block-insecure": false
         }
     }
 }

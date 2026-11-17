@@ -36,7 +36,7 @@ jobs:
         run: git clone https://github.com/OXID-eSales/docker-eshop-sdk.git .
 
       - name: Clone the shop
-        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-7.0.x --single-branch source
+        run: git clone --depth 1 https://github.com/OXID-eSales/oxideshop_ce.git --branch b-7.4.x --single-branch source
 
       - name: Download detagen
         run: |
@@ -107,7 +107,7 @@ jobs:
             php composer config repositories.oxid-esales/oxideshop-demodata-ce \
             --json '{"type":"git", "url":"https://github.com/OXID-eSales/oxideshop_demodata_ce"}'
           docker compose exec -T php composer require oxid-esales/oxideshop-demodata-ce:dev-master --no-update
-          docker compose exec -T php composer require oxid-esales/apex-theme:dev-b-7.0.x --no-update
+          docker compose exec -T php composer require oxid-esales/apex-theme:dev-b-7.4.x --no-update
 
       - name: Install datagen
         run: |
@@ -118,6 +118,9 @@ jobs:
 
       - name: Install dependencies and reset shop
         run: |
+          # allow packages with security advisories: some third-party dependencies of the shop
+          # have open advisories, and composer would refuse to resolve them
+          docker compose exec -T php composer config audit.block-insecure false
           docker compose exec -T php composer update --no-interaction
           docker compose exec -T php bin/oe-console oe:database:reset \
             --db-host=mysql --db-port=3306 --db-name=example --db-user=root --db-password=root --force

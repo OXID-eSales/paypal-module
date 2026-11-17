@@ -1,12 +1,27 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:changeBasket\\(\\) has parameter \\$aPersParam with no value type specified in iterable type array\\.$#"
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:changeBasket\\(\\) has parameter \\$aPersParam with no type specified\\.$#"
 			count: 1
 			path: ../../src/Component/BasketComponent.php
 
 		-
-			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:changeBasket\\(\\) has parameter \\$aSel with no value type specified in iterable type array\\.$#"
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:changeBasket\\(\\) has parameter \\$aSel with no type specified\\.$#"
+			count: 1
+			path: ../../src/Component/BasketComponent.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:changeBasket\\(\\) has parameter \\$blOverride with no type specified\\.$#"
+			count: 1
+			path: ../../src/Component/BasketComponent.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:changeBasket\\(\\) has parameter \\$dAmount with no type specified\\.$#"
+			count: 1
+			path: ../../src/Component/BasketComponent.php
+
+		-
+			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Component\\\\BasketComponent\\:\\:changeBasket\\(\\) has parameter \\$sProductId with no type specified\\.$#"
 			count: 1
 			path: ../../src/Component/BasketComponent.php
 
@@ -3319,11 +3334,6 @@ parameters:
 			message: "#^Ternary operator condition is always true\\.$#"
 			count: 2
 			path: ../../src/Service/BasketNetSummaryService.php
-
-		-
-			message: "#^Call to static method getParameter\\(\\) on an unknown class OxidEsales\\\\EshopCommunity\\\\Core\\\\Di\\\\ContainerFacade\\.$#"
-			count: 1
-			path: ../../src/Service/BasketStockGuard.php
 
 		-
 			message: "#^Method OxidSolutionCatalysts\\\\PayPal\\\\Service\\\\BasketStockGuard\\:\\:isCheckedItem\\(\\) has parameter \\$basketItem with no type specified\\.$#"
