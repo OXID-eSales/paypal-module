@@ -89,6 +89,10 @@
                 <button id="{{ paymentId }}" type="button" class="btn btn-lg btn-primary float-right pull-right submitButton nextStep largeButton">
                     <i class="fa fa-check"></i> {{ translate({ ident: "SUBMIT_ORDER" }) }}
                 </button>
+            {% elseif oViewConf.getPayPalCheckoutConfig().isPayPalStandardRedirectFlow() %}
+                {# redirect flow: the shop's own order button submits the order form,
+                   the customer is redirected to PayPal and back #}
+                {{ parent() }}
             {% else %}
                 <div id="{{ paymentId }}" class="paypal-button-container float-right pull-right"></div>
             {% endif %}
@@ -96,7 +100,8 @@
             {{ parent() }}
         {% endif %}
     {% endif %}
-    {% if paymentId == "oscpaypal_express" %}
+    {% if paymentId == "oscpaypal_express" or (paymentId == "oscpaypal" and not vaultedPaymentDescription and oViewConf.getPayPalCheckoutConfig().isPayPalStandardRedirectFlow()) %}
+        {# double-submit guard: a second submit of the order form must not create a second PayPal order #}
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 // Apex (Twig) renders the submit-button as an OXID-standard

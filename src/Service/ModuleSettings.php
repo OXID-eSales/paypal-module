@@ -31,6 +31,9 @@ use Psr\Log\LoggerInterface;
  */
 class ModuleSettings
 {
+    public const STANDARD_CHECKOUT_FLOW_POPUP = 'popup';
+    public const STANDARD_CHECKOUT_FLOW_REDIRECT = 'redirect';
+
     /**
      * Force session start for details-controller, so PayPal-Express-Buttons works everytime
      *
@@ -371,6 +374,26 @@ class ModuleSettings
     public function getPayPalStandardCaptureStrategy(): string
     {
         return (string)$this->getSettingValue('oscPayPalStandardCaptureStrategy');
+    }
+
+    /**
+     * Checkout flow of PayPal Standard on the order page: 'popup' (PayPal button,
+     * PayPal opens in a popup) or 'redirect' (shop's own order button, the customer
+     * is redirected to PayPal and back). Anything else - e.g. the setting is not yet
+     * in the module configuration - falls back to the popup flow.
+     */
+    public function getPayPalStandardCheckoutFlow(): string
+    {
+        $flow = $this->getSettingValueAsString('oscPayPalStandardCheckoutFlow');
+
+        return in_array($flow, [self::STANDARD_CHECKOUT_FLOW_POPUP, self::STANDARD_CHECKOUT_FLOW_REDIRECT], true) ?
+            $flow :
+            self::STANDARD_CHECKOUT_FLOW_POPUP;
+    }
+
+    public function isPayPalStandardRedirectFlow(): bool
+    {
+        return $this->getPayPalStandardCheckoutFlow() === self::STANDARD_CHECKOUT_FLOW_REDIRECT;
     }
 
     public function getPayPalCheckoutBannersColorScheme(): string

@@ -678,6 +678,17 @@ class Order extends Order_parent
     {
         $sessionPaymentId = (string) $this->getPaymentService()->getSessionPaymentId();
 
+        // PayPal Standard in the redirect flow: the customer submitted the shop's order form.
+        // The AJAX flows (popup, vaulted PayPal account) set isPayPalPaymentCheckout and keep
+        // using the proxy controller branch below.
+        if (
+            PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID === $sessionPaymentId &&
+            !Registry::getSession()->getVariable('isPayPalPaymentCheckout') &&
+            $this->getModuleSettings()->isPayPalStandardRedirectFlow()
+        ) {
+            return $this->executePayPalStandardRedirectPayment($basket);
+        }
+
         if (PayPalDefinitions::isProxyControllerPayment($sessionPaymentId)) {
             if (!Registry::getSession()->getVariable('isPayPalPaymentCheckout')) {
                 return self::ORDER_STATE_PAYMENTERROR;
@@ -1862,6 +1873,76 @@ class Order extends Order_parent
             $this->paymentService = $this->getServiceFromContainer(PaymentService::class);
         }
         return $this->paymentService;
+    }
+
+    /**
+     * Starts the PayPal Standard payment of the redirect flow: creates the PayPal order and
+     * hands the PayPal approval link to OrderController::getNextStep(), which redirects to it.
+     * As with the uAPMs, the order stays unfinished and without confirmation mail until the
+     * customer returns (finalizepaypalsession) or cancels (cancelpaypalsession).
+     *
+     * @return int order state
+     */
+    protected function executePayPalStandardRedirectPayment(Basket $basket)
+    {
+        try {
+            // the PayPal order carries the order number (custom_id), so it has to be set first
+            $this->setOrderNumber();
+            $this->prepareStandardRedirectVaulting($basket);
+
+            $redirectLink = $this->getPaymentService()->doExecuteStandardRedirectPayment($this, $basket);
+            PayPalSession::setSessionRedirectLink($redirectLink);
+
+            return self::ORDER_STATE_SESSIONPAYMENT_INPROGRESS;
+        } catch (Exception $exception) {
+            PayPalSession::unsetPayPalOrderId();
+            $this->cancelPayPalOrder();
+            /** @var LoggerInterface $logger */
+            $logger = $this->getServiceFromContainer('OxidSolutionCatalysts\PayPal\Logger');
+            $logger->log(
+                'error',
+                'PayPal Standard redirect payment execution failed: ' . $exception->getMessage(),
+                [$exception]
+            );
+        }
+
+        return self::ORDER_STATE_PAYMENTERROR;
+    }
+
+    /**
+     * The order form of the redirect flow sends vaultPayment=true when the customer ticked
+     * "save payment". The order request factory reads it from the request, so it is passed on
+     * only if the customer may vault (same rules as for showing the checkbox) and removed otherwise.
+     */
+    protected function prepareStandardRedirectVaulting(Basket $basket): void
+    {
+        $vaultRequested = Registry::getRequest()->getRequestParameter('vaultPayment') === 'true';
+        unset($_POST['vaultPayment'], $_GET['vaultPayment']);
+
+        if (!$vaultRequested || !$this->isStandardRedirectVaultingPossible($basket)) {
+            return;
+        }
+
+        $_POST['vaultPayment'] = 'true';
+        $_POST['oscPayPalPaymentTypeForVaulting'] = PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID;
+    }
+
+    protected function isStandardRedirectVaultingPossible(Basket $basket): bool
+    {
+        $user = $basket->getBasketUser();
+        if (!$user instanceof User || !$user->getFieldData('oxpassword')) {
+            return false;
+        }
+
+        if (!$this->getModuleSettings()->isVaultingAllowedForPayment(PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID)) {
+            return false;
+        }
+
+        // only one vaulted PayPal account per customer
+        return !Registry::get(ServiceFactory::class)->getVaultingService()->isVaultedPaymentUsed(
+            PayPalDefinitions::PAYMENT_SOURCE_PAYPAL,
+            $user
+        );
     }
 
     protected function getModuleSettings(): ModuleSettings

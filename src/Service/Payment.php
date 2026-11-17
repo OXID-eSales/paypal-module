@@ -583,6 +583,73 @@ class Payment
     }
 
     /**
+     * PayPal Standard in the redirect flow (module setting oscPayPalStandardCheckoutFlow = redirect):
+     * the customer submitted the shop's order form, the shop order exists. Creates the PayPal order
+     * and returns the PayPal link the customer has to be redirected to for the approval.
+     *
+     * The way back is the same as for the popup flow: PayPal returns to order/finalizepaypalsession,
+     * which captures or authorizes according to the capture strategy (finalizeOrderAfterExternalPayment),
+     * or to order/cancelpaypalsession.
+     *
+     * Vaulting ("save payment") is requested by the order form field vaultPayment=true, which the
+     * order request factory reads from the request. The caller has to make sure that it is only
+     * set when vaulting is allowed for the customer.
+     *
+     * @throws PayPalException
+     */
+    public function doExecuteStandardRedirectPayment(EshopModelOrder $order, EshopModelBasket $basket): string
+    {
+        $this->setPaymentExecutionError(self::PAYMENT_ERROR_NONE);
+
+        $payPalUrlService = $this->getServiceFromContainer(PayPalUrlService::class);
+        $intent = $this->moduleSettingsService->getPayPalStandardCaptureStrategy() === 'directly' ?
+            OrderRequest::INTENT_CAPTURE :
+            OrderRequest::INTENT_AUTHORIZE;
+
+        $response = $this->doCreatePayPalOrder(
+            $basket,
+            $intent,
+            OrderRequestFactory::USER_ACTION_PAY_NOW,
+            null,
+            null,
+            '',
+            Constants::PAYPAL_PARTNER_ATTRIBUTION_ID_PPCP,
+            $payPalUrlService->getReturnUrl(),
+            $payPalUrlService->getCancelUrl(),
+            false,
+            $order
+        );
+
+        if (!$response || empty($response->id)) {
+            $this->setPaymentExecutionError(self::PAYMENT_ERROR_GENERIC);
+            throw PayPalException::createPayPalOrderFail();
+        }
+        $payPalOrderId = (string)$response->id;
+
+        PayPalSession::storePayPalOrderId($payPalOrderId);
+
+        $redirectLink = '';
+        foreach ((array)($response->links ?? []) as $link) {
+            if (in_array($link['rel'] ?? '', ['payer-action', 'approve'], true)) {
+                $redirectLink = (string)$link['href'];
+                break;
+            }
+        }
+        if ($redirectLink === '') {
+            throw PayPalException::sessionPaymentMissingRedirectLink();
+        }
+
+        $this->trackPayPalOrder(
+            (string)$order->getId(),
+            $payPalOrderId,
+            PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID,
+            (string)$response->status
+        );
+
+        return $redirectLink;
+    }
+
+    /**
      * @throws PayPalException
      */
     public function doCreateUAPMOrder(EshopModelOrder $order, EshopModelBasket $basket): string

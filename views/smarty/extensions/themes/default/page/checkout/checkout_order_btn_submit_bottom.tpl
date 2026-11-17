@@ -12,9 +12,15 @@
 [{if $payment}]
     [{assign var="paymentId" value=$payment->getId()}]
 [{/if}]
+[{* PayPal Standard in the redirect flow: the shop's own order button submits the order form,
+    the customer is redirected to PayPal and back. A vaulted PayPal account keeps its own button. *}]
+[{assign var="oscPayPalStandardRedirect" value=false}]
+[{if "oscpaypal" == $paymentId && !$vaultedPaymentDescription && $oViewConf->getPayPalCheckoutConfig()->isPayPalStandardRedirectFlow()}]
+    [{assign var="oscPayPalStandardRedirect" value=true}]
+[{/if}]
 [{if "oscpaypal_googlepay" != $paymentId &&
     "oscpaypal_applepay" != $paymentId &&
-    "oscpaypal" != $paymentId &&
+    ("oscpaypal" != $paymentId || $oscPayPalStandardRedirect) &&
     "oscpaypal_acdc" != $paymentId}]
     [{$smarty.block.parent}]
 [{/if}]
@@ -28,7 +34,7 @@
     [{include file="@osc_paypal/frontend/shared/pui_fraudnet.tpl"}]
 [{/if}]
 
-[{if "oscpaypal_express" == $paymentId}]
+[{if "oscpaypal_express" == $paymentId || $oscPayPalStandardRedirect}]
     [{capture name="oscpaypal_express_doubleclick_guard"}]
         [{if $phpstorm}]<script>[{/if}]
         document.addEventListener('DOMContentLoaded', function () {

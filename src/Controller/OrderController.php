@@ -173,6 +173,8 @@ class OrderController extends OrderController_parent
             return $this->getBasket()->getProductsCount() ? 'order' : 'basket';
         }
 
+        $this->clearStaleCheckoutFlagForStandardRedirect();
+
         $nextStep = parent::execute();
 
         // A stock check inside finalizeOrder() that removed an article (it ran later than the
@@ -184,6 +186,23 @@ class OrderController extends OrderController_parent
         }
 
         return $nextStep;
+    }
+
+    /**
+     * In the redirect flow of PayPal Standard the shop's order form is the regular way to pay.
+     * isPayPalPaymentCheckout tells Model\Order::executePayment() that an AJAX flow takes care
+     * of the payment; an aborted AJAX checkout can leave it in the session. Submitting the order
+     * form with that leftover would finalize the order without any payment, so it is removed.
+     */
+    protected function clearStaleCheckoutFlagForStandardRedirect(): void
+    {
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        if (
+            PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID === (string)$paymentService->getSessionPaymentId() &&
+            $this->getServiceFromContainer(ModuleSettings::class)->isPayPalStandardRedirectFlow()
+        ) {
+            Registry::getSession()->deleteVariable('isPayPalPaymentCheckout');
+        }
     }
 
     public function getUserCountryIso(): string

@@ -390,6 +390,13 @@ $aModule = [
             'group' => null
         ],
         [
+            'name' => 'oscPayPalStandardCheckoutFlow',
+            'type' => 'select',
+            'value' => 'popup',
+            'constraints' => 'popup|redirect',
+            'group' => null
+        ],
+        [
             'name' => 'oscPayPalSetupFeeFailureAction',
             'type' => 'select',
             'value' => 'CONTINUE',

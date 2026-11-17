@@ -477,6 +477,16 @@ class Config
         return $this->getModuleSettings()->getPayPalStandardCaptureStrategy();
     }
 
+    public function getPayPalStandardCheckoutFlow(): string
+    {
+        return $this->getModuleSettings()->getPayPalStandardCheckoutFlow();
+    }
+
+    public function isPayPalStandardRedirectFlow(): bool
+    {
+        return $this->getModuleSettings()->isPayPalStandardRedirectFlow();
+    }
+
     public function getPayPalSCAContingency(): string
     {
         return $this->getModuleSettings()->getPayPalSCAContingency();
