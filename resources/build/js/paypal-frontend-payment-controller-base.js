@@ -5,6 +5,9 @@
             'undefined' === typeof PayPalPaymentControllerConfig ? {} : PayPalPaymentControllerConfig,
             typeof config === 'object' ? config : {});
 
+        // the controller itself, for methods that may run before window.PayPalPayment is set
+        const controller = this;
+
         this.currentOrderDefaults = {
             shop: null,
             paypal: null,
@@ -353,15 +356,69 @@
             submitButton.addEventListener('click', function (e) {
                 e.stopPropagation();
                 e.preventDefault();
+                // second click while the order is being submitted
+                if (submitButton.dataset.oscSubmitting) {
+                    return;
+                }
                 PayPalPayment.addSubmitButtonOverlay();
 
                 if (PayPalPayment.config.vaultedPaymentSource) {
                     PayPalPayment.createOrder();
                 }
             });
+
+            // BFCache restore (back button): do not leave a locked "submitting" button behind
+            window.addEventListener('pageshow', function (e) {
+                if (e.persisted) {
+                    controller.unlockSubmitButton();
+                }
+            });
+        };
+
+        /**
+         * PayPal Standard paid with an already vaulted PayPal account: no PayPal popup is
+         * involved, so instead of the full-page overlay the order button itself is locked
+         * and shows the submitting label - the same behaviour as the shop's order button.
+         */
+        this.isVaultedPayPalCheckout = function () {
+            return controller.getConfigValue('paymentId') === 'oscpaypal' &&
+                null !== controller.getConfigValue('vaultedPaymentSource');
+        };
+
+        this.lockSubmitButton = function () {
+            const button = document.querySelector(controller.config.buttonSelector);
+            if (!button || button.dataset.oscSubmitting) {
+                return;
+            }
+            button.dataset.oscSubmitting = '1';
+            button.dataset.oscOriginalLabel = button.innerHTML;
+            const label = controller.getConfigValue('submittingLabel');
+            if (label) {
+                button.textContent = label;
+            }
+            button.disabled = true;
+            button.setAttribute('aria-busy', 'true');
+            button.setAttribute('aria-disabled', 'true');
+        };
+
+        this.unlockSubmitButton = function () {
+            const button = document.querySelector(controller.config.buttonSelector);
+            if (!button || !button.dataset.oscSubmitting) {
+                return;
+            }
+            button.innerHTML = button.dataset.oscOriginalLabel;
+            delete button.dataset.oscOriginalLabel;
+            delete button.dataset.oscSubmitting;
+            button.disabled = false;
+            button.removeAttribute('aria-busy');
+            button.removeAttribute('aria-disabled');
         };
 
         this.addSubmitButtonOverlay = function() {
+            if (controller.isVaultedPayPalCheckout()) {
+                controller.lockSubmitButton();
+                return;
+            }
             const overlay = document.getElementById('paypal-overlay');
             if (overlay) {
                 overlay.style.display = 'block';
@@ -371,6 +428,10 @@
         };
 
         this.removeSubmitButtonOverlay = function() {
+            if (controller.isVaultedPayPalCheckout()) {
+                controller.unlockSubmitButton();
+                return;
+            }
             const overlay = document.getElementById('paypal-overlay');
             if (overlay) {
                 overlay.style.display = 'none';

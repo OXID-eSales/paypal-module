@@ -46,6 +46,7 @@
                     shopOrderPatchingUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=patchShopOrder&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
                     updateOxUserWithPayPalCustomerIdUrl: '{{ (sSelfLink ~ "cl=ajaxpay&fnc=updateOxUserWithPayPalCustomerId&aid=" ~ aid ~ "&stoken=" ~ sToken ~ debug)|replace({'&amp;': '&'})|raw }}',
                     buttonSelector: '#{{ paymentId }}',
+                    submittingLabel: '{{ translate({ ident: "OSC_PAYPAL_ORDER_SUBMITTING" })|escape('js') }}',
                     paymentId: 'oscpaypal'
                 });
             };

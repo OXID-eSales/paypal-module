@@ -82,12 +82,13 @@
                 </div>
             {% endfor %}
             <div class="text-right">
+                {# the "next" button of the theme (Apex); the vault checkout JS finds it by its id #}
                 <button type="submit" name="userform"
-                        class="btn btn-primary pull-right submitButton nextStep largeButton"
+                        class="btn btn-highlight btn-lg w-100 mt-3"
                         id="paypalVaultCheckoutButton"
                         disabled
                 >
-                    {{ 'OSC_PAYPAL_CONTINUE_TO_NEXT_STEP'|translate }} <i class="fa fa-caret-right"></i>
+                    {{ 'OSC_PAYPAL_CONTINUE_TO_NEXT_STEP'|translate }}
                 </button>
             </div>
         </div>

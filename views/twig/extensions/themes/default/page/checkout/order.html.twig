@@ -86,8 +86,10 @@
             </button>
         {% elseif paymentId == "oscpaypal" %}
             {% if vaultedPaymentDescription %}
-                <button id="{{ paymentId }}" type="button" class="btn btn-lg btn-primary float-right pull-right submitButton nextStep largeButton">
-                    <i class="fa fa-check"></i> {{ translate({ ident: "SUBMIT_ORDER" }) }}
+                {# vaulted PayPal account: the order button of the theme (Apex), handled by the
+                   payment controller JS, which locks it while the order is submitted #}
+                <button id="{{ paymentId }}" type="button" class="btn btn-highlight btn-lg w-100">
+                    {{ translate({ ident: "SUBMIT_ORDER" }) }}
                 </button>
             {% elseif oViewConf.getPayPalCheckoutConfig().isPayPalStandardRedirectFlow() %}
                 {# redirect flow: the shop's own order button submits the order form,
