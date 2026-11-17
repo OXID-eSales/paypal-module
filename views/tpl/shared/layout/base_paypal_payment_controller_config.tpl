@@ -48,6 +48,7 @@
                 shopOrderPatchingUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=patchShopOrder&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                 updateOxUserWithPayPalCustomerIdUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=updateOxUserWithPayPalCustomerId&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',
                 buttonSelector: '#[{$paymentId}]',
+                submittingLabel: '[{"OSC_PAYPAL_ORDER_SUBMITTING"|oxmultilangassign|escape:"javascript"}]',
                 paymentId: 'oscpaypal'
             });
         };
