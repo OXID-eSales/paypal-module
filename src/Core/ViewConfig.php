@@ -378,6 +378,15 @@ class ViewConfig extends ViewConfig_parent
     }
 
     /**
+     * PayPal Standard uses the redirect flow instead of the PayPal button with popup.
+     * Offered here because Smarty cannot chain method calls inside {if}.
+     */
+    public function isPayPalStandardRedirectFlow(): bool
+    {
+        return $this->getServiceFromContainer(ModuleSettings::class)->isPayPalStandardRedirectFlow();
+    }
+
+    /**
      * get Session Vault Success
      *
      * @return bool|null

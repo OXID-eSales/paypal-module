@@ -38,7 +38,9 @@
             confirmAGBRequired: [{if $oViewConf->isFunctionalityEnabled('blConfirmAGB')}]1[{else}]0[{/if}] === 1,
         }
 
-    [{if $paymentId == 'oscpaypal'}]
+    [{* In the redirect flow the order form is submitted the shop's way, so the payment
+        controller is only needed for the checkout with an already vaulted PayPal account *}]
+    [{if $paymentId == 'oscpaypal' && (!$oPPconfig->isPayPalStandardRedirectFlow() || $vaultedPaymentSource != 'null')}]
         window.PayPalPaymentControllerConfigurator = function () {
             return Object.assign (PayPalPaymentControllerConfiguratorDefaults, {
                 createOrdersForPayPalUrl: '[{$sSelfLink|cat:"cl=ajaxpay&fnc=createOrdersForPayPal&aid="|cat:$aid|cat:"&stoken="|cat:$sToken}][{$debug}]',

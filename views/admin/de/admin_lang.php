@@ -229,6 +229,11 @@ $aLang = array_merge(
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME_DIRECTLY'     => 'Direkt',
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME_DELIVERY'     => 'automatisch bei Lieferung',
     'OSC_PAYPAL_STANDARD_CAPTURE_TIME_MANUALLY'     => 'manuell',
+    'OSC_PAYPAL_STANDARD_CHECKOUT_FLOW_TITLE'       => 'PayPal Standard - Checkout-Ablauf',
+    'OSC_PAYPAL_STANDARD_CHECKOUT_FLOW_LABEL'       => 'Wie soll der Kunde auf der Bestellseite mit PayPal Standard bezahlen?',
+    'OSC_PAYPAL_STANDARD_CHECKOUT_FLOW_POPUP'       => 'PayPal-Button, PayPal öffnet sich in einem Popup',
+    'OSC_PAYPAL_STANDARD_CHECKOUT_FLOW_REDIRECT'    => 'Bestell-Button des Shops, Weiterleitung zu PayPal',
+    'OSC_PAYPAL_STANDARD_CHECKOUT_FLOW_HELP'        => 'Bei der Weiterleitung zeigt die Bestellseite den Bestell-Button im Stil des Shops. Nach dem Klick wird der Kunde zu PayPal weitergeleitet und kehrt nach der Zahlung in den Shop zurück.',
     'OSC_PAYPAL_CAPTURE_DAYS_LEFT'                  => 'Noch %s Tage Zeit, für den Geldeinzug',
     'OSC_PAYPAL_CAPTURE_NOT_POSSIBLE_ANYMORE'       => 'Zeit für Geldeinzug leider abgelaufen. Bitte kontaktieren Sie den Kunden um über Alternativen zu sprechen',
 

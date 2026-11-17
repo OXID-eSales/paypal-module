@@ -462,6 +462,33 @@
             </div>
 
             <div class="card">
+                <div class="card-header" id="headingStandardCheckoutFlow">
+                    <h4 class="collapsed" data-toggle="collapse" data-target="#collapseStandardCheckoutFlow" aria-expanded="false" aria-controls="collapseStandardCheckoutFlow">
+                        [{oxmultilang ident="OSC_PAYPAL_STANDARD_CHECKOUT_FLOW_TITLE"}]
+                    </h4>
+                </div>
+
+                <div id="collapseStandardCheckoutFlow" class="collapse" aria-labelledby="headingStandardCheckoutFlow" data-parent="#accordion">
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="standard-checkout-flow">[{oxmultilang ident="OSC_PAYPAL_STANDARD_CHECKOUT_FLOW_LABEL"}]</label>
+                            <div class="controls">
+                                <select name="conf[oscPayPalStandardCheckoutFlow]" id="standard-checkout-flow" class="form-control">
+                                    <option value="popup" [{if $config->getPayPalStandardCheckoutFlow() == 'popup'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STANDARD_CHECKOUT_FLOW_POPUP"}]
+                                    </option>
+                                    <option value="redirect" [{if $config->getPayPalStandardCheckoutFlow() == 'redirect'}]selected[{/if}]>
+                                        [{oxmultilang ident="OSC_PAYPAL_STANDARD_CHECKOUT_FLOW_REDIRECT"}]
+                                    </option>
+                                </select>
+                            </div>
+                            <span class="help-block">[{oxmultilang ident="OSC_PAYPAL_STANDARD_CHECKOUT_FLOW_HELP"}]</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
                 <div class="card-header" id="heading5">
                     <h4 class="collapsed" data-toggle="collapse" data-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
                         [{oxmultilang ident="OSC_PAYPAL_SCA_CONTINGENCY"}]
