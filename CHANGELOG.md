@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### CHANGED
 
+- CI: Composer may install packages with security advisories (`audit.block-insecure: false`). OXID eShop 6.5 requires `smarty/smarty` 2.6, for which only versions with advisories exist, so the job `styles` could not install the module dependencies. File touched: `composer.json`.
 - Checkout with a vaulted PayPal account: on click the order button is locked and shows "Processing your order …" instead of covering the page with the overlay and spinner; it is unlocked again if the order fails (terms not confirmed, PayPal refuses) and on a BFCache restore. ACDC, Google Pay, Apple Pay and the popup flow keep the overlay. Files touched: `resources/build/js/paypal-frontend-payment-controller-base.js`, `out/src/js/paypal-frontend.min.js`, `views/tpl/shared/layout/base_paypal_payment_controller_config.tpl`.
 - phpstan: `reportUnmatchedIgnoredErrors: false`, because the CI analyses only the files of the last commit and a baseline generated over `src/` cannot match such partial runs. `ServiceContainer::$serviceArray` got its value type. Files touched: `tests/PhpStan/phpstan.neon`, `src/Traits/ServiceContainer.php`.
 
