@@ -60,6 +60,8 @@ $aLang = [
 
     'OSC_PAYPAL_VAULTING_MENU'                      => 'Manage PayPal',
     'OSC_PAYPAL_VAULTING_MENU_CARD'                 => 'Manage credit or debit card',
+    'OSC_PAYPAL_VAULTING_DASHBOARD_PAYPAL'          => 'View and delete your saved PayPal accounts',
+    'OSC_PAYPAL_VAULTING_DASHBOARD_CARD'            => 'View and delete your saved credit and debit cards',
     'OSC_PAYPAL_VAULTING_VAULTED_PAYMENTS'          => 'Saved payments',
     'OSC_PAYPAL_VAULTING_ERROR'                     => 'There was an error saving your payment method.',
     'OSC_PAYPAL_VAULTING_SUCCESS'                   => 'You used your saved payment data when paying. If this is your first time, you\'ll see these data in your shop account in about 15 minutes.',

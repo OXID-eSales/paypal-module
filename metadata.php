@@ -195,6 +195,11 @@ $aModule = [
             'file' => 'views/smarty/extensions/themes/default/page/account/inc/account_menu.tpl',
         ],
         [
+            'template' => 'page/account/dashboard.tpl',
+            'block' => 'account_dashboard_col2',
+            'file' => 'views/smarty/extensions/themes/default/page/account/dashboard_col2.tpl',
+        ],
+        [
             'template' => 'page/checkout/basket.tpl',
             'block' => 'basket_btn_next_bottom',
             'file' => 'views/smarty/extensions/themes/default/page/checkout/basket_btn_next_bottom.tpl',
