@@ -397,10 +397,10 @@ jobs:
         run: |
           docker compose exec -T php  bin/oe-console datagen:shop:create_user ${{ secrets.SHOP_USER_EMAIL }} ${{ secrets.SHOP_USER_PASSWORD }} 
 
-      - name: Require the terms and conditions in the checkout
+      - name: Prepare the shop for the Playwright specs
         run: |
-          # the specs check the terms and conditions, the shop asks for them only with blConfirmAGB
-          docker compose exec -T php php -r 'require "source/bootstrap.php"; \OxidEsales\Eshop\Core\Registry::getConfig()->saveShopConfVar("bool", "blConfirmAGB", true);'
+          # terms and conditions required, countries of the local payment methods (same script as for local runs)
+          docker compose exec -T php php vendor/${{ env.PACKAGE_NAME }}/tests/e2e/playwright/setup/prepare-shop.php
 
       - name: Check container logs
         if: failure()
@@ -423,9 +423,8 @@ jobs:
             sleep 10
           fi
           # Core specs only, one after the other: all tests use the same shop customer, whose
-          # basket is kept in the database. The specs of the local payment methods (Bancontact,
-          # EPS, iDEAL, P24) and PUI need countries and settings the CI shop does not have yet;
-          # run them locally with "make test".
+          # basket is kept in the database. The whole suite (local payment methods, PUI) takes
+          # about 30 minutes; run it locally with "make test" (see tests/e2e/playwright/setup).
           timeout 1800 npx playwright test \
             tests/e2e/PaypalPayment.spec.js \
             tests/e2e/PaypalExpressPayment.spec.js \

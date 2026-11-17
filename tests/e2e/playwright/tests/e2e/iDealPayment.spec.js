@@ -7,7 +7,8 @@ dotenv.config();
 
 let context, page;
 
-test.beforeAll(async ({ browser }) => {
+// every test gets its own browser context, see PaypalPayment.spec.js
+test.beforeEach(async ({ browser }) => {
     context = await browser.newContext({
         extraHTTPHeaders: {
             'ngrok-skip-browser-warning': 'true',
@@ -23,7 +24,7 @@ test.beforeAll(async ({ browser }) => {
 
 test('iDEAL Successfull Payment method', async () => {
     const shopHelper = new ShopHelper(page);
-    const UAPMHelper = new UAPMHelper(page);
+    const uAPMHelper = new UAPMHelper(page);
 
     // Step 1: Login, select country, and add items
     await shopHelper.loginUser();
@@ -34,14 +35,14 @@ test('iDEAL Successfull Payment method', async () => {
     await shopHelper.nextStep();
     await shopHelper.acceptTerms();
 await shopHelper.orderNow('1')
-    await UAPMHelper.checkPaymentRedirect(page)
-    await UAPMHelper.clickTestSuccessfulPayment(); // Test for successful payment
+    await uAPMHelper.checkPaymentRedirect(page)
+    await uAPMHelper.clickTestSuccessfulPayment(); // Test for successful payment
     await shopHelper.verifyThankYouPage(); // Verify success
 });
 
 test('iDEAL Failed Payment method', async () => {
     const shopHelper = new ShopHelper(page);
-    const UAPMHelper = new UAPMHelper(page);
+    const uAPMHelper = new UAPMHelper(page);
     // Step 1: Login, select country, and add items
     await shopHelper.loginUser();
     await shopHelper.changeCountry('Netherlands');
@@ -52,7 +53,7 @@ test('iDEAL Failed Payment method', async () => {
     await shopHelper.nextStep();
     await shopHelper.acceptTerms();
     await shopHelper.orderNow('1')
-    await UAPMHelper.checkPaymentRedirect(page)
+    await uAPMHelper.checkPaymentRedirect(page)
     await page.waitForTimeout(10000);
     await uAPMHelper.clickTestFailedPayment()
     await uAPMHelper.verifyFailed();
@@ -63,7 +64,7 @@ test('iDEAL Failed Payment method', async () => {
 
 test('iDEAL Cancelled Payment method', async () => {
     const shopHelper = new ShopHelper(page);
-    const UAPMHelper = new UAPMHelper(page);
+    const uAPMHelper = new UAPMHelper(page);
     await shopHelper.loginUser();
     await shopHelper.changeCountry('Netherlands');
     await shopHelper.addItemsToCart();
@@ -73,7 +74,7 @@ test('iDEAL Cancelled Payment method', async () => {
     await shopHelper.nextStep();
     await shopHelper.acceptTerms();
     await shopHelper.orderNow('1')
-    await UAPMHelper.checkPaymentRedirect(page)
+    await uAPMHelper.checkPaymentRedirect(page)
     await page.waitForTimeout(10000);
     await uAPMHelper.clickTestCancelledPayment(); // Test for successful payment
     await uAPMHelper.verifyCanceled();
@@ -93,7 +94,7 @@ test('iDEAL without accepting T&C', async () => {
     await page.waitForTimeout(3000);
     await shopHelper.verifyTCAuth()
 });
-test.afterAll(async () => {
+test.afterEach(async () => {
     try {
         if (context && !context.browser().isConnected()) {
             // Browser is already disconnected, don't try to close

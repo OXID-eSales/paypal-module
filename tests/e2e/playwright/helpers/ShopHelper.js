@@ -197,62 +197,38 @@ export class ShopHelper {
         const beforeLabel = await readSelectedCountry();
         console.log(`[changeCountry] Currently selected country: "${beforeLabel || '(none)'}"`);
 
-        // --- Preferred: use the Bootstrap-select dropdown tied to #invCountrySelect ---
-        const bsButton = page
-            .locator('.btn-group.bootstrap-select.form-control button.dropdown-toggle[data-id="invCountrySelect"]')
-            .first();
 
-        if (await bsButton.count()) {
-            console.log('[changeCountry] Using Bootstrap-select UI…');
-            await bsButton.scrollIntoViewIfNeeded();
-            await bsButton.click(); // open dropdown
+        if (beforeLabel.toLowerCase() === String(country).toLowerCase()) {
+            console.log('[changeCountry] Country already selected, nothing to change.');
+        } else {
+            // Set the country on the <select> behind the Bootstrap-select widget: the widget's
+            // button is not reliably visible while the address form slides open.
+            await page.locator('#invCountrySelect').waitFor({ state: 'attached' });
+            await page.evaluate((label) => {
+                const sel = document.querySelector('#invCountrySelect');
+                const option = Array.from(sel.options)
+                    .find((o) => (o.label || o.text).trim().toLowerCase() === label.toLowerCase());
+                if (!option) {
+                    throw new Error(`Country "${label}" is not offered`);
+                }
+                sel.value = option.value;
+                sel.dispatchEvent(new Event('change', { bubbles: true }));
+                if (window.jQuery && window.jQuery.fn.selectpicker) {
+                    window.jQuery(sel).selectpicker('refresh');
+                }
+            }, String(country));
 
-            // Click the option by visible text
-            const option = page.locator('.dropdown-menu.open .inner li a .text', { hasText: country }).first();
-            await option.click();
-            console.log(`[changeCountry] Clicked option: "${country}"`);
-
-            // Verify via the hidden select (source of truth)
             const afterLabel = await readSelectedCountry();
             console.log(`[changeCountry] Selected country after change: "${afterLabel || '(none)'}"`);
-
-            if (!afterLabel || afterLabel.toLowerCase() !== country.toLowerCase()) {
-                console.warn(`[changeCountry] Mismatch after selection. Expected "${country}", got "${afterLabel}".`);
-                // Try dispatching change just in case the UI didn’t sync
-                await page.evaluate(() => {
-                    const sel = document.querySelector('#invCountrySelect');
-                    if (sel) sel.dispatchEvent(new Event('change', { bubbles: true }));
-                });
-            }
-
-            // Close any leftover open menu to avoid overlay issues
-            const menuOpen = page.locator('.dropdown-menu.open');
-            if (await menuOpen.count()) {
-                await bsButton.click().catch(() => {});
-                await page.keyboard.press('Escape').catch(() => {});
-            }
-        } else {
-            console.log('[changeCountry] Bootstrap-select UI not found; forcing hidden <select>…');
-            const select = page.locator('#invCountrySelect');
-            await select.waitFor({ state: 'attached' });
-            await select.selectOption({ label: country }, { force: true });
-
-            // Fire change event to sync wrappers
-            await page.evaluate(() => {
-                const sel = document.querySelector('#invCountrySelect');
-                if (sel) sel.dispatchEvent(new Event('change', { bubbles: true }));
-            });
-
-            const afterLabel = await readSelectedCountry();
-            console.log(`[changeCountry] Selected country after forced select: "${afterLabel || '(none)'}"`);
-            if (!afterLabel || afterLabel.toLowerCase() !== country.toLowerCase()) {
+            if (afterLabel.toLowerCase() !== String(country).toLowerCase()) {
                 throw new Error(`[changeCountry] Failed to set country to "${country}". Current: "${afterLabel}".`);
             }
-        }
 
-        // --- Save changes ---
-        console.log('[changeCountry] Saving address changes…');
-        await page.locator('#accUserSaveTop').click();
+            // --- Save changes ---
+            console.log('[changeCountry] Saving address changes…');
+            await page.locator('#accUserSaveTop').click();
+            await page.waitForLoadState('load');
+        }
 
         // --- Go to homepage by clicking the logo (instead of "Home") ---
         console.log('[changeCountry] Navigating to homepage via logo…');
@@ -274,9 +250,17 @@ export class ShopHelper {
 
     async checkout() {
         const { page } = this;
+        // a click while the previous page is still loading leaves the flyout closed: retry once
+        await page.waitForLoadState('load');
+        const flyout = page.locator('.minibasket-menu-box');
         await page.locator('.btn-group.minibasket-menu button').click();
         console.log('Cart dropdown button clicked.')
-        await page.locator('.minibasket-menu-box').waitFor({ state: 'visible' });
+        try {
+            await flyout.waitFor({ state: 'visible', timeout: 5000 });
+        } catch (e) {
+            await page.locator('.btn-group.minibasket-menu button').click();
+            await flyout.waitFor({ state: 'visible' });
+        }
         console.log('Basket flyout visible.');
         const checkoutButton = page.locator('.minibasket-menu-box .btn.btn-primary');
         await checkoutButton.waitFor({ state: 'visible' });
@@ -298,7 +282,7 @@ export class ShopHelper {
             'Paypal SEPA direct debit': 'oscpaypal_sepa',
             'Paypal Bancontact': 'oscpaypal_bancontact',
             'Paypal EPS': 'oscpaypal_eps',
-            'Paypal iDeal': 'oscpaypal_iDeal',
+            'Paypal iDeal': 'oscpaypal_ideal',
             'Paypal P24': 'oscpaypal_przelewy24'
         };
 

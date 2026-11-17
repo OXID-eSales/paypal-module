@@ -7,7 +7,8 @@ dotenv.config();
 
 let context, page;
 
-test.beforeAll(async ({ browser }) => {
+// every test gets its own browser context, see PaypalPayment.spec.js
+test.beforeEach(async ({ browser }) => {
     context = await browser.newContext({
         extraHTTPHeaders: {
             'ngrok-skip-browser-warning': 'true',
@@ -99,7 +100,7 @@ test('Bancontact without accepting T&C', async () => {
 });
 
 
-test.afterAll(async () => {
+test.afterEach(async () => {
     try {
         if (context && !context.browser().isConnected()) {
             // Browser is already disconnected, don't try to close

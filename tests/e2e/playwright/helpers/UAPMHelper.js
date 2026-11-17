@@ -18,6 +18,8 @@ export class UAPMHelper {
         const selector = `[data-testid="${testid}"], #${id}, button[name="${id}"]`;
         const button = page.locator(selector).first();
 
+        // the simulator page renders its buttons after loading
+        await button.waitFor({ state: 'attached', timeout: 30000 }).catch(() => {});
         const count = await button.count();
         console.log(`[status-test] Looking for "${humanLabel}" using selector "${selector}" → found: ${count}`);
 
@@ -73,6 +75,9 @@ export class UAPMHelper {
     }
 
     async checkPaymentRedirect() {
+        // the shop submits the order first and redirects to PayPal afterwards
+        await this.page.waitForURL((url) => /paypal\.com|ideal/i.test(url.toString()), { timeout: 60000 })
+            .catch(() => {});
         await this.page.waitForLoadState('load');
 
         const url = this.page.url();
@@ -150,9 +155,13 @@ export class UAPMHelper {
 
         const findIn = async (root) => {
             const loc = root.locator(selector).filter({ hasText: text }).first();
-            return (await loc.count()) ? loc : null;
+            // the shop page may still be navigating back from PayPal
+            return (await loc.count().catch(() => 0)) ? loc : null;
         };
 
+        await this.page.waitForLoadState('load');
+        await this.page.locator(selector).filter({ hasText: text }).first()
+            .waitFor({ state: 'visible', timeout }).catch(() => {});
         let target = await findIn(this.page);
         if (!target) {
             for (const f of this.page.frames()) {

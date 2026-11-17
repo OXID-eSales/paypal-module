@@ -7,7 +7,8 @@ dotenv.config();
 
 let context, page;
 
-test.beforeAll(async ({ browser }) => {
+// every test gets its own browser context, see PaypalPayment.spec.js
+test.beforeEach(async ({ browser }) => {
     context = await browser.newContext({
         extraHTTPHeaders: {
             'ngrok-skip-browser-warning': 'true',
@@ -23,33 +24,33 @@ test.beforeAll(async ({ browser }) => {
 
 test('P24 Successfull Payment method', async () => {
     const shopHelper = new ShopHelper(page);
-    const UAPMHelper = new UAPMHelper(page);
+    const uAPMHelper = new UAPMHelper(page);
     await shopHelper.loginUser();
     await shopHelper.changeCountry('Poland');
     await shopHelper.addItemsToCart();
     await shopHelper.checkout();
-    await shopHelper.selectPaymentMethod('P24');
+    await shopHelper.selectPaymentMethod('Paypal P24');
     await shopHelper.nextStep();
     await shopHelper.acceptTerms();
     await shopHelper.orderNow('1')
-    await UAPMHelper.checkPaymentRedirect(page)
-    await UAPMHelper.clickTestSuccessfulPayment(); // Test for successful payment
+    await uAPMHelper.checkPaymentRedirect(page)
+    await uAPMHelper.clickTestSuccessfulPayment(); // Test for successful payment
     await shopHelper.verifyThankYouPage(); // Verify success
 });
 
 test('P24 Failed Payment method', async () => {
     const shopHelper = new ShopHelper(page);
-    const UAPMHelper = new UAPMHelper(page);
+    const uAPMHelper = new UAPMHelper(page);
     await shopHelper.loginUser();
     await shopHelper.changeCountry('Poland');
     await shopHelper.addItemsToCart();
     await shopHelper.checkout();
     await page.waitForTimeout(10000);
-    await shopHelper.selectPaymentMethod('P24');
+    await shopHelper.selectPaymentMethod('Paypal P24');
     await shopHelper.nextStep();
     await shopHelper.acceptTerms();
     await shopHelper.orderNow('1')
-    await UAPMHelper.checkPaymentRedirect(page)
+    await uAPMHelper.checkPaymentRedirect(page)
     await page.waitForTimeout(10000);
     await uAPMHelper.clickTestFailedPayment()
     await uAPMHelper.verifyFailed();
@@ -59,17 +60,17 @@ test('P24 Failed Payment method', async () => {
 
 test('P24 Cancelled Payment method', async () => {
     const shopHelper = new ShopHelper(page);
-    const nonGermanHelper = new UAPMHelper(page);
+    const uAPMHelper = new UAPMHelper(page);
     await shopHelper.loginUser();
     await shopHelper.changeCountry('Poland');
     await shopHelper.addItemsToCart();
     await shopHelper.checkout();
     await page.waitForTimeout(10000)
-    await shopHelper.selectPaymentMethod('P24');
+    await shopHelper.selectPaymentMethod('Paypal P24');
     await shopHelper.nextStep();
     await shopHelper.acceptTerms();
     await shopHelper.orderNow('1')
-    await UAPMHelper.checkPaymentRedirect(page)
+    await uAPMHelper.checkPaymentRedirect(page)
     await page.waitForTimeout(10000);
     await uAPMHelper.clickTestCancelledPayment(); // Test for successful payment
     await uAPMHelper.verifyCanceled();
@@ -79,18 +80,18 @@ test('P24 Cancelled Payment method', async () => {
 
 test('P24 Without accepting T&C', async () => {
     const shopHelper = new ShopHelper(page);
-    const UAPMHelper = new UAPMHelper(page);
+    const uAPMHelper = new UAPMHelper(page);
     await shopHelper.loginUser();
     await shopHelper.changeCountry('Poland');
     await shopHelper.addItemsToCart();
     await shopHelper.checkout();
-    await shopHelper.selectPaymentMethod('P24');
+    await shopHelper.selectPaymentMethod('Paypal P24');
     await shopHelper.nextStep();
     await shopHelper.orderNow('1')
     await page.waitForTimeout(3000);
     await shopHelper.verifyTCAuth()
 });
-test.afterAll(async () => {
+test.afterEach(async () => {
     try {
         if (context && !context.browser().isConnected()) {
             // Browser is already disconnected, don't try to close
