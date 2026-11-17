@@ -11,7 +11,8 @@ export class ShopHelper {
 
     async clickUserCenter() {
         console.log('Clicking on the user center (login button)');
-        await this.page.locator('.service-menu.showLogin').click();
+        // Wave/Flow: the account toggle of the header, logged in or not
+        await this.page.locator('.service-menu > button.dropdown-toggle').first().click();
     }
 
     async loginUser() {
@@ -67,7 +68,9 @@ export class ShopHelper {
 
     async ifUserLoggedIn() {
         const { page } = this;
-        const userLoggedIn = await page.locator('div.menu-dropdowns > ul').count();
+        // Wave/Flow mark the service menu with "showLogin" as long as nobody is logged in
+        // ("div.menu-dropdowns > ul" was the check of the Apex theme of OXID 7, never true here)
+        const userLoggedIn = await page.locator('.service-menu:not(.showLogin)').count();
         console.log('User login status (count of user-related menu items):', userLoggedIn > 0 ? 'Logged in' : 'Not logged in');
         return userLoggedIn > 0;
     }
