@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [3.9.4] - unreleased
+
+### Added
+
+- PayPal Standard: the redirect flow is offered again as an alternative to the PayPal button with popup. New module setting "PayPal Standard - Checkout flow" (`oscPayPalStandardCheckoutFlow`, admin > PayPal > Configuration, next to the capture strategy, values `popup`|`redirect`, **popup by default**). In the redirect flow the order page shows the order button of the theme instead of the PayPal button; submitting the order form creates the shop order and the PayPal order (`Order::executePayment()` -> `Payment::doExecuteStandardRedirectPayment()`) and redirects the customer to PayPal. The way back is the one of the popup flow: `order/finalizepaypalsession` captures or authorizes according to the capture strategy, `order/cancelpaypalsession` cancels. "Save payment" (vaulting) is sent with the order form and only passed on if the customer may vault; a vaulted PayPal account keeps using the AJAX flow. `OrderController::execute()` removes a leftover `isPayPalPaymentCheckout` flag of an aborted AJAX checkout, which would otherwise have finalized the order without a payment. The double-submit guard of PayPal Express also protects the order button of the redirect flow. Twig (Apex) and Smarty (Wave, Flow). Files touched: `metadata.php`, `src/Controller/OrderController.php`, `src/Core/Config.php`, `src/Model/Order.php`, `src/Service/ModuleSettings.php`, `src/Service/Payment.php`, admin and checkout templates, admin translations.
+
+### CHANGED
+
+- Checkout with a vaulted PayPal account: Apex shows the order button of the theme (`btn-highlight`) instead of a black button, on the order page and for "continue" below the vaulted payment sources on the payment page. On click the button is locked and shows "Processing your order …" instead of covering the page with the overlay and spinner; it is unlocked again if the order fails (terms not confirmed, PayPal refuses) and on a BFCache restore. ACDC, Google Pay, Apple Pay and the popup flow keep the overlay. Files touched: `resources/build/js/paypal-frontend-payment-controller-base.js`, `assets/src/js/paypal-frontend.min.js`, `views/twig/extensions/themes/default/page/checkout/order.html.twig`, `views/twig/extensions/themes/default/page/checkout/payment.html.twig`, the payment controller config templates (Twig and Smarty).
+- CI: the workflow runs with PHP 8.3. `oxideshop-ce dev-b-7.0.x` requires `symfony/config` 6.4 and therefore PHP >= 8.1; with PHP 8.0 the jobs `install_shop_with_module` and `styles` failed and the unit tests and Playwright never ran. File touched: `.github/workflows/development.yml`.
+
+### FIX
+
+- After a vaulted payment the thank-you page said "something went wrong while saving your payment method" although the PayPal customer id had been saved: `Payment::doCapturePayPalOrder()` never set `vaultSuccess` to true. `saveCustomerIdToUser()` now returns whether the id was saved, and that is the result shown. Until now only the webhook went through this capture, the redirect flow uses it as well. File touched: `src/Service/Payment.php`.
+- Apex customer account: the tiles "PayPal verwalten" and "Kredit- oder Debitkarte verwalten" disappeared when another module overrode the block `account_dashboard_col1` without `parent()` (the Unzer module did). They are now added to `account_dashboard_col2`. File touched: `views/twig/extensions/themes/default/page/account/dashboard.html.twig`.
+
 ## [3.9.3] - 2026-11-13
 
 ### FIX
