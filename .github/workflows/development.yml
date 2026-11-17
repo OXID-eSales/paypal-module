@@ -106,8 +106,20 @@ jobs:
           docker compose exec -T \
             php composer config repositories.oxid-esales/oxideshop-demodata-ce \
             --json '{"type":"git", "url":"https://github.com/OXID-eSales/oxideshop_demodata_ce"}'
-          docker compose exec -T php composer require oxid-esales/oxideshop-demodata-ce:dev-master --no-update
+          docker compose exec -T php composer require oxid-esales/oxideshop-demodata-ce:dev-b-7.4.x --no-update
           docker compose exec -T php composer require oxid-esales/apex-theme:dev-b-7.4.x --no-update
+
+      - name: Install twig components
+        # oxideshop-ce 7.4 no longer requires the template engine, it has to be installed explicitly
+        run: |
+          docker compose exec -T \
+            php composer config repositories.oxid-esales/twig-component \
+            --json '{"type":"git", "url":"https://github.com/OXID-eSales/twig-component"}'
+          docker compose exec -T php composer require oxid-esales/twig-component:dev-b-7.4.x --no-update
+          docker compose exec -T \
+            php composer config repositories.oxid-esales/twig-admin-theme \
+            --json '{"type":"git", "url":"https://github.com/OXID-eSales/twig-admin-theme"}'
+          docker compose exec -T php composer require oxid-esales/twig-admin-theme:dev-b-7.4.x --no-update
 
       - name: Install datagen
         run: |
