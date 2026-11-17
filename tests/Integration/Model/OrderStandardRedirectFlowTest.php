@@ -13,6 +13,7 @@ use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
 use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\Eshop\Core\Request;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\PayPalSession;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
@@ -36,6 +37,8 @@ final class OrderStandardRedirectFlowTest extends BaseTestCase
     {
         parent::setUp();
 
+        // vaultPayment is read from $_POST via the request; earlier tests may have left a request mock
+        Registry::set(Request::class, oxNew(Request::class));
         Registry::getSession()->deleteVariable('isPayPalPaymentCheckout');
         PayPalSession::unsetSessionRedirectLink();
         unset($_POST['vaultPayment'], $_POST['oscPayPalPaymentTypeForVaulting'], $_GET['vaultPayment']);

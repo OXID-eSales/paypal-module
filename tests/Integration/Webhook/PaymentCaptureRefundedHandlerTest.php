@@ -59,11 +59,11 @@ final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
     {
         return [
             'full' => [
-                'ordertotal' => 7.0,
+                'orderTotal' => 7.0,
                 'expected' => 'REFUNDED'
             ],
             'partial' => [
-                'ordertotal' => 70.0,
+                'orderTotal' => 70.0,
                 'expected' => 'PARTIALLY_REFUNDED'
             ]
         ];

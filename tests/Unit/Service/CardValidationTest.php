@@ -435,46 +435,65 @@ class CardValidationTest extends TestCase
      *
      * @dataProvider providerPayPalApiOrderResults
      */
-    public function testIsCardSafeToUse(string $serializedOrder, string $assertMethod)
+    public function testIsCardSafeToUse(string $orderCase, string $assertMethod)
     {
         $validator = $this->createValidator();
 
-        $this->{$assertMethod}($validator->isCardUsableForPayment(unserialize($serializedOrder)));
+        $order = unserialize($this->getSerializedOrder($orderCase));
+
+        $this->{$assertMethod}($validator->isCardUsableForPayment($order));
     }
 
-    public function providerPayPalApiOrderResults(): array
+    /**
+     * Static for PHPUnit 11: the cases name the serialized orders, the test builds them.
+     */
+    public static function providerPayPalApiOrderResults(): array
     {
-        $this->initSerializedVariables();
         return [
-            'success'            => ['success' => $this->success3DCard,       'method' => 'assertTrue'],
-            'standardcard'       => ['success' => $this->standardCard3D,       'method' => 'assertTrue'],
-            'failesignature'     => ['success' => $this->failedSignature,      'method' => 'assertFalse'],
-            'failedauth'         => ['success' => $this->failedAuthentication, 'method' => 'assertFalse'],
-            'no_credemtial_prompt' => ['success' => $this->noPrompt,            'method' => 'assertTrue'],
-            'timeout'            => ['success' => $this->timeout,             'method' => 'assertTrue'],
-            'not_enrolled'       => ['success' => $this->notEnrolled,         'method' => 'assertTrue'],
-            'system_not_available' => ['success' => $this->systemNotAvailable,  'method' => 'assertTrue'],
-            'merchant_not_active' => ['success' => $this->merchantNotActive,   'method' => 'assertTrue'],
-            'failed_3Ds1'        => ['success' => $this->failedSignature3DS1,   'method' => 'assertTrue'],
-            'cmpiLookupError'    => ['success' => $this->cmpiLookupError,       'method' => 'assertTrue'],
-            'cmpiAuthError'      => ['success' => $this->cmpiAuthError,         'method' => 'assertFalse'],
-            'unavailableAuth'    => ['success' => $this->unavailableAuth,       'method' => 'assertFalse'],
-            'bypassedAuth'       => ['success' => $this->bypassedAuth,          'method' => 'assertTrue'],
+            'success'            => ['orderCase' => 'success3DCard',        'assertMethod' => 'assertTrue'],
+            'standardcard'       => ['orderCase' => 'standardCard3D',       'assertMethod' => 'assertTrue'],
+            'failesignature'     => ['orderCase' => 'failedSignature',      'assertMethod' => 'assertFalse'],
+            'failedauth'         => ['orderCase' => 'failedAuthentication', 'assertMethod' => 'assertFalse'],
+            'no_credemtial_prompt' => ['orderCase' => 'noPrompt',           'assertMethod' => 'assertTrue'],
+            'timeout'            => ['orderCase' => 'timeout',              'assertMethod' => 'assertTrue'],
+            'not_enrolled'       => ['orderCase' => 'notEnrolled',          'assertMethod' => 'assertTrue'],
+            'system_not_available' => ['orderCase' => 'systemNotAvailable', 'assertMethod' => 'assertTrue'],
+            'merchant_not_active' => ['orderCase' => 'merchantNotActive',   'assertMethod' => 'assertTrue'],
+            'failed_3Ds1'        => ['orderCase' => 'failedSignature3DS1',  'assertMethod' => 'assertTrue'],
+            'cmpiLookupError'    => ['orderCase' => 'cmpiLookupError',      'assertMethod' => 'assertTrue'],
+            'cmpiAuthError'      => ['orderCase' => 'cmpiAuthError',        'assertMethod' => 'assertFalse'],
+            'unavailableAuth'    => ['orderCase' => 'unavailableAuth',      'assertMethod' => 'assertFalse'],
+            'bypassedAuth'       => ['orderCase' => 'bypassedAuth',         'assertMethod' => 'assertTrue'],
             // PayPal: system unavailable - do not continue, ask the cardholder to retry
             'unknown_enrollment_liability_unknown' => [
-                'success' => $this->buildSerializedCardOrder('U', null, 'UNKNOWN'),
-                'method' => 'assertFalse'
+                'orderCase' => 'unknownEnrollmentLiabilityUnknown',
+                'assertMethod' => 'assertFalse'
             ],
             'no_3ds_data_liability_unknown' => [
-                'success' => $this->buildSerializedCardOrder(null, null, 'UNKNOWN'),
-                'method' => 'assertFalse'
+                'orderCase' => 'no3dsDataLiabilityUnknown',
+                'assertMethod' => 'assertFalse'
             ],
             // PayPal: system unavailable with liability shift NO - continue
             'unknown_enrollment_liability_no' => [
-                'success' => $this->buildSerializedCardOrder('U', null, 'NO'),
-                'method' => 'assertTrue'
+                'orderCase' => 'unknownEnrollmentLiabilityNo',
+                'assertMethod' => 'assertTrue'
             ],
         ];
+    }
+
+    private function getSerializedOrder(string $orderCase): string
+    {
+        switch ($orderCase) {
+            case 'unknownEnrollmentLiabilityUnknown':
+                return $this->buildSerializedCardOrder('U', null, 'UNKNOWN');
+            case 'no3dsDataLiabilityUnknown':
+                return $this->buildSerializedCardOrder(null, null, 'UNKNOWN');
+            case 'unknownEnrollmentLiabilityNo':
+                return $this->buildSerializedCardOrder('U', null, 'NO');
+            default:
+                // serialized orders prepared in setUp()
+                return $this->{$orderCase};
+        }
     }
 
     /**

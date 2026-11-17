@@ -18,7 +18,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 final class SCAValidatorTest extends BaseTestCase
 {
-    private function createSuccess3DCardOrder(): ApiOrderModel
+    private static function createSuccess3DCardOrder(): ApiOrderModel
     {
         $order = new ApiOrderModel();
         $order->id = 'some_id';
@@ -44,7 +44,7 @@ final class SCAValidatorTest extends BaseTestCase
         return $order;
     }
 
-    private function createFailedAuthenticationOrder(): ApiOrderModel
+    private static function createFailedAuthenticationOrder(): ApiOrderModel
     {
         $order = new ApiOrderModel();
 
@@ -69,7 +69,7 @@ final class SCAValidatorTest extends BaseTestCase
         return $order;
     }
 
-    private function createMissingCardAuthenticationOrder(): ApiOrderModel
+    private static function createMissingCardAuthenticationOrder(): ApiOrderModel
     {
         $order = new ApiOrderModel();
 
@@ -85,40 +85,40 @@ final class SCAValidatorTest extends BaseTestCase
         return $order;
     }
 
-    public function dataProviderVerify3D(): array
+    public static function dataProviderVerify3D(): array
     {
         return [
             'success' => [
                 'paymentId' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'paypalOrder' => $this->createSuccess3DCardOrder(),
+                'paypalOrder' => self::createSuccess3DCardOrder(),
                 'alwaysIgnoreSCAResult' => false,
                 'assert' => 'assertTrue',
                 'sca' => Constants::PAYPAL_SCA_ALWAYS
             ],
             'fail' => [
                 'paymentId' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'paypalOrder' => $this->createFailedAuthenticationOrder(),
+                'paypalOrder' => self::createFailedAuthenticationOrder(),
                 'alwaysIgnoreSCAResult' => false,
                 'assert' => 'assertFalse',
                 'sca' => Constants::PAYPAL_SCA_ALWAYS
             ],
             'other_payment' => [
                 'paymentId' => PayPalDefinitions::STANDARD_PAYPAL_PAYMENT_ID,
-                'paypalOrder' => $this->createFailedAuthenticationOrder(),
+                'paypalOrder' => self::createFailedAuthenticationOrder(),
                 'alwaysIgnoreSCAResult' => false,
                 'assert' => 'assertTrue',
                 'sca' => Constants::PAYPAL_SCA_ALWAYS
             ],
             'ignore_sca' => [
                 'paymentId' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'paypalOrder' => $this->createFailedAuthenticationOrder(),
+                'paypalOrder' => self::createFailedAuthenticationOrder(),
                 'alwaysIgnoreSCAResult' => true,
                 'assert' => 'assertTrue',
                 'sca' => Constants::PAYPAL_SCA_WHEN_REQUIRED
             ],
             'sca_automatic_empty_result' => [
                 'paymentId' => PayPalDefinitions::ACDC_PAYPAL_PAYMENT_ID,
-                'paypalOrder' => $this->createMissingCardAuthenticationOrder(),
+                'paypalOrder' => self::createMissingCardAuthenticationOrder(),
                 'alwaysIgnoreSCAResult' => false,
                 'assert' => 'assertTrue',
                 'sca' => Constants::PAYPAL_SCA_WHEN_REQUIRED

@@ -19,6 +19,14 @@ use OxidEsales\Eshop\Core\Registry;
 
 final class UserTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        // the tests put a request mock into the registry; later tests need the real request
+        Registry::set(Request::class, null);
+
+        parent::tearDown();
+    }
+
     public function testPuiBirthDate(): void
     {
         $puiRequired = [
