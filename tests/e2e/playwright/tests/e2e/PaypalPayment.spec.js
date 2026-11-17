@@ -7,7 +7,9 @@ dotenv.config();
 
     let context, page;
 
-    test.beforeAll(async ({ browser }) => {
+    // every test gets its own browser context: cookies, shop session and PayPal login of the
+// previous test made the next one depend on how that one ended
+test.beforeEach(async ({ browser }) => {
         context = await browser.newContext({
             extraHTTPHeaders: {
                 'ngrok-skip-browser-warning': 'true',
@@ -30,7 +32,7 @@ test('Paypal Payment method', async () => {
     await shopHelper.selectPaymentMethod('PayPal');
     await shopHelper.nextStep();
     await shopHelper.acceptTerms();
-    await shopHelper.orderNow();
+    // popup flow: the PayPal button takes the place of "Order now" on the order page
     await paypalHelper.clickPaypalButtonInIframe('Paypal'); // click iframe (2nd if present)
     await paypalHelper.handlePopup();               // handle popup → return
     await paypalHelper.verifyThankYouPage();        // verify success
@@ -45,13 +47,17 @@ test('Paypal Payment method Without Accepting T&C', async () => {
     await shopHelper.checkout();
     await shopHelper.selectPaymentMethod('PayPal');
     await shopHelper.nextStep();
-    await page.waitForTimeout(3000);
-    await shopHelper.orderNow();
-    await page.waitForTimeout(3000);
-    await shopHelper.verifyTCAuth()
+    // without confirmed terms the module refuses the click (onClick -> actions.reject()) and shows
+    // an error message; the SDK may open its popup before that and closes it again
+    const popup = await paypalHelper.clickPaypalButtonInIframe('Paypal').catch(() => null);
+    if (popup && !popup.isClosed()) {
+        await popup.waitForEvent('close', { timeout: 15000 }).catch(() => {});
+    }
+    expect(popup === null || popup.isClosed()).toBe(true);
+    expect(await shopHelper.verifyTCAuth()).toBe(true);
 });
 
-test.afterAll(async () => {
+test.afterEach(async () => {
         try {
             if (context && !context.browser().isConnected()) {
                 // Browser is already disconnected, don't try to close

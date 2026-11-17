@@ -7,7 +7,9 @@ dotenv.config();
 
 let context, page;
 
-test.beforeAll(async ({ browser }) => {
+// every test gets its own browser context: cookies, shop session and PayPal login of the
+// previous test made the next one depend on how that one ended
+test.beforeEach(async ({ browser }) => {
     context = await browser.newContext({
         extraHTTPHeaders: {
             'ngrok-skip-browser-warning': 'true',
@@ -67,5 +69,11 @@ test('Paypal Express without accepting T&C', async () => {
     await paypalHelper.clickPaypalButtonInIframe('PaypalExpress');
     await paypalHelper.handlePopup();
     await shopHelper.orderNow();
- await shopHelper.verifyTCAuth()
+    expect(await shopHelper.verifyTCAuth()).toBe(true);
+});
+
+test.afterEach(async () => {
+    if (context) {
+        await context.close().catch(() => {});
+    }
 });

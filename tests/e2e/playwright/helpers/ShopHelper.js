@@ -150,14 +150,16 @@ export class ShopHelper {
                 await addToCartButton.click();
                 console.log(`Added product ${i + 1} to the cart.`);
 
-                // small settle for modal to appear
-                await page.waitForTimeout(500);
-
-                // Close modal if it shows up (best effort)
-                const closeModalButton = page.locator('.modal-dialog .modal-header .close');
-                if (await closeModalButton.isVisible().catch(() => false)) {
-                    await closeModalButton.click().catch(() => {});
+                // The shop confirms with a modal ("1 Items in cart"), which can take a few seconds
+                // and covers the next button: wait for it and close it.
+                const closeModalButton = page.locator('.modal-dialog .modal-header .close').first();
+                try {
+                    await closeModalButton.waitFor({ state: 'visible', timeout: 5000 });
+                    await closeModalButton.click();
+                    await closeModalButton.waitFor({ state: 'hidden', timeout: 5000 });
                     console.log('Modal closed.');
+                } catch (e) {
+                    console.log('No cart modal to close.');
                 }
 
                 // small settle between adds
@@ -300,7 +302,10 @@ export class ShopHelper {
             'Paypal P24': 'oscpaypal_przelewy24'
         };
 
-        const normalizedValue = paymentMethodMap[paymentMethod];
+        // the specs spell the names differently ("PayPal", "Paypal"): look them up case-insensitively
+        const mapKey = Object.keys(paymentMethodMap)
+            .find((key) => key.toLowerCase() === String(paymentMethod).toLowerCase());
+        const normalizedValue = mapKey ? paymentMethodMap[mapKey] : undefined;
         await page.waitForTimeout(5000);
         if (normalizedValue) {
             // Wait for the radio button to be visible
@@ -312,14 +317,19 @@ export class ShopHelper {
 
             console.log(`Payment method '${paymentMethod}' selected.`);
         } else {
-            console.log(`Payment method '${paymentMethod}' is not a PayPal option.`);
+            // fail instead of ordering with whatever payment method is preselected
+            throw new Error(`Payment method '${paymentMethod}' is not a PayPal option.`);
         }
     }
 
 
     async nextStep() {
         const { page } = this;
+        const urlBefore = page.url();
         await page.locator('button').locator('text=/Next|Weiter/i').click();
+        // wait for the next checkout step; callers look for elements of that page right away
+        await page.waitForURL((url) => url.toString() !== urlBefore, { timeout: 30000 }).catch(() => {});
+        await page.waitForLoadState('domcontentloaded');
     }
 
     async acceptTerms() {
@@ -470,21 +480,15 @@ export class ShopHelper {
     }
 
     async verifyTCAuth() {
-        const errorMessage = this.page.locator('.error-message.alert.alert-danger');
-
-        // Check if the error message contains the expected text
-        const isErrorVisible = await errorMessage.isVisible();
-        if (isErrorVisible) {
-            const errorText = await errorMessage.textContent();
-            if (errorText.includes('Please read and confirm our terms and conditions!')) {
-                console.log('Error found: User needs to confirm the terms and conditions.');
-            } else {
-                console.log('Different error displayed.');
-            }
-        } else {
-            console.log('No error message displayed.');
+        // the shop (order form) and the module (PayPal button) show the same text
+        const errorMessage = this.page.locator('.alert-danger', { hasText: /terms and conditions|AGB/i }).first();
+        try {
+            await errorMessage.waitFor({ state: 'visible', timeout: 10000 });
+        } catch (e) {
+            console.log('No terms and conditions error displayed.');
+            return false;
         }
-        // Return whether the error is present or not
-        return isErrorVisible;
+        console.log('Error found: ' + (await errorMessage.textContent()).trim());
+        return true;
     }
 }

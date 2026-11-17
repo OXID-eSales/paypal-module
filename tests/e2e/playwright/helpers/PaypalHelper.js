@@ -39,8 +39,22 @@ export class PaypalHelper {
             ? OPTION_TO_INDEX[option]
             : 1;
 
-        // Find a matching iframe selector
-        const paypalFrameSelector = await this._findMatchingIframeSelector(this._paypalIframeSelectors);
+        // Find a matching iframe selector. For the PayPal button of the order page look inside its
+        // container (id = payment id): the page has more PayPal iframes (express, pay later), and
+        // which of them is "the second one" depends on the page.
+        let paypalFrameSelector = null;
+        let idx = preferIndex;
+        let useFrameLocator = false;
+        if (option === 'Paypal' && await page.locator('#oscpaypal').count() > 0) {
+            // the SDK renders the button some time after the page has loaded
+            await page.locator('#oscpaypal iframe').first().waitFor({ state: 'attached', timeout: 30000 });
+            paypalFrameSelector = '#oscpaypal iframe';
+            idx = 0;
+            useFrameLocator = true;
+            console.log('Using the PayPal button of the order page (#oscpaypal).');
+        } else {
+            paypalFrameSelector = await this._findMatchingIframeSelector(this._paypalIframeSelectors);
+        }
         if (!paypalFrameSelector) throw new Error('PayPal iframe not found');
 
         // Listen for popup BEFORE clicking
@@ -54,10 +68,21 @@ export class PaypalHelper {
             });
         });
 
-        console.log(`Clicking PayPal button in iframe... (option: ${option}, index: ${preferIndex})`);
+        console.log(`Clicking PayPal button in iframe... (option: ${option}, index: ${idx})`);
 
         // ✅ Pass a single object argument to evaluate
-        const clicked = await page.evaluate(({ selector, idx }) => {
+        let clicked = false;
+        if (useFrameLocator) {
+            // cross-origin iframe: let Playwright wait for the button and click it. The button is
+            // visible before the SDK has wired it up; an early click is silently ignored.
+            const button = page.frameLocator(paypalFrameSelector).first()
+                .locator('[data-funding-source="paypal"]').first();
+            await button.waitFor({ state: 'visible', timeout: 30000 });
+            await page.waitForTimeout(3000);
+            await button.click({ timeout: 30000 });
+            clicked = true;
+        } else {
+        clicked = await page.evaluate(({ selector, idx }) => {
             const iframes = document.querySelectorAll(selector);
             console.log(`Found ${iframes.length} iframes for selector: ${selector}`);
 
@@ -78,7 +103,8 @@ export class PaypalHelper {
             else btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
 
             return true;
-        }, { selector: paypalFrameSelector, idx: preferIndex });
+        }, { selector: paypalFrameSelector, idx });
+        }
 
         if (!clicked) throw new Error('PayPal button click failed inside iframe');
         console.log('PayPal button clicked successfully.');
@@ -186,7 +212,23 @@ export class PaypalHelper {
         try {
             if (popupPage.isClosed()) throw new Error('Popup page was closed unexpectedly');
             const emailField = popupPage.locator('#email');
-            await emailField.waitFor({ state: 'visible', timeout: 15000 });
+            const continueButton = popupPage.locator('button:has-text("Continue"), [data-testid="submit-button-initial"]');
+            // a buyer who logged in earlier in this browser context goes straight to the review page
+            try {
+                await emailField.or(continueButton).first().waitFor({ state: 'visible', timeout: 30000 });
+            } catch (e) {
+                // with a buyer already logged in, PayPal may approve and close the popup by itself
+                if (popupPage.isClosed()) {
+                    console.log('Popup closed by PayPal before any login was needed.');
+                    return;
+                }
+                throw e;
+            }
+            if (!(await emailField.isVisible()) && await continueButton.first().isVisible()) {
+                console.log('Already logged in at PayPal - continuing.');
+                await continueButton.first().click();
+                return;
+            }
             console.log('Filling PayPal email...');
             await emailField.fill(email);
             const nextButton = popupPage.locator('#btnNext');
@@ -205,10 +247,9 @@ export class PaypalHelper {
             console.log('Clicking login button...');
             await loginButton.click();
             console.log('Waiting for continue button...');
-            const continueButton = popupPage.locator('button:has-text("Continue"), [data-testid="submit-button-initial"]');
-            await continueButton.waitFor({ state: 'visible', timeout: 20000 });
+            await continueButton.first().waitFor({ state: 'visible', timeout: 20000 });
             console.log('Continue button found - login successful');
-            await continueButton.click();
+            await continueButton.first().click();
             console.log('Clicked continue button - payment should be processed');
         } catch (error) {
             console.error('Error during PayPal login:', error.message);
