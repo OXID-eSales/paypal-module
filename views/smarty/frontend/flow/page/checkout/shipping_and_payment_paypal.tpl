@@ -46,7 +46,7 @@
                     [{if $oscpaypal_isVaultingPossible}]
                         <br>
                         <br>
-                        [{if $oViewConf->getPayPalCheckoutConfig()->isPayPalStandardRedirectFlow()}]
+                        [{if $oViewConf->isPayPalStandardRedirectFlow()}]
                             [{* redirect flow: no payment controller JS, the checkbox is sent with the order form *}]
                             <input type="checkbox" id="oscPayPalVaultPaymentCheckbox" name="vaultPayment" value="true" form="orderConfirmAgbBottom">
                         [{else}]

@@ -15,7 +15,7 @@
 [{* PayPal Standard in the redirect flow: the shop's own order button submits the order form,
     the customer is redirected to PayPal and back. A vaulted PayPal account keeps its own button. *}]
 [{assign var="oscPayPalStandardRedirect" value=false}]
-[{if "oscpaypal" == $paymentId && !$vaultedPaymentDescription && $oViewConf->getPayPalCheckoutConfig()->isPayPalStandardRedirectFlow()}]
+[{if "oscpaypal" == $paymentId && !$vaultedPaymentDescription && $oViewConf->isPayPalStandardRedirectFlow()}]
     [{assign var="oscPayPalStandardRedirect" value=true}]
 [{/if}]
 [{if "oscpaypal_googlepay" != $paymentId &&

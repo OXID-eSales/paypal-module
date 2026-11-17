@@ -26,7 +26,7 @@
         <button id="[{$paymentId}]" type="submit" class="btn btn-lg btn-primary pull-right submitButton nextStep largeButton">
             <i class="fa fa-check"></i> [{oxmultilang ident="SUBMIT_ORDER"}]
         </button>
-    [{elseif !$oViewConf->getPayPalCheckoutConfig()->isPayPalStandardRedirectFlow()}]
+    [{elseif !$oViewConf->isPayPalStandardRedirectFlow()}]
         <div id="[{$paymentId}]" class="paypal-button-container pull-right [{$buttonClass}]"></div>
     [{/if}]
 [{/if}]
