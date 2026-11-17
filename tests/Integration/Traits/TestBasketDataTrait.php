@@ -7,7 +7,7 @@
 
 declare(strict_types=1);
 
-namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Trait;
+namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Traits;
 
 use OxidEsales\Eshop\Application\Model\Article as EshopModelArticle;
 use OxidEsales\Eshop\Application\Model\User as EshopModelUser;

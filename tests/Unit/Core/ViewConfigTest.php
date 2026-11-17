@@ -15,6 +15,10 @@ use OxidEsales\Eshop\Core\ViewConfig;
 use OxidSolutionCatalysts\PayPal\Module as OscPayPalModule;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidEsales\EshopCommunity\Internal\Container\ContainerFactory;
+use OxidEsales\EshopCommunity\Internal\Framework\Module\Configuration\Bridge\ModuleConfigurationDaoBridgeInterface;
+use OxidEsales\EshopCommunity\Internal\Transition\Utility\ContextInterface;
+use OxidSolutionCatalysts\PayPal\Service\UserRepository;
+use Psr\Log\LoggerInterface;
 
 /**
  * Testing \OxidSolutionCatalysts\PayPal\Core\ViewConfig class.
@@ -61,19 +65,49 @@ final class ViewConfigTest extends UnitTestCase
 
     /**
      * Test case for ViewConfig::getPayPalClientId(): the client id of the active mode.
+     *
+     * The settings come from a mocked settings bridge: an environment configuration
+     * (var/configuration/environment/1.yaml, as in the CI) overrides saved module settings.
      */
     public function testGetPayPalClientId(): void
     {
-        $view = oxNew(ViewConfig::class);
+        $settings = [
+            'oscPayPalClientId' => '_test_live_client_id',
+            'oscPayPalSandboxClientId' => '_test_sandbox_client_id',
+            'oscPayPalSandboxMode' => true,
+        ];
 
-        $this->updateModuleSetting('oscPayPalClientId', '_test_live_client_id');
-        $this->updateModuleSetting('oscPayPalSandboxClientId', '_test_sandbox_client_id');
-
-        $this->updateModuleSetting('oscPayPalSandboxMode', true);
+        $view = $this->createViewConfigWithSettings($settings);
         $this->assertSame('_test_sandbox_client_id', $view->getPayPalClientId());
 
-        $this->updateModuleSetting('oscPayPalSandboxMode', false);
+        $settings['oscPayPalSandboxMode'] = false;
+        $view = $this->createViewConfigWithSettings($settings);
         $this->assertSame('_test_live_client_id', $view->getPayPalClientId());
+    }
+
+    private function createViewConfigWithSettings(array $settings): ViewConfig
+    {
+        $settingBridge = $this->createMock(ModuleSettingBridgeInterface::class);
+        $settingBridge->method('get')->willReturnCallback(
+            static function (string $name) use ($settings) {
+                return $settings[$name] ?? null;
+            }
+        );
+        $container = ContainerFactory::getInstance()->getContainer();
+        $moduleSettings = new ModuleSettings(
+            $settingBridge,
+            $container->get(ContextInterface::class),
+            $container->get(ModuleConfigurationDaoBridgeInterface::class),
+            $this->createMock(LoggerInterface::class),
+            $container->get(UserRepository::class)
+        );
+
+        $view = oxNew(ViewConfig::class);
+        $serviceArray = new \ReflectionProperty($view, 'serviceArray');
+        $serviceArray->setAccessible(true);
+        $serviceArray->setValue($view, [ModuleSettings::class => $moduleSettings]);
+
+        return $view;
     }
 
     /**

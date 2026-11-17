@@ -1,6 +1,6 @@
 <?php
 
-namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Trait;
+namespace OxidSolutionCatalysts\PayPal\Tests\Integration\Traits;
 
 use OxidEsales\EshopCommunity\Internal\Framework\Database\ConnectionProvider;
 use OxidEsales\EshopCommunity\Internal\Framework\Database\QueryBuilderFactory;

@@ -14,7 +14,7 @@ use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Exception\UserPhone as UserPhoneException;
 use OxidSolutionCatalysts\PayPal\Service\Factory\OrderRequestFactory;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
-use OxidSolutionCatalysts\PayPal\Tests\Integration\Trait\TestBasketDataTrait;
+use OxidSolutionCatalysts\PayPal\Tests\Integration\Traits\TestBasketDataTrait;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderRequest;
 use OxidEsales\Eshop\Application\Model\Basket as EshopModelBasket;

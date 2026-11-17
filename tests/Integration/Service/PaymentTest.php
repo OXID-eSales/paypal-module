@@ -13,7 +13,7 @@ use OxidEsales\Eshop\Application\Model\User as EshopModelUser;
 use OxidEsales\Eshop\Application\Model\Order as EshopModelOrder;
 use OxidSolutionCatalysts\PayPal\Service\OrderProcessTrackingService;
 use OxidSolutionCatalysts\PayPal\Tests\Integration\BaseTestCase;
-use OxidSolutionCatalysts\PayPal\Tests\Integration\Trait\TestBasketDataTrait;
+use OxidSolutionCatalysts\PayPal\Tests\Integration\Traits\TestBasketDataTrait;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
