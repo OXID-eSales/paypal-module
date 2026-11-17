@@ -81,8 +81,9 @@
         {% include "@osc_paypal/frontend/applepay_button.html.twig" with {paymentId: payment.getId()} %}
     {% else %}
         {% if paymentId == "oscpaypal_acdc" %}
-            <button id="{{ paymentId }}" type="button" class="btn btn-lg btn-primary pull-right submitButton nextStep largeButton">
-                <i class="fa fa-check"></i> {{ translate({ ident: "SUBMIT_ORDER" }) }}
+            {# the order button of the theme (Apex), like for a vaulted PayPal account #}
+            <button id="{{ paymentId }}" type="button" class="btn btn-highlight btn-lg w-100">
+                {{ translate({ ident: "SUBMIT_ORDER" }) }}
             </button>
         {% elseif paymentId == "oscpaypal" %}
             {% if vaultedPaymentDescription %}
