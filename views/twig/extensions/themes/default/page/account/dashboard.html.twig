@@ -1,6 +1,8 @@
 {% extends "page/account/dashboard.html.twig" %}
 
-{% block account_dashboard_col1 %}
+{# account_dashboard_col2 instead of col1: other payment modules extend col1 as well,
+   and one of them overriding it without parent() would drop the PayPal tiles #}
+{% block account_dashboard_col2 %}
     {{ parent() }}
     {% if oViewConf.getIsVaultingActive() %}
         {% if oViewConf.isVaultingAllowedForPayPal() %}
