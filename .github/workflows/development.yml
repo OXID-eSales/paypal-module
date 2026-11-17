@@ -274,7 +274,8 @@ jobs:
         php: [ '8.2' ]
         mysql: [ '5.7' ]
     needs: [ install_shop_with_module ]
-    runs-on: ubuntu-latest
+    # ubuntu-latest is Ubuntu 26.04, for which Playwright installs no browsers
+    runs-on: ubuntu-24.04
     steps:
       - name: Load current installation from cache
         uses: actions/cache@v4
