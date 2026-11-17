@@ -16,6 +16,9 @@
         this.currentOrder = this.currentOrderDefaults;
         this.currentError = null;
         this.stoppedOnError = false;
+        // The funding source of the PayPal button the buyer clicked, as the JS SDK reports it to
+        // onClick (data.fundingSource, e.g. 'paypal', 'card'); set by the standard controller.
+        this.fundingSource = null;
         this.captureInProgress = false;
         this.reactOnPayPalOverlayClosed = false;
 

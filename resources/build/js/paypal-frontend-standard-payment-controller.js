@@ -49,8 +49,14 @@
         this.createOrder = async function (data, actions) {
             PayPalPayment.addBeforeUnloadListener();
             PayPalPayment.removeErrorMessage();
-            PayPalPayment.addSubmitButtonOverlay();
-            PayPalPayment.paypalOverlayWatcher();
+            // The card button ("Debit or Credit Card") opens PayPal's card form inline, inside the
+            // button container, not in a popup: the full-page overlay would cover it, and the buyer
+            // could not enter the card. The overlay and its watcher are for the popup flow only. A
+            // real cancel of the card form (its ×) still comes through the SDK's onCancel.
+            if ('card' !== PayPalPayment.fundingSource) {
+                PayPalPayment.addSubmitButtonOverlay();
+                PayPalPayment.paypalOverlayWatcher();
+            }
 
             document.dispatchEvent(new CustomEvent('beforeShopOrderCreated'));
 
@@ -137,6 +143,9 @@
                 // Mirrors the Apple Pay / Google Pay pre-check; the createOrder guard
                 // below is kept as a safety net.
                 onClick: function (data, actions) {
+                    // Which button was clicked (paypal.FUNDING.*): createOrder shows no overlay
+                    // for the card button, whose form opens inline.
+                    PayPalPayment.fundingSource = data && data.fundingSource ? data.fundingSource : null;
                     if (false === PayPalPayment.checkTermsAndConditions()) {
                         PayPalPayment.showErrorMessage(PayPalI18n.READ_AND_CONFIRM_TERMS);
                         return actions.reject();
