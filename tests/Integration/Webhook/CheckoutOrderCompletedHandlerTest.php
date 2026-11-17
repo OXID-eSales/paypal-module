@@ -50,7 +50,7 @@ final class CheckoutOrderCompletedHandlerTest extends WebhookHandlerBaseTestCase
         $handler->handle($event);
     }
 
-    public function dataProviderWebhookEvent(): array
+    public static function dataProviderWebhookEvent(): array
     {
         return [
             'api_v1' => [

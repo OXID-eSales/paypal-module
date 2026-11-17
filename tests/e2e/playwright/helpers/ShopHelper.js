@@ -12,7 +12,8 @@ export class ShopHelper {
     }
 
     async clickUserCenter() {
-        await this.page.locator('.menu-dropdowns button[aria-label="Usercenter"]').click();
+        // Apex < 7.4 labels the account toggle "Usercenter", Apex 7.4 "Login"/"My account"
+        await this.page.locator('.menu-dropdowns button[data-bs-toggle="dropdown"]').first().click();
     }
 
     async loginUser() {

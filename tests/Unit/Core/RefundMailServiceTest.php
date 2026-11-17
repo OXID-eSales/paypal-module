@@ -15,7 +15,7 @@ use ReflectionMethod;
  */
 class RefundMailServiceTest extends TestCase
 {
-    public function recipientModeProvider(): array
+    public static function recipientModeProvider(): array
     {
         return [
             'no mail' => [Constants::MAIL_RECIPIENT_NONE, []],

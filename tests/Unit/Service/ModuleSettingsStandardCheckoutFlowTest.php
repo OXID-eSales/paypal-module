@@ -39,7 +39,7 @@ final class ModuleSettingsStandardCheckoutFlowTest extends TestCase
         $this->assertSame($expectedRedirect, $moduleSettings->isPayPalStandardRedirectFlow());
     }
 
-    public function checkoutFlowProvider(): array
+    public static function checkoutFlowProvider(): array
     {
         return [
             'popup' => ['popup', ModuleSettings::STANDARD_CHECKOUT_FLOW_POPUP, false],

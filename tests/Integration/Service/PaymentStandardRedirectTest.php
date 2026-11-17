@@ -95,7 +95,7 @@ final class PaymentStandardRedirectTest extends BaseTestCase
         $this->assertStringEndsWith('cl=order&fnc=cancelpaypalsession', $cancelUrl);
     }
 
-    public function captureStrategyProvider(): array
+    public static function captureStrategyProvider(): array
     {
         return [
             'capture directly' => ['directly', OrderRequest::INTENT_CAPTURE],

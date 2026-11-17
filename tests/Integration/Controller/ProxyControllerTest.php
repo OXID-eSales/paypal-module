@@ -95,7 +95,7 @@ final class ProxyControllerTest extends BaseTestCase
         $this->assertSame(0, Registry::getSession()->getBasket()->getItemsCount());
     }
 
-    public function walletMethodDataProvider(): array
+    public static function walletMethodDataProvider(): array
     {
         return [
             'Google Pay' => ['createGooglePayOrder'],

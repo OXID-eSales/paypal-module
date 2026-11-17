@@ -248,10 +248,13 @@ jobs:
 
       - name: Run tests
         run: |
+          # OXID 7.4 ships PHPUnit 11: migrate the PHPUnit 9 configuration of the module first
+          docker compose exec -T php vendor/bin/phpunit \
+            -c /var/www/test-module/tests/phpunit.xml \
+            --migrate-configuration || true
           docker compose exec -T -e XDEBUG_MODE=coverage php vendor/bin/phpunit \
             -c /var/www/test-module/tests/phpunit.xml \
-            --bootstrap=/var/www/source/bootstrap.php \
-            --verbose
+            --bootstrap=/var/www/source/bootstrap.php
 
       - name: Upload log artifact
         if: always()

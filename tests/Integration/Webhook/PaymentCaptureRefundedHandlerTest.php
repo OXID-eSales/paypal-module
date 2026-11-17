@@ -55,7 +55,7 @@ final class PaymentCaptureRefundedHandlerTest extends WebhookHandlerBaseTestCase
         $handler->handle($event);
     }
 
-    public function dataProviderWebhookEvent(): array
+    public static function dataProviderWebhookEvent(): array
     {
         return [
             'full' => [

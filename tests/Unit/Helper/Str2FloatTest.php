@@ -19,7 +19,7 @@ class Str2FloatTest extends TestCase
         $this->assertSame($expected, $result);
     }
 
-    public function dataSource(): array
+    public static function dataSource(): array
     {
         return [
             [

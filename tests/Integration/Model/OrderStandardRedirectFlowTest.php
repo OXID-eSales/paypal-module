@@ -162,7 +162,7 @@ final class OrderStandardRedirectFlowTest extends BaseTestCase
         $this->assertNull($vaultRequestDuringPayPalCall);
     }
 
-    public function vaultingNotPossibleProvider(): array
+    public static function vaultingNotPossibleProvider(): array
     {
         return [
             'guest without password' => ['', true],

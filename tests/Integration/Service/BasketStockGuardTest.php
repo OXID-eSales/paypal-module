@@ -147,7 +147,7 @@ final class BasketStockGuardTest extends BaseTestCase
         $this->assertCount(1, $this->getDisplayedMessages());
     }
 
-    public function unavailableArticleProvider(): array
+    public static function unavailableArticleProvider(): array
     {
         return [
             'sold out, offline' => [self::ARTICLE_SOLD_OUT_OFFLINE],

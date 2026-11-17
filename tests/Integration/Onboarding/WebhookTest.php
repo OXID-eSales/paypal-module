@@ -129,7 +129,7 @@ final class WebhookTest extends BaseTestCase
     protected function getServiceMock(string $url = self::TEST_WEBHOOK_URL, array $addMockMethods = []): Webhook
     {
         $service = $this->getMockBuilder(Webhook::class)
-            ->setMethods(array_merge(['getWebhookEndpoint'], $addMockMethods))
+            ->onlyMethods(array_merge(['getWebhookEndpoint'], $addMockMethods))
             ->getMock();
         $service->expects($this->any())
             ->method('getWebhookEndpoint')

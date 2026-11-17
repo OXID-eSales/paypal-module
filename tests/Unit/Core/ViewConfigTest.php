@@ -131,7 +131,7 @@ final class ViewConfigTest extends TestCase
     {
         $viewMock = $this
             ->getMockBuilder(\OxidSolutionCatalysts\PayPal\Core\ViewConfig::class)
-            ->setMethods(['getActionClassName'])
+            ->onlyMethods(['getActionClassName'])
             ->getMock();
         $viewMock->expects($this->once())->method('getActionClassName')->will($this->returnValue($actionClassName));
 
@@ -147,7 +147,7 @@ final class ViewConfigTest extends TestCase
         $this->assertFalse($viewMock->showPayPalCheckoutBannerOnCheckoutPage());
     }
 
-    public function providerBannerCheckoutPage(): array
+    public static function providerBannerCheckoutPage(): array
     {
         return [
             ['basket', 'oscPayPalBannersCartPageSelector'],
@@ -168,7 +168,7 @@ final class ViewConfigTest extends TestCase
         $this->assertEquals($colorScheme, $view->getPayPalCheckoutBannersColorScheme());
     }
 
-    public function providerGetPayPalColorScheme(): array
+    public static function providerGetPayPalColorScheme(): array
     {
         return [
             ['blue'],

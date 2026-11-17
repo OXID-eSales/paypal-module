@@ -59,7 +59,7 @@ abstract class BaseTestCase extends TestCase
     {
         $psrLogger = $this->getMockBuilder(LoggerInterface::class)
             ->disableOriginalConstructor()
-            ->setMethods(
+            ->onlyMethods(
                 [
                     'emergency',
                     'alert',

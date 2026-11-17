@@ -620,7 +620,7 @@ final class OrderTest extends BaseTestCase
         return $orderMock;
     }
 
-    public function dataProviderCaptureStatus(): array
+    public static function dataProviderCaptureStatus(): array
     {
         return [
             // PayPal order status, capture status, isCompleted, isCapturePending
@@ -723,7 +723,7 @@ final class OrderTest extends BaseTestCase
         $this->assertSame(!$expectCancelled, $reloaded->load(self::TEST_ORDER_ID));
     }
 
-    public function cancelApprovedOrderDataProvider(): array
+    public static function cancelApprovedOrderDataProvider(): array
     {
         return [
             '3DS failed' => [PayPalCancelReason::SCA_3DS_NOT_COMPLETED, true],

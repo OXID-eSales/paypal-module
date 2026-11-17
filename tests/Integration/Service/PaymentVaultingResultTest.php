@@ -107,7 +107,7 @@ final class PaymentVaultingResultTest extends BaseTestCase
         $this->assertSame($customerIdSaved, Registry::getSession()->getVariable('vaultSuccess'));
     }
 
-    public function vaultResultProvider(): array
+    public static function vaultResultProvider(): array
     {
         return [
             'customer id saved' => [true],

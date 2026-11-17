@@ -114,7 +114,7 @@ class WebhookHandlerBaseTestCase extends BaseTestCase
     {
         $psrLogger = $this->getMockBuilder(LoggerInterface::class)
             ->disableOriginalConstructor()
-            ->setMethods(
+            ->onlyMethods(
                 [
                     'emergency',
                     'alert',

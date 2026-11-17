@@ -58,7 +58,7 @@ class LanguageLocaleMapperTest extends TestCase
         );
     }
 
-    public function getLocaleWithCountryTestData(): array
+    public static function getLocaleWithCountryTestData(): array
     {
         return [
             [ // regional locale configured and matching the customer country: preferred
@@ -131,7 +131,7 @@ class LanguageLocaleMapperTest extends TestCase
         );
     }
 
-    public function getBcp47TestData(): array
+    public static function getBcp47TestData(): array
     {
         return [
             [ // underscore notation of the setting is converted to the hyphen the api expects
@@ -197,7 +197,7 @@ class LanguageLocaleMapperTest extends TestCase
         ];
     }
 
-    public function getTestData(): array
+    public static function getTestData(): array
     {
         return [
             [ // first supported language
