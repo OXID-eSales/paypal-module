@@ -306,6 +306,16 @@
         if (true !== PayPalPayment.reactOnPayPalOverlayClosed) {
             return;
         }
+        // Only the ACDC flow relies on this listener: its card fields have no cancel callback. The
+        // listener is registered on every page, though, and the standard flow arms the watcher too.
+        // There the JS SDK reports a real cancel itself (onCancel), and the overlay that disappears
+        // can be the 3-D-Secure challenge of the inline card form ("Debit or Credit Card" button),
+        // after which the payment is approved: cancelling then made cancelOrder() reload the page
+        // while captureOrder was under way - the buyer was charged but sent back to the payment step.
+        if ('object' !== typeof PayPalPaymentControllerConfig ||
+            PayPalPaymentControllerConfig.paymentId !== 'oscpaypal_acdc') {
+            return;
+        }
         PayPalPayment.cancelOrder().then((e) => {
             PayPalPayment.removeSubmitButtonOverlay();
         });
