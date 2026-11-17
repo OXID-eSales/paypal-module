@@ -61,6 +61,8 @@ $aLang = [
 
     'OSC_PAYPAL_VAULTING_MENU'                      => 'PayPal verwalten',
     'OSC_PAYPAL_VAULTING_MENU_CARD'                 => 'Kredit- oder Debitkarte verwalten',
+    'OSC_PAYPAL_VAULTING_DASHBOARD_PAYPAL'          => 'Gespeicherte PayPal-Konten ansehen und löschen',
+    'OSC_PAYPAL_VAULTING_DASHBOARD_CARD'            => 'Gespeicherte Kredit- und Debitkarten ansehen und löschen',
     'OSC_PAYPAL_VAULTING_VAULTED_PAYMENTS'          => 'Gespeicherte Zahlungsarten',
     'OSC_PAYPAL_VAULTING_ERROR'                     => 'Beim Speichern Ihrer Zahlart ist etwas schiefgelaufen.',
     'OSC_PAYPAL_VAULTING_SUCCESS'                   => 'Beim bezahlen haben Sie Ihre gespeicherten Zahlungsdaten genutzt. Wenn Sie das zum ersten Mal getan haben, dann sehen Sie diese Daten in ca. 15min auch in Ihrem Shop-Kundenaccount.',

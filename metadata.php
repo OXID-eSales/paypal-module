@@ -205,6 +205,11 @@ $aModule = [
             'file' => '/views/blocks/page/account/inc/account_menu.tpl',
         ],
         [
+            'template' => 'page/account/dashboard.tpl',
+            'block' => 'account_dashboard_col2',
+            'file' => '/views/blocks/page/account/dashboard_col2.tpl',
+        ],
+        [
             'template' => 'page/checkout/basket.tpl',
             'block' => 'basket_btn_next_bottom',
             'file' => '/views/blocks/page/checkout/basket_btn_next_bottom.tpl',
