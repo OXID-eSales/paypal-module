@@ -408,7 +408,7 @@ class Payment
                     $vaultSuccess = false;
 
                     if ($id = $vault->customer["id"]) {
-                        $this->saveCustomerIdToUser($id);
+                        $vaultSuccess = $this->saveCustomerIdToUser($id);
                     }
 
                     if (!$vaultSuccess) {
@@ -444,18 +444,21 @@ class Payment
         return $result;
     }
 
-    public function saveCustomerIdToUser(string $customerId, ?User $user = null): void
+    /**
+     * @return bool true if the PayPal customer id was saved to the user
+     */
+    public function saveCustomerIdToUser(string $customerId, ?User $user = null): bool
     {
         if (null === $user) {
             $user = Registry::getConfig()->getUser();
         }
 
         if (!$user) {
-            return;
+            return false;
         }
 
         $user->oxuser__oscpaypalcustomerid = new Field($customerId);
-        $user->save();
+        return (bool)$user->save();
     }
 
     /**
