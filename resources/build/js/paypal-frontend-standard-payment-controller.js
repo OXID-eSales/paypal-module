@@ -56,6 +56,11 @@
             if ('card' !== PayPalPayment.fundingSource) {
                 PayPalPayment.addSubmitButtonOverlay();
                 PayPalPayment.paypalOverlayWatcher();
+            } else {
+                // Without the watcher the flag stays unset, and onPayPalUnload would leave the shop
+                // order NOT_FINISHED (stock reserved) when the buyer leaves the page with the card form
+                // open. Safe without the watcher: the paypalOverlayClosed listener acts for ACDC only.
+                PayPalPayment.reactOnPayPalOverlayClosed = true;
             }
 
             document.dispatchEvent(new CustomEvent('beforeShopOrderCreated'));
