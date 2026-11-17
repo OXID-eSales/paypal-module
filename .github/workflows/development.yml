@@ -134,11 +134,14 @@ jobs:
           # have open advisories, and composer would refuse to resolve them
           docker compose exec -T php composer config audit.block-insecure false
           docker compose exec -T php composer update --no-interaction
-          docker compose exec -T php bin/oe-console oe:database:reset \
+          # display_errors is off in custom.ini; show fatal errors of the console in the job log,
+          # otherwise a failing command only ends with exit code 255 and no message
+          OE_CONSOLE="php -d display_errors=stderr -d error_reporting=E_ALL bin/oe-console"
+          docker compose exec -T php $OE_CONSOLE oe:database:reset \
             --db-host=mysql --db-port=3306 --db-name=example --db-user=root --db-password=root --force
-          docker compose exec -T php bin/oe-console oe:setup:demodata
-          docker compose exec -T php bin/oe-console oe:theme:activate apex
-          docker compose exec -T php bin/oe-console oe:module:activate osc_paypal
+          docker compose exec -T php $OE_CONSOLE oe:setup:demodata
+          docker compose exec -T php $OE_CONSOLE oe:theme:activate apex
+          docker compose exec -T php $OE_CONSOLE oe:module:activate osc_paypal
           ls -la
           ls -la source
 
