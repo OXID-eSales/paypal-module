@@ -273,6 +273,10 @@ jobs:
       matrix:
         php: [ '8.2' ]
         mysql: [ '5.7' ]
+    # one ngrok domain for all branches: run the Playwright jobs one after the other
+    concurrency:
+      group: paypal-module-playwright-ngrok
+      cancel-in-progress: false
     needs: [ install_shop_with_module ]
     # ubuntu-latest is Ubuntu 26.04, for which Playwright installs no browsers
     runs-on: ubuntu-24.04
