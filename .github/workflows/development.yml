@@ -9,7 +9,7 @@ env:
   MODULE_PATH: 'osc/paypal'
   SONARCLOUD_ORGANIZATION: 'oxid-esales'
   SONARCLOUD_PROJECT_KEY: 'OXID-eSales_module-paypal_checkout'
-  PHP_VERSION: '8.0'
+  PHP_VERSION: '8.3'
   MYSQL_VERSION: '5.7'
   TEMPLATE_ENGINE: 'twig'
 
@@ -163,7 +163,7 @@ jobs:
   styles:
     strategy:
       matrix:
-        php: [ '8.0' ]
+        php: [ '8.3' ]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout current module
