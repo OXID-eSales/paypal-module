@@ -286,7 +286,8 @@ jobs:
       matrix:
         php: [ '8.0' ]
     needs: [ install_shop_with_module ]
-    runs-on: ubuntu-latest
+    # ubuntu-latest is Ubuntu 26.04, for which Playwright installs no browsers
+    runs-on: ubuntu-24.04
     steps:
       - name: Load current installation from cache
         uses: actions/cache@v4
@@ -306,8 +307,7 @@ jobs:
         working-directory: source/test-module/tests/e2e/playwright
         run: |
           cp .env.dist.Razvan .env
-          echo "Created .env file with the following content:"
-          cat .env
+          echo "Created .env file."
 
       - name: Load .env file into GitHub environment if present
         working-directory: source/test-module/tests/e2e/playwright
@@ -315,6 +315,8 @@ jobs:
           if [ -f .env ]; then
             while IFS='=' read -r key value || [ -n "$key" ]; do
               if [[ ! "$key" =~ ^# && -n "$key" ]]; then
+                # keep the credentials out of the job log
+                [ -n "$value" ] && echo "::add-mask::$value"
                 echo "$key=$value" >> $GITHUB_ENV
               fi
             done < .env
@@ -322,11 +324,6 @@ jobs:
           else
             echo ".env file not found. Skipping..."
           fi
-
-      - name: Debug GitHub Environment Variables
-        run: |
-          echo "Loaded environment variables:"
-          printenv | grep -E 'BASE_URL|PAYPAL_EMAIL|PAYPAL_PASSWORD|SHOP_USER_EMAIL|SHOP_USER_PASSWORD'
 
       - name: Validate Environment Variables
         run: |
