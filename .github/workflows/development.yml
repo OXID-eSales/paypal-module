@@ -1,6 +1,6 @@
 name: Development
 
-on: [ push, pull_request ]
+on: [ push, pull_request, workflow_dispatch ]
 
 env:
   PACKAGE_NAME: 'oxid-solution-catalysts/paypal-module'
@@ -285,6 +285,10 @@ jobs:
       fail-fast: false
       matrix:
         php: [ '8.0' ]
+    # one ngrok domain for all branches: run the Playwright jobs one after the other
+    concurrency:
+      group: paypal-module-playwright-ngrok
+      cancel-in-progress: false
     needs: [ install_shop_with_module ]
     # ubuntu-latest is Ubuntu 26.04, for which Playwright installs no browsers
     runs-on: ubuntu-24.04
@@ -306,7 +310,7 @@ jobs:
       - name: Create .env file
         working-directory: source/test-module/tests/e2e/playwright
         run: |
-          cp .env.dist.Razvan .env
+          echo "${{ secrets.PLAYWRIGHT_TEST_ENV }}" > .env
           echo "Created .env file."
 
       - name: Load .env file into GitHub environment if present
@@ -334,15 +338,45 @@ jobs:
           echo "Environment variables successfully loaded."
 
 
+      - name: Set up ngrok
+        run: |
+          curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && \
+          echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list && \
+          sudo apt-get update && sudo apt-get install ngrok
+
+      - name: Start ngrok with custom domain
+        run: |
+          ngrok config add-authtoken ${{ secrets.NGROK_AUTH_TOKEN }}
+          nohup ngrok http --hostname=${{ secrets.NGROK_CUSTOM_DOMAIN }} --log=stdout 80 > ngrok.log 2>&1 &
+          NGROK_PID=$!
+          echo "NGROK_PID=$NGROK_PID" >> $GITHUB_ENV
+          sleep 10
+          if ! kill -0 $NGROK_PID 2>/dev/null; then
+            echo "Ngrok failed to start properly"
+            cat ngrok.log
+            exit 1
+          fi
+          echo "Ngrok started successfully with PID $NGROK_PID"
+
+      - name: Test ngrok tunnel connection
+        run: |
+          for i in {1..5}; do
+            echo "Testing ngrok connection attempt $i/5"
+            if curl -I https://${{ secrets.NGROK_CUSTOM_DOMAIN }} --max-time 10; then
+              echo "Ngrok connection successful"
+              break
+            else
+              echo "Connection failed, retrying in 5 seconds..."
+              sleep 5
+            fi
+          done
+
       - name: Set module settings
         continue-on-error: true
         run: |
           set -x
           mkdir -p source/var/configuration/environment/
           echo "${{ secrets.MODULE_SETTINGS }}" > source/var/configuration/environment/1.yaml
-          ls -la source/var/configuration/environment/
-          cat source/var/configuration/environment/1.yaml
-          cat source/var/configuration/shops/1.yaml
           echo "${{ secrets.MODULE_ENV }}" > source/vendor/${{ env.PACKAGE_NAME }}/tests/.env
 
       - name: Apply module configuration
@@ -378,7 +412,21 @@ jobs:
       - name: Run Playwright tests
         working-directory: source/test-module/tests/e2e/playwright
         run: |
-          make test
+          if ! kill -0 $NGROK_PID 2>/dev/null; then
+            echo "Ngrok is not running, restarting..."
+            nohup ngrok http --hostname=${{ secrets.NGROK_CUSTOM_DOMAIN }} --log=stdout 80 > ngrok.log 2>&1 &
+            sleep 10
+          fi
+          timeout 900 make test
+
+      - name: Cleanup ngrok
+        if: always()
+        run: |
+          pkill -f ngrok || true
+          if [ -f ngrok.log ]; then
+            echo "Ngrok logs:"
+            cat ngrok.log
+          fi
 
 
       - name: Upload log artifact
