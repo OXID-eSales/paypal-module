@@ -14,6 +14,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 
 trait ServiceContainer
 {
+    /** @var array<string, MockObject> service mocks of the tests, by service name */
     protected array $serviceArray = [];
     /**
      * Used in Unit-Tests to mock services

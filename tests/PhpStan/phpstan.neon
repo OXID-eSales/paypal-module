@@ -1,4 +1,9 @@
 parameters:
+    # The CI analyses only the files of the last commit (codestyle_check.sh). A baseline generated
+    # over src/ cannot match such partial runs: errors of traits and errors that depend on the
+    # other analysed files only show up in the full run. Stale entries are cleaned up by
+    # regenerating the baseline (composer phpstan-generate-baseline).
+    reportUnmatchedIgnoredErrors: false
     bootstrapFiles:
         - phpstan-bootstrap.php
     level: 0
