@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [2.10.4] - unreleased
+
+### Added
+
+- PayPal Standard: the redirect flow is offered again as an alternative to the PayPal button with popup. New module setting "PayPal Standard - Checkout flow" (`oscPayPalStandardCheckoutFlow`, admin > PayPal > Configuration, next to the capture strategy, values `popup`|`redirect`, **popup by default**). In the redirect flow the order page shows the order button of the theme instead of the PayPal button; submitting the order form creates the shop order and the PayPal order (`Order::_executePayment()` -> `Payment::doExecuteStandardRedirectPayment()`) and redirects the customer to PayPal. The way back is the one of the popup flow: `order/finalizepaypalsession` captures or authorizes according to the capture strategy, `order/cancelpaypalsession` cancels. "Save payment" (vaulting) is sent with the order form and only passed on if the customer may vault; a vaulted PayPal account keeps using the AJAX flow. `OrderController::execute()` removes a leftover `isPayPalPaymentCheckout` flag of an aborted AJAX checkout, which would otherwise have finalized the order without a payment. The double-submit guard of PayPal Express also protects the order button of the redirect flow. The templates ask `ViewConfig::isPayPalStandardRedirectFlow()`, because Smarty cannot chain method calls inside `{if}`. Files touched: `metadata.php`, `src/Controller/OrderController.php`, `src/Core/Config.php`, `src/Core/ViewConfig.php`, `src/Model/Order.php`, `src/Service/ModuleSettings.php`, `src/Service/Payment.php`, admin and checkout templates (Wave, Flow), admin translations.
+- Customer account (Wave, Flow): tiles "PayPal verwalten" and "Kredit- oder Debitkarte verwalten" on the dashboard (block `account_dashboard_col2`), with the same conditions as the entries in the account menu. Before, the vaulted payment sources were only reachable through the account menu. Files touched: `metadata.php`, `views/blocks/page/account/dashboard_col2.tpl`, `translations/*/oscpaypal_*_lang.php`.
+- The same changes were made in the OXID 7 module `osc/paypal-module` (3.9.4).
+
+### CHANGED
+
+- Checkout with a vaulted PayPal account: on click the order button is locked and shows "Processing your order …" instead of covering the page with the overlay and spinner; it is unlocked again if the order fails (terms not confirmed, PayPal refuses) and on a BFCache restore. ACDC, Google Pay, Apple Pay and the popup flow keep the overlay. Files touched: `resources/build/js/paypal-frontend-payment-controller-base.js`, `out/src/js/paypal-frontend.min.js`, `views/tpl/shared/layout/base_paypal_payment_controller_config.tpl`.
+- phpstan: `reportUnmatchedIgnoredErrors: false`, because the CI analyses only the files of the last commit and a baseline generated over `src/` cannot match such partial runs. `ServiceContainer::$serviceArray` got its value type. Files touched: `tests/PhpStan/phpstan.neon`, `src/Traits/ServiceContainer.php`.
+
+### FIX
+
+- After a vaulted payment the thank-you page said "something went wrong while saving your payment method" although the PayPal customer id had been saved: `Payment::doCapturePayPalOrder()` never set `vaultSuccess` to true. `saveCustomerIdToUser()` now returns whether the id was saved, and that is the result shown. Until now only the webhook went through this capture, the redirect flow uses it as well. File touched: `src/Service/Payment.php`.
+
 ## [2.10.3] - 2026-11-13
 
 ### FIX
