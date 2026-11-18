@@ -75,26 +75,14 @@ export class CreditCardHelper {
         const expiryInput = expiryFrame.locator('input, [contenteditable="true"]').first();
         await expect(expiryInput).toBeVisible();
 
-        // Custom function to type expiry date manually
+        // The hosted field formats while typing ("0333" becomes "03 / 33"), so type the digits only
         const expiryDate = '03 / 33';
-
-// Focus on the expiry input field first and clear it
         await expiryInput.click();
-        // await expiryInput.clear(); // Clear any pre-filled values
+        await expiryInput.press('ControlOrMeta+a');
+        await expiryInput.press('Backspace');
+        await expiryInput.pressSequentially('0333', { delay: 150 });
 
-// Wait for a moment to ensure the field is ready
-        await page.waitForTimeout(500);
-
-// Type the first part of the expiry date (03)
-//         await expiryInput.type('03', { delay: 500 });
-//
-//         await page.waitForTimeout(500);
-        await expiryInput.click();
-
-// Type the second part of the expiry date (33)
-        await expiryInput.type('33333', { delay: 500 });
-
-// Check the value after typing
+        // Check the value after typing
         const expiryValueAfterFill = await expiryInput.inputValue();
         console.log('Filled expiry date:', expiryDate);
         console.log('Expiry Date value after fill:', expiryValueAfterFill);

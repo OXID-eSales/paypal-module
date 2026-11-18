@@ -8,22 +8,28 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 
-    let context, page;
+let context, page;
 
-    test.beforeAll(async ({ browser }) => {
-        const context = await browser.newContext({
-            extraHTTPHeaders: {
-                'ngrok-skip-browser-warning': 'true',
-            },
-        });
-
-        await context.clearCookies();
-
-        page = await context.newPage();
-        page.setDefaultTimeout(30000);
-        page.setDefaultNavigationTimeout(30000);
-        await page.goto(process.env.BASE_URL);
+// every test gets its own browser context: the session of the previous test (order finished,
+// thank-you page) made the next one depend on how that one ended
+test.beforeEach(async ({ browser }) => {
+    context = await browser.newContext({
+        extraHTTPHeaders: {
+            'ngrok-skip-browser-warning': 'true',
+        },
     });
+
+    await context.clearCookies();
+
+    page = await context.newPage();
+    page.setDefaultTimeout(30000);
+    page.setDefaultNavigationTimeout(30000);
+    await page.goto(process.env.BASE_URL);
+});
+
+test.afterEach(async () => {
+    await context?.close();
+});
 
 
 test('Pay with card and do not save it ', async () => {
@@ -53,8 +59,7 @@ test('Pay with card without accepting T&C', async () => {
     await shopHelper.nextStep();
     await cardHelper.addNewCard();
     await shopHelper.orderNow();
-    await page.waitForTimeout(3000);
-    await shopHelper.verifyTCAuth()
+    expect(await shopHelper.verifyTCAuth()).toBe(true);
 });
 
 test.skip('ACDC Payment test', () => {
