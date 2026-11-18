@@ -422,13 +422,14 @@ jobs:
             nohup ngrok http --hostname=${{ secrets.NGROK_CUSTOM_DOMAIN }} --log=stdout 80 > ngrok.log 2>&1 &
             sleep 10
           fi
-          # Core specs only, one after the other: all tests use the same shop customer, whose
+          # Core specs only (PayPal, Express, banner, ACDC with 3-D Secure), one after the other: all tests use the same shop customer, whose
           # basket is kept in the database. The whole suite (local payment methods, PUI) takes
           # about 30 minutes; run it locally with "make test" (see tests/e2e/playwright/setup).
           timeout 1800 npx playwright test \
             tests/e2e/PaypalPayment.spec.js \
             tests/e2e/PaypalExpressPayment.spec.js \
             tests/e2e/PaypalBannerShowUp.spec.js \
+            tests/e2e/ACDCPayment.spec.js \
             --workers=1
 
       - name: Cleanup ngrok
