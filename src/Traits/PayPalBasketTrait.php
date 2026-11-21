@@ -7,7 +7,6 @@
 
 namespace OxidSolutionCatalysts\PayPal\Traits;
 
-use OxidEsales\Eshop\Application\Model\Address;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\DeliverySetList;
 use OxidEsales\Eshop\Core\Exception\ArticleInputException;
@@ -15,6 +14,7 @@ use OxidEsales\Eshop\Core\Exception\NoArticleException;
 use OxidEsales\Eshop\Core\Exception\OutOfStockException;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
+use OxidSolutionCatalysts\PayPal\Core\Utils\SessionDeliveryAddress;
 
 trait PayPalBasketTrait
 {
@@ -136,11 +136,8 @@ trait PayPalBasketTrait
         } else {
             if ($delCountryId = $config->getGlobalParameter('delcountryid')) {
                 $countryId = $delCountryId;
-            } elseif ($addressId = Registry::getSession()->getVariable('deladrid')) {
-                $deliveryAddress = oxNew(Address::class);
-                if ($deliveryAddress->load($addressId)) {
-                    $countryId = $deliveryAddress->oxaddress__oxcountryid->value;
-                }
+            } elseif ($deliveryAddress = SessionDeliveryAddress::get()) {
+                $countryId = $deliveryAddress->oxaddress__oxcountryid->value;
             }
 
             if (!$countryId) {

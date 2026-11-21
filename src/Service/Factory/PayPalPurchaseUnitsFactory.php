@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace OxidSolutionCatalysts\PayPal\Service\Factory;
 
-use OxidEsales\Eshop\Application\Model\Address as EshopAddress;
 use OxidEsales\Eshop\Application\Model\Country as EshopCountry;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\BasketItem;
@@ -18,6 +17,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\Constants;
 use OxidSolutionCatalysts\PayPal\Core\Utils\AmountFormatter;
 use OxidSolutionCatalysts\PayPal\Core\Utils\PriceToMoney;
+use OxidSolutionCatalysts\PayPal\Core\Utils\SessionDeliveryAddress;
 use OxidSolutionCatalysts\PayPal\Exception\PayPalException;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\AmountBreakdown;
@@ -216,12 +216,11 @@ class PayPalPurchaseUnitsFactory
         if (!$user) {
             return null;
         }
-        $deliveryId = Registry::getSession()->getVariable('deladrid');
-        $deliveryAddress = new EshopAddress();
+        $deliveryAddress = SessionDeliveryAddress::get();
         $shipping = new ApiShippingDetail();
         $name = $shipping->initName();
 
-        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
+        if ($deliveryAddress) {
             $fullName = $deliveryAddress->oxaddress__oxfname->value . ' ' . $deliveryAddress->oxaddress__oxlname->value;
             $name->full_name = $fullName;
 

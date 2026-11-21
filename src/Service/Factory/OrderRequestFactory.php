@@ -14,7 +14,6 @@ use JsonException;
 use libphonenumber\NumberParseException;
 use libphonenumber\PhoneNumberFormat;
 use libphonenumber\PhoneNumberUtil;
-use OxidEsales\Eshop\Application\Model\Address;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\State;
@@ -23,6 +22,7 @@ use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\CustomerAddressHelper;
 use OxidSolutionCatalysts\PayPal\Core\PayPalDefinitions;
 use OxidSolutionCatalysts\PayPal\Core\ServiceFactory;
+use OxidSolutionCatalysts\PayPal\Core\Utils\SessionDeliveryAddress;
 use OxidSolutionCatalysts\PayPal\Service\BasketSummaryService;
 use OxidSolutionCatalysts\PayPal\Service\LanguageLocaleMapper;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
@@ -321,9 +321,8 @@ class OrderRequestFactory
         $country->load($user->getFieldData('oxcountryid'));
 
         // check possible deliveryCountry
-        $deliveryId = Registry::getSession()->getVariable("deladrid");
-        $deliveryAddress = oxNew(Address::class);
-        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
+        $deliveryAddress = SessionDeliveryAddress::get();
+        if ($deliveryAddress) {
             $country->load($deliveryAddress->getFieldData('oxcountryid'));
         }
 

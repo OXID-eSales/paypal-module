@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace OxidSolutionCatalysts\PayPal\Core;
 
 use JsonSerializable;
-use OxidEsales\Eshop\Application\Model\Address;
 use OxidEsales\Eshop\Application\Model\Basket;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Core\Registry;
+use OxidSolutionCatalysts\PayPal\Core\Utils\SessionDeliveryAddress;
 use OxidSolutionCatalysts\PayPal\Service\ModuleSettings;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\OrderExperienceContext;
 use OxidSolutionCatalysts\PayPalApi\Model\Orders\PaymentSource;
@@ -34,9 +34,8 @@ trait CustomerAddressHelper
             return $country;
         }
         $country->load($user->getFieldData('oxcountryid'));
-        $deliveryId = Registry::getSession()->getVariable("deladrid");
-        $deliveryAddress = oxNew(Address::class);
-        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
+        $deliveryAddress = SessionDeliveryAddress::get();
+        if ($deliveryAddress) {
             $country->load($deliveryAddress->getFieldData('oxcountryid'));
         }
 

@@ -63,6 +63,9 @@ class UserAddressPaypalService
                 $oAddress->setId($sAddressId);
             }
 
+            // the address must belong to the user: since OXID 7.6 Order::getDelAddressInfo() only
+            // accepts a "deladrid" from the user's own addresses, and the lookup above filters on it
+            $newDeliveryAddress['oxaddress__oxuserid'] = $oUser->getId();
             $oAddress->assign($newDeliveryAddress);
             $oAddress->save();
 

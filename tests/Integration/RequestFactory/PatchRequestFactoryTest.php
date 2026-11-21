@@ -10,6 +10,7 @@ use OxidEsales\Eshop\Application\Model\BasketItem;
 use OxidEsales\Eshop\Application\Model\Country;
 use OxidEsales\Eshop\Application\Model\OrderArticle;
 use OxidEsales\Eshop\Application\Model\State;
+use OxidEsales\Eshop\Application\Model\User;
 use OxidEsales\Eshop\Core\Price;
 use OxidEsales\Eshop\Core\Registry;
 use OxidSolutionCatalysts\PayPal\Core\PatchRequestFactory;
@@ -47,11 +48,17 @@ class PatchRequestFactoryTest extends BaseTestCase
             'oxstreetnr' => '123',
             'oxcity' => 'Test City',
             'oxzip' => '12345',
-            'oxcountryid' => 'a7c40f631fc920687.20179984',
+            'oxcountryid' => 'testcountry_de',
             'oxcompany' => 'Test Company',
             'oxaddinfo' => 'Additional Info'
         ]);
         $deliveryAddress->save();
+
+        // the address belongs to the active user: since OXID 7.6 the shop ignores a "deladrid"
+        // of another user, and so does the shipping patch
+        $user = oxNew(User::class);
+        $user->setId('_testuser');
+        Registry::getConfig()->setUser($user);
 
         // Create price mock with more realistic values
         $priceMock = $this->createMock(Price::class);
@@ -139,6 +146,7 @@ class PatchRequestFactoryTest extends BaseTestCase
             // Clean up test data
             $this->cleanUpTable('oxaddress');
             Registry::getSession()->deleteVariable('deladrid');
+            Registry::getConfig()->setUser(null);
         }
     }
 

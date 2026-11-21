@@ -16,8 +16,8 @@ use OxidEsales\Eshop\Application\Model\State;
 use OxidEsales\Eshop\Core\Exception\ArticleException;
 use OxidEsales\Eshop\Core\Exception\ArticleInputException;
 use OxidEsales\Eshop\Core\Exception\NoArticleException;
-use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\Eshop\Application\Model\Order;
+use OxidSolutionCatalysts\PayPal\Core\Utils\SessionDeliveryAddress;
 use OxidSolutionCatalysts\PayPal\Service\Factory\PayPalPurchaseUnitsFactory;
 use OxidSolutionCatalysts\PayPal\Service\Payment as PaymentService;
 use OxidSolutionCatalysts\PayPal\Traits\ServiceContainer;
@@ -49,8 +49,7 @@ class PatchRequestFactory
         ?Order $order = null
     ): array {
         $this->basket = $basket;
-        $deliveryId = Registry::getSession()->getVariable("deladrid");
-        $deliveryAddress = oxNew(Address::class);
+        $deliveryAddress = SessionDeliveryAddress::get();
 
         $paymentService = $this->getServiceFromContainer(PaymentService::class);
 
@@ -62,7 +61,7 @@ class PatchRequestFactory
             ])
         );
 
-        if ($deliveryId && $deliveryAddress->load($deliveryId)) {
+        if ($deliveryAddress) {
             $patches[] = $this->getShippingNamePatch($deliveryAddress);
             $patches[] = $this->getShippingAddressPatch($deliveryAddress);
         }
