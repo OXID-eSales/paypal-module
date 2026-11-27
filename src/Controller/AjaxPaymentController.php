@@ -120,6 +120,16 @@ class AjaxPaymentController extends BaseController
             $this->orderProcessTrackingService->setTrackingId($data['trackingId']);
         }
 
+        // A previous checkout of this session may still be open. If PayPal already approved
+        // or captured it, do not start a second payment: the checkout redirects to the thank
+        // you page, as for a blocked cancel.
+        if ($this->cancelPreviousTemporaryOrder()) {
+            $this->outputJson([
+                'status' => 'cancel_blocked'
+            ]);
+            return;
+        }
+
         $this->addToBasket();
 
         // Step 0: the page the customer confirmed may show an outdated basket (another
@@ -250,6 +260,55 @@ class AjaxPaymentController extends BaseController
                 'reload' => $reload
             ]);
         }
+    }
+
+    /**
+     * The shop order of a previous PayPal checkout in this session (sess_challenge) is left
+     * behind when the buyer starts a new one - e.g. the buyer approved the payment in the
+     * PayPal window, the approval never reached the order page (tab or app switch on mobile)
+     * and the buyer clicked the PayPal button again. The CHECKOUT.ORDER.APPROVED webhook then
+     * captures the left-behind order as well, and the buyer pays twice.
+     * Cancel that order before a new one is created. The cancel is blocked if PayPal already
+     * approved or captured it; the webhook captures it then.
+     *
+     * @return bool true if the previous order is already approved or captured at PayPal
+     */
+    protected function cancelPreviousTemporaryOrder(): bool
+    {
+        $previousOrderId = (string)Registry::getSession()->getVariable('sess_challenge');
+        if ($previousOrderId === '') {
+            return false;
+        }
+
+        /** @var ShopOrder $previousOrder */
+        $previousOrder = oxNew(Order::class);
+        if (
+            !$previousOrder->load($previousOrderId)
+            || (int)$previousOrder->getFieldData('oxstorno') === 1
+            || !PayPalDefinitions::isPayPalPayment((string)$previousOrder->getFieldData('oxpaymenttype'))
+            || !empty($previousOrder->getFieldData('oxtransid'))
+            || $previousOrder->isOrderSuccessfullyPaid()
+        ) {
+            return false;
+        }
+
+        /** @var PaymentService $paymentService */
+        $paymentService = $this->getServiceFromContainer(PaymentService::class);
+        $cancelBlocked = $paymentService->removeTemporaryOrder(
+            $previousOrderId,
+            PayPalCancelReason::BUYER_CANCELLED
+        );
+
+        if ($cancelBlocked) {
+            $this->logger->log('warning', sprintf(
+                'PayPal checkout started again for shop order %s (nr: %s), which PayPal already approved or'
+                . ' captured - no second order created',
+                $previousOrderId,
+                (string)$previousOrder->getFieldData('oxordernr')
+            ));
+        }
+
+        return $cancelBlocked;
     }
 
     /**
