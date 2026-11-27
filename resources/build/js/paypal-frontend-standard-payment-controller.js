@@ -82,6 +82,17 @@
                 'trackingId': PayPalPayment.getConfigValue('trackingId')
             });
 
+            if (result.status === 'cancel_blocked') {
+                // PayPal already approved the previous order of this checkout, but its approval
+                // never reached this page. No second payment: the webhook captures that order.
+                // The promise stays pending, so the PayPal SDK neither opens a new order nor
+                // reports an error while the page leaves for the thank you page.
+                PayPalPayment.reactOnPayPalOverlayClosed = false;
+                PayPalPayment.stoppedOnError = true;
+                PayPalPayment.thankYouPageRedirect();
+                return new Promise(function () {});
+            }
+
             if (result.status !== 'success') {
                 PayPalPayment.removeSubmitButtonOverlay();
                 throw new Error('Order creation failed: ' + (result.message || 'Unknown error'));

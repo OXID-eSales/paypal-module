@@ -286,7 +286,9 @@
                 return result;
             }
 
-            if (result.status !== 'success') {
+            // 'cancel_blocked' is no error: PayPal already approved the order, the caller
+            // redirects to the thank you page. handleError() would try to cancel it again.
+            if (result.status !== 'success' && result.status !== 'cancel_blocked') {
                 if (result.reload) {
                     // The backend changed the basket (e.g. removed an article that is no
                     // longer buyable) or found it outdated: only a reload shows the customer
