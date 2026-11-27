@@ -270,6 +270,9 @@ class AjaxPaymentController extends BaseController
      * captures the left-behind order as well, and the buyer pays twice.
      * Cancel that order before a new one is created. The cancel is blocked if PayPal already
      * approved or captured it; the webhook captures it then.
+     * If the webhook has already captured it (approval at least WebhookRetryDelay ago), the
+     * checkout of this session is paid. The thank you page deletes sess_challenge, so a paid
+     * order in sess_challenge means the buyer never got there: no new order either.
      *
      * @return bool true if the previous order is already approved or captured at PayPal
      */
@@ -286,10 +289,22 @@ class AjaxPaymentController extends BaseController
             !$previousOrder->load($previousOrderId)
             || $this->orderFieldAsString($previousOrder, 'oxstorno') === '1'
             || !PayPalDefinitions::isPayPalPayment($this->orderFieldAsString($previousOrder, 'oxpaymenttype'))
-            || !empty($previousOrder->getFieldData('oxtransid'))
-            || $previousOrder->isOrderSuccessfullyPaid()
         ) {
             return false;
+        }
+
+        if (
+            $this->orderFieldAsString($previousOrder, 'oxtransid') !== ''
+            || $previousOrder->isOrderSuccessfullyPaid()
+        ) {
+            $this->logger->log('warning', sprintf(
+                'PayPal checkout started again for shop order %s (nr: %s), which is already captured'
+                . ' (transid: %s) - no second order created',
+                $previousOrderId,
+                $this->orderFieldAsString($previousOrder, 'oxordernr'),
+                $this->orderFieldAsString($previousOrder, 'oxtransid')
+            ));
+            return true;
         }
 
         /** @var PaymentService $paymentService */
