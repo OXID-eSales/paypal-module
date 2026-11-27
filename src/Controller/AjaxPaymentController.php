@@ -271,8 +271,8 @@ class AjaxPaymentController extends BaseController
      */
     protected function cancelPreviousTemporaryOrder(): bool
     {
-        $previousOrderId = (string)Registry::getSession()->getVariable('sess_challenge');
-        if ($previousOrderId === '') {
+        $previousOrderId = Registry::getSession()->getVariable('sess_challenge');
+        if (!is_string($previousOrderId) || $previousOrderId === '') {
             return false;
         }
 
@@ -280,8 +280,8 @@ class AjaxPaymentController extends BaseController
         $previousOrder = oxNew(Order::class);
         if (
             !$previousOrder->load($previousOrderId)
-            || (int)$previousOrder->getFieldData('oxstorno') === 1
-            || !PayPalDefinitions::isPayPalPayment((string)$previousOrder->getFieldData('oxpaymenttype'))
+            || $this->orderFieldAsString($previousOrder, 'oxstorno') === '1'
+            || !PayPalDefinitions::isPayPalPayment($this->orderFieldAsString($previousOrder, 'oxpaymenttype'))
             || !empty($previousOrder->getFieldData('oxtransid'))
             || $previousOrder->isOrderSuccessfullyPaid()
         ) {
@@ -300,11 +300,21 @@ class AjaxPaymentController extends BaseController
                 'PayPal checkout started again for shop order %s (nr: %s), which PayPal already approved or'
                 . ' captured - no second order created',
                 $previousOrderId,
-                (string)$previousOrder->getFieldData('oxordernr')
+                $this->orderFieldAsString($previousOrder, 'oxordernr')
             ));
         }
 
         return $cancelBlocked;
+    }
+
+    /**
+     * getFieldData() is untyped: anything that is not a plain value yields an empty string.
+     */
+    private function orderFieldAsString(ShopOrder $order, string $field): string
+    {
+        $value = $order->getFieldData($field);
+
+        return is_scalar($value) ? (string)$value : '';
     }
 
     /**
